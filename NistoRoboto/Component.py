@@ -11,10 +11,23 @@ class Component(object):
     
     '''
     def __init__(self,name,mass=None,volume=None,density=None,formula=None):
-        self.density = density
         self.name    = name
-        self.mass    = mass
-        self.volume  = volume
+        self.density = density
+        
+        if (mass is None) and (volume is None):
+            # use hidden variables to avoid property setting Nonsense
+            self._mass = None
+            self._volume = None
+        elif volume is None:
+            # volume will be set in property.setter
+            self.mass    = mass
+        elif mass is None:
+            # mass will be set in property.setter
+            self.volume  = volume
+        else:
+            # use hidden variables to avoid property setting Nonsense
+            self._mass = mass
+            self._volume = volume
         
         # try to set up periodictable object for sld calculation
         if formula is None:
@@ -86,7 +99,7 @@ class Component(object):
     
     def __mul__(self,factor):
         if not isinstance(factor,numbers.Number):
-            raise TypeError(f'Can only multiply Component by numerical scale factor, not {type(other)}')
+            raise TypeError(f'Can only multiply Component by numerical scale factor, not {type(factor)}')
         component = copy.deepcopy(self)
         component._volume *= factor
         component._mass *= factor
@@ -118,15 +131,14 @@ class Component(object):
         self._add_mass(other)
         self._add_density(other)
         
-    
     def __add__(self,other):
-        if isinstance(other,Component):
-            if self.name == other.name:
-                component = copy.deepcopy(self)
-                component._add_all_properties(other)
-                return component
-                
-            else:
-                raise ValueError('Can only add/substract identical components!')
-            #     return Mixture([self,other])
+        if not isinstance(other,Component):
+            raise ValueError('Can only add identical component objects!')
+
+        if self.name == other.name:
+            component = copy.deepcopy(self)
+            component._add_all_properties(other)
+            return component
+        else:
+            raise ValueError('Can only add identical components!')
             

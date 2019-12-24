@@ -1,7 +1,7 @@
 #!python
 from __future__ import division,print_function
-from Roboto.Component import Component
-from Roboto.Mixture import Mixture
+from NistoRoboto.Component import Component
+from NistoRoboto.Mixture import Mixture
 import unittest
 import numpy as np
 
@@ -26,12 +26,16 @@ class Component_TestCase(unittest.TestCase):
 
         scale = 1.35
         D2O = D2O*scale
-
         
         np.testing.assert_array_almost_equal(D2O.volume,volume*scale)
         np.testing.assert_array_almost_equal(D2O.mass,mass*scale)
         np.testing.assert_array_almost_equal(D2O.density,density)
         
+
+        # test for error
+        with self.assertRaises(TypeError):
+            D2O*'a'
+
     def test_assign(self):
         '''Does the mass/volume update appropriately?'''
         density = 1.11

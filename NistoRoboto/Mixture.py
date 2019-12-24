@@ -1,4 +1,4 @@
-from Roboto.Component import Component
+from NistoRoboto.Component import Component
 import numpy as np
 import copy
 
@@ -54,11 +54,21 @@ class Mixture:
         
     @property
     def mass(self):
-        return sum([component.mass for name,component in self.components.items()])
+        '''Total mass of mixture. Components with mass = None will be ignored.'''
+        masses = []
+        for name,component in self.components.items(): 
+            if component._has_mass():
+                masses.append(component.mass)
+        return sum(masses)
     
     @property
     def volume(self):
-        return sum([component.volume for name,component in self.components.items()])
+        '''Total volume of mixture. Components with volume = None will be ignored.'''
+        volumes = []
+        for name,component in self.components.items(): 
+            if component._has_volume():
+                volumes.append(component.volume)
+        return sum(volumes)
     
     @property
     def density(self):
@@ -77,55 +87,85 @@ class Mixture:
     
     @property
     def mass_fraction(self):
+        '''Mass fraction of components in mixture
+
+        Returns
+        -------
+        mass_fraction: dict
+        Component mass fractions
+        '''
         total_mass = self.mass
-        return {name:component.mass/total_mass for name,component in self.components.items()}
+        mass_fraction = {}
+        for name,component in self.components.items():
+            if component._has_mass():
+                mass_fraction[name] = component.mass/total_mass
+        return mass_fraction
     
     @property
     def volume_fraction(self):
+        '''Volume fraction of components in mixture
+
+        Returns
+        -------
+        volume_fraction: dict
+        Component volume fractions
+        '''
         total_volume = self.volume
-        return {name:component.volume/total_volume for name,component in self.components.items()}
+        volume_fraction = {}
+        for name,component in self.components.items():
+            if component._has_volume():
+                volume_fraction[name] = component.volume/total_volume
+        return volume_fraction
     
     @property
     def concentration(self):
         total_volume = self.volume
         return {name:component.mass/total_volume for name,component in self.components.items()}
     
-    def set_mass_fractions(self,total_mass,fractions):
+    def set_mass_fractions(self,fractions,total_mass=None):
         '''
         Arguments
         ---------
-        total_mass: float
-            Total mass of mixture
         
         fractions: dict
             Dictionary of component fractions. The number of elements of the 
             dictionary must match the number of components in the mixture
+
+        total_mass: float
+            Total mass of mixture. If not set, the current total mass of the
+            mixture is used
             
         '''
         
         if not (len(fractions) == len(self.components)):
             raise ValueError('Fraction dictionary doesn\'t match size of mixture')
+
+        if total_mass is None:
+            total_mass = self.mass
         
         normalization = sum(fractions.values()) # can't trust users to give sane fractional values
         for name,fraction in fractions.items():
             self.components[name].mass = (fraction/normalization)*total_mass
         
-    def set_volume_fractions(self,total_volume,fractions):
+    def set_volume_fractions(self,fractions,total_volume=None):
         '''
         Arguments
         ---------
-        total_volume: float
-            Total volume of mixture
-        
         fractions: dict
             Dictionary of component fractions. The number of elements of the 
             dictionary must match the number of components in the mixture
-            
+
+        total_volume: float
+            Total volume of mixture. If not set, the current total volume of 
+            the mixture is used.
+        
         '''
         
         if not (len(fractions) == len(self.components)):
             raise ValueError('Fraction dictionary doesn\'t match size of mixture')
-        
+
+        if total_volume is None:
+            total_volume = self.volume
         
         normalization = sum(fractions.values()) # can't trust users to give sane fractional values
         for name,fraction in fractions.items():

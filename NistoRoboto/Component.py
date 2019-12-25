@@ -19,10 +19,12 @@ class Component(object):
             self._mass = None
             self._volume = None
         elif volume is None:
-            # volume will be set in property.setter
+            # volume will be set in property.setter if density is set
+            self. _volume = None
             self.mass    = mass
         elif mass is None:
-            # mass will be set in property.setter
+            # mass will be set in property.setter if density is set
+            self._mass = None
             self.volume  = volume
         else:
             # use hidden variables to avoid property setting Nonsense
@@ -40,9 +42,9 @@ class Component(object):
             self.formula = None
 
     def __str__(self):
-        mass    = self.mass if self._has_mass else -1
-        volume  = self.volume if self._has_volume is not None else -1
-        density = self.density if self._has_density is not None else -1
+        mass    = self.mass if self._has_mass() else -1
+        volume  = self.volume if self._has_volume() else -1
+        density = self.density if self._has_density() else -1
         return f'<Component M={mass:3.2f} V={volume:3.2f} D={density:3.2f}>'
     
     def __repr__(self):

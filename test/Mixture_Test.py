@@ -190,12 +190,25 @@ class Mixture_TestCase(unittest.TestCase):
         polymer = Component('polymer',mass=mass3)
 
         mix = Mixture([D2O,H2O,polymer])
+        pre_mass_fractions = mix.mass_fraction
+        pre_volume_fractions = mix.volume_fraction
 
         target_volume = 1.2
         mix.volume = target_volume
+
         np.testing.assert_almost_equal(mix['D2O'].volume,volume1*target_volume/(volume1 + volume2))
         np.testing.assert_almost_equal(mix['H2O'].volume,volume2*target_volume/(volume1 + volume2))
         np.testing.assert_almost_equal(mix.volume,target_volume)
+
+
+        np.testing.assert_almost_equal(mix.volume_fraction['H2O'],pre_volume_fractions['H2O'])
+        np.testing.assert_almost_equal(mix.volume_fraction['D2O'],pre_volume_fractions['D2O'])
+
+        # mass fractions will change because polymer volume isn't specified and therefore isn't
+        # modified by the volume setter
+        # np.testing.assert_almost_equal(mix.mass_fraction['H2O'],pre_mass_fractions['H2O'])
+        # np.testing.assert_almost_equal(mix.mass_fraction['D2O'],pre_mass_fractions['D2O'])
+        # np.testing.assert_almost_equal(mix.mass_fraction['polymer'],pre_mass_fractions['polymer'])
 
     def test_set_total_mass(self):
         density1 = 1.11
@@ -212,13 +225,22 @@ class Mixture_TestCase(unittest.TestCase):
         polymer = Component('polymer',mass=mass3)
 
         mix = Mixture([D2O,H2O,polymer])
+        pre_mass_fractions = mix.mass_fraction
+        pre_volume_fractions = mix.volume_fraction
 
         target_mass = 1.2
         mix.mass = target_mass
+
         np.testing.assert_almost_equal(mix.mass,target_mass)
         np.testing.assert_almost_equal(mix['H2O'].mass,mass2*target_mass/(mass1 + mass2 + mass3))
         np.testing.assert_almost_equal(mix['D2O'].mass,mass1*target_mass/(mass1 + mass2 + mass3))
         np.testing.assert_almost_equal(mix['polymer'].mass,mass3*target_mass/(mass1 + mass2 + mass3))
+        np.testing.assert_almost_equal(mix.mass_fraction['H2O'],pre_mass_fractions['H2O'])
+        np.testing.assert_almost_equal(mix.mass_fraction['D2O'],pre_mass_fractions['D2O'])
+        np.testing.assert_almost_equal(mix.mass_fraction['polymer'],pre_mass_fractions['polymer'])
+
+        np.testing.assert_almost_equal(mix.volume_fraction['H2O'],pre_volume_fractions['H2O'])
+        np.testing.assert_almost_equal(mix.volume_fraction['D2O'],pre_volume_fractions['D2O'])
         
         
 if __name__ == '__main__':

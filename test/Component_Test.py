@@ -84,12 +84,9 @@ class Component_TestCase(unittest.TestCase):
         
         with self.assertRaises(ValueError):
             mix = D2O + H2O
-        
-        # new_density = (D2O.mass + H2O.mass)/(D2O.mass/D2O.density + H2O.mass/H2O.density)
-        # np.testing.assert_array_almost_equal(mix.mass,D2O.mass+H2O.mass)
-        # np.testing.assert_array_almost_equal(mix.volume,D2O.volume+H2O.volume)
-        # np.testing.assert_array_almost_equal(mix.density,new_density)
 
+
+        
 
         
 if __name__ == '__main__':

@@ -60,15 +60,31 @@ class Mixture:
             if component._has_mass():
                 masses.append(component.mass)
         return sum(masses)
+
+    @mass.setter
+    def mass(self,value):
+        '''Set total mass of mixture. Components with no mass specified will be ignored.'''
+        scale_factor = value/self.mass
+        for name,component in self.components.items(): 
+            if component._has_mass():
+                component.mass = (component.mass*scale_factor)
     
     @property
     def volume(self):
-        '''Total volume of mixture. Components with volume = None will be ignored.'''
+        '''Total volume of mixture. Components with no volume specified will be ignored.'''
         volumes = []
         for name,component in self.components.items(): 
             if component._has_volume():
                 volumes.append(component.volume)
         return sum(volumes)
+
+    @volume.setter
+    def volume(self,value):
+        '''Set total volume of mixture. Components with no volume specified will be ignored.'''
+        scale_factor = value/self.volume
+        for name,component in self.components.items(): 
+            if component._has_volume():
+                component.volume = (component.volume*scale_factor)
     
     @property
     def density(self):

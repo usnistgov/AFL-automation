@@ -153,25 +153,72 @@ class Mixture_TestCase(unittest.TestCase):
         np.testing.assert_almost_equal(mix['H2O'].mass,mix.mass*mfrac_set['H2O'])
         np.testing.assert_almost_equal(mix['EtOH'].mass,mix.mass*mfrac_set['EtOH'])
 
-    # def test_set_concentration(self):
-    #     '''Can we set the concentration of a solute?'''
-    #     density1 = 1.11
-    #     volume1 = 0.5
-    #     mass1 = volume1*density1
-    #     D2O = Component('D2O',density=density1,volume=volume1,mass=mass1)
+    def test_set_concentration(self):
+        '''Can we set the concentration of a solute?'''
+        density1 = 1.11
+        volume1 = 0.5
+        mass1 = volume1*density1
+        D2O = Component('D2O',density=density1,volume=volume1,mass=mass1)
 
-    #     density2 = 1.00
-    #     volume2 = 0.15
-    #     mass2 = volume2*density2
-    #     H2O = Component('H2O',density=density2,volume=volume2,mass=mass2)
+        density2 = 1.00
+        volume2 = 0.15
+        mass2 = volume2*density2
+        H2O = Component('H2O',density=density2,volume=volume2,mass=mass2)
+
+        mass3 =  0.3
+        polymer = Component('polymer',mass=mass3)
+
+        mix = Mixture([D2O,H2O,polymer])
+        mix.set_concentration('polymer',1.25)
+
+        np.testing.assert_almost_equal(mix.concentration['polymer'],1.25)
+        np.testing.assert_almost_equal(mix['polymer'].mass,1.25*mix.volume)
+
+    def test_set_total_volume(self):
+        density1 = 1.11
+        volume1 = 0.5
+        mass1 = volume1*density1
+        D2O = Component('D2O',density=density1,volume=volume1,mass=mass1)
+
+        density2 = 1.00
+        volume2 = 0.15
+        mass2 = volume2*density2
+        H2O = Component('H2O',density=density2,volume=volume2,mass=mass2)
 
 
-    #     # in order for this to work, we specifically don't set a density
-    #     mass3 =  0.3
-    #     volume3 = 0
-    #     polymer = Component('poly',mass=mass3,volume=volume3)
+        mass3 =  0.3
+        polymer = Component('polymer',mass=mass3)
 
-    #     mix = Mixture([D2O,H2O,EtOH])
+        mix = Mixture([D2O,H2O,polymer])
+
+        target_volume = 1.2
+        mix.volume = target_volume
+        np.testing.assert_almost_equal(mix['D2O'].volume,volume1*target_volume/(volume1 + volume2))
+        np.testing.assert_almost_equal(mix['H2O'].volume,volume2*target_volume/(volume1 + volume2))
+        np.testing.assert_almost_equal(mix.volume,target_volume)
+
+    def test_set_total_mass(self):
+        density1 = 1.11
+        volume1 = 0.5
+        mass1 = volume1*density1
+        D2O = Component('D2O',density=density1,volume=volume1,mass=mass1)
+
+        density2 = 1.00
+        volume2 = 0.15
+        mass2 = volume2*density2
+        H2O = Component('H2O',density=density2,volume=volume2,mass=mass2)
+
+        mass3 =  0.3
+        polymer = Component('polymer',mass=mass3)
+
+        mix = Mixture([D2O,H2O,polymer])
+
+        target_mass = 1.2
+        mix.mass = target_mass
+        np.testing.assert_almost_equal(mix.mass,target_mass)
+        np.testing.assert_almost_equal(mix['H2O'].mass,mass2*target_mass/(mass1 + mass2 + mass3))
+        np.testing.assert_almost_equal(mix['D2O'].mass,mass1*target_mass/(mass1 + mass2 + mass3))
+        np.testing.assert_almost_equal(mix['polymer'].mass,mass3*target_mass/(mass1 + mass2 + mass3))
         
         
 if __name__ == '__main__':

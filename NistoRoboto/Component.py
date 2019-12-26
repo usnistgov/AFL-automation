@@ -42,9 +42,9 @@ class Component(object):
             self.formula = None
 
     def __str__(self):
-        mass    = self.mass if self._has_mass() else -1
-        volume  = self.volume if self._has_volume() else -1
-        density = self.density if self._has_density() else -1
+        mass    = self.mass if self._has_mass else -1
+        volume  = self.volume if self._has_volume else -1
+        density = self.density if self._has_density else -1
         return f'<Component M={mass:3.2f} V={volume:3.2f} D={density:3.2f}>'
     
     def __repr__(self):
@@ -57,7 +57,7 @@ class Component(object):
     @mass.setter
     def mass(self,value):
         self._mass = value
-        if self._has_mass() and self._has_density():
+        if self._has_mass and self._has_density:
             self._volume = self._mass/self.density
 
     @property
@@ -67,12 +67,12 @@ class Component(object):
     @volume.setter
     def volume(self,value):
         self._volume = value
-        if self._has_volume() and self._has_density():
+        if self._has_volume and self._has_density:
             self._mass = self._volume*self.density
     
     @property
     def sld(self):
-        if self._has_formula() and self._has_density():
+        if self._has_formula and self._has_density:
             
             #try to coonvert units and them strip them
             #XXX This is hacky and needs to be changed
@@ -87,15 +87,19 @@ class Component(object):
         else:
             return None
             
+    @property
     def _has_density(self):
         return (self.density is not None)
     
+    @property
     def _has_volume(self):
         return (self.volume is not None)
     
+    @property
     def _has_mass(self):
         return (self.mass is not None)
     
+    @property
     def _has_formula(self):
         return (self.formula is not None)
     
@@ -111,19 +115,19 @@ class Component(object):
         return self.__mul__(factor)
             
     def _add_volume(self,other):
-        if self._has_volume() and other._has_volume():
+        if self._has_volume and other._has_volume:
             self._volume = self.volume + other.volume
         else:
             self._volume = None
         
     def _add_mass(self,other):
-        if self._has_mass() and other._has_mass():
+        if self._has_mass and other._has_mass:
             self._mass = self.mass + other.mass
         else:
             self._mass = None
         
     def _add_density(self,other):
-        if self._has_mass() and other._has_mass() and self._has_density() and other._has_density():
+        if self._has_mass and other._has_mass and self._has_density and other._has_density:
             self.density = (self.mass + other.mass)/(self.mass/self.density + other.mass/other.density)
         else:
             self.density = None

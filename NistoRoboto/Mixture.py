@@ -57,7 +57,7 @@ class Mixture:
         '''Total mass of mixture. Components with mass = None will be ignored.'''
         masses = []
         for name,component in self.components.items(): 
-            if component._has_mass():
+            if component._has_mass:
                 masses.append(component.mass)
         return sum(masses)
 
@@ -66,7 +66,7 @@ class Mixture:
         '''Set total mass of mixture. Components with no mass specified will be ignored.'''
         scale_factor = value/self.mass
         for name,component in self.components.items(): 
-            if component._has_mass():
+            if component._has_mass:
                 component.mass = (component.mass*scale_factor)
     
     @property
@@ -74,7 +74,7 @@ class Mixture:
         '''Total volume of mixture. Components with no volume specified will be ignored.'''
         volumes = []
         for name,component in self.components.items(): 
-            if component._has_volume():
+            if component._has_volume:
                 volumes.append(component.volume)
         return sum(volumes)
 
@@ -83,7 +83,7 @@ class Mixture:
         '''Set total volume of mixture. Components with no volume specified will be ignored.'''
         scale_factor = value/self.volume
         for name,component in self.components.items(): 
-            if component._has_volume():
+            if component._has_volume:
                 component.volume = (component.volume*scale_factor)
     
     @property
@@ -113,7 +113,7 @@ class Mixture:
         total_mass = self.mass
         mass_fraction = {}
         for name,component in self.components.items():
-            if component._has_mass():
+            if component._has_mass:
                 mass_fraction[name] = component.mass/total_mass
         return mass_fraction
     
@@ -129,7 +129,7 @@ class Mixture:
         total_volume = self.volume
         volume_fraction = {}
         for name,component in self.components.items():
-            if component._has_volume():
+            if component._has_volume:
                 volume_fraction[name] = component.volume/total_volume
         return volume_fraction
     
@@ -177,7 +177,7 @@ class Mixture:
         
         '''
         
-        if not (len(fractions) == len(self.components)):
+        if not (len(fractions) == sum([c._has_volume for name,c in self.components.items()])):
             raise ValueError('Fraction dictionary doesn\'t match size of mixture')
 
         if total_volume is None:

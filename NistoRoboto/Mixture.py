@@ -27,6 +27,10 @@ class Mixture:
     
     def __getitem__(self,name):
         return self.components[name]
+
+    def __iter__(self):
+        for name,component in self.components.items():
+            yield name,component
     
     def __add__(self,other):
         mixture = copy.deepcopy(self)

@@ -41,6 +41,9 @@ class Component(object):
         except ParseException:
             self.formula = None
 
+    def copy(self):
+        return copy.deepcopy(self)
+
     def __str__(self):
         mass    = self.mass if self._has_mass else -1
         volume  = self.volume if self._has_volume else -1

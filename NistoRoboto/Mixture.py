@@ -49,6 +49,9 @@ class Mixture:
             raise TypeError(f'Unsure how to combine Mixture with {type(other)}')
             
         return mixture
+
+    def copy(self):
+        return copy.deepcopy(self)
             
     def contains(self,name):
         if name in self.components:

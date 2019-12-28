@@ -43,7 +43,7 @@ class Component(object):
 
     def copy(self):
         return copy.deepcopy(self)
-
+    
     def __str__(self):
         mass    = self.mass if self._has_mass else -1
         volume  = self.volume if self._has_volume else -1
@@ -62,6 +62,8 @@ class Component(object):
         self._mass = value
         if self._has_mass and self._has_density:
             self._volume = self._mass/self.density
+        else:
+            self._volume = None
 
     @property
     def volume(self):
@@ -72,6 +74,8 @@ class Component(object):
         self._volume = value
         if self._has_volume and self._has_density:
             self._mass = self._volume*self.density
+        else:
+            self._mass = None
     
     @property
     def sld(self):

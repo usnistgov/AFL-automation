@@ -241,6 +241,80 @@ class Mixture_TestCase(unittest.TestCase):
 
         np.testing.assert_almost_equal(mix.volume_fraction['H2O'],pre_volume_fractions['H2O'])
         np.testing.assert_almost_equal(mix.volume_fraction['D2O'],pre_volume_fractions['D2O'])
+
+    def test_remove_volume(self):
+        density1 = 1.11
+        volume1 = 0.5
+        mass1 = volume1*density1
+        D2O = Component('D2O',density=density1,volume=volume1,mass=mass1)
+
+        density2 = 1.00
+        volume2 = 0.15
+        mass2 = volume2*density2
+        H2O = Component('H2O',density=density2,volume=volume2,mass=mass2)
+
+        mass3 =  0.3
+        polymer = Component('polymer',mass=mass3)
+
+        mix1 = Mixture([D2O,H2O])
+
+        pre_mass_fractions = mix1.mass_fraction
+        pre_volume_fractions = mix1.volume_fraction
+        removed_volume = 0.075
+        removed = mix1.remove_volume(removed_volume)
+
+        np.testing.assert_almost_equal(mix1.volume,volume1+volume2-removed_volume)
+        np.testing.assert_almost_equal(removed.volume,removed_volume)
+        np.testing.assert_almost_equal(mix1.mass_fraction['H2O'],pre_mass_fractions['H2O'])
+        np.testing.assert_almost_equal(mix1.mass_fraction['D2O'],pre_mass_fractions['D2O'])
+        np.testing.assert_almost_equal(mix1.volume_fraction['H2O'],pre_volume_fractions['H2O'])
+        np.testing.assert_almost_equal(mix1.volume_fraction['D2O'],pre_volume_fractions['D2O'])
+
+        # can't remove more volume than mixture contains
+        with self.assertRaises(ValueError):
+            mix1.remove_volume(10)
+
+
+        # can't remove volume from mixture since polymer volume isn't specified
+        mix2 = Mixture([D2O,H2O,polymer])
+        with self.assertRaises(RuntimeError):
+            mix2.remove_volume(0.001)
+
+    def test_remove_mass(self):
+        density1 = 1.11
+        volume1 = 0.5
+        mass1 = volume1*density1
+        D2O = Component('D2O',density=density1,volume=volume1,mass=mass1)
+
+        density2 = 1.00
+        volume2 = 0.15
+        mass2 = volume2*density2
+        H2O = Component('H2O',density=density2,volume=volume2,mass=mass2)
+
+        mass3 =  0.3
+        polymer = Component('polymer',mass=mass3)
+
+        mix = Mixture([D2O,H2O,polymer])
+
+        pre_mass_fractions = mix.mass_fraction
+        pre_volume_fractions = mix.volume_fraction
+
+        removed_mass = 0.075
+        removed = mix.remove_mass(removed_mass)
+
+        np.testing.assert_almost_equal(mix.mass,mass1+mass2+mass3-removed_mass)
+        np.testing.assert_almost_equal(removed.mass,removed_mass)
+        np.testing.assert_almost_equal(mix.mass_fraction['H2O'],pre_mass_fractions['H2O'])
+        np.testing.assert_almost_equal(mix.mass_fraction['D2O'],pre_mass_fractions['D2O'])
+        np.testing.assert_almost_equal(mix.mass_fraction['polymer'],pre_mass_fractions['polymer'])
+        np.testing.assert_almost_equal(mix.volume_fraction['H2O'],pre_volume_fractions['H2O'])
+        np.testing.assert_almost_equal(mix.volume_fraction['D2O'],pre_volume_fractions['D2O'])
+
+        # can't remove more volume than mixture contains
+        with self.assertRaises(ValueError):
+            mix.remove_mass(10)
+
+
         
         
 if __name__ == '__main__':

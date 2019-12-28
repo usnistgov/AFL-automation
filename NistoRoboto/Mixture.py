@@ -12,7 +12,7 @@ class Mixture:
         self.components = {}
         for component in components:
             #copy so we don't modify templates
-            component_copy = copy.deepcopy(component) 
+            component_copy = component.copy()
             self.components[component_copy.name] = component_copy
             
     def __str__(self):
@@ -33,7 +33,7 @@ class Mixture:
             yield name,component
     
     def __add__(self,other):
-        mixture = copy.deepcopy(self)
+        mixture = self.copy()
         if isinstance(other,Component):
             if mixture.contains(other.name):
                 mixture.components[other.name] = (mixture.components[other.name] + other)
@@ -52,6 +52,10 @@ class Mixture:
 
     def copy(self):
         return copy.deepcopy(self)
+
+    @property
+    def num_components(self):
+        return len(self.components)
             
     def contains(self,name):
         if name in self.components:
@@ -206,5 +210,45 @@ class Mixture:
             
         '''
         self.components[name].mass = concentration*self.volume
+
+    def remove_volume(self,amount):
+        '''Remove volume from mixture without changing composition
+
+        Returns
+        -------
+        Mixture object with removed volume
+        '''
+        if self.volume<amount:
+            raise ValueError(f'Volume of mixture ({self.volume}) less than removed amount ({amount})')
+
+        if not all([component._has_volume for name,component in self]):
+           raise RuntimeError('Can\'t remove volume from mixture without all volumes specified')
+       
+        self.volume = self.volume - amount
+        removed = self.copy()
+        removed.volume = amount
+        return removed
+
+    def remove_mass(self,amount):
+        '''Remove mass from mixture without changing composition
+
+        Returns
+        -------
+        Mixture object with removed mass
+        '''
+        if self.mass<amount:
+            raise ValueError(f'Mass of mixture ({self.mass}) less than removed amount ({amount})')
+
+        if not all([component._has_mass for name,component in self]):
+           raise RuntimeError('Can\'t remove mass from mixture without all masses specified')
+       
+        self.mass = self.mass - amount
+
+        removed = self.copy()
+        removed.mass = amount
+        return removed
+
+
+
         
-    
+

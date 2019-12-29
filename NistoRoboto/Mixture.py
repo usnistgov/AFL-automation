@@ -17,8 +17,13 @@ class Mixture:
             
     def __str__(self):
         out_str = '<Mixture v/v'
-        for k,v in self.volume_fraction.items():
-            out_str += f' {k}:{v:3.2f}'
+        volume_fraction = self.volume_fraction
+        for name,component in self:
+            vfrac = volume_fraction.get(name,None)
+            if vfrac is None:
+                out_str += f' {name}:NoVolume'
+            else:
+                out_str += f' {name}:{vfrac:3.2f}'
         out_str +='>'
         return out_str
     
@@ -42,7 +47,7 @@ class Mixture:
         elif isinstance(other,Mixture):
             for name,component in other.components.items():
                 if mixture.contains(name):
-                    mixture.components[name] = (mixture.components[name] + other)
+                    mixture.components[name] = (mixture.components[name] + component)
                 else:
                     mixture.components[name] = other
         else:

@@ -45,10 +45,12 @@ class Component(object):
         return copy.deepcopy(self)
     
     def __str__(self):
-        mass    = self.mass if self._has_mass else -1
-        volume  = self.volume if self._has_volume else -1
-        density = self.density if self._has_density else -1
-        return f'<Component M={mass:3.2f} V={volume:3.2f} D={density:3.2f}>'
+        out_str  = '<Component '
+        out_str += f' M={self.mass:3.2f}' if self._has_mass else ' M=None'
+        out_str += f' V={self.volume:3.2f}' if self._has_volume else ' V=None'
+        out_str += f' D={self.density:3.2f}' if self._has_density else ' D=None'
+        out_str += '>'
+        return out_str
     
     def __repr__(self):
         return self.__str__()

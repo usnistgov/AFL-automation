@@ -8,7 +8,13 @@ class Mixture:
         - ability to add/remove volume or mass without changing composition
         - unit support
     '''
-    def __init__(self,components):
+    def __init__(self,components=None):
+        if components is None:
+            components = []
+        elif isinstance(components,Component):
+            # make listy so that iterator works below
+            components = [components]
+
         self.components = {}
         for component in components:
             #copy so we don't modify templates
@@ -16,7 +22,7 @@ class Mixture:
             self.components[component_copy.name] = component_copy
             
     def __str__(self):
-        out_str = '<Mixture v/v'
+        out_str = '<Mixture v/v%'
         volume_fraction = self.volume_fraction
         for name,component in self:
             vfrac = volume_fraction.get(name,None)

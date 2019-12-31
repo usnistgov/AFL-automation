@@ -221,7 +221,7 @@ class Mixture:
 
         Returns
         -------
-        Mixture object with removed volume
+        Mixture object with removed volume at identical composition 
         '''
         if self.volume<amount:
             raise ValueError(f'Volume of mixture ({self.volume}) less than removed amount ({amount})')
@@ -239,7 +239,7 @@ class Mixture:
 
         Returns
         -------
-        Mixture object with removed mass
+        Mixture object with removed mass at identical composition 
         '''
         if self.mass<amount:
             raise ValueError(f'Mass of mixture ({self.mass}) less than removed amount ({amount})')
@@ -252,8 +252,6 @@ class Mixture:
         removed = self.copy()
         removed.mass = amount
         return removed
-
-
 
         
 

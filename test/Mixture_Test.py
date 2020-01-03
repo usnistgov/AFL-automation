@@ -2,6 +2,7 @@
 from __future__ import division,print_function
 from NistoRoboto.Mixture import Mixture
 from NistoRoboto.Component import Component
+from NistoRoboto.Exceptions import EmptyException
 import unittest
 import numpy as np
 
@@ -271,7 +272,7 @@ class Mixture_TestCase(unittest.TestCase):
         np.testing.assert_almost_equal(mix1.volume_fraction['D2O'],pre_volume_fractions['D2O'])
 
         # can't remove more volume than mixture contains
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EmptyException):
             mix1.remove_volume(10)
 
 
@@ -311,7 +312,7 @@ class Mixture_TestCase(unittest.TestCase):
         np.testing.assert_almost_equal(mix.volume_fraction['D2O'],pre_volume_fractions['D2O'])
 
         # can't remove more volume than mixture contains
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EmptyException):
             mix.remove_mass(10)
 
 

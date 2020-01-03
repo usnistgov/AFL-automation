@@ -1,4 +1,5 @@
 from NistoRoboto.Component import Component
+from NistoRoboto.Exceptions import EmptyException
 import numpy as np
 import copy
 
@@ -55,7 +56,7 @@ class Mixture:
                 if mixture.contains(name):
                     mixture.components[name] = (mixture.components[name] + component)
                 else:
-                    mixture.components[name] = other
+                    mixture.components[name] = component
         else:
             raise TypeError(f'Unsure how to combine Mixture with {type(other)}')
             
@@ -86,7 +87,11 @@ class Mixture:
     @mass.setter
     def mass(self,value):
         '''Set total mass of mixture. Components with no mass specified will be ignored.'''
-        scale_factor = value/self.mass
+        if self.mass>0:
+            scale_factor = value/self.mass
+        else:
+            scale_factor = 0
+
         for name,component in self.components.items(): 
             if component._has_mass:
                 component.mass = (component.mass*scale_factor)
@@ -103,7 +108,10 @@ class Mixture:
     @volume.setter
     def volume(self,value):
         '''Set total volume of mixture. Components with no volume specified will be ignored.'''
-        scale_factor = value/self.volume
+        if self.volume>0:
+            scale_factor = value/self.volume
+        else:
+            scale_factor = 0
         for name,component in self.components.items(): 
             if component._has_volume:
                 component.volume = (component.volume*scale_factor)
@@ -230,7 +238,7 @@ class Mixture:
         Mixture object with removed volume at identical composition 
         '''
         if self.volume<amount:
-            raise ValueError(f'Volume of mixture ({self.volume}) less than removed amount ({amount})')
+            raise EmptyException(f'Volume of mixture ({self.volume}) less than removed amount ({amount})')
 
         if not all([component._has_volume for name,component in self]):
            raise RuntimeError('Can\'t remove volume from mixture without all volumes specified')
@@ -248,7 +256,7 @@ class Mixture:
         Mixture object with removed mass at identical composition 
         '''
         if self.mass<amount:
-            raise ValueError(f'Mass of mixture ({self.mass}) less than removed amount ({amount})')
+            raise EmptyException(f'Mass of mixture ({self.mass}) less than removed amount ({amount})')
 
         if not all([component._has_mass for name,component in self]):
            raise RuntimeError('Can\'t remove mass from mixture without all masses specified')

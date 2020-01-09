@@ -37,7 +37,10 @@ class Mixture:
         return self.__str__()
     
     def __getitem__(self,name):
-        return self.components[name]
+        try:
+            return self.components[name]
+        except KeyError:
+            raise KeyError(f'The component \'{name}\' is not in this mixture which contains: {list(self.components.keys())}')
 
     def __iter__(self):
         for name,component in self.components.items():

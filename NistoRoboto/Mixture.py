@@ -75,15 +75,17 @@ class Mixture:
 
         if isinstance(other,Mixture):
             checks = []# list of true/false values that represent equality checks
-            checks.append(self.mass == other.mass)
-            checks.append(self.volume == other.volume)
+            checks.append(np.isclose(self.mass,other.mass))
+            checks.append(np.isclose(self.volume,other.volume))
 
             for name,component in self:
-                checks.append(self[name].mass == other[name].mass)
-                checks.append(self[name].volume == other[name].volume)
+                if component._has_mass:
+                    checks.append(np.isclose(self[name].mass,other[name].mass))
+                    checks.append(np.isclose(self.mass_fraction[name],other.mass_fraction[name]))
 
-                checks.append(self.mass_fraction[name] == other.mass_fraction[name])
-                checks.append(self.volume_fraction[name] == other.volume_fraction[name])
+                if component._has_volume:
+                    checks.append(np.isclose(self[name].volume,other[name].volume))
+                    checks.append(np.isclose(self.volume_fraction[name],other.volume_fraction[name]))
 
             return all(checks)
 

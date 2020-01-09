@@ -65,13 +65,7 @@ class Mixture:
         return mixture
     
     def __eq__(self,other):
-        ''''Compare the mass,volume, and composition of two mixtures
-
-        Returns
-        -------
-        equal: bool
-
-        '''
+        ''''Compare the mass,volume, and composition of two mixtures'''
 
         if isinstance(other,Mixture):
             checks = []# list of true/false values that represent equality checks
@@ -247,7 +241,7 @@ class Mixture:
         for name,fraction in fractions.items():
             self.components[name].volume = (fraction/normalization)*total_volume
             
-    def set_concentration(self,name,concentration):
+    def set_mass_concentration(self,name,concentration,by_dilution=False):
         '''
         Arguments
         ---------
@@ -258,7 +252,10 @@ class Mixture:
             target concentration
             
         '''
-        self.components[name].mass = concentration*self.volume
+        if by_dilution:
+            self.volume = self.components[name].mass / concentration
+        else:
+            self.components[name].mass = concentration*self.volume
 
     def remove_volume(self,amount):
         '''Remove volume from mixture without changing composition

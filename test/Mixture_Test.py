@@ -154,7 +154,7 @@ class Mixture_TestCase(unittest.TestCase):
         np.testing.assert_almost_equal(mix['H2O'].mass,mix.mass*mfrac_set['H2O'])
         np.testing.assert_almost_equal(mix['EtOH'].mass,mix.mass*mfrac_set['EtOH'])
 
-    def test_set_concentration(self):
+    def test_set_mass_concentration(self):
         '''Can we set the concentration of a solute?'''
         density1 = 1.11
         volume1 = 0.5
@@ -170,10 +170,31 @@ class Mixture_TestCase(unittest.TestCase):
         polymer = Component('polymer',mass=mass3)
 
         mix = Mixture([D2O,H2O,polymer])
-        mix.set_concentration('polymer',1.25)
+        mix.set_mass_concentration('polymer',1.25)
 
         np.testing.assert_almost_equal(mix.concentration['polymer'],1.25)
         np.testing.assert_almost_equal(mix['polymer'].mass,1.25*mix.volume)
+
+    def test_set_mass_concentration_by_dilution(self):
+        '''Can we set the concentration of a solute?'''
+        density1 = 1.11
+        volume1 = 0.5
+        mass1 = volume1*density1
+        D2O = Component('D2O',density=density1,volume=volume1,mass=mass1)
+
+        density2 = 1.00
+        volume2 = 0.15
+        mass2 = volume2*density2
+        H2O = Component('H2O',density=density2,volume=volume2,mass=mass2)
+
+        mass3 =  0.3
+        polymer = Component('polymer',mass=mass3)
+
+        mix = Mixture([D2O,H2O,polymer])
+        mix.set_mass_concentration('polymer',1.25,by_dilution=True)
+
+        np.testing.assert_almost_equal(mix.concentration['polymer'],1.25)
+        np.testing.assert_almost_equal(mix.volume,mix['polymer'].mass/1.25)
 
     def test_set_total_volume(self):
         density1 = 1.11

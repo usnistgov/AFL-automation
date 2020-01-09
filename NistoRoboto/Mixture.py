@@ -6,7 +6,6 @@ import copy
 class Mixture:
     '''
     ToDo:
-        - ability to add/remove volume or mass without changing composition
         - unit support
     '''
     def __init__(self,components=None):
@@ -33,7 +32,7 @@ class Mixture:
                 out_str += f' {name}:{vfrac:3.2f}'
         out_str +='>'
         return out_str
-    
+
     def __repr__(self):
         return self.__str__()
     
@@ -61,6 +60,32 @@ class Mixture:
             raise TypeError(f'Unsure how to combine Mixture with {type(other)}')
             
         return mixture
+    
+    def __eq__(self,other):
+        ''''Compare the mass,volume, and composition of two mixtures
+
+        Returns
+        -------
+        equal: bool
+
+        '''
+
+        if isinstance(other,Mixture):
+            checks = []# list of true/false values that represent equality checks
+            checks.append(self.mass == other.mass)
+            checks.append(self.volume == other.volume)
+
+            for name,component in self:
+                checks.append(self[name].mass == other[name].mass)
+                checks.append(self[name].volume == other[name].volume)
+
+                checks.append(self.mass_fraction[name] == other.mass_fraction[name])
+                checks.append(self.volume_fraction[name] == other.volume_fraction[name])
+
+            return all(checks)
+
+        else:
+            raise TypeError(f'Unsure how to compare Mixture with {type(other)}')
 
     def copy(self):
         return copy.deepcopy(self)

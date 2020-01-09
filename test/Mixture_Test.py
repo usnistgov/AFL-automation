@@ -315,6 +315,31 @@ class Mixture_TestCase(unittest.TestCase):
         with self.assertRaises(EmptyException):
             mix.remove_mass(10)
 
+    def test_equals(self):
+        '''Can we compare two mixtures?'''
+        # create three components
+        density1 = 1.11
+        volume1 = 0.5
+        mass1 = volume1*density1
+        D2O = Component('D2O',density=density1,volume=volume1,mass=mass1)
+
+        density2 = 1.00
+        volume2 = 0.15
+        mass2 = volume2*density2
+        H2O = Component('H2O',density=density2,volume=volume2,mass=mass2)
+
+        density3 = 0.789
+        mass3 =  0.3
+        EtOH = Component('EtOH',formula='C2H5OH',density=density3,mass=mass3)
+
+        # create base mixture then add third component
+        mix1 = Mixture([H2O,D2O]) 
+        mix2 = mix1 + EtOH
+
+        self.assertFalse((mix1 == mix2))
+        self.assertTrue(((mix1+EtOH) == mix2))
+
+
 
         
         

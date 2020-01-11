@@ -25,22 +25,22 @@ class NE1kSyringePump(SyringePump,SerialDevice):
     	self.stop()#stop the pump
     	self.sendCommand('%iDIA %f\x0D'%(self.id,syringe_id_mm)) #set the diameter
     	readback = self.sendCommand('%iDIA\x0D'%self.id) #readback
-    
-        #@TODO: parse readback and verify set succeded
+        dia = float(readback[4:-1])
+        assert dia==syringe_id_mm, "Warning: syringe diameter set failed.  Commanded diameter "+str(syringe_id_mm)+", read back "+str(dia)
 
     def stop(self):
         self.sendCommand('%iSTP\x0D'%self.id) 
 
     def withdraw(self,volume,block=True):
-        self.sendCommand('%iVOL ML\x0D'%self.id)
+        self.sendCommand('%iVOLML\x0D'%self.id)
         self.sendCommand('%iVOL %f\x0D'%(self.id,volume))
-        self.sendCommand('%iDIR WDR\x0D'%self.id)
+        self.sendCommand('%iDIRWDR\x0D'%self.id)
         self.sendCommand('%iRUN\x0D',response=block)
 
     def dispense(self,volume,block=True):
-        self.sendCommand('%iVOL ML\x0D'%self.id)
-        self.sendCommand('%iVOL %f\x0D'%(self.id,volume))
-        self.sendCommand('%iDIR INF\x0D'%self.id)
+        self.sendCommand('%iVOLML\x0D'%self.id)
+        self.sendCommand('%iVOL%f\x0D'%(self.id,volume))
+        self.sendCommand('%iDIRINF\x0D'%self.id)
         self.sendCommand('%iRUN\x0D',response=block)
         
     def setRate(self,rate):

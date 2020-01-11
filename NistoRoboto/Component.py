@@ -54,6 +54,10 @@ class Component(object):
     
     def __repr__(self):
         return self.__str__()
+
+    def __hash__(self):
+        '''Needed so Components can be dictionary keys'''
+        return id(self)
     
     @property
     def mass(self):

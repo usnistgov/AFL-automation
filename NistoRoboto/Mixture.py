@@ -86,6 +86,10 @@ class Mixture:
         else:
             raise TypeError(f'Unsure how to compare Mixture with {type(other)}')
 
+    def __hash__(self):
+        '''Needed so Mixtures can be dictionary keys'''
+        return id(self)
+
     def copy(self):
         return copy.deepcopy(self)
 

@@ -1,3 +1,7 @@
+from FlowSelector import *
+from SerialDevice import *
+import serial
+
 class ViciMultiposSelector(FlowSelector,SerialDevice):
 	def __init__(self,port,baud=9600,portlabels=None):
 		'''
@@ -9,7 +13,7 @@ class ViciMultiposSelector(FlowSelector,SerialDevice):
 			portlabels - dict for smart port naming, of the form {'sample':3,'instrument':4,'rinse':5,'waste':6}
 		'''
 		self.serialport = serial.Serial(port=port,baudrate=baud,timeout=0.5)
-		self.npositions = self.sendCommand('NP\x0D')[2:3]
+		self.npositions = int(self.sendCommand('NP\x0D')[2:4])
 
 		self.portlabels = portlabels
 
@@ -24,16 +28,16 @@ class ViciMultiposSelector(FlowSelector,SerialDevice):
 
 		'''
 
-		if type(port) is string:
+		if type(port) is str:
 			portnum = self.portlabels[port]
 		else:
-			portnum = port
+			portnum = int(port)
 
-		assert portnum < self.npositions, "That port doesn't exist."
+		assert portnum <= self.npositions, "That port doesn't exist."
 
-		if(direction="CCW"):
+		if direction=="CCW":
 			readback = self.sendCommand('CC%02i\x0D'%portnum,response=False)
-		else if direction= "CW":
+		else if direction== "CW":
 			readback = self.sendCommand('CW%02i\x0D'%portnum,response=False)
 		else:
 			readback = self.sendCommand('GO%02i\x0D'%portnum,response=False)
@@ -42,4 +46,4 @@ class ViciMultiposSelector(FlowSelector,SerialDevice):
 		'''
 			query the current selected position
 		'''
-		portnum = int(self.sendCommand('CP\x0D')[3:4])
+		portnum = int(self.sendCommand('CP\x0D')[2:4])

@@ -1,8 +1,7 @@
 class SyringePump():
 
-	def stop(self):
-		raise NotImplementedError
-		
+    def stop(self):
+        raise NotImplementedError
 
     def withdraw(self,volume,block=True):
         raise NotImplementedError

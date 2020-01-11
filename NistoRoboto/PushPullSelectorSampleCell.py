@@ -1,3 +1,4 @@
+from SampleCell import *
 
 class PushPullSelectorSampleCell(SampleCell):
 	'''
@@ -18,7 +19,7 @@ class PushPullSelectorSampleCell(SampleCell):
 	nrinses_syringe = 2
 	nrinses_cell = 2
 
-	def __init__(self,name=None,thickness=None,state='clean',pump,selector):
+	def __init__(self,pump,selector,name=None,thickness=None,state='clean'):
 		'''
 			Name = the cell name, recognizable by the daq software
 
@@ -29,7 +30,7 @@ class PushPullSelectorSampleCell(SampleCell):
 			pump: a pump object supporting withdraw() and dispense() methods
 				e.g. pump = NE1KSyringePump(port,syringe_id_mm,syringe_volume)
 
-			selector: a selector object supporting string-based selectport() method with options 'sample','cell','rinse','waste','air'
+			selector: a selector object supporting string-based selectPort() method with options 'sample','cell','rinse','waste','air'
 				e.g. selector = ViciMultiposSelector(port,portlabels={'sample':1,'cell':2,'rinse':3,'waste':4,'air':5})
 
 		'''
@@ -45,47 +46,47 @@ class PushPullSelectorSampleCell(SampleCell):
 			self.rinseAll()
 
 		if self.state is 'clean':
-			self.selector.selectport('sample')
+			self.selector.selectPort('sample')
 			self.pump.withdraw(sample_to_hold_volume_ml)
-			self.selector.selectport('cell')
+			self.selector.selectPort('cell')
 			self.pump.dispense(sample_to_cell_volume_ml)
 			self.state = 'loaded'
 
 
 	def sampleToWaste(self):
-			self.selector.selectport('sample')
+			self.selector.selectPort('sample')
 			self.pump.withdraw(sample_to_cell_volume_ml + extra_vol_to_empty_ml)
-			self.selector.selectport('waste')
+			self.selector.selectPort('waste')
 			self.pump.dispense(sample_to_waste_volume_ml)
 
 	def rinseSyringe(self):
 		for i in range(nrinses_syringe):
-			self.selector.selectport('rinse')
+			self.selector.selectPort('rinse')
 			self.pump.withdraw(rinse_vol_ml)
-			self.selector.selectport('waste')
+			self.selector.selectPort('waste')
 			self.pump.dispense(rinse_vol_ml)
 
 	def rinseCell(self):
 		#rinse the cell
 		for i in range(nrinses_cell):	
-			self.selector.selectport('rinse')
+			self.selector.selectPort('rinse')
 			self.pump.withdraw(rinse_vol_ml)
-			self.selector.selectport('cell')
+			self.selector.selectPort('cell')
 			for i in range(3): #swish the fluid around in the cell
 				self.pump.dispense(rinse_vol_ml)
 				self.pump.withdraw(rinse_vol_ml)
-			self.selector.selectport('waste')
+			self.selector.selectPort('waste')
 			self.pump.dispense(rinse_vol_ml + extra_vol_to_empty_ml)
 
 	def rinseSampleLoadPort(self):
 		for i in range(nrinses_sampleport):
-			self.selector.selectport('rinse')
+			self.selector.selectPort('rinse')
 			self.pump.withdraw(rinse_vol_ml)
-			self.selector.selectport('sample')
+			self.selector.selectPort('sample')
 			for i in range(3): #swish the fluid around in the cell
 				self.pump.dispense(rinse_vol_ml+sample_to_hold_volume_ml)
 				self.pump.withdraw(rinse_vol_ml+sample_to_hold_volume_ml)
-			self.selector.selectport('waste')
+			self.selector.selectPort('waste')
 			self.pump.dispense(rinse_vol_ml + extra_vol_to_empty_ml)
 
 	def rinseAll(self):

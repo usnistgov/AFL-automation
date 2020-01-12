@@ -1,15 +1,14 @@
 from SyringePump import *
 from SerialDevice import *
-import serial
 
-class NE1kSyringePump(SyringePump,SerialDevice):
+class NE1kSyringePump(SerialDevice,SyringePump):
 
     def __init__(self,port,syringe_id_mm,syringe_volume,baud=9600,daisy_chain=None,pumpid=None):
         self.pumpid = pumpid
         if daisy_chain is not None:
             self.serialport = daisy_chain.serialport
         else:
-            self.serialport = serial.Serial(port=port,baudrate=baud,timeout=0.5)
+            __super__.init(port,baudrate=baud,timeout=0.5)
 
         # try to connect
 
@@ -41,14 +40,14 @@ class NE1kSyringePump(SyringePump,SerialDevice):
         self.sendCommand('%iVOLML\x0D'%self.pumpid)
         self.sendCommand('%iVOL %.03f\x0D'%(self.pumpid,volume))
         self.sendCommand('%iDIRWDR\x0D'%self.pumpid)
-        self.sendCommand('%iRUN\x0D'%self.pumpid,response=block)
+        self.sendCommand('%iRUN\x0D'%self.pumpid,response=True,timeout=None)
         #@TODO: the response is not blocking.  Poll pump status to check when move complete, or set a longer pyserial timeout
 
     def dispense(self,volume,block=True):
         self.sendCommand('%iVOLML\x0D'%self.pumpid)
         self.sendCommand('%iVOL%.03f\x0D'%(self.pumpid,volume))
         self.sendCommand('%iDIRINF\x0D'%self.pumpid)
-        self.sendCommand('%iRUN\x0D'%self.pumpid,response=block)
+        self.sendCommand('%iRUN\x0D'%self.pumpid,response=True,timeout=None)
         
     def setRate(self,rate):
         self.sendCommand('%iRAT%.03fMM\x0D'%(self.pumpid,rate))

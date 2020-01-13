@@ -13,9 +13,13 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
             portlabels - dict for smart port naming, of the form {'sample':3,'instrument':4,'rinse':5,'waste':6}
         '''
 
-        __super__.init(port,baudrate=baud,timeout=0.5)
+        super().__init__(port,baudrate=baud,timeout=0.5)
 
-        self.npositions = int(self.sendCommand('NP\x0D')[2:4])
+        response = self.sendCommand('NP\x0D')[2:4]
+        
+        assert response != '', "Did not get a reply from the selector... is the port, baudrate correct?  Is it turned on and plugged in?"
+        
+        self.npositions = int(response)
 
         self.portlabels = portlabels
 
@@ -39,7 +43,7 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
 
         if direction=="CCW":
             readback = self.sendCommand('CC%02i\x0D'%portnum,response=False)
-        else if direction== "CW":
+        elif direction== "CW":
             readback = self.sendCommand('CW%02i\x0D'%portnum,response=False)
         else:
             readback = self.sendCommand('GO%02i\x0D'%portnum,response=False)

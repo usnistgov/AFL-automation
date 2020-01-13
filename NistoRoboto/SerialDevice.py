@@ -2,7 +2,7 @@ import serial
 
 class SerialDevice():
 
-	def __init__(self,port,baud=19200,timeout=0.5):
+	def __init__(self,port,baudrate=19200,timeout=0.5):
 		self.serialport = serial.Serial(port,baudrate=baud,timeout=timeout)
 
     def sendCommand(self,cmd,response=True,questionmarkOK=False,timeout=-1):

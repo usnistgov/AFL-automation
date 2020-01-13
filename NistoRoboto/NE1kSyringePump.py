@@ -8,12 +8,12 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         if daisy_chain is not None:
             self.serialport = daisy_chain.serialport
         else:
-            __super__.init(port,baudrate=baud,timeout=0.5)
+            super().__init__(port,baudrate=baud,timeout=0.5)
 
         # try to connect
 
         if self.pumpid is None:
-            for i in range(10):
+            for i in range(75):
                    if len(self.sendCommand('%iADR\x0D'%i))>0:
                     self.pumpid = i
                     break
@@ -40,14 +40,18 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         self.sendCommand('%iVOLML\x0D'%self.pumpid)
         self.sendCommand('%iVOL %.03f\x0D'%(self.pumpid,volume))
         self.sendCommand('%iDIRWDR\x0D'%self.pumpid)
-        self.sendCommand('%iRUN\x0D'%self.pumpid,response=True,timeout=None)
+        self.sendCommand('%iRUN\x0D'%self.pumpid)
+        if block:
+            self.blockUntilStatusStopped()
         #@TODO: the response is not blocking.  Poll pump status to check when move complete, or set a longer pyserial timeout
 
     def dispense(self,volume,block=True):
         self.sendCommand('%iVOLML\x0D'%self.pumpid)
         self.sendCommand('%iVOL%.03f\x0D'%(self.pumpid,volume))
         self.sendCommand('%iDIRINF\x0D'%self.pumpid)
-        self.sendCommand('%iRUN\x0D'%self.pumpid,response=True,timeout=None)
+        self.sendCommand('%iRUN\x0D'%self.pumpid)
+        if block:
+            self.blockUntilStatusStopped()
         
     def setRate(self,rate):
         self.sendCommand('%iRAT%.03fMM\x0D'%(self.pumpid,rate))
@@ -64,5 +68,29 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         elif units=='UH':
             rate = float(output[4:-3])/60/1000
         return rate
+
+    def blockUntilStatusStopped(self,pollingdelay=0.2):
+        statuschar = 'X'
+        while statuschar is not 'S':
+            time.sleep(pollingdelay)
+            statuschar = self.getStatus()[0]
+
+    def getStatus(self):
+        '''
+        query the pump status and return a tuple of the status character, 
+        infused volume, and withdrawn volume)
+        '''
+
+        dispensed = self.sendCommand('%iDIS\x0D'%self.pumpid)
+        # example answer: 10SI0.000W20.00ML
+        statuschar = dispensed[3]
+        infusedvol = float(dispensed[5:10])
+        withdrawnvol = float(dispensed[11:16])
+
+        return(statuschar,infusedvol,withdrawnvol)
+
+
+
+
 
 

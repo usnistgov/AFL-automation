@@ -76,3 +76,4 @@ class Deck:
                     
             if not (target == target_check):
                 raise RuntimeError('Mass transfer calculation failed...')
+

@@ -33,6 +33,11 @@ def index():
     - currently running command
     - loaded labeware
     - visualization of the deck
+
+
+    - button should stop robot (hard halt)
+    - robot should only accept commands if the door is closed
+    - color of button should reflect state
     '''
     kw = {}
     kw['pipettes'] = None#roboto_server.protocol.loaded_pipettes

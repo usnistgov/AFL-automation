@@ -7,14 +7,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 
-import NistoRoboto.RobotoFlaskKey
-def key_is_valid(key):
-    if key == NistoRoboto.RobotoFlaskKey.__flaskkey__:
-        return True
-    else:
-        return False
-
-from RobotoServer import RobotoServer
+from NistoRoboto.server.RobotoServer import RobotoServer
 roboto_server = RobotoServer()
 
 app = Flask(__name__)
@@ -40,11 +33,13 @@ def index():
     - color of button should reflect state
     '''
     kw = {}
-    kw['pipettes'] = None#roboto_server.protocol.loaded_pipettes
-    kw['labware']  = None#roboto_server.protocol.loaded_labware
+    kw['pipettes'] = roboto_server.protocol.loaded_instruments
+    kw['labware']  = roboto_server.protocol.loaded_labwares
 
     #request image and save to static directory
-    #reply = requests.post('http://localhost:31950/camer/picture')
+    response = requests.post('http://localhost:31950/camera/picture')
+    with open('static/deck.jpeg','wb') as f:
+        f.write(response.content)
 
     return render_template('index.html',**kw)
 
@@ -76,4 +71,4 @@ def transfer():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0',debug=True)

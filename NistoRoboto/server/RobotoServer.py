@@ -5,7 +5,7 @@ class RobotoServer:
     '''
     '''
     def __init__(self):
-        self.protocol = None#opentrons.execute.get_protocol_api('2.0')
+        self.protocol = opentrons.execute.get_protocol_api('2.0')
 
     def transfer(self,mount,source,dest,volume,**kwargs):
         '''Transfer fluid from one location to another

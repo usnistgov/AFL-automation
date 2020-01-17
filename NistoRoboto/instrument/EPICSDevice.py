@@ -1,0 +1,8 @@
+import pyepics
+
+
+
+class EPICSDevice():
+
+
+

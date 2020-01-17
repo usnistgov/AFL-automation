@@ -14,13 +14,15 @@ class PushPullSelectorSampleCell(SampleCell):
 
 
 
-    def __init__(self,pump,selector,name=None,thickness=None,state='clean'):
+    def __init__(self,pump,selector,ncells=1,name=None,thickness=None,state='clean'):
         '''
-            Name = the cell name, recognizable by the daq software
 
-            thickness = cell path length, to be incorporated into metadata
+            ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)
+            Name = the cell name, array with length = ncells
 
-            cell state if not 'clean'
+            thickness = cell path length, to be incorporated into metadata, array with length = ncells
+
+            cell state if not 'clean', array with length = ncells
 
             pump: a pump object supporting withdraw() and dispense() methods
                 e.g. pump = NE1KSyringePump(port,syringe_id_mm,syringe_volume)
@@ -41,7 +43,7 @@ class PushPullSelectorSampleCell(SampleCell):
         self.nrinses_syringe = 2
         self.nrinses_cell = 2
 
-    def loadSample(self):
+    def loadSample(self,cellname='cell'):
 
         if self.state is 'dirty':
             self.rinseAll()
@@ -49,16 +51,33 @@ class PushPullSelectorSampleCell(SampleCell):
         if self.state is 'clean':
             self.selector.selectPort('sample')
             self.pump.withdraw(self.sample_to_hold_volume_ml)
-            self.selector.selectPort('cell')
+            self.selector.selectPort(cellname)
             self.pump.dispense(self.sample_to_cell_volume_ml)
             self.state = 'loaded'
 
+    def _firstCleanCell(self,rinse_if_none=False):
+            # find the first clean cell and use that.
+            for (cn,ct,cs) in zip(self.name,self.thickness,self.state):
+                if cs is 'clean':
+                    return (cn,ct,cs)
+            if clean_if_none:
+                for (cn,ct,cs) in zip(self.name,self.thickness,self.state):
+                    if cs is 'dirty':
+                        self.rinseCell(cellname=cn)
+                        return (cn,ct,cs)
 
     def sampleToWaste(self):
             self.selector.selectPort('sample')
             self.pump.withdraw(self.sample_to_cell_volume_ml + self.extra_vol_to_empty_ml)
             self.selector.selectPort('waste')
             self.pump.dispense(self.sample_to_waste_volume_ml)
+
+    def cellToWaste(self,cellname='cell'):
+            self.selector.selectPort(cellname)
+            self.pump.withdraw(self.sample_to_cell_volume_ml + self.extra_vol_to_empty_ml)
+            self.selector.selectPort('waste')
+            self.pump.dispense(self.sample_to_waste_volume_ml)
+
 
     def rinseSyringe(self):
         for i in range(self.nrinses_syringe):
@@ -67,12 +86,12 @@ class PushPullSelectorSampleCell(SampleCell):
             self.selector.selectPort('waste')
             self.pump.dispense(self.rinse_vol_ml)
 
-    def rinseCell(self):
+    def rinseCell(self,cellname = 'cell'):
         #rinse the cell
         for i in range(self.nrinses_cell):    
             self.selector.selectPort('rinse')
             self.pump.withdraw(self.rinse_vol_ml)
-            self.selector.selectPort('cell')
+            self.selector.selectPort(cellname)
             for i in range(3): #swish the fluid around in the cell
                 self.pump.dispense(self.rinse_vol_ml)
                 self.pump.withdraw(self.rinse_vol_ml)

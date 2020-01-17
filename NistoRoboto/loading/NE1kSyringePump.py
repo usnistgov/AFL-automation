@@ -4,6 +4,32 @@ from SerialDevice import *
 class NE1kSyringePump(SerialDevice,SyringePump):
 
     def __init__(self,port,syringe_id_mm,syringe_volume,baud=9600,daisy_chain=None,pumpid=None):
+        '''
+            Initializes and verifies connection to a New Era 1000 syringe pump.
+
+            port = serial port reference
+
+            syringe_id_mm = syringe inner diameter in mm, used for absolute volume. 
+                            (will re-program the pump with this diameter on connection)
+
+            syringe_volume = syringe volume in mL
+
+            baud = baudrate for connection
+
+            daisy_chain = used for the 'party-line' mode on these pumps where a string of pumps is on one serial port.
+                            when setting up daisy chaining:
+                                connect to the first pump on a port with daisy_chain = False
+                                on subsequent pumps, set daisy_chain to the pump with a hardware connection (the first pump)
+                                    or any other pump on the string.
+                                note: when daisy chaining you should probably set pumpid explicitly rather than autodiscovering
+                                    as most likely the autodiscovery will return the first pump id each time.
+
+            pumpid = the ID configured in the pump firmware.  If not set, will attempt to auto-discover a pump.  
+                    setting pumpid will save some time on connection and probably result in more reproducible 
+                    behavior.  Practically mandatory for daisy chain mode.
+
+
+        '''
         self.pumpid = pumpid
         if daisy_chain is not None:
             self.serialport = daisy_chain.serialport
@@ -22,7 +48,7 @@ class NE1kSyringePump(SerialDevice,SyringePump):
                 raise NoDeviceFoundException
 
 
-        assert self.pumpid is not None, "Error: no answer from any of the first 10 pumps.  Is speed correct?"
+        assert self.pumpid is not None, "Error: no answer from any of the first 75 pumps.  Is speed correct?"
           # reset diameter
         self.syringe_id_mm = syringe_id_mm
         self.syringe_volume = syringe_volume
@@ -34,6 +60,9 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         assert dia==syringe_id_mm, "Warning: syringe diameter set failed.  Commanded diameter "+str(syringe_id_mm)+", read back "+str(dia)
 
     def stop(self):
+        '''
+        Abort the current dispense/withdraw action. Equivalent to pressing stop button on panel.
+        '''
         self.sendCommand('%iSTP\x0D'%self.pumpid,questionmarkOK=True) 
 
     def withdraw(self,volume,block=True):
@@ -43,8 +72,7 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         self.sendCommand('%iRUN\x0D'%self.pumpid)
         if block:
             self.blockUntilStatusStopped()
-        #@TODO: the response is not blocking.  Poll pump status to check when move complete, or set a longer pyserial timeout
-
+        
     def dispense(self,volume,block=True):
         self.sendCommand('%iVOLML\x0D'%self.pumpid)
         self.sendCommand('%iVOL%.03f\x0D'%(self.pumpid,volume))

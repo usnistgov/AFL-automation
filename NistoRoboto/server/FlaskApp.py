@@ -7,12 +7,13 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 
-from NistoRoboto.server.RobotoServer import RobotoServer
+from NistoRoboto.server.Server import Server
 roboto_server = RobotoServer()
 
 app = Flask(__name__)
 
-# maybe hide this at some point?
+# initialize auth module
+# maybe hide the secret at some point?
 app.config['JWT_SECRET_KEY'] = '03570'  
 jwt = JWTManager(app)
 

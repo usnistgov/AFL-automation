@@ -8,16 +8,22 @@ class Server:
     def __init__(self):
         self.protocol = opentrons.execute.get_protocol_api('2.0')
 
-    def get_wells(self,loc):
+    def get_wells(self,locs):
         wells = []
-        for loc in listify(source):
+        for loc in listify(locs):
             if not (len(loc) == 3):
                 raise ValueError(f'Well specification should be [SLOT][ROW_LETTER][COL_NUM] not {loc}')
             slot = loc[0]
             well = loc[1:]
-            wells.append(self.protocol.loaded_labware[slot][well])
+            labware = self.get_labware(slot)
+            wells.append(labware[well])
+        return wells
 
     def get_labware(self,slot):
+        if self.protocol.deck[slot] is not None:
+            return self.protocol.deck[slot]
+        else:
+            raise ValueError('Specified slot ({slot}) is empty of labware')
 
     def transfer(self,mount,source,dest,volume,**kwargs):
         '''Transfer fluid from one location to another
@@ -43,26 +49,8 @@ class Server:
 
         #get pipette
         pipette = self.protocol.loaded_instruments[mount]
-
-        #get source well
-        if not isinstance(source,list):
-            source = [source]
-
-        source_wells = []
-        for loc in source:
-            slot = loc[0]
-            well = loc[1:]
-            source_wells.append(self.protocol.loaded_labware[slot][well])
-
-        if not isinstance(dest,list):
-            dest = [dest]
-
-        dest_wells = []
-        for loc in dest:
-            slot = loc[0]
-            well = loc[1:]
-            dest_wells.append(self.protocol.loaded_labware[slot][well])
-
+        source_wells = self.get_wells(source)
+        dest_wells = self.get_wells(dest)
         pipette.transfer(volume,source,dest)
 
 

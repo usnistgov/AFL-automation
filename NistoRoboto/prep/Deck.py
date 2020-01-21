@@ -2,7 +2,6 @@ class Deck:
     def __init__(self):
         self.stocks        = []
         self.targets       = []
-        self.containers    = {}
         self.stock_location = {}
         self.target_location = {}
         
@@ -10,8 +9,53 @@ class Deck:
         self.components_stock  = set()
         self.components_target = set()
         
-        self.strategy = []
+        self.protocol = []
+
+        self.containers    = {}
+        self.pipettes      = {}
         
+    def add_pipette(self,name,mount,tipracks):
+
+        for slot,name in tipracks:
+            self.tipracks[slot] = name
+
+        if not (mount in ['left','right']):
+            raise ValueError('Pipette mount point can only be "left" or "right"')
+        self.pipettes[mount] = name,
+
+
+
+    def add_container(self,name,slot):
+        self.containers[slot] = name
+        
+    def generate_calibration_script(self,filename):
+        with open(filename,'w') as f:
+            f.write('from opentrons import protocol_api\n')
+            f.write('\n')
+            f.write('\n')
+            f.write('metadata={\'apiLevel\':\'2.0\'}\n')
+            f.write('\n')
+            f.write('def run(protocol):\n')
+
+            tiprack_list = []
+            for slot,tiprack in self.tipracks.items():
+                f.write(f'tiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
+                tipack_list.append(f'tiprack_{slot}')
+            f.write('\n')
+
+            container_list = []
+            for slot,container in self.container.items():
+                f.write(f'container_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
+                container_list.append(f'container_{slot}')
+            f.write('\n')
+
+            pipette_list = []
+            for mount,(pipettte,tipsize) in self.container.items():
+                f.write(f'pipette_{mount} = protocol.load_labware(\'{pipette}\',\'{slot}\',tip_racks=[{tip_racks}])\n')
+                pipette_list.append(f'pipette_{mount}')
+            f.write('\n')
+
+
     def add_stock(self,stock,location):
         stock = stock.copy()
         self.stocks.append(stock)
@@ -30,7 +74,7 @@ class Deck:
             self.components.add(name)
             self.components_target.add(name)
             
-    def create_transfer_strategy(self):
+    def create_transfer_protocol(self):
         for target in self.targets:
             
             # build matrix and vector representing mass balance
@@ -72,7 +116,7 @@ class Deck:
                                 volume = removed.volume
                                 
                     )
-                    self.strategy.append(action)
+                    self.protocol.append(action)
                     
             if not (target == target_check):
                 raise RuntimeError('Mass transfer calculation failed...')

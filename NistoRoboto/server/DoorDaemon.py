@@ -4,10 +4,11 @@ from opentrons.drivers.rpi_drivers import gpio
 
 
 class DoorDaemon(threading.Thread):
-    def __init__(self):
+    def __init__(self,queue):
         threading.Thread.__init__(self,daemon=True)
         self._stop = False
         self._open = True
+        self.queue = queue
 
     @property
     def is_open(self):
@@ -20,7 +21,10 @@ class DoorDaemon(threading.Thread):
         while not self._stop:
             if gpio.read_window_switches():
                 #window is closed! green = safe!
-                gpio.set_button_light(green=True,red=False,blue=False)
+                if self.queue.empty():
+                    gpio.set_button_light(green=False,red=False,blue=True)
+                else:
+                    gpio.set_button_light(green=True,red=False,blue=False)
                 self._open=False
             else:
                 #window is open! red = caution!

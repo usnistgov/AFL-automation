@@ -1,4 +1,4 @@
-import requests
+import requests,datetime
 
 import queue
 task_queue = queue.Queue()
@@ -70,20 +70,9 @@ def login():
         return jsonify({"msg": "Bad password"}), 401
 
     # Identity can be any data that is json serializable
-    token = create_access_token(identity=username)
+    #expires = datetime.timedelta(days=1)
+    token = create_access_token(identity=username)#,expires=expires)
     return jsonify(token=token), 200
-
-
-@app.route('/transfer',methods=['POST'])
-@jwt_required
-def transfer():
-    try:
-        roboto_server.transfer(**request.json)
-    except:
-        return
-    else:
-        return 'Success',200
-
 
 @app.route('/enqueue',methods=['POST'])
 @jwt_required

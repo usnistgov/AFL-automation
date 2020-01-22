@@ -14,7 +14,7 @@ class Server(threading.Thread):
         threading.Thread.__init__(self)
 
         self.protocol = opentrons.execute.get_protocol_api('2.0')
-        self.doorDaemon = DoorDaemon()
+        self.doorDaemon = DoorDaemon(task_queue)
         self.doorDaemon.start()
 
         self._stop = False
@@ -28,14 +28,14 @@ class Server(threading.Thread):
             # this will block until something enters the task_queue
             task = self.task_queue.get(block=True,timeout=None)
 
-            while self.doorDaemon.is_open:
-                time.sleep(0.1)
+            # while self.doorDaemon.is_open:
+            #     time.sleep(0.1)
 
-            if task['type'] == 'transfer':
-                self.transfer(**task)
-            else:
-                raise ValueError(f'Task type not recognized: {task["type"]}')
-            time.sleep(0.1)
+            # if task['type'] == 'transfer':
+            #     self.transfer(**task)
+            # else:
+            #     raise ValueError(f'Task type not recognized: {task["type"]}')
+            time.sleep(2.0)
 
     def get_wells(self,locs):
         wells = []

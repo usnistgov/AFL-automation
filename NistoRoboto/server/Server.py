@@ -2,45 +2,40 @@ import opentrons.execute
 import opentrons
 
 from NistoRoboto.shared.utilities import listify
+from NistoRoboto.server.DoorDaemon import DoorDaemon
 
 import threading
 import time
-from opentrons.drivers.rpi_drivers import gpio
 
-
-class DoorDaemon(threading.Thread):
-    def __init__(self):
+class Server(threading.Thread):
+    '''
+    '''
+    def __init__(self,task_queue):
         threading.Thread.__init__(self)
-        self._stop = False
-        self._open = True
-        opentrons.robot._driver.turn_off_button_light()
 
-    def is_open(self):
-        return self._open
+        self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.doorDaemon = DoorDaemon()
+        self.doorDaemon.start()
+
+        self._stop = False
+        self.task_queue = task_queue
 
     def terminate(self):
         self._stop = True
 
     def run(self):
-        print('--> Running DoorDaemon!')
         while not self._stop:
-            if gpio.read_window_switches():
-                gpio.set_button_light(green=True,red=False,blue=False)
-                self._open=False
+            # this will block until something enters the task_queue
+            task = self.task_queue.get(block=True,timeout=None)
+
+            while self.doorDaemon.is_open:
+                time.sleep(0.1)
+
+            if task['type'] == 'transfer':
+                self.transfer(**task)
             else:
-                gpio.set_button_light(green=False,red=True,blue=False)
-                self._open=True
-            time.sleep(1)
-
-
-
-class Server:
-    '''
-    '''
-    def __init__(self):
-        self.protocol = opentrons.execute.get_protocol_api('2.0')
-        self.doorDaemon = DoorDaemon()
-        self.doorDaemon.start()
+                raise ValueError(f'Task type not recognized: {task["type"]}')
+            time.sleep(0.1)
 
     def get_wells(self,locs):
         wells = []

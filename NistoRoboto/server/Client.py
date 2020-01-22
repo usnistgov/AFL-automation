@@ -6,13 +6,15 @@ class Client:
     This class maps pipettor functions to HTTP REST requests that are sent to
     the NistoRoboto server
     '''
-    def __init__(self,url = 'http://10.42.0.31:5000/'):
+    def __init__(self,url = 'http://10.42.0.31:5000'):
         self.url = url
 
     def login(self,username):
-        response = requests.post(self.url+'/login',json={'username':username,'password':'domo_arigato'})
+        url = self.url + '/login'
+        print(url)
+        response = requests.post(url,json={'username':username,'password':'domo_arigato'})
         if not (response.status_code == 200):
-            raise RuntimeError(f'Client login failed with status code {response.status_code}')
+            raise RuntimeError(f'Client login failed with status code {response.status_code}:\n{response.content}')
 
         # headers should be included in all HTTP requests 
         self.token  = response.json()['token']
@@ -40,10 +42,11 @@ class Client:
 
         '''
         json = {}
+        json['type']  = 'transfer'
         json['mount']  = mount
         json['source'] = source
         json['dest']   = dest
         json['volume'] = volume
-        jsonsponse = requests.post(self.url+'/transfer',headers=self.headers,json=json)
+        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
-            raise RuntimeError(f'API call to transfer command failed with status_code {response.status_code}')
+            raise RuntimeError(f'API call to transfer command failed with status_code {response.status_code}\n{response.text}')

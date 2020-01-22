@@ -1,5 +1,37 @@
 import opentrons.execute
+import opentrons
+
 from NistoRoboto.shared.utilities import listify
+
+import threading
+import time
+from opentrons.drivers.rpi_drivers import gpio
+
+
+class DoorDaemon(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self._stop = False
+        self._open = True
+        opentrons.robot._driver.turn_off_button_light()
+
+    def is_open(self):
+        return self._open
+
+    def terminate(self):
+        self._stop = True
+
+    def run(self):
+        print('--> Running DoorDaemon!')
+        while not self._stop:
+            if gpio.read_window_switches():
+                gpio.set_button_light(green=True,red=False,blue=False)
+                self._open=False
+            else:
+                gpio.set_button_light(green=False,red=True,blue=False)
+                self._open=True
+            time.sleep(1)
+
 
 
 class Server:
@@ -7,6 +39,8 @@ class Server:
     '''
     def __init__(self):
         self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.doorDaemon = DoorDaemon()
+        self.doorDaemon.start()
 
     def get_wells(self,locs):
         wells = []

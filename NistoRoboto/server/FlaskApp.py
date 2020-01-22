@@ -8,7 +8,7 @@ from flask_jwt_extended import (
 )
 
 from NistoRoboto.server.Server import Server
-roboto_server = RobotoServer()
+roboto_server = Server()
 
 app = Flask('NistoRoboto')
 

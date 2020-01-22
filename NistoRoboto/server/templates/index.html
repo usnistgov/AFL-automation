@@ -1,18 +1,73 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <style>
+        body {
+          background-color: linen;
+
+        }
+        #header-bar {
+          position: absolute;
+          top:0px;
+          width:100%;
+          background-color: gray;
+          border-bottom-style: dashed;
+          border-bottom-width: 4px;
+          border-bottom-color: black;
+          clear:both;
+        }
+
+        #status-strip {
+          text-align:center;
+          font: bold 15px sans-serif;
+        }
+        
+        #camera-img {
+          float:left;
+          width:60%;
+          overflow:hidden;
+          border-width: 4px;
+        }
+        #hardware-desc {
+          float:right;
+          width:40%;
+          overflow:hidden;
+          border-width: 4px;
+          border-color: black;
+          border-style: solid;
+        }
+        #command-queue {
+          position: absolute;
+          bottom:50px;
+          width:100%;
+          border-top-style: dashed;
+          border-top-width: 4px;
+          border-top-color: red;
+        }
+    </style>
+    <meta http-equiv="refresh" content="30" />
     <title>NistoRoboto Server</title>
   </head>
-  <p>
-  <img src='static/deck.jpeg'/>
-  </p>
+  <div id="header-bar">
+    <p id="status-strip">
+        NistoRoboto  -  Last Updated {{updatetime}}  -  Current Status {{robotstatus}} - Experiment {{experimentname}} - Contact {{contactinfo}}
+    </p>
+  </div>
 
-  <h3> Loaded pipettes:</h3>
-  <p>{{pipettes}}</p>
+  <div id="camera-img">
+    <p>
+       <img src='static/deck.jpeg'/>
+    </p>
+  </div>
+  <div id="hardware-desc">
+      <h3> Loaded pipettes:</h3>
+      <p>{{pipettes}}</p>
 
-  <h3> Loaded labware:</h3>
-  <p>{{labware}}</p>
-
-  <h3> Queue:</h3> 
-  {{queue}}
+      <h3> Loaded labware:</h3>
+      <p>{{labware}}</p>
+  </div>
+  <div id="command-queue">
+    <h3> Queue:</h3> 
+    {{queue}}
+  </div>
 </html>

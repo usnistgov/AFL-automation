@@ -1,7 +1,7 @@
 class PipetteAction:
-    def __init__(self,origin,destination,volume):
+    def __init__(self,source,dest,volume):
         self.source       = source
-        self.dest         = destination
+        self.dest         = dest
         self.volume       = volume
     
     def __str__(self):

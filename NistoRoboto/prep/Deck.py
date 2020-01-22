@@ -1,3 +1,19 @@
+import numpy as np
+from NistoRoboto.prep.Mixture import Mixture
+from NistoRoboto.prep.PipetteAction import PipetteAction
+
+get_pipette='''
+def get_pipette(volume,loaded_pipettes):
+    found_pipettes = []
+    for pipette in loaded_pipettes:
+        if ((volume>pipette.min) and (volume<pipette.max))
+            found_pipettes.append(pipette)
+
+    if not found_pipettes:
+        raise ValueError('No suitable pipettes found!')
+    else:
+        return min(pipettes,key=lambda x: x.max_volume)
+'''
 class Deck:
     def __init__(self):
         self.stocks        = []
@@ -11,6 +27,7 @@ class Deck:
         
         self.protocol = []
 
+        self.tip_racks    = {}
         self.containers    = {}
         self.pipettes      = {}
         
@@ -18,20 +35,17 @@ class Deck:
         if not (mount in ['left','right']):
             raise ValueError('Pipette mount point can only be "left" or "right"')
 
-        tiprack__list = []
+        tiprack_list = []
         for slot,name in tipracks:
-            self.tipracks[slot] = name
-            tipack_list.append(f'tiprack_{slot}')
+            self.tip_racks[slot] = name
+            tiprack_list.append(f'tiprack_{slot}')
 
         self.pipettes[mount] = name,tiprack_list
 
     def add_container(self,name,slot):
         self.containers[slot] = name
 
-    def get_pipette_by_volume(self,volume):
-        for mount,pipette
-        
-    def generate_script(self,filename):
+    def make_script(self,filename):
         with open(filename,'w') as f:
             f.write('from opentrons import protocol_api\n')
             f.write('\n')
@@ -39,60 +53,35 @@ class Deck:
             f.write('metadata={\'apiLevel\':\'2.0\'}\n')
             f.write('\n')
             f.write('\n')
-            f.write('''
-            def get_pipette(volume,loaded_pipettes):
-                found_pipettes = []
-                for pipette in loaded_pipettes:
-                    if ((volume>pipette.min) and (volume<pipette.max))
-                        found_pipettes.append(pipette)
-
-                if not found_pipettes:
-                    raise ValueError('No suitable pipettes found!')
-                else:
-                    return min(pipettes,key=lambda x: x.max_volume)
-            ''')
-            f.write('\n')
-            f.write('\n')
-            f.write('''
-            def get_well(loc):
-                found_pipettes = []
-                for pipette in loaded_pipettes:
-                    if ((volume>pipette.min) and (volume<pipette.max))
-                        found_pipettes.append(pipette)
-
-                if not found_pipettes:
-                    raise ValueError('No suitable pipettes found!')
-                else:
-                    return min(pipettes,key=lambda x: x.max_volume)
-            ''')
+            f.write(get_pipette)
             f.write('\n')
             f.write('\n')
             f.write('def run(protocol):\n')
 
-            for slot,tiprack in self.tipracks.items():
-                f.write(f'\ttiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
+            for slot,tiprack in self.tip_racks.items():
+                f.write(' '*4+ f'tiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
             f.write('\n')
 
             container_list = []
-            for slot,container in self.container.items():
-                f.write(f'\tcontainer_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
+            for slot,container in self.containers.items():
+                f.write(' '*4 + f'container_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
                 container_list.append(f'container_{slot}\n')
             f.write('\n')
 
-            f.write('\tpipettes = []')
-            for mount,(pipettte,tip_racks) in self.container.items():
-                f.write(f'pipette_{mount} = protocol.load_labware(\'{pipette}\',\'{slot}\',tip_racks=[{tip_racks}])\n')
-                f.write(f'pipettes.append(pipette_{mount})\n')
+            f.write(' '*4 + 'pipettes = []\n')
+            for mount,(pipette,tip_racks) in self.pipettes.items():
+                f.write(' '*4 + f'pipette_{mount} = protocol.load_labware(\'{pipette}\',\'{slot}\',tip_racks={tip_racks})\n')
+                f.write(' '*4 + f'pipettes.append(pipette_{mount})\n')
             f.write('\n')
 
             if not self.protocol:
                 return
 
             for action in self.protocol:
-                f.write(f'pipette = get_pipette({action.volume},pipettes)\n')
-                f.write(f'well_source = container_{action.source[0]}[action.source[1:]])\n')
-                f.write(f'well_dest = container_{action.dest[0]}[action.dest[1:]])\n')
-                f.write(f'pipette.transfer({action.volume},{well_source},{well_dest})\n')
+                f.write(' '*4 + f'pipette = get_pipette({action.volume},pipettes)\n')
+                f.write(' '*4 + f'well_source = container_{action.source[0]}[\'{action.source[1:]}\']\n')
+                f.write(' '*4 + f'well_dest = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')
+                f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
                 f.write('\n')
 
 
@@ -115,7 +104,7 @@ class Deck:
             self.components.add(name)
             self.components_target.add(name)
             
-    def create_protocol(self):
+    def make_protocol(self):
         for target in self.targets:
             
             # build matrix and vector representing mass balance
@@ -142,7 +131,7 @@ class Deck:
                     target_component_masses.append(0)
 
             #solve mass balance 
-            mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses)
+            mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
             
             #apply mass balance
             target_check = Mixture()

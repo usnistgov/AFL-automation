@@ -15,45 +15,86 @@ class Deck:
         self.pipettes      = {}
         
     def add_pipette(self,name,mount,tipracks):
-
-        for slot,name in tipracks:
-            self.tipracks[slot] = name
-
         if not (mount in ['left','right']):
             raise ValueError('Pipette mount point can only be "left" or "right"')
-        self.pipettes[mount] = name,
 
+        tiprack__list = []
+        for slot,name in tipracks:
+            self.tipracks[slot] = name
+            tipack_list.append(f'tiprack_{slot}')
 
+        self.pipettes[mount] = name,tiprack_list
 
     def add_container(self,name,slot):
         self.containers[slot] = name
+
+    def get_pipette_by_volume(self,volume):
+        for mount,pipette
         
-    def generate_calibration_script(self,filename):
+    def generate_script(self,filename):
         with open(filename,'w') as f:
             f.write('from opentrons import protocol_api\n')
             f.write('\n')
             f.write('\n')
             f.write('metadata={\'apiLevel\':\'2.0\'}\n')
             f.write('\n')
+            f.write('\n')
+            f.write('''
+            def get_pipette(volume,loaded_pipettes):
+                found_pipettes = []
+                for pipette in loaded_pipettes:
+                    if ((volume>pipette.min) and (volume<pipette.max))
+                        found_pipettes.append(pipette)
+
+                if not found_pipettes:
+                    raise ValueError('No suitable pipettes found!')
+                else:
+                    return min(pipettes,key=lambda x: x.max_volume)
+            ''')
+            f.write('\n')
+            f.write('\n')
+            f.write('''
+            def get_well(loc):
+                found_pipettes = []
+                for pipette in loaded_pipettes:
+                    if ((volume>pipette.min) and (volume<pipette.max))
+                        found_pipettes.append(pipette)
+
+                if not found_pipettes:
+                    raise ValueError('No suitable pipettes found!')
+                else:
+                    return min(pipettes,key=lambda x: x.max_volume)
+            ''')
+            f.write('\n')
+            f.write('\n')
             f.write('def run(protocol):\n')
 
-            tiprack_list = []
             for slot,tiprack in self.tipracks.items():
-                f.write(f'tiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
-                tipack_list.append(f'tiprack_{slot}')
+                f.write(f'\ttiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
             f.write('\n')
 
             container_list = []
             for slot,container in self.container.items():
-                f.write(f'container_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
-                container_list.append(f'container_{slot}')
+                f.write(f'\tcontainer_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
+                container_list.append(f'container_{slot}\n')
             f.write('\n')
 
-            pipette_list = []
-            for mount,(pipettte,tipsize) in self.container.items():
+            f.write('\tpipettes = []')
+            for mount,(pipettte,tip_racks) in self.container.items():
                 f.write(f'pipette_{mount} = protocol.load_labware(\'{pipette}\',\'{slot}\',tip_racks=[{tip_racks}])\n')
-                pipette_list.append(f'pipette_{mount}')
+                f.write(f'pipettes.append(pipette_{mount})\n')
             f.write('\n')
+
+            if not self.protocol:
+                return
+
+            for action in self.protocol:
+                f.write(f'pipette = get_pipette({action.volume},pipettes)\n')
+                f.write(f'well_source = container_{action.source[0]}[action.source[1:]])\n')
+                f.write(f'well_dest = container_{action.dest[0]}[action.dest[1:]])\n')
+                f.write(f'pipette.transfer({action.volume},{well_source},{well_dest})\n')
+                f.write('\n')
+
 
 
     def add_stock(self,stock,location):
@@ -74,7 +115,7 @@ class Deck:
             self.components.add(name)
             self.components_target.add(name)
             
-    def create_transfer_protocol(self):
+    def create_protocol(self):
         for target in self.targets:
             
             # build matrix and vector representing mass balance
@@ -111,8 +152,8 @@ class Deck:
                     target_check = target_check + removed
                     
                     action = PipetteAction(
-                                origin = self.stock_location[stock],
-                                destination = self.target_location[target],
+                                source = self.stock_location[stock],
+                                dest = self.target_location[target],
                                 volume = removed.volume
                                 
                     )

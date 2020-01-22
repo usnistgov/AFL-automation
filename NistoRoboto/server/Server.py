@@ -1,5 +1,37 @@
 import opentrons.execute
+import opentrons
+
 from NistoRoboto.shared.utilities import listify
+
+import threading
+import time
+from opentrons.drivers.rpi_drivers import gpio
+
+
+class DoorDaemon(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self._stop = False
+        self._open = True
+        opentrons.robot._driver.turn_off_button_light()
+
+    def is_open(self):
+        return self._open
+
+    def terminate(self):
+        self._stop = True
+
+    def run(self):
+        print('--> Running DoorDaemon!')
+        while not self._stop:
+            if gpio.read_window_switches():
+                gpio.set_button_light(green=True,red=False,blue=False)
+                self._open=False
+            else:
+                gpio.set_button_light(green=False,red=True,blue=False)
+                self._open=True
+            time.sleep(1)
+
 
 
 class Server:
@@ -7,17 +39,25 @@ class Server:
     '''
     def __init__(self):
         self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.doorDaemon = DoorDaemon()
+        self.doorDaemon.start()
 
-    def get_wells(self,loc):
+    def get_wells(self,locs):
         wells = []
-        for loc in listify(source):
+        for loc in listify(locs):
             if not (len(loc) == 3):
                 raise ValueError(f'Well specification should be [SLOT][ROW_LETTER][COL_NUM] not {loc}')
             slot = loc[0]
             well = loc[1:]
-            wells.append(self.protocol.loaded_labware[slot][well])
+            labware = self.get_labware(slot)
+            wells.append(labware[well])
+        return wells
 
     def get_labware(self,slot):
+        if self.protocol.deck[slot] is not None:
+            return self.protocol.deck[slot]
+        else:
+            raise ValueError('Specified slot ({slot}) is empty of labware')
 
     def transfer(self,mount,source,dest,volume,**kwargs):
         '''Transfer fluid from one location to another
@@ -43,26 +83,8 @@ class Server:
 
         #get pipette
         pipette = self.protocol.loaded_instruments[mount]
-
-        #get source well
-        if not isinstance(source,list):
-            source = [source]
-
-        source_wells = []
-        for loc in source:
-            slot = loc[0]
-            well = loc[1:]
-            source_wells.append(self.protocol.loaded_labware[slot][well])
-
-        if not isinstance(dest,list):
-            dest = [dest]
-
-        dest_wells = []
-        for loc in dest:
-            slot = loc[0]
-            well = loc[1:]
-            dest_wells.append(self.protocol.loaded_labware[slot][well])
-
+        source_wells = self.get_wells(source)
+        dest_wells = self.get_wells(dest)
         pipette.transfer(volume,source,dest)
 
 

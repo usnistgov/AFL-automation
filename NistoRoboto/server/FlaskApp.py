@@ -8,9 +8,9 @@ from flask_jwt_extended import (
 )
 
 from NistoRoboto.server.Server import Server
-roboto_server = RobotoServer()
+roboto_server = Server()
 
-app = Flask(__name__)
+app = Flask('NistoRoboto')
 
 # initialize auth module
 # maybe hide the secret at some point?
@@ -67,8 +67,12 @@ def login():
 @app.route('/transfer',methods=['POST'])
 @jwt_required
 def transfer():
-    roboto_server.transfer(**request.json)
-    return 'Success',200
+    try:
+        roboto_server.transfer(**request.json)
+    except:
+        return
+    else:
+        return 'Success',200
 
 
 if __name__ == '__main__':

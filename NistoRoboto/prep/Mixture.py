@@ -1,5 +1,5 @@
-from NistoRoboto.Component import Component
-from NistoRoboto.Exceptions import EmptyException
+from NistoRoboto.prep.Component import Component
+from NistoRoboto.shared.exceptions import EmptyException
 import numpy as np
 import copy
 

@@ -5,15 +5,28 @@ from NistoRoboto.prep.PipetteAction import PipetteAction
 get_pipette='''
 def get_pipette(volume,loaded_pipettes):
     found_pipettes = []
+    minVol = ''
     for pipette in loaded_pipettes:
-        if ((volume>pipette.min) and (volume<pipette.max))
+        minVol += f'{pipette.min_volume}>{volume}\\n'
+        if volume>pipette.min_volume:
             found_pipettes.append(pipette)
 
     if not found_pipettes:
-        raise ValueError('No suitable pipettes found!')
+        raise ValueError('No suitable pipettes found!\\n'+ minVol)
     else:
-        return min(pipettes,key=lambda x: x.max_volume)
+        return min(found_pipettes,key=lambda x: x.max_volume)
 '''
+
+metadata = '''
+metadata = {
+    'protocolName': 'Alignment',
+    'author': 'NistoRoboto',
+    'description': 'Script for aligning and testing',
+    'apiLevel': '2.0'
+}
+'''
+
+
 class Deck:
     def __init__(self):
         self.stocks        = []
@@ -36,9 +49,9 @@ class Deck:
             raise ValueError('Pipette mount point can only be "left" or "right"')
 
         tiprack_list = []
-        for slot,name in tipracks:
-            self.tip_racks[slot] = name
-            tiprack_list.append(f'tiprack_{slot}')
+        for slot,rack_name in tipracks:
+            self.tip_racks[slot] = rack_name
+            tiprack_list.append(slot)
 
         self.pipettes[mount] = name,tiprack_list
 
@@ -50,7 +63,8 @@ class Deck:
             f.write('from opentrons import protocol_api\n')
             f.write('\n')
             f.write('\n')
-            f.write('metadata={\'apiLevel\':\'2.0\'}\n')
+            #f.write('metadata={\'apiLevel\':\'2.0\'}\n')
+            f.write(metadata)
             f.write('\n')
             f.write('\n')
             f.write(get_pipette)
@@ -58,20 +72,28 @@ class Deck:
             f.write('\n')
             f.write('def run(protocol):\n')
 
+            
+            f.write(' '*4+ 'deck={}\n')
+            f.write('\n')
             for slot,tiprack in self.tip_racks.items():
                 f.write(' '*4+ f'tiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
+                f.write(' '*4+ f'deck[{slot}] = tiprack_{slot}\n')
             f.write('\n')
 
-            container_list = []
             for slot,container in self.containers.items():
                 f.write(' '*4 + f'container_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
-                container_list.append(f'container_{slot}\n')
+                f.write(' '*4+ f'deck[{slot}] = container_{slot}\n')
             f.write('\n')
 
             f.write(' '*4 + 'pipettes = []\n')
-            for mount,(pipette,tip_racks) in self.pipettes.items():
-                f.write(' '*4 + f'pipette_{mount} = protocol.load_labware(\'{pipette}\',\'{slot}\',tip_racks={tip_racks})\n')
+            for mount,(pipette,tip_rack_slots) in self.pipettes.items():
+                
+                f.write(' '*4 + f'tip_racks = []\n')
+                f.write(' '*4 + f'for slot in {tip_rack_slots}:\n')
+                f.write(' '*8 + f'tip_racks.append(protocol.deck[slot])\n')
+                f.write(' '*4 + f'pipette_{mount} = protocol.load_instrument(\'{pipette}\',\'{mount}\',tip_racks=tip_racks)\n')
                 f.write(' '*4 + f'pipettes.append(pipette_{mount})\n')
+                f.write(' '*4 + '\n')
             f.write('\n')
 
             if not self.protocol:
@@ -143,7 +165,7 @@ class Deck:
                     action = PipetteAction(
                                 source = self.stock_location[stock],
                                 dest = self.target_location[target],
-                                volume = removed.volume
+                                volume = removed.volume*1000 #assume ml for now
                                 
                     )
                     self.protocol.append(action)

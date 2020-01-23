@@ -7,40 +7,108 @@
 
         }
         #header-bar {
-          position: absolute;
           top:0px;
           width:100%;
+          height: 10%;
           background-color: gray;
-          border-bottom-style: dashed;
+          border-bottom-style: solid;
           border-bottom-width: 4px;
           border-bottom-color: black;
           clear:both;
+          display: flex;
+          justify-content: space-between;
         }
 
         #status-strip {
+          /*display:inline-block;
+
+          margin-left: auto;
+          width: 75%;
+          margin-right: auto;*/
           text-align:center;
           font: bold 15px sans-serif;
         }
-        
-        #camera-img {
-          float:left;
-          width:55%;
-          overflow:hidden;
-          border-width: 4px;
+
+        #nist-logo {
+          width: 10%;
+          height: auto;
+          /*
+          right: 0px;
+          display: inline-block;
+          height: 50px;
+          padding: 5px;*/
         }
-        #hardware-desc {
-          float:right;
-          width:35%;
-          overflow:hidden;
-          border-width: 4px;
-          border-color: black;
-          border-style: solid;
+
+        #ncnr-logo {
+          width: 10%;
+          height: auto;
+          /*
+          right: 0px;
+          display: inline-block;
+          height: 50px;
+          padding: 5px;*/
         }
-        #command-queue {
-          position: absolute;
-          bottom:50px;
+        #content-container {
           width:100%;
-          border-top-style: dashed;
+          clear:both;
+          padding-top: 10px;
+        }
+
+        #deck {
+          height: 100%; 
+          width: 100%; 
+          object-fit: contain
+        }
+
+        @media (min-width: 640px) {
+            /* styles for desktop */
+            #camera-img {
+                float:left;
+                width:58%;
+                overflow:hidden;
+                border-width: 4px;
+              }
+            #hardware-desc {
+              float:right;
+              width:38%;
+              overflow:hidden;
+
+              border-width: 4px;
+              border-color: black;
+              border-style: solid;
+            }
+        }
+        @media (max-width: 640px) {
+
+          #camera-img {
+            width:100%;
+            clear:both;
+          }
+
+          #hardware-desc {
+            width:100%;
+            clear:both;
+            border-top-width: 4px;
+            border-top-color: black;
+            border-top-style: solid;
+
+          }
+        
+        }
+
+        /*
+*/
+
+        #command-queue {
+          background-color: #aaaaaa;
+          position: sticky;
+          bottom: 0px;
+          padding-top: 5px;
+          padding-bottom: 5px;
+          clear:both;
+          min-height: 70px;
+          width:100%;
+          border-top-style: dotted;
           border-top-width: 4px;
           border-top-color: red;
         }
@@ -49,22 +117,25 @@
     <title>NistoRoboto Server</title>
   </head>
   <div id="header-bar">
+    <img id="nist-logo" src="static/logo.svg" />
     <p id="status-strip">
-        NistoRoboto  -  Last Updated {{updatetime}}  -  Current Status {{robotstatus}} - Experiment {{experimentname}} - Contact {{contactinfo}}
+        Last&nbsp;Updated&nbsp;{{updatetime}}  -  Current&nbsp;Status&nbsp;{{robotstatus}} - Experiment&nbsp;{{experimentname}} - Contact&nbsp;{{contactinfo}}
     </p>
+    <img id="ncnr-logo" src="static/ncnr.png" />
   </div>
+  <div id="content-container">
+    <div id="camera-img">
+      <p>
+         <img id="deck" src='static/deck.jpeg'/>
+      </p>
+    </div>
+    <div id="hardware-desc">
+        <h3> Loaded pipettes:</h3>
+        <p>{{pipettes}}</p>
 
-  <div id="camera-img">
-    <p>
-       <img src='static/deck.jpeg'/>
-    </p>
-  </div>
-  <div id="hardware-desc">
-      <h3> Loaded pipettes:</h3>
-      <p>{{pipettes}}</p>
-
-      <h3> Loaded labware:</h3>
-      <p>{{labware}}</p>
+        <h3> Loaded labware:</h3>
+        <p>{{labware}}</p>
+    </div>
   </div>
   <div id="command-queue">
     <h3> Queue:</h3> 

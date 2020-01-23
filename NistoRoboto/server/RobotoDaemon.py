@@ -7,26 +7,35 @@ from NistoRoboto.server.DoorDaemon import DoorDaemon
 import threading
 import time
 
-class Server(threading.Thread):
+class RobotoDaemon(threading.Thread):
     '''
     '''
-    def __init__(self,task_queue):
-        threading.Thread.__init__(self)
+    def __init__(self,app,task_queue):
+        app.logger.info('Creating RobotoDaemon thread')
+
+        threading.Thread.__init__(self,daemon=True)
 
         self.protocol = opentrons.execute.get_protocol_api('2.0')
-        self.doorDaemon = DoorDaemon(task_queue)
+        self.doorDaemon = DoorDaemon(app,task_queue)
         self.doorDaemon.start()
 
         self._stop = False
         self.task_queue = task_queue
+        self._app = app
 
     def terminate(self):
+        self.doorDaemon.terminate()
+
+        self._app.logger.info('Terminating RobotoDaemon thread')
         self._stop = True
+        self.task_queue.put(None)
 
     def run(self):
         while not self._stop:
             # this will block until something enters the task_queue
             task = self.task_queue.get(block=True,timeout=None)
+            if task is None:
+                break
 
             # while self.doorDaemon.is_open:
             #     time.sleep(0.1)
@@ -36,6 +45,7 @@ class Server(threading.Thread):
             # else:
             #     raise ValueError(f'Task type not recognized: {task["type"]}')
             time.sleep(2.0)
+        self._app.logger.info('RobotoDaemon runloop exiting')
 
     def get_wells(self,locs):
         wells = []

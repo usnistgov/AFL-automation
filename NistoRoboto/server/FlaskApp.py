@@ -1,24 +1,24 @@
-import requests,datetime
-
-import queue
-task_queue = queue.Queue()
-
-from NistoRoboto.server.Server import Server
-roboto_server = Server(task_queue)
-roboto_server.start()# start server thread
-
 from flask import Flask, render_template
 from flask import request, jsonify, Markup
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
 
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token,
-    get_jwt_identity
-)
+import requests,datetime
+
+import logging
+app.logger.setLevel(level=logging.DEBUG)
+
+import queue
+task_queue = queue.Queue()
+
+from NistoRoboto.server.RobotoDaemon import RobotoDaemon
+roboto_daemon = RobotoDaemon(app,task_queue)
+roboto_daemon.start()# start server thread
+
 # initialize auth module
-# maybe hide the secret at some point?
-app.config['JWT_SECRET_KEY'] = '03570'  
+from flask_jwt_extended import JWTManager, jwt_required 
+from flask_jwt_extended import create_access_token, get_jwt_identity
+app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
 jwt = JWTManager(app)
 
 @app.route('/')
@@ -38,8 +38,8 @@ def index():
     - color of button should reflect state
     '''
     kw = {}
-    kw['pipettes'] = roboto_server.protocol.loaded_instruments
-    kw['labware']  = roboto_server.protocol.loaded_labwares
+    kw['pipettes'] = roboto_daemon.protocol.loaded_instruments
+    kw['labware']  = roboto_daemon.protocol.loaded_labwares
 
     queue_str  = '<ol>\n'
     for task in task_queue.queue:
@@ -81,5 +81,12 @@ def enqueue():
     return 'Success',200
 
 
+# @app.teardown_appcontext
+# def cleanup(*args,**kwargs):
+#     print('--> Cleaning up threads...')
+#     roboto_daemon.terminate()
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0',debug=True)
+

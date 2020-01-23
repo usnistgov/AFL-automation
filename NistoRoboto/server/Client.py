@@ -14,6 +14,15 @@ class Client:
         self.port = port
         self.url = 'http://{ip}:{port}'
 
+    def logged_in(self):
+        url = self.url + '/login_test'
+        response = requests.post(url,headers=self.headers)
+        if response.status_code == 200:
+            return True
+        else:
+            print(response.content)
+            return False
+
     def login(self,username):
         url = self.url + '/login'
         response = requests.post(url,json={'username':username,'password':'domo_arigato'})

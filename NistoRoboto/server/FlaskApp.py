@@ -123,6 +123,13 @@ def enqueue():
     task_queue.put(request.json)
     return 'Success',200
 
+@app.route('/login_test',methods=['POST'])
+@jwt_required
+def login_test():
+    username = get_jwt_identity()
+    app.logger.info(f'Login test for {username} successful')
+    return 'Success',200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',debug=True)

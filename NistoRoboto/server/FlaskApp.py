@@ -1,14 +1,13 @@
 from flask import Flask, render_template
 from flask import request, jsonify, Markup
 
-from datetime import datetime
+import datetime,requests
 
 experiment = 'Not Set'
 contactinfo = 'Not Set'
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
 
-import requests,datetime
 
 import logging
 app.logger.setLevel(level=logging.DEBUG)
@@ -17,7 +16,7 @@ import queue
 task_queue = queue.Queue()
 
 from NistoRoboto.server.RobotoDaemon import RobotoDaemon
-roboto_daemon = RobotoDaemon(app,task_queue)
+roboto_daemon = RobotoDaemon(app,task_queue,debug_mode=True)
 roboto_daemon.start()# start server thread
 
 # initialize auth module
@@ -46,10 +45,14 @@ def index():
     kw['pipettes'] = roboto_daemon.protocol.loaded_instruments
     kw['labware']  = roboto_daemon.protocol.loaded_labwares
 
-    kw['updatetime'] = _nbsp(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    kw['updatetime'] = _nbsp(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     kw['robotstatus'] = _nbsp(_queue_status(task_queue))
     kw['currentexperiment'] = _nbsp(experiment)
     kw['contactinfo'] = _nbsp(contactinfo)
+    if roboto_daemon.debug_mode:
+        kw['queuemode'] = 'DEBUG'
+    else:
+        kw['queuemode'] = 'ACTIVE'
 
     queue_str  = '<ol>\n'
     for task in task_queue.queue:
@@ -70,8 +73,8 @@ def index():
 
     return render_template('index.html',**kw)
 
-def _nbsp(str):
-    return str.replace(' ','&nbsp;')
+def _nbsp(instr):
+    return Markup(instr.replace(' ','&nbsp;'))
 
 @app.route('/login',methods=['GET','POST'])
 def login():
@@ -93,6 +96,7 @@ def login():
 
     # Identity can be any data that is json serializable
     #expires = datetime.timedelta(days=1)
+    app.logger.info(f'Creating login token for user {username}')
     token = create_access_token(identity=username)#,expires=expires)
     return jsonify(token=token), 200
 
@@ -100,7 +104,7 @@ def _queue_status(q):
     if q.empty():
         return "Idle"
     else:
-        return "Running, " + q.qsize() + " pending tasks."
+        return f"Running, {q.qsize()} pending tasks."
 
 @app.route('/transfer',methods=['POST'])
 @jwt_required
@@ -118,12 +122,6 @@ def transfer():
 def enqueue():
     task_queue.put(request.json)
     return 'Success',200
-
-
-# @app.teardown_appcontext
-# def cleanup(*args,**kwargs):
-#     print('--> Cleaning up threads...')
-#     roboto_daemon.terminate()
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ import time
 class RobotoDaemon(threading.Thread):
     '''
     '''
-    def __init__(self,app,task_queue):
+    def __init__(self,app,task_queue,debug_mode=True):
         app.logger.info('Creating RobotoDaemon thread')
 
         threading.Thread.__init__(self,daemon=True)
@@ -20,8 +20,9 @@ class RobotoDaemon(threading.Thread):
         self.doorDaemon.start()
 
         self._stop = False
-        self.task_queue = task_queue
         self._app = app
+        self.task_queue = task_queue
+        self.debug_mode = debug_mode
 
     def terminate(self):
         self.doorDaemon.terminate()
@@ -34,17 +35,29 @@ class RobotoDaemon(threading.Thread):
         while not self._stop:
             # this will block until something enters the task_queue
             task = self.task_queue.get(block=True,timeout=None)
+            self._app.logger.info(f'Running task {task}')
+
             if task is None:
+                self.terminate()
                 break
+            elif 'debug_mode' in task:
+                self._app.logger.info(f'Setting queue debug_mode to {task["debug_mode"]}')
+                self.debug_mode = task['debug_mode']
+                continue
+            elif self.debug_mode:
+                time.sleep(2.0)
+                continue
 
-            # while self.doorDaemon.is_open:
-            #     time.sleep(0.1)
+            #interlock check
+            while not self.doorDaemon.door_closed:
+                time.sleep(0.1)
 
-            # if task['type'] == 'transfer':
-            #     self.transfer(**task)
-            # else:
-            #     raise ValueError(f'Task type not recognized: {task["type"]}')
-            time.sleep(2.0)
+            if task['type'] == 'transfer':
+                self.transfer(**task)
+            else:
+                raise ValueError(f'Task type not recognized: {task["type"]}')
+            time.sleep(0.1)
+
         self._app.logger.info('RobotoDaemon runloop exiting')
 
     def get_wells(self,locs):

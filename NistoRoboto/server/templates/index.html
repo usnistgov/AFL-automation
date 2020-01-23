@@ -58,6 +58,11 @@
           height: 100%; 
           width: 100%; 
           object-fit: contain
+          -webkit-transform:rotate(180deg);
+          -moz-transform: rotate(180deg);
+          -ms-transform: rotate(180deg);
+          -o-transform: rotate(180deg);
+          transform: rotate(180deg);
         }
 
         @media (min-width: 640px) {
@@ -119,7 +124,7 @@
   <div id="header-bar">
     <img id="nist-logo" src="static/logo.svg" />
     <p id="status-strip">
-        Last&nbsp;Updated&nbsp;{{updatetime}}  -  Current&nbsp;Status&nbsp;{{robotstatus}} - Experiment&nbsp;{{experimentname}} - Contact&nbsp;{{contactinfo}}
+    Last&nbsp;Updated&nbsp;{{updatetime}}  -  Current&nbsp;Status&nbsp;{{robotstatus}} - Experiment&nbsp;{{experimentname}} - Contact&nbsp;{{contactinfo}} - Queue&nbsp;Mode&nbsp;{{queuemode}}
     </p>
     <img id="ncnr-logo" src="static/ncnr.png" />
   </div>

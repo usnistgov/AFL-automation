@@ -6,12 +6,16 @@ class Client:
     This class maps pipettor functions to HTTP REST requests that are sent to
     the NistoRoboto server
     '''
-    def __init__(self,url = 'http://10.42.0.31:5000'):
-        self.url = url
+    def __init__(self,ip='10.42.0.30',port='5000'):
+        #trim trailing slash if present
+        if ip[-1] == '/':
+            ip = ip[:-1]
+        self.ip = ip
+        self.port = port
+        self.url = 'http://{ip}:{port}'
 
     def login(self,username):
         url = self.url + '/login'
-        print(url)
         response = requests.post(url,json={'username':username,'password':'domo_arigato'})
         if not (response.status_code == 200):
             raise RuntimeError(f'Client login failed with status code {response.status_code}:\n{response.content}')

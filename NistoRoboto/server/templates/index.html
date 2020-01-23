@@ -7,7 +7,6 @@
 
         }
         #header-bar {
-          position: absolute;
           top:0px;
           width:100%;
           background-color: gray;
@@ -21,24 +20,62 @@
           text-align:center;
           font: bold 15px sans-serif;
         }
+        #content-container {
+          width:100%;
+          clear:both;
+          padding-top: 10px;
+        }
+
+        img {
+          height: 100%; 
+          width: 100%; 
+          object-fit: contain
+        }
+
+        @media (min-width: 640px) {
+            /* styles for desktop */
+            #camera-img {
+                float:left;
+                width:58%;
+                overflow:hidden;
+                border-width: 4px;
+              }
+            #hardware-desc {
+              float:right;
+              width:38%;
+              overflow:hidden;
+
+              border-width: 4px;
+              border-color: black;
+              border-style: solid;
+            }
+        }
+        @media (max-width: 640px) {
+
+          #camera-img (max-width:960px) {
+            width:100%;
+            clear:both;
+          }
+
+          #hardware-desc (max-width:960px) {
+            width:100%;
+            clear:both;
+          }
         
-        #camera-img {
-          float:left;
-          width:60%;
-          overflow:hidden;
-          border-width: 4px;
         }
-        #hardware-desc {
-          float:right;
-          width:40%;
-          overflow:hidden;
-          border-width: 4px;
-          border-color: black;
-          border-style: solid;
-        }
+
+        /*
+*/
+
+
+
         #command-queue {
-          position: absolute;
-          bottom:50px;
+          background-color: linen;
+          position: sticky;
+          bottom: 50px;
+          padding-top: 15px;
+          clear:both;
+          min-height: 50px;
           width:100%;
           border-top-style: dashed;
           border-top-width: 4px;
@@ -53,18 +90,19 @@
         NistoRoboto  -  Last Updated {{updatetime}}  -  Current Status {{robotstatus}} - Experiment {{experimentname}} - Contact {{contactinfo}}
     </p>
   </div>
+  <div id="content-container">
+    <div id="camera-img">
+      <p>
+         <img src='static/deck.jpeg'/>
+      </p>
+    </div>
+    <div id="hardware-desc">
+        <h3> Loaded pipettes:</h3>
+        <p>{{pipettes}}</p>
 
-  <div id="camera-img">
-    <p>
-       <img src='static/deck.jpeg'/>
-    </p>
-  </div>
-  <div id="hardware-desc">
-      <h3> Loaded pipettes:</h3>
-      <p>{{pipettes}}</p>
-
-      <h3> Loaded labware:</h3>
-      <p>{{labware}}</p>
+        <h3> Loaded labware:</h3>
+        <p>{{labware}}</p>
+    </div>
   </div>
   <div id="command-queue">
     <h3> Queue:</h3> 

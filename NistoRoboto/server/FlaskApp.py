@@ -9,6 +9,11 @@ roboto_server.start()# start server thread
 
 from flask import Flask, render_template
 from flask import request, jsonify, Markup
+
+from datetime import datetime
+
+experiment = 'Not Set'
+contactinfo = 'Not Set'
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
 
@@ -41,6 +46,11 @@ def index():
     kw['pipettes'] = roboto_server.protocol.loaded_instruments
     kw['labware']  = roboto_server.protocol.loaded_labwares
 
+    kw['updatetime'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    kw['robotstatus'] = _queue_status(task_queue)
+    kw['currentexperiment'] = experiment
+    kw['contactinfo'] = contactinfo
+
     queue_str  = '<ol>\n'
     for task in task_queue.queue:
         queue_str  += f'\t<li>{task}</li>\n'
@@ -69,10 +79,18 @@ def login():
     if password != 'domo_arigato':
         return jsonify({"msg": "Bad password"}), 401
 
+    experiment = request.json.get('experiment',None)
+    contactinfo = request.json.get('contactinfo',None)
+
     # Identity can be any data that is json serializable
     token = create_access_token(identity=username)
     return jsonify(token=token), 200
 
+def _queue_status(q):
+    if q.empty():
+        return "Idle"
+    else:
+        return "Running, " + q.qsize() + " pending tasks."
 
 @app.route('/transfer',methods=['POST'])
 @jwt_required

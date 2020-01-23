@@ -9,16 +9,44 @@
         #header-bar {
           top:0px;
           width:100%;
+          height: 10%;
           background-color: gray;
-          border-bottom-style: dashed;
+          border-bottom-style: solid;
           border-bottom-width: 4px;
           border-bottom-color: black;
           clear:both;
+          display: flex;
+          justify-content: space-between;
         }
 
         #status-strip {
+          /*display:inline-block;
+
+          margin-left: auto;
+          width: 75%;
+          margin-right: auto;*/
           text-align:center;
           font: bold 15px sans-serif;
+        }
+
+        #nist-logo {
+          width: 10%;
+          height: auto;
+          /*
+          right: 0px;
+          display: inline-block;
+          height: 50px;
+          padding: 5px;*/
+        }
+
+        #ncnr-logo {
+          width: 10%;
+          height: auto;
+          /*
+          right: 0px;
+          display: inline-block;
+          height: 50px;
+          padding: 5px;*/
         }
         #content-container {
           width:100%;
@@ -26,7 +54,7 @@
           padding-top: 10px;
         }
 
-        img {
+        #deck {
           height: 100%; 
           width: 100%; 
           object-fit: contain
@@ -52,14 +80,18 @@
         }
         @media (max-width: 640px) {
 
-          #camera-img (max-width:960px) {
+          #camera-img {
             width:100%;
             clear:both;
           }
 
-          #hardware-desc (max-width:960px) {
+          #hardware-desc {
             width:100%;
             clear:both;
+            border-top-width: 4px;
+            border-top-color: black;
+            border-top-style: solid;
+
           }
         
         }
@@ -67,17 +99,16 @@
         /*
 */
 
-
-
         #command-queue {
-          background-color: linen;
+          background-color: #aaaaaa;
           position: sticky;
-          bottom: 50px;
-          padding-top: 15px;
+          bottom: 0px;
+          padding-top: 5px;
+          padding-bottom: 5px;
           clear:both;
-          min-height: 50px;
+          min-height: 70px;
           width:100%;
-          border-top-style: dashed;
+          border-top-style: dotted;
           border-top-width: 4px;
           border-top-color: red;
         }
@@ -86,14 +117,16 @@
     <title>NistoRoboto Server</title>
   </head>
   <div id="header-bar">
+    <img id="nist-logo" src="static/logo.svg" />
     <p id="status-strip">
-        NistoRoboto  -  Last Updated {{updatetime}}  -  Current Status {{robotstatus}} - Experiment {{experimentname}} - Contact {{contactinfo}}
+        Last&nbsp;Updated&nbsp;{{updatetime}}  -  Current&nbsp;Status&nbsp;{{robotstatus}} - Experiment&nbsp;{{experimentname}} - Contact&nbsp;{{contactinfo}}
     </p>
+    <img id="ncnr-logo" src="static/ncnr.png" />
   </div>
   <div id="content-container">
     <div id="camera-img">
       <p>
-         <img src='static/deck.jpeg'/>
+         <img id="deck" src='static/deck.jpeg'/>
       </p>
     </div>
     <div id="hardware-desc">

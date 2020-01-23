@@ -46,10 +46,10 @@ def index():
     kw['pipettes'] = roboto_server.protocol.loaded_instruments
     kw['labware']  = roboto_server.protocol.loaded_labwares
 
-    kw['updatetime'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    kw['robotstatus'] = _queue_status(task_queue)
-    kw['currentexperiment'] = experiment
-    kw['contactinfo'] = contactinfo
+    kw['updatetime'] = _nbsp(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    kw['robotstatus'] = _nbsp(_queue_status(task_queue))
+    kw['currentexperiment'] = _nbsp(experiment)
+    kw['contactinfo'] = _nbsp(contactinfo)
 
     queue_str  = '<ol>\n'
     for task in task_queue.queue:
@@ -58,11 +58,20 @@ def index():
     kw['queue'] = Markup(queue_str)
 
     #request image and save to static directory
+
+    # TO SET UP STREAM IN FUTURE:
+    # ffmpeg -y -f video4linux2 -s 640x480 -i /dev/video0 'udp://239.0.0.1:1234?ttl=2'
+
+    # this will UDP multicast stream to 239.0.0.1:1234, pick this stream up on control server and repackage it.
+    
     response = requests.post('http://localhost:31950/camera/picture')
     with open('static/deck.jpeg','wb') as f:
         f.write(response.content)
 
     return render_template('index.html',**kw)
+
+def _nbsp(str):
+    return str.replace(' ','&nbsp;')
 
 @app.route('/login',methods=['GET','POST'])
 def login():

@@ -1,6 +1,5 @@
 import opentrons.execute
 
-from NistoRoboto.shared.utilities import listify
 from NistoRoboto.server.DoorDaemon import DoorDaemon
 from NistoRoboto.server.Protocol import Protocol
 

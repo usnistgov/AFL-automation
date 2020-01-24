@@ -98,3 +98,8 @@ class Client:
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
             raise RuntimeError(f'API call to home command failed with status_code {response.status_code}\n{response.content}')
+
+    def halt(self):
+        response = requests.post(self.url+'/halt',headers=self.headers,json={})
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to halt command failed with status_code {response.status_code}\n{response.content}')

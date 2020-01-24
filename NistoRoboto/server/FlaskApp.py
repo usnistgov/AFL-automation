@@ -15,6 +15,7 @@ app.logger.setLevel(level=logging.DEBUG)
 import queue
 task_queue = queue.Queue()
 
+import opentrons
 from NistoRoboto.server.RobotoDaemon import RobotoDaemon
 roboto_daemon = RobotoDaemon(app,task_queue,debug_mode=True)
 roboto_daemon.start()# start server thread
@@ -97,6 +98,11 @@ def _queue_status(q):
 @jwt_required
 def enqueue():
     task_queue.put(request.json)
+    return 'Success',200
+
+@app.route('/halt',methods=['POST'])
+def halt():
+    opentrons.robot.halt()
     return 'Success',200
 
 @app.route('/login_test',methods=['POST'])

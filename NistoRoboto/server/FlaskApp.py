@@ -3,15 +3,14 @@ from flask import request, jsonify, Markup
 
 import datetime,requests
 
-experiment = 'Not Set'
-contactinfo = 'Not Set'
+experiment = 'Development'
+contactinfo = 'tbm@nist.gov'
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
 
 
 import logging
-# app.logger.setLevel(level=logging.DEBUG)
-app.logger.setLevel(level=logging.INFO)
+app.logger.setLevel(level=logging.DEBUG)
 
 import queue
 task_queue = queue.Queue()
@@ -28,20 +27,7 @@ jwt = JWTManager(app)
 
 @app.route('/')
 def index():
-    '''
-    This should be a live, status page of the robo
-
-    This page should include:
-    - status/queue of robot
-    - currently running command
-    - loaded labeware
-    - visualization of the deck
-
-
-    - button should stop robot (hard halt)
-    - robot should only accept commands if the door is closed
-    - color of button should reflect state
-    '''
+    '''Live, status page of the robot'''
     kw = {}
     kw['pipettes'] = roboto_daemon.protocol.loaded_instruments
     kw['labware']  = roboto_daemon.protocol.loaded_labwares

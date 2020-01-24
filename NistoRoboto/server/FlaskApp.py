@@ -29,8 +29,8 @@ jwt = JWTManager(app)
 def index():
     '''Live, status page of the robot'''
     kw = {}
-    kw['pipettes'] = roboto_daemon.protocol.loaded_instruments
-    kw['labware']  = roboto_daemon.protocol.loaded_labwares
+    kw['pipettes'] = roboto_daemon.protocol.protocol.loaded_instruments
+    kw['labware']  = roboto_daemon.protocol.protocol.loaded_labwares
 
     kw['updatetime'] = _nbsp(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     kw['robotstatus'] = _nbsp(_queue_status(task_queue))

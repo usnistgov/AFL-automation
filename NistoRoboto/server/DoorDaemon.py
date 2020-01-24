@@ -8,7 +8,7 @@ class DoorDaemon(threading.Thread):
     def __init__(self,app,task_queue):
         app.logger.info('Creating DoorDaemon thread')
 
-        threading.Thread.__init__(self,daemon=True)
+        threading.Thread.__init__(self,name='DoorDaemon',daemon=True)
         self._stop = False
         self._app = app
         self.task_queue = task_queue

@@ -10,7 +10,8 @@ app = Flask(__name__)
 
 
 import logging
-app.logger.setLevel(level=logging.DEBUG)
+# app.logger.setLevel(level=logging.DEBUG)
+app.logger.setLevel(level=logging.INFO)
 
 import queue
 task_queue = queue.Queue()

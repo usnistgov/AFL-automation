@@ -31,6 +31,14 @@ class RobotoDaemon(threading.Thread):
         self._stop = True
         self.task_queue.put(None)
 
+    def reset(self):
+        self._app.logger.info('Resetting the protocol context')
+        self.protocol = opentrons.execute.get_protocol_api('2.0')
+
+    def home(self):
+        self._app.logger.info('Homing the robots axes')
+        self.protocol.home()
+
     def run(self):
         while not self._stop:
             # this will block until something enters the task_queue
@@ -48,12 +56,20 @@ class RobotoDaemon(threading.Thread):
                 time.sleep(2.0)
                 continue
 
-            #interlock check
-            while not self.doorDaemon.door_closed:
-                time.sleep(0.1)
+            # #interlock check
+            # while not self.doorDaemon.door_closed:
+            #     time.sleep(0.1)
 
             if task['type'] == 'transfer':
                 self.transfer(**task)
+            elif task['type'] == 'load_labware':
+                self.load_labware(**task)
+            elif task['type'] == 'load_instrument':
+                self.load_instrument(**task)
+            elif task['type'] == 'reset':
+                self.reset()
+            elif task['type'] == 'home':
+                self.home()
             else:
                 raise ValueError(f'Task type not recognized: {task["type"]}')
             time.sleep(0.1)
@@ -77,14 +93,23 @@ class RobotoDaemon(threading.Thread):
         else:
             raise ValueError('Specified slot ({slot}) is empty of labware')
 
-    def transfer(self,mount,source,dest,volume,**kwargs):
+    def load_labware(self,name,slot,**kw):
+        self.protocol.load_labware(name,slot)
+
+    def load_instrument(self,name,mount,tip_rack_slots,**kw):
+        tip_racks = []
+        for slot in tip_rack_slots:
+            tip_rack = self.protocol.deck[slot]
+            if not tip_rack.is_tiprack:
+                raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
+            tip_racks.append(tip_rack)
+        self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
+
+    def transfer(self,source,dest,volume,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
         ---------
-        mount: str ('left' or 'right')
-            Mount location of pipette to be used
-
         source: str or list of str
             Source wells to transfer from. Wells should be specified as three
             character strings with the first character being the slot number.
@@ -98,13 +123,27 @@ class RobotoDaemon(threading.Thread):
             volume of fluid to transfer
 
         '''
+        self._app.logger.info(f'Transfer {volume}uL from {source} to {dest}')
 
-        #get pipette
-        pipette = self.protocol.loaded_instruments[mount]
+        #get pipette based on volume
+        pipette = self.get_pipette(volume)
         source_wells = self.get_wells(source)
         dest_wells = self.get_wells(dest)
-        pipette.transfer(volume,source,dest)
+        pipette.transfer(volume,source_wells,dest_wells)
 
+    def get_pipette(self,volume):
+        found_pipettes = []
+        minVolStr = ''
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            minVolStr += f'{pipette.min_volume}>{volume}\\n'
+            if volume>pipette.min_volume:
+                found_pipettes.append(pipette)
+    
+        if not found_pipettes:
+            raise ValueError('No suitable pipettes found!\\n'+ minVolStr)
+        else:
+            return min(found_pipettes,key=lambda x: x.max_volume)
+    
 
 
 

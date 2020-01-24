@@ -43,7 +43,29 @@ class Deck:
         self.tip_racks    = {}
         self.containers    = {}
         self.pipettes      = {}
-        
+
+        self.client = None
+
+    def init_remote_connection(self,url):
+        from NistoRoboto.server.Client import Client
+        self.client = Client(url)
+        self.client.login('NistoRobotoDeck')
+
+    def send_protocol(self):
+        if not self.protocol:
+            raise ValueError('No protocol to send. Did you call make_protocol()?')
+
+        if self.client is None:
+            raise ValueError('Need to call \'init_remote_connection\' before sending protocol')
+
+        if not self.client.logged_in():
+            # just relogin
+            self.client.login('NistoRobotoDeck')
+
+        for task in self.protocol:
+            kw = task.get_kwargs()
+            self.client.transfer(**kw)
+
     def add_pipette(self,name,mount,tipracks):
         if not (mount in ['left','right']):
             raise ValueError('Pipette mount point can only be "left" or "right"')
@@ -57,55 +79,6 @@ class Deck:
 
     def add_container(self,name,slot):
         self.containers[slot] = name
-
-    def make_script(self,filename):
-        with open(filename,'w') as f:
-            f.write('from opentrons import protocol_api\n')
-            f.write('\n')
-            f.write('\n')
-            #f.write('metadata={\'apiLevel\':\'2.0\'}\n')
-            f.write(metadata)
-            f.write('\n')
-            f.write('\n')
-            f.write(get_pipette)
-            f.write('\n')
-            f.write('\n')
-            f.write('def run(protocol):\n')
-
-            
-            f.write(' '*4+ 'deck={}\n')
-            f.write('\n')
-            for slot,tiprack in self.tip_racks.items():
-                f.write(' '*4+ f'tiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
-                f.write(' '*4+ f'deck[{slot}] = tiprack_{slot}\n')
-            f.write('\n')
-
-            for slot,container in self.containers.items():
-                f.write(' '*4 + f'container_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
-                f.write(' '*4+ f'deck[{slot}] = container_{slot}\n')
-            f.write('\n')
-
-            f.write(' '*4 + 'pipettes = []\n')
-            for mount,(pipette,tip_rack_slots) in self.pipettes.items():
-                
-                f.write(' '*4 + f'tip_racks = []\n')
-                f.write(' '*4 + f'for slot in {tip_rack_slots}:\n')
-                f.write(' '*8 + f'tip_racks.append(protocol.deck[slot])\n')
-                f.write(' '*4 + f'pipette_{mount} = protocol.load_instrument(\'{pipette}\',\'{mount}\',tip_racks=tip_racks)\n')
-                f.write(' '*4 + f'pipettes.append(pipette_{mount})\n')
-                f.write(' '*4 + '\n')
-            f.write('\n')
-
-            if not self.protocol:
-                return
-
-            for action in self.protocol:
-                f.write(' '*4 + f'pipette = get_pipette({action.volume},pipettes)\n')
-                f.write(' '*4 + f'well_source = container_{action.source[0]}[\'{action.source[1:]}\']\n')
-                f.write(' '*4 + f'well_dest = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')
-                f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
-                f.write('\n')
-
 
 
     def add_stock(self,stock,location):
@@ -172,4 +145,52 @@ class Deck:
                     
             if not (target == target_check):
                 raise RuntimeError('Mass transfer calculation failed...')
+
+    def make_script(self,filename):
+        with open(filename,'w') as f:
+            f.write('from opentrons import protocol_api\n')
+            f.write('\n')
+            f.write('\n')
+            #f.write('metadata={\'apiLevel\':\'2.0\'}\n')
+            f.write(metadata)
+            f.write('\n')
+            f.write('\n')
+            f.write(get_pipette)
+            f.write('\n')
+            f.write('\n')
+            f.write('def run(protocol):\n')
+
+            
+            f.write(' '*4+ 'deck={}\n')
+            f.write('\n')
+            for slot,tiprack in self.tip_racks.items():
+                f.write(' '*4+ f'tiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
+                f.write(' '*4+ f'deck[{slot}] = tiprack_{slot}\n')
+            f.write('\n')
+
+            for slot,container in self.containers.items():
+                f.write(' '*4 + f'container_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
+                f.write(' '*4+ f'deck[{slot}] = container_{slot}\n')
+            f.write('\n')
+
+            f.write(' '*4 + 'pipettes = []\n')
+            for mount,(pipette,tip_rack_slots) in self.pipettes.items():
+                
+                f.write(' '*4 + f'tip_racks = []\n')
+                f.write(' '*4 + f'for slot in {tip_rack_slots}:\n')
+                f.write(' '*8 + f'tip_racks.append(protocol.deck[slot])\n')
+                f.write(' '*4 + f'pipette_{mount} = protocol.load_instrument(\'{pipette}\',\'{mount}\',tip_racks=tip_racks)\n')
+                f.write(' '*4 + f'pipettes.append(pipette_{mount})\n')
+                f.write(' '*4 + '\n')
+            f.write('\n')
+
+            if not self.protocol:
+                return
+
+            for action in self.protocol:
+                f.write(' '*4 + f'pipette = get_pipette({action.volume},pipettes)\n')
+                f.write(' '*4 + f'well_source = container_{action.source[0]}[\'{action.source[1:]}\']\n')
+                f.write(' '*4 + f'well_dest = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')
+                f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
+                f.write('\n')
 

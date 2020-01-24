@@ -12,7 +12,7 @@ class Client:
             ip = ip[:-1]
         self.ip = ip
         self.port = port
-        self.url = 'http://{ip}:{port}'
+        self.url = f'http://{ip}:{port}'
 
     def logged_in(self):
         url = self.url + '/login_test'
@@ -39,14 +39,11 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
 
-    def transfer(self,mount,source,dest,volume):
+    def transfer(self,source,dest,volume):
         '''Transfer fluid from one location to another
 
         Arguments
         ---------
-        mount: str ('left' or 'right')
-            Mount location of pipette to be used
-
         source: str or list of str
             Source wells to transfer from. Wells should be specified as three
             character strings with the first character being the slot number.
@@ -62,10 +59,42 @@ class Client:
         '''
         json = {}
         json['type']  = 'transfer'
-        json['mount']  = mount
         json['source'] = source
         json['dest']   = dest
         json['volume'] = volume
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
             raise RuntimeError(f'API call to transfer command failed with status_code {response.status_code}\n{response.content}')
+
+    def load_labware(self,name,slot):
+        json = {}
+        json['type']  = 'load_labware'
+        json['name'] = name
+        json['slot'] = slot
+        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to load_labware command failed with status_code {response.status_code}\n{response.content}')
+
+    def load_instrument(self,name,mount,tip_rack_slots):
+        json = {}
+        json['type']  = 'load_instrument'
+        json['name'] = name
+        json['mount'] = mount
+        json['tip_rack_slots'] = tip_rack_slots
+        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to load_instrument command failed with status_code {response.status_code}\n{response.content}')
+
+    def reset(self):
+        json = {}
+        json['type']  = 'reset'
+        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to reset command failed with status_code {response.status_code}\n{response.content}')
+
+    def home(self):
+        json = {}
+        json['type']  = 'home'
+        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to home command failed with status_code {response.status_code}\n{response.content}')

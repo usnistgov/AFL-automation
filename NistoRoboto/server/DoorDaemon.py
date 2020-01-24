@@ -38,14 +38,14 @@ class DoorDaemon(threading.Thread):
 
 
             if(self.safe):
-                if self.pendtask:  # proposed color reorg: blue = door open and interlock blocked, red = not safe to open door (running), green = safe to open door (not running)
-                    #blue = safe and runing!
+                if self.pendtask:  
+                    #red = running and not safe to enter!
                     self.set_button_light(red=True)
                 else:
-                    #green = safe and ready to run!
+                    #green = not running, safe to enter, ready to run!
                     self.set_button_light(green=True)
             else:
-                #window is open! red = caution!
+                #blue = window is open! will not run!
                 self.set_button_light(blue=True)
 
             time.sleep(0.1)

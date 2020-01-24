@@ -1,4 +1,5 @@
 import opentrons.execute
+import opentrons
 from NistoRoboto.shared.utilities import listify
 
 class Protocol:
@@ -11,20 +12,22 @@ class Protocol:
 
         raise NotImplementedError('This method doesn\'t work yet. For now, just restart the flask server')
 
-        #XXX HACK! asyncio event loop finding borks without this
-        # self._app.logger.debug(opentrons.execute._HWCONTROL)
-        # del opentrons.execute._HWCONTROL
-        # opentrons.execute._HWCONTROL = None
-        self._app.logger.debug(opentrons.execute._HWCONTROL)
+        # opentrons.robot.reset() doesnt work
 
-        self.protocol = opentrons.execute.get_protocol_api('2.0')
+        # #XXX HACK! asyncio event loop finding borks without this
+        # # self._app.logger.debug(opentrons.execute._HWCONTROL)
+        # # del opentrons.execute._HWCONTROL
+        # # opentrons.execute._HWCONTROL = None
+        # self._app.logger.debug(opentrons.execute._HWCONTROL)
+
+        # self.protocol = opentrons.execute.get_protocol_api('2.0')
 
     def home(self):
         self._app.logger.info('Homing the robots axes')
         self.protocol.home()
 
     def get_wells(self,locs):
-        self._app.logger.debug(f'Converting locations to well objects: {loc}')
+        self._app.logger.debug(f'Converting locations to well objects: {locs}')
         wells = []
         for loc in listify(locs):
             if not (len(loc) == 3):
@@ -96,7 +99,7 @@ class Protocol:
             if volume>pipette.min_volume:
                 found_pipettes.append(pipette)
     
-        self._app.logger.debug(f'Found pipettes with suitable minimum volume: {pipettes}')
+        self._app.logger.debug(f'Found pipettes with suitable minimum volume: {found_pipettes}')
         if not found_pipettes:
             raise ValueError('No suitable pipettes found!\\n'+ minVolStr)
         

@@ -51,7 +51,7 @@ class Deck:
         self.client = Client(url)
         self.client.login('NistoRobotoDeck')
 
-    def send_protocol(self):
+    def send_protocol(self,debug_mode=False):
         if not self.protocol:
             raise ValueError('No protocol to send. Did you call make_protocol()?')
 
@@ -59,9 +59,21 @@ class Deck:
             raise ValueError('Need to call \'init_remote_connection\' before sending protocol')
 
         if not self.client.logged_in():
-            # just relogin
+            # just re-login
             self.client.login('NistoRobotoDeck')
 
+        self.client.set_queue_mode(debug_mode=debug_mode)#unlock the queue
+
+        for slot,tip_rack in self.tip_racks.items():
+            self.client.load_labware(tip_rack,slot)
+
+        for slot,container in self.containers.items():
+            self.client.load_labware(container,slot)
+
+        for mount,(pipette,tip_rack_slots) in self.pipettes.items():
+            self.client.load_instrument(pipette,mount,tip_rack_slots)
+
+        self.client.home()# must home robot before sending commands
         for task in self.protocol:
             kw = task.get_kwargs()
             self.client.transfer(**kw)
@@ -79,7 +91,6 @@ class Deck:
 
     def add_container(self,name,slot):
         self.containers[slot] = name
-
 
     def add_stock(self,stock,location):
         stock = stock.copy()

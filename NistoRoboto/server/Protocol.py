@@ -51,19 +51,36 @@ class Protocol:
 
     def load_labware(self,name,slot,**kw):
         '''Load labware (containers,tipracks) into the protocol'''
-        self._app.logger.debug(f'Loading labware \'{name}\' into slot \'{slot}\' into the protocol context')
-        self.protocol.load_labware(name,slot)
+        if self.protocol.deck[slot] is not None:
+            if self.protocol.deck[slot].name == name:
+                self._app.logger.info(f'Labware \'{name}\' already loaded into slot \'{slot}\'.\n')
+                #do nothing
+            else:
+                raise RuntimeError(f'''Attempted to load labware \'{name}\' into slot \'{slot}\'.
+                        Slot is already filled loaded with {self.protocol.deck[slot]}.''')
+        else: 
+            self._app.logger.debug(f'Loading labware \'{name}\' into slot \'{slot}\' into the protocol context')
+            self.protocol.load_labware(name,slot)
 
     def load_instrument(self,name,mount,tip_rack_slots,**kw):
         '''Load a pipette into the protocol'''
-        self._app.logger.debug(f'Loading pipette \'{name}\' into mount \'{mount}\' with tip_racks in slots {tip_rack_slots}')
-        tip_racks = []
-        for slot in listify(tip_rack_slots):
-            tip_rack = self.protocol.deck[slot]
-            if not tip_rack.is_tiprack:
-                raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
-            tip_racks.append(tip_rack)
-        self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
+
+        if mount in self.protocol.loaded_instruments:
+            if self.protocol.loaded_instruments[mount].name == name:
+                self._app.logger.info(f'Instrument \'{name}\' already loaded into mount \'{mount}\'.\n')
+                #do nothing
+            else:
+                raise RuntimeError(f'''Attempted to load instrument \'{name}\' into mount \'{mount}\'.
+                        mount is already loaded with {self.protocol.loaded_instruments[mount]}.''')
+        else: 
+            self._app.logger.debug(f'Loading pipette \'{name}\' into mount \'{mount}\' with tip_racks in slots {tip_rack_slots}')
+            tip_racks = []
+            for slot in listify(tip_rack_slots):
+                tip_rack = self.protocol.deck[slot]
+                if not tip_rack.is_tiprack:
+                    raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
+                tip_racks.append(tip_rack)
+            self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
 
     def transfer(self,source,dest,volume,**kwargs):
         '''Transfer fluid from one location to another

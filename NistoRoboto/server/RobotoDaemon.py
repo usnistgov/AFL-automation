@@ -5,6 +5,7 @@ from NistoRoboto.server.Protocol import Protocol
 
 import threading
 import time
+import datetime
 
 class RobotoDaemon(threading.Thread):
     '''
@@ -50,9 +51,10 @@ class RobotoDaemon(threading.Thread):
                 time.sleep(2.0)
                 continue
 
+
             # XXX 200124 This causes the queue to hang 
-            # #interlock check 
-            # while not self.doorDaemon.door_closed:
+            # #interlock check
+            # while self.doorDaemon.safe and abs(self.doorDaemon.last_check - datetime.now)<250:
             #     time.sleep(0.1)
 
             if task['type'] == 'transfer':

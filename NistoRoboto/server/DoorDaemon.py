@@ -1,6 +1,7 @@
 import threading
 import time
 from opentrons.drivers.rpi_drivers import gpio
+import datetime
 
 
 class DoorDaemon(threading.Thread):
@@ -30,16 +31,22 @@ class DoorDaemon(threading.Thread):
 
     def run(self):
         while not self._stop:
-            if self.door_closed:
-                if self.task_queue.empty():
+            self.safe = self.door_closed  # put other logic about safety state here, other sensors, etc.
+            self.pendtask = not self.task_queue.empty()
+            self.last_check = datetime.now()  # this is a crude watchdog timer mechanic, clients should check this relative to their datetime.now
+                                              # and refuse to believe the interlock value if data stale.
+
+
+            if(self.safe)
+                if self.pendtask:  # proposed color reorg: blue = door open and interlock blocked, red = not safe to open door (running), green = safe to open door (not running)
+                    #blue = safe and runing!
+                    self.set_button_light(red=True)
+                else:
                     #green = safe and ready to run!
                     self.set_button_light(green=True)
-                    
-                else:
-                    #blue = safe and runing!
-                    self.set_button_light(blue=True)
             else:
                 #window is open! red = caution!
-                self.set_button_light(red=True)
+                self.set_button_light(blue=True)
+
             time.sleep(0.1)
         self._app.logger.info('DoorDaemon runloop exiting')

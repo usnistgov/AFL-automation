@@ -1,6 +1,7 @@
 import opentrons.execute
 import opentrons
 from NistoRoboto.shared.utilities import listify
+from math import ceil,sqrt
 
 class Protocol:
     def __init__(self,app):
@@ -23,7 +24,7 @@ class Protocol:
         # self.protocol = opentrons.execute.get_protocol_api('2.0')
 
     def home(self):
-        self._app.logger.info('Homing the robots axes')
+        self._app.logger.info('Homing the robot\'s axes')
         self.protocol.home()
 
     def get_wells(self,locs):
@@ -92,38 +93,46 @@ class Protocol:
 
     def get_pipette(self,volume):
         self._app.logger.debug(f'Looking for a pipette for volume {volume}')
-        found_pipettes = []
-        minVolStr = ''
-        for mount,pipette in self.protocol.loaded_instruments.items():
-            minVolStr += f'{pipette.min_volume}>{volume}\\n'
-            if volume>pipette.min_volume:
-                found_pipettes.append(pipette)
-    
 
         pipettes = []
-        uncertanties = []
+        minVolStr = ''
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            if volume>pipette.min_volume:
+                pipettes.append({'object':pipette})
+    
 
-        for pipette in found_pipettes:
-            ntransfers = ceil(volume/pipette.max_volume)
+        for pipette in pipettes:
+            max_volume = pipette['object'].max_volume
+            ntransfers = ceil(volume/max_volume)
+            vol_per_transfer = volume / ntransfers
             
-            # peter personally apologizes for these impressively long lines, which he believes to be correct.  The systematic error is added straight (i.e, not sumsq) while the random is added as sumsq, then the two are combined as sumsq
+            # **Peter** personally apologizes for these impressively long lines,
+            # which he believes to be correct.  The systematic error is added
+            # straight (i.e, not sumsq) while the random is added as sumsq,
+            # then the two are combined as sumsq 
+            pipette['uncertainty'] = sqrt(
+                (ntransfers*self._pipette_uncertainty(max_volume,vol_per_transfer,'random')**2)+
+                (ntransfers*self._pipette_uncertainty(max_volume,vol_per_transfer,'systematic'))**2
+            )
 
-            vol_per_transfer_equal = volume / ntransfers
-            pipette['total_uncertainty_equal'] = sqrt((ntransfers*_pipette_uncertainty(pipette.max_volume,vol_per_transfer_equal,'random')^2)+(ntranfers*_pipette_uncertainty(pipette.max_volume,vol_per_transfer_equal,'systematic')^2)
+            # last_transfer_vol_maxmin = volume - max_volume*(ntransfers-1)
+            # pipette['total_uncertainty_maxmin'] = sqrt(
+            #     (ntransfers-1*_pipette_uncertainty(max_volume,max_volume,'random')**2+ 
+            #     _pipette_uncertainty(max_volume,last_transfer_vol_maxmin,'random')**2)+
+            #     ((ntransfers-1)*_pipette_uncertainty(max_volume,vol_per_transfer,'systematic')+
+            #     _pipette_uncertainty(max_volume,last_transfer_vol_maxmin,'systematic')**2)
+            #     )
 
-            last_transfer_vol_maxmin = volume - pipette.max_volume*(ntransfers-1)
-            pipette['total_uncertainty_maxmin'] = = sqrt((ntransfers-1*_pipette_uncertainty(pipette.max_volume,pipette.max_volume,'random')^2+_pipette_uncertainty(pipette.max_volume,last_transfer_vol_maxmin,'random')^2)+((ntranfers-1)*_pipette_uncertainty(pipette.max_volume,vol_per_transfer_equal,'systematic')+_pipette_uncertainty(pipette.max_volume,last_transfer_vol_maxmin,'systematic')^2)
 
-
-        self._app.logger.debug(f'Found pipettes with suitable minimum volume and computed uncertainties: {found_pipettes}')
-        if not found_pipettes:
-            raise ValueError('No suitable pipettes found!\\n'+ minVolStr)
+        self._app.logger.debug(f'Found pipettes with suitable minimum volume and computed uncertainties: {pipettes}')
+        if not pipettes:
+            raise ValueError('No suitable pipettes found!\\n')
         
-        pipette = min(found_pipettes,key=lambda x: x.total_uncertainty_maxmin)
+        pipette = min(pipettes,key=lambda x: x['uncertainty'])
         self._app.logger.debug(f'Chosen pipette: {pipette}')
-        return pipette
+        return pipette['object']
 
-    def _pipette_uncertainty(maxvolume,volume,errortype):
+    def _pipette_uncertainty(self,maxvolume,volume,errortype):
         '''pipet uncertainties from the opentrons gen 1 whitepaper 
         @ https://opentrons.com/publications/OT-2-Pipette-White-Paper-GEN1.pdf
         
@@ -143,15 +152,14 @@ class Protocol:
         P1000 single        1000                1.5                 7
         P1000 single        500                 1.0                 5
         P1000 single        100                 1.0                 2
-
-
-
         '''
         #dict of uncertainty data where params are  error = a * volume + b
-        pipette_uncertainties = [{size:10,gen:1,random_a:0.00491803278688525,random_b:0.0737704918032787,systematic_a:0.00491803278688525,systematic_b:0.173770491803279},
-                    {size:50,gen:1,random_a:-0.000983606557377049,random_b:0.226229508196721,systematic_a:0.0055327868852459,systematic_b:0.227459016393443},
-                    {size:300,gen:1,random_a:0.00168032786885246,random_b:0.381147540983607,systematic_a:0.00327868852459016,systematic_b:0.875409836065574},
-                    {size:1000,gen:1,random_a:0.000573770491803279,random_b:0.860655737704918,systematic_a:0.00549180327868852,systematic_b:1.73770491803279}]
+        pipette_uncertainties = [
+        {'size':10,  'gen':1,'random_a':0.00491803278688525,  'random_b':0.0737704918032787,'systematic_a':0.00491803278688525,'systematic_b':0.173770491803279},
+        {'size':50,  'gen':1,'random_a':-0.000983606557377049,'random_b':0.226229508196721, 'systematic_a':0.0055327868852459, 'systematic_b':0.227459016393443},
+        {'size':300, 'gen':1,'random_a':0.00168032786885246,  'random_b':0.381147540983607, 'systematic_a':0.00327868852459016,'systematic_b':0.875409836065574},
+        {'size':1000,'gen':1,'random_a':0.000573770491803279, 'random_b':0.860655737704918, 'systematic_a':0.00549180327868852,'systematic_b':1.73770491803279}
+        ]
 
         for pu in pipette_uncertainties:
             if pu['size'] == maxvolume:

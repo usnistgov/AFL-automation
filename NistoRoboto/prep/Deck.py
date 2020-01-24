@@ -43,6 +43,7 @@ class Deck:
         self.tip_racks    = {}
         self.containers    = {}
         self.pipettes      = {}
+        self.loaders = {}
 
         self.client = None
 
@@ -51,9 +52,25 @@ class Deck:
         self.client = Client(url)
         self.client.login('NistoRobotoDeck')
 
-    def send_protocol(self,debug_mode=False):
-        if not self.protocol:
-            raise ValueError('No protocol to send. Did you call make_protocol()?')
+    def load_sample(self,volume,source,dest,debug_mode=False):
+        if self.client is None:
+            raise ValueError('Need to call \'init_remote_connection\' before sending protocol')
+
+        if not self.client.logged_in():
+            # just re-login
+            self.client.login('NistoRobotoDeck')
+
+        self.client.set_queue_mode(debug_mode=debug_mode)#unlock the queue
+
+        self.client.home()# must home robot before sending commands
+
+        kw = {}
+        kw['volume'] = volume
+        kw['source'] = source
+        kw['dest']   = dest
+        self.client.transfer(**kw)
+
+    def _check_client(self,debug_mode=False):
 
         if self.client is None:
             raise ValueError('Need to call \'init_remote_connection\' before sending protocol')
@@ -64,14 +81,29 @@ class Deck:
 
         self.client.set_queue_mode(debug_mode=debug_mode)#unlock the queue
 
+    def send_deck_config(self,debug_mode=False):
+        self._check_client(debug_mode)
+
         for slot,tip_rack in self.tip_racks.items():
             self.client.load_labware(tip_rack,slot)
 
         for slot,container in self.containers.items():
             self.client.load_labware(container,slot)
 
+        for slot,loader in self.loaders.items():
+            self.client.load_labware(loader,slot)
+
         for mount,(pipette,tip_rack_slots) in self.pipettes.items():
             self.client.load_instrument(pipette,mount,tip_rack_slots)
+
+    def send_protocol(self,send_deck_config=True,debug_mode=False):
+        if not self.protocol:
+            raise ValueError('No protocol to send. Did you call make_protocol()?')
+
+        self._check_client(debug_mode)
+
+        if send_deck_config:
+            self.send_deck_config(debug_mode)
 
         self.client.home()# must home robot before sending commands
         for task in self.protocol:
@@ -88,6 +120,9 @@ class Deck:
             tiprack_list.append(slot)
 
         self.pipettes[mount] = name,tiprack_list
+
+    def add_loader(self,name,slot):
+        self.loaders[slot] = name
 
     def add_container(self,name,slot):
         self.containers[slot] = name
@@ -157,7 +192,7 @@ class Deck:
             if not (target == target_check):
                 raise RuntimeError('Mass transfer calculation failed...')
 
-    def make_script(self,filename):
+    def make_script(self,filename,load_last_sample=True):
         with open(filename,'w') as f:
             f.write('from opentrons import protocol_api\n')
             f.write('\n')
@@ -172,16 +207,17 @@ class Deck:
             f.write('def run(protocol):\n')
 
             
-            f.write(' '*4+ 'deck={}\n')
             f.write('\n')
             for slot,tiprack in self.tip_racks.items():
                 f.write(' '*4+ f'tiprack_{slot} = protocol.load_labware(\'{tiprack}\',\'{slot}\')\n')
-                f.write(' '*4+ f'deck[{slot}] = tiprack_{slot}\n')
             f.write('\n')
 
             for slot,container in self.containers.items():
                 f.write(' '*4 + f'container_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
-                f.write(' '*4+ f'deck[{slot}] = container_{slot}\n')
+            f.write('\n')
+
+            for slot,loader in self.loaders.items():
+                f.write(' '*4 + f'loader_{slot} = protocol.load_labware(\'{loader}\',\'{slot}\')\n')
             f.write('\n')
 
             f.write(' '*4 + 'pipettes = []\n')
@@ -198,10 +234,17 @@ class Deck:
             if not self.protocol:
                 return
 
-            for action in self.protocol:
+            for i,action in enumerate(self.protocol):
                 f.write(' '*4 + f'pipette = get_pipette({action.volume},pipettes)\n')
                 f.write(' '*4 + f'well_source = container_{action.source[0]}[\'{action.source[1:]}\']\n')
                 f.write(' '*4 + f'well_dest = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')
                 f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
                 f.write('\n')
+                if load_last_sample and (i == (len(self.protocol)-1)):
+                    for slot,loader in self.loaders.items():
+                        f.write(' '*4 + f'pipette = get_pipette({action.volume},pipettes)\n')
+                        f.write(' '*4 + f'well_source = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')
+                        f.write(' '*4 + f'well_dest = loader_{slot}[\'A1\']\n')
+                        f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
+                        f.write('\n')
 

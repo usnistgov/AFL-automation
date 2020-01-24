@@ -19,9 +19,9 @@ class DoorDaemon(threading.Thread):
     def set_button_light(self,red=False,green=False,blue=False):
         red_state,green_state,blue_state = gpio.get_button_light()
         if not ((red_state == red) and (blue_state==blue) and (green_state==green)):
-            origin = f'({red_state},{green_state},{blue_state})'
-            dest = f'({red},{green},{blue})'
-            self._app.logger.debug(f'Button rgb from {origin} to {dest}')
+            # origin = f'({red_state},{green_state},{blue_state})'
+            # dest = f'({red},{green},{blue})'
+            # self._app.logger.debug(f'Button rgb from {origin} to {dest}')
             gpio.set_button_light(red=red,green=green,blue=blue)
 
     @property

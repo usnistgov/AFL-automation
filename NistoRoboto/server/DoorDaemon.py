@@ -33,11 +33,11 @@ class DoorDaemon(threading.Thread):
         while not self._stop:
             self.safe = self.door_closed  # put other logic about safety state here, other sensors, etc.
             self.pendtask = not self.task_queue.empty()
-            self.last_check = datetime.now()  # this is a crude watchdog timer mechanic, clients should check this relative to their datetime.now
+            self.last_check = datetime.datetime.now()  # this is a crude watchdog timer mechanic, clients should check this relative to their datetime.now
                                               # and refuse to believe the interlock value if data stale.
 
 
-            if(self.safe)
+            if(self.safe):
                 if self.pendtask:  # proposed color reorg: blue = door open and interlock blocked, red = not safe to open door (running), green = safe to open door (not running)
                     #blue = safe and runing!
                     self.set_button_light(red=True)

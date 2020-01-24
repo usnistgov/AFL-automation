@@ -6,6 +6,7 @@ from NistoRoboto.server.DoorDaemon import DoorDaemon
 
 import threading
 import time
+import datetime
 
 class RobotoDaemon(threading.Thread):
     '''
@@ -57,7 +58,7 @@ class RobotoDaemon(threading.Thread):
                 continue
 
             # #interlock check
-            # while not self.doorDaemon.door_closed:
+            # while self.doorDaemon.safe and abs(self.doorDaemon.last_check - datetime.now)<250:
             #     time.sleep(0.1)
 
             if task['type'] == 'transfer':

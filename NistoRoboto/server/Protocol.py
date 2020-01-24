@@ -1,4 +1,5 @@
 import opentrons.execute
+from NistoRoboto.shared.utilities import listify
 
 class Protocol:
     def __init__(self,app):

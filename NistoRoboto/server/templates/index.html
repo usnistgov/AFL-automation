@@ -39,6 +39,12 @@
           padding: 5px;*/
         }
 
+        #estop {
+          height:100%;
+          background: red;
+          vertical-align: center;
+        }
+
         #ncnr-logo {
           width: 10%;
           height: auto;
@@ -126,6 +132,7 @@
     <p id="status-strip">
     Last&nbsp;Updated:&nbsp;{{updatetime}}  -  Current&nbsp;Status:&nbsp;{{robotstatus}} - Experiment:&nbsp;{{experimentname}} - Contact:&nbsp;{{contactinfo}} - Queue&nbsp;Mode:&nbsp;{{queuemode}}
     </p>
+    <form action="/halt" method="POST"><input id ="estop" type="submit" value="HALT"></form>
     <img id="ncnr-logo" src="static/ncnr.png" />
   </div>
   <div id="content-container">

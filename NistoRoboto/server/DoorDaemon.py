@@ -24,6 +24,7 @@ class DoorDaemon(threading.Thread):
             # dest = f'({red},{green},{blue})'
             # self._app.logger.debug(f'Button rgb from {origin} to {dest}')
             gpio.set_button_light(red=red,green=green,blue=blue)
+            self.button_color = '#'+('ff' if red else '00')+('ff' if green else '00')+('ff' if blue else '00')
 
     @property
     def door_closed(self):

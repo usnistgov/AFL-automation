@@ -17,6 +17,16 @@
           clear:both;
           display: flex;
           justify-content: space-between;
+          align-items: center;
+        }
+
+        #status-light {
+          height: 50px;
+          width: 50px;
+
+          border-radius: 50%;
+          background-color: {{statuscolor}};
+
         }
 
         #status-strip {
@@ -40,9 +50,8 @@
         }
 
         #estop {
-          height:100%;
+          height: 50px;
           background: red;
-          vertical-align: center;
         }
 
         #ncnr-logo {
@@ -129,6 +138,7 @@
   </head>
   <div id="header-bar">
     <img id="nist-logo" src="static/logo.svg" />
+    <span id="status-light" class="dot"></span>
     <p id="status-strip">
     Last&nbsp;Updated:&nbsp;{{updatetime}}  -  Current&nbsp;Status:&nbsp;{{robotstatus}} - Experiment:&nbsp;{{experimentname}} - Contact:&nbsp;{{contactinfo}} - Queue&nbsp;Mode:&nbsp;{{queuemode}}
     </p>

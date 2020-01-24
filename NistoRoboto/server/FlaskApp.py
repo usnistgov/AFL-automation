@@ -33,6 +33,8 @@ def index():
     kw['pipettes'] = roboto_daemon.protocol.protocol.loaded_instruments
     kw['labware']  = roboto_daemon.protocol.protocol.loaded_labwares
 
+    kw['statuscolor'] = roboto_daemon.doorDaemon.button_color
+
     kw['updatetime'] = _nbsp(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     kw['robotstatus'] = _nbsp(_queue_status(task_queue))
     kw['currentexperiment'] = _nbsp(experiment)

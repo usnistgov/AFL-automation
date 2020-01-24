@@ -17,6 +17,16 @@
           clear:both;
           display: flex;
           justify-content: space-between;
+          align-items: center;
+        }
+
+        #status-light {
+          height: 50px;
+          width: 50px;
+
+          border-radius: 50%;
+          background-color: {{statuscolor}};
+
         }
 
         #status-strip {
@@ -37,6 +47,11 @@
           display: inline-block;
           height: 50px;
           padding: 5px;*/
+        }
+
+        #estop {
+          height: 50px;
+          background: red;
         }
 
         #ncnr-logo {
@@ -123,9 +138,11 @@
   </head>
   <div id="header-bar">
     <img id="nist-logo" src="static/logo.svg" />
+    <span id="status-light" class="dot"></span>
     <p id="status-strip">
     Last&nbsp;Updated:&nbsp;{{updatetime}}  -  Current&nbsp;Status:&nbsp;{{robotstatus}} - Experiment:&nbsp;{{experimentname}} - Contact:&nbsp;{{contactinfo}} - Queue&nbsp;Mode:&nbsp;{{queuemode}}
     </p>
+    <form action="/halt" method="POST"><input id ="estop" type="submit" value="HALT"></form>
     <img id="ncnr-logo" src="static/ncnr.png" />
   </div>
   <div id="content-container">

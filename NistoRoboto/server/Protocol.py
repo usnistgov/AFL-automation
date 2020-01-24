@@ -99,10 +99,69 @@ class Protocol:
             if volume>pipette.min_volume:
                 found_pipettes.append(pipette)
     
-        self._app.logger.debug(f'Found pipettes with suitable minimum volume: {found_pipettes}')
+
+        pipettes = []
+        uncertanties = []
+
+        for pipette in found_pipettes:
+            ntransfers = ceil(volume/pipette.max_volume)
+            
+            # peter personally apologizes for these impressively long lines, which he believes to be correct.  The systematic error is added straight (i.e, not sumsq) while the random is added as sumsq, then the two are combined as sumsq
+
+            vol_per_transfer_equal = volume / ntransfers
+            pipette['total_uncertainty_equal'] = sqrt((ntransfers*_pipette_uncertainty(pipette.max_volume,vol_per_transfer_equal,'random')^2)+(ntranfers*_pipette_uncertainty(pipette.max_volume,vol_per_transfer_equal,'systematic')^2)
+
+            last_transfer_vol_maxmin = volume - pipette.max_volume*(ntransfers-1)
+            pipette['total_uncertainty_maxmin'] = = sqrt((ntransfers-1*_pipette_uncertainty(pipette.max_volume,pipette.max_volume,'random')^2+_pipette_uncertainty(pipette.max_volume,last_transfer_vol_maxmin,'random')^2)+((ntranfers-1)*_pipette_uncertainty(pipette.max_volume,vol_per_transfer_equal,'systematic')+_pipette_uncertainty(pipette.max_volume,last_transfer_vol_maxmin,'systematic')^2)
+
+
+        self._app.logger.debug(f'Found pipettes with suitable minimum volume and computed uncertainties: {found_pipettes}')
         if not found_pipettes:
             raise ValueError('No suitable pipettes found!\\n'+ minVolStr)
         
-        pipette = min(found_pipettes,key=lambda x: x.max_volume)
+        pipette = min(found_pipettes,key=lambda x: x.total_uncertainty_maxmin)
         self._app.logger.debug(f'Chosen pipette: {pipette}')
         return pipette
+
+    def _pipette_uncertainty(maxvolume,volume,errortype):
+        '''pipet uncertainties from the opentrons gen 1 whitepaper 
+        @ https://opentrons.com/publications/OT-2-Pipette-White-Paper-GEN1.pdf
+        
+        pipette          moving uL      random error uL ±     systematic error uL ±
+        P10 single          10                  0.1                 0.2
+        P10 single          5                   0.15                0.25
+        P10 single          1                   0.05                0.15
+
+        P50 single          50                  0.2                 0.5
+        P50 single          25                  0.15                0.375
+        P50 single          5                   0.25                0.25
+
+        P300 single         300                 0.9                 1.8
+        P300 single         150                 0.6                 1.5
+        P300 single         30                  0.45                0.9
+
+        P1000 single        1000                1.5                 7
+        P1000 single        500                 1.0                 5
+        P1000 single        100                 1.0                 2
+
+
+
+        '''
+        #dict of uncertainty data where params are  error = a * volume + b
+        pipette_uncertainties = [{size:10,gen:1,random_a:0.00491803278688525,random_b:0.0737704918032787,systematic_a:0.00491803278688525,systematic_b:0.173770491803279},
+                    {size:50,gen:1,random_a:-0.000983606557377049,random_b:0.226229508196721,systematic_a:0.0055327868852459,systematic_b:0.227459016393443},
+                    {size:300,gen:1,random_a:0.00168032786885246,random_b:0.381147540983607,systematic_a:0.00327868852459016,systematic_b:0.875409836065574},
+                    {size:1000,gen:1,random_a:0.000573770491803279,random_b:0.860655737704918,systematic_a:0.00549180327868852,systematic_b:1.73770491803279}]
+
+        for pu in pipette_uncertainties:
+            if pu['size'] == maxvolume:
+                #I think sum squares is the correct way to combine these errors, but not 100%
+                if errortype == 'random':
+                    return pu['random_a'] * volume + pu['random_b']
+                elif errortype == 'systematic':
+                    return pu['systematic_a'] * volume + pu['systematic_b']
+                else:
+                    return None
+
+
+   

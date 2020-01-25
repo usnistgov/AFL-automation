@@ -133,13 +133,13 @@
           border-top-color: red;
         }
     </style>
-    <script src="static/jquery-3.4.1-min.js" />
+    <script src="static/jquery-3.4.1.min.js"></script>
     <script>
       function updatecontent(){
           $.get( "ajax_data", function( data ) {
                   a = JSON.parse(data)
                   $("#status-strip").innerHTML = 'Last&nbsp;Updated:&nbsp;'+a['updatetime']+' -  Current&nbsp;Status:&nbsp;'+a['robotstatus']+' - Experiment:&nbsp;'+a['experimentname']+' - Contact:&nbsp;'+a['contactinfo']+' - Queue&nbsp;Mode:&nbsp;'+ a['queuemode']
-                  $("#status-light").background-color = a['statuscolor']
+                  $("#status-light").css("background-color",a['statuscolor'])
                   $("#pipette-list").innerHTML = a['pipettes']
                   $("#labware-list").innerHTML = a['labware']
                   $("#command-queue").innerHTML = "<h3>Queue:</h3>"+a['queue']

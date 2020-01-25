@@ -87,10 +87,10 @@ def status_dict():
 def _nbsp(instr):
     return Markup(instr.replace(' ','&nbsp;'))
 
-@app.route('/ajax-data')
+@app.route('/ajax_data')
 def ajax_data():
     kw = status_dict()
-    return jsonify(status_dict),200
+    return jsonify(str(kw)),200
 
 @app.route('/update_img',methods=['POST'])
 def update_img():

@@ -19,6 +19,8 @@ jwt = JWTManager(app)
 import logging
 app.logger.setLevel(level=logging.DEBUG)
 
+
+# this is necessary to use the default debug reloading functionality 
 if app.config['ENV']=='production' or os.environ.get("WERKZEUG_RUN_MAIN") =='true':
     import queue
     task_queue = queue.Queue()
@@ -28,7 +30,6 @@ if app.config['ENV']=='production' or os.environ.get("WERKZEUG_RUN_MAIN") =='tru
     OT2_daemon = OT2Daemon(app,task_queue,debug_mode=True)
     OT2_daemon.start()# start server thread
 
-
 @app.route('/')
 def index():
     '''Live, status page of the robot'''
@@ -37,7 +38,7 @@ def index():
     response = requests.post('http://localhost:5000/update_img')
     print(response.status_code,response.content)
 
-    return render_template('index.html',**kw)
+    return render_template('index.html',**kw),200
 
 @app.route('/ajax_test')
 def ajax_index():
@@ -55,7 +56,7 @@ def ajax_index():
     with open('static/deck.jpeg','wb') as f:
         f.write(response.content)
 
-    return render_template('index-ajax.html',**kw)
+    return render_template('index-ajax.html',**kw),200
 
 
 def _nbsp(instr):
@@ -89,7 +90,7 @@ def _nbsp(instr):
 @app.route('/ajax-data')
 def ajax_data():
     kw = status_dict()
-    return jsonify(status_dict)
+    return jsonify(status_dict),200
 
 @app.route('/update_img',methods=['POST'])
 def update_img():
@@ -106,6 +107,7 @@ def update_img():
             stdout=subprocess.DEVNULL, 
             stderr=subprocess.STDOUT
             )
+    return 'Success',200
 
 @app.route('/login',methods=['GET','POST'])
 def login():

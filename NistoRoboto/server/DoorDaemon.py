@@ -26,17 +26,6 @@ class DoorDaemon(threading.Thread):
         gpio.set_button_light(red=red,green=green,blue=blue)
         self.button_color = '#'+('ff' if red else '00')+('ff' if green else '00')+('ff' if blue else '00')
 
-        #XXX TBM: Checking the state is actually more inefficient than just
-        #         settting exactly the state we want each time.
-        #
-        # red_state,green_state,blue_state = gpio.get_button_light()
-        # if not ((red_state == red) and (blue_state==blue) and (green_state==green)):
-        #     # origin = f'({red_state},{green_state},{blue_state})'
-        #     # dest = f'({red},{green},{blue})'
-        #     # self._app.logger.debug(f'Button rgb from {origin} to {dest}')
-        #     gpio.set_button_light(red=red,green=green,blue=blue)
-        #     self.button_color = '#'+('ff' if red else '00')+('ff' if green else '00')+('ff' if blue else '00')
-
     @property
     def door_closed(self):
         return gpio.read_window_switches()
@@ -45,7 +34,7 @@ class DoorDaemon(threading.Thread):
         while not self._stop:
             # put other logic about safety state here, other sensors, etc.
             self.safe = self.door_closed  
-            self.pendtask = (self.task_queue.qsize()>0)
+            self.pendtask = (not self.task_queue.empty())
 
             # this is a crude watchdog timer mechanic, clients should check
             # this relative to their datetime.now and refuse to believe the

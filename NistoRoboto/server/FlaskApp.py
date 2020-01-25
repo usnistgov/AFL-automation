@@ -6,6 +6,8 @@ import datetime,requests, subprocess,shlex,os
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
 app.config['ENV'] = 'development'
+experiment = 'Development'
+contactinfo = 'tbm@nist.gov'
 # app.config['ENV'] = 'production'
 
 # initialize auth module
@@ -30,29 +32,72 @@ if app.config['ENV']=='production' or os.environ.get("WERKZEUG_RUN_MAIN") =='tru
 @app.route('/')
 def index():
     '''Live, status page of the robot'''
-    global experiment, contactinfo
+    kw = status_dict()
+
+    response = requests.post('http://localhost:5000/update_img')
+    print(response.status_code,response.content)
+
+    return render_template('index.html',**kw)
+
+@app.route('/ajax_test')
+def ajax_index():
+    '''Live, status page of the robot'''
+    kw = status_dict()
+
+    #request image and save to static directory
+
+    # TO SET UP STREAM IN FUTURE:
+    # ffmpeg -y -f video4linux2 -s 640x480 -i /dev/video0 'udp://239.0.0.1:1234?ttl=2'
+
+    # this will UDP multicast stream to 239.0.0.1:1234, pick this stream up on control server and repackage it.
+    
+    response = requests.post('http://localhost:31950/camera/picture')
+    with open('static/deck.jpeg','wb') as f:
+        f.write(response.content)
+
+    return render_template('index-ajax.html',**kw)
+
+
+def _nbsp(instr):
+    return Markup(instr.replace(' ','&nbsp;'))
+
+def status_dict():
     kw = {}
     kw['pipettes'] = roboto_daemon.protocol.protocol.loaded_instruments
     kw['labware']  = roboto_daemon.protocol.protocol.loaded_labwares
     kw['statuscolor'] = roboto_daemon.doorDaemon.button_color
     kw['updatetime'] = _nbsp(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    kw['robotstatus'] = _nbsp(_queue_status(task_queue))
+    kw['robotstatus']      = _nbsp(_queue_status(task_queue))
     kw['currentexperiment'] = _nbsp(experiment)
-    kw['contactinfo'] = _nbsp(contactinfo)
+    kw['contactinfo']       = _nbsp(contactinfo)
     if roboto_daemon.debug_mode:
         kw['queuemode'] = 'DEBUG'
     else:
         kw['queuemode'] = 'ACTIVE'
 
-    queue_str  = '<ol>\n'
+    queue_str  = '<ol id="queue">\n'
     for task in task_queue.queue:
         queue_str  += f'\t<li>{task}</li>\n'
     queue_str  += '</ol>\n'
     kw['queue'] = Markup(queue_str)
 
+    return kw
+
+def _nbsp(instr):
+    return Markup(instr.replace(' ','&nbsp;'))
+
+@app.route('/ajax-data')
+def ajax_data():
+    kw = status_dict()
+    return jsonify(status_dict)
+
+@app.route('/update_img',methods=['POST'])
+def update_img():
+    #copy new take img code from above here once pushed from NR.
     # TO SET UP STREAM IN FUTURE:
     # ffmpeg -y -f video4linux2 -s 640x480 -i /dev/video0 'udp://239.0.0.1:1234?ttl=2'
-    # this will UDP multicast stream to 239.0.0.1:1234, pick this stream up on control server and repackage it.
+    # this will UDP multicast stream to 239.0.0.1:1234, pick this stream up on
+    # control server and repackage it.
 
     subprocess.Popen(
             shlex.split(
@@ -61,16 +106,9 @@ def index():
             stdout=subprocess.DEVNULL, 
             stderr=subprocess.STDOUT
             )
-    
-    return render_template('index.html',**kw)
-
-def _nbsp(instr):
-    return Markup(instr.replace(' ','&nbsp;'))
 
 @app.route('/login',methods=['GET','POST'])
 def login():
-    global experiment, contactinfo
-
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
 
@@ -84,8 +122,8 @@ def login():
     if password != 'domo_arigato':
         return jsonify({"msg": "Bad password"}), 401
 
-    experiment = request.json.get('experiment','Development')
-    contactinfo = request.json.get('contactinfo','tbm@nist.gov')
+    experiment = request.json.get('experiment',experiment)
+    contactinfo = request.json.get('contactinfo',contactinfo)
 
     # Identity can be any data that is json serializable
     #expires = datetime.timedelta(days=1)

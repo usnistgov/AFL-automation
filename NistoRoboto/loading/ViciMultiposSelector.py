@@ -1,9 +1,9 @@
-from FlowSelector import *
-from SerialDevice import *
+from NistoRoboto.loading.FlowSelector import FlowSelector
+from NistoRoboto.loading.SerialDevice import SerialDevice
 import serial
 
 class ViciMultiposSelector(SerialDevice,FlowSelector):
-    def __init__(self,port,baud=9600,portlabels=None):
+    def __init__(self,port,baudrate=9600,portlabels=None):
         '''
         connect to valve and query the number of positions
 
@@ -13,7 +13,7 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
             portlabels - dict for smart port naming, of the form {'sample':3,'instrument':4,'rinse':5,'waste':6}
         '''
 
-        super().__init__(port,baudrate=baud,timeout=0.5)
+        super().__init__(port,baudrate=baudrate,timeout=0.5)
 
         response = self.sendCommand('NP\x0D')[2:4]
         
@@ -48,7 +48,7 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
         else:
             readback = self.sendCommand('GO%02i\x0D'%portnum,response=False)
 
-    def getPort(self,as_str):
+    def getPort(self,as_str=False):
         '''
             query the current selected position
         '''

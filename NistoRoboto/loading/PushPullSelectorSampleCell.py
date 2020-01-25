@@ -1,4 +1,4 @@
-from SampleCell import *
+from NistoRoboto.loading.SampleCell import SampleCell
 
 class PushPullSelectorSampleCell(SampleCell):
     '''
@@ -36,9 +36,10 @@ class PushPullSelectorSampleCell(SampleCell):
         self.selector = selector
         self.state = 'clean'
 
-        self.sample_to_hold_volume_ml = 2
-        self.sample_to_cell_volume_ml = 3
+        self.sample_to_hold_volume_ml = 4
+        self.sample_to_cell_volume_ml = 5
         self.extra_vol_to_empty_ml = 1
+        self.sample_to_waste_volume_ml = 4
         self.rinse_vol_ml = 3
         self.nrinses_syringe = 2
         self.nrinses_cell = 2
@@ -111,9 +112,9 @@ class PushPullSelectorSampleCell(SampleCell):
 
     def rinseAll(self):
         if self.state is 'loaded':
-            self.sampleToWaste()
-        self.rinseSyringe()
+            self.cellToWaste()
         self.rinseCell()
+        self.rinseSyringe()
 
 
 

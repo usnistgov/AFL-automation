@@ -1,4 +1,3 @@
 class SampleCell:
-
-	def loadSample():
-		raise NotImplementedError
+    def loadSample():
+        raise NotImplementedError

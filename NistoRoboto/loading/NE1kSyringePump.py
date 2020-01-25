@@ -1,9 +1,10 @@
-from SyringePump import *
-from SerialDevice import *
+from NistoRoboto.loading.SyringePump import SyringePump
+from NistoRoboto.loading.SerialDevice import SerialDevice
+import time
 
 class NE1kSyringePump(SerialDevice,SyringePump):
 
-    def __init__(self,port,syringe_id_mm,syringe_volume,baud=9600,daisy_chain=None,pumpid=None):
+    def __init__(self,port,syringe_id_mm,syringe_volume,baud=9600,daisy_chain=None,pumpid=None,flow_delay=1):
         '''
             Initializes and verifies connection to a New Era 1000 syringe pump.
 
@@ -31,6 +32,7 @@ class NE1kSyringePump(SerialDevice,SyringePump):
 
         '''
         self.pumpid = pumpid
+        self.flow_delay = flow_delay
         if daisy_chain is not None:
             self.serialport = daisy_chain.serialport
         else:
@@ -72,6 +74,7 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         self.sendCommand('%iRUN\x0D'%self.pumpid)
         if block:
             self.blockUntilStatusStopped()
+            time.sleep(self.flow_delay)
         
     def dispense(self,volume,block=True):
         self.sendCommand('%iVOLML\x0D'%self.pumpid)
@@ -80,6 +83,7 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         self.sendCommand('%iRUN\x0D'%self.pumpid)
         if block:
             self.blockUntilStatusStopped()
+            time.sleep(self.flow_delay)
         
     def setRate(self,rate):
         self.sendCommand('%iRAT%.03fMM\x0D'%(self.pumpid,rate))

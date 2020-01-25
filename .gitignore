@@ -1,4 +1,5 @@
 .ipynb_checkpoints/*
+.ipynb_checkpoints/*
 dev/.ipynb_checkpoints/*
 *pyc
 *swp

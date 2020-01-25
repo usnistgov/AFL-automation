@@ -14,18 +14,28 @@ class DoorDaemon(threading.Thread):
         self.task_queue = task_queue
         self.button_color = '#000000'
 
+    def __del__(self):
+        self._app.logger.info('Destructing DoorDaemon thread')
+        self.terminate()
+
     def terminate(self):
         self._app.logger.info('Terminating DoorDaemon thread')
         self._stop = True
 
     def set_button_light(self,red=False,green=False,blue=False):
-        red_state,green_state,blue_state = gpio.get_button_light()
-        if not ((red_state == red) and (blue_state==blue) and (green_state==green)):
-            # origin = f'({red_state},{green_state},{blue_state})'
-            # dest = f'({red},{green},{blue})'
-            # self._app.logger.debug(f'Button rgb from {origin} to {dest}')
-            gpio.set_button_light(red=red,green=green,blue=blue)
-            self.button_color = '#'+('ff' if red else '00')+('ff' if green else '00')+('ff' if blue else '00')
+        gpio.set_button_light(red=red,green=green,blue=blue)
+        self.button_color = '#'+('ff' if red else '00')+('ff' if green else '00')+('ff' if blue else '00')
+
+        #XXX TBM: Checking the state is actually more inefficient than just
+        #         settting exactly the state we want each time.
+        #
+        # red_state,green_state,blue_state = gpio.get_button_light()
+        # if not ((red_state == red) and (blue_state==blue) and (green_state==green)):
+        #     # origin = f'({red_state},{green_state},{blue_state})'
+        #     # dest = f'({red},{green},{blue})'
+        #     # self._app.logger.debug(f'Button rgb from {origin} to {dest}')
+        #     gpio.set_button_light(red=red,green=green,blue=blue)
+        #     self.button_color = '#'+('ff' if red else '00')+('ff' if green else '00')+('ff' if blue else '00')
 
     @property
     def door_closed(self):
@@ -33,11 +43,14 @@ class DoorDaemon(threading.Thread):
 
     def run(self):
         while not self._stop:
-            self.safe = self.door_closed  # put other logic about safety state here, other sensors, etc.
-            self.pendtask = not self.task_queue.empty()
-            self.last_check = datetime.datetime.now()  # this is a crude watchdog timer mechanic, clients should check this relative to their datetime.now
-                                              # and refuse to believe the interlock value if data stale.
+            # put other logic about safety state here, other sensors, etc.
+            self.safe = self.door_closed  
+            self.pendtask = (self.task_queue.qsize()>0)
 
+            # this is a crude watchdog timer mechanic, clients should check
+            # this relative to their datetime.now and refuse to believe the
+            # interlock value if data stale.
+            self.last_check = datetime.datetime.now()  
 
             if(self.safe):
                 if self.pendtask:  

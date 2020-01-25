@@ -25,7 +25,6 @@ class RobotoDaemon(threading.Thread):
         self.task_queue = task_queue
         self.debug_mode = debug_mode
 
-
     def terminate(self):
         self.doorDaemon.terminate()
 
@@ -51,11 +50,15 @@ class RobotoDaemon(threading.Thread):
                 time.sleep(2.0)
                 continue
 
+            #safety interlock
+            counter = 600
+            while not self.doorDaemon.door_closed:
+                time.sleep(0.1)
 
-            # XXX 200124 This causes the queue to hang 
-            # #interlock check
-            # while self.doorDaemon.safe and abs(self.doorDaemon.last_check - datetime.now)<250:
-            #     time.sleep(0.1)
+                counter += 1
+                if counter>600:
+                    self._app.logger.info(f'Queue is paused. Please close OT-2 door to resume.')
+                    counter=0
 
             if task['type'] == 'transfer':
                 self.protocol.transfer(**task)

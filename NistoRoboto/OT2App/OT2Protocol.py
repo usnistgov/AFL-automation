@@ -3,7 +3,7 @@ import opentrons
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
 
-class Protocol:
+class OT2Protocol:
     def __init__(self,app):
         self._app = app
         self.protocol = opentrons.execute.get_protocol_api('2.0')

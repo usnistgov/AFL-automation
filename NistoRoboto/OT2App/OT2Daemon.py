@@ -1,7 +1,7 @@
 import opentrons.execute
 
 from NistoRoboto.OT2App.DoorDaemon import DoorDaemon
-from NistoRoboto.OT2App.Protocol import Protocol
+from NistoRoboto.OT2App.OT2Protocol import OT2Protocol
 
 import threading
 import time
@@ -15,7 +15,7 @@ class OT2Daemon(threading.Thread):
 
         threading.Thread.__init__(self,name='OT2Daemon',daemon=True)
 
-        self.protocol  = Protocol(app)
+        self.protocol  = OT2Protocol(app)
 
         self.doorDaemon = DoorDaemon(app,task_queue)
         self.doorDaemon.start()
@@ -28,7 +28,7 @@ class OT2Daemon(threading.Thread):
     def terminate(self):
         self.doorDaemon.terminate()
 
-        self._app.logger.info('Terminating RobotoDaemon thread')
+        self._app.logger.info('Terminating OT2Daemon thread')
         self._stop = True
         self.task_queue.put(None)
 
@@ -74,7 +74,7 @@ class OT2Daemon(threading.Thread):
                 raise ValueError(f'Task type not recognized: {task["type"]}')
             time.sleep(0.1)
 
-        self._app.logger.info('RobotoDaemon runloop exiting')
+        self._app.logger.info('OT2Daemon runloop exiting')
 
     
 

@@ -24,9 +24,9 @@ if app.config['ENV']=='production' or os.environ.get("WERKZEUG_RUN_MAIN") =='tru
     task_queue = queue.Queue()
     
     import opentrons
-    from NistoRoboto.server.RobotoDaemon import RobotoDaemon
-    roboto_daemon = RobotoDaemon(app,task_queue,debug_mode=True)
-    roboto_daemon.start()# start server thread
+    from NistoRoboto.OT2App.OT2Daemon import OT2Daemon
+    OT2_daemon = OT2Daemon(app,task_queue,debug_mode=True)
+    OT2_daemon.start()# start server thread
 
 
 @app.route('/')
@@ -63,14 +63,14 @@ def _nbsp(instr):
 
 def status_dict():
     kw = {}
-    kw['pipettes'] = roboto_daemon.protocol.protocol.loaded_instruments
-    kw['labware']  = roboto_daemon.protocol.protocol.loaded_labwares
-    kw['statuscolor'] = roboto_daemon.doorDaemon.button_color
+    kw['pipettes'] = OT2_daemon.protocol.protocol.loaded_instruments
+    kw['labware']  = OT2_daemon.protocol.protocol.loaded_labwares
+    kw['statuscolor'] = OT2_daemon.doorDaemon.button_color
     kw['updatetime'] = _nbsp(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     kw['robotstatus']      = _nbsp(_queue_status(task_queue))
     kw['currentexperiment'] = _nbsp(experiment)
     kw['contactinfo']       = _nbsp(contactinfo)
-    if roboto_daemon.debug_mode:
+    if OT2_daemon.debug_mode:
         kw['queuemode'] = 'DEBUG'
     else:
         kw['queuemode'] = 'ACTIVE'

@@ -1,19 +1,19 @@
 import opentrons.execute
 
-from NistoRoboto.server.DoorDaemon import DoorDaemon
-from NistoRoboto.server.Protocol import Protocol
+from NistoRoboto.OT2App.DoorDaemon import DoorDaemon
+from NistoRoboto.OT2App.Protocol import Protocol
 
 import threading
 import time
 import datetime
 
-class RobotoDaemon(threading.Thread):
+class OT2Daemon(threading.Thread):
     '''
     '''
     def __init__(self,app,task_queue,debug_mode=True):
-        app.logger.info('Creating RobotoDaemon thread')
+        app.logger.info('Creating OT2Daemon thread')
 
-        threading.Thread.__init__(self,name='RobotoDaemon',daemon=True)
+        threading.Thread.__init__(self,name='OT2Daemon',daemon=True)
 
         self.protocol  = Protocol(app)
 

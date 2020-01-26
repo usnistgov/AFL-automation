@@ -29,14 +29,8 @@ metadata = {
 
 class Deck:
     def __init__(self):
-        self.stocks        = []
-        self.targets       = []
-        self.stock_location = {}
-        self.target_location = {}
-        
-        self.components        = set()
-        self.components_stock  = set()
-        self.components_target = set()
+        self.reset_targets()
+        self.reset_stocks()
         
         self.protocol = []
 
@@ -84,6 +78,7 @@ class Deck:
     def send_deck_config(self,debug_mode=False):
         self._check_client(debug_mode)
 
+        # tip racks must be in place *before* adding pipettes
         for slot,tip_rack in self.tip_racks.items():
             self.client.load_labware(tip_rack,slot)
 
@@ -131,32 +126,55 @@ class Deck:
         stock = stock.copy()
         self.stocks.append(stock)
         self.stock_location[stock] = location
-        
-        for name,component in stock:
-            self.components.add(name)
-            self.components_stock.add(name)
             
     def add_target(self,target,location):
         target = target.copy()
         self.targets.append(target)
         self.target_location[target] = location
         
-        for name,component in target:
-            self.components.add(name)
-            self.components_target.add(name)
+    def reset_targets(self):
+        self.targets = []
+        self.target_location = {}
             
+    def reset_stocks(self):
+        self.stocks = []
+        self.stock_location = {}
+
+    def get_components(self):
+        components        = set()
+        target_components = set()
+        stock_components  = set()
+
+        for target in self.targets:
+            for name,component in targets:
+                components.add(name)
+                target_components.add(name)
+
+        for stock in self.stocks:
+            for name,component in stock:
+                components.add(name)
+                stock_components.add(name)
+
+        return components,target_components,stock_components
+
+
     def make_protocol(self):
+        #build component list
+        components,target_components,stock_components = self.get_components()
+
         for target in self.targets:
             
             # build matrix and vector representing mass balance
             mass_fraction_matrix = []
             target_component_masses = []
-            for name in self.components:
+            for name in components:
                 row = []
                 for stock in self.stocks:
                     if name in stock.components:
                         if stock[name]._has_mass:
                             row.append(stock.mass_fraction[name])
+                        elif stock[name].empty:
+                            row.append(0) #this component is set to zero
                         else:
                             raise ValueError('Need masses specified for mass balance')
                     else:
@@ -166,6 +184,8 @@ class Deck:
                 if name in target.components:
                     if target[name]._has_mass:
                         target_component_masses.append(target[name].mass)
+                    elif target[name].empty:
+                        target_component_masses.append(0.0) #this component is set to zero
                     else:
                         raise ValueError('Need masses specified for mass balance')
                 else:

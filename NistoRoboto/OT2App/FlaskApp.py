@@ -111,6 +111,7 @@ def update_img():
 
 @app.route('/login',methods=['GET','POST'])
 def login():
+    global experiment,contactinfo
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
 
@@ -150,6 +151,10 @@ def clear_queue():
     app.logger.info(f'Removing all items from OT-2 queue')
     task_queue.queue.clear()
     return 'Success',200
+
+@app.route('/get_queue',methods=['GET'])
+def get_queue():
+    return jsonify(list(task_queue.queue)),200
 
 @app.route('/halt',methods=['POST'])
 def halt():

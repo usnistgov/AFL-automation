@@ -60,7 +60,7 @@ class PushPullSelectorSampleCell(SampleCell):
         
         
 
-        self.catch_to_selector_vol = Tubing(1530,52).volume() + Tubing(1,25.4).volume()
+        self.catch_to_selector_vol = Tubing(1530,2.2*52).volume() + Tubing(1,25.4).volume()
         self.cell_to_selector_vol = Tubing(1517,262.9).volume()+1
         self.syringe_to_selector_vol = Tubing(1530,49.27).volume() 
         self.selector_internal_vol = Tubing(1529,1).volume()
@@ -126,7 +126,11 @@ class PushPullSelectorSampleCell(SampleCell):
             self.pump.dispense(self.rinse_vol_ml)
         self.syringe_dirty = False
 
-    def rinseCell(self,cellname = 'cell'):
+        
+    def rinseCell(self,cellname='cell'):
+        self.rinseCellFlood(self,cellname)
+        
+    def rinseCellPull(self,cellname = 'cell'):
         #rinse the cell
         for i in range(self.nrinses_cell):    
             self.selector.selectPort('rinse')
@@ -159,6 +163,8 @@ class PushPullSelectorSampleCell(SampleCell):
 
     def rinseCatch(self):
         for i in range(self.nrinses_catch):
+            self.selector.selectPort('air')
+            self.pump.withdraw(self.catch_to_selector_vol)
             self.selector.selectPort('rinse')
             self.pump.withdraw(self.rinse_vol_ml)
             self.selector.selectPort('catch')
@@ -169,6 +175,8 @@ class PushPullSelectorSampleCell(SampleCell):
             self.pump.withdraw(self.catch_to_selector_vol)
             self.selector.selectPort('waste')
             self.pump.dispense(self.rinse_vol_ml + self.syringe_to_selector_vol)
+            self.selector.selectPort('air')
+            self.pump.dispense(self.catch_to_selector_vol-self.syringe_to_selector_vol)
 
     def rinseAll(self):
         if self.state is 'loaded':

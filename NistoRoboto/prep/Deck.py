@@ -48,7 +48,7 @@ class Deck:
         self.client = None
 
     def init_remote_connection(self,url):
-        from NistoRoboto.server.Client import Client
+        from NistoRoboto.OT2App.Client import Client
         self.client = Client(url)
         self.client.login('NistoRobotoDeck')
 

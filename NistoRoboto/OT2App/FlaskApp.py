@@ -36,7 +36,6 @@ def index():
     kw = status_dict()
 
     response = requests.post('http://localhost:5000/update_img')
-    print(response.status_code,response.content)
 
     return render_template('index.html',**kw),200
 
@@ -66,7 +65,7 @@ def status_dict():
     kw = {}
     kw['pipettes'] = OT2_daemon.protocol.protocol.loaded_instruments
     kw['labware']  = OT2_daemon.protocol.protocol.loaded_labwares
-    kw['statuscolor'] = OT2_daemon.doorDaemon.button_color
+    kw['statuscolor'] = 'mauve'#OT2_daemon.doorDaemon.button_color
     kw['updatetime'] = _nbsp(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     kw['robotstatus']      = _nbsp(_queue_status(task_queue))
     kw['currentexperiment'] = _nbsp(experiment)

@@ -17,8 +17,8 @@ class OT2Daemon(threading.Thread):
 
         self.protocol  = OT2Protocol(app)
 
-        self.doorDaemon = DoorDaemon(app,task_queue)
-        self.doorDaemon.start()
+        #self.doorDaemon = DoorDaemon(app,task_queue)
+        #self.doorDaemon.start()
 
         self._stop = False
         self._app = app
@@ -26,7 +26,7 @@ class OT2Daemon(threading.Thread):
         self.debug_mode = debug_mode
 
     def terminate(self):
-        self.doorDaemon.terminate()
+        # self.doorDaemon.terminate()
 
         self._app.logger.info('Terminating OT2Daemon thread')
         self._stop = True
@@ -50,15 +50,15 @@ class OT2Daemon(threading.Thread):
                 time.sleep(2.0)
                 continue
 
-            #safety interlock
-            counter = 600
-            while not self.doorDaemon.door_closed:
-                time.sleep(0.1)
+            # #safety interlock
+            # counter = 600
+            # while not self.doorDaemon.door_closed:
+            #     time.sleep(0.1)
 
-                counter += 1
-                if counter>600:
-                    self._app.logger.info(f'Queue is paused. Please close OT-2 door to resume.')
-                    counter=0
+            #     counter += 1
+            #     if counter>600:
+            #         self._app.logger.info(f'Queue is paused. Please close OT-2 door to resume.')
+            #         counter=0
 
             if task['type'] == 'transfer':
                 self.protocol.transfer(**task)

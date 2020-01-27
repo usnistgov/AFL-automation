@@ -146,7 +146,7 @@ class Deck:
         stock_components  = set()
 
         for target in self.targets:
-            for name,component in targets:
+            for name,component in target:
                 components.add(name)
                 target_components.add(name)
 
@@ -161,7 +161,7 @@ class Deck:
     def make_protocol(self):
         #build component list
         components,target_components,stock_components = self.get_components()
-
+        self.protocol = []
         for target in self.targets:
             
             # build matrix and vector representing mass balance
@@ -204,10 +204,16 @@ class Deck:
                     action = PipetteAction(
                                 source = self.stock_location[stock],
                                 dest = self.target_location[target],
-                                volume = removed.volume*1000 #assume ml for now
+                                volume = removed.volume*1000, #assume ml for now
+                                dest_loc = 'top'
                                 
                     )
                     self.protocol.append(action)
+
+            #need to add empty components for equality check
+            for name,component in target:
+                if component.empty:
+                    target_check = target_check + component
                     
             if not (target == target_check):
                 raise RuntimeError('Mass transfer calculation failed...')

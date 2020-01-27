@@ -128,11 +128,13 @@ class Component(object):
     
     @property
     def _has_volume(self):
-        return ((self.volume is not None) and (self.volume>0))
+        # return ((self.volume is not None) and (self.volume>0))
+        return (self.volume is not None) 
     
     @property
     def _has_mass(self):
-        return ((self.mass is not None) and (self.mass>0))
+        # return ((self.mass is not None) and (self.mass>0))
+        return (self.mass is not None) 
     
     @property
     def _has_formula(self):

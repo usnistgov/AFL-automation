@@ -119,7 +119,7 @@ class OT2Protocol:
 
         pipette.transfer(volume,source_wells,dest_wells)
 
-    def get_pipette(self,volume):
+    def get_pipette(self,volume,method='min_transfers'):
         self._app.logger.debug(f'Looking for a pipette for volume {volume}')
 
         pipettes = []
@@ -134,6 +134,8 @@ class OT2Protocol:
             ntransfers = ceil(volume/max_volume)
             vol_per_transfer = volume / ntransfers
             
+            pipette['ntransfers'] = ntransfers
+
             # **Peter** personally apologizes for these impressively long lines,
             # which he believes to be correct.  The systematic error is added
             # straight (i.e, not sumsq) while the random is added as sumsq,
@@ -156,7 +158,14 @@ class OT2Protocol:
         if not pipettes:
             raise ValueError('No suitable pipettes found!\\n')
         
-        pipette = min(pipettes,key=lambda x: x['uncertainty'])
+        if(method == 'uncertainty'):
+            pipette = min(pipettes,key=lambda x: x['uncertainty'])
+        elif(method == 'min_transfers'):
+            min_xfers = min(pipettes,key=lambda x: x['ntransfers'])['ntransfers']
+            acceptable_pipettes = filter(lambda x: x['ntransfers']==min_xfers,pipettes)
+            pipette = min(acceptable_pipettes,key=lambda x: x['object'].max_volume) 
+        else:
+            raise ValueError(f'Pipette selection method {method} was not recognized.')
         self._app.logger.debug(f'Chosen pipette: {pipette}')
         return pipette['object']
 

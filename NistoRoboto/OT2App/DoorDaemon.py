@@ -14,10 +14,6 @@ class DoorDaemon(threading.Thread):
         self.task_queue = task_queue
         self.button_color = '#000000'
 
-    def __del__(self):
-        self._app.logger.info('Destructing DoorDaemon thread')
-        self.terminate()
-
     def terminate(self):
         self._app.logger.info('Terminating DoorDaemon thread')
         self._stop = True

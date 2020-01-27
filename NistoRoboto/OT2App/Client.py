@@ -39,7 +39,7 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
 
-    def transfer(self,source,dest,volume):
+    def transfer(self,source,dest,volume,source_loc=None,dest_loc=None):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -62,6 +62,10 @@ class Client:
         json['source'] = source
         json['dest']   = dest
         json['volume'] = volume
+        if source_loc is not None:
+            json['source_loc'] = source_loc
+        if dest_loc is not None:
+            json['dest_loc'] = dest_loc
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
             raise RuntimeError(f'API call to transfer command failed with status_code {response.status_code}\n{response.content}')

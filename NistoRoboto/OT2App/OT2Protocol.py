@@ -102,10 +102,21 @@ class OT2Protocol:
         '''
         self._app.logger.info(f'Transfering {volume}uL from {source} to {dest}')
 
+
         #get pipette based on volume
         pipette = self.get_pipette(volume)
+
+        #modify source well dispense location
         source_wells = self.get_wells(source)
+        if 'source_loc' in kwargs:
+            source_wells = [getattr(sw,kwargs['source_loc'])() for sw in source_wells]
+
+
+        #modify destination well dispense location
         dest_wells = self.get_wells(dest)
+        if 'dest_loc' in kwargs:
+            dest_wells = [getattr(dw,kwargs['dest_loc'])() for dw in dest_wells]
+
         pipette.transfer(volume,source_wells,dest_wells)
 
     def get_pipette(self,volume):

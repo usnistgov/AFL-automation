@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from flask import request, jsonify, Markup
 
-import datetime,requests, subprocess,shlex,os
+import datetime,requests, subprocess,shlex,os,json
 
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
@@ -89,7 +89,9 @@ def _nbsp(instr):
 @app.route('/ajax_data')
 def ajax_data():
     kw = status_dict()
-    return jsonify(str(kw)),200
+    kw['pipettes'] = str(kw['pipettes'])
+    kw['labware'] = str(kw['labware'])
+    return json.dumps(kw),200
 
 @app.route('/update_img',methods=['POST'])
 def update_img():
@@ -99,7 +101,7 @@ def update_img():
     # this will UDP multicast stream to 239.0.0.1:1234, pick this stream up on
     # control server and repackage it.
 
-    subprocess.Popen(
+    subprocess.call(
             shlex.split(
                 'ffmpeg -y -f video4linux2 -s 640x480 -i /dev/video0 -ss 0:0:0.01 -frames 1 static/deck.jpeg'
                 ),

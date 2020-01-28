@@ -138,17 +138,23 @@
       function updatecontent(){
           $.get( "ajax_data", function( data ) {
                   a = JSON.parse(data)
-                  $("#status-strip").innerHTML = 'Last&nbsp;Updated:&nbsp;'+a['updatetime']+' -  Current&nbsp;Status:&nbsp;'+a['robotstatus']+' - Experiment:&nbsp;'+a['experimentname']+' - Contact:&nbsp;'+a['contactinfo']+' - Queue&nbsp;Mode:&nbsp;'+ a['queuemode']
+                  $("#status-strip").html('Last&nbsp;Updated:&nbsp;'+a['updatetime']+' -  Current&nbsp;Status:&nbsp;'+a['robotstatus']+' - Experiment:&nbsp;'+a['experimentname']+' - Contact:&nbsp;'+a['contactinfo']+' - Queue&nbsp;Mode:&nbsp;'+ a['queuemode'])
                   $("#status-light").css("background-color",a['statuscolor'])
-                  $("#pipette-list").innerHTML = a['pipettes']
-                  $("#labware-list").innerHTML = a['labware']
-                  $("#command-queue").innerHTML = "<h3>Queue:</h3>"+a['queue']
+                  $("#pipette-list").html(a['pipettes'])
+                  $("#labware-list").html(a['labware'])
+                  $("#command-queue").html("<h3>Queue:</h3>"+a['queue'])
           })
           };
       
-
+        function updateimage() {
+        $.post("update_img")
+        $("#deck").attr("src","/static/deck.jpeg?t=" + new Date().getTime());
+        
+        };
       updatecontent(); // This will run on page load
-      setInterval(function(){ updatecontent() }, 5000); // this will run every 5 seconds  
+      
+      setInterval(function(){ updatecontent() }, 1000); // this will run every 5 seconds  
+      setInterval(function(){ updateimage() },1000);
     </script>
     <title>NistoRoboto Server</title>
   </head>

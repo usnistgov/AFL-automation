@@ -158,7 +158,7 @@ class Deck:
         return components,target_components,stock_components
 
 
-    def make_protocol(self):
+    def make_protocol(self,volume_cutoff=0.03):
         #build component list
         components,target_components,stock_components = self.get_components()
         self.protocol = []
@@ -193,6 +193,12 @@ class Deck:
 
             #solve mass balance 
             mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
+            self.mass_transfers = mass_transfers
+           
+            for stock,mass in zip(self.stocks,mass_transfers):
+                    volume = mass/stock.density
+                    if (volume>0) and (volume<volume_cutoff):
+                        raise IndexError('Can\'t make solution with loaded pipettes')
             
             #apply mass balance
             target_check = Mixture()

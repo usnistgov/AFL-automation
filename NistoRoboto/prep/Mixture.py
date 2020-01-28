@@ -50,15 +50,15 @@ class Mixture:
         mixture = self.copy()
         if isinstance(other,Component):
             if mixture.contains(other.name):
-                mixture.components[other.name] = (mixture.components[other.name] + other)
+                mixture.components[other.name] = (mixture.components[other.name] + other.copy())
             else:
-                mixture.components[other.name] = other
+                mixture.components[other.name] = other.copy()
         elif isinstance(other,Mixture):
             for name,component in other.components.items():
                 if mixture.contains(name):
-                    mixture.components[name] = (mixture.components[name] + component)
+                    mixture.components[name] = (mixture.components[name] + component.copy())
                 else:
-                    mixture.components[name] = component
+                    mixture.components[name] = component.copy()
         else:
             raise TypeError(f'Unsure how to combine Mixture with {type(other)}')
             

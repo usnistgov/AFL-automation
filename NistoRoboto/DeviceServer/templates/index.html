@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>DevServer</title>
+        <script src="static/jquery-3.4.1.min.js"></script>
+        <script>
+            function update_queue(){
+                $.get( "get_queue", function( queue ) {
+                    ul = $("<ul>");
+                    for (var i=0, l=queue.length; i<l; ++i) {
+                        ul.append("<li>" + JSON.stringify(queue[i]) + "</li>");
+                    }
+                    $("#queued_values").html(ul);
+               })
+            };
+      
+            update_queue(); // This will run on page load
+            setInterval(function(){ update_queue() }, 500); // this will run every 0.5 seconds  
+    </script>
+  </head>
+  <div id="command-queue">
+    <h3> Queue:</h3> 
+    <div id="queued_values"></div>
+  </div>
+</html>

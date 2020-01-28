@@ -66,7 +66,7 @@ class Component(object):
     
     @mass.setter
     def mass(self,value):
-        if self._mass<self.tol:
+        if value<self.tol:
             self._mass = 0.0
         else:
             self._mass = value

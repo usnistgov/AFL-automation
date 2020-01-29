@@ -40,6 +40,12 @@
               clear:both;
               padding-top: 10px;
             }
+            #meta_buttons {
+              align-items:center;
+              display: flex;
+              justify-content: center;
+              margin-top: 15px;
+            }
             body {
                 background-color: linen;
             }
@@ -152,17 +158,29 @@
             update_queue(); // This will run on page load
             setInterval(function(){ update_queue() }, 500); // this will run every 0.5 seconds  
 
+            function MetaToggle(){
+                $('div.meta').toggle();
+            };
+            function MetaOff(){
+                $('div.meta').toggle();
+            };
+
     </script>
   </head>
     <body>
+        <div id="header-bar">
+            <img id="nist-logo" src="static/logo.svg" />
+            <p id="status-strip">
+                Last&nbsp;Updated:&nbsp;{{updatetime}}  -  Experiment:&nbsp;{{experiment}} - Contact:&nbsp;{{contact}} - Queue&nbsp;State:&nbsp;{{queue_state}}
+            </p>
+            <form action="/halt" method="POST"><input id="estop" type="submit" value="HALT"></form>
+            <img id="ncnr-logo" src="static/ncnr.png" />
+        </div>
         <div id="content_container">
-            <div id="header-bar">
-                <img id="nist-logo" src="static/logo.svg" />
-                <p id="status-strip">
-                    Last&nbsp;Updated:&nbsp;{{updatetime}}  -  Experiment:&nbsp;{{experiment}} - Contact:&nbsp;{{contact}} - Queue&nbsp;State:&nbsp;{{queue_state}}
-                </p>
-                <form action="/halt" method="POST"><input id="estop" type="submit" value="HALT"></form>
-                <img id="ncnr-logo" src="static/ncnr.png" />
+            <div id="meta_buttons">
+                <button onclick="$('div.meta').toggle()">Meta Toggle</button>
+                <button onclick="$('div.meta').hide()">Meta Off</button>
+                <button onclick="$('div.meta').show()">Meta On</button>
             </div>
             <div id="command-queue">
                 <div id="history"></div>

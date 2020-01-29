@@ -5,8 +5,11 @@ import datetime,requests, subprocess,shlex,os
 
 import threading,queue,logging
 
+from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
+
 class DeviceServer:
     def __init__(self,name):
+        self.history = []
         self.task_queue = queue.Queue()
         self.app = Flask(name)
 
@@ -25,6 +28,7 @@ class DeviceServer:
         self.app.add_url_rule('/','index',self.index)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
         self.app.add_url_rule('/clear_queue','clear_queue',self.clear_queue,methods=['POST'])
+        self.app.add_url_rule('/clear_history','clear_history',self.clear_history,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
         self.app.before_first_request(self.init)
 
@@ -32,24 +36,37 @@ class DeviceServer:
         '''Live, status page of the robot'''
         self.app.logger.info('Serving indexes')
 
+
         kw = {}
         kw['queue'] = self.get_queue()
         return render_template('index.html',**kw),200
 
     def get_queue(self):
-        return jsonify(list(self.task_queue.queue)),200
+        output = [self.history,list(self.task_queue.queue)]
+        return jsonify(output),200
 
     def enqueue(self):
+        task = request.json
+        task['start'] = datetime.datetime.now().strftime('%H:%M')
         self.task_queue.put(request.json)
         return 'Success',200
 
     def clear_queue(self):
         self.task_queue.queue.clear()
         return 'Success',200
+
+    def clear_history(self):
+        del self.history[:]
+        return 'Success',200
     
     def init(self):
-        # from flask import current_app as app
+        # this kills the default werkzeug webserver output
+        log = logging.getLogger('werkzeug')
+        log.disabled = True
+
         self.app.logger.info('Spawning Daemons')
+        self.queue_daemon = QueueDaemon(self.app,self.task_queue,self.history)
+        self.queue_daemon.start()
         return 'Success',200
 
 # class QueueFilter(logging.Filter):  

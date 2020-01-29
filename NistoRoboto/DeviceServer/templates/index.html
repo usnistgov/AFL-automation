@@ -2,15 +2,58 @@
 <html>
     <head>
         <title>DevServer</title>
+        <style>
+            body {
+                background-color: linen;
+            }
+            h3.centered {
+                text-align:center;
+            }
+            ul.element {
+                list-style-type: square;
+                padding-left:0;
+            }
+            li.element {
+                list-style-type: none;
+                margin: 0 0 5px 0;
+                height: 35px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-weight: bold;
+            }
+            li.queued {
+                background: #33cccc;
+                border-style: solid;
+                border-color: #000000;
+                border-width: 1px;
+            }
+            li.history {
+                background: #669999;
+                border-style: solid;
+                border-color: #000000;
+                border-width: 1px;
+            }
+        </style>
         <script src="static/jquery-3.4.1.min.js"></script>
         <script>
             function update_queue(){
-                $.get( "get_queue", function( queue ) {
-                    ul = $("<ul>");
-                    for (var i=0, l=queue.length; i<l; ++i) {
-                        ul.append("<li>" + JSON.stringify(queue[i]) + "</li>");
+                $.get( "get_queue", function( result ) {
+                    hist = result[0];
+                    console.log(hist);
+                        
+                    ul_history = $("<ul class=element>");
+                    for (var i=0, l=hist.length; i<l; ++i) {
+                        ul_history.append("<li class='element history'>" + JSON.stringify(hist[i]) + "</li>");
                     }
-                    $("#queued_values").html(ul);
+
+                    queue = result[1];
+                    ul_queued = $("<ul class=element>");
+                    for (var i=0, l=queue.length; i<l; ++i) {
+                        ul_queued.append("<li class='element queued'>" + JSON.stringify(queue[i]) + "</li>");
+                    }
+                    $("#history").html(ul_history);
+                    $("#queued").html(ul_queued);
                })
             };
       
@@ -19,7 +62,10 @@
     </script>
   </head>
   <div id="command-queue">
-    <h3> Queue:</h3> 
-    <div id="queued_values"></div>
+    <div id="history"></div>
+    <h3 class="centered"> History</h3> 
+    <hr/>
+    <h3 class="centered"> Queued</h3> 
+    <div id="queued"></div>
   </div>
 </html>

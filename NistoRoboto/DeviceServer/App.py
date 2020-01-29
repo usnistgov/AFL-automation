@@ -12,6 +12,7 @@ class DeviceServer:
         self.history = []
         self.task_queue = queue.Queue()
         self.app = Flask(name)
+        self.queue_daemon = QueueDaemon(self.app,self.task_queue,self.history)
 
     def run(self,**kwargs):
         self.app.run(**kwargs)
@@ -29,13 +30,14 @@ class DeviceServer:
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
         self.app.add_url_rule('/clear_queue','clear_queue',self.clear_queue,methods=['POST'])
         self.app.add_url_rule('/clear_history','clear_history',self.clear_history,methods=['POST'])
+        self.app.add_url_rule('/debug','debug',self.debug,methods=['POST'])
+        self.app.add_url_rule('/pause','pause',self.pause,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
         self.app.before_first_request(self.init)
 
     def index(self):
         '''Live, status page of the robot'''
-        self.app.logger.info('Serving indexes')
-
+        self.app.logger.info('Serving index page')
 
         kw = {}
         kw['queue'] = self.get_queue()
@@ -47,8 +49,9 @@ class DeviceServer:
 
     def enqueue(self):
         task = request.json
-        task['start'] = datetime.datetime.now().strftime('%H:%M')
-        self.task_queue.put(request.json)
+        package = {'task':task,'meta':{}}
+        package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M')
+        self.task_queue.put(package)
         return 'Success',200
 
     def clear_queue(self):
@@ -58,14 +61,25 @@ class DeviceServer:
     def clear_history(self):
         del self.history[:]
         return 'Success',200
-    
+
+    def debug(self):
+        state = request.json['state']
+        self.app.logger.info(f'Setting queue debug state to {state}')
+        self.queue_daemon.debug = state
+        return 'Success',200
+
+    def pause(self):
+        state = request.json['state']
+        self.app.logger.info(f'Setting queue paused state to {state}')
+        self.queue_daemon.paused = state
+        return 'Success',200
+
     def init(self):
         # this kills the default werkzeug webserver output
-        log = logging.getLogger('werkzeug')
-        log.disabled = True
+        # log = logging.getLogger('werkzeug')
+        #log.disabled = True
 
         self.app.logger.info('Spawning Daemons')
-        self.queue_daemon = QueueDaemon(self.app,self.task_queue,self.history)
         self.queue_daemon.start()
         return 'Success',200
 

@@ -5,48 +5,62 @@ import datetime
 class QueueDaemon(threading.Thread):
     '''
     '''
-    def __init__(self,app,task_queue,history,debug_mode=True):
+    def __init__(self,app,task_queue,history,debug=True):
         app.logger.info('Creating QueueDaemon thread')
 
         threading.Thread.__init__(self,name='QueueDaemon',daemon=True)
 
         self.protocol  = None#Protocol(app)
 
-        self._stop = False
-        self._app = app
+        self.app = app
         self.task_queue = task_queue
         self.history    = history
-        self.debug_mode = debug_mode
+
+        self.stop = False
+        self.debug = debug
+        self.paused = False
 
     def terminate(self):
-        self._app.logger.info('Terminating QueueDaemon thread')
-        self._stop = True
+        self.app.logger.info('Terminating QueueDaemon thread')
+        self.stop = True
         self.task_queue.put(None)
 
     def run(self):
-        while not self._stop:
-            task = self.task_queue.get(block=True,timeout=None)
-            self._app.logger.info(f'Running task {task}')
-            task['end'] = datetime.datetime.now().strftime('%H:%M')
-            self.history.append(task)
+        while not self.stop:
+            package = self.task_queue.get(block=True,timeout=None)
+            task = package['task']
 
-            # Queue execution mods
+            self.app.logger.info(f'Running task {task}')
+            package['meta']['started'] = datetime.datetime.now().strftime('%H:%M')
+
+            self.history.append(package)
+
+            # If the task object is None, break the queue-loop
             if task is None: #stop the queue execution
                 self.terminate()
                 break
-            elif 'debug_mode' in task: #modify the debugging mode state
-                self._app.logger.debug(f'Setting queue debug_mode to {task["debug_mode"]}')
-                self.debug_mode = task['debug_mode']
-                continue
-            elif self.debug_mode: #if debug_mode, pop but don't execute
+
+            #if debug_mode, pop and wait but don't execute
+            if self.debug: 
                 time.sleep(3.0)
+                package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M')
                 continue
+            
+            # pause queue but notify user of state every minute
+            count = 600
+            while self.paused: 
+                time.sleep(0.1)
+                count+=1
+                if count>600:
+                    self.app.logger('Queued is paused. Set paused state to false to continue execution')
+                    count = 0
 
             continue
             getattr(self.protocol,task['name'])(**task)
+            package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M')
             time.sleep(0.1)
 
-        self._app.logger.info('QueueDaemon runloop exiting')
+        self.app.logger.info('QueueDaemon runloop exiting')
 
     
 

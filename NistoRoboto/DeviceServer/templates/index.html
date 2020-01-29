@@ -34,31 +34,67 @@
                 border-color: #000000;
                 border-width: 1px;
             }
+            div.meta {
+                display:flex;
+                background: tan;
+                border-style: solid;
+                border-color: #000000;
+                border-width: 1px;
+                justify-content: center;
+                align-items: center;
+                font-weight: bold;
+            }
         </style>
         <script src="static/jquery-3.4.1.min.js"></script>
         <script>
             function update_queue(){
                 $.get( "get_queue", function( result ) {
-                    hist = result[0];
-                    console.log(hist);
+                    
+                    task_history = result[0];
                         
+                
+                    var queue_num = 0;
                     ul_history = $("<ul class=element>");
-                    for (var i=0, l=hist.length; i<l; ++i) {
-                        ul_history.append("<li class='element history'>" + JSON.stringify(hist[i]) + "</li>");
+                    for (var i=0, l=task_history.length; i<l; ++i) {
+                        ul_history.append(
+                                            "<li class='element history' data-div='meta" + queue_num + "'>" + 
+                                            JSON.stringify(task_history[i]['task']) + 
+                                            "</li>" +
+                                            "<div class='hidden meta' id='meta"+ queue_num + "'>" + 
+                                            JSON.stringify(task_history[i]['meta']) + 
+                                            "</div>" 
+                        );
+                        queue_num += 1;
                     }
 
-                    queue = result[1];
+                    task_queue = result[1];
                     ul_queued = $("<ul class=element>");
-                    for (var i=0, l=queue.length; i<l; ++i) {
-                        ul_queued.append("<li class='element queued'>" + JSON.stringify(queue[i]) + "</li>");
+                    for (var i=0, l=task_queue.length; i<l; ++i) {
+                        ul_queued.append(
+                                            "<li class='element queued' data-div='meta" + queue_num + "'>" + 
+                                            JSON.stringify(task_queue[i]['task']) + 
+                                            "</li>" +
+                                            "<div class='hidden meta' id='meta"+ queue_num + "'>" + 
+                                            JSON.stringify(task_queue[i]['meta']) + 
+                                            "</div>" 
+                        );
+                        queue_num += 1;
                     }
                     $("#history").html(ul_history);
                     $("#queued").html(ul_queued);
+                    $("div.meta").toggle();
                })
             };
-      
+            
+            
             update_queue(); // This will run on page load
-            setInterval(function(){ update_queue() }, 500); // this will run every 0.5 seconds  
+            // setInterval(function(){ update_queue() }, 500); // this will run every 0.5 seconds  
+
+            $(document).ready(function() {
+                $('li.element').on('click', function() {
+                    $('div[id="' + $(this).data('div') + '"]').toggle(); 
+                });
+            });
     </script>
   </head>
   <div id="command-queue">

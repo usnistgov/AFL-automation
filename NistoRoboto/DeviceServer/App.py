@@ -8,11 +8,13 @@ import threading,queue,logging
 from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
 
 class DeviceServer:
-    def __init__(self,name):
+    def __init__(self,name,experiment='Development',contact='tbm@nist.gov'):
         self.history = []
         self.task_queue = queue.Queue()
         self.app = Flask(name)
         self.queue_daemon = QueueDaemon(self.app,self.task_queue,self.history)
+        self.experiment = experiment
+        self.contact = contact
 
     def run(self,**kwargs):
         self.app.run(**kwargs)
@@ -32,6 +34,7 @@ class DeviceServer:
         self.app.add_url_rule('/clear_history','clear_history',self.clear_history,methods=['POST'])
         self.app.add_url_rule('/debug','debug',self.debug,methods=['POST'])
         self.app.add_url_rule('/pause','pause',self.pause,methods=['POST'])
+        self.app.add_url_rule('/halt','halt',self.halt,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
         self.app.before_first_request(self.init)
 
@@ -41,6 +44,14 @@ class DeviceServer:
 
         kw = {}
         kw['queue'] = self.get_queue()
+        kw['contact'] = self.contact
+        kw['experiment'] = self.experiment
+        if self.queue_daemon.debug:
+            kw['queue_state'] = 'Debug'
+        elif self.queue_daemon.paused:
+            kw['queue_state'] = 'Paused'
+        else:
+            kw['queue_state'] = 'Active'
         return render_template('index.html',**kw),200
 
     def get_queue(self):
@@ -72,6 +83,11 @@ class DeviceServer:
         state = request.json['state']
         self.app.logger.info(f'Setting queue paused state to {state}')
         self.queue_daemon.paused = state
+        return 'Success',200
+
+    def halt(self):
+        self.app.logger.info(f'Halting all protocols and stopping QueueDaemon')
+        # ToDo....
         return 'Success',200
 
     def init(self):

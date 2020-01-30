@@ -52,7 +52,7 @@ class QueueDaemon(threading.Thread):
                 time.sleep(0.1)
                 count+=1
                 if count>600:
-                    self.app.logger('Queued is paused. Set paused state to false to continue execution')
+                    self.app.logger.info('Queued is paused. Set paused state to false to continue execution')
                     count = 0
 
             continue

@@ -3,18 +3,21 @@ from flask import request, jsonify, Markup
 
 import datetime,requests, subprocess,shlex,os
 
-import threading,queue,logging
+import threading,queue,logging,json
 
 from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
 
 class DeviceServer:
     def __init__(self,name,experiment='Development',contact='tbm@nist.gov'):
-        self.history = []
-        self.task_queue = queue.Queue()
-        self.app = Flask(name)
-        self.queue_daemon = QueueDaemon(self.app,self.task_queue,self.history)
+        self.name = name
         self.experiment = experiment
         self.contact = contact
+
+        self.history = []
+        self.task_queue = queue.Queue()
+
+        self.app = Flask(name)
+        self.queue_daemon = QueueDaemon(self.app,self.task_queue,self.history)
 
     def run(self,**kwargs):
         self.app.run(**kwargs)
@@ -36,23 +39,31 @@ class DeviceServer:
         self.app.add_url_rule('/pause','pause',self.pause,methods=['POST'])
         self.app.add_url_rule('/halt','halt',self.halt,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
+        self.app.add_url_rule('/queue_state','queue_state',self.queue_state,methods=['GET'])
         self.app.before_first_request(self.init)
+
+        self.app.logger.setLevel(level=logging.DEBUG)
 
     def index(self):
         '''Live, status page of the robot'''
         self.app.logger.info('Serving index page')
 
         kw = {}
-        kw['queue'] = self.get_queue()
-        kw['contact'] = self.contact
-        kw['experiment'] = self.experiment
-        if self.queue_daemon.debug:
-            kw['queue_state'] = 'Debug'
-        elif self.queue_daemon.paused:
-            kw['queue_state'] = 'Paused'
-        else:
-            kw['queue_state'] = 'Active'
+        kw['queue']       = self.get_queue()
+        kw['contact']     = self.contact
+        kw['experiment']  = self.experiment
+        kw['queue_state'] = self.queue_state()
+        kw['name'] = self.name
         return render_template('index.html',**kw),200
+
+    def queue_state(self):
+        if self.queue_daemon.debug:
+            state = 'Debug'
+        elif self.queue_daemon.paused:
+            state = 'Paused'
+        else:
+            state = 'Active'
+        return state,200
 
     def get_queue(self):
         output = [self.history,list(self.task_queue.queue)]
@@ -99,14 +110,26 @@ class DeviceServer:
         self.queue_daemon.start()
         return 'Success',200
 
-# class QueueFilter(logging.Filter):  
-#     def filter(self, record):  
-#         return "get_queue" not in record.getMessage() 
-# 
-# for handler in logging.root.handlers:  
-#         handler.addFilter(QueueFilter())
+class Filter(object):
+    def __init__(self, *filters):
+        from werkzeug import serving
+
+        self.filters = filters
+        self._log_request = serving.WSGIRequestHandler.log_request
+
+        parent = self
+
+        def log_request(self, *args, **kwargs):
+            if any(filter in self.requestline for filter in parent.filters):
+                return
+
+            parent._log_request(self, *args, **kwargs)
+
+        serving.WSGIRequestHandler.log_request = log_request
 
 if __name__ =='__main__':
+
+    filter = Filter('get_queue','queue_state')
 
     server = DeviceServer('TestServer')
     server.add_standard_routes()

@@ -5,12 +5,12 @@ import datetime
 class QueueDaemon(threading.Thread):
     '''
     '''
-    def __init__(self,app,task_queue,history,debug=True):
+    def __init__(self,app,protocol,task_queue,history,debug=True):
         app.logger.info('Creating QueueDaemon thread')
 
         threading.Thread.__init__(self,name='QueueDaemon',daemon=True)
 
-        self.protocol  = None#Protocol(app)
+        self.protocol  = protocol
 
         self.app = app
         self.task_queue = task_queue
@@ -19,6 +19,7 @@ class QueueDaemon(threading.Thread):
         self.stop = False
         self.debug = debug
         self.paused = False
+        self.busy = False #flag denotes if a task is being processed
 
     def terminate(self):
         self.app.logger.info('Terminating QueueDaemon thread')
@@ -28,10 +29,11 @@ class QueueDaemon(threading.Thread):
     def run(self):
         while not self.stop:
             package = self.task_queue.get(block=True,timeout=None)
+            self.busy=True
             task = package['task']
 
             self.app.logger.info(f'Running task {task}')
-            package['meta']['started'] = datetime.datetime.now().strftime('%H:%M')
+            package['meta']['started'] = datetime.datetime.now().strftime('%H:%M:%S')
 
             self.history.append(package)
 
@@ -40,12 +42,6 @@ class QueueDaemon(threading.Thread):
                 self.terminate()
                 break
 
-            #if debug_mode, pop and wait but don't execute
-            if self.debug: 
-                time.sleep(3.0)
-                package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M')
-                continue
-            
             # pause queue but notify user of state every minute
             count = 600
             while self.paused: 
@@ -55,9 +51,16 @@ class QueueDaemon(threading.Thread):
                     self.app.logger.info('Queued is paused. Set paused state to false to continue execution')
                     count = 0
 
-            continue
-            getattr(self.protocol,task['name'])(**task)
+            #if debug_mode, pop and wait but don't execute
+            if self.debug: 
+                time.sleep(3.0)
+                package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')
+                continue
+            
+
+            self.protocol.execute(**task)
             package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M')
+            self.busy = False
             time.sleep(0.1)
 
         self.app.logger.info('QueueDaemon runloop exiting')

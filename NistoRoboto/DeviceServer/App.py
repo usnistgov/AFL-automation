@@ -13,18 +13,26 @@ class DeviceServer:
         self.experiment = experiment
         self.contact = contact
 
+        self.app = Flask(name)
+        self.queue_daemon = None
+
+    def create_queue(self,protocol):
         self.history = []
         self.task_queue = queue.Queue()
-
-        self.app = Flask(name)
-        self.queue_daemon = QueueDaemon(self.app,self.task_queue,self.history)
+        self.protocol = protocol
+        self.protocol.app = self.app
+        self.queue_daemon = QueueDaemon(self.app,protocol,self.task_queue,self.history)
 
     def run(self,**kwargs):
+        if self.queue_daemon is None:
+            raise ValueError('create_queue must be called before running server')
         self.app.run(**kwargs)
 
     def run_threaded(self,start_thread=True,**kwargs):
-        thread = threading.Thread(target=self.app.run,kwargs=kwargs)
+        if self.queue_daemon is None:
+            raise ValueError('create_queue must be called before running server')
 
+        thread = threading.Thread(target=self.app.run,kwargs=kwargs)
         if start_thread:
             thread.start()
         else:
@@ -40,6 +48,7 @@ class DeviceServer:
         self.app.add_url_rule('/halt','halt',self.halt,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
         self.app.add_url_rule('/queue_state','queue_state',self.queue_state,methods=['GET'])
+        self.app.add_url_rule('/protocol_status','protocol_status',self.protocol_status,methods=['GET'])
         self.app.before_first_request(self.init)
 
         self.app.logger.setLevel(level=logging.DEBUG)
@@ -53,17 +62,24 @@ class DeviceServer:
         kw['contact']     = self.contact
         kw['experiment']  = self.experiment
         kw['queue_state'] = self.queue_state()
-        kw['name'] = self.name
+        kw['name']        = self.name
+        kw['protocol']    = self.queue_daemon.protocol.name
         return render_template('index.html',**kw),200
 
     def queue_state(self):
-        if self.queue_daemon.debug:
-            state = 'Debug'
-        elif self.queue_daemon.paused:
+        if self.queue_daemon.paused:
             state = 'Paused'
-        else:
+        elif self.queue_daemon.debug:
+            state = 'Debug'
+        elif self.queue_daemon.busy:
             state = 'Active'
+        else:
+            state = 'Ready'
         return state,200
+
+    def protocol_status(self):
+        status = self.queue_daemon.protocol.status()
+        return jsonify(status),200
 
     def get_queue(self):
         output = [self.history,list(self.task_queue.queue)]
@@ -72,7 +88,7 @@ class DeviceServer:
     def enqueue(self):
         task = request.json
         package = {'task':task,'meta':{}}
-        package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M')
+        package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
         self.task_queue.put(package)
         return 'Success',200
 
@@ -129,9 +145,13 @@ class Filter(object):
 
 if __name__ =='__main__':
 
-    filter = Filter('get_queue','queue_state')
+    filter = Filter('get_queue','queue_state','protocol_status')
+    
 
+    from NistoRoboto.DeviceServer.DummyProtocol import DummyProtocol
     server = DeviceServer('TestServer')
+    protocol = DummyProtocol()
     server.add_standard_routes()
+    server.create_queue(protocol)
     server.run(debug=True)
 

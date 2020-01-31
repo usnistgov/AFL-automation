@@ -4,7 +4,7 @@ from math import ceil,sqrt
 class DummyProtocol:
     def __init__(self,name=None):
         self.app = None
-        if name is None
+        if name is None:
             self.name = 'DummyProtocol'
         else:
             self.name = name

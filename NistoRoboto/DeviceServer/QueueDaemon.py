@@ -15,6 +15,7 @@ class QueueDaemon(threading.Thread):
         self.app = app
         self.task_queue = task_queue
         self.history    = history
+        self.running_task = []
 
         self.stop = False
         self.debug = debug
@@ -35,7 +36,8 @@ class QueueDaemon(threading.Thread):
             self.app.logger.info(f'Running task {task}')
             package['meta']['started'] = datetime.datetime.now().strftime('%H:%M:%S')
 
-            self.history.append(package)
+            self.running_task = [package]
+
 
             # If the task object is None, break the queue-loop
             if task is None: #stop the queue execution
@@ -55,11 +57,15 @@ class QueueDaemon(threading.Thread):
             if self.debug: 
                 time.sleep(3.0)
                 package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')
+                self.running_task = []
+                self.history.append(package)
                 continue
             
 
             self.protocol.execute(**task)
             package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M')
+            self.running_task = []
+            self.history.append(package)
             self.busy = False
             time.sleep(0.1)
 

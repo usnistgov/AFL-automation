@@ -25,8 +25,32 @@ function update(){
             }
             queue_num += 1;
         }
+            
+        task_running = result[1];
+        ul_running = $("<ul class=element>");
+        for (var i=0, l=task_running.length; i<l; ++i) {
+            var meta_str = "meta" + queue_num;
+            ul_running.append(
+                                "<li class='element running' data-div=" + meta_str + ">" + 
+                                JSON.stringify(task_running[i]['task']) + 
+                                "</li>" +
+                                "<div class='hidden meta' id=" + meta_str + ">"+
+                                JSON.stringify(task_running[i]['meta']) + 
+                                "</div>" 
+            );
+            if ($('#' + meta_str).length) {
+                if ($('#' + meta_str).is(':visible')) {
+                    ul_running.children().last().last().show();
+                } else {
+                    ul_running.children().last().last().hide();
+                }
+            } else {
+                ul_running.children().last().last().hide();
+            }
+            queue_num += 1;
+        }
 
-        task_queue = result[1];
+        task_queue = result[2];
         ul_queued = $("<ul class=element>");
         for (var i=0, l=task_queue.length; i<l; ++i) {
             var meta_str = "meta" + queue_num;
@@ -51,6 +75,7 @@ function update(){
         }
 
         $("#history").html(ul_history);
+        $("#running").html(ul_running);
         $("#queued").html(ul_queued);
 
         $('li.element').on('click', function() {
@@ -79,9 +104,12 @@ function update(){
 
     var x = new Date()
     $("#time").text(x)
+
+    setTimeout(function () {update()}, 500); // this will run every 0.5 seconds  
 };
+
 update(); // This will run on page load
-var updateInteval = setInterval(function(){ update() }, 500); // this will run every 0.5 seconds  
+// var updateInteval = setInterval(function(){ update() }, 500); // this will run every 0.5 seconds  
 
 
 	

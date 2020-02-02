@@ -14,13 +14,13 @@
             <br/>
             Queued:&nbsp;<span id='queue_size'></span> • Completed:&nbsp;<span id='history_size'></span>
             <br/>
-            Experiment:&nbsp;{{experiment}} • Contact:&nbsp;{{contact}}  
-            <br/>
             Protocol:&nbsp;{{protocol}} • Queue&nbsp;State:&nbsp;<span id='queue_state'></span> 
+            <br/>
+            Experiment:&nbsp;{{experiment}} • Contact:&nbsp;{{contact}}  
             <br/>
             Last&nbsp;Updated:&nbsp;<span id='time'></span> 
             </p>
-            <form action="/halt" method="POST"><input id="estop" type="submit" value="HALT"></form>
+            <!--<form action="/halt" method="POST"><input id="estop" type="submit" value="HALT"></form>-->
             <img id="ncnr-logo" src="static/ncnr.png" />
         </div>
         <div id="content_container">
@@ -36,15 +36,20 @@
                 •
                 <button onclick="$('div.meta').hide()">Meta Off</button>
                 <button onclick="$('div.meta').show()">Meta On</button>
+                •
+                <button onclick="$.post('/halt')" style="background-color:red;">HALT</button>
             </div>
             <h3 class="centered"> Protocol Status </h3> <hr/>
             <div id="protocol_status"></div>
 
             <div id="command-queue">
-                <h3 class="centered">  History </h3> <hr/>
+                <h3 class="centered">Task History </h3> <hr/>
                 <div id="history"></div>
+                
+                <h3 class="centered">Running Task</h3> <hr/>
+                <div id="running"></div>
 
-                <h3 class="centered">  Task Queue </h3> <hr/>
+                <h3 class="centered">Task Queue</h3> <hr/>
                 <div id="queued"></div>
             </div>
         </div id="content_container">

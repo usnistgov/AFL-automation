@@ -1,0 +1,109 @@
+#header-bar {
+  top:0px;
+  width:100%;
+  height: 10%;
+  background-color: gray;
+  clear:both;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.status-strip {
+  text-align:center;
+  font: bold 15px sans-serif;
+}
+
+#nist-logo {
+  width: 10%;
+  height: auto;
+  margin-left: 5px;
+}
+
+#estop {
+  height: 50px;
+  background: red;
+}
+
+#ncnr-logo {
+  width: 10%;
+  height: auto;
+  margin-right: 5px;
+}
+#content-container {
+  width:100%;
+  clear:both;
+  padding-top: 10px;
+}
+#meta_buttons {
+  align-items:center;
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+body {
+    background-color: linen;
+}
+h3.centered {
+    text-align:center;
+    margin-bottom:0px;
+}
+hr {
+    margin:0px 0px 0px 0px;
+}
+ul.element {
+    list-style-type: square;
+    padding-left:0;
+}
+li.element {
+    list-style-type: none;
+    margin: 5px 0px 0px 0px;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    padding: 10px 10px 10px 10px;
+    text-align: center;
+    word-wrap: break-word;
+    
+}
+#protocol_status {
+    display:flex;
+    justify-content: center;
+}
+li.status {
+    background: #ffffff;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+    display: inline-flex;
+    margin: 10px 0px 0px 10px;
+}
+li.queued {
+    background: #33cccc;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+}
+li.running {
+    background: #00ff00;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+}
+li.history {
+    background: #669999;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+}
+div.meta {
+    display:flex;
+    background: tan;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 1px;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin: 0 15px 0 15px
+}

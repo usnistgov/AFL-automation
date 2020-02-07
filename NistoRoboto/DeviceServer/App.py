@@ -82,7 +82,7 @@ class DeviceServer:
         return jsonify(status),200
 
     def get_queue(self):
-        output = [self.history,list(self.task_queue.queue)]
+        output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         return jsonify(output),200
 
     def enqueue(self):
@@ -153,5 +153,5 @@ if __name__ =='__main__':
     protocol = DummyProtocol()
     server.add_standard_routes()
     server.create_queue(protocol)
-    server.run(debug=True)
+    server.run(host='0.0.0.0',debug=True)
 

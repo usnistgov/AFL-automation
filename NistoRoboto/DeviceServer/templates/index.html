@@ -2,221 +2,25 @@
 <html>
     <head>
         <title>{{name}}</title>
-        <style>
-            #header-bar {
-              top:0px;
-              width:100%;
-              height: 10%;
-              background-color: gray;
-              clear:both;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-            .status-strip {
-              text-align:center;
-              font: bold 15px sans-serif;
-            }
-
-            #nist-logo {
-              width: 10%;
-              height: auto;
-              margin-left: 5px;
-            }
-
-            #estop {
-              height: 50px;
-              background: red;
-            }
-
-            #ncnr-logo {
-              width: 10%;
-              height: auto;
-              margin-right: 5px;
-            }
-            #content-container {
-              width:100%;
-              clear:both;
-              padding-top: 10px;
-            }
-            #meta_buttons {
-              align-items:center;
-              display: flex;
-              justify-content: center;
-              margin-top: 15px;
-            }
-            body {
-                background-color: linen;
-            }
-            h3.centered {
-                text-align:center;
-                margin-bottom:0px;
-            }
-            hr {
-                margin:0px 0px 0px 0px;
-            }
-            ul.element {
-                list-style-type: square;
-                padding-left:0;
-            }
-            li.element {
-                list-style-type: none;
-                margin: 5px 0px 0px 0px;
-                justify-content: center;
-                align-items: center;
-                font-weight: bold;
-                padding: 10px 10px 10px 10px;
-                text-align: center;
-                word-wrap: break-word;
-                
-            }
-            #protocol_status {
-                display:flex;
-                justify-content: center;
-            }
-            li.status {
-                background: #ffffff;
-                border-style: solid;
-                border-color: #000000;
-                border-width: 1px;
-                display: inline-flex;
-                margin: 10px 0px 0px 10px;
-            }
-            li.queued {
-                background: #33cccc;
-                border-style: solid;
-                border-color: #000000;
-                border-width: 1px;
-            }
-            li.history {
-                background: #669999;
-                border-style: solid;
-                border-color: #000000;
-                border-width: 1px;
-            }
-            div.meta {
-                display:flex;
-                background: tan;
-                border-style: solid;
-                border-color: #000000;
-                border-width: 1px;
-                justify-content: center;
-                align-items: center;
-                font-weight: bold;
-                margin: 0 15px 0 15px
-            }
-        </style>
-        <script src="static/jquery-3.4.1.min.js"></script>
-        <script>
-            function update(){
-                $.get( "get_queue", function( result ) {
-                    
-                    task_history = result[0];
-                        
-                
-                    var queue_num = 0;
-                    ul_history = $("<ul class=element>");
-                    for (var i=0, l=task_history.length; i<l; ++i) {
-                        var meta_str = "meta" + queue_num;
-                        ul_history.append(
-                                            "<li class='element history' data-div=" + meta_str + ">" + 
-                                            JSON.stringify(task_history[i]['task']) + 
-                                            "</li>" +
-                                            "<div class='hidden meta' id=" + meta_str + ">"+
-                                            JSON.stringify(task_history[i]['meta']) + 
-                                            "</div>" 
-                        );
-                        if ($('#' + meta_str).length) {
-                            if ($('#' + meta_str).is(':visible')) {
-                                ul_history.children().last().last().show();
-                            } else {
-                                ul_history.children().last().last().hide();
-                            }
-                        } else {
-                            ul_history.children().last().last().hide();
-                        }
-                        queue_num += 1;
-                    }
-
-                    task_queue = result[1];
-                    ul_queued = $("<ul class=element>");
-                    for (var i=0, l=task_queue.length; i<l; ++i) {
-                        var meta_str = "meta" + queue_num;
-                        ul_queued.append(
-                                            "<li class='element queued' data-div=" + meta_str + ">" + 
-                                            JSON.stringify(task_queue[i]['task']) + 
-                                            "</li>" +
-                                            "<div class='hidden meta' id="+ meta_str + ">" + 
-                                            JSON.stringify(task_queue[i]['meta']) + 
-                                            "</div>" 
-                        );
-                        if ($('#' + meta_str).length) {
-                            if ($('#' + meta_str).is(':visible')) {
-                                ul_queued.children().last().last().show();
-                            } else {
-                                ul_queued.children().last().last().hide();
-                            }
-                        } else {
-                            ul_queued.children().last().last().hide();
-                        }
-                        queue_num += 1;
-                    }
-
-                    $("#history").html(ul_history);
-                    $("#queued").html(ul_queued);
-
-                    $('li.element').on('click', function() {
-                        $('div[id="' + $(this).data('div') + '"]').toggle(); 
-                    });
-                    
-                    $.get('/queue_state', function (data) {
-                        $("#queue_state").text(data);
-                    });
-
-                    $('#history_size').text(task_history.length);
-                    $('#queue_size').text(task_queue.length);
-                    
-                })
-                $.get( "protocol_status", function( result ) {
-                    ul_status = $("<ul class=element>");
-                    for (var i=0, l=result.length; i<l; ++i) {
-                        ul_status.append(
-                            "<li class='element status'>" + 
-                            JSON.stringify(result[i]) + 
-                            "</li>"
-                        );
-                    }
-                    $("#protocol_status").html(ul_status);
-                })
-            };
-            
-            
-            update(); // This will run on page load
-            var updateInteval = setInterval(function(){ update() }, 500); // this will run every 0.5 seconds  
-
-            function update_time(){
-                var x = new Date()
-                $("#time").text(x)
-            };
-            var timeInterval = setInterval(function(){ update_time() }, 500); // this will run every 0.5 seconds  
-
-	
-
-    </script>
-  </head>
+        <link rel="stylesheet" type="text/css" href='static/style.css' />
+        <script src="static/jquery-3.4.1.min.js" ></script>
+        <script src="static/scripts.js" ></script>
+    </head>
     <body>
         <div id="header-bar">
             <img id="nist-logo" src="static/logo.svg" />
             <p class="status-strip">
-            {{name}} • Experiment:&nbsp;{{experiment}} 
-            <br/>
-            Contact:&nbsp;{{contact}} • Queue&nbsp;State:&nbsp;<span id='queue_state'></span> 
+            • {{name}} •
             <br/>
             Queued:&nbsp;<span id='queue_size'></span> • Completed:&nbsp;<span id='history_size'></span>
             <br/>
+            Protocol:&nbsp;{{protocol}} • Queue&nbsp;State:&nbsp;<span id='queue_state'></span> 
+            <br/>
+            Experiment:&nbsp;{{experiment}} • Contact:&nbsp;{{contact}}  
+            <br/>
             Last&nbsp;Updated:&nbsp;<span id='time'></span> 
             </p>
-            <form action="/halt" method="POST"><input id="estop" type="submit" value="HALT"></form>
+            <!--<form action="/halt" method="POST"><input id="estop" type="submit" value="HALT"></form>-->
             <img id="ncnr-logo" src="static/ncnr.png" />
         </div>
         <div id="content_container">
@@ -232,15 +36,20 @@
                 •
                 <button onclick="$('div.meta').hide()">Meta Off</button>
                 <button onclick="$('div.meta').show()">Meta On</button>
+                •
+                <button onclick="$.post('/halt')" style="background-color:red;">HALT</button>
             </div>
             <h3 class="centered"> Protocol Status </h3> <hr/>
             <div id="protocol_status"></div>
 
             <div id="command-queue">
-                <h3 class="centered">  History </h3> <hr/>
+                <h3 class="centered">Task History </h3> <hr/>
                 <div id="history"></div>
+                
+                <h3 class="centered">Running Task</h3> <hr/>
+                <div id="running"></div>
 
-                <h3 class="centered">  Task Queue </h3> <hr/>
+                <h3 class="centered">Task Queue</h3> <hr/>
                 <div id="queued"></div>
             </div>
         </div id="content_container">

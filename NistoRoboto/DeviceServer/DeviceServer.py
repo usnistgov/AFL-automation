@@ -5,22 +5,25 @@ from flask import request, jsonify, Markup
 from flask_jwt_extended import JWTManager, jwt_required 
 from flask_jwt_extended import create_access_token, get_jwt_identity
 
-import datetime,requests, subprocess,shlex,os
-
-import threading,queue,logging,json
+import datetime,requests,subprocess,shlex,os
+import threading,queue,logging,json,pathlib
 
 from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
 from NistoRoboto.DeviceServer.LoggerFilter import LoggerFilter
 
 class DeviceServer:
-    def __init__(self,name,experiment='Development',contact='tbm@nist.gov',root_path=None):
+    def __init__(self,name,experiment='Development',contact='tbm@nist.gov'):
         self.name = name
         self.experiment = experiment
         self.contact = contact
 
         self.logger_filter= LoggerFilter('get_queue','queue_state','protocol_status')
 
+
+        #allows the flask server to find the static and templates directories
+        root_path = pathlib.Path(__file__).parent.absolute()
         self.app = Flask(name,root_path=root_path)
+
         self.queue_daemon = None
         self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
         self.jwt = JWTManager(self.app)

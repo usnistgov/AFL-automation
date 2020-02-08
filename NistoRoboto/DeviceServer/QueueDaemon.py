@@ -28,6 +28,7 @@ class QueueDaemon(threading.Thread):
         self.task_queue.put(None)
 
     def run(self):
+        app.logger.info('Initializing QueueDaemon run-loop')
         while not self.stop:
             package = self.task_queue.get(block=True,timeout=None)
             self.busy=True

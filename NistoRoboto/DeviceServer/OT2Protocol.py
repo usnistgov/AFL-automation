@@ -10,27 +10,35 @@ class OT2Protocol(Protocol):
         self.name = 'OT2Protocol'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
 
+    def status(self):
+        status = []
+        for k,v in self.protocol.loaded_instruments.items():
+            status.append(str(v))
+        for k,v in self.protocol.loaded_labwares.items():
+            status.append(str(v))
+        return status
+
     def reset(self):
-        self._app.logger.info('Resetting the protocol context')
+        self.app.logger.info('Resetting the protocol context')
 
         raise NotImplementedError('This method doesn\'t work yet. For now, just restart the flask server')
 
         # opentrons.robot.reset() doesnt work
 
         # #XXX HACK! asyncio event loop finding borks without this
-        # # self._app.logger.debug(opentrons.execute._HWCONTROL)
+        # # self.app.logger.debug(opentrons.execute._HWCONTROL)
         # # del opentrons.execute._HWCONTROL
         # # opentrons.execute._HWCONTROL = None
-        # self._app.logger.debug(opentrons.execute._HWCONTROL)
+        # self.app.logger.debug(opentrons.execute._HWCONTROL)
 
         # self.protocol = opentrons.execute.get_protocol_api('2.0')
 
-    def home(self):
-        self._app.logger.info('Homing the robot\'s axes')
+    def home(self,**kwargs):
+        self.app.logger.info('Homing the robot\'s axes')
         self.protocol.home()
 
     def get_wells(self,locs):
-        self._app.logger.debug(f'Converting locations to well objects: {locs}')
+        self.app.logger.debug(f'Converting locations to well objects: {locs}')
         wells = []
         for loc in listify(locs):
             if not (len(loc) == 3):
@@ -39,43 +47,43 @@ class OT2Protocol(Protocol):
             well = loc[1:]
             labware = self.get_labware(slot)
             wells.append(labware[well])
-        self._app.logger.debug(f'Created well objects: {wells}')
+        self.app.logger.debug(f'Created well objects: {wells}')
         return wells
 
     def get_labware(self,slot):
-        self._app.logger.debug(f'Getting labware from slot \'{slot}\'')
+        self.app.logger.debug(f'Getting labware from slot \'{slot}\'')
         if self.protocol.deck[slot] is not None:
             labware = self.protocol.deck[slot]
-            self._app.logger.debug(f'Found labware \'{labware}\'')
+            self.app.logger.debug(f'Found labware \'{labware}\'')
             return labware
         else:
             raise ValueError('Specified slot ({slot}) is empty of labware')
 
-    def load_labware(self,name,slot,**kw):
+    def load_labware(self,name,slot,**kwargs):
         '''Load labware (containers,tipracks) into the protocol'''
         if self.protocol.deck[slot] is not None:
             if self.protocol.deck[slot].name == name:
-                self._app.logger.info(f'Labware \'{name}\' already loaded into slot \'{slot}\'.\n')
+                self.app.logger.info(f'Labware \'{name}\' already loaded into slot \'{slot}\'.\n')
                 #do nothing
             else:
                 raise RuntimeError(f'''Attempted to load labware \'{name}\' into slot \'{slot}\'.
                         Slot is already filled loaded with {self.protocol.deck[slot]}.''')
         else: 
-            self._app.logger.debug(f'Loading labware \'{name}\' into slot \'{slot}\' into the protocol context')
+            self.app.logger.debug(f'Loading labware \'{name}\' into slot \'{slot}\' into the protocol context')
             self.protocol.load_labware(name,slot)
 
-    def load_instrument(self,name,mount,tip_rack_slots,**kw):
+    def load_instrument(self,name,mount,tip_rack_slots,**kwargs):
         '''Load a pipette into the protocol'''
 
         if mount in self.protocol.loaded_instruments:
             if self.protocol.loaded_instruments[mount].name == name:
-                self._app.logger.info(f'Instrument \'{name}\' already loaded into mount \'{mount}\'.\n')
+                self.app.logger.info(f'Instrument \'{name}\' already loaded into mount \'{mount}\'.\n')
                 #do nothing
             else:
                 raise RuntimeError(f'''Attempted to load instrument \'{name}\' into mount \'{mount}\'.
                         mount is already loaded with {self.protocol.loaded_instruments[mount]}.''')
         else: 
-            self._app.logger.debug(f'Loading pipette \'{name}\' into mount \'{mount}\' with tip_racks in slots {tip_rack_slots}')
+            self.app.logger.debug(f'Loading pipette \'{name}\' into mount \'{mount}\' with tip_racks in slots {tip_rack_slots}')
             tip_racks = []
             for slot in listify(tip_rack_slots):
                 tip_rack = self.protocol.deck[slot]
@@ -102,7 +110,7 @@ class OT2Protocol(Protocol):
             volume of fluid to transfer
 
         '''
-        self._app.logger.info(f'Transfering {volume}uL from {source} to {dest}')
+        self.app.logger.info(f'Transfering {volume}uL from {source} to {dest}')
 
 
         #get pipette based on volume
@@ -122,7 +130,7 @@ class OT2Protocol(Protocol):
         pipette.transfer(volume,source_wells,dest_wells)
 
     def get_pipette(self,volume,method='min_transfers'):
-        self._app.logger.debug(f'Looking for a pipette for volume {volume}')
+        self.app.logger.debug(f'Looking for a pipette for volume {volume}')
 
         pipettes = []
         minVolStr = ''
@@ -156,7 +164,7 @@ class OT2Protocol(Protocol):
             #     )
 
 
-        self._app.logger.debug(f'Found pipettes with suitable minimum volume and computed uncertainties: {pipettes}')
+        self.app.logger.debug(f'Found pipettes with suitable minimum volume and computed uncertainties: {pipettes}')
         if not pipettes:
             raise ValueError('No suitable pipettes found!\\n')
         
@@ -168,7 +176,7 @@ class OT2Protocol(Protocol):
             pipette = min(acceptable_pipettes,key=lambda x: x['object'].max_volume) 
         else:
             raise ValueError(f'Pipette selection method {method} was not recognized.')
-        self._app.logger.debug(f'Chosen pipette: {pipette}')
+        self.app.logger.debug(f'Chosen pipette: {pipette}')
         return pipette['object']
 
     def _pipette_uncertainty(self,maxvolume,volume,errortype):

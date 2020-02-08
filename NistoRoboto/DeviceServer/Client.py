@@ -38,6 +38,11 @@ class Client:
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
             raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
+
+    def reset_queue_daemon(self):
+        response = requests.post(self.url+'/reset_queue_daemon',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to reset_queue_daemon command failed with status_code {response.status_code}\n{response.text}')
         
     def pause(self,state):
         json={'state':state}
@@ -45,11 +50,11 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
 
-    def debug_mode(self,state):
+    def debug(self,state):
         json={'state':state}
-        response = requests.post(self.url+'/debug_mode',headers=self.headers,json=json)
+        response = requests.post(self.url+'/debug',headers=self.headers,json=json)
         if response.status_code != 200:
-            raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
+            raise RuntimeError(f'API call to debug command failed with status_code {response.status_code}\n{response.text}')
 
     def halt(self):
         response = requests.post(self.url+'/halt',headers=self.headers,json={})

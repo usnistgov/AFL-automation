@@ -11,10 +11,14 @@ class Protocol:
         
     def status(self):
         status = []
-        return kw
+        return status
 
-    def execute(self,kw):
-        pass
+    def execute(self,**kwargs):
+        task_name = kwargs.get('task_name',None)
+        if task_name is None:
+            raise ValueError('No name field in task. Don\'t know what to execute...')
+        #execute the command
+        getattr(self,task_name)(**kwargs)
 
 
 

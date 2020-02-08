@@ -10,14 +10,17 @@ import datetime,requests, subprocess,shlex,os
 import threading,queue,logging,json
 
 from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
+from NistoRoboto.DeviceServer.LoggerFilter import LoggerFilter
 
 class DeviceServer:
-    def __init__(self,name,experiment='Development',contact='tbm@nist.gov'):
+    def __init__(self,name,experiment='Development',contact='tbm@nist.gov',root_path=None):
         self.name = name
         self.experiment = experiment
         self.contact = contact
 
-        self.app = Flask(name)
+        self.logger_filter= LoggerFilter('get_queue','queue_state','protocol_status')
+
+        self.app = Flask(name,root_path=root_path)
         self.queue_daemon = None
         self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
         self.jwt = JWTManager(self.app)
@@ -25,9 +28,14 @@ class DeviceServer:
     def create_queue(self,protocol):
         self.history = []
         self.task_queue = queue.Queue()
-        self.protocol = protocol
+        self.protocol     = protocol
         self.protocol.app = self.app
         self.queue_daemon = QueueDaemon(self.app,protocol,self.task_queue,self.history)
+
+    def reset_queue_daemon(self):
+        self.queue_daemon.terminate()
+        self.create_queue(self.protocol)
+        return 'Success',200
 
     def run(self,**kwargs):
         if self.queue_daemon is None:
@@ -57,6 +65,7 @@ class DeviceServer:
         self.app.add_url_rule('/protocol_status','protocol_status',self.protocol_status,methods=['GET'])
         self.app.add_url_rule('/login','login',self.login,methods=['POST'])
         self.app.add_url_rule('/login_test','login_test',self.login_test,methods=['GET','POST'])
+        self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
 
         self.app.before_first_request(self.init)
         self.app.logger.setLevel(level=logging.DEBUG)
@@ -165,27 +174,8 @@ class DeviceServer:
         return 'Success',200
 
 
-class Filter(object):
-    def __init__(self, *filters):
-        from werkzeug import serving
-
-        self.filters = filters
-        self._log_request = serving.WSGIRequestHandler.log_request
-
-        parent = self
-
-        def log_request(self, *args, **kwargs):
-            if any(filter in self.requestline for filter in parent.filters):
-                return
-
-            parent._log_request(self, *args, **kwargs)
-
-        serving.WSGIRequestHandler.log_request = log_request
 
 if __name__ =='__main__':
-
-    filter = Filter('get_queue','queue_state','protocol_status')
-    
 
     from NistoRoboto.DeviceServer.DummyProtocol import DummyProtocol
     server = DeviceServer('TestServer')

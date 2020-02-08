@@ -28,22 +28,20 @@ class QueueDaemon(threading.Thread):
         self.task_queue.put(None)
 
     def run(self):
-        app.logger.info('Initializing QueueDaemon run-loop')
+        self.app.logger.info('Initializing QueueDaemon run-loop')
         while not self.stop:
             package = self.task_queue.get(block=True,timeout=None)
-            self.busy=True
-            task = package['task']
-
-            self.app.logger.info(f'Running task {task}')
-            package['meta']['started'] = datetime.datetime.now().strftime('%H:%M:%S')
-
-            self.running_task = [package]
-
 
             # If the task object is None, break the queue-loop
-            if task is None: #stop the queue execution
+            if package is None: #stop the queue execution
                 self.terminate()
                 break
+
+            self.busy=True
+            task = package['task']
+            self.app.logger.info(f'Running task {task}')
+            package['meta']['started'] = datetime.datetime.now().strftime('%H:%M:%S')
+            self.running_task = [package]
 
             # pause queue but notify user of state every minute
             count = 600
@@ -57,13 +55,9 @@ class QueueDaemon(threading.Thread):
             #if debug_mode, pop and wait but don't execute
             if self.debug: 
                 time.sleep(3.0)
-                package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')
-                self.running_task = []
-                self.history.append(package)
-                continue
-            
+            else:
+                self.protocol.execute(**task)
 
-            self.protocol.execute(**task)
             package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M')
             self.running_task = []
             self.history.append(package)

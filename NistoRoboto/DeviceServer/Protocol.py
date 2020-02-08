@@ -2,11 +2,15 @@ from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
 
 class Protocol:
-    def __init__(self,app):
-        self.app = app
+    def __init__(self,name):
+        self.app = None
+        if name is None:
+            self.name = 'Protocol'
+        else:
+            self.name = name
         
     def status(self):
-        kw = {}
+        status = []
         return kw
 
     def execute(self,kw):

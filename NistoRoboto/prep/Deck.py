@@ -195,10 +195,10 @@ class Deck:
             mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
             self.mass_transfers = mass_transfers
            
-            for stock,mass in zip(self.stocks,mass_transfers):
-                    volume = mass/stock.density
-                    if (volume>0) and (volume<volume_cutoff):
-                        raise IndexError('Can\'t make solution with loaded pipettes')
+            # for stock,mass in zip(self.stocks,mass_transfers):
+            #         volume = mass/stock.density
+            #         if (volume>0) and (volume<volume_cutoff):
+            #             raise IndexError('Can\'t make solution with loaded pipettes')
             
             #apply mass balance
             target_check = Mixture()

@@ -13,7 +13,9 @@ class Component(object):
     def __init__(self,name,mass=None,volume=None,density=None,formula=None):
         self.name    = name
         self.density = density
-        self.tol = 1e-3 #tolerance for volume/mass checks
+        #tolerance for volume/mass checks
+        # 1e=3 = 1 mg or 1 uL
+        self.tol = 1e-3 
         
         if (mass is None) and (volume is None):
             # use hidden variables to avoid property setting Nonsense
@@ -47,9 +49,9 @@ class Component(object):
     
     def __str__(self):
         out_str  = '<Component '
-        out_str += f' M={self.mass:3.2f}' if self._has_mass else ' M=None'
-        out_str += f' V={self.volume:3.2f}' if self._has_volume else ' V=None'
-        out_str += f' D={self.density:3.2f}' if self._has_density else ' D=None'
+        out_str += f' M={self.mass:4.3f}' if self._has_mass else ' M=None'
+        out_str += f' V={self.volume:4.3f}' if self._has_volume else ' V=None'
+        out_str += f' D={self.density:4.3f}' if self._has_density else ' D=None'
         out_str += '>'
         return out_str
     

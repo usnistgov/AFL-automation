@@ -29,7 +29,7 @@ class Mixture:
             if vfrac is None:
                 out_str += f' {name}:NoVolume'
             else:
-                out_str += f' {name}:{vfrac:3.2f}'
+                out_str += f' {name}:{vfrac:4.3f}'
         out_str +='>'
         return out_str
 

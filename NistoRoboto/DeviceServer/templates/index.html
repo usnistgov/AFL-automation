@@ -25,17 +25,17 @@
         </div>
         <div id="content_container">
             <div id="meta_buttons">
-                <button onclick="$.post('/clear_history')">Clear History</button>
-                <button onclick="$.post('/clear_queue')">Clear Queue</button>
+                <button onclick=$.post('/clear_history')>Clear History</button>
+                <button onclick=$.post('/clear_queue')>Clear Queue</button>
                 •
-                <button onclick="$.ajax({type:'POST',url:'/pause',data:JSON.stringify({state:true}),contentType:'application/json;charset=UTF-8'})">Pause</button>
-                <button onclick="$.ajax({type:'POST',url:'/pause',data:JSON.stringify({state:false}),contentType:'application/json;charset=UTF-8'})">Unpause</button>
+                <button onclick=$.post({url:'/pause',data:'{"state":true}',contentType:'application/json'})>Pause</button>
+                <button onclick=$.post({url:'/pause',data:'{"state":false}',contentType:'application/json'})>Unpause</button>
                 •
-                <button onclick="$.ajax({type:'POST',url:'/debug',data:JSON.stringify({state:true}),contentType:'application/json;charset=UTF-8'})">Enable Debug Mode</button>
-                <button onclick="$.ajax({type:'POST',url:'/debug',data:JSON.stringify({state:false}),contentType:'application/json;charset=UTF-8'})">Disable Debug Mode</button>
+                <button onclick=$.post({url:'/debug',data:'{"state":true}',contentType:'application/json'})>Enable Debug Mode</button>
+                <button onclick=$.post({url:'/debug',data:'{"state":false}',contentType:'application/json'})>Disable Debug Mode</button>
                 •
-                <button onclick="$('div.meta').hide()">Meta Off</button>
-                <button onclick="$('div.meta').show()">Meta On</button>
+                <button onclick=$('div.meta').hide()>Meta Off</button>
+                <button onclick=$('div.meta').show()>Meta On</button>
                 •
                 <button onclick="$.post('/halt')" style="background-color:red;">HALT</button>
             </div>

@@ -1,6 +1,10 @@
 from flask import Flask, render_template
 from flask import request, jsonify, Markup
 
+#authentication module
+from flask_jwt_extended import JWTManager, jwt_required 
+from flask_jwt_extended import create_access_token, get_jwt_identity
+
 import datetime,requests, subprocess,shlex,os
 
 import threading,queue,logging,json
@@ -15,6 +19,8 @@ class DeviceServer:
 
         self.app = Flask(name)
         self.queue_daemon = None
+        self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
+        self.jwt = JWTManager(self.app)
 
     def create_queue(self,protocol):
         self.history = []
@@ -49,8 +55,10 @@ class DeviceServer:
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
         self.app.add_url_rule('/queue_state','queue_state',self.queue_state,methods=['GET'])
         self.app.add_url_rule('/protocol_status','protocol_status',self.protocol_status,methods=['GET'])
-        self.app.before_first_request(self.init)
+        self.app.add_url_rule('/login','login',self.login,methods=['POST'])
+        self.app.add_url_rule('/login_test','login_test',self.login_test,methods=['GET','POST'])
 
+        self.app.before_first_request(self.init)
         self.app.logger.setLevel(level=logging.DEBUG)
 
     def index(self):
@@ -85,8 +93,10 @@ class DeviceServer:
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         return jsonify(output),200
 
+    @jwt_required
     def enqueue(self):
         task = request.json
+        self.app.logger.info(f'{request.json}')
         package = {'task':task,'meta':{}}
         package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
         self.task_queue.put(package)
@@ -124,7 +134,36 @@ class DeviceServer:
 
         self.app.logger.info('Spawning Daemons')
         self.queue_daemon.start()
+
         return 'Success',200
+
+    def login(self):
+        if not request.is_json:
+            return jsonify({"msg": "Missing JSON in request"}), 400
+    
+        username = request.json.get('username', None)
+        if username is None:
+            return jsonify({"msg": "Missing username parameter"}), 400
+
+        password = request.json.get('password', None)
+        if password is None:
+            return jsonify({"msg": "Missing password parameter"}), 400
+    
+        if password != 'domo_arigato':
+            return jsonify({"msg": "Bad password"}), 401
+    
+        # Identity can be any data that is json serializable
+        #expires = datetime.timedelta(days=1)
+        self.app.logger.info(f'Creating login token for user {username}')
+        token = create_access_token(identity=username)#,expires=expires)
+        return jsonify(token=token), 200
+    
+    @jwt_required
+    def login_test(self):
+        username = get_jwt_identity()
+        self.app.logger.info(f'Login test for {username} successful')
+        return 'Success',200
+
 
 class Filter(object):
     def __init__(self, *filters):

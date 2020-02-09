@@ -42,8 +42,8 @@ class Deck:
         self.client = None
 
     def init_remote_connection(self,url):
-        from NistoRoboto.OT2App.Client import Client
-        self.client = Client(url)
+        from NistoRoboto.DeviceServer.OT2Client import OT2Client
+        self.client = OT2Client(url)
         self.client.login('NistoRobotoDeck')
 
     def load_sample(self,volume,source,dest,debug_mode=False):
@@ -54,7 +54,7 @@ class Deck:
             # just re-login
             self.client.login('NistoRobotoDeck')
 
-        self.client.set_queue_mode(debug_mode=debug_mode)#unlock the queue
+        self.client.debug(state=False)#unlock the queue
 
         self.client.home()# must home robot before sending commands
 
@@ -73,7 +73,7 @@ class Deck:
             # just re-login
             self.client.login('NistoRobotoDeck')
 
-        self.client.set_queue_mode(debug_mode=debug_mode)#unlock the queue
+        self.client.debug(state=False)#unlock the queue
 
     def send_deck_config(self,debug_mode=False):
         self._check_client(debug_mode)

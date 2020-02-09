@@ -1,4 +1,4 @@
-import requests
+import requests,uuid,time
 
 class Client:
     '''Communicate with DeviceServer 
@@ -33,11 +33,31 @@ class Client:
         self.token  = response.json()['token']
         self.headers = {'Authorization':'Bearer {}'.format(self.token)}
 
+    def get_queue(self):
+        response = requests.get(self.url+'/get_queue',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
+        return response.json()
+
+    def wait(self,target_uuid=None,interval=0.1):
+        while True:
+            response = requests.get(self.url+'/get_queue',headers=self.headers)
+            history,running,queued = response.json()
+            if target_uuid is not None:
+                if not any([task['uuid']==target_uuid for task in running + queued]):
+                    break
+            else:
+                if len(running+queued)==0:
+                    break
+            time.sleep(interval)
+            
+
     def enqueue(self,**kwargs):
         json=kwargs
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
             raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
+        return uuid.UUID(response.text)
 
     def reset_queue_daemon(self):
         response = requests.post(self.url+'/reset_queue_daemon',headers=self.headers)
@@ -48,7 +68,17 @@ class Client:
         json={'state':state}
         response = requests.post(self.url+'/pause',headers=self.headers,json=json)
         if response.status_code != 200:
-            raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
+            raise RuntimeError(f'API call to pause command failed with status_code {response.status_code}\n{response.text}')
+        
+    def clear_queue(self):
+        response = requests.post(self.url+'/clear_queue',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to clear_queue command failed with status_code {response.status_code}\n{response.text}')
+
+    def clear_history(self):
+        response = requests.post(self.url+'/clear_history',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to clear_history command failed with status_code {response.status_code}\n{response.text}')
 
     def debug(self,state):
         json={'state':state}

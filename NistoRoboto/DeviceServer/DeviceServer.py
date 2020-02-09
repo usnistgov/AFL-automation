@@ -1,12 +1,11 @@
-from flask import Flask, render_template
-from flask import request, jsonify, Markup
+from flask import Flask, render_template, request, jsonify
 
 #authentication module
 from flask_jwt_extended import JWTManager, jwt_required 
 from flask_jwt_extended import create_access_token, get_jwt_identity
 
 import datetime,requests,subprocess,shlex,os
-import threading,queue,logging,json,pathlib
+import threading,queue,logging,json,pathlib,uuid
 
 from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
 from NistoRoboto.DeviceServer.LoggerFilter import LoggerFilter
@@ -109,10 +108,10 @@ class DeviceServer:
     def enqueue(self):
         task = request.json
         self.app.logger.info(f'{request.json}')
-        package = {'task':task,'meta':{}}
+        package = {'task':task,'meta':{},'uuid':uuid.uuid4()}
         package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
         self.task_queue.put(package)
-        return 'Success',200
+        return str(package['uuid']),200
 
     def clear_queue(self):
         self.task_queue.queue.clear()

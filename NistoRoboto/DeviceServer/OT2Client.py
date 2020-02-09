@@ -12,8 +12,7 @@ class OT2Client(Client):
 
         Arguments
         ---------
-        source: str or list of str
-            Source wells to transfer from. Wells should be specified as three
+        source: str or list of str Source wells to transfer from. Wells should be specified as three
             character strings with the first character being the slot number.
 
         dest: str or list of str
@@ -34,18 +33,17 @@ class OT2Client(Client):
             json['source_loc'] = source_loc
         if dest_loc is not None:
             json['dest_loc'] = dest_loc
-        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
-        if response.status_code != 200:
-            raise RuntimeError(f'API call to transfer command failed with status_code {response.status_code}\n{response.content}')
+
+        UUID = self.enqueue(**json)
+        return UUID
 
     def load_labware(self,name,slot):
         json = {}
         json['task_name']  = 'load_labware'
         json['name'] = name
         json['slot'] = slot
-        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
-        if response.status_code != 200:
-            raise RuntimeError(f'API call to load_labware command failed with status_code {response.status_code}\n{response.content}')
+        UUID = self.enqueue(**json)
+        return UUID
 
     def load_instrument(self,name,mount,tip_rack_slots):
         json = {}
@@ -53,13 +51,11 @@ class OT2Client(Client):
         json['name'] = name
         json['mount'] = mount
         json['tip_rack_slots'] = tip_rack_slots
-        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
-        if response.status_code != 200:
-            raise RuntimeError(f'API call to load_instrument command failed with status_code {response.status_code}\n{response.content}')
+        UUID = self.enqueue(**json)
+        return UUID
 
     def home(self):
         json = {}
         json['task_name']  = 'home'
-        response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
-        if response.status_code != 200:
-            raise RuntimeError(f'API call to home command failed with status_code {response.status_code}\n{response.content}')
+        UUID = self.enqueue(**json)
+        return UUID

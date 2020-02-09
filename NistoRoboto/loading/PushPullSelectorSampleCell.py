@@ -1,4 +1,5 @@
 from NistoRoboto.loading.SampleCell import SampleCell
+from NistoRoboto.DeviceServer.Protocol import Protocol
 
 import math
 
@@ -23,7 +24,7 @@ class Tubing():
         '''returns volume in mL'''
         return (self.id_mm / 20)**2 *math.pi*self.length
 
-class PushPullSelectorSampleCell(SampleCell):
+class PushPullSelectorSampleCell(Protocol,SampleCell):
     '''
         Class for a sample cell consisting of a pump and a one-to-many flow selector 
         where the pump line holds sample (pulling and pushing as necessary) with a cell on 
@@ -37,7 +38,7 @@ class PushPullSelectorSampleCell(SampleCell):
 
 
 
-    def __init__(self,pump,selector,ncells=1,name=None,thickness=None,state='clean'):
+    def __init__(self,pump,selector,ncells=1,thickness=None,state='clean'):
         '''
             ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)
             Name = the cell name, array with length = ncells
@@ -53,7 +54,7 @@ class PushPullSelectorSampleCell(SampleCell):
                 e.g. selector = ViciMultiposSelector(port,portlabels={'catch':1,'cell':2,'rinse':3,'waste':4,'air':5})
 
         '''
-        self.name = name
+        self.name = 'PushPullSelectorSampleCell'
         self.pump = pump
         self.selector = selector
         self.state = 'clean'
@@ -78,6 +79,16 @@ class PushPullSelectorSampleCell(SampleCell):
         self.nrinses_cell = 1
         self.nrinses_catch = 2
         self.syringe_dirty = False
+
+    def status(self):
+        status = []
+        status.append(f'Pump: {self.pump.name}')
+        status.append(f'Selector: {self.selector.name}')
+        status.append(f'Cell: {self.name}')
+        for k,v in self.selector.portlabels.items():
+            status.append(f'Port {v}: {k}')
+        return status
+
     def loadSample(self,cellname='cell'):
 
         if self.syringe_dirty:

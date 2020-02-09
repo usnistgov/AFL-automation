@@ -18,6 +18,7 @@ class Protocol:
         if task_name is None:
             raise ValueError('No name field in task. Don\'t know what to execute...')
         #execute the command
+        del kwargs['task_name']
         getattr(self,task_name)(**kwargs)
 
 

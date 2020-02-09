@@ -31,6 +31,7 @@ class NE1kSyringePump(SerialDevice,SyringePump):
 
 
         '''
+        self.name = 'NE1kSyringePump'
         self.pumpid = pumpid
         self.flow_delay = flow_delay
         if daisy_chain is not None:

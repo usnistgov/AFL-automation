@@ -108,7 +108,7 @@ div.meta {
     margin: 0 15px 0 15px
 }
 
-div.history {
-    height: 200px;
+div.overflow {
+    max-height: 200px;
     overflow: scroll;
 }

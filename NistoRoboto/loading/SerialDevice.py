@@ -1,4 +1,5 @@
 import serial
+from NistoRoboto.shared.exceptions import SerialCommsException
 
 class SerialDevice():
     def __init__(self,port,baudrate=19200,timeout=0.5):

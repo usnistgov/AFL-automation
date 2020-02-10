@@ -42,11 +42,12 @@ class Deck:
 
         self.client = None
 
-    def init_remote_connection(self,url):
+    def init_remote_connection(self,url,home=False):
         from NistoRoboto.DeviceServer.OT2Client import OT2Client
         self.client = OT2Client(url)
         self.client.login('NistoRobotoDeck')
-        self.client.home()# must home robot before sending commands
+        if home:
+            self.client.home()# must home robot before sending commands
 
     def load_sample(self,volume,source,dest,debug_mode=False):
         if self.client is None:

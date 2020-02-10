@@ -37,20 +37,23 @@
                 <button onclick=$('div.meta').hide()>Meta Off</button>
                 <button onclick=$('div.meta').show()>Meta On</button>
                 •
-                <button onclick="$.post('/halt')" style="background-color:red;">HALT</button>
+                <button onclick="$.post('/halt')" style="background-color:red;height:50px;width:50px;">HALT</button>
             </div>
             <h3 class="centered"> Protocol Status </h3> <hr/>
-            <div id="protocol_status"></div>
+            <div id="protocol_status" class="overflow"></div>
 
             <div id="command-queue">
-                <h3 class="centered">Task History </h3> <hr/>
-                <div id="history"></div>
+                <!--<h3 class="centered">Task History </h3> <hr/> -->
+                <div id="history" class="overflow"></div>
+                <hr/>
                 
-                <h3 class="centered">Running Task</h3> <hr/>
-                <div id="running"></div>
+                <!--<h3 class="centered">Running Task</h3> <hr/>-->
+                <div id="running"class="overflow"></div>
+                <hr/>
 
-                <h3 class="centered">Task Queue</h3> <hr/>
-                <div id="queued"></div>
+                <!--<h3 class="centered">Task Queue</h3> <hr/>-->
+                <div id="queued"class="overflow"></div>
+                <hr/>
             </div>
         </div id="content_container">
     </body>

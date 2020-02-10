@@ -107,3 +107,8 @@ div.meta {
     font-weight: bold;
     margin: 0 15px 0 15px
 }
+
+div.history {
+    height: 200px;
+    overflow: scroll;
+}

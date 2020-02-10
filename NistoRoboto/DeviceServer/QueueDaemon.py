@@ -58,7 +58,7 @@ class QueueDaemon(threading.Thread):
             else:
                 self.protocol.execute(**task)
 
-            package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M')
+            package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')
             self.running_task = []
             self.history.append(package)
             self.busy = False

@@ -1,6 +1,7 @@
 import numpy as np
 from NistoRoboto.prep.Mixture import Mixture
 from NistoRoboto.prep.PipetteAction import PipetteAction
+from NistoRoboto.shared.exceptions import MixingException
 
 get_pipette='''
 def get_pipette(volume,loaded_pipettes):
@@ -45,6 +46,7 @@ class Deck:
         from NistoRoboto.DeviceServer.OT2Client import OT2Client
         self.client = OT2Client(url)
         self.client.login('NistoRobotoDeck')
+        self.client.home()# must home robot before sending commands
 
     def load_sample(self,volume,source,dest,debug_mode=False):
         if self.client is None:
@@ -56,7 +58,6 @@ class Deck:
 
         self.client.debug(state=False)#unlock the queue
 
-        self.client.home()# must home robot before sending commands
 
         kw = {}
         kw['volume'] = volume
@@ -100,7 +101,6 @@ class Deck:
         if send_deck_config:
             self.send_deck_config(debug_mode)
 
-        self.client.home()# must home robot before sending commands
         for task in self.protocol:
             kw = task.get_kwargs()
             self.client.transfer(**kw)
@@ -158,7 +158,7 @@ class Deck:
         return components,target_components,stock_components
 
 
-    def make_protocol(self,volume_cutoff=0.03):
+    def make_protocol(self,deplete=True,volume_cutoff=0.03):
         #build component list
         components,target_components,stock_components = self.get_components()
         self.protocol = []
@@ -195,22 +195,30 @@ class Deck:
             mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
             self.mass_transfers = mass_transfers
            
-            # for stock,mass in zip(self.stocks,mass_transfers):
-            #         volume = mass/stock.density
-            #         if (volume>0) and (volume<volume_cutoff):
-            #             raise IndexError('Can\'t make solution with loaded pipettes')
-            
-            #apply mass balance
-            target_check = Mixture()
+            #
             for stock,mass in zip(self.stocks,mass_transfers):
                 if mass>0:
-                    removed = stock.remove_mass(mass)
-                    target_check = target_check + removed
+                    removed = stock.copy()
+                    removed.mass = mass
+                    if (removed.volume>0) and (removed.volume<volume_cutoff):
+                        raise MixingException('Can\'t make solution with loaded pipettes')
+
+            #apply mass balance
+            self.target_check = Mixture()
+            for stock,mass in zip(self.stocks,mass_transfers):
+                if mass>0:
+                    if deplete:
+                        removed = stock.remove_mass(mass)
+                    else:
+                        removed = stock.copy()
+                        removed.mass = mass
+
+                    self.target_check = self.target_check + removed
                     
                     action = PipetteAction(
                                 source = self.stock_location[stock],
                                 dest = self.target_location[target],
-                                volume = removed.volume*1000, #assume ml for now
+                                volume = removed.volume*1000, #convet from ml for to ul
                                 dest_loc = 'top'
                                 
                     )
@@ -219,9 +227,9 @@ class Deck:
             #need to add empty components for equality check
             for name,component in target:
                 if component.empty:
-                    target_check = target_check + component
+                    self.target_check = self.target_check + component
                     
-            if not (target == target_check):
+            if not (target == self.target_check):
                 raise RuntimeError('Mass transfer calculation failed...')
 
     def make_script(self,filename,load_last_sample=True):

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+        body {
+          background-color: linen;
+
+        }
+        #header-bar {
+          top:0px;
+          width:100%;
+          height: 10%;
+          background-color: gray;
+          border-bottom-style: solid;
+          border-bottom-width: 4px;
+          border-bottom-color: black;
+          clear:both;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        #status-light {
+          height: 50px;
+          width: 50px;
+
+          border-radius: 50%;
+          background-color: {{statuscolor}};
+
+        }
+
+        #status-strip {
+          /*display:inline-block;
+
+          margin-left: auto;
+          width: 75%;
+          margin-right: auto;*/
+          text-align:center;
+          font: bold 15px sans-serif;
+        }
+
+        #nist-logo {
+          width: 10%;
+          height: auto;
+          /*
+          right: 0px;
+          display: inline-block;
+          height: 50px;
+          padding: 5px;*/
+        }
+
+        #estop {
+          height: 50px;
+          background: red;
+        }
+
+        #ncnr-logo {
+          width: 10%;
+          height: auto;
+          /*
+          right: 0px;
+          display: inline-block;
+          height: 50px;
+          padding: 5px;*/
+        }
+        #content-container {
+          width:100%;
+          clear:both;
+          padding-top: 10px;
+        }
+
+        #deck {
+          height: 100%; 
+          width: 100%; 
+          object-fit: contain
+          -webkit-transform:rotate(180deg);
+          -moz-transform: rotate(180deg);
+          -ms-transform: rotate(180deg);
+          -o-transform: rotate(180deg);
+          transform: rotate(180deg);
+        }
+
+        @media (min-width: 640px) {
+            /* styles for desktop */
+            #camera-img {
+                float:left;
+                width:58%;
+                overflow:hidden;
+                border-width: 4px;
+              }
+            #hardware-desc {
+              float:right;
+              width:38%;
+              overflow:hidden;
+
+              border-width: 4px;
+              border-color: black;
+              border-style: solid;
+            }
+        }
+        @media (max-width: 640px) {
+
+          #camera-img {
+            width:100%;
+            clear:both;
+          }
+
+          #hardware-desc {
+            width:100%;
+            clear:both;
+            border-top-width: 4px;
+            border-top-color: black;
+            border-top-style: solid;
+
+          }
+        
+        }
+
+        /*
+*/
+
+        #command-queue {
+          background-color: #aaaaaa;
+          position: sticky;
+          bottom: 0px;
+          padding-top: 5px;
+          padding-bottom: 5px;
+          clear:both;
+          min-height: 70px;
+          width:100%;
+          border-top-style: dotted;
+          border-top-width: 4px;
+          border-top-color: red;
+        }
+    </style>
+    <script src="static/jquery-3.4.1.min.js"></script>
+    <script>
+      function updatecontent(){
+          $.get( "ajax_data", function( data ) {
+                  a = JSON.parse(data)
+                  $("#status-strip").html('Last&nbsp;Updated:&nbsp;'+a['updatetime']+' -  Current&nbsp;Status:&nbsp;'+a['robotstatus']+' - Experiment:&nbsp;'+a['experimentname']+' - Contact:&nbsp;'+a['contactinfo']+' - Queue&nbsp;Mode:&nbsp;'+ a['queuemode'])
+                  $("#status-light").css("background-color",a['statuscolor'])
+                  $("#pipette-list").html(a['pipettes'])
+                  $("#labware-list").html(a['labware'])
+                  $("#command-queue").html("<h3>Queue:</h3>"+a['queue'])
+          })
+          };
+      
+        function updateimage() {
+        $.post("update_img")
+        $("#deck").attr("src","/static/deck.jpeg?t=" + new Date().getTime());
+        
+        };
+      updatecontent(); // This will run on page load
+      
+      setInterval(function(){ updatecontent() }, 1000); // this will run every 5 seconds  
+      setInterval(function(){ updateimage() },1000);
+    </script>
+    <title>NistoRoboto Server</title>
+  </head>
+  <div id="header-bar">
+    <img id="nist-logo" src="static/logo.svg" />
+    <span id="status-light" class="dot"></span>
+    <p id="status-strip">
+    Last&nbsp;Updated:&nbsp;{{updatetime}}  -  Current&nbsp;Status:&nbsp;{{robotstatus}} - Experiment:&nbsp;{{experimentname}} - Contact:&nbsp;{{contactinfo}} - Queue&nbsp;Mode:&nbsp;{{queuemode}}
+    </p>
+    <form action="/halt" method="POST"><input id ="estop" type="submit" value="HALT"></form>
+    <img id="ncnr-logo" src="static/ncnr.png" />
+  </div>
+  <div id="content-container">
+    <div id="camera-img">
+      <p>
+         <img id="deck" src='static/deck.jpeg'/>
+      </p>
+    </div>
+    <div id="hardware-desc">
+        <h3> Loaded pipettes:</h3>
+        <p id="pipette-list">{{pipettes}}</p>
+
+        <h3> Loaded labware:</h3>
+        <p id="labware-list">{{labware}}</p>
+    </div>
+  </div>
+  <div id="command-queue">
+    <h3> Queue:</h3> 
+    {{queue}}
+  </div>
+</html>

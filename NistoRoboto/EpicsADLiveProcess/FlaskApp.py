@@ -123,6 +123,66 @@ def oned_plot():
     script,div = bokeh.embed.components(p)
     return render_template('simple-bokeh.html',script=script,div=div,title=title)
 
+@app.route('/3up',methods=['GET'])
+def mostrecent():
+    items = request.args['n'].split(",")
+    if 'xlin' in request.args:
+        xlin = strtobool(request.args['xlin'])
+        xmode = 'linear' if xlin else 'log'
+    else:
+        xmode = 'log'
+    if 'ylin' in request.args:
+        ylin = strtobool(request.args['ylin'])
+        ymode = 'linear' if xlin else 'log'
+    else:
+        ymode = 'log'
+
+    TOOLS = 'pan,wheel_zoom,box_zoom,reset,save'
+    title = EADLP_daemon.results[int(items[0])][0]
+    p = bokeh.plotting.figure(title=title,tools=TOOLS,x_axis_type=xmode,y_axis_type=ymode)
+    p.xaxis.axis_label = 'q (A^-1)'
+    p.yaxis.axis_label = 'Intensity (AU)'
+    for item in items:
+        res = EADLP_daemon.results[int(item)][3]
+        p.scatter(res[0],res[1],marker='circle', size=2,
+              line_color='navy', fill_color='orange', alpha=0.5)
+
+    #errors = bokeh.models.Band(base=res[1],upper=res[1]+res[2],lower=res[1]-res[2], level='underlay',
+    #        fill_alpha=1.0, line_width=1, line_color='black')
+    #p.add_layout(band)
+    script,div = bokeh.embed.components(p)
+    return render_template('threeup.html',script=script,div=div,title=title,n=request.args['n'])
+
+
+@app.route('/mostrecent',methods=['GET'])
+def mostrecent():
+    items = request.args['n'].split(",")
+    if 'xlin' in request.args:
+        xlin = strtobool(request.args['xlin'])
+        xmode = 'linear' if xlin else 'log'
+    else:
+        xmode = 'log'
+    if 'ylin' in request.args:
+        ylin = strtobool(request.args['ylin'])
+        ymode = 'linear' if xlin else 'log'
+    else:
+        ymode = 'log' 
+
+    TOOLS = 'pan,wheel_zoom,box_zoom,reset,save'
+    title = EADLP_daemon.results[int(items[0])][0]
+    p = bokeh.plotting.figure(title=title,tools=TOOLS,x_axis_type=xmode,y_axis_type=ymode)
+    p.xaxis.axis_label = 'q (A^-1)'
+    p.yaxis.axis_label = 'Intensity (AU)'
+    res = EADLP_daemon.results[-1][3]
+    p.scatter(res[0],res[1],marker='circle', size=2,
+              line_color='navy', fill_color='orange', alpha=0.5)
+
+    #errors = bokeh.models.Band(base=res[1],upper=res[1]+res[2],lower=res[1]-res[2], level='underlay',
+    #        fill_alpha=1.0, line_width=1, line_color='black')
+    #p.add_layout(band)
+    script,div = bokeh.embed.components(p)
+    return render_template('threeup.html',script=script,div=div,title=title,n="-1")
+
 @app.route('/reconfig_integrator',methods=['POST'])
 def reconfig_integrator():
     poni1 = request.args['poni1']

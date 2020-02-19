@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-1.4.0.min.css"
+    rel="stylesheet" type="text/css">
+<link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.4.0.min.css"
+    rel="stylesheet" type="text/css">
+
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-1.4.0.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.4.0.min.js"></script>
+
+    
+    <title>{{title}}</title>
+  </head>
+  
+  <div style="width:30%" id="rawimg"> <img src="raw_image?n={{n}}&log=1"></div>
+  <div style="width:30%" id="unwrap"> <img src="unwrapped_image?n={{n}}&log=1"></div>
+  <div style="width:30%" id="reduced"> 
+		{{ script|safe }}
+		{{ div|safe }}
+	</div>
+</html>

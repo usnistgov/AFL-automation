@@ -4,7 +4,7 @@ import queue
 
 
 class AreaDetectorLive():
-    def __init__(self,basepv="13SIM1:",cam="cam1:",filewriter="TIFF1:",image="image1:"):
+    def __init__(self,basepv="PIL5:",cam="cam1:",filewriter="TIFF1:",image="image1:"):
         self.imgqueue = queue.Queue()
         
         self.size_x = epics.caget(basepv+cam+"ArraySizeX_RBV")
@@ -38,7 +38,7 @@ class AreaDetectorLive():
             return None
         elif(data[0] == self.PVimagearray.pvname):
             if(len(data[1])>0):
-                self.arraydata = np.reshape(data[1],(self.size_x,self.size_y))
+                self.arraydata = np.reshape(data[1],(self.size_y,self.size_x))
                 return (self.filename,self.expt,self.arraydata)
             return None
         else:

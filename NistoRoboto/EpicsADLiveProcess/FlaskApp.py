@@ -184,5 +184,5 @@ if __name__ == '__main__':
         debug = True
     else:
         debug = False
-    app.run(host='0.0.0.0',debug=debug)
+    app.run(host='0.0.0.0',debug=debug,port=5050)
 

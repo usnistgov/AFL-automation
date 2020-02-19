@@ -1,4 +1,6 @@
-
+import threading
+import time
+from AreaDetectorLive import AreaDetectorLive
 
 
 class CollateDaemon(threading.Thread):
@@ -22,5 +24,6 @@ class CollateDaemon(threading.Thread):
             tempval = self.detector.queuehandler()
             if tempval is not None:
                 self.reduction_queue.put(tempval)
-            time.sleep(0.1)
+                self._app.logger.info(f'Got new image {tempval[0]}, placing in reduction queue as item {self.reduction_queue.qsize()}')
+            time.sleep(0.001)
         self._app.logger.info('CollateDaemon runloop exiting')

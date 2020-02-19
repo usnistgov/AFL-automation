@@ -1,7 +1,12 @@
 from flask import Flask, render_template
-from flask import request, jsonify, Markup
+from flask import request, jsonify, Markup, send_file
 
-import datetime,requests, subprocess,shlex,os,json
+from PIL import Image
+import datetime,requests, subprocess,shlex,os,json,io,bokeh,pyFAI
+import numpy as np
+from distutils.util import strtobool
+import bokeh.plotting,bokeh.models,pyFAI.azimuthalIntegrator
+from AreaDetectorLive import AreaDetectorLive
 
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
@@ -11,10 +16,10 @@ contactinfo = 'pab2@nist.gov'
 # app.config['ENV'] = 'production'
 
 # initialize auth module
-#from flask_jwt_extended import JWTManager, jwt_required 
-#from flask_jwt_extended import create_access_token, get_jwt_identity
-#app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
-#jwt = JWTManager(app)
+from flask_jwt_extended import JWTManager, jwt_required 
+from flask_jwt_extended import create_access_token, get_jwt_identity
+app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
+jwt = JWTManager(app)
 
 import logging
 app.logger.setLevel(level=logging.DEBUG)
@@ -22,12 +27,12 @@ app.logger.setLevel(level=logging.DEBUG)
 
 # this is necessary to use the default debug reloading functionality 
 if app.config['ENV']=='production' or os.environ.get("WERKZEUG_RUN_MAIN") =='true':
-    import queue
-    task_queue = queue.Queue()
+    #import queue
+    results = []
     
-    import opentrons
-    from NistoRoboto.EpicsADLiveProcess import EpicsADLiveProcess
-    EADLP_daemon = EpicsADLiveProcessDaemon(app,task_queue,debug_mode=True)
+
+    from EpicsADLiveProcessDaemon import EpicsADLiveProcessDaemon
+    EADLP_daemon = EpicsADLiveProcessDaemon(app,results)
     EADLP_daemon.start()# start server thread
 
 @app.route('/')
@@ -35,132 +40,137 @@ def index():
     '''Live, status page of the robot'''
     kw = status_dict()
 
-    response = requests.post('http://localhost:5000/update_img')
-
     return render_template('index.html',**kw),200
 
-@app.route('/ajax_test')
-def ajax_index():
-    '''Live, status page of the robot'''
-    kw = status_dict()
+@app.route('/results')
+def results():
+    response = "<ul>"
+    for num,res in enumerate(EADLP_daemon.results):
+        response += f'<li>#{num}  |  {res[0]}  | exp {res[1]} | '
+        response += f'<a href="raw_image?n={num}&log=0" target="_blank">raw img</a>  |'
+        response += f'<a href="unwrapped_image?n={num}&log=0" target="_blank">unwrapped img</a>  |'
+        response += f'<a href="1d_plot?n={num}" target="_blank">reduced data</a></li>'
+    response += "</ul>"
+    return Markup(response)
 
-    #request image and save to static directory
+@app.route('/raw_image',methods=['GET'])
+def raw_image():
+    itemnum = int(request.args['n'])
+    if 'log' in request.args:
+        log_image = strtobool(request.args['log'])
+    else:
+        log_image = True
+    # convert numpy array to PIL Image
+    npa = EADLP_daemon.results[itemnum][2]
+    return send_array_as_jpg(npa,log_image=log_image)
 
-    # TO SET UP STREAM IN FUTURE:
-    # ffmpeg -y -f video4linux2 -s 640x480 -i /dev/video0 'udp://239.0.0.1:1234?ttl=2'
+@app.route('/unwrapped_image',methods=['GET'])
+def unwrapped_image():
+    itemnum = int(request.args['n'])
+    if 'log' in request.args:
+        log_image = strtobool(request.args['log'])
+    else:
+        log_image = True
+    # convert numpy array to PIL Image
+    npa = EADLP_daemon.results[itemnum][4].intensity
 
-    # this will UDP multicast stream to 239.0.0.1:1234, pick this stream up on control server and repackage it.
+    return send_array_as_jpg(npa,log_image=log_image)
+
+def send_array_as_jpg(array,log_image=False):
+    if(log_image):
+        array = np.log(array)
+    img = Image.fromarray(array.astype('uint8'))
+
+    # create file-object in memory
+    file_object = io.BytesIO()
+
+    # write PNG in file-object
+    img.save(file_object, 'jpeg')
+
+    # move to beginning of file so `send_file()` it will read from start    
+    file_object.seek(0)
+
+    return send_file(file_object, mimetype='image/jpeg')
+
+@app.route('/1d_plot',methods=['GET'])
+def oned_plot():
+    items = request.args['n'].split(",")
+    if 'xlin' in request.args:
+        xlin = strtobool(request.args['xlin'])
+        xmode = 'linear' if xlin else 'log'
+    else:
+        xmode = 'log'
+    if 'ylin' in request.args:
+        ylin = strtobool(request.args['ylin'])
+        ymode = 'linear' if xlin else 'log'
+    else:
+        ymode = 'log'
     
-    response = requests.post('http://localhost:31950/camera/picture')
-    with open('static/deck.jpeg','wb') as f:
-        f.write(response.content)
 
-    return render_template('index-ajax.html',**kw),200
+    TOOLS = 'pan,wheel_zoom,box_zoom,reset,save'
+    title = EADLP_daemon.results[int(items[0])][0]
+    p = bokeh.plotting.figure(title=title,tools=TOOLS,x_axis_type=xmode,y_axis_type=ymode)
+    p.xaxis.axis_label = 'q (A^-1)'
+    p.yaxis.axis_label = 'Intensity (AU)'
+    for item in items:
+        res = EADLP_daemon.results[int(item)][3]
+        p.scatter(res[0],res[1],marker='circle', size=2,
+              line_color='navy', fill_color='orange', alpha=0.5)
 
+    #errors = bokeh.models.Band(base=res[1],upper=res[1]+res[2],lower=res[1]-res[2], level='underlay',
+    #        fill_alpha=1.0, line_width=1, line_color='black')
+    #p.add_layout(band)
+    script,div = bokeh.embed.components(p)
+    return render_template('simple-bokeh.html',script=script,div=div,title=title)
 
-def _nbsp(instr):
-    return Markup(instr.replace(' ','&nbsp;'))
+@app.route('/reconfig_integrator',methods=['POST'])
+def reconfig_integrator():
+    poni1 = request.args['poni1']
+    poni2 = request.args['poni2']
+    rot1 = request.args['rot1']
+    rot2 = request.args['rot2']
+    rot3 = request.args['rot3']
+    distance = request.args['distance']
+    wavelength = request.args['wavelength']
+    det_type = request.args['det_type']
+    pixel1 = request.args['pixel1']
+    pixel2 = request.args['pixel2']
 
-def status_dict():
-    kw = {}
-    kw['pipettes'] = OT2_daemon.protocol.protocol.loaded_instruments
-    kw['labware']  = OT2_daemon.protocol.protocol.loaded_labwares
-    kw['statuscolor'] = 'mauve'#OT2_daemon.doorDaemon.button_color
-    kw['updatetime'] = _nbsp(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    kw['robotstatus']      = _nbsp(_queue_status(task_queue))
-    kw['currentexperiment'] = _nbsp(experiment)
-    kw['contactinfo']       = _nbsp(contactinfo)
-    if OT2_daemon.debug_mode:
-        kw['queuemode'] = 'DEBUG'
+    npts = request.args['npts']
+
+    #sanity check for integrator integrity goes here...
+    
+    if(det_type != ''):
+        EADLP_daemon.detector = pyFAI.detector_factory(name=det_type)
     else:
-        kw['queuemode'] = 'ACTIVE'
+        EADLP_daemon.detector = pyFAI.detector_factory()
 
-    queue_str  = '<ol id="queue">\n'
-    for task in task_queue.queue:
-        queue_str  += f'\t<li>{task}</li>\n'
-    queue_str  += '</ol>\n'
-    kw['queue'] = Markup(queue_str)
+    EADLP_daemon.integrator = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector = EADLP_daemon.detector,
+        wavelength = wavelength,poni1 = poni1, poni2 = poni2, rot1 = rot1, rot2 = rot2,
+        rot3 = rot3, distance = distance)
 
-    return kw
+    EADLP_daemon.reduceDaemon.npts = npts
 
-def _nbsp(instr):
-    return Markup(instr.replace(' ','&nbsp;'))
-
-@app.route('/ajax_data')
-def ajax_data():
-    kw = status_dict()
-    kw['pipettes'] = str(kw['pipettes'])
-    kw['labware'] = str(kw['labware'])
-    return json.dumps(kw),200
-
-@app.route('/update_img',methods=['POST'])
-def update_img():
-    #copy new take img code from above here once pushed from NR.
-    # TO SET UP STREAM IN FUTURE:
-    # ffmpeg -y -f video4linux2 -s 640x480 -i /dev/video0 'udp://239.0.0.1:1234?ttl=2'
-    # this will UDP multicast stream to 239.0.0.1:1234, pick this stream up on
-    # control server and repackage it.
-
-    subprocess.call(
-            shlex.split(
-                'ffmpeg -y -f video4linux2 -s 640x480 -i /dev/video0 -ss 0:0:0.01 -frames 1 static/deck.jpeg'
-                ),
-            stdout=subprocess.DEVNULL, 
-            stderr=subprocess.STDOUT
-            )
-    return 'Success',200
-
-@app.route('/login',methods=['GET','POST'])
-def login():
-    global experiment,contactinfo
-    if not request.is_json:
-        return jsonify({"msg": "Missing JSON in request"}), 400
-
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
-    if not username:
-        return jsonify({"msg": "Missing username parameter"}), 400
-    if not password:
-        return jsonify({"msg": "Missing password parameter"}), 400
-
-    if password != 'domo_arigato':
-        return jsonify({"msg": "Bad password"}), 401
-
-    experiment = request.json.get('experiment',experiment)
-    contactinfo = request.json.get('contactinfo',contactinfo)
-
-    # Identity can be any data that is json serializable
-    #expires = datetime.timedelta(days=1)
-    app.logger.info(f'Creating login token for user {username}')
-    token = create_access_token(identity=username)#,expires=expires)
-    return jsonify(token=token), 200
-
-def _queue_status(q):
-    if q.empty():
-        return "Idle"
+@app.route('/reconfig_detector',methods=['POST'])
+def reconfig_detector():
+    basepv= request.args['basepv']
+    if 'cam' in request.args:
+        cam = request.args['cam']
     else:
-        return f"Running, {q.qsize()} pending tasks."
+        cam = "cam1:"
+    if 'filewriter' in request.args:
+        filewriter = request.args['filewriter']
+    else:
+        filewriter="TIFF1:"
+    if 'image' in request.args:
+        image = request.args['image']
+    else:
+        image="image1:"
 
-@app.route('/enqueue',methods=['POST'])
-@jwt_required
-def enqueue():
-    task_queue.put(request.json)
+    EADLP_daemon.collateDaemon.detector = AreaDetectorLive(basepv = basepv,cam=cam,filewriter=filewriter,image=image)
+
     return 'Success',200
 
-@app.route('/clear_queue',methods=['POST'])
-def clear_queue():
-    app.logger.info(f'Removing all items from OT-2 queue')
-    task_queue.queue.clear()
-    return 'Success',200
-
-@app.route('/get_queue',methods=['GET'])
-def get_queue():
-    return jsonify(list(task_queue.queue)),200
-
-@app.route('/halt',methods=['POST'])
-def halt():
-    opentrons.robot.halt()
-    return 'Success',200
 
 @app.route('/login_test',methods=['POST'])
 @jwt_required

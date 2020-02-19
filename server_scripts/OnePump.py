@@ -9,8 +9,8 @@ selector = ViciMultiposSelector('/dev/ttyFlwSel0',baudrate=19200,portlabels={'ca
 pump = NE1kSyringePump('/dev/ttySyrPmp0',14.86,10,baud=19200,pumpid=10) # ID for 10mL = 14.859, for 50 mL 26.43
 cell = PushPullSelectorSampleCell(pump,selector)
 
-server = DeviceServer('SampleCellServer')
+server = DeviceServer('SampleCellServer1')
 protocol = cell
 server.add_standard_routes()
 server.create_queue(protocol)
-server.run(host='0.0.0.0', debug=False)
+server.run(host='0.0.0.0',port=5000, debug=False)

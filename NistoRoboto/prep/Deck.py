@@ -38,7 +38,7 @@ class Deck:
         self.tip_racks    = {}
         self.containers    = {}
         self.pipettes      = {}
-        self.loaders = {}
+        self.catches = {}
 
         self.client = None
 
@@ -87,8 +87,8 @@ class Deck:
         for slot,container in self.containers.items():
             self.client.load_labware(container,slot)
 
-        for slot,loader in self.loaders.items():
-            self.client.load_labware(loader,slot)
+        for slot,catch in self.catches.items():
+            self.client.load_labware(catch,slot)
 
         for mount,(pipette,tip_rack_slots) in self.pipettes.items():
             self.client.load_instrument(pipette,mount,tip_rack_slots)
@@ -117,8 +117,8 @@ class Deck:
 
         self.pipettes[mount] = name,tiprack_list
 
-    def add_loader(self,name,slot):
-        self.loaders[slot] = name
+    def add_catch(self,name,slot):
+        self.catches[slot] = name
 
     def add_container(self,name,slot):
         self.containers[slot] = name
@@ -257,8 +257,8 @@ class Deck:
                 f.write(' '*4 + f'container_{slot} = protocol.load_labware(\'{container}\',\'{slot}\')\n')
             f.write('\n')
 
-            for slot,loader in self.loaders.items():
-                f.write(' '*4 + f'loader_{slot} = protocol.load_labware(\'{loader}\',\'{slot}\')\n')
+            for slot,catch in self.catches.items():
+                f.write(' '*4 + f'catch_{slot} = protocol.load_labware(\'{catch}\',\'{slot}\')\n')
             f.write('\n')
 
             f.write(' '*4 + 'pipettes = []\n')
@@ -282,10 +282,10 @@ class Deck:
                 f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
                 f.write('\n')
                 if load_last_sample and (i == (len(self.protocol)-1)):
-                    for slot,loader in self.loaders.items():
+                    for slot,catch in self.catches.items():
                         f.write(' '*4 + f'pipette = get_pipette({action.volume},pipettes)\n')
                         f.write(' '*4 + f'well_source = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')
-                        f.write(' '*4 + f'well_dest = loader_{slot}[\'A1\']\n')
+                        f.write(' '*4 + f'well_dest = catch_{slot}[\'A1\']\n')
                         f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
                         f.write('\n')
 

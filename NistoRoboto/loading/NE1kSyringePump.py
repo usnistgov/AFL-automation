@@ -2,7 +2,7 @@ from NistoRoboto.loading.SyringePump import SyringePump
 from NistoRoboto.loading.SerialDevice import SerialDevice
 import time
 
-class NE1kSyringePump(SerialDevice,SyringePump):
+class NE1kSyringePump(SyringePump):
 
     def __init__(self,port,syringe_id_mm,syringe_volume,baud=9600,daisy_chain=None,pumpid=None,flow_delay=2):
         '''
@@ -35,19 +35,19 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         self.pumpid = pumpid
         self.flow_delay = flow_delay
         if daisy_chain is not None:
-            self.serialport = daisy_chain.serialport
+            self.serial_device = daisy_chain.serial_device
         else:
-            super().__init__(port,baudrate=baud,timeout=0.5)
+            self.serial_device = SerialDevice(port,baudrate=baud,timeout=0.5)
 
         # try to connect
 
         if self.pumpid is None:
             for i in range(75):
-                   if len(self.sendCommand('%iADR\x0D'%i))>0:
+                   if len(self.serial_device.sendCommand('%iADR\x0D'%i))>0:
                     self.pumpid = i
                     break
         else:
-            if len(self.sendCommand('%iADR\x0D'%self.pumpid))==0:
+            if len(self.serial_device.sendCommand('%iADR\x0D'%self.pumpid))==0:
                 raise NoDeviceFoundException
 
 
@@ -57,8 +57,8 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         self.syringe_volume = syringe_volume
 
         self.stop()#stop the pump
-        self.sendCommand('%iDIA %.02f\x0D'%(self.pumpid,syringe_id_mm)) #set the diameter
-        readback = self.sendCommand('%iDIA\x0D'%self.pumpid) #readback
+        self.serial_device.sendCommand('%iDIA %.02f\x0D'%(self.pumpid,syringe_id_mm)) #set the diameter
+        readback = self.serial_device.sendCommand('%iDIA\x0D'%self.pumpid) #readback
         dia = float(readback[4:-1])
         assert dia==syringe_id_mm, "Warning: syringe diameter set failed.  Commanded diameter "+str(syringe_id_mm)+", read back "+str(dia)
 
@@ -66,31 +66,31 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         '''
         Abort the current dispense/withdraw action. Equivalent to pressing stop button on panel.
         '''
-        self.sendCommand('%iSTP\x0D'%self.pumpid,questionmarkOK=True) 
+        self.serial_device.sendCommand('%iSTP\x0D'%self.pumpid,questionmarkOK=True) 
 
     def withdraw(self,volume,block=True):
-        self.sendCommand('%iVOLML\x0D'%self.pumpid)
-        self.sendCommand('%iVOL %.03f\x0D'%(self.pumpid,volume))
-        self.sendCommand('%iDIRWDR\x0D'%self.pumpid)
-        self.sendCommand('%iRUN\x0D'%self.pumpid)
+        self.serial_device.sendCommand('%iVOLML\x0D'%self.pumpid)
+        self.serial_device.sendCommand('%iVOL %.03f\x0D'%(self.pumpid,volume))
+        self.serial_device.sendCommand('%iDIRWDR\x0D'%self.pumpid)
+        self.serial_device.sendCommand('%iRUN\x0D'%self.pumpid)
         if block:
             self.blockUntilStatusStopped()
             time.sleep(self.flow_delay)
         
     def dispense(self,volume,block=True):
-        self.sendCommand('%iVOLML\x0D'%self.pumpid)
-        self.sendCommand('%iVOL%.03f\x0D'%(self.pumpid,volume))
-        self.sendCommand('%iDIRINF\x0D'%self.pumpid)
-        self.sendCommand('%iRUN\x0D'%self.pumpid)
+        self.serial_device.sendCommand('%iVOLML\x0D'%self.pumpid)
+        self.serial_device.sendCommand('%iVOL%.03f\x0D'%(self.pumpid,volume))
+        self.serial_device.sendCommand('%iDIRINF\x0D'%self.pumpid)
+        self.serial_device.sendCommand('%iRUN\x0D'%self.pumpid)
         if block:
             self.blockUntilStatusStopped()
             time.sleep(self.flow_delay)
         
     def setRate(self,rate):
-        self.sendCommand('%iRAT%.03fMM\x0D'%(self.pumpid,rate))
+        self.serial_device.sendCommand('%iRAT%.03fMM\x0D'%(self.pumpid,rate))
 
     def getRate(self,rate):
-        output = self.sendCommand('%iRAT\x0D'%self.pumpid)
+        output = self.serial_device.sendCommand('%iRAT\x0D'%self.pumpid)
         units = output[-3:-1]
         if units=='MM':
             rate = float(output[4:-3])
@@ -114,7 +114,7 @@ class NE1kSyringePump(SerialDevice,SyringePump):
         infused volume, and withdrawn volume)
         '''
 
-        dispensed = self.sendCommand('%iDIS\x0D'%self.pumpid)
+        dispensed = self.serial_device.sendCommand('%iDIS\x0D'%self.pumpid)
         # example answer: 10SI0.000W20.00ML
         statuschar = dispensed[3]
         infusedvol = float(dispensed[5:10])

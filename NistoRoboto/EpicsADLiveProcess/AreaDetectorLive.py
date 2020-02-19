@@ -4,7 +4,7 @@ import queue
 
 
 class AreaDetectorLive():
-    def __init__(self,basepv="13SIM1:",cam="cam1:",filewriter="TIFF1:",image="image1:"):
+    def __init__(self,basepv="PIL5:",cam="cam1:",filewriter="TIFF1:",image="image1:"):
         self.imgqueue = queue.Queue()
         
         self.size_x = epics.caget(basepv+cam+"ArraySizeX_RBV")
@@ -29,7 +29,7 @@ class AreaDetectorLive():
         self.imgqueue.put((pvname,value))
     
     def queuehandler(self):
-        data = self.imgqueue.get()
+        data = self.imgqueue.get(block=True,timeout=None)
         if(data[0] == self.PVfilename.pvname):
             self.filename = data[1].tobytes().decode('ascii')
             return None
@@ -37,8 +37,10 @@ class AreaDetectorLive():
             self.expt = data[1]
             return None
         elif(data[0] == self.PVimagearray.pvname):
-            self.arraydata = np.reshape(data[1],(self.size_x,self.size_y))
-            return (self.filename,self.expt,self.arraydata)
+            if(len(data[1])>0):
+                self.arraydata = np.reshape(data[1],(self.size_y,self.size_x))
+                return (self.filename,self.expt,self.arraydata)
+            return None
         else:
             raise NotImplementedError
     

@@ -2,6 +2,9 @@ import queue
 import threading
 import time
 import datetime
+import pyFAI,pyFAI.azimuthalIntegrator
+from CollateDaemon import CollateDaemon
+from ReduceDaemon import ReduceDaemon
 
 class EpicsADLiveProcessDaemon(threading.Thread):
     '''
@@ -22,62 +25,36 @@ class EpicsADLiveProcessDaemon(threading.Thread):
 
 
     '''
-    def __init__(self,app,task_queue,debug_mode=True):
+    def __init__(self,app,results,debug_mode=True):
         app.logger.info('Creating EpicsADLiveProcessDaemon thread')
 
         threading.Thread.__init__(self,name='EpicsADLiveProcessDaemon',daemon=True)
 
         self.reduction_queue = queue.Queue()
+        self.detector = pyFAI.detector_factory(name="pilatus300k")
+        self.integrator = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector = self.detector,wavelength = 1.54e-10)
 
-        self.collateDaemon = CollateDaemon(app,reduction_queue)
+        self.collateDaemon = CollateDaemon(app,self.reduction_queue)
         self.collateDaemon.start()
 
-        self.reduceDaemon = ReduceDaemon(app,reduction_queue)
+        self.reduceDaemon = ReduceDaemon(app,self.reduction_queue,self.integrator,results)
         self.reduceDaemon.start()
 
         self._stop = False
         self._app = app
-        self.task_queue = task_queue
+        self.results = results
         self.debug_mode = debug_mode
 
     def terminate(self):
         self.collateDaemon.terminate()
         self.reduceDaemon.terminate()
 
-        self._app.logger.info('Terminating OT2Daemon thread')
+        self._app.logger.info('Terminating EADLPDaemon thread')
         self._stop = True
         self.task_queue.put(None)
 
     def run(self):
         while not self._stop:
-            # this will block until something enters the task_queue
-            task = self.task_queue.get(block=True,timeout=None)
-            self._app.logger.info(f'Running task {task}')
-
-            # Queue execution mods
-            if task is None: #stop the queue execution
-                self.terminate()
-                break
-            elif 'debug_mode' in task: #modify the debugging mode state
-                self._app.logger.debug(f'Setting queue debug_mode to {task["debug_mode"]}')
-                self.debug_mode = task['debug_mode']
-                continue
-            elif self.debug_mode: #if debug_mode, pop but don't execute
-                time.sleep(2.0)
-                continue
-
-            if task['type'] == 'transfer':
-                self.protocol.transfer(**task)
-            elif task['type'] == 'load_labware':
-                self.protocol.load_labware(**task)
-            elif task['type'] == 'load_instrument':
-                self.protocol.load_instrument(**task)
-            elif task['type'] == 'reset':
-                self.protocol.reset()
-            elif task['type'] == 'home':
-                self.protocol.home()
-            else:
-                raise ValueError(f'Task type not recognized: {task["type"]}')
             time.sleep(0.1)
 
         self._app.logger.info('EpicsADLiveProcessDaemon runloop exiting')

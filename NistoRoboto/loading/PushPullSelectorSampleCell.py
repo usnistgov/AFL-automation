@@ -1,28 +1,9 @@
 from NistoRoboto.loading.SampleCell import SampleCell
+from NistoRoboto.loading.Tubing import Tubing
 from NistoRoboto.DeviceServer.Protocol import Protocol
+from collections import defaultdict
 
 import math
-
-class Tubing():
-    tubing = [{'typeid':1530,'material':'Tefzel','IDEXpart':1530,'OD_in':0.125,'ID_mm':1.575},
-            {'typeid':1529,'material':'Tefzel','IDEXpart':1529,'OD_in':0.075,'ID_mm':0.254},
-            {'typeid':1,'material':'PVC','IDEXpart':0,'OD_in':0.1875,'ID_mm':2.92},
-            {'typeid':1517,'material':'Tefzel','IDEXpart':1517,'OD_in':0.075,'ID_mm':1}]
-
-    def __init__(self,specid,length):
-        for tubingtype in Tubing.tubing:
-            if tubingtype['typeid'] == specid:
-                self.id_mm    = tubingtype['ID_mm']
-                self.od_in    = tubingtype['OD_in']
-                self.idexpart = tubingtype['IDEXpart']
-                self.material     = tubingtype['material']
-                self.length   = length
-                return
-        raise NotImplementedError
-    
-    def volume(self):
-        '''returns volume in mL'''
-        return (self.id_mm / 20)**2 *math.pi*self.length
 
 class PushPullSelectorSampleCell(Protocol,SampleCell):
     '''
@@ -38,7 +19,15 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
 
 
-    def __init__(self,pump,selector,ncells=1,thickness=None,state='clean'):
+    def __init__(self,pump,
+                      selector,
+                      ncells=1,
+                      thickness=None,
+                      catch_to_sel_vol=None,
+                      cell_to_sel_vol=None,
+                      syringe_to_sel_vol=None,
+                      selector_internal_vol=None,
+                      ):
         '''
             ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)
             Name = the cell name, array with length = ncells
@@ -57,20 +46,34 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.name = 'PushPullSelectorSampleCell'
         self.pump = pump
         self.selector = selector
-        self.state = 'clean'
+        self.cell_state = defaultdict(lambda: 'clean')
         
         
 
-        self.catch_to_selector_vol = Tubing(1530,2.2*52).volume() + Tubing(1,25.4).volume() + 2.0
-        self.cell_to_selector_vol = Tubing(1517,262.9).volume()+1
-        self.syringe_to_selector_vol = Tubing(1530,49.27).volume() 
-        self.selector_internal_vol = Tubing(1529,1).volume()
+        if catch_to_sel_vol is None:
+            self.catch_to_selector_vol   = Tubing(1530,2.2*52).volume() + Tubing(1,25.4).volume() + 2.0
+        else:
+            self.catch_to_selector_vol   = catch_to_sel_vol
+
+        if cell_to_sel_vol is None:
+            self.cell_to_selector_vol    = Tubing(1517,262.9).volume()  + 1
+        else:
+            self.cell_to_selector_vol    = cell_to_sel_vol
+
+        if syringe_to_sel_vol is None:
+            self.syringe_to_selector_vol = Tubing(1530,49.27).volume() 
+        else:
+            self.syringe_to_selector_vol = syringe_to_sel_vol
+
+        if selector_internal_vol is None:
+            self.selector_internal_vol   = Tubing(1529,1).volume()
+        else:
+            self.selector_internal_vol   = selector_internal_vol
         
         self.catch_empty_ffvol = 2
         self.to_waste_vol = 1
 
         self.rinse_prime_vol = 3
-
 
         self.rinse_vol_ml = 3
         self.blow_out_vol = 6
@@ -82,6 +85,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def status(self):
         status = []
+        status.append(f'State: {dict(self.cell_state)}')
         status.append(f'Pump: {self.pump.name}')
         status.append(f'Selector: {self.selector.name}')
         status.append(f'Cell: {self.name}')
@@ -94,19 +98,14 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         if self.syringe_dirty:
             self.rinseSyringe()
 
-        if self.state =='dirty':
-            self.rinseCell()
+        if not self.cell_state[cellname] =='clean':
+            self.rinseCell(cellname=cellname)
 
-            #self.rinseAll()
-
-        if self.state is 'clean':
-            self.selector.selectPort('catch')
-            self.pump.withdraw(self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol)
-            self.selector.selectPort(cellname)
-            self.pump.dispense(self.syringe_to_selector_vol + self.cell_to_selector_vol)
-            self.state = 'loaded'
-        else:
-            raise RuntimeError('')
+        self.selector.selectPort('catch')
+        self.pump.withdraw(self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol)
+        self.selector.selectPort(cellname)
+        self.pump.dispense(self.syringe_to_selector_vol + self.cell_to_selector_vol)
+        self.cell_state[cellname] = 'loaded'
 
         
 
@@ -136,7 +135,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
         
     def rinseCell(self,cellname='cell'):
-        self.rinseCellFlood(self,cellname)
+        self.rinseCellFlood(cellname)
         
     def rinseCellPull(self,cellname = 'cell'):
         #rinse the cell
@@ -158,7 +157,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         for i in range(self.nrinses_cell_flood):
             self.transfer('rinse',cellname,self.rinse_vol_ml)
         self.blowOutCell(cellname)
-        self.state = 'clean'
+        self.cell_state[cellname] = 'clean'
         
     def transfer(self,source,dest,vol_source,vol_dest=None):
         if vol_dest is None:
@@ -188,10 +187,16 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def rinseCatch(self):
         for i in range(self.nrinses_catch):
-            self.transfer('rinse','catch',self.rinse_vol_ml,vol_dest=self.catch_to_selector_vol)
+            from_vol = self.rinse_vol_ml 
+            to_vol   = self.rinse_vol_ml + self.catch_to_selector_vol
+            self.transfer('rinse','catch',from_vol,to_vol)
+
             for i in range(1):
                 self.swish(self.rinse_vol_ml)
-            self.transfer('catch','waste',self.catch_to_selector_vol+self.catch_empty_ffvol,self.rinse_vol_ml + self.syringe_to_selector_vol)
+
+            from_vol = self.rinse_vol_ml + self.catch_to_selector_vol + self.catch_empty_ffvol
+            to_vol   = self.rinse_vol_ml + self.syringe_to_selector_vol
+            self.transfer('catch','waste',from_vol,to_vol)
 
     def old_rinseCatch(self):
         for i in range(self.nrinses_catch):
@@ -210,10 +215,10 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             self.selector.selectPort('air')
             self.pump.dispense(self.catch_to_selector_vol-self.syringe_to_selector_vol)
 
-    def rinseAll(self):
-        if self.state is 'loaded':
-            self.cellToWaste()
-        self.rinseCell()
+    def rinseAll(self,cellname='cell'):
+        # if self.state is 'loaded':
+        #     self.cellToWaste()
+        self.rinseCell(cellname=cellname)
         self.rinseCatch()
         self.rinseSyringe()
 

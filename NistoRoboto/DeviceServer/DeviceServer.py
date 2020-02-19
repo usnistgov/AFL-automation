@@ -25,6 +25,7 @@ class DeviceServer:
 
         self.queue_daemon = None
         self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
+        self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
         self.jwt = JWTManager(self.app)
 
     def create_queue(self,protocol):
@@ -48,7 +49,7 @@ class DeviceServer:
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
 
-        thread = threading.Thread(target=self.app.run,kwargs=kwargs)
+        thread = threading.Thread(target=self.app.run,daemon=True,kwargs=kwargs)
         if start_thread:
             thread.start()
         else:
@@ -107,7 +108,8 @@ class DeviceServer:
     @jwt_required
     def enqueue(self):
         task = request.json
-        self.app.logger.info(f'{request.json}')
+        user = get_jwt_identity()
+        self.app.logger.info(f'{user} enqueued {request.json}')
         package = {'task':task,'meta':{},'uuid':uuid.uuid4()}
         package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
         self.task_queue.put(package)

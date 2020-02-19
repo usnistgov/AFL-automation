@@ -7,6 +7,7 @@ import numpy as np
 from distutils.util import strtobool
 import bokeh.plotting,bokeh.models,pyFAI.azimuthalIntegrator
 from AreaDetectorLive import AreaDetectorLive
+import matplotlib as mpl
 
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
@@ -60,9 +61,14 @@ def raw_image():
         log_image = strtobool(request.args['log'])
     else:
         log_image = True
+
+    if 'max' in request.args:
+        maxv = int(request.args['max'])
+    else:
+        maxv = None
     # convert numpy array to PIL Image
     npa = EADLP_daemon.results[itemnum][2]
-    return send_array_as_jpg(npa,log_image=log_image)
+    return send_array_as_jpg(npa,log_image=log_image,max_val=maxv)
 
 @app.route('/unwrapped_image',methods=['GET'])
 def unwrapped_image():
@@ -71,16 +77,24 @@ def unwrapped_image():
         log_image = strtobool(request.args['log'])
     else:
         log_image = True
+
+    if 'max' in request.args:
+        maxv = int(request.args['max'])
+    else:
+        maxv = None    
     # convert numpy array to PIL Image
     npa = EADLP_daemon.results[itemnum][4].intensity
 
-    return send_array_as_jpg(npa,log_image=log_image)
+    return send_array_as_jpg(npa,log_image=log_image,max_val=maxv)
 
-def send_array_as_jpg(array,log_image=False):
+def send_array_as_jpg(array,log_image=False,max_val=None):
     if(log_image):
         array = np.log(array)
-    img = Image.fromarray(array.astype('uint8'))
-
+    #img = Image.fromarray(array.astype('uint8'))
+    if max_val == None:
+        max_val = np.amax(array)
+    array = array/max_val
+    img = Image.fromarray(np.uint8(cm.gist_earth(array)*255))
     # create file-object in memory
     file_object = io.BytesIO()
 

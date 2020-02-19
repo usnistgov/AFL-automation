@@ -1,28 +1,8 @@
 from NistoRoboto.loading.SampleCell import SampleCell
+from NistoRoboto.loading.Tubing import Tubing
 from NistoRoboto.DeviceServer.Protocol import Protocol
 
 import math
-
-class Tubing():
-    tubing = [{'typeid':1530,'material':'Tefzel','IDEXpart':1530,'OD_in':0.125,'ID_mm':1.575},
-            {'typeid':1529,'material':'Tefzel','IDEXpart':1529,'OD_in':0.075,'ID_mm':0.254},
-            {'typeid':1,'material':'PVC','IDEXpart':0,'OD_in':0.1875,'ID_mm':2.92},
-            {'typeid':1517,'material':'Tefzel','IDEXpart':1517,'OD_in':0.075,'ID_mm':1}]
-
-    def __init__(self,specid,length):
-        for tubingtype in Tubing.tubing:
-            if tubingtype['typeid'] == specid:
-                self.id_mm    = tubingtype['ID_mm']
-                self.od_in    = tubingtype['OD_in']
-                self.idexpart = tubingtype['IDEXpart']
-                self.material     = tubingtype['material']
-                self.length   = length
-                return
-        raise NotImplementedError
-    
-    def volume(self):
-        '''returns volume in mL'''
-        return (self.id_mm / 20)**2 *math.pi*self.length
 
 class PushPullSelectorSampleCell(Protocol,SampleCell):
     '''
@@ -38,7 +18,16 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
 
 
-    def __init__(self,pump,selector,ncells=1,thickness=None,state='clean'):
+    def __init__(self,pump,
+                      selector,
+                      ncells=1,
+                      thickness=None,
+                      state='clean',
+                      catch_to_sel_vol=None,
+                      cell_to_sel_vol=None,
+                      syringe_to_sel_vol=None,
+                      selector_internal_vol=None,
+                      ):
         '''
             ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)
             Name = the cell name, array with length = ncells
@@ -61,16 +50,30 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         
         
 
-        self.catch_to_selector_vol = Tubing(1530,2.2*52).volume() + Tubing(1,25.4).volume() + 2.0
-        self.cell_to_selector_vol = Tubing(1517,262.9).volume()+1
-        self.syringe_to_selector_vol = Tubing(1530,49.27).volume() 
-        self.selector_internal_vol = Tubing(1529,1).volume()
+        if catch_to_sel_vol is None:
+            self.catch_to_selector_vol   = Tubing(1530,2.2*52).volume() + Tubing(1,25.4).volume() + 2.0
+        else:
+            self.catch_to_selector_vol   = catch_to_sel_vol
+
+        if cell_to_sel_vol is None:
+            self.cell_to_selector_vol    = Tubing(1517,262.9).volume()  + 1
+        else:
+            self.cell_to_selector_vol    = cell_to_sel_vol
+
+        if syringe_to_sel_vol is None:
+            self.syringe_to_selector_vol = Tubing(1530,49.27).volume() 
+        else:
+            self.syringe_to_selector_vol = syringe_to_sel_vol
+
+        if selector_internal_vol is None:
+            self.selector_internal_vol   = Tubing(1529,1).volume()
+        else:
+            self.selector_internal_vol   = selector_internal_vol
         
         self.catch_empty_ffvol = 2
         self.to_waste_vol = 1
 
         self.rinse_prime_vol = 3
-
 
         self.rinse_vol_ml = 3
         self.blow_out_vol = 6
@@ -95,11 +98,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             self.rinseSyringe()
 
         if self.state =='dirty':
-            self.rinseCell()
-
-            #self.rinseAll()
-
-        if self.state is 'clean':
+            self.rinseCell(cellname=cellname)
+        elif self.state == 'clean':
             self.selector.selectPort('catch')
             self.pump.withdraw(self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol)
             self.selector.selectPort(cellname)

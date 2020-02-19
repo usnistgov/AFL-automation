@@ -17,10 +17,20 @@ class Protocol:
         task_name = kwargs.get('task_name',None)
         if task_name is None:
             raise ValueError('No name field in task. Don\'t know what to execute...')
-        #execute the command
         del kwargs['task_name']
-        getattr(self,task_name)(**kwargs)
 
+        if 'device' not in kwargs:
+            getattr(self,task_name)(**kwargs)
+
+        device_name = kwargs['device']
+        del kwargs['device']
+        try:
+            device_obj = getattr(self,device_name)
+        except AttributeError:
+            raise ValueError(f'Device \'{device_name}\' not found in protocol \'{self.name}\'')
+
+        self.app.logger.info(f'Sending task \'{task_name}\' to device \'{device_name}\'!')
+        getattr(device_obj,task_name)(**kwargs)
 
 
 

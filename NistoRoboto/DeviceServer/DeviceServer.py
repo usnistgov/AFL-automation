@@ -108,7 +108,8 @@ class DeviceServer:
     @jwt_required
     def enqueue(self):
         task = request.json
-        self.app.logger.info(f'{request.json}')
+        user = get_jwt_identity()
+        self.app.logger.info(f'{user} enqueued {request.json}')
         package = {'task':task,'meta':{},'uuid':uuid.uuid4()}
         package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
         self.task_queue.put(package)

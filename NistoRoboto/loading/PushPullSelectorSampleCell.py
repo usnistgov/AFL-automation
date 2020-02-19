@@ -1,6 +1,7 @@
 from NistoRoboto.loading.SampleCell import SampleCell
 from NistoRoboto.loading.Tubing import Tubing
 from NistoRoboto.DeviceServer.Protocol import Protocol
+from collections import defaultdict
 
 import math
 
@@ -22,7 +23,6 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
                       selector,
                       ncells=1,
                       thickness=None,
-                      state='clean',
                       catch_to_sel_vol=None,
                       cell_to_sel_vol=None,
                       syringe_to_sel_vol=None,
@@ -46,7 +46,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.name = 'PushPullSelectorSampleCell'
         self.pump = pump
         self.selector = selector
-        self.state = 'clean'
+        self.cell_state = defaultdict(lambda: 'clean')
         
         
 
@@ -85,6 +85,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def status(self):
         status = []
+        status.append(f'State: {dict(self.cell_state)}')
         status.append(f'Pump: {self.pump.name}')
         status.append(f'Selector: {self.selector.name}')
         status.append(f'Cell: {self.name}')
@@ -97,16 +98,14 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         if self.syringe_dirty:
             self.rinseSyringe()
 
-        if self.state =='dirty':
+        if not self.cell_state[cellname] =='clean':
             self.rinseCell(cellname=cellname)
-        elif self.state == 'clean':
-            self.selector.selectPort('catch')
-            self.pump.withdraw(self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol)
-            self.selector.selectPort(cellname)
-            self.pump.dispense(self.syringe_to_selector_vol + self.cell_to_selector_vol)
-            self.state = 'loaded'
-        else:
-            raise RuntimeError('')
+
+        self.selector.selectPort('catch')
+        self.pump.withdraw(self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol)
+        self.selector.selectPort(cellname)
+        self.pump.dispense(self.syringe_to_selector_vol + self.cell_to_selector_vol)
+        self.cell_state[cellname] = 'loaded'
 
         
 
@@ -136,7 +135,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
         
     def rinseCell(self,cellname='cell'):
-        self.rinseCellFlood(self,cellname)
+        self.rinseCellFlood(cellname)
         
     def rinseCellPull(self,cellname = 'cell'):
         #rinse the cell
@@ -158,7 +157,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         for i in range(self.nrinses_cell_flood):
             self.transfer('rinse',cellname,self.rinse_vol_ml)
         self.blowOutCell(cellname)
-        self.state = 'clean'
+        self.cell_state[cellname] = 'clean'
         
     def transfer(self,source,dest,vol_source,vol_dest=None):
         if vol_dest is None:
@@ -188,10 +187,16 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def rinseCatch(self):
         for i in range(self.nrinses_catch):
-            self.transfer('rinse','catch',self.rinse_vol_ml,vol_dest=self.catch_to_selector_vol)
+            from_vol = self.rinse_vol_ml 
+            to_vol   = self.rinse_vol_ml + self.catch_to_selector_vol
+            self.transfer('rinse','catch',from_vol,to_vol)
+
             for i in range(1):
                 self.swish(self.rinse_vol_ml)
-            self.transfer('catch','waste',self.catch_to_selector_vol+self.catch_empty_ffvol,self.rinse_vol_ml + self.syringe_to_selector_vol)
+
+            from_vol = self.rinse_vol_ml + self.catch_to_selector_vol + self.catch_empty_ffvol
+            to_vol   = self.rinse_vol_ml + self.syringe_to_selector_vol
+            self.transfer('catch','waste',from_vol,to_vol)
 
     def old_rinseCatch(self):
         for i in range(self.nrinses_catch):
@@ -210,10 +215,10 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             self.selector.selectPort('air')
             self.pump.dispense(self.catch_to_selector_vol-self.syringe_to_selector_vol)
 
-    def rinseAll(self):
-        if self.state is 'loaded':
-            self.cellToWaste()
-        self.rinseCell()
+    def rinseAll(self,cellname='cell'):
+        # if self.state is 'loaded':
+        #     self.cellToWaste()
+        self.rinseCell(cellname=cellname)
         self.rinseCatch()
         self.rinseSyringe()
 

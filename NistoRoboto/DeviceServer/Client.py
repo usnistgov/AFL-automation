@@ -44,7 +44,7 @@ class Client:
             response = requests.get(self.url+'/get_queue',headers=self.headers)
             history,running,queued = response.json()
             if target_uuid is not None:
-                if not any([task['uuid']==target_uuid for task in running + queued]):
+                if not any([str(task['uuid'])==str(target_uuid) for task in running + queued]):
                     break
             else:
                 if len(running+queued)==0:

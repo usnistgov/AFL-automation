@@ -5,6 +5,8 @@ import datetime
 import pyFAI,pyFAI.azimuthalIntegrator
 from CollateDaemon import CollateDaemon
 from ReduceDaemon import ReduceDaemon
+from PIL import Image
+import numpy as np
 
 class EpicsADLiveProcessDaemon(threading.Thread):
     '''
@@ -32,12 +34,18 @@ class EpicsADLiveProcessDaemon(threading.Thread):
 
         self.reduction_queue = queue.Queue()
         self.detector = pyFAI.detector_factory(name="pilatus300k")
-        self.integrator = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector = self.detector,wavelength = 1.54e-10)
+        self.mask = np.array(Image.open('static/PIL5mask.tif'))
+        self.integrator = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=self.detector,
+                                                                        wavelength = 1.265e-10,
+                                                                        dist = 2.435,
+                                                                        poni1 = 0.0576,
+                                                                        poni2 = 0.04120
+                                                                        )
 
         self.collateDaemon = CollateDaemon(app,self.reduction_queue)
         self.collateDaemon.start()
 
-        self.reduceDaemon = ReduceDaemon(app,self.reduction_queue,self.integrator,results)
+        self.reduceDaemon = ReduceDaemon(app,self.reduction_queue,self.integrator,results,mask=self.mask)
         self.reduceDaemon.start()
 
         self._stop = False

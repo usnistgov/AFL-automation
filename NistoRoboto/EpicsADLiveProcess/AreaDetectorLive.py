@@ -18,7 +18,7 @@ class AreaDetectorLive():
         self.arraydata = None
         
         self.PVimagearray = epics.PV(basepv+image+"ArrayData",callback=self.cbfunc,auto_monitor=True)
-        self.PVfilename = epics.PV(basepv+filewriter+"FileName",callback=self.cbfunc,auto_monitor=True)
+        self.PVfilename = epics.PV(basepv+cam+"FileName_RBV",callback=self.cbfunc,auto_monitor=True)
         self.PVexpt = epics.PV(basepv+cam+"AcquireTime",callback=self.cbfunc,auto_monitor=True)
         
         #@TODO: this could track all the metadata in, e.g., the HDF5 filewriter, and might need to for complex experiments.  For now this is probably fine.

@@ -8,6 +8,7 @@ from distutils.util import strtobool
 import bokeh.plotting,bokeh.models,pyFAI.azimuthalIntegrator
 from AreaDetectorLive import AreaDetectorLive
 import matplotlib as mpl
+from matplotlib import cm
 
 #app = Flask('NistoRoboto') #okay this breaks the templating apparently
 app = Flask(__name__)
@@ -36,23 +37,28 @@ if app.config['ENV']=='production' or os.environ.get("WERKZEUG_RUN_MAIN") =='tru
     EADLP_daemon = EpicsADLiveProcessDaemon(app,results)
     EADLP_daemon.start()# start server thread
 
-@app.route('/')
-def index():
-    '''Live, status page of the robot'''
-    kw = status_dict()
-
-    return render_template('index.html',**kw),200
+# @app.route('/')
+# def index():
+#     '''Live, status page of the robot'''
+#     kw = status_dict()
+# 
+#     return render_template('index.html',**kw),200
 
 @app.route('/results')
 def results():
     response = "<ul>"
     for num,res in enumerate(EADLP_daemon.results):
         response += f'<li>#{num}  |  {res[0]}  | exp {res[1]} | '
-        response += f'<a href="raw_image?n={num}&log=0" target="_blank">raw img</a>  |'
-        response += f'<a href="unwrapped_image?n={num}&log=0" target="_blank">unwrapped img</a>  |'
+        response += f'<a href="raw_image?n={num}&log=1&max=25" target="_blank">raw img</a>  |'
+        response += f'<a href="unwrapped_image?n={num}&log=1&max=25" target="_blank">unwrapped img</a>  |'
         response += f'<a href="1d_plot?n={num}" target="_blank">reduced data</a></li>'
     response += "</ul>"
     return Markup(response)
+
+@app.route('/clear_results')
+def clear_results():
+    EADLP_daemon.results.clear()
+    return 'Success',200
 
 @app.route('/raw_image',methods=['GET'])
 def raw_image():
@@ -94,7 +100,7 @@ def send_array_as_jpg(array,log_image=False,max_val=None):
     if max_val == None:
         max_val = np.amax(array)
     array = array/max_val
-    img = Image.fromarray(np.uint8(cm.gist_earth(array)*255))
+    img = Image.fromarray(np.uint8(cm.plasma(array)*255)).convert('RGB')
     # create file-object in memory
     file_object = io.BytesIO()
 
@@ -138,7 +144,7 @@ def oned_plot():
     return render_template('simple-bokeh.html',script=script,div=div,title=title)
 
 @app.route('/3up',methods=['GET'])
-def mostrecent():
+def threeup():
     items = request.args['n'].split(",")
     if 'xlin' in request.args:
         xlin = strtobool(request.args['xlin'])

@@ -39,6 +39,7 @@ class SpecScreenProtocol(Protocol):
         if 'spec_cmd' not in kwargs:
             raise ValueError('No spec_cmd specified!')
         spec_cmd = kwargs['spec_cmd']
+        #'stuff' is a required part of the command
         subprocess.call(shlex.split(f'screen -X stuff "{spec_cmd}\n"'))
 
 

@@ -25,8 +25,11 @@ class SpecScreenProtocol(Protocol):
             
             spec_lines = spec_lines[::-1]
             for i in range(self.n_spec_blocks): 
-                m = spec_lines[i]
-                n = spec_lines[i+1]
+                try:
+                    m = spec_lines[i]
+                    n = spec_lines[i+1]
+                except IndexError:
+                    break
                 status.append('\n'.join(lines[m:n]))
             status = status[::-1]
 

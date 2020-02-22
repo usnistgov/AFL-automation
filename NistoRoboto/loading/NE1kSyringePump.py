@@ -4,7 +4,7 @@ import time
 
 class NE1kSyringePump(SyringePump):
 
-    def __init__(self,port,syringe_id_mm,syringe_volume,baud=9600,daisy_chain=None,pumpid=None,flow_delay=2):
+    def __init__(self,port,syringe_id_mm,syringe_volume,baud=9600,daisy_chain=None,pumpid=None,flow_delay=5):
         '''
             Initializes and verifies connection to a New Era 1000 syringe pump.
 

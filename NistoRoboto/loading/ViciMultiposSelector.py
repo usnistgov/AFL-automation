@@ -24,7 +24,9 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
 
         self.portlabels = portlabels
 
-
+        portnum = self.getPort()
+        port = self.getPort(as_str=True)
+        self.portString = f'{port}/{portnum}'
 
     def selectPort(self,port,direction=None):
         '''
@@ -48,6 +50,8 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
             readback = self.sendCommand('CW%02i\x0D'%portnum,response=False)
         else:
             readback = self.sendCommand('GO%02i\x0D'%portnum,response=False)
+
+        self.portString = f'{port}/{portnum}'
 
     def getPort(self,as_str=False):
         '''

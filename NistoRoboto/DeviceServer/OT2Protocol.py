@@ -92,6 +92,18 @@ class OT2Protocol(Protocol):
                 tip_racks.append(tip_rack)
             self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
 
+    def mix(self,repetitions=1, volume=None, location=None, rate=1.0,**kwargs):
+        self.app.logger.info(f'Transfering {volume}uL from {source} to {dest}')
+
+        #get pipette based on volume
+        pipette = self.get_pipette(volume)
+
+        #modify source well dispense location
+        location_wells = self.get_wells(location)
+
+        pipette.mix(repetitions, volume, location, rate)
+
+
     def transfer(self,source,dest,volume,**kwargs):
         '''Transfer fluid from one location to another
 

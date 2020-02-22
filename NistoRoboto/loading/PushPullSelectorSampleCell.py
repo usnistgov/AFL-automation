@@ -85,7 +85,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def status(self):
         status = []
-        status.append(f'State: {dict(self.cell_state)}')
+        status.append(f'CellState: {dict(self.cell_state)}')
+        status.append(f'SelectorState: {self.selector.portString}')
         status.append(f'Pump: {self.pump.name}')
         status.append(f'Selector: {self.selector.name}')
         status.append(f'Cell: {self.name}')
@@ -93,18 +94,23 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             status.append(f'Port {v}: {k}')
         return status
 
-    def loadSample(self,cellname='cell'):
+    def loadSample(self,cellname='cell',sampleVolume=0):
 
         if self.syringe_dirty:
             self.rinseSyringe()
 
         if not self.cell_state[cellname] =='clean':
             self.rinseCell(cellname=cellname)
+        
+        vol_source = self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol + sampleVolume
+        vol_dest   = self.syringe_to_selector_vol + self.cell_to_selector_vol + sampleVolume
 
-        self.selector.selectPort('catch')
-        self.pump.withdraw(self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol)
-        self.selector.selectPort(cellname)
-        self.pump.dispense(self.syringe_to_selector_vol + self.cell_to_selector_vol)
+        self.transfer('catch',cellname,vol_source,vol_dest)
+
+        # self.selector.selectPort('catch')
+        # self.pump.withdraw(self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol)
+        # self.selector.selectPort(cellname)
+        # self.pump.dispense(self.syringe_to_selector_vol + self.cell_to_selector_vol)
         self.cell_state[cellname] = 'loaded'
 
         

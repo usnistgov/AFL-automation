@@ -93,7 +93,7 @@ class OT2Protocol(Protocol):
             self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
 
     def mix(self,repetitions=1, volume=None, location=None, rate=1.0,**kwargs):
-        self.app.logger.info(f'Transfering {volume}uL from {source} to {dest}')
+        self.app.logger.info(f'Mixing {volume}uL {repetitions} times at {location}')
 
         #get pipette based on volume
         pipette = self.get_pipette(volume)
@@ -101,10 +101,9 @@ class OT2Protocol(Protocol):
         #modify source well dispense location
         location_wells = self.get_wells(location)
 
-        pipette.mix(repetitions, volume, location, rate)
 
 
-    def transfer(self,source,dest,volume,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -139,7 +138,10 @@ class OT2Protocol(Protocol):
         if 'dest_loc' in kwargs:
             dest_wells = [getattr(dw,kwargs['dest_loc'])() for dw in dest_wells]
 
-        pipette.transfer(volume,source_wells,dest_wells)
+        if mix_before is not None:
+            pipette.transfer(volume,source_wells,dest_wells,mix_before=mix_before)
+        else:
+            pipette.transfer(volume,source_wells,dest_wells)
 
     def get_pipette(self,volume,method='min_transfers'):
         self.app.logger.debug(f'Looking for a pipette for volume {volume}')

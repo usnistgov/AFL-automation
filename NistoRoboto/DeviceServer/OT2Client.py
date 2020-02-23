@@ -7,7 +7,7 @@ class OT2Client(Client):
     This class maps pipettor functions to HTTP REST requests that are sent to
     the NistoRoboto server
     '''
-    def transfer(self,source,dest,volume,source_loc=None,dest_loc=None):
+    def transfer(self,source,dest,volume,source_loc=None,dest_loc=None,mix_before=None):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -29,6 +29,7 @@ class OT2Client(Client):
         json['source'] = source
         json['dest']   = dest
         json['volume'] = volume
+        json['mix_before'] = mix_before
         if source_loc is not None:
             json['source_loc'] = source_loc
         if dest_loc is not None:

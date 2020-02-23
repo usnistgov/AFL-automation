@@ -50,7 +50,7 @@ class Deck:
             self.client.debug(state=False)
             self.client.home()# must home robot before sending commands
 
-    def catch_sample(self,volume,source,dest,debug_mode=False):
+    def catch_sample(self,volume,source,dest,mix_before=None,debug_mode=False):
         if self.client is None:
             raise ValueError('Need to call \'init_remote_connection\' before sending protocol')
 
@@ -65,6 +65,7 @@ class Deck:
         kw['volume'] = volume
         kw['source'] = source
         kw['dest']   = dest
+        kw['mix_before']   = mix_before
         UUID = self.client.transfer(**kw)
         return UUID
 

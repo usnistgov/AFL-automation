@@ -6,3 +6,8 @@ dev/.ipynb_checkpoints/*
 *.DS_Store
 dev/*
 hardware-designs/capillary-holder-CHESS/OldVersions/*
+NistoRoboto/EpicsADLiveProcess/templates/static/.gitkeep
+NistoRoboto/EpicsADLiveProcess/templates/static/deck.jpeg
+NistoRoboto/EpicsADLiveProcess/templates/static/jquery-3.4.1.min.js
+NistoRoboto/EpicsADLiveProcess/templates/static/logo.svg
+NistoRoboto/EpicsADLiveProcess/templates/static/ncnr.png

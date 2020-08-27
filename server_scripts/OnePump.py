@@ -1,9 +1,11 @@
 import os,sys,subprocess
+from pathlib import Path
 
 try:
-	import NistoRoboto
+        import NistoRoboto
 except:
-	sys.path.append('../')
+        sys.path.append(os.path.abspath(Path(__file__).parent.parent))
+        print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 server_port=5000
 
@@ -13,18 +15,27 @@ from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampl
 from NistoRoboto.loading.NE1kSyringePump import NE1kSyringePump
 from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
 
-selector = ViciMultiposSelector('/dev/ttyFlwSel0',baudrate=19200,portlabels={'catch':5,'rinse':7,'waste':6,'air':9,'cell':8})
-pump = NE1kSyringePump('/dev/ttySyrPmp0',14.86,10,baud=19200,pumpid=10) # ID for 10mL = 14.859, for 50 mL 26.43
+selector = ViciMultiposSelector('/dev/ttyFlowSel',
+            baudrate=19200,
+            portlabels={'catch':1,'rinse':9,'waste':8,'air':10,'cell':5})
+pump = NE1kSyringePump('/dev/ttySyrPump',
+        14.86, #ID for 10 mL = 14.859, for 50 mL 26.43
+        10,
+        baud=19200,
+        pumpid=10) # ID for 10mL = 14.859, for 50 mL 26.43
 cell = PushPullSelectorSampleCell(pump,selector)
 
 server = DeviceServer('SampleCellServer1')
 protocol = cell
 server.add_standard_routes()
 server.create_queue(protocol)
-server.run(host='0.0.0.0',port=server_port, debug=False)
+#server.run(host='0.0.0.0',port=server_port, debug=False)
 
-process = subprocess.Popen(f'chromium-browser --start-fullscreen http://localhost:{server_port}', shell=True, stdout=subprocess.PIPE)
+process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
+
+server.run_threaded(host='0.0.0.0', port=server_port, debug=False)
+
 process.wait()
 
-server.stop()
+server._stop()
 server.join()

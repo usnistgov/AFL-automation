@@ -1,0 +1,13 @@
+
+
+Rotate touchscreen 90 degrees with:
+
+lcd_rotate=1 in /boot/config.txt
+
+Assign serial devices:
+
+
+
+Rotate display using GUI display manager:
+
+

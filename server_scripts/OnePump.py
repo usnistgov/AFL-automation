@@ -1,4 +1,14 @@
-import os
+import os,sys,subprocess
+from pathlib import Path
+
+try:
+        import NistoRoboto
+except:
+        sys.path.append(os.path.abspath(Path(__file__).parent.parent))
+        print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
+
+server_port=5000
+
 from NistoRoboto.DeviceServer.DeviceServer import DeviceServer
 
 from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
@@ -25,9 +35,16 @@ protocol = PushPullSelectorSampleCell(pump,
                                       syringe_to_sel_vol    =None,
                                       selector_internal_vol =None,
                                      )
-
-
 server = DeviceServer('SampleCellServer1')
 server.add_standard_routes()
 server.create_queue(protocol)
-server.run(host='0.0.0.0',port=5000, debug=False)
+server.run(host='0.0.0.0',port=server_port, debug=False)
+
+# process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
+# 
+# server.run_threaded(host='0.0.0.0', port=server_port, debug=False)
+# 
+# process.wait()
+# 
+# server._stop()
+# server.join()

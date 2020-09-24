@@ -87,9 +87,9 @@ class NE1kSyringePump(SyringePump):
             time.sleep(self.flow_delay)
         
     def setRate(self,rate):
-        self.serial_device.sendCommand('%iRAT%.03fMM\x0D'%(self.pumpid,rate))
+        self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate))
 
-    def getRate(self,rate):
+    def getRate(self):
         output = self.serial_device.sendCommand('%iRAT\x0D'%self.pumpid)
         units = output[-3:-1]
         if units=='MM':

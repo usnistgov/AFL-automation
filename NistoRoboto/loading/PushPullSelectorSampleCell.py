@@ -82,6 +82,12 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.nrinses_cell = 1
         self.nrinses_catch = 2
         self.syringe_dirty = False
+        
+        self.rinse_speed = 50.
+        self.load_speed = 10.
+        self.pump.setRate(self.rinse_speed)
+        if self.pump.getRate()!=self.rinse_speed:
+            raise ValueError('Pump rate change failed')
 
     def status(self):
         status = []
@@ -95,6 +101,10 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         return status
 
     def loadSample(self,cellname='cell',sampleVolume=0):
+        
+        self.pump.setRate(self.load_speed)
+        if self.pump.getRate()!=self.load_speed:
+            raise ValueError('Pump rate change failed')
 
         if self.syringe_dirty:
             self.rinseSyringe()
@@ -112,6 +122,11 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         # self.selector.selectPort(cellname)
         # self.pump.dispense(self.syringe_to_selector_vol + self.cell_to_selector_vol)
         self.cell_state[cellname] = 'loaded'
+        
+        self.pump.setRate(self.rinse_speed)
+        if self.pump.getRate()!=self.rinse_speed:
+            raise ValueError('Pump rate change failed')
+        
 
         
 
@@ -171,6 +186,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         if vol_dest>vol_source:
             self.selector.selectPort('air')
             self.pump.withdraw(vol_dest-vol_source)
+        print('Vol_Source',vol_source)
+        print('Vol_Dest',vol_dest)
         self.selector.selectPort(source)
         self.pump.withdraw(vol_source)
         self.selector.selectPort(dest)

@@ -61,9 +61,9 @@ class QueueDaemon(threading.Thread):
             else:
                 try:
                     self.protocol.execute(**task)
-                except:
+                except Exception as error:
                     self.app.logger.error('Exception encountered in protocol, pausing queue...')
-                    print(sys.exc_info()[0])
+                    self.app.logger.error(f'Error:\n\n{error}\n\n')
                     self.paused=True
 
             package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')

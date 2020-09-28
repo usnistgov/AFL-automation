@@ -1,6 +1,7 @@
 import threading
 import time
 import datetime
+import sys
 
 class QueueDaemon(threading.Thread):
     '''
@@ -30,7 +31,9 @@ class QueueDaemon(threading.Thread):
     def run(self):
         self.app.logger.info('Initializing QueueDaemon run-loop')
         while not self.stop:
+            self.app.logger.debug('Getting item from queue')
             package = self.task_queue.get(block=True,timeout=None)
+            self.app.logger.debug('Got item from queue')
 
             # If the task object is None, break the queue-loop
             if package is None: #stop the queue execution
@@ -56,7 +59,12 @@ class QueueDaemon(threading.Thread):
             if self.debug: 
                 time.sleep(3.0)
             else:
-                self.protocol.execute(**task)
+                try:
+                    self.protocol.execute(**task)
+                except:
+                    self.app.logger.error('Exception encountered in protocol, pausing queue...')
+                    print(sys.exc_info()[0])
+                    self.paused=True
 
             package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')
             self.running_task = []

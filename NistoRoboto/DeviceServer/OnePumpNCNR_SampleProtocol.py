@@ -2,23 +2,18 @@ from NistoRoboto.DeviceServer.Client import Client
 from NistoRoboto.DeviceServer.OT2Client import OT2Client
 from NistoRoboto.shared.utilities import listify
 
-import nice
+# import nice
 
 from math import ceil,sqrt
 import json
 import time
-import requests
-import shutil
-import datetime
 
 
-class OnePumpNICE_SampleProtocol:
+class OnePumpNCNRProtocol:
     def __init__(self,
             load_url,
             prep_url,
             nice_url='NGBSANS.ncnr.nist.gov',
-            camera_urls = None,
-            snapshot_directory ='/home/nistoroboto/',
             ):
 
         if not (len(load_url.split(':'))==2):
@@ -27,7 +22,6 @@ class OnePumpNICE_SampleProtocol:
         if not (len(prep_url.split(':'))==2):
             raise ArgumentError('Need to specify both ip and port on prep_url')
 
-            print(self.configurations)
         self.app = None
         self.name = 'OnePumpNCNR'
 
@@ -42,10 +36,7 @@ class OnePumpNICE_SampleProtocol:
         self.load_client.debug(False)
 
         #measure samples
-        self.nice_client = nice.connect(host='NGBSANS.ncnr.nist.gov')
-
-        self.camera_urls = camera_urls
-        self.snapshot_directory = snapshot_directory
+        self.nice_client = None# nice.connect(host='NGBSANS.ncnr.nist.gov')
 
         self.cell_rinse_uuid = None
         self.catch_rinse_uuid = None
@@ -53,73 +44,40 @@ class OnePumpNICE_SampleProtocol:
         self.default_nice_params ={
                 'counter.countAgainst':'TIME',
                 'groupid':'-1', 
+                'filePurpose':'SCATTERING', 
+                'sample.thickness':'1.0', 
+                    
                 } 
 
-        self.status_str = 'Fresh Server!'
-        self.configurations = []
+        self.status_str = ''
     def status(self):
-        status = []
-        for i,config in enumerate(self.configurations):
-            status.append(f'{i}: {config}')
-        status.append(f'Snapshots: {self.snapshot_directory}')
-        status.append(f'Cameras: {self.camera_urls}')
-        status.append(self.status_str)
-        return status
+        return [self.status_str]
 
     def update_status(self,value):
         self.status_str = value
         self.app.logger.info(value)
 
-    def take_snapshot(self,prefix):
-        now = datetime.datetime.now().strftime('%y%m%d-%H:%M:%S')
-        for i,cam_url in enumerate(self.camera_urls):
-            fname = self.snapshot_directory + '/' 
-            fname += prefix
-            fname += f'-{i}-'
-            fname += now
-            fname += '.jpg'
-
-            r = requests.get(cam_url,stream=True)
-            if r.status_code == 200:
-                with open(fname,'wb') as f:
-                    r.raw.decode_content=True
-                    shutil.copyfileobj(r.raw,f)
-
     def execute(self,**kwargs):
         if self.app is not None:
             self.app.logger.debug(f'Executing task {kwargs}')
 
-        if kwargs['task_name']=='sample':
+        if 'sample' in kwargs:
             self.process_sample(kwargs)
-        elif kwargs['task_name']=='measure':
-            self.measure(kwargs)
-        elif kwargs['task_name']=='take_snapshot':
-            self.take_snapshot(kwargs['prefix'])
-        elif kwargs['task_name']=='set_snapshot_directory':
-            self.snapshot_directory = kwargs['snapshot_directory']
-        elif kwargs['task_name']=='add_configuration':
-            config = kwargs['configuration']
-            runGroup = kwargs.get('runGroup',10)
-            prefix = kwargs.get('prefix','ROBOT')
-            user = kwargs.get('user','NGB')
-
-            self.configurations.append([config,runGroup,prefix,user])
-        else:
-            raise ValueError(f'Task_name not recognized: {kwargs["task_name"]}')
 
     def measure(self,sample):
-        for config_index in sample['configuration_indices']:
-            config,runGroup,prefix,user = self.configurations[config_index]
+        runGroup = sample.get('nice_runGroup',10)
+        prefix = sample.get('nice_prefix','ROBOT')
+        user = sample.get('nice_user','NGB')
 
+        for config in sample['configs']:
             nice_params = self.default_nice_params.copy()
             nice_params.update(config)
-            nice_params['sample.description'] = sample['name'] + ' ' + config['configuration']
             params_str = json.dumps(nice_params).replace(':','=')
 
-            self.nice_client.console(f'runPoint {params_str} -g {runGroup} -p \"{prefix}\" -u \"{user}\"')
+            # self.nice_client.console(f'runPoint {params_str} -g {runGroup} -p \"{prefix}\" -u \"{user}\"')
 
     def process_sample(self,sample):
-        name = sample['name']
+        name = sample['sampl']
 
         for task in sample['protocol']:
             kw = task.get_kwargs()
@@ -143,15 +101,15 @@ class OnePumpNICE_SampleProtocol:
         if self.cell_rinse_uuid is not None:
             self.update_status(f'Waiting for cell rinse...')
             self.load_client.wait(self.cell_rinse_uuid)
-            time.sleep(10)
-            self.take_snapshot(prefix = f'cleaned-{name}')
+            # time.sleep(10)
+            # take_image(cam,prefix='camera/200809/',tag = f'cleaned-{conc:5.4f}')
             self.update_status(f'Cell rinse done!')
         
         self.update_status(f'Loading sample into cell...')
         self.load_uuid = self.load_client.enqueue(task_name='loadSample',sampleVolume=sample['volume'])
         self.load_client.wait(self.load_uuid)
-        time.sleep(10)
-        take_image(prefix = f'loaded-{name}')
+        # time.sleep(10)
+        # take_image(cam,prefix='camera/200809/',tag = f'loaded-{conc:5.4f}')
         
         self.update_status(f'Queueing catch rinse')
         self.catch_rinse_uuid = self.load_client.enqueue(task_name='rinseCatch')
@@ -160,8 +118,8 @@ class OnePumpNICE_SampleProtocol:
         self.measure(sample)
         self.update_status(f'Waiting for NICE to measure scattering of {name}')
         time.sleep(60)
-        while str(self.nice_client.queue.queue_state) != 'IDLE':
-            time.sleep(10)
+        # while str(self.nice_client.queue.queue_state) != 'IDLE':
+        #     time.sleep(10)
             
         self.update_status(f'Cleaning up sample {name}')
         self.load_client.enqueue(task_name='rinseCell')

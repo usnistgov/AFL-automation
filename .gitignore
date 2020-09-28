@@ -1,6 +1,10 @@
 .ipynb_checkpoints
 .ipynb_checkpoints/*
 dev/.ipynb_checkpoints/*
+*tif
+*tiff
+data/*
+*poni
 *pyc
 *swp
 *.DS_Store

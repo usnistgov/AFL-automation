@@ -7,10 +7,12 @@ from flask_jwt_extended import create_access_token, get_jwt_identity
 import datetime,requests,subprocess,shlex,os
 import threading,queue,logging,json,pathlib,uuid
 
-from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
+from NistoRoboto.SampleServer.QueueDaemon import QueueDaemon
 from NistoRoboto.DeviceServer.LoggerFilter import LoggerFilter
 
-class DeviceServer:
+from NistoRoboto.shared.MutableQueue import MutableQueue
+
+class SampleServer:
     def __init__(self,name,experiment='Development',contact='tbm@nist.gov'):
         self.name = name
         self.experiment = experiment
@@ -30,12 +32,14 @@ class DeviceServer:
 
     def create_queue(self,protocol):
         self.history = []
-        self.task_queue = queue.Queue()
+        self.task_queue = MutableQueue()
         self.protocol     = protocol
         self.protocol.app = self.app
         self.queue_daemon = QueueDaemon(self.app,protocol,self.task_queue,self.history)
 
-    def reset_queue_daemon(self):
+    def reset_queue_daemon(self,protocol=None):
+        if protocol is not None:
+            self.protocol=protocol
         self.queue_daemon.terminate()
         self.create_queue(self.protocol)
         return 'Success',200
@@ -108,11 +112,17 @@ class DeviceServer:
     @jwt_required
     def enqueue(self):
         task = request.json
+        if 'queue_loc' in task:
+            queue_loc = task['queue_loc']
+            del task['queue_loc']
+        else:
+            queue_loc=0
+
         user = get_jwt_identity()
         self.app.logger.info(f'{user} enqueued {request.json}')
         package = {'task':task,'meta':{},'uuid':uuid.uuid4()}
         package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
-        self.task_queue.put(package)
+        self.task_queue.put(package,queue_loc)
         return str(package['uuid']),200
 
     def clear_queue(self):
@@ -181,8 +191,8 @@ class DeviceServer:
 
 if __name__ =='__main__':
 
-    from NistoRoboto.DeviceServer.DummyProtocol import DummyProtocol
-    server = DeviceServer('TestServer')
+    from NistoRoboto.SampleServer.DummyProtocol import DummyProtocol
+    server = SampleServer('TestServer')
     protocol = DummyProtocol()
     server.add_standard_routes()
     server.create_queue(protocol)

@@ -7,12 +7,12 @@ from flask_jwt_extended import create_access_token, get_jwt_identity
 import datetime,requests,subprocess,shlex,os
 import threading,queue,logging,json,pathlib,uuid
 
-from NistoRoboto.SampleServer.QueueDaemon import QueueDaemon
+from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
 from NistoRoboto.DeviceServer.LoggerFilter import LoggerFilter
 
 from NistoRoboto.shared.MutableQueue import MutableQueue
 
-class SampleServer:
+class DeviceServer:
     def __init__(self,name,experiment='Development',contact='tbm@nist.gov'):
         self.name = name
         self.experiment = experiment
@@ -191,8 +191,8 @@ class SampleServer:
 
 if __name__ =='__main__':
 
-    from NistoRoboto.SampleServer.DummyProtocol import DummyProtocol
-    server = SampleServer('TestServer')
+    from NistoRoboto.DeviceServer.DummyProtocol import DummyProtocol
+    server = DeviceServer('TestServer')
     protocol = DummyProtocol()
     server.add_standard_routes()
     server.create_queue(protocol)

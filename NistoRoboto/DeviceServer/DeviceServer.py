@@ -116,7 +116,7 @@ class DeviceServer:
             queue_loc = task['queue_loc']
             del task['queue_loc']
         else:
-            queue_loc=task_queue.qsize()
+            queue_loc=0
 
         user = get_jwt_identity()
         self.app.logger.info(f'{user} enqueued {request.json}')

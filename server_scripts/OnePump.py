@@ -17,7 +17,7 @@ from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
 from NistoRoboto.loading.Tubing import Tubing
 
 selector = ViciMultiposSelector(
-        '/dev/ttyFlwSel0',
+        '/dev/ttyFlowSel',
         baudrate=19200,
         portlabels={
             'catch':1,
@@ -27,7 +27,7 @@ selector = ViciMultiposSelector(
             'air':10,
             }
         )
-pump = NE1kSyringePump('/dev/ttySyrPmp0',14.86,10,baud=19200,pumpid=10) # ID for 10mL = 14.859, for 50 mL 26.43
+pump = NE1kSyringePump('/dev/ttySyrPump',14.86,10,baud=19200,pumpid=10) # ID for 10mL = 14.859, for 50 mL 26.43
 protocol = PushPullSelectorSampleCell(pump,
                                       selector,
                                       catch_to_sel_vol      =Tubing(1517,112).volume(),

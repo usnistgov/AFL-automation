@@ -8,17 +8,22 @@ except:
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 from NistoRoboto.DeviceServer.DeviceServer import DeviceServer
-from NistoRoboto.DeviceServer.OnePumpNCNR_SampleProtocol import OnePumpNCNR_SampleProtocol
+from NistoRoboto.DeviceServer.OnePumpNICE_SampleProtocol import OnePumpNICE_SampleProtocol
 
 
-protocol = OnePumpNCNRProtocol(
-        load_url='localhost:5000',
-        prep_url='localhost:5001',
+protocol = OnePumpNICE_SampleProtocol(
+        load_url='piloader:5000',
+        prep_url='piot2:5000',
+        camera_urls = [
+            'http://picam:8081/1/current',
+            'http://picam:8081/2/current',
+            'http://picam:8081/3/current',
+            ]
         )
 server = DeviceServer('SampleServer')
 server.add_standard_routes()
 server.create_queue(protocol)
-server.run(host='0.0.0.0',port=5002, debug=False)
+server.run(host='0.0.0.0',port=5000, debug=False)
 
 # process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
 # 

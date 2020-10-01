@@ -3,6 +3,8 @@ from NistoRoboto.shared.exceptions import EmptyException
 import numpy as np
 import copy
 
+AVOGADROS_NUMBER = 6.0221409e+23
+
 class Mixture:
     '''
     ToDo:
@@ -260,6 +262,23 @@ class Mixture:
             self.volume = self.components[name].mass / concentration
         else:
             self.components[name].mass = concentration*self.volume
+
+    def set_molarity(self,name,molarity,by_dilution=False):
+        '''
+        Arguments
+        ---------
+        name: str
+            name of component to set molarity of
+        
+        molarity: float
+            target molarity
+            
+        '''
+        if self.components[name].formula is None:
+            raise RuntimeError('Cannot set molarity without formula defined')
+
+        molar_mass = self.components['name'].formula.molecular_mass*AVOGADROS_NUMBER
+        self.components[name].mass = molarity*molar_mass*self.volume
 
     def remove_volume(self,amount):
         '''Remove volume from mixture without changing composition

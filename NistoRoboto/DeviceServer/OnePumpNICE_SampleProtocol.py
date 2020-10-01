@@ -127,6 +127,7 @@ class OnePumpNICE_SampleProtocol:
         self.configurations.append([config,runGroup,prefix,user])
 
     def measure(self,sample):
+        UUID = None
         for config_index in sample['configuration_indices']:
             config,runGroup,prefix,user = self.configurations[config_index]
 
@@ -135,7 +136,8 @@ class OnePumpNICE_SampleProtocol:
             nice_params['sample.description'] = sample['name'] + ' ' + config['configuration']
             params_str = json.dumps(nice_params).replace(':','=')
 
-            self.nice_client.console(f'runPoint {params_str} -g {runGroup} -p \"{prefix}\" -u \"{user}\"')
+            UUID = self.nice_client.console(f'runPoint {params_str} -g {runGroup} -p \"{prefix}\" -u \"{user}\"')
+        return UUID
 
     def process_sample(self,sample):
         name = sample['name']
@@ -175,11 +177,13 @@ class OnePumpNICE_SampleProtocol:
         self.catch_rinse_uuid = self.load_client.enqueue(task_name='rinseCatch')
 
         self.update_status(f'Asking NICE to measure sample {name}')
-        self.measure(sample)
+        nice_uuid = self.measure(sample)
         self.update_status(f'Waiting for NICE to measure scattering of {name}')
-        time.sleep(60)
-        while str(self.nice_client.queue.queue_state) != 'IDLE':
-            time.sleep(10)
+        time.sleep(10)
+        self.nice_client.wait_for(nice_uuid)
+        # time.sleep(60)
+        # while str(self.nice_client.queue.queue_state) != 'IDLE':
+        #     time.sleep(10)
             
         self.update_status(f'Cleaning up sample {name}')
         self.load_client.enqueue(task_name='rinseCell')

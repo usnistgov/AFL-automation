@@ -141,8 +141,7 @@ class OnePumpNICE_SampleProtocol:
         name = sample['name']
 
         for task in sample['protocol']:
-            kw = task.get_kwargs()
-            self.prep_uuid = self.prep_client.transfer(**kw)
+            self.prep_uuid = self.prep_client.transfer(**task)
  
         if self.catch_rinse_uuid is not None:
             self.update_status(f'Waiting for catch rinse...')
@@ -170,7 +169,7 @@ class OnePumpNICE_SampleProtocol:
         self.load_uuid = self.load_client.enqueue(task_name='loadSample',sampleVolume=sample['volume'])
         self.load_client.wait(self.load_uuid)
         time.sleep(10)
-        take_image(prefix = f'loaded-{name}')
+        self.take_snapshot(prefix = f'loaded-{name}')
         
         self.update_status(f'Queueing catch rinse')
         self.catch_rinse_uuid = self.load_client.enqueue(task_name='rinseCatch')

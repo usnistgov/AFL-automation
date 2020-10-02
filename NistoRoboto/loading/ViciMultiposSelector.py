@@ -37,6 +37,8 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
             if unset or other value, will move via most efficient route.
 
         '''
+        if self.app is not None:
+            self.app.logger.debug(f'Setting port to {port}')
 
         if type(port) is str:
             portnum = self.portlabels[port]

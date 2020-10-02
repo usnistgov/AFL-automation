@@ -27,6 +27,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
                       cell_to_sel_vol=None,
                       syringe_to_sel_vol=None,
                       selector_internal_vol=None,
+                      rinse_speed=50.0,
+                      load_speed=10.0,
                       ):
         '''
             ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)
@@ -43,6 +45,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
                 e.g. selector = ViciMultiposSelector(port,portlabels={'catch':1,'cell':2,'rinse':3,'waste':4,'air':5})
 
         '''
+        self._app = None
         self.name = 'PushPullSelectorSampleCell'
         self.pump = pump
         self.selector = selector
@@ -83,11 +86,21 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.nrinses_catch = 2
         self.syringe_dirty = False
         
-        self.rinse_speed = 50.
-        self.load_speed = 10.
+        self.rinse_speed = rinse_speed
+        self.load_speed = load_speed
         self.pump.setRate(self.rinse_speed)
         if self.pump.getRate()!=self.rinse_speed:
             raise ValueError('Pump rate change failed')
+
+    @property
+    def app(self):
+        return self._app
+
+    @app.setter
+    def app(self,app):
+        self._app = app
+        self.pump.app = app
+        self.selector.app = app
 
     def status(self):
         status = []
@@ -99,6 +112,25 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         for k,v in self.selector.portlabels.items():
             status.append(f'Port {v}: {k}')
         return status
+
+    def transfer(self,source,dest,vol_source,vol_dest=None):
+        if vol_dest is None:
+            vol_dest = vol_source
+        self.app.logger.debug(f'Transferring {vol_source}mL from {source} and {vol_dest}mL to {dest}')
+
+        if vol_dest>vol_source:
+            self.app.logger.debug(f'Withrawing {vol_dest-vol_source} mL from air')
+            self.selector.selectPort('air')
+            self.pump.withdraw(vol_dest-vol_source)
+
+        self.selector.selectPort(source)
+        self.pump.withdraw(vol_source)
+        self.selector.selectPort(dest)
+        self.pump.dispense(vol_dest)
+        if vol_dest<vol_source:
+            self.app.logger.debug(f'Dumping {vol_source-vol_dest} mL  excess to waste')
+            self.selector.selectPort('waste')
+            self.pump.dispense(vol_source-vol_dest)
 
     def loadSample(self,cellname='cell',sampleVolume=0):
         
@@ -124,9 +156,6 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.cell_state[cellname] = 'loaded'
         
         self.pump.setRate(self.rinse_speed)
-        if self.pump.getRate()!=self.rinse_speed:
-            raise ValueError('Pump rate change failed')
-        
 
         
 
@@ -150,15 +179,18 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             self.syringe_dirty = True
 
     def rinseSyringe(self):
+        self.pump.setRate(self.rinse_speed)
         for i in range(self.nrinses_syringe):
             self.transfer('rinse','waste',self.rinse_vol_ml)
         self.syringe_dirty = False
 
         
     def rinseCell(self,cellname='cell'):
+        self.pump.setRate(self.rinse_speed)
         self.rinseCellFlood(cellname)
         
     def rinseCellPull(self,cellname = 'cell'):
+        self.pump.setRate(self.rinse_speed)
         #rinse the cell
         for i in range(self.nrinses_cell):    
             self.selector.selectPort('rinse')
@@ -172,6 +204,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.syringe_dirty = True
 
     def rinseCellFlood(self,cellname='cell'):
+        self.pump.setRate(self.rinse_speed)
         if self.syringe_dirty:
             self.rinseSyringe()
         self.blowOutCell(cellname)
@@ -180,28 +213,14 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.blowOutCell(cellname)
         self.cell_state[cellname] = 'clean'
         
-    def transfer(self,source,dest,vol_source,vol_dest=None):
-        if vol_dest is None:
-            vol_dest = vol_source
-        if vol_dest>vol_source:
-            self.selector.selectPort('air')
-            self.pump.withdraw(vol_dest-vol_source)
-        print('Vol_Source',vol_source)
-        print('Vol_Dest',vol_dest)
-        self.selector.selectPort(source)
-        self.pump.withdraw(vol_source)
-        self.selector.selectPort(dest)
-        self.pump.dispense(vol_dest)
-        if vol_dest<vol_source:
-            self.selector.selectPort('waste')
-            self.pump.dispense(vol_source-vol_dest)
-        
 
     def swish(self,vol):
+        self.pump.setRate(self.rinse_speed)
         self.pump.withdraw(vol)
         self.pump.dispense(vol)
 
     def blowOutCell(self,cellname='cell'):
+        self.pump.setRate(self.rinse_speed)
         self.selector.selectPort('air')
         self.pump.withdraw(self.blow_out_vol)
         self.selector.selectPort(cellname)
@@ -209,6 +228,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
 
     def rinseCatch(self):
+        self.pump.setRate(self.rinse_speed)
         for i in range(self.nrinses_catch):
             from_vol = self.rinse_vol_ml 
             to_vol   = self.rinse_vol_ml + self.catch_to_selector_vol
@@ -220,23 +240,6 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             from_vol = self.rinse_vol_ml + self.catch_to_selector_vol + self.catch_empty_ffvol
             to_vol   = self.rinse_vol_ml + self.syringe_to_selector_vol
             self.transfer('catch','waste',from_vol,to_vol)
-
-    def old_rinseCatch(self):
-        for i in range(self.nrinses_catch):
-            self.selector.selectPort('air')
-            self.pump.withdraw(self.catch_to_selector_vol)
-            self.selector.selectPort('rinse')
-            self.pump.withdraw(self.rinse_vol_ml)
-            self.selector.selectPort('catch')
-            self.pump.dispense(self.catch_to_selector_vol)
-            for i in range(2): #swish the fluid around in the cell
-                self.pump.dispense(self.rinse_vol_ml)
-                self.pump.withdraw(self.rinse_vol_ml)
-            self.pump.withdraw(self.catch_to_selector_vol)
-            self.selector.selectPort('waste')
-            self.pump.dispense(self.rinse_vol_ml + self.syringe_to_selector_vol)
-            self.selector.selectPort('air')
-            self.pump.dispense(self.catch_to_selector_vol-self.syringe_to_selector_vol)
 
     def rinseAll(self,cellname='cell'):
         # if self.state is 'loaded':

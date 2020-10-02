@@ -12,6 +12,7 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
             baud - baudrate to use
             portlabels - dict for smart port naming, of the form {'sample':3,'instrument':4,'rinse':5,'waste':6}
         '''
+        self.app = None
         self.name = 'ViciMultiPosSelector'
 
         super().__init__(port,baudrate=baudrate,timeout=0.5)

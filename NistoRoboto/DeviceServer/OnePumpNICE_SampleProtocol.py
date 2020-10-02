@@ -158,6 +158,7 @@ class OnePumpNICE_SampleProtocol:
             'source':sample['target_loc'],
             'dest':sample['catch_loc'],
             'volume':sample['volume']*1000,
+            'mix_before':(3,sample['volume']*1000),
             })
         
         self.update_status(f'Waiting for sample prep/catch of {name} to finish')

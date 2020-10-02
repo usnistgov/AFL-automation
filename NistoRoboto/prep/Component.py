@@ -4,6 +4,8 @@ import copy
 import numbers
 from pyparsing import ParseException
 
+AVOGADROS_NUMBER = 6.0221409e+23
+
 class Component(object):
     '''Base class for all materials
     
@@ -61,7 +63,14 @@ class Component(object):
     def __hash__(self):
         '''Needed so Components can be dictionary keys'''
         return id(self)
-    
+
+    @property
+    def moles(self):
+        if self._has_formula and self._has_mass:
+            return self._mass/self.formula.molecular_mass/AVOGADROS_NUMBER
+        else:
+            return None
+
     @property
     def mass(self):
         return self._mass

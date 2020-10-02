@@ -1,7 +1,9 @@
 import numpy as np
-from NistoRoboto.prep.Mixture import Mixture
+# from NistoRoboto.prep.Mixture import Mixture
+import NistoRoboto.prep.Mixture 
 from NistoRoboto.prep.PipetteAction import PipetteAction
 from NistoRoboto.shared.exceptions import MixingException
+import scipy.optimize
 
 get_pipette='''
 def get_pipette(volume,loaded_pipettes):
@@ -179,7 +181,7 @@ class Deck:
                         if stock[name]._has_mass:
                             row.append(stock.mass_fraction[name])
                         elif stock[name].empty:
-                            row.append(0) #this component is set to zero
+                            row.append(0.0) #this component is set to zero
                         else:
                             raise ValueError('Need masses specified for mass balance')
                     else:
@@ -188,7 +190,7 @@ class Deck:
                 
                 if name in target.components:
                     if target[name]._has_mass:
-                        target_component_masses.append(target[name].mass)
+                        target_component_masses.append(target[name].mass)#.mass_fraction[name])# target[name].mass) PB changed in attempt to fix matrix errors
                     elif target[name].empty:
                         target_component_masses.append(0.0) #this component is set to zero
                     else:
@@ -197,8 +199,13 @@ class Deck:
                     target_component_masses.append(0)
 
             #solve mass balance 
-            mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
+            # mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
+            mass_transfers,residuals = scipy.optimize.nnls(mass_fraction_matrix,target_component_masses)
+            print(f'Debug: mass fraction matrix is {mass_fraction_matrix} and targeted a solution {target_component_masses}')
+            print(f'Debug: mass transfer result is {mass_transfers}')
             self.mass_transfers = mass_transfers
+            if any(mass_transfers<0):
+                raise MixingException(f'Mass transfer calculation failed, negative mass transers present:\n{self.mass_transfers}')
            
             #
             for stock,mass in zip(self.stocks,mass_transfers):
@@ -206,12 +213,15 @@ class Deck:
                     removed = stock.copy()
                     removed.mass = mass
                     if (removed.volume>0) and (removed.volume<volume_cutoff):
-                        raise MixingException('Can\'t make solution with loaded pipettes')
+                        print(f'Trying to take {removed.volume} from {removed}')
+                        print(f'No way to do that.  See what solution looks like without it')
+                        #raise MixingException('Can\'t make solution with loaded pipettes') We need to rethink this.  There will be MANY systems where good enough is good enough.
 
             #apply mass balance
-            self.target_check = Mixture()
+            # self.target_check = Mixture()
+            self.target_check = NistoRoboto.prep.Mixture.Mixture()
             for stock,mass in zip(self.stocks,mass_transfers):
-                if mass>0:
+                if mass>1e-6:#tolerance
                     if deplete:
                         removed = stock.remove_mass(mass)
                     else:
@@ -219,11 +229,14 @@ class Deck:
                         removed.mass = mass
 
                     #check to make sure that min_tol hasn't been hit
-                    if not (removed.volume>0):
+                    print('Removed Volume',removed.volume,removed.volume>0)
+                    print('Removed Mass',removed.mass)
+                    if (removed.volume>0) and (removed.volume<volume_cutoff):
+                        print(f'Not using action {self.target_check} since it is not physically possible.')
                         continue
-
-                    self.target_check = self.target_check + removed
                     
+                    self.target_check = self.target_check + removed
+                                                
                     action = PipetteAction(
                                 source = self.stock_location[stock],
                                 dest = self.target_location[target],
@@ -233,14 +246,18 @@ class Deck:
                     )
                     self.protocol.append(action)
 
+
             #need to add empty components for equality check
             for name,component in target:
                 if component.empty:
                     self.target_check = self.target_check + component
                     
             if not (target == self.target_check):
-                raise RuntimeError('Mass transfer calculation failed...')
-
+                print(f'Wanted to make: {target.volume} mL of {target.mass_fraction}')
+                print(f'Got: {target.volume} mL of {self.target_check.mass_fraction}')
+                print(f'With protocol: {self.protocol}')
+                #raise RuntimeError(f'Mass transfer calculation failed...')
+        
     def make_align_script(self,filename,load_last_sample=True):
         with open(filename,'w') as f:
             f.write('from opentrons import protocol_api\n')

@@ -86,11 +86,14 @@ class OnePumpNICE_SampleProtocol:
             fname += now
             fname += '.jpg'
 
-            r = requests.get(cam_url,stream=True)
-            if r.status_code == 200:
-                with open(fname,'wb') as f:
-                    r.raw.decode_content=True
-                    shutil.copyfileobj(r.raw,f)
+            try:
+                r = requests.get(cam_url,stream=True)
+                if r.status_code == 200:
+                    with open(fname,'wb') as f:
+                        r.raw.decode_content=True
+                        shutil.copyfileobj(r.raw,f)
+            except Exception as error:
+                self.app.logger.warning('take_snapshot failed with error:\n\n{error}\n\n')
 
     def execute(self,**kwargs):
         if self.app is not None:

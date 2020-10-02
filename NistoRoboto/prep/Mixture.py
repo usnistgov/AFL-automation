@@ -62,7 +62,7 @@ class Mixture:
                 else:
                     mixture.components[name] = component.copy()
         else:
-            raise TypeError(f'Unsure how to combine Mixture with {type(other)}')
+            raise TypeError(f'Unsure how to combine {type(self)} with {type(other)}')
             
         return mixture
     
@@ -271,14 +271,14 @@ class Mixture:
             name of component to set molarity of
         
         molarity: float
-            target molarity
+            target molarity in mol/L
             
         '''
         if self.components[name].formula is None:
             raise RuntimeError('Cannot set molarity without formula defined')
 
-        molar_mass = self.components['name'].formula.molecular_mass*AVOGADROS_NUMBER
-        self.components[name].mass = molarity*molar_mass*self.volume
+        molar_mass = self.components[name].formula.molecular_mass*AVOGADROS_NUMBER
+        self.components[name].mass = molarity*molar_mass*(self.volume/1000.0)#Assumes volume is in mL
 
     def remove_volume(self,amount):
         '''Remove volume from mixture without changing composition

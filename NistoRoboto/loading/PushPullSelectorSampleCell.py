@@ -29,6 +29,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
                       selector_internal_vol=None,
                       rinse_speed=50.0,
                       load_speed=10.0,
+                      rinse_flow_delay=3.0,
+                      load_flow_delay=10.0,
                       ):
         '''
             ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)
@@ -88,6 +90,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         
         self.rinse_speed = rinse_speed
         self.load_speed = load_speed
+        self.rinse_flow_delay = rinse_flow_delay
+        self.load_flow_delay = load_flow_delay
         self.pump.setRate(self.rinse_speed)
         if self.pump.getRate()!=self.rinse_speed:
             raise ValueError('Pump rate change failed')
@@ -133,10 +137,6 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             self.pump.dispense(vol_source-vol_dest)
 
     def loadSample(self,cellname='cell',sampleVolume=0):
-        
-        self.pump.setRate(self.load_speed)
-        if self.pump.getRate()!=self.load_speed:
-            raise ValueError('Pump rate change failed')
 
         if self.syringe_dirty:
             self.rinseSyringe()
@@ -144,6 +144,9 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         if not self.cell_state[cellname] =='clean':
             self.rinseCell(cellname=cellname)
         
+        self.pump.setRate(self.load_speed)
+        self.pump.flow_delay = self.load_flow_delay
+
         vol_source = self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol + sampleVolume
         vol_dest   = self.syringe_to_selector_vol + self.cell_to_selector_vol + sampleVolume
 
@@ -156,8 +159,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.cell_state[cellname] = 'loaded'
         
         self.pump.setRate(self.rinse_speed)
-
-        
+        self.pump.flow_delay = self.rinse_flow_delay
 
     def _firstCleanCell(self,rinse_if_none=False):
             # find the first clean cell and use that.
@@ -180,6 +182,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def rinseSyringe(self):
         self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
         for i in range(self.nrinses_syringe):
             self.transfer('rinse','waste',self.rinse_vol_ml)
         self.syringe_dirty = False
@@ -187,10 +190,12 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         
     def rinseCell(self,cellname='cell'):
         self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
         self.rinseCellFlood(cellname)
         
     def rinseCellPull(self,cellname = 'cell'):
         self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
         #rinse the cell
         for i in range(self.nrinses_cell):    
             self.selector.selectPort('rinse')
@@ -205,6 +210,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def rinseCellFlood(self,cellname='cell'):
         self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
         if self.syringe_dirty:
             self.rinseSyringe()
         self.blowOutCell(cellname)
@@ -216,11 +222,13 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def swish(self,vol):
         self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
         self.pump.withdraw(vol)
         self.pump.dispense(vol)
 
     def blowOutCell(self,cellname='cell'):
         self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
         self.selector.selectPort('air')
         self.pump.withdraw(self.blow_out_vol)
         self.selector.selectPort(cellname)
@@ -229,6 +237,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
     def rinseCatch(self):
         self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
         for i in range(self.nrinses_catch):
             from_vol = self.rinse_vol_ml 
             to_vol   = self.rinse_vol_ml + self.catch_to_selector_vol

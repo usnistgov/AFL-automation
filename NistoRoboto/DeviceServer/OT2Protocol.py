@@ -13,7 +13,10 @@ class OT2Protocol(Protocol):
     def status(self):
         status = []
         for k,v in self.protocol.loaded_instruments.items():
-            status.append(str(v))
+            aspirate = v.flow_rate.aspirate
+            dispense = v.flow_rate.dispense
+            flow_str = f' @ {aspirate}/{dispense} uL/s'
+            status.append(str(v)+flow_str)
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
@@ -142,6 +145,15 @@ class OT2Protocol(Protocol):
             pipette.transfer(volume,source_wells,dest_wells,mix_before=mix_before)
         else:
             pipette.transfer(volume,source_wells,dest_wells)
+    def set_aspirate_rate(self,rate=150):
+        '''Set aspirate rate of both pipettes in uL/s. Default is 150 uL/s'''
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            pipette.flow_rate.aspirate = rate
+
+    def set_dispense_rate(self,rate=300):
+        '''Set aspirate rate of both pipettes in uL/s. Default is 150 uL/s'''
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            pipette.flow_rate.dispense = rate
 
     def get_pipette(self,volume,method='min_transfers'):
         self.app.logger.debug(f'Looking for a pipette for volume {volume}')

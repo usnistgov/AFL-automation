@@ -10,6 +10,13 @@ import requests
 import shutil
 import datetime
 
+class NiceDummy:
+    '''Used in place of NICE client'''
+    def console(self,*args,**kwargs):
+        pass
+    def wait_for(self,*args,**kwargs):
+        pass
+
 
 class OnePumpNICE_SampleProtocol:
     def __init__(self,
@@ -55,14 +62,18 @@ class OnePumpNICE_SampleProtocol:
         self.status_str = 'Fresh Server!'
         self.configurations = []
     def init_nice(self,nice_url):
+        self.nice_url = nice_url
+        if nice_url is not None:
+            import nice
+            self.nice_client = nice.connect(host=nice_url)
 
-        import nice
-        self.nice_client = nice.connect(host=nice_url)
-
-        #this MUST be imported after the nice_client connects
-        from NistoRoboto.instrument.NICEDevice import NICEDevice
-        self.nice_device = NICEDevice()
-        self.nice_client.subscribe('devices',self.nice_device)
+            #this MUST be imported after the nice_client connects
+            from NistoRoboto.instrument.NICEDevice import NICEDevice
+            self.nice_device = NICEDevice()
+            self.nice_client.subscribe('devices',self.nice_device)
+        else:
+            self.nice_client = NiceDummy()
+            self.nice_device = None
 
     def status(self):
         status = []
@@ -70,6 +81,7 @@ class OnePumpNICE_SampleProtocol:
             status.append(f'{i}: {config}')
         status.append(f'Snapshots: {self.snapshot_directory}')
         status.append(f'Cameras: {self.camera_urls}')
+        status.append(f'NICE: {self.nice_url}')
         status.append(self.status_str)
         return status
 
@@ -113,21 +125,26 @@ class OnePumpNICE_SampleProtocol:
             del self.configurations[kwargs['configuration_index']]
         elif kwargs['task_name']=='clear_configurations':
             self.configurations = []
+        elif kwargs['task_name']=='init_nice':
+            self.init_nice(kwargs['nice_url'])
         else:
             raise ValueError(f'Task_name not recognized: {kwargs["task_name"]}')
 
     def add_configuration(self,kwargs):
-        config = kwargs['configuration']
-        runGroup = kwargs.get('runGroup',10)
-        prefix = kwargs.get('prefix','ROBOT')
-        user = kwargs.get('user','NGB')
+        if self.nice_device is not None:
+            config = kwargs['configuration']
+            runGroup = kwargs.get('runGroup',10)
+            prefix = kwargs.get('prefix','ROBOT')
+            user = kwargs.get('user','NGB')
 
-        #get current state of NICE instrument
-        nice_configs = self.nice_device.nodes['configuration.map'].currentValue.userVal.val
-        if config['configuration'] not in nice_configs:
-            raise ValueError(f'Configuration not found on instrument!\nRequested:{config["configuration"]}\nAvailable:{nice_configs.keys()}\n')
+            #get current state of NICE instrument
+            nice_configs = self.nice_device.nodes['configuration.map'].currentValue.userVal.val
+            if config['configuration'] not in nice_configs:
+                raise ValueError(f'Configuration not found on instrument!\nRequested:{config["configuration"]}\nAvailable:{nice_configs.keys()}\n')
 
-        self.configurations.append([config,runGroup,prefix,user])
+            self.configurations.append([config,runGroup,prefix,user])
+        else:
+            self.configurations.append(['Dummy configuration added (not connected to NICE)!'])
 
     def measure(self,sample):
         UUID = None

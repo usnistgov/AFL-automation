@@ -106,7 +106,7 @@ class OT2Protocol(Protocol):
 
 
 
-    def transfer(self,source,dest,volume,mix_before=None,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -142,9 +142,10 @@ class OT2Protocol(Protocol):
             dest_wells = [getattr(dw,kwargs['dest_loc'])() for dw in dest_wells]
 
         if mix_before is not None:
-            pipette.transfer(volume,source_wells,dest_wells,mix_before=mix_before)
+            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap,mix_before=mix_before)
         else:
-            pipette.transfer(volume,source_wells,dest_wells)
+            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap)
+
     def set_aspirate_rate(self,rate=150):
         '''Set aspirate rate of both pipettes in uL/s. Default is 150 uL/s'''
         for mount,pipette in self.protocol.loaded_instruments.items():

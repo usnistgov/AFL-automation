@@ -8,6 +8,7 @@ function update(){
             var meta_str = "meta" + queue_num;
             ul_history.append(
                                 "<li class='element history' data-div=" + meta_str + ">" + 
+                                i + ") " + 
                                 JSON.stringify(task_history[i]['task']) + 
                                 "</li>" +
                                 "<div class='hidden meta' id=" + meta_str + ">"+
@@ -56,6 +57,7 @@ function update(){
             var meta_str = "meta" + queue_num;
             ul_queued.append(
                                 "<li class='element queued' data-div=" + meta_str + ">" + 
+                                i + ") " + 
                                 JSON.stringify(task_queue[i]['task']) + 
                                 "</li>" +
                                 "<div class='hidden meta' id="+ meta_str + ">" + 

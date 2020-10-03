@@ -71,7 +71,7 @@ class NE1kSyringePump(SyringePump):
 
     def withdraw(self,volume,block=True):
         if self.app is not None:
-            rate = self.pump.getRate()
+            rate = self.getRate()
             self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
 
         self.serial_device.sendCommand('%iVOLML\x0D'%self.pumpid)
@@ -84,7 +84,7 @@ class NE1kSyringePump(SyringePump):
         
     def dispense(self,volume,block=True):
         if self.app is not None:
-            rate = self.pump.getRate()
+            rate = self.getRate()
             self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min')
         self.serial_device.sendCommand('%iVOLML\x0D'%self.pumpid)
         self.serial_device.sendCommand('%iVOL%.03f\x0D'%(self.pumpid,volume))
@@ -98,7 +98,7 @@ class NE1kSyringePump(SyringePump):
         if self.app is not None:
             self.app.logger.debug(f'Setting pump rate to {rate} mL/min')
         self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate))
-        if self.pump.getRate()!=rate:
+        if self.getRate()!=rate:
             raise ValueError('Pump rate change failed')
 
     def getRate(self):

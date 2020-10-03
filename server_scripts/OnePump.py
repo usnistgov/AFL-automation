@@ -31,7 +31,7 @@ pump = NE1kSyringePump('/dev/ttySyrPump',14.86,10,baud=19200,pumpid=10,flow_dela
 protocol = PushPullSelectorSampleCell(pump,
                                       selector,
                                       catch_to_sel_vol      =Tubing(1517,112).volume(),
-                                      cell_to_sel_vol       =Tubing(1517,170).volume(),
+                                      cell_to_sel_vol       =Tubing(1517,170).volume()+0.6,
                                       syringe_to_sel_vol    =None,
                                       selector_internal_vol =None,
                                       load_speed=10.0,

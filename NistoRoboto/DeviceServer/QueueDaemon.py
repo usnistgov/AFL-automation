@@ -2,6 +2,7 @@ import threading
 import time
 import datetime
 import sys
+import traceback
 
 class QueueDaemon(threading.Thread):
     '''
@@ -62,8 +63,8 @@ class QueueDaemon(threading.Thread):
                 try:
                     self.protocol.execute(**task)
                 except Exception as error:
+                    self.app.logger.error(f'Error: {error.__repr__()}\n\n'+traceback.format_exc()+'\n')
                     self.app.logger.error('Exception encountered in protocol, pausing queue...')
-                    self.app.logger.error(f'Error:\n\n{error}\n\n')
                     self.paused=True
 
             package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')

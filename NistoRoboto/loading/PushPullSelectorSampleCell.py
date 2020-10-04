@@ -96,24 +96,24 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
         #variables that we'll allow users to set via the API
         self.remote_parameters = [
-            'catch_to_selector_vol'
-            'cell_to_selector_vol'
-            'syringe_to_selector_vol'
-            'selector_internal_vol'
-            'catch_empty_ffvol'
-            'to_waste_vol'
-            'rinse_prime_vol'
-            'rinse_vol_ml'
-            'blow_out_vol'
-            'nrinses_cell_flood'
-            'nrinses_syringe'
-            'nrinses_cell'
-            'nrinses_catch'
-            'syringe_dirty'
-            'rinse_speed'
-            'load_speed'
-            'rinse_flow_delay'
-            'load_flow_delay'
+            'catch_to_selector_vol',
+            'cell_to_selector_vol',
+            'syringe_to_selector_vol',
+            'selector_internal_vol',
+            'catch_empty_ffvol',
+            'to_waste_vol',
+            'rinse_prime_vol',
+            'rinse_vol_ml',
+            'blow_out_vol',
+            'nrinses_cell_flood',
+            'nrinses_syringe',
+            'nrinses_cell',
+            'nrinses_catch',
+            'syringe_dirty',
+            'rinse_speed',
+            'load_speed',
+            'rinse_flow_delay',
+            'load_flow_delay',
             ]
 
     @property
@@ -137,12 +137,12 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             status.append(f'Port {v}: {k}')
         return status
     
-    def set_parameter(self,parameter,value):
+    def setParameter(self,parameter,value):
         if parameters not in self.remote_parameters:
             raise ValueError(f'Parameter {parameter} not settable')
             setattr(self,parameter,value)
 
-    def get_parameters(self):
+    def getParameters(self):
         for parameter in self.remote_parameters:
             value = getattr(self,parameter)
             print(f'{parameter:20s} = {value}')

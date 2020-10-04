@@ -136,6 +136,15 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             self.selector.selectPort('waste')
             self.pump.dispense(vol_source-vol_dest)
 
+    def catchToSyringe(self,sampleVolume=0):
+        self.pump.setRate(self.load_speed)
+        self.pump.flow_delay = self.load_flow_delay
+
+        vol_source = self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol + sampleVolume
+
+        self.selector.selectPort('catch')
+        self.pump.withdraw(vol_source)
+
     def loadSample(self,cellname='cell',sampleVolume=0):
 
         if self.syringe_dirty:

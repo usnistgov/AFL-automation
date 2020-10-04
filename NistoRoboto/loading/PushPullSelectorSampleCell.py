@@ -75,6 +75,9 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         else:
             self.selector_internal_vol   = selector_internal_vol
         
+        self.calibrated_load_vol_source = None
+        self.calibrated_load_vol_dest = None
+
         self.catch_empty_ffvol = 2
         self.to_waste_vol = 1
 
@@ -96,6 +99,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
         #variables that we'll allow users to set via the API
         self.remote_parameters = [
+            'calibrated_load_vol_source',
+            'calibrated_load_vol_dest',
             'catch_to_selector_vol',
             'cell_to_selector_vol',
             'syringe_to_selector_vol',
@@ -138,7 +143,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         return status
     
     def setParameter(self,parameter,value):
-        if parameters not in self.remote_parameters:
+        if parameter not in self.remote_parameters:
             raise ValueError(f'Parameter {parameter} not settable')
             setattr(self,parameter,value)
 
@@ -186,9 +191,21 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.pump.setRate(self.load_speed)
         self.pump.flow_delay = self.load_flow_delay
 
-        vol_source = self.catch_to_selector_vol+self.syringe_to_selector_vol+self.catch_empty_ffvol + sampleVolume
-        vol_dest   = self.syringe_to_selector_vol + self.cell_to_selector_vol + sampleVolume
+        if (self.calibrated_load_vol_source is None) or (self.calibrated_load_vol_source=='None'):
+            vol_source  = self.catch_to_selector_vol
+            vol_source += self.syringe_to_selector_vol
+            vol_source +=self.catch_empty_ffvol 
+        else:
+            vol_source = self.calibrated_load_vol_source
 
+        if (self.calibrated_load_vol_dest is None) or (self.calibrated_load_vol_dest=='None'):
+            vol_dest  = self.syringe_to_selector_vol 
+            vol_dest += self.cell_to_selector_vol 
+        else:
+            vol_dest = self.calibrated_load_vol_dest
+            
+        vol_dest   += sampleVolume
+        vol_source += sampleVolume
         self.transfer('catch',cellname,vol_source,vol_dest)
 
         # self.selector.selectPort('catch')

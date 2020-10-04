@@ -145,6 +145,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
     def setParameter(self,parameter,value):
         if parameter not in self.remote_parameters:
             raise ValueError(f'Parameter {parameter} not settable')
+        else:
             setattr(self,parameter,value)
 
     def getParameters(self):

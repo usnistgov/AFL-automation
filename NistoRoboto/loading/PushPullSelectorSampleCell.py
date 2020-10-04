@@ -145,7 +145,7 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
     def getParameters(self):
         for parameter in self.remote_parameters:
             value = getattr(self,parameter)
-            print(f'{parameter:20s} = {value}')
+            print(f'{parameter:30s} = {value}')
 
     def transfer(self,source,dest,vol_source,vol_dest=None):
         if vol_dest is None:

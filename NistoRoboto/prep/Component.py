@@ -4,7 +4,9 @@ import copy
 import numbers
 from pyparsing import ParseException
 
-AVOGADROS_NUMBER = 6.0221409e+23
+from NistoRoboto.shared.units import ureg
+
+AVOGADROS_NUMBER = 6.0221409e+23*ureg('1/mol')
 
 class Component(object):
     '''Base class for all materials
@@ -14,6 +16,7 @@ class Component(object):
     '''
     def __init__(self,name,mass=None,volume=None,density=None,formula=None):
         self.name    = name
+        self.density = density
         
         if (mass is None) and (volume is None):
             # use hidden variables to avoid property setting Nonsense
@@ -46,7 +49,7 @@ class Component(object):
         return copy.deepcopy(self)
 
     def __iter__(self):
-        '''Dummy iterator to mimic behavior of Mixture'''
+        '''Dummy iterator to mimic behavior of Mixture.'''
         for name,component in [(self.name,self)]:
             yield name,component
     
@@ -68,7 +71,7 @@ class Component(object):
     @property
     def moles(self):
         if self._has_formula and self._has_mass:
-            return self._mass/self.formula.molecular_mass/AVOGADROS_NUMBER
+            return self._mass/(self.formula.molecular_mass*ureg('g'))/AVOGADROS_NUMBER
         else:
             return None
 
@@ -113,13 +116,7 @@ class Component(object):
     def sld(self):
         if self._has_formula and self._has_density:
             
-            #try to coonvert units and them strip them
-            #XXX This is hacky and needs to be changed
-            try:
-                self.formula.density = self.density.to('g/ml').magnitude
-            except AttributeError:
-                self.formula.density = self.density
-                
+            self.formula.density = self.density.to('g/ml').magnitude
             # neutron_sld returns a 3-tuple with (real, imag, incoh)
             # wavelength doesn't matter for real_sld
             return self.formula.neutron_sld(wavelength=5.0)[0]

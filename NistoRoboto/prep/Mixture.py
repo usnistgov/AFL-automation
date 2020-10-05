@@ -3,7 +3,9 @@ from NistoRoboto.shared.exceptions import EmptyException
 import numpy as np
 import copy
 
-AVOGADROS_NUMBER = 6.0221409e+23
+from NistoRoboto.shared.units import ureg
+
+AVOGADROS_NUMBER = 6.0221409e+23*ureg('1/mol')
 
 class Mixture:
     '''
@@ -269,7 +271,7 @@ class Mixture:
             raise RuntimeError('Cannot set molarity without formula defined')
 
         molar_mass = self.components[name].formula.molecular_mass*AVOGADROS_NUMBER
-        self.components[name].mass = molarity*molar_mass*(self.volume/1000.0)#Assumes volume is in mL
+        self.components[name].mass = molarity*molar_mass*self.volume #Assumes volume is in mL
 
     def remove_volume(self,amount):
         '''Remove volume from mixture without changing composition

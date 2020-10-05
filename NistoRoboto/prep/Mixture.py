@@ -190,6 +190,11 @@ class Mixture:
     def concentration(self):
         total_volume = self.volume
         return {name:component.mass/total_volume for name,component in self.components.items()}
+
+    @property
+    def molarity(self):
+        total_volume = self.volume
+        return {name:component.moles/total_volume for name,component in self.components.items() if component._has_formula}
     
     def set_mass_fractions(self,fractions,total_mass=None):
         '''

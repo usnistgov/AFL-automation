@@ -167,13 +167,13 @@ class Component(object):
         self._add_density(other)
         
     def __add__(self,other):
-        if not isinstance(other,Component):
-            raise ValueError('Can only add identical component objects!')
+        if not hasattr(other,'_add_all_properties'):
+            raise ValueError('Can only add components of same type (i.e., name)')
 
         if self.name == other.name:
             component = copy.deepcopy(self)
             component._add_all_properties(other)
             return component
         else:
-            raise ValueError('Can only add identical components!')
+            raise ValueError('Can only add components of same type (i.e., name)')
             

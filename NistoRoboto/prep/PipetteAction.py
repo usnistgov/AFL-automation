@@ -1,10 +1,22 @@
 class PipetteAction:
-    def __init__(self,source,dest,volume,source_loc=None,dest_loc=None):
+    def __init__(self,
+            source,
+            dest,
+            volume,
+            source_loc=None,
+            dest_loc=None,
+            aspirate_rate=None,
+            dispense_rate=None,
+            mix_before = None,
+            ):
         self.source       = source
         self.dest         = dest
         self.volume       = volume
         self.source_loc   = source_loc
         self.dest_loc     = dest_loc
+        self.mix_before   = mix_before
+        self.aspirate_rate = aspirate_rate
+        self.dispense_rate = dispense_rate
     
     def __str__(self):
         return f'<PipetteAction Vol:{self.volume:4.3f} {self.source}-->{self.dest}>'
@@ -17,6 +29,7 @@ class PipetteAction:
         kwargs['source'] = self.source
         kwargs['dest'] = self.dest
         kwargs['volume'] = self.volume
+        kwargs['mix_before'] = self.mix_before
 
         if self.source_loc is not None:
             kwargs['source_loc'] = self.source_loc
@@ -24,5 +37,7 @@ class PipetteAction:
         if self.dest_loc is not None:
             kwargs['dest_loc'] = self.dest_loc
 
+        kwargs['aspirate_rate']=self.aspirate_rate
+        kwargs['dispense_rate']=self.dispense_rate
 
         return kwargs

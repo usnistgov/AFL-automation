@@ -7,7 +7,17 @@ class OT2Client(Client):
     This class maps pipettor functions to HTTP REST requests that are sent to
     the NistoRoboto server
     '''
-    def transfer(self,source,dest,volume,source_loc=None,dest_loc=None,mix_before=None):
+    def transfer(self,
+            source,
+            dest,
+            volume,
+            source_loc=None,
+            dest_loc=None,
+            mix_before=None,
+            air_gap=0,
+            aspirate_rate=None,
+            dispense_rate=None,
+            ):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -30,10 +40,13 @@ class OT2Client(Client):
         json['dest']   = dest
         json['volume'] = volume
         json['mix_before'] = mix_before
+        json['air_gap'] = air_gap
         if source_loc is not None:
             json['source_loc'] = source_loc
         if dest_loc is not None:
             json['dest_loc'] = dest_loc
+        json['aspirate_rate']=aspirate_rate
+        json['dispense_rate']=dispense_rate
 
         UUID = self.enqueue(**json)
         return UUID
@@ -52,6 +65,20 @@ class OT2Client(Client):
         json['name'] = name
         json['mount'] = mount
         json['tip_rack_slots'] = tip_rack_slots
+        UUID = self.enqueue(**json)
+        return UUID
+
+    def aspirate_rate(self,rate):
+        json = {}
+        json['task_name']  = 'set_aspirate_rate'
+        json['rate']  = rate
+        UUID = self.enqueue(**json)
+        return UUID
+
+    def dispense_rate(self,rate):
+        json = {}
+        json['task_name']  = 'set_dispense_rate'
+        json['rate']  = rate
         UUID = self.enqueue(**json)
         return UUID
 

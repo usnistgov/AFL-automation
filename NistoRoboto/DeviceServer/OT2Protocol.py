@@ -100,18 +100,18 @@ class OT2Protocol(Protocol):
                 tip_racks.append(tip_rack)
             self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
 
-    def mix(self,repetitions=1, volume=None, location=None, rate=1.0,**kwargs):
+    def mix(self,volume, location, repetitions=1,**kwargs):
         self.app.logger.info(f'Mixing {volume}uL {repetitions} times at {location}')
 
         #get pipette based on volume
         pipette = self.get_pipette(volume)
 
         #modify source well dispense location
-        location_wells = self.get_wells(location)
+        location_well = self.get_wells(location)[0]
 
+        pipette.mix(repetitions,volume,location_well)
 
-
-    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -131,6 +131,11 @@ class OT2Protocol(Protocol):
         '''
         self.app.logger.info(f'Transfering {volume}uL from {source} to {dest}')
 
+        if aspirate_rate is not None:
+            self.set_aspirate_rate(aspirate_rate)
+
+        if dispense_rate is not None:
+            self.set_dispense_rate(dispense_rate)
 
         #get pipette based on volume
         pipette = self.get_pipette(volume)
@@ -167,7 +172,7 @@ class OT2Protocol(Protocol):
         pipettes = []
         minVolStr = ''
         for mount,pipette in self.protocol.loaded_instruments.items():
-            if volume>pipette.min_volume:
+            if volume>=pipette.min_volume:
                 pipettes.append({'object':pipette})
     
 
@@ -198,7 +203,7 @@ class OT2Protocol(Protocol):
 
         self.app.logger.debug(f'Found pipettes with suitable minimum volume and computed uncertainties: {pipettes}')
         if not pipettes:
-            raise ValueError('No suitable pipettes found!\\n')
+            raise ValueError('No suitable pipettes found!\n')
         
         if(method == 'uncertainty'):
             pipette = min(pipettes,key=lambda x: x['uncertainty'])

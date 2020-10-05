@@ -48,6 +48,11 @@ class Component(object):
 
     def copy(self):
         return copy.deepcopy(self)
+
+    def __iter__(self):
+        '''Dummy iterator to mimic behavior of Mixture'''
+        for name,component in [(self.name,self)]:
+            yield name,component
     
     def __str__(self):
         out_str  = '<Component '

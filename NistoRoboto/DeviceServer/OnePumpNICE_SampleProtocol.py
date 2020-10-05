@@ -194,23 +194,23 @@ class OnePumpNICE_SampleProtocol:
         time.sleep(10)
         self.take_snapshot(prefix = f'loaded-{name}')
         
-        self.update_status(f'Queueing catch rinse')
+        self.update_status(f'Queueing catch rinse...')
         self.catch_rinse_uuid = self.load_client.enqueue(task_name='rinseCatch')
 
-        self.update_status(f'Asking NICE to measure sample {name}')
+        self.update_status(f'Asking NICE to measure sample {name}...')
         nice_uuid = self.measure(sample)
-        self.update_status(f'Waiting for NICE to measure scattering of {name}')
+        self.update_status(f'Waiting for NICE to measure scattering of {name} with UUID {nice_uuid}...')
         time.sleep(10)
-        self.nice_client.wait_for(nice_uuid)
-        # time.sleep(60)
-        # while str(self.nice_client.queue.queue_state) != 'IDLE':
-        #     time.sleep(10)
+        # self.nice_client.wait_for(nice_uuid)
+        time.sleep(10)
+        while str(self.nice_client.queue.queue_state) != 'IDLE':
+            time.sleep(10)
             
-        self.update_status(f'Cleaning up sample {name}')
-        self.load_client.enqueue(task_name='rinseCell')
-        self.cell_rinse_uuid = self.load_client.enqueue(task_name='blowOutCell')
+        self.update_status(f'Cleaning up sample {name}...')
+        self.load_client.enqueue(task_name='blowOutCell')
+        self.cell_rinse_uuid = self.load_client.enqueue(task_name='rinseCell')
         
-        self.update_status(f'All done for {name}')
+        self.update_status(f'All done for {name}!')
    
 
 

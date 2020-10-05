@@ -84,6 +84,12 @@ class Component(object):
         else:
             self._volume = None
 
+    def set_mass(self,mass):
+        '''Setter for inline volume changes'''
+        component = self.copy()
+        component.mass = mass
+        return component
+
     @property
     def volume(self):
         return self._volume
@@ -96,6 +102,12 @@ class Component(object):
             self._mass = self._volume*self.density
         else:
             self._mass = None
+
+    def set_volume(self,volume):
+        '''Setter for inline volume changes'''
+        component = self.copy()
+        component.volume = volume
+        return component
     
     @property
     def sld(self):

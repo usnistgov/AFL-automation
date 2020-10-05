@@ -40,14 +40,19 @@ class OT2Protocol(Protocol):
         self.app.logger.info('Homing the robot\'s axes')
         self.protocol.home()
 
+    def parse_well(self,loc):
+        for i,loc_part in enumerate(list(loc)):
+            if loc_part.isalpha():
+                break
+        slot = loc[:i]
+        well = loc[i:]
+        return slot,well
+
     def get_wells(self,locs):
         self.app.logger.debug(f'Converting locations to well objects: {locs}')
         wells = []
         for loc in listify(locs):
-            if not (len(loc) == 3):
-                raise ValueError(f'Well specification should be [SLOT][ROW_LETTER][COL_NUM] not \'{loc}\'')
-            slot = loc[0]
-            well = loc[1:]
+            slot,well = self.parse_well(loc)
             labware = self.get_labware(slot)
             wells.append(labware[well])
         self.app.logger.debug(f'Created well objects: {wells}')

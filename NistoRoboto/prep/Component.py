@@ -14,10 +14,6 @@ class Component(object):
     '''
     def __init__(self,name,mass=None,volume=None,density=None,formula=None):
         self.name    = name
-        self.density = density
-        #tolerance for volume/mass checks
-        # 1e=3 = 1 mg or 1 uL
-        self.tol = 1e-3 
         
         if (mass is None) and (volume is None):
             # use hidden variables to avoid property setting Nonsense
@@ -82,15 +78,9 @@ class Component(object):
     
     @mass.setter
     def mass(self,value):
-        if value<self.tol:
-            self._mass = 0.0
-        else:
-            self._mass = value
-
+        self._mass = value
         if self._has_mass and self._has_density:
             self._volume = self._mass/self.density
-        elif self._mass<self.tol:
-            self._volume = 0.
         else:
             self._volume = None
 
@@ -100,15 +90,10 @@ class Component(object):
     
     @volume.setter
     def volume(self,value):
-        if value<self.tol:
-            self._volume = 0.0
-        else:
-            self._volume = value
+        self._volume = value
 
         if self._has_volume and self._has_density:
             self._mass = self._volume*self.density
-        elif self._volume<self.tol:
-            self._mass = 0.
         else:
             self._mass = None
     
@@ -129,15 +114,6 @@ class Component(object):
         else:
             return None
 
-    @property
-    def empty(self):
-        '''
-        If a volume fraction is set to zero
-        '''
-        vol_test = (self.volume is not None) and (self.volume<self.tol)
-        mass_test = (self.mass is not None) and (self.mass<self.tol)
-        return (vol_test or mass_test)
-            
     @property
     def _has_density(self):
         return (self.density is not None)

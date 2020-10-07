@@ -32,11 +32,13 @@ protocol = PushPullSelectorSampleCell(pump,
                                       selector,
                                       catch_to_sel_vol      =Tubing(1517,112).volume(),
                                       cell_to_sel_vol       =Tubing(1517,170).volume()+0.6,
+                                      calibrated_load_vol_source = 3.2,
+                                      calibrated_load_vol_dest = 3.2,
                                       syringe_to_sel_vol    =None,
                                       selector_internal_vol =None,
-                                      load_speed=10.0,
+                                      load_speed=5.0,
                                      )
-server = DeviceServer('SampleCellServer1')
+server = DeviceServer('CellServer1')
 server.add_standard_routes()
 server.create_queue(protocol)
 server.run(host='0.0.0.0',port=server_port, debug=False)

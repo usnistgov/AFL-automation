@@ -27,6 +27,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
                       cell_to_sel_vol=None,
                       syringe_to_sel_vol=None,
                       selector_internal_vol=None,
+                      calibrated_load_vol_source=None,
+                      calibrated_load_vol_dest=None,
                       rinse_speed=50.0,
                       load_speed=10.0,
                       rinse_flow_delay=3.0,
@@ -75,8 +77,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         else:
             self.selector_internal_vol   = selector_internal_vol
         
-        self.calibrated_load_vol_source = None
-        self.calibrated_load_vol_dest = None
+        self.calibrated_load_vol_source  = calibrated_load_vol_source
+        self.calibrated_load_vol_dest  = calibrated_load_vol_dest 
 
         self.catch_empty_ffvol = 2
         self.to_waste_vol = 1

@@ -2,6 +2,7 @@ from NistoRoboto.loading.SampleCell import SampleCell
 from NistoRoboto.loading.Tubing import Tubing
 from NistoRoboto.DeviceServer.Protocol import Protocol
 from collections import defaultdict
+import time
 
 import math
 
@@ -291,6 +292,9 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.selector.selectPort(cellname)
         self.pump.dispense(self.blow_out_vol)
 
+    def blowOutCellForcedAir(self,cellname='cell',waittime=5):
+        self.selector.selectPort('forced_air_cell')
+        time.sleep(waittime)
 
     def rinseCatch(self):
         self.pump.setRate(self.rinse_speed)

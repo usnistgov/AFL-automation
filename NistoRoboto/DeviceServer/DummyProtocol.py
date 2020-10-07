@@ -21,6 +21,10 @@ class DummyProtocol:
         if self.app is not None:
             self.app.logger.debug(f'Executing task {kwargs}')
 
+        if 'task_name' in kwargs:
+            if kwargs['task_name'] == 'error':
+                raise RuntimeError()
+
 
 
 

@@ -4,7 +4,9 @@ import copy
 import numbers
 from pyparsing import ParseException
 
-AVOGADROS_NUMBER = 6.0221409e+23
+from NistoRoboto.shared.units import ureg
+
+AVOGADROS_NUMBER = 6.0221409e+23*ureg('1/mol')
 
 class Component(object):
     '''Base class for all materials
@@ -15,9 +17,6 @@ class Component(object):
     def __init__(self,name,mass=None,volume=None,density=None,formula=None):
         self.name    = name
         self.density = density
-        #tolerance for volume/mass checks
-        # 1e=3 = 1 mg or 1 uL
-        self.tol = 1e-3 
         
         if (mass is None) and (volume is None):
             # use hidden variables to avoid property setting Nonsense
@@ -48,6 +47,11 @@ class Component(object):
 
     def copy(self):
         return copy.deepcopy(self)
+
+    def __iter__(self):
+        '''Dummy iterator to mimic behavior of Mixture.'''
+        for name,component in [(self.name,self)]:
+            yield name,component
     
     def __str__(self):
         out_str  = '<Component '
@@ -67,7 +71,7 @@ class Component(object):
     @property
     def moles(self):
         if self._has_formula and self._has_mass:
-            return self._mass/self.formula.molecular_mass/AVOGADROS_NUMBER
+            return self._mass/(self.formula.molecular_mass*ureg('g'))/AVOGADROS_NUMBER
         else:
             return None
 
@@ -77,17 +81,17 @@ class Component(object):
     
     @mass.setter
     def mass(self,value):
-        if value<self.tol:
-            self._mass = 0.0
-        else:
-            self._mass = value
-
+        self._mass = value
         if self._has_mass and self._has_density:
             self._volume = self._mass/self.density
-        elif self._mass<self.tol:
-            self._volume = 0.
         else:
             self._volume = None
+
+    def set_mass(self,mass):
+        '''Setter for inline volume changes'''
+        component = self.copy()
+        component.mass = mass
+        return component
 
     @property
     def volume(self):
@@ -95,44 +99,30 @@ class Component(object):
     
     @volume.setter
     def volume(self,value):
-        if value<self.tol:
-            self._volume = 0.0
-        else:
-            self._volume = value
+        self._volume = value
 
         if self._has_volume and self._has_density:
             self._mass = self._volume*self.density
-        elif self._volume<self.tol:
-            self._mass = 0.
         else:
             self._mass = None
+
+    def set_volume(self,volume):
+        '''Setter for inline volume changes'''
+        component = self.copy()
+        component.volume = volume
+        return component
     
     @property
     def sld(self):
         if self._has_formula and self._has_density:
             
-            #try to coonvert units and them strip them
-            #XXX This is hacky and needs to be changed
-            try:
-                self.formula.density = self.density.to('g/ml').magnitude
-            except AttributeError:
-                self.formula.density = self.density
-                
+            self.formula.density = self.density.to('g/ml').magnitude
             # neutron_sld returns a 3-tuple with (real, imag, incoh)
             # wavelength doesn't matter for real_sld
             return self.formula.neutron_sld(wavelength=5.0)[0]
         else:
             return None
 
-    @property
-    def empty(self):
-        '''
-        If a volume fraction is set to zero
-        '''
-        vol_test = (self.volume is not None) and (self.volume<self.tol)
-        mass_test = (self.mass is not None) and (self.mass<self.tol)
-        return (vol_test or mass_test)
-            
     @property
     def _has_density(self):
         return (self.density is not None)
@@ -186,13 +176,13 @@ class Component(object):
         self._add_density(other)
         
     def __add__(self,other):
-        if not isinstance(other,Component):
-            raise ValueError('Can only add identical component objects!')
+        if not hasattr(other,'_add_all_properties'):
+            raise ValueError('Can only add components of same type (i.e., name)')
 
         if self.name == other.name:
             component = copy.deepcopy(self)
             component._add_all_properties(other)
             return component
         else:
-            raise ValueError('Can only add identical components!')
+            raise ValueError('Can only add components of same type (i.e., name)')
             

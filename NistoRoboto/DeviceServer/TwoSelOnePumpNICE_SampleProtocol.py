@@ -19,7 +19,7 @@ class NiceDummy:
         pass
 
 
-class OnePumpNICE_SampleProtocol:
+class TwoSelOnePumpNICE_SampleProtocol:
     def __init__(self,
             load_url,
             prep_url,
@@ -211,7 +211,7 @@ class OnePumpNICE_SampleProtocol:
         self.update_status(f'Cleaning up sample {name}...')
         self.load_client.enqueue(task_name='blowOutCell')
         self.load_client.enqueue(task_name='rinseCell')
-        self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCell')
+        self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCellForcedAir')
         
         self.update_status(f'All done for {name}!')
    

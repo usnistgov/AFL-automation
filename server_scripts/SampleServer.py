@@ -12,10 +12,11 @@ from NistoRoboto.DeviceServer.OnePumpNICE_SampleProtocol import OnePumpNICE_Samp
 
 
 protocol = OnePumpNICE_SampleProtocol(
+        nice_url='NGBSANS.ncnr.nist.gov',
         load_url='piloader:5000',
         prep_url='piot2:5000',
         camera_urls = [
-            'http://picam:8081/1/current',
+            # 'http://picam:8081/1/current',
             'http://picam:8081/2/current',
             'http://picam:8081/3/current',
             ]
@@ -23,6 +24,15 @@ protocol = OnePumpNICE_SampleProtocol(
 server = DeviceServer('SampleServer')
 server.add_standard_routes()
 server.create_queue(protocol)
+
+import logging
+from logging.handlers import SMTPHandler
+mail_handler = SMTPHandler(mailhost=('smtp.nist.gov',25),
+                   fromaddr='SampleServer@pg93001.ncnr.nist.gov',
+                   toaddrs='tbm@nist.gov', subject='Protocol Error')
+mail_handler.setLevel(logging.ERROR)
+server.app.logger.addHandler(mail_handler)
+
 server.run(host='0.0.0.0',port=5000, debug=False)
 
 # process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)

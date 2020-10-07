@@ -3,7 +3,9 @@ from NistoRoboto.shared.exceptions import EmptyException
 import numpy as np
 import copy
 
-AVOGADROS_NUMBER = 6.0221409e+23
+from NistoRoboto.shared.units import ureg
+
+AVOGADROS_NUMBER = 6.0221409e+23*ureg('1/mol')
 
 class Mixture:
     '''
@@ -50,20 +52,11 @@ class Mixture:
     
     def __add__(self,other):
         mixture = self.copy()
-        if isinstance(other,Component):
-            if mixture.contains(other.name):
-                mixture.components[other.name] = (mixture.components[other.name] + other.copy())
+        for name,component in other:
+            if mixture.contains(name):
+                mixture.components[name] = (mixture.components[name] + component.copy())
             else:
-                mixture.components[other.name] = other.copy()
-        elif isinstance(other,Mixture):
-            for name,component in other.components.items():
-                if mixture.contains(name):
-                    mixture.components[name] = (mixture.components[name] + component.copy())
-                else:
-                    mixture.components[name] = component.copy()
-        else:
-            raise TypeError(f'Unsure how to combine {type(self)} with {type(other)}')
-            
+                mixture.components[name] = component.copy()
         return mixture
     
     def __eq__(self,other):
@@ -197,6 +190,11 @@ class Mixture:
     def concentration(self):
         total_volume = self.volume
         return {name:component.mass/total_volume for name,component in self.components.items()}
+
+    @property
+    def molarity(self):
+        total_volume = self.volume
+        return {name:component.moles/total_volume for name,component in self.components.items() if component._has_formula}
     
     def set_mass_fractions(self,fractions,total_mass=None):
         '''
@@ -278,7 +276,7 @@ class Mixture:
             raise RuntimeError('Cannot set molarity without formula defined')
 
         molar_mass = self.components[name].formula.molecular_mass*AVOGADROS_NUMBER
-        self.components[name].mass = molarity*molar_mass*(self.volume/1000.0)#Assumes volume is in mL
+        self.components[name].mass = molarity*molar_mass*self.volume #Assumes volume is in mL
 
     def remove_volume(self,amount):
         '''Remove volume from mixture without changing composition

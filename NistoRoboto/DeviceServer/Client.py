@@ -56,7 +56,7 @@ class Client:
         json=kwargs
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
-            raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
+            raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
         return uuid.UUID(response.text)
 
     def reset_queue_daemon(self):

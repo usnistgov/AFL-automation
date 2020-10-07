@@ -9,6 +9,7 @@ import time
 import requests
 import shutil
 import datetime
+import traceback
 
 class NiceDummy:
     '''Used in place of NICE client'''
@@ -105,7 +106,8 @@ class OnePumpNICE_SampleProtocol:
                         r.raw.decode_content=True
                         shutil.copyfileobj(r.raw,f)
             except Exception as error:
-                self.app.logger.warning('take_snapshot failed with error:\n\n{error}\n\n')
+                output_str  = f'take_snapshot failed with error: {error.__repr__()}\n\n'+traceback.format_exc()+'\n\n'
+                self.app.logger.warning(output_str)
 
     def execute(self,**kwargs):
         if self.app is not None:
@@ -175,21 +177,21 @@ class OnePumpNICE_SampleProtocol:
             'source':sample['target_loc'],
             'dest':sample['catch_loc'],
             'volume':sample['volume']*1000,
-            'mix_before':(3,sample['volume']*1000),
+            # 'mix_before':(3,sample['volume']*1000),
             })
         
-        self.update_status(f'Waiting for sample prep/catch of {name} to finish')
+        self.update_status(f'Waiting for sample prep/catch of {name} to finish: {self.catch_uuid}')
         self.prep_client.wait(self.catch_uuid)
         
         if self.cell_rinse_uuid is not None:
-            self.update_status(f'Waiting for cell rinse...')
+            self.update_status(f'Waiting for cell rinse: {self.cell_rinse_uuid}')
             self.load_client.wait(self.cell_rinse_uuid)
             time.sleep(10)
             self.take_snapshot(prefix = f'cleaned-{name}')
             self.update_status(f'Cell rinse done!')
         
-        self.update_status(f'Loading sample into cell...')
         self.load_uuid = self.load_client.enqueue(task_name='loadSample',sampleVolume=sample['volume'])
+        self.update_status(f'Loading sample into cell: {self.load_uuid}')
         self.load_client.wait(self.load_uuid)
         time.sleep(10)
         self.take_snapshot(prefix = f'loaded-{name}')
@@ -208,7 +210,8 @@ class OnePumpNICE_SampleProtocol:
             
         self.update_status(f'Cleaning up sample {name}...')
         self.load_client.enqueue(task_name='blowOutCell')
-        self.cell_rinse_uuid = self.load_client.enqueue(task_name='rinseCell')
+        self.load_client.enqueue(task_name='rinseCell')
+        self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCell')
         
         self.update_status(f'All done for {name}!')
    

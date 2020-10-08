@@ -9,9 +9,10 @@ except:
 
 from NistoRoboto.DeviceServer.DeviceServer import DeviceServer
 from NistoRoboto.DeviceServer.OnePumpNICE_SampleProtocol import OnePumpNICE_SampleProtocol
+from NistoRoboto.DeviceServer.TwoSelOnePumpNICE_SampleProtocol import TwoSelOnePumpNICE_SampleProtocol
 
 
-protocol = OnePumpNICE_SampleProtocol(
+protocol = TwoSelOnePumpNICE_SampleProtocol(
         nice_url='NGBSANS.ncnr.nist.gov',
         load_url='piloader:5000',
         prep_url='piot2:5000',

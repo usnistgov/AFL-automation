@@ -173,12 +173,15 @@ class TwoSelOnePumpNICE_SampleProtocol:
             self.update_status(f'Catch rinse done!')
         
         self.update_status(f'Queueing sample {name} load into syringe loader')
-        self.catch_uuid = self.prep_client.transfer(**{
+        kwargs = {
             'source':sample['target_loc'],
             'dest':sample['catch_loc'],
             'volume':sample['volume']*1000,
             # 'mix_before':(3,sample['volume']*1000),
-            })
+            }
+        if 'mix_before_load' in sample:
+            kwargs['mix_before'] = sample['mix_before_load']
+        self.catch_uuid = self.prep_client.transfer(**kwargs)
         
         self.update_status(f'Waiting for sample prep/catch of {name} to finish: {self.catch_uuid}')
         self.prep_client.wait(self.catch_uuid)
@@ -211,6 +214,8 @@ class TwoSelOnePumpNICE_SampleProtocol:
         self.update_status(f'Cleaning up sample {name}...')
         self.load_client.enqueue(task_name='blowOutCell')
         self.load_client.enqueue(task_name='rinseCell')
+        self.load_client.enqueue(task_name='blowOutCellForcedAir')
+        self.load_client.enqueue(task_name='rinseSyringe')
         self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCellForcedAir')
         
         self.update_status(f'All done for {name}!')

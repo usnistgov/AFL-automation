@@ -28,8 +28,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
                       cell_to_sel_vol=None,
                       syringe_to_sel_vol=None,
                       selector_internal_vol=None,
-                      calibrated_load_vol_source=None,
-                      calibrated_load_vol_dest=None,
+                      calibrated_catch_to_syringe_vol=None,
+                      calibrated_syringe_to_cell_vol=None,
                       rinse_speed=50.0,
                       load_speed=10.0,
                       rinse_flow_delay=3.0,
@@ -78,8 +78,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         else:
             self.selector_internal_vol   = selector_internal_vol
         
-        self.calibrated_load_vol_source  = calibrated_load_vol_source
-        self.calibrated_load_vol_dest  = calibrated_load_vol_dest 
+        self.calibrated_catch_to_syringe_vol  = calibrated_catch_to_syringe_vol
+        self.calibrated_syringe_to_cell_vol  = calibrated_syringe_to_cell_vol 
 
         self.catch_empty_ffvol = 2
         self.to_waste_vol = 1
@@ -102,8 +102,8 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
 
         #variables that we'll allow users to set via the API
         self.remote_parameters = [
-            'calibrated_load_vol_source',
-            'calibrated_load_vol_dest',
+            'calibrated_catch_to_syringe_vol',
+            'calibrated_syringe_to_cell_vol',
             'catch_to_selector_vol',
             'cell_to_selector_vol',
             'syringe_to_selector_vol',
@@ -195,18 +195,18 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.pump.setRate(self.load_speed)
         self.pump.flow_delay = self.load_flow_delay
 
-        if (self.calibrated_load_vol_source is None) or (self.calibrated_load_vol_source=='None'):
+        if (self.calibrated_catch_to_syringe_vol is None) or (self.calibrated_catch_to_syringe_vol=='None'):
             vol_source  = self.catch_to_selector_vol
             vol_source += self.syringe_to_selector_vol
             vol_source +=self.catch_empty_ffvol 
         else:
-            vol_source = self.calibrated_load_vol_source
+            vol_source = self.calibrated_catch_to_syringe_vol
 
-        if (self.calibrated_load_vol_dest is None) or (self.calibrated_load_vol_dest=='None'):
+        if (self.calibrated_syringe_to_cell_vol is None) or (self.calibrated_syringe_to_cell_vol=='None'):
             vol_dest  = self.syringe_to_selector_vol 
             vol_dest += self.cell_to_selector_vol 
         else:
-            vol_dest = self.calibrated_load_vol_dest
+            vol_dest = self.calibrated_syringe_to_cell_vol
             
         vol_dest   += sampleVolume
         vol_source += sampleVolume
@@ -232,9 +232,19 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
                         self.rinseCell(cellname=cn)
                         return (cn,ct,cs)
 
-    def catchToWaste(self):
-            self.transfer('catch','waste',self.catch_to_selector_vol + self.syringe_to_selector_vol,vol_dest = self.syringe_to_selector_vol + self.to_waste_vol)
-            self.syringe_dirty = True
+    def catchToWaste(self,sampleVolume=0.0):
+        if (self.calibrated_catch_to_syringe_vol is None) or (self.calibrated_catch_to_syringe_vol=='None'):
+            vol_source = self.syringe_to_selector_vol
+            vol_source +=self.catch_empty_ffvol 
+            vol_source += sampleVolume
+        else:
+            vol_source = self.calibrated_catch_to_syringe_vol 
+            vol_source += sampleVolume
+        
+
+        vol_dest = self.syringe_to_selector_vol + self.to_waste_vol + sampleVolume
+        self.transfer('catch','waste',vol_source,vol_dest)
+        self.syringe_dirty = True
 
     def cellToWaste(self,cellname='cell'):
             self.transfer(cellname,'waste',self.cell_to_selector_vol + self.syringe_to_selector_vol,vol_dest = self.syringe_to_selector_vol + self.to_waste_vol)
@@ -294,22 +304,32 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
         self.selector.selectPort(cellname)
         self.pump.dispense(self.blow_out_vol)
 
-    def blowOutCellForcedAir(self,cellname='cell',waittime=5):
+    def blowOutCellForcedAir(self,cellname='cell',waittime=20):
+        self.selector.selectPort('cell')
         self.selector.selectPort('forced_air_cell')
         time.sleep(waittime)
+        self.selector.selectPort('cell')
 
     def rinseCatch(self):
         self.pump.setRate(self.rinse_speed)
         self.pump.flow_delay = self.rinse_flow_delay
+
+
         for i in range(self.nrinses_catch):
-            from_vol = self.rinse_vol_ml 
-            to_vol   = self.rinse_vol_ml + self.catch_to_selector_vol
+            from_vol = self.rinse_vol_ml + self.syringe_to_selector_vol
+            if (self.calibrated_catch_to_syringe_vol is None) or (self.calibrated_catch_to_syringe_vol=='None'):
+                to_vol   = self.rinse_vol_ml + self.catch_to_selector_vol
+            else:
+                to_vol   = self.calibrated_catch_to_syringe_vol + self.rinse_vol_ml
             self.transfer('rinse','catch',from_vol,to_vol)
 
             for i in range(1):
                 self.swish(self.rinse_vol_ml)
 
-            from_vol = self.rinse_vol_ml + self.catch_to_selector_vol + self.catch_empty_ffvol
+            if (self.calibrated_catch_to_syringe_vol is None) or (self.calibrated_catch_to_syringe_vol=='None'):
+                from_vol = self.rinse_vol_ml + self.catch_to_selector_vol + self.catch_empty_ffvol
+            else:
+                from_vol   = self.calibrated_catch_to_syringe_vol + self.catch_empty_ffvol + self.rinse_vol_ml
             to_vol   = self.rinse_vol_ml + self.syringe_to_selector_vol
             self.transfer('catch','waste',from_vol,to_vol)
 

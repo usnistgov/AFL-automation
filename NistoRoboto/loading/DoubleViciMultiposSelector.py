@@ -1,6 +1,6 @@
 from NistoRoboto.loading.FlowSelector import FlowSelector
 from NistoRoboto.loading.SerialDevice import SerialDevice
-from NistoRoboto.loading.ViciMultiPosSelector import ViciMultiPosSelector
+from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
 import serial
 
 class DoubleViciMultiposSelector(FlowSelector):
@@ -15,19 +15,20 @@ class DoubleViciMultiposSelector(FlowSelector):
         '''
 
         self.app = None
-        self.name = 'DoubleViciMultiPosSelector'
+        self.name = 'DoubleViciMultiposSelector'
 
         portlabels1 = {k:v[0] for k,v in portlabels.items()}
-        self.selector1 = ViciMultiPosSelector(port1,baudrate,portlabels)
+        self.selector1 = ViciMultiposSelector(port1,baudrate,portlabels)
 
         portlabels2 = {k:v[1] for k,v in portlabels.items()}
-        self.selector2 = ViciMultiPosSelector(port2,baudrate,portlabels)
+        self.selector2 = ViciMultiposSelector(port2,baudrate,portlabels)
 
         self.portlabels = portlabels
 
-        portnum = self.getPort()
-        port = self.getPort(as_str=True)
-        self.portString = f'{port}/{portnum}'
+        portnum1 = self.selector1.getPort()
+        portnum2 = self.selector2.getPort()
+        port1,port2 = self.getPort(as_str=True)
+        self.portString = f'{port1}/{portnum1}/{portnum2}'
 
     def selectPort(self,port,direction=None):
         '''
@@ -56,7 +57,7 @@ class DoubleViciMultiposSelector(FlowSelector):
         '''
 
         portnum1 = self.selector1.getPort(as_str=as_str)
-        portnum2 = self.selector1.getPort(as_str=as_str)
+        portnum2 = self.selector2.getPort(as_str=as_str)
 
         return portnum1,portnum2
                 

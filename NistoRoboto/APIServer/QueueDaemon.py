@@ -7,12 +7,12 @@ import traceback
 class QueueDaemon(threading.Thread):
     '''
     '''
-    def __init__(self,app,protocol,task_queue,history,debug=True):
+    def __init__(self,app,driver,task_queue,history,debug=True):
         app.logger.info('Creating QueueDaemon thread')
 
         threading.Thread.__init__(self,name='QueueDaemon',daemon=True)
 
-        self.protocol  = protocol
+        self.driver  = driver
 
         self.app = app
         self.task_queue = task_queue
@@ -61,10 +61,10 @@ class QueueDaemon(threading.Thread):
                 time.sleep(3.0)
             else:
                 try:
-                    self.protocol.execute(**task)
+                    self.driver.execute(**task)
                 except Exception as error:
                     output_str  = f'Error: {error.__repr__()}\n\n'+traceback.format_exc()+'\n\n'
-                    output_str += 'Exception encountered in protocol, pausing queue...'
+                    output_str += 'Exception encountered in driver, pausing queue...'
                     self.app.logger.error(output_str)
                     self.paused=True
 

@@ -1,11 +1,11 @@
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
 
-class DummyProtocol:
+class DummyDriver:
     def __init__(self,name=None):
         self.app = None
         if name is None:
-            self.name = 'DummyProtocol'
+            self.name = 'DummyDriver'
         else:
             self.name = name
 

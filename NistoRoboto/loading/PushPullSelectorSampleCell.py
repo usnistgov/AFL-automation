@@ -1,12 +1,12 @@
 from NistoRoboto.loading.SampleCell import SampleCell
 from NistoRoboto.loading.Tubing import Tubing
-from NistoRoboto.DeviceServer.Protocol import Protocol
+from NistoRoboto.driver.Driver import Driver
 from collections import defaultdict
 import time
 
 import math
 
-class PushPullSelectorSampleCell(Protocol,SampleCell):
+class PushPullSelectorSampleCell(Driver,SampleCell):
     '''
         Class for a sample cell consisting of a pump and a one-to-many flow selector 
         where the pump line holds sample (pulling and pushing as necessary) with a cell on 

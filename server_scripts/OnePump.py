@@ -9,7 +9,7 @@ except:
 
 server_port=5000
 
-from NistoRoboto.DeviceServer.DeviceServer import DeviceServer
+from NistoRoboto.APIServer.APIServer import APIServer
 
 from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
 from NistoRoboto.loading.NE1kSyringePump import NE1kSyringePump
@@ -28,7 +28,7 @@ selector = ViciMultiposSelector(
             }
         )
 pump = NE1kSyringePump('/dev/ttySyrPump',14.86,10,baud=19200,pumpid=10,flow_delay=10) # ID for 10mL = 14.859, for 50 mL 26.43
-protocol = PushPullSelectorSampleCell(pump,
+driver = PushPullSelectorSampleCell(pump,
                                       selector,
                                       catch_to_sel_vol      =Tubing(1517,112).volume(),
                                       cell_to_sel_vol       =Tubing(1517,170).volume()+0.6,
@@ -38,9 +38,10 @@ protocol = PushPullSelectorSampleCell(pump,
                                       selector_internal_vol =None,
                                       load_speed=5.0,
                                      )
-server = DeviceServer('CellServer1')
+server = APIServer('CellServer1')
 server.add_standard_routes()
-server.create_queue(protocol)
+server.create_queue(driver)
+server.init_logging(toaddrs=['tbm@nist.gov'])
 server.run(host='0.0.0.0',port=server_port, debug=False)
 
 # process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)

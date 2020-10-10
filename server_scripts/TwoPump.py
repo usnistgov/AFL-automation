@@ -7,7 +7,7 @@ except:
 
 server_port=5000
 
-from NistoRoboto.DeviceServer.DeviceServer import DeviceServer
+from NistoRoboto.APIServer.APIServer import APIServer
 from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
 from NistoRoboto.loading.NE1kSyringePump import NE1kSyringePump
 from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
@@ -35,7 +35,7 @@ selector2 = ViciMultiposSelector('/dev/ttyFlwSel1',
 pump1 = NE1kSyringePump('/dev/ttySyrPmp0',14.86,10,baud=19200,pumpid=10) # ID for 10mL = 14.859, for 50 mL 26.43
 pump2 = NE1kSyringePump('/dev/ttySyrPmp0',14.86,10,baud=19200,pumpid=11,daisy_chain=pump1) # ID for 10mL = 14.859, for 50 mL 26.43
 
-protocol1 = PushPullSelectorSampleCell(pump1,
+driver1 = PushPullSelectorSampleCell(pump1,
                                       selector1,
                                       catch_to_sel_vol      =Tubing(1517,122).volume(),
                                       cell_to_sel_vol       =Tubing(1517,61).volume() + 0.5,
@@ -43,12 +43,12 @@ protocol1 = PushPullSelectorSampleCell(pump1,
                                       selector_internal_vol =None,
                                      )
 
-server1 = DeviceServer('SampleCellServer1')
+server1 = APIServer('SampleCellServer1')
 server1.add_standard_routes()
-server1.create_queue(protocol1)
+server1.create_queue(driver1)
 server1.run_threaded(host='0.0.0.0',port=server_port, debug=False)
 
-protocol2 = PushPullSelectorSampleCell(pump2,
+driver2 = PushPullSelectorSampleCell(pump2,
                                       selector2,
                                       catch_to_sel_vol      =Tubing(1517,182.9).volume(),
                                       cell_to_sel_vol       =Tubing(1517,91.4).volume() + 1.5,
@@ -56,9 +56,9 @@ protocol2 = PushPullSelectorSampleCell(pump2,
                                       selector_internal_vol =None,
                                      )
 
-server2 = DeviceServer('SampleCellServer2')
+server2 = APIServer('SampleCellServer2')
 server2.add_standard_routes()
-server2.create_queue(protocol2)
+server2.create_queue(driver2)
 server2.run(host='0.0.0.0',port=5001, debug=False)
 
 process = subprocess.Popen(f'chromium-browser --start-fullscreen http://localhost:{server_port}', shell=True, stdout=subprocess.PIPE)

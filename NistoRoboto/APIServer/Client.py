@@ -1,7 +1,7 @@
 import requests,uuid,time
 
 class Client:
-    '''Communicate with DeviceServer 
+    '''Communicate with APIServer 
 
     This class maps pipettor functions to HTTP REST requests that are sent to
     the server

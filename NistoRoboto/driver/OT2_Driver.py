@@ -1,13 +1,13 @@
 import opentrons.execute
 import opentrons
-from NistoRoboto.DeviceServer.Protocol import Protocol
+from NistoRoboto.APIServer.Driver import Driver
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
 
-class OT2Protocol(Protocol):
+class OT2_Driver(Driver):
     def __init__(self):
         self.app = None
-        self.name = 'OT2Protocol'
+        self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
 
     def status(self):

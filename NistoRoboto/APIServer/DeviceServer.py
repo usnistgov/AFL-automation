@@ -10,18 +10,18 @@ import threading,queue,logging,json,pathlib,uuid
 from logging.handlers import SMTPHandler
 from logging import FileHandler
 
-from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
-from NistoRoboto.DeviceServer.LoggerFilter import LoggerFilter
+from NistoRoboto.APIServer.QueueDaemon import QueueDaemon
+from NistoRoboto.APIServer.LoggerFilter import LoggerFilter
 
 from NistoRoboto.shared.MutableQueue import MutableQueue
 
-class DeviceServer:
+class APIServer:
     def __init__(self,name,experiment='Development',contact='tbm@nist.gov'):
         self.name = name
         self.experiment = experiment
         self.contact = contact
 
-        self.logger_filter= LoggerFilter('get_queue','queue_state','protocol_status')
+        self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status')
 
 
         #allows the flask server to find the static and templates directories
@@ -33,18 +33,18 @@ class DeviceServer:
         self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
         self.jwt = JWTManager(self.app)
 
-    def create_queue(self,protocol):
+    def create_queue(self,driver):
         self.history = []
         self.task_queue = MutableQueue()
-        self.protocol     = protocol
-        self.protocol.app = self.app
-        self.queue_daemon = QueueDaemon(self.app,protocol,self.task_queue,self.history)
+        self.driver     = driver
+        self.driver.app = self.app
+        self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history)
 
-    def reset_queue_daemon(self,protocol=None):
-        if protocol is not None:
-            self.protocol=protocol
+    def reset_queue_daemon(self,driver=None):
+        if driver is not None:
+            self.driver=driver
         self.queue_daemon.terminate()
-        self.create_queue(self.protocol)
+        self.create_queue(self.driver)
         return 'Success',200
 
     def run(self,**kwargs):
@@ -72,7 +72,7 @@ class DeviceServer:
         self.app.add_url_rule('/halt','halt',self.halt,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
         self.app.add_url_rule('/queue_state','queue_state',self.queue_state,methods=['GET'])
-        self.app.add_url_rule('/protocol_status','protocol_status',self.protocol_status,methods=['GET'])
+        self.app.add_url_rule('/driver_status','driver_status',self.driver_status,methods=['GET'])
         self.app.add_url_rule('/login','login',self.login,methods=['POST'])
         self.app.add_url_rule('/login_test','login_test',self.login_test,methods=['GET','POST'])
         self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
@@ -87,7 +87,7 @@ class DeviceServer:
             mail_handler = logging.SMTPHandler(mailhost=('smtp.nist.gov',25),
                                fromaddr=f'{self.name}@pg93001.ncnr.nist.gov', 
                                toaddrs=toaddrs, 
-                               subject='Protocol Error')
+                               subject='Driver Error')
             mail_handler.setLevel(logging.ERROR)
             server.app.logger.addHandler(mail_handler)
 
@@ -106,7 +106,7 @@ class DeviceServer:
         kw['experiment']  = self.experiment
         kw['queue_state'] = self.queue_state()
         kw['name']        = self.name
-        kw['protocol']    = self.queue_daemon.protocol.name
+        kw['driver']    = self.queue_daemon.driver.name
         return render_template('index.html',**kw),200
 
     def queue_state(self):
@@ -120,8 +120,8 @@ class DeviceServer:
             state = 'Ready'
         return state,200
 
-    def protocol_status(self):
-        status = self.queue_daemon.protocol.status()
+    def driver_status(self):
+        status = self.queue_daemon.driver.status()
         return jsonify(status),200
 
     def get_queue(self):
@@ -166,7 +166,7 @@ class DeviceServer:
         return 'Success',200
 
     def halt(self):
-        self.app.logger.info(f'Halting all protocols and stopping QueueDaemon')
+        self.app.logger.info(f'Halting all drivers and stopping QueueDaemon')
         # ToDo....
         return 'Success',200
 
@@ -211,10 +211,9 @@ class DeviceServer:
 
 if __name__ =='__main__':
 
-    from NistoRoboto.DeviceServer.DummyProtocol import DummyProtocol
-    server = DeviceServer('TestServer')
-    protocol = DummyProtocol()
+    from NistoRoboto.APIServer.DummyDriver import DummyDriver
+    server = APIServer('TestServer')
     server.add_standard_routes()
-    server.create_queue(protocol)
+    server.create_queue(DummyDriver())
     server.run(host='0.0.0.0',debug=True)
 

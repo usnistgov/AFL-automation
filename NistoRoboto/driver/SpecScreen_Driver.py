@@ -1,12 +1,12 @@
 from NistoRoboto.shared.utilities import listify
-from NistoRoboto.DeviceServer.Protocol import Protocol
+from NistoRoboto.APIServer.Driver import Driver
 from math import ceil,sqrt
 import subprocess,shlex
 
-class SpecScreenProtocol(Protocol):
+class SpecScreen_Driver(Driver):
     def __init__(self,log_file=None):
         self.app = None
-        self.name = 'SpecScreenProtocol'
+        self.name = 'SpecScreen_Driver'
         self.log_file = log_file
         self.n_spec_blocks=3
 

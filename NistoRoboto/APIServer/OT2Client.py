@@ -1,5 +1,5 @@
 import requests
-from NistoRoboto.DeviceServer.Client import Client
+from NistoRoboto.APIServer.Client import Client
 
 class OT2Client(Client):
     '''Communicate with NistoRoboto server on OT-2

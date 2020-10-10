@@ -14,7 +14,7 @@
             <br/>
             Queued:&nbsp;<span id='queue_size'></span> • Completed:&nbsp;<span id='history_size'></span>
             <br/>
-            Protocol:&nbsp;{{protocol}} • Queue&nbsp;State:&nbsp;<span id='queue_state'></span> 
+            Driver:&nbsp;{{driver}} • Queue&nbsp;State:&nbsp;<span id='queue_state'></span> 
             <br/>
             Experiment:&nbsp;{{experiment}} • Contact:&nbsp;{{contact}}  
             <br/>
@@ -39,8 +39,8 @@
                 •
                 <button onclick="$.post('/halt')" style="background-color:red;height:50px;width:100px;">HALT</button>
             </div>
-            <h3 class="centered"> Protocol Status </h3> <hr/>
-            <div id="protocol_status" class="overflow"></div>
+            <h3 class="centered"> Driver Status </h3> <hr/>
+            <div id="driver_status" class="overflow"></div>
             <hr/>
             <div id="command-queue">
                 <!--<h3 class="centered">Task History </h3> <hr/> -->

@@ -92,7 +92,7 @@ function update(){
         $('#queue_size').text(task_queue.length);
         
     })
-    $.get( "protocol_status", function( result ) {
+    $.get( "driver_status", function( result ) {
         ul_status = $("<ul class=element>");
         for (var i=0, l=result.length; i<l; ++i) {
             ul_status.append(
@@ -101,7 +101,7 @@ function update(){
                 "</li>"
             );
         }
-        $("#protocol_status").html(ul_status);
+        $("#driver_status").html(ul_status);
     })
 
     var x = new Date()

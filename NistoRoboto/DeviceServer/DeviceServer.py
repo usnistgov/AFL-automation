@@ -7,6 +7,9 @@ from flask_jwt_extended import create_access_token, get_jwt_identity
 import datetime,requests,subprocess,shlex,os
 import threading,queue,logging,json,pathlib,uuid
 
+from logging.handlers import SMTPHandler
+from logging import FileHandler
+
 from NistoRoboto.DeviceServer.QueueDaemon import QueueDaemon
 from NistoRoboto.DeviceServer.LoggerFilter import LoggerFilter
 
@@ -75,7 +78,23 @@ class DeviceServer:
         self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
 
         self.app.before_first_request(self.init)
+
+    def init_logging(self,toaddrs=None):
         self.app.logger.setLevel(level=logging.DEBUG)
+
+        if toaddrs is not None:
+            # setup error emails
+            mail_handler = logging.SMTPHandler(mailhost=('smtp.nist.gov',25),
+                               fromaddr=f'{self.name}@pg93001.ncnr.nist.gov', 
+                               toaddrs=toaddrs, 
+                               subject='Protocol Error')
+            mail_handler.setLevel(logging.ERROR)
+            server.app.logger.addHandler(mail_handler)
+
+
+        file_handler = FileHandler(f'nistoroboto.{self.name}.log')
+        server.app.logger.addHandler(file_handler)
+        logging.getLogger('werkzeug').addHandler(file_handler)
 
     def index(self):
         '''Live, status page of the robot'''

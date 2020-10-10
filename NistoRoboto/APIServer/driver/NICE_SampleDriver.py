@@ -1,5 +1,5 @@
-from NistoRoboto.APIServer.Client import Client
-from NistoRoboto.APIServer.OT2Client import OT2Client
+from NistoRoboto.APIServer.client.Client import Client
+from NistoRoboto.APIServer.client.OT2Client import OT2Client
 from NistoRoboto.shared.utilities import listify
 
 from math import ceil,sqrt

@@ -7,7 +7,7 @@ except:
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 from NistoRoboto.APIServer.APIServer import APIServer
-from NistoRoboto.APIServer.DummyDriver import DummyDriver
+from NistoRoboto.APIServer.driver.DummyDriver import DummyDriver
 
 server = APIServer('DummyPumpServer')
 server.add_standard_routes()

@@ -1,5 +1,5 @@
 from NistoRoboto.APIServer.APIServer import APIServer
-from NistoRoboto.APIServer.OT2_Driver import OT2_Driver
+from NistoRoboto.APIServer.driver.OT2_Driver import OT2_Driver
 import os
 server = APIServer('OT2Server')
 driver = OT2_Driver()

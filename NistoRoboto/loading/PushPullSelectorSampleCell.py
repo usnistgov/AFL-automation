@@ -1,6 +1,6 @@
 from NistoRoboto.loading.SampleCell import SampleCell
 from NistoRoboto.loading.Tubing import Tubing
-from NistoRoboto.driver.Driver import Driver
+from NistoRoboto.APIServer.driver.Driver import Driver
 from collections import defaultdict
 import time
 

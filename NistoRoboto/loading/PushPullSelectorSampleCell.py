@@ -333,6 +333,10 @@ class PushPullSelectorSampleCell(Protocol,SampleCell):
             to_vol   = self.rinse_vol_ml + self.syringe_to_selector_vol
             self.transfer('catch','waste',from_vol,to_vol)
 
+        #clear out any remaining volume in the syringe
+        self.selector.selectPort('waste')
+        self.pump.dispense(5.0)
+
     def rinseAll(self,cellname='cell'):
         # if self.state is 'loaded':
         #     self.cellToWaste()

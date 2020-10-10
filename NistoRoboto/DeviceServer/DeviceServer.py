@@ -84,17 +84,21 @@ class DeviceServer:
 
         if toaddrs is not None:
             # setup error emails
-            mail_handler = logging.SMTPHandler(mailhost=('smtp.nist.gov',25),
+            mail_handler = SMTPHandler(mailhost=('smtp.nist.gov',25),
                                fromaddr=f'{self.name}@pg93001.ncnr.nist.gov', 
                                toaddrs=toaddrs, 
                                subject='Protocol Error')
             mail_handler.setLevel(logging.ERROR)
-            server.app.logger.addHandler(mail_handler)
+            self.app.logger.addHandler(mail_handler)
 
 
         file_handler = FileHandler(f'nistoroboto.{self.name}.log')
-        server.app.logger.addHandler(file_handler)
+        file_handler.setFormatter(logging.Formatter(
+                '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+                ))
+        self.app.logger.addHandler(file_handler)
         logging.getLogger('werkzeug').addHandler(file_handler)
+
 
     def index(self):
         '''Live, status page of the robot'''

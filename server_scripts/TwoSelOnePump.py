@@ -37,21 +37,13 @@ protocol = PushPullSelectorSampleCell(pump,
                                       syringe_to_sel_vol    = Tubing(1530,49.27+10.4).volume() ,
                                       selector_internal_vol = None,
                                       calibrated_catch_to_syringe_vol = 3.4,
-                                      calibrated_syringe_to_cell_vol = 3.42,
+                                      calibrated_syringe_to_cell_vol = 3.2,
                                       load_speed=5.0,
                                      )
 server = DeviceServer('CellServer')
 server.add_standard_routes()
 server.create_queue(protocol)
-
-import logging
-from logging.handlers import SMTPHandler
-mail_handler = SMTPHandler(mailhost=('smtp.nist.gov',25),
-                   fromaddr='PushPullSelectorSampleCell@pg93001.ncnr.nist.gov',
-                   toaddrs='tbm@nist.gov', subject='Protocol Error')
-mail_handler.setLevel(logging.ERROR)
-server.app.logger.addHandler(mail_handler)
-
+server.init_logging(toaddrs=['tbm@nist.gov'])
 server.run(host='0.0.0.0',port=server_port, debug=False)
 
 

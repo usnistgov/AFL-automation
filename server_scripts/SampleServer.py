@@ -8,10 +8,10 @@ except:
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 from NistoRoboto.APIServer.APIServer import APIServer
-from NistoRoboto.APIServer.NICE_SampleProtocol import NICE_SampleProtocol
+from NistoRoboto.APIServer.driver.NICE_SampleDriver import NICE_SampleDriver
 
 
-driver =NICE_SampleProtocol(
+driver =NICE_SampleDriver(
         nice_url='NGBSANS.ncnr.nist.gov',
         load_url='piloader:5000',
         prep_url='piot2:5000',

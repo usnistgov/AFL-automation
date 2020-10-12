@@ -34,7 +34,7 @@ class NICE_SampleDriver:
             raise ArgumentError('Need to specify both ip and port on prep_url')
 
         self.app = None
-        self.name = 'OnePumpNICE'
+        self.name = 'NICE_SampleDriver'
 
         #prepare samples
         self.prep_client = OT2Client(prep_url.split(':')[0],port=prep_url.split(':')[1])

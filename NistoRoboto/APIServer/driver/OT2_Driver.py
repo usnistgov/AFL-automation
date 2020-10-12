@@ -111,7 +111,7 @@ class OT2_Driver(Driver):
 
         pipette.mix(repetitions,volume,location_well)
 
-    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -152,9 +152,9 @@ class OT2_Driver(Driver):
             dest_wells = [getattr(dw,kwargs['dest_loc'])() for dw in dest_wells]
 
         if mix_before is not None:
-            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap,mix_before=mix_before)
+            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap,mix_before=mix_before,blow_out=blow_out)
         else:
-            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap)
+            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap,blow_out=blow_out)
 
     def set_aspirate_rate(self,rate=150):
         '''Set aspirate rate of both pipettes in uL/s. Default is 150 uL/s'''

@@ -1,5 +1,5 @@
 import requests
-from NistoRoboto.APIServer.Client import Client
+from NistoRoboto.APIServer.client.Client import Client
 
 class OT2Client(Client):
     '''Communicate with NistoRoboto server on OT-2
@@ -17,6 +17,7 @@ class OT2Client(Client):
             air_gap=0,
             aspirate_rate=None,
             dispense_rate=None,
+            blow_out=False,
             ):
         '''Transfer fluid from one location to another
 
@@ -41,6 +42,7 @@ class OT2Client(Client):
         json['volume'] = volume
         json['mix_before'] = mix_before
         json['air_gap'] = air_gap
+        json['blow_out'] = blow_out
         if source_loc is not None:
             json['source_loc'] = source_loc
         if dest_loc is not None:

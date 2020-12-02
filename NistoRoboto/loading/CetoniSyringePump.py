@@ -1,129 +1,194 @@
+'''
+
+Some notes on how to get this talking:
+
+1) You need the IXXAT usb-can kernel module built and installed (gooooood luuuck, but it works on armv7l)
+
+2) Set up the canbus interface:
+	sudo ip link set can0 up type can bitrate 1000000
+	sudo ip link set txqueuelen 10 dev can0
+
+3) Put the cetoni qmixsdk c/cython modules on your PYTHONPATH, such that you can import them, see below.
+
+
+'''
+
+
+
+
 from NistoRoboto.loading.SyringePump import SyringePump
-from NistoRoboto.loading.SerialDevice import SerialDevice
+
+import sys
+
+from qmixsdk import qmixbus
+from qmixsdk import qmixpump
+from qmixsdk import qmixvalve
+from qmixsdk.qmixbus import UnitPrefix, TimeUnit
+
 import time
 
 class CetoniSyringePump(SyringePump):
 
-    def __init__(self,port,syringe_id_mm,syringe_volume,baud=9600,daisy_chain=None,pumpid=None,flow_delay=5):
+    def __init__(self,deviceconfig,pumpName="neMESYS_Low_Pressure_1_Pump",existingBus=None,flow_delay=5):
         '''
-            Initializes and verifies connection to a New Era 1000 syringe pump.
+            Initializes and verifies connection to a Cetoni syringe pump.
 
-            port = serial port reference
+            This is quite a bit more complicated/annoying than on a NE1k.
 
-            syringe_id_mm = syringe inner diameter in mm, used for absolute volume. 
-                            (will re-program the pump with this diameter on connection)
-
-            syringe_volume = syringe volume in mL
-
-            baud = baudrate for connection
-
-            daisy_chain = used for the 'party-line' mode on these pumps where a string of pumps is on one serial port.
-                            when setting up daisy chaining:
-                                connect to the first pump on a port with daisy_chain = False
-                                on subsequent pumps, set daisy_chain to the pump with a hardware connection (the first pump)
-                                    or any other pump on the string.
-                                note: when daisy chaining you should probably set pumpid explicitly rather than autodiscovering
-                                    as most likely the autodiscovery will return the first pump id each time.
-
-            pumpid = the ID configured in the pump firmware.  If not set, will attempt to auto-discover a pump.  
-                    setting pumpid will save some time on connection and probably result in more reproducible 
-                    behavior.  Practically mandatory for daisy chain mode.
-
+            You have to get the canBUS object, search the bus for pumps, start the bus, then enable the pump drive 
 
         '''
         self.app = None
-        self.name = 'NE1kSyringePump'
-        self.pumpid = pumpid
+        self.name = 'CetoniSyringePump'
         self.flow_delay = flow_delay
-        if daisy_chain is not None:
-            self.serial_device = daisy_chain.serial_device
-        else:
-            self.serial_device = SerialDevice(port,baudrate=baud,timeout=0.5)
 
         # try to connect
+	    if existingBus is not None:
+	        print("Opening bus with deviceconfig ", deviceconfig)
+	        self.bus = qmixbus.Bus()
+	        self.bus.open(deviceconfig, 0)
+	    else:
+	    	self.bus = existingBus
 
-        if self.pumpid is None:
-            for i in range(75):
-                   if len(self.serial_device.sendCommand('%iADR\x0D'%i))>0:
-                    self.pumpid = i
-                    break
-        else:
-            if len(self.serial_device.sendCommand('%iADR\x0D'%self.pumpid))==0:
-                raise NoDeviceFoundException
+        print("Looking up devices...")
+        self.pump = qmixpump.Pump()
+        self.pump.lookup_by_name(pumpname)
+        pumpcount = qmixpump.Pump.get_no_of_pumps()
+        print("Number of pumps: ", pumpcount)
+        for i in range (pumpcount):
+            pump2 = qmixpump.Pump()
+            pump2.lookup_by_device_index(i)
+            print("Name of pump ", i, " is ", pump2.get_device_name())
+
+        assert pumpcount == 1, "Error: this driver does not support >1 pump on a bus.  Probably small hack to fix but it won't work yet."
+        
+
+       	# Connect the bus
+        self.bus.start()
+		
+        # Turn on the pump
+		print("Enabling pump drive...")
+        if self.pump.is_in_fault_state():
+            self.pump.clear_fault()
+        if not self.pump.is_enabled():
+            self.pump.enable(True)
+    
+
+        # Calibrate pump
 
 
-        assert self.pumpid is not None, "Error: no answer from any of the first 75 pumps.  Is speed correct?"
+        print("Calibrating pump...")
+        self.pump.calibrate()
+        time.sleep(0.2)
+        calibration_finished = self.wait_calibration_finished(self.pump, 30)
+        print("Pump calibrated: ", calibration_finished)
+
           # reset diameter
-        self.syringe_id_mm = syringe_id_mm
-        self.syringe_volume = syringe_volume
+        syringe = self.pump.get_syringe_param()
+        self.syringe_id_mm = syringe.inner_diameter_mm
+        self.piston_stroke_mm = syringe.max_piston_stroke_mm
+        self.syringe_volume_ml = syringe.volume_ml #this may not be a real attribute
 
-        self.stop()#stop the pump
-        self.serial_device.sendCommand('%iDIA %.02f\x0D'%(self.pumpid,syringe_id_mm)) #set the diameter
-        readback = self.serial_device.sendCommand('%iDIA\x0D'%self.pumpid) #readback
-        dia = float(readback[4:-1])
-        assert dia==syringe_id_mm, "Warning: syringe diameter set failed.  Commanded diameter "+str(syringe_id_mm)+", read back "+str(dia)
+        self.pump.set_volume_unit(qmixpump.UnitPrefix.milli, qmixpump.VolumeUnit.litres)
+        self.pump.set_flow_unit(qmixpump.UnitPrefix.milli, qmixpump.VolumeUnit.litres, 
+            qmixpump.TimeUnit.per_second)
+
+        self.max_rate = self.pump.get_flow_rate_max()
+        self.max_volume = self.pump.get_volume_max()
+
+
+        self.setRate(self.max_rate/2)
+
+
+        def __del__(self):
+	        print("Closing bus...")
+	        self.bus.stop()
+	        self.bus.close()
+
+    @staticmethod
+    def wait_calibration_finished(pump, timeout_seconds):
+        """
+        The function waits until the given pump has finished calibration or
+        until the timeout occurs.
+        """
+        timer = qmixbus.PollingTimer(timeout_seconds * 1000)
+        result = False
+        while (result == False) and not timer.is_expired():
+            time.sleep(0.1)
+            result = pump.is_calibration_finished()
+        return result
+
+
+    @staticmethod
+    def wait_dosage_finished(pump, timeout_seconds):
+        """
+        The function waits until the last dosage command has finished
+        until the timeout occurs.
+        """
+        timer = qmixbus.PollingTimer(timeout_seconds * 1000)
+        message_timer = qmixbus.PollingTimer(500)
+        result = True
+        while (result == True) and not timer.is_expired():
+            time.sleep(0.1)
+            if message_timer.is_expired():
+                print("Fill level: ", pump.get_fill_level())
+                message_timer.restart()
+            result = pump.is_pumping()
+        return not result
+        
+
+
 
     def stop(self):
         '''
-        Abort the current dispense/withdraw action. Equivalent to pressing stop button on panel.
+        Abort the current dispense/withdraw action. 
         '''
-        self.serial_device.sendCommand('%iSTP\x0D'%self.pumpid,questionmarkOK=True) 
+
+        self.pump.stop()
 
     def withdraw(self,volume,block=True):
         if self.app is not None:
             rate = self.getRate()
             self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
 
-        self.serial_device.sendCommand('%iVOLML\x0D'%self.pumpid)
-        self.serial_device.sendCommand('%iVOL %.03f\x0D'%(self.pumpid,volume))
-        self.serial_device.sendCommand('%iDIRWDR\x0D'%self.pumpid)
-        self.serial_device.sendCommand('%iRUN\x0D'%self.pumpid)
+   		self.pump.aspirate(volume, self.rate)
         if block:
-            self.blockUntilStatusStopped()
+			self.wait_dosage_finished(self.pump, 30)
             time.sleep(self.flow_delay)
         
     def dispense(self,volume,block=True):
         if self.app is not None:
             rate = self.getRate()
             self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min')
-        self.serial_device.sendCommand('%iVOLML\x0D'%self.pumpid)
-        self.serial_device.sendCommand('%iVOL%.03f\x0D'%(self.pumpid,volume))
-        self.serial_device.sendCommand('%iDIRINF\x0D'%self.pumpid)
-        self.serial_device.sendCommand('%iRUN\x0D'%self.pumpid)
+        self.pump.dispense(volume, self.rate)
         if block:
-            self.blockUntilStatusStopped()
+			self.wait_dosage_finished(self.pump, 30)
             time.sleep(self.flow_delay)
         
-    def setRate(self,rate):
+
+
+    def setRate(self,rate): #@TODO
         if self.app is not None:
             self.app.logger.debug(f'Setting pump rate to {rate} mL/min')
-        self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate))
-        if self.getRate()!=rate:
-            raise ValueError('Pump rate change failed')
+        self.rate = rate
 
-    def getRate(self):
-        output = self.serial_device.sendCommand('%iRAT\x0D'%self.pumpid)
-        units = output[-3:-1]
-        if units=='MM':
-            rate = float(output[4:-3])
-        elif units=='UM':
-            rate = float(output[4:-3])/1000
-        elif units=='MH':
-            rate = float(output[4:-3])/60
-        elif units=='UH':
-            rate = float(output[4:-3])/60/1000
-        return rate
+    def getRate(self): #@TODO
+        return self.rate
 
     def blockUntilStatusStopped(self,pollingdelay=0.2):
-        statuschar = 'X'
-        while statuschar is not 'S':
-            time.sleep(pollingdelay)
-            statuschar = self.getStatus()[0]
+        '''
+        This is a deprecated function from old serial logic.  It should work, but do not use.  
+        '''
+        self.wait_dosage_finished(self.pump,30)
+        self.wait_calibration_finished(self.pump,30)
 
-    def getStatus(self):
+
+    def getStatus(self): #@TODO
         '''
         query the pump status and return a tuple of the status character, 
         infused volume, and withdrawn volume)
+        
+		This is a deprecated method from old serial logic.  It should work, but do not use.
         '''
 
         dispensed = self.serial_device.sendCommand('%iDIS\x0D'%self.pumpid)

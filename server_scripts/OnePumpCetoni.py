@@ -12,7 +12,7 @@ server_port=5000
 from NistoRoboto.APIServer.APIServer import APIServer
 
 from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
-from NistoRoboto.loading.NE1kSyringePump import NE1kSyringePump
+from NistoRoboto.loading.CetoniSyringePump import CetoniSyringePump
 from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
 from NistoRoboto.loading.Tubing import Tubing
 
@@ -27,7 +27,7 @@ selector = ViciMultiposSelector(
             'air':10,
             }
         )
-pump = NE1kSyringePump('/dev/ttySyrPump',14.86,10,baud=19200,pumpid=10,flow_delay=10) # ID for 10mL = 14.859, for 50 mL 26.43
+pump = CetoniSyringePump('single-pump',flow_delay=5) # ID for 10mL = 14.859, for 50 mL 26.43
 driver = PushPullSelectorSampleCell(pump,
                                       selector,
                                       catch_to_sel_vol      =Tubing(1517,112).volume(),

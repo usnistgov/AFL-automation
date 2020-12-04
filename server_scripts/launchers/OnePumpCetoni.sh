@@ -7,4 +7,4 @@ source activate nistoroboto
 cd ~/NistoRoboto/
 git pull
 
-python ~/NistoRoboto/server_scripts/OnePump.py
+python ~/NistoRoboto/server_scripts/OnePumpCetoni.py

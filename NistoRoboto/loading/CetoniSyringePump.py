@@ -5,8 +5,8 @@ Some notes on how to get this talking:
 1) You need the IXXAT usb-can kernel module built and installed (gooooood luuuck, but it works on armv7l)
 
 2) Set up the canbus interface:
-	sudo ip link set can0 up type can bitrate 1000000
-	sudo ip link set txqueuelen 10 dev can0
+    sudo ip link set can0 up type can bitrate 1000000
+    sudo ip link set txqueuelen 10 dev can0
 
 3) Put the cetoni qmixsdk c/cython modules on your PYTHONPATH, such that you can import them, see below.
 
@@ -29,7 +29,7 @@ import time
 
 class CetoniSyringePump(SyringePump):
 
-    def __init__(self,deviceconfig,pumpName="neMESYS_Low_Pressure_1_Pump",existingBus=None,flow_delay=5):
+    def __init__(self,deviceconfig,configdir='~/QmixSDK_Raspi/config/',pumpName="neMESYS_Low_Pressure_1_Pump",existingBus=None,flow_delay=5):
         '''
             Initializes and verifies connection to a Cetoni syringe pump.
 
@@ -38,17 +38,19 @@ class CetoniSyringePump(SyringePump):
             You have to get the canBUS object, search the bus for pumps, start the bus, then enable the pump drive 
 
         '''
+
         self.app = None
         self.name = 'CetoniSyringePump'
         self.flow_delay = flow_delay
 
+        deviceconfig = configdir + deviceconfig
         # try to connect
-	    if existingBus is not None:
-	        print("Opening bus with deviceconfig ", deviceconfig)
-	        self.bus = qmixbus.Bus()
-	        self.bus.open(deviceconfig, 0)
-	    else:
-	    	self.bus = existingBus
+        if existingBus is not None:
+            print("Opening bus with deviceconfig ", deviceconfig)
+            self.bus = qmixbus.Bus()
+            self.bus.open(deviceconfig, 0)
+        else:
+            self.bus = existingBus
 
         print("Looking up devices...")
         self.pump = qmixpump.Pump()
@@ -63,11 +65,11 @@ class CetoniSyringePump(SyringePump):
         assert pumpcount == 1, "Error: this driver does not support >1 pump on a bus.  Probably small hack to fix but it won't work yet."
         
 
-       	# Connect the bus
+           # Connect the bus
         self.bus.start()
-		
+        
         # Turn on the pump
-		print("Enabling pump drive...")
+        print("Enabling pump drive...")
         if self.pump.is_in_fault_state():
             self.pump.clear_fault()
         if not self.pump.is_enabled():
@@ -101,9 +103,9 @@ class CetoniSyringePump(SyringePump):
 
 
         def __del__(self):
-	        print("Closing bus...")
-	        self.bus.stop()
-	        self.bus.close()
+            print("Closing bus...")
+            self.bus.stop()
+            self.bus.close()
 
     @staticmethod
     def wait_calibration_finished(pump, timeout_seconds):
@@ -151,9 +153,9 @@ class CetoniSyringePump(SyringePump):
             rate = self.getRate()
             self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
 
-   		self.pump.aspirate(volume, self.rate)
+           self.pump.aspirate(volume, self.rate)
         if block:
-			self.wait_dosage_finished(self.pump, 30)
+            self.wait_dosage_finished(self.pump, 30)
             time.sleep(self.flow_delay)
         
     def dispense(self,volume,block=True):
@@ -162,7 +164,7 @@ class CetoniSyringePump(SyringePump):
             self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min')
         self.pump.dispense(volume, self.rate)
         if block:
-			self.wait_dosage_finished(self.pump, 30)
+            self.wait_dosage_finished(self.pump, 30)
             time.sleep(self.flow_delay)
         
 
@@ -188,7 +190,7 @@ class CetoniSyringePump(SyringePump):
         query the pump status and return a tuple of the status character, 
         infused volume, and withdrawn volume)
         
-		This is a deprecated method from old serial logic.  It should work, but do not use.
+        This is a deprecated method from old serial logic.  It should work, but do not use.
         '''
 
         dispensed = self.serial_device.sendCommand('%iDIS\x0D'%self.pumpid)

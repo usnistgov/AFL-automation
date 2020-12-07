@@ -14,10 +14,11 @@ from NistoRoboto.APIServer.APIServer import APIServer
 from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
 from NistoRoboto.loading.CetoniSyringePump import CetoniSyringePump
 from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
+from NistoRoboto.loading.CetoniMultiPosValve import CetoniMultiPosValve
 from NistoRoboto.loading.Tubing import Tubing
 
 selector = ViciMultiposSelector(
-        '/dev/ttyFlowSel',
+        '/dev/ttyUSB0',
         baudrate=19200,
         portlabels={
             'catch':1,
@@ -27,15 +28,19 @@ selector = ViciMultiposSelector(
             'air':10,
             }
         )
+
+
 pump = CetoniSyringePump('single-pump',flow_delay=5) # ID for 10mL = 14.859, for 50 mL 26.43
+
+selector2 = CetoniMultiPosValve(pump)
 driver = PushPullSelectorSampleCell(pump,
-                                      selector,
-                                      catch_to_sel_vol      =Tubing(1517,112).volume(),
-                                      cell_to_sel_vol       =Tubing(1517,170).volume()+0.6,
-                                      calibrated_load_vol_source = 3.2,
-                                      calibrated_load_vol_dest = 3.2,
-                                      syringe_to_sel_vol    =None,
-                                      selector_internal_vol =None,
+                                      selector2,
+                                      catch_to_sel_vol      = Tubing(1517,112).volume(),
+                                      cell_to_sel_vol       = Tubing(1517,170).volume()+0.6,
+                                      syringe_to_sel_vol    = Tubing(1530,49.27+10.4).volume() ,
+                                      selector_internal_vol = None,
+                                      calibrated_catch_to_syringe_vol = 3.4,
+                                      calibrated_syringe_to_cell_vol = 3.2,
                                       load_speed=5.0,
                                      )
 server = APIServer('CellServer1')

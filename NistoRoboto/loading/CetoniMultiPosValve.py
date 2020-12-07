@@ -1,7 +1,7 @@
 from NistoRoboto.loading.FlowSelector import FlowSelector
 
-class ViciMultiposSelector(SerialDevice,FlowSelector):
-    def __init__(self,pump,portlabels=None):
+class CetoniMultiPosValve(FlowSelector):
+    def __init__(self,parentpump,portlabels={}):
         '''
         connect to valve and query the number of positions
 
@@ -13,22 +13,17 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
         self.app = None
         self.name = 'CetoniMultiPosValve'
 
-        self.pump = pump
+        self.pump = parentpump.pump
 
         assert self.pump.has_valve(), "this pump does not have a valve installed"
 
         self.valve = self.pump.get_valve()
-        self.npositions = valve.number_of_valve_positions()
+        self.npositions = self.valve.number_of_valve_positions()
         print("Valve positions: ", self.npositions)
 
 
 
-        for i in range (valve_pos_count):
-            time.sleep(0.2) # give valve some time to move to target
-
-            self.assertEqual(i, valve_pos_is)
-        valve.switch_valve_to_position(0)
-        self.npositions = int(response)
+        self.valve.switch_valve_to_position(0)
 
         self.portlabels = portlabels
 
@@ -63,7 +58,7 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
         '''
             query the current selected position
         '''
-        portnum = valve.actual_valve_position()
+        portnum = self.valve.actual_valve_position()
                 
         if not as_str:
             return portnum

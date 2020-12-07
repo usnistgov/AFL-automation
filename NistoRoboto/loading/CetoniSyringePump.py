@@ -29,7 +29,7 @@ import time
 
 class CetoniSyringePump(SyringePump):
 
-    def __init__(self,deviceconfig,configdir='~/QmixSDK_Raspi/config/',pumpName="neMESYS_Low_Pressure_1_Pump",existingBus=None,flow_delay=5):
+    def __init__(self,deviceconfig,configdir='/home/pi/QmixSDK_Raspi/config/',lookupByName=False,pumpName="neMESYS_Low_Pressure_1_Pump",existingBus=None,flow_delay=5):
         '''
             Initializes and verifies connection to a Cetoni syringe pump.
 
@@ -43,27 +43,26 @@ class CetoniSyringePump(SyringePump):
         self.name = 'CetoniSyringePump'
         self.flow_delay = flow_delay
 
-        deviceconfig = configdir + deviceconfig
+        deviceconfig = configdir + deviceconfig + '/'
         # try to connect
-        if existingBus is not None:
-            print("Opening bus with deviceconfig ", deviceconfig)
+        if existingBus is None:
+            print(f"Opening bus with deviceconfig {deviceconfig}")
             self.bus = qmixbus.Bus()
             self.bus.open(deviceconfig, 0)
         else:
             self.bus = existingBus
 
         print("Looking up devices...")
-        self.pump = qmixpump.Pump()
-        self.pump.lookup_by_name(pumpname)
-        pumpcount = qmixpump.Pump.get_no_of_pumps()
-        print("Number of pumps: ", pumpcount)
-        for i in range (pumpcount):
-            pump2 = qmixpump.Pump()
-            pump2.lookup_by_device_index(i)
-            print("Name of pump ", i, " is ", pump2.get_device_name())
-
-        assert pumpcount == 1, "Error: this driver does not support >1 pump on a bus.  Probably small hack to fix but it won't work yet."
-        
+        if lookupByName:
+            self.pump = qmixpump.Pump()
+            self.pump.lookup_by_name(pumpName)
+        else:
+            pumpcount = qmixpump.Pump.get_no_of_pumps()
+            print("Number of pumps: ", pumpcount)
+            #assert pumpcount == 1, "Error: this driver does not support >1 pump on a bus.  Probably small hack to fix but it won't work yet."
+            self.pump = qmixpump.Pump()
+            self.pump.lookup_by_device_index(0)
+            print("Name of pump is ", self.pump.get_device_name())
 
            # Connect the bus
         self.bus.start()
@@ -89,7 +88,7 @@ class CetoniSyringePump(SyringePump):
         syringe = self.pump.get_syringe_param()
         self.syringe_id_mm = syringe.inner_diameter_mm
         self.piston_stroke_mm = syringe.max_piston_stroke_mm
-        self.syringe_volume_ml = syringe.volume_ml #this may not be a real attribute
+        self.syringe_volume_ml = self.pump.get_volume_max() #this may not be a real attribute
 
         self.pump.set_volume_unit(qmixpump.UnitPrefix.milli, qmixpump.VolumeUnit.litres)
         self.pump.set_flow_unit(qmixpump.UnitPrefix.milli, qmixpump.VolumeUnit.litres, 
@@ -153,7 +152,7 @@ class CetoniSyringePump(SyringePump):
             rate = self.getRate()
             self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
 
-           self.pump.aspirate(volume, self.rate)
+            self.pump.aspirate(volume, self.rate)
         if block:
             self.wait_dosage_finished(self.pump, 30)
             time.sleep(self.flow_delay)

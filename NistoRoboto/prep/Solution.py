@@ -4,16 +4,14 @@ import numpy as np
 import copy
 
 from NistoRoboto.shared.units import units,AVOGADROS
+from NistoRoboto.prep.Mixture import Mixture
 from NistoRoboto.prep.types import types
 
 
-class Mixture:
-    '''
-    ToDo:
-        - unit support
-    '''
+class Solution(Mixture):
+    ''' '''
     def __init__(self,components=None):
-        self.type=types.BaseMixture
+        self.type=types.Solution
 
         if components is None:
             components = []
@@ -28,7 +26,7 @@ class Mixture:
             self.components[component_copy.name] = component_copy
             
     def __str__(self):
-        out_str = '<Mixture v/v%'
+        out_str = '<Solution v/v%'
         volume_fraction = self.volume_fraction
         for name,component in self:
             vfrac = volume_fraction.get(name,None)
@@ -200,6 +198,7 @@ class Mixture:
         try:
             result = {k:v.to(units) for k,v in result.items()}
         except AttributeError:
+            #units not defined
             pass
         return result
     
@@ -284,6 +283,15 @@ class Mixture:
 
         molar_mass = self.components[name].formula.molecular_mass*AVOGADROS
         self.components[name].mass = molarity*molar_mass*self.volume #Assumes volume is in mL
+
+
+    @property
+    def solutes(self):
+        return [c for c in self.components if c.is_solute()]
+
+    @property
+    def solvents(self):
+        return [c for c in self.components if c.is_solvent()]
 
     def remove_volume(self,amount):
         '''Remove volume from mixture without changing composition

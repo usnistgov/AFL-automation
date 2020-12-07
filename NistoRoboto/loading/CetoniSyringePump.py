@@ -87,7 +87,7 @@ class CetoniSyringePump(SyringePump):
           # reset diameter
 
         if syringeName is not None:
-
+            print('Syringe Parameter Lookup Not Yet Supported')
 
         syringe = self.pump.get_syringe_param()
         self.syringe_id_mm = syringe.inner_diameter_mm
@@ -104,7 +104,7 @@ class CetoniSyringePump(SyringePump):
         self.max_rate = self.pump.get_flow_rate_max()
         self.max_volume = self.pump.get_volume_max()
 
-        print(f'Currently loaded syringe is a {self.syringe_volume_ml}, max pump rate {self.max_rate}')
+        print(f'Currently loaded syringe is a {self.syringe_volume_ml}, max pump rate {self.max_rate}, ID {self.syringe_id_mm}, stroke {self.piston_stroke_mm}')
 
         self.setRate(self.max_rate/2)
 

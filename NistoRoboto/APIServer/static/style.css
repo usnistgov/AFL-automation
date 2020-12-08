@@ -34,13 +34,15 @@
   clear:both;
   padding-top: 10px;
 }
-#meta_buttons {
+
+div.button_row {
   align-items:center;
   display: flex;
   justify-content: center;
-  margin-top: 15px;
+  margin-top: 20px;
   flex-wrap: wrap;
 }
+
 body {
     background-color: linen;
 }
@@ -61,12 +63,19 @@ li.element {
     justify-content: center;
     align-items: center;
     font-weight: bold;
+    font-size: larger;
     padding: 10px 10px 10px 10px;
     text-align: center;
     word-wrap: break-word;
     
 }
 #driver_status {
+    display:flex;
+    justify-content: center;
+    font-size:larger;
+}
+
+#driver_control {
     display:flex;
     justify-content: center;
 }
@@ -110,5 +119,13 @@ div.meta {
 
 div.overflow {
     max-height: 200px;
-    overflow: scroll;
+    overflow: auto;
 }
+
+.button{
+  line-height:60px;
+  font-size:larger;
+  font-weight:bolder;
+  width:150px;
+}
+

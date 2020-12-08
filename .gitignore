@@ -1,6 +1,7 @@
 .ipynb_checkpoints
 .ipynb_checkpoints/*
 dev/.ipynb_checkpoints/*
+*log
 *tif
 *tiff
 data/*

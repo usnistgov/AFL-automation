@@ -1,8 +1,13 @@
 from flask import Flask, render_template, request, jsonify
 
 #authentication module
-from flask_jwt_extended import JWTManager, jwt_required 
-from flask_jwt_extended import create_access_token, get_jwt_identity
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    jwt_refresh_token_required, create_refresh_token,
+    get_jwt_identity, set_access_cookies,
+    set_refresh_cookies, unset_jwt_cookies
+)
+
 
 import datetime,requests,subprocess,shlex,os
 import threading,queue,logging,json,pathlib,uuid
@@ -16,10 +21,11 @@ from NistoRoboto.APIServer.LoggerFilter import LoggerFilter
 from NistoRoboto.shared.MutableQueue import MutableQueue
 
 class APIServer:
-    def __init__(self,name,experiment='Development',contact='tbm@nist.gov'):
+    def __init__(self,name,experiment='Development',contact='tbm@nist.gov',index_template='index.html'):
         self.name = name
         self.experiment = experiment
         self.contact = contact
+        self.index_template = index_template
 
         self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status')
 
@@ -32,7 +38,7 @@ class APIServer:
         self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
         self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
         self.jwt = JWTManager(self.app)
-
+    
     def create_queue(self,driver):
         self.history = []
         self.task_queue = MutableQueue()
@@ -111,7 +117,7 @@ class APIServer:
         kw['queue_state'] = self.queue_state()
         kw['name']        = self.name
         kw['driver']    = self.queue_daemon.driver.name
-        return render_template('index.html',**kw),200
+        return render_template(self.index_template,**kw),200
 
     def queue_state(self):
         if self.queue_daemon.paused:
@@ -204,6 +210,7 @@ class APIServer:
         self.app.logger.info(f'Creating login token for user {username}')
         token = create_access_token(identity=username)#,expires=expires)
         return jsonify(token=token), 200
+
     
     @jwt_required
     def login_test(self):

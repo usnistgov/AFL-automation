@@ -168,7 +168,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         if vol_dest>vol_source:
             self.app.logger.debug(f'Withrawing {vol_dest-vol_source} mL from air')
             self.selector.selectPort('air')
-            self.pump.withdraw(vol_dest-vol_source)
+            self.pump.withdraw(vol_dest-vol_source,delay=False)
 
         self.selector.selectPort(source)
         self.pump.withdraw(vol_source)
@@ -304,7 +304,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.pump.setRate(self.rinse_speed)
         self.pump.flow_delay = self.rinse_flow_delay
         self.selector.selectPort('air')
-        self.pump.withdraw(self.blow_out_vol)
+        self.pump.withdraw(self.blow_out_vol,delay=False)
         self.selector.selectPort(cellname)
         self.pump.dispense(self.blow_out_vol)
 

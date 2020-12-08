@@ -4,9 +4,10 @@ import copy
 import numbers
 from pyparsing import ParseException
 
-from NistoRoboto.shared.units import ureg
+from NistoRoboto.shared.units import units
+from NistoRoboto.prep.types import types
 
-AVOGADROS_NUMBER = 6.0221409e+23*ureg('1/mol')
+AVOGADROS_NUMBER = 6.0221409e+23*units('1/mol')
 
 class Component(object):
     '''Base class for all materials
@@ -17,6 +18,7 @@ class Component(object):
     def __init__(self,name,mass=None,volume=None,density=None,formula=None):
         self.name    = name
         self.density = density
+        self.type = types.BaseComponent
         
         if (mass is None) and (volume is None):
             # use hidden variables to avoid property setting Nonsense
@@ -45,6 +47,12 @@ class Component(object):
         except ParseException:
             self.formula = None
 
+    def is_solute(self):
+        return self.type==types.Solute
+
+    def is_solvent(self):
+        return self.type==types.Solvent
+
     def copy(self):
         return copy.deepcopy(self)
 
@@ -71,7 +79,7 @@ class Component(object):
     @property
     def moles(self):
         if self._has_formula and self._has_mass:
-            return self._mass/(self.formula.molecular_mass*ureg('g'))/AVOGADROS_NUMBER
+            return self._mass/(self.formula.molecular_mass*units('g'))/AVOGADROS_NUMBER
         else:
             return None
 

@@ -10,3 +10,4 @@ def make_locs(slot,nrows,ncols):
     return locs
 
 
+

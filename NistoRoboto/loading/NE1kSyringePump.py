@@ -69,7 +69,7 @@ class NE1kSyringePump(SyringePump):
         '''
         self.serial_device.sendCommand('%iSTP\x0D'%self.pumpid,questionmarkOK=True) 
 
-    def withdraw(self,volume,block=True):
+    def withdraw(self,volume,block=True,delay=True):
         if self.app is not None:
             rate = self.getRate()
             self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
@@ -80,9 +80,10 @@ class NE1kSyringePump(SyringePump):
         self.serial_device.sendCommand('%iRUN\x0D'%self.pumpid)
         if block:
             self.blockUntilStatusStopped()
+        if delay:
             time.sleep(self.flow_delay)
         
-    def dispense(self,volume,block=True):
+    def dispense(self,volume,block=True,delay=True):
         if self.app is not None:
             rate = self.getRate()
             self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min')
@@ -92,6 +93,7 @@ class NE1kSyringePump(SyringePump):
         self.serial_device.sendCommand('%iRUN\x0D'%self.pumpid)
         if block:
             self.blockUntilStatusStopped()
+        if delay:
             time.sleep(self.flow_delay)
         
     def setRate(self,rate):

@@ -29,7 +29,7 @@ import time
 
 class CetoniSyringePump(SyringePump):
 
-    def __init__(self,deviceconfig,configdir='/home/pi/QmixSDK_Raspi/config/',lookupByName=False,pumpName="neMESYS_Low_Pressure_1_Pump",existingBus=None,flow_delay=5):
+    def __init__(self,deviceconfig,configdir='/home/pi/QmixSDK_Raspi/config/',lookupByName=False,pumpName=None,existingBus=None,syringeName=None,flow_delay=5):
         '''
             Initializes and verifies connection to a Cetoni syringe pump.
 
@@ -85,26 +85,34 @@ class CetoniSyringePump(SyringePump):
         print("Pump calibrated: ", calibration_finished)
 
           # reset diameter
+
+        if syringeName is not None:
+            print('Syringe Parameter Lookup Not Yet Supported')
+
         syringe = self.pump.get_syringe_param()
         self.syringe_id_mm = syringe.inner_diameter_mm
         self.piston_stroke_mm = syringe.max_piston_stroke_mm
-        self.syringe_volume_ml = self.pump.get_volume_max() #this may not be a real attribute
 
         self.pump.set_volume_unit(qmixpump.UnitPrefix.milli, qmixpump.VolumeUnit.litres)
         self.pump.set_flow_unit(qmixpump.UnitPrefix.milli, qmixpump.VolumeUnit.litres, 
             qmixpump.TimeUnit.per_second)
 
+
+        self.syringe_volume_ml = self.pump.get_volume_max() #this may not be a real attribute
+
+        
         self.max_rate = self.pump.get_flow_rate_max()
         self.max_volume = self.pump.get_volume_max()
 
+        print(f'Currently loaded syringe is a {self.syringe_volume_ml}, max pump rate {self.max_rate}, ID {self.syringe_id_mm}, stroke {self.piston_stroke_mm}')
 
         self.setRate(self.max_rate/2)
 
 
-        def __del__(self):
-            print("Closing bus...")
-            self.bus.stop()
-            self.bus.close()
+    def __del__(self):
+        print("Closing bus...")
+        self.bus.stop()
+        self.bus.close()
 
     @staticmethod
     def wait_calibration_finished(pump, timeout_seconds):
@@ -147,7 +155,7 @@ class CetoniSyringePump(SyringePump):
 
         self.pump.stop()
 
-    def withdraw(self,volume,block=True):
+    def withdraw(self,volume,block=True,delay=True):
         if self.app is not None:
             rate = self.getRate()
             self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
@@ -155,15 +163,17 @@ class CetoniSyringePump(SyringePump):
             self.pump.aspirate(volume, self.rate)
         if block:
             self.wait_dosage_finished(self.pump, 30)
+        if delay:
             time.sleep(self.flow_delay)
         
-    def dispense(self,volume,block=True):
+    def dispense(self,volume,block=True,delay=True):
         if self.app is not None:
             rate = self.getRate()
             self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min')
         self.pump.dispense(volume, self.rate)
         if block:
             self.wait_dosage_finished(self.pump, 30)
+        if delay:
             time.sleep(self.flow_delay)
         
 

@@ -21,19 +21,19 @@ selector = ViciMultiposSelector(
         '/dev/ttyUSB0',
         baudrate=19200,
         portlabels={
-            'catch':1,
-            'cell':5,
-            'waste':8,
-            'rinse':9,
-            'air':10,
+            'catch':3,
+            'cell':2,
+            'waste':9,
+            'rinse':10,
+            'air':1,
             }
         )
 
 
 pump = CetoniSyringePump('single-pump',flow_delay=5) # ID for 10mL = 14.859, for 50 mL 26.43
 
-selector2 = CetoniMultiPosValve(pump)
-driver = PushPullSelectorSampleCell(pump,
+selector2 = CetoniMultiPosValve(pump,portlabels={'pump':0,'blow':1})
+driver = DualSelectorBlowoutSampleCell(pump,
                                       selector2,
                                       catch_to_sel_vol      = Tubing(1517,112).volume(),
                                       cell_to_sel_vol       = Tubing(1517,170).volume()+0.6,

@@ -155,7 +155,7 @@ class CetoniSyringePump(SyringePump):
 
         self.pump.stop()
 
-    def withdraw(self,volume,block=True):
+    def withdraw(self,volume,block=True,delay=True):
         if self.app is not None:
             rate = self.getRate()
             self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
@@ -163,15 +163,17 @@ class CetoniSyringePump(SyringePump):
             self.pump.aspirate(volume, self.rate)
         if block:
             self.wait_dosage_finished(self.pump, 30)
+        if delay:
             time.sleep(self.flow_delay)
         
-    def dispense(self,volume,block=True):
+    def dispense(self,volume,block=True,delay=True):
         if self.app is not None:
             rate = self.getRate()
             self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min')
         self.pump.dispense(volume, self.rate)
         if block:
             self.wait_dosage_finished(self.pump, 30)
+        if delay:
             time.sleep(self.flow_delay)
         
 

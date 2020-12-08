@@ -108,10 +108,12 @@ function update(){
     $("#time").text(x)
 
     setTimeout(function () {update()}, 500); // this will run every 0.5 seconds  
+
 };
 
 update(); // This will run on page load
 // var updateInteval = setInterval(function(){ update() }, 500); // this will run every 0.5 seconds  
+
 
 
 	

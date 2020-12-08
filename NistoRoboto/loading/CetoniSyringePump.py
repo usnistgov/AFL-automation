@@ -95,7 +95,7 @@ class CetoniSyringePump(SyringePump):
 
         self.pump.set_volume_unit(qmixpump.UnitPrefix.milli, qmixpump.VolumeUnit.litres)
         self.pump.set_flow_unit(qmixpump.UnitPrefix.milli, qmixpump.VolumeUnit.litres, 
-            qmixpump.TimeUnit.per_second)
+            qmixpump.TimeUnit.per_minute)
 
 
         self.syringe_volume_ml = self.pump.get_volume_max() #this may not be a real attribute

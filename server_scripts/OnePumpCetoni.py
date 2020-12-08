@@ -11,7 +11,7 @@ server_port=5000
 
 from NistoRoboto.APIServer.APIServer import APIServer
 
-from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
+from NistoRoboto.loading.TwoSelectorBlowoutSampleCell import TwoSelectorBlowoutSampleCell
 from NistoRoboto.loading.CetoniSyringePump import CetoniSyringePump
 from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
 from NistoRoboto.loading.CetoniMultiPosValve import CetoniMultiPosValve
@@ -33,7 +33,8 @@ selector = ViciMultiposSelector(
 pump = CetoniSyringePump('single-pump',flow_delay=5) # ID for 10mL = 14.859, for 50 mL 26.43
 
 selector2 = CetoniMultiPosValve(pump,portlabels={'pump':0,'blow':1})
-driver = DualSelectorBlowoutSampleCell(pump,
+driver = TwoSelectorBlowoutSampleCell(pump,
+                                      selector,
                                       selector2,
                                       catch_to_sel_vol      = Tubing(1517,112).volume(),
                                       cell_to_sel_vol       = Tubing(1517,170).volume()+0.6,
@@ -41,7 +42,7 @@ driver = DualSelectorBlowoutSampleCell(pump,
                                       selector_internal_vol = None,
                                       calibrated_catch_to_syringe_vol = 3.4,
                                       calibrated_syringe_to_cell_vol = 3.2,
-                                      load_speed=5.0,
+                                      load_speed=0.5,
                                      )
 server = APIServer('CellServer1')
 server.add_standard_routes()

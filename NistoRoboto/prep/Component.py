@@ -79,7 +79,7 @@ class Component(object):
     @property
     def moles(self):
         if self._has_formula and self._has_mass:
-            return self._mass/(self.formula.molecular_mass*ureg('g'))/AVOGADROS_NUMBER
+            return self._mass/(self.formula.molecular_mass*units('g'))/AVOGADROS_NUMBER
         else:
             return None
 

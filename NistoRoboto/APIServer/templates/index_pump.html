@@ -85,8 +85,8 @@
                     <option value=5.0>5.0</option>
                     <option value=10.0>10.0</option>
                 </select>
-                <button class='button' onclick=enqueue(JSON.stringify({"task_name":"withdraw","device":"pump","volume":$("#pump_volume").val()}))>Withdraw</button>
-                <button class='button' onclick=enqueue(JSON.stringify({"task_name":"dispense","device":"pump","volume":$("#pump_volume").val()}))>Dispense</button>
+                <button class='button' onclick=enqueue(JSON.stringify({"task_name":"withdraw","device":"pump","volume":parseFloat($("#pump_volume").val())}))>Withdraw</button>
+                <button class='button' onclick=enqueue(JSON.stringify({"task_name":"dispense","device":"pump","volume":parseFloat($("#pump_volume").val())}))>Dispense</button>
             </div>
             <div class="button_row">
                 <label for="pump_rate" style="font-size:larger;font-weight:bolder;">Rate (mL/min):  </label>

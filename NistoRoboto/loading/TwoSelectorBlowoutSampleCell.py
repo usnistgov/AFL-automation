@@ -31,8 +31,8 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
                       selector_internal_vol=None,
                       calibrated_catch_to_syringe_vol=None,
                       calibrated_syringe_to_cell_vol=None,
-                      rinse_speed=1.0,
-                      load_speed=0.5,
+                      rinse_speed=50.0,
+                      load_speed=10.0,
                       rinse_flow_delay=3.0,
                       load_flow_delay=10.0,
                       ):

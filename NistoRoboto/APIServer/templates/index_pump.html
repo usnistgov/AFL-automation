@@ -91,11 +91,10 @@
             <div class="button_row">
                 <label for="pump_rate" style="font-size:larger;font-weight:bolder;">Rate (mL/min):  </label>
                 <select class='button' id="pump_rate">
-                    <option value=0.1>0.1</option>
-                    <option value=0.5>0.5</option>
-                    <option value=1.0>1.0</option>
+                    <option value=0.1>1.0</option>
                     <option value=5.0>5.0</option>
                     <option value=10.0>10.0</option>
+                    <option value=50.0>50.0</option>
                 </select>
                 <button class='button' onclick=enqueue(JSON.stringify({"task_name":"setRate","device":"pump","rate":$("#pump_rate").val()}))>Set Rate</button>
             </div>

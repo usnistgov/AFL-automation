@@ -116,6 +116,9 @@ class NE1kSyringePump(SyringePump):
             rate = float(output[4:-3])/60/1000
         return rate
 
+    def emptySyringe(self):
+        self.dispense(self.syringe_volume*0.9)
+
     def blockUntilStatusStopped(self,pollingdelay=0.2):
         statuschar = 'X'
         while statuschar is not 'S':

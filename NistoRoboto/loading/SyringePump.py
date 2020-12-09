@@ -14,3 +14,6 @@ class SyringePump():
 
     def getRate(self,rate):
         raise NotImplementedError
+
+    def emptySyringe(self):
+        raise NotImplementedError

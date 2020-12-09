@@ -44,10 +44,10 @@ driver = TwoSelectorBlowoutSampleCell(pump,
                                       calibrated_syringe_to_cell_vol = 3.2,
                                       load_speed=0.5,
                                      )
-server = APIServer('CellServer1')
+server = APIServer('CellServer1',index_template="index_pump.html")
 server.add_standard_routes()
 server.create_queue(driver)
-server.init_logging(toaddrs=['tbm@nist.gov'])
+server.init_logging(toaddrs=['tbm@nist.gov','peter.beaucage@nist.gov'])
 server.run(host='0.0.0.0',port=server_port, debug=False)
 
 # process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)

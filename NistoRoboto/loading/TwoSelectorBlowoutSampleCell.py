@@ -339,7 +339,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
 
         #clear out any remaining volume in the syringe
         self.selector.selectPort('waste')
-        self.pump.emptyStringe()
+        self.pump.emptySyringe()
 
     def rinseAll(self,cellname='cell'):
         # if self.state is 'loaded':

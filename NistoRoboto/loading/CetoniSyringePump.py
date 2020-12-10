@@ -189,7 +189,7 @@ class CetoniSyringePump(SyringePump):
     def setRate(self,rate): #@TODO
         if self.app is not None:
             self.app.logger.debug(f'Setting pump rate to {rate} mL/min')
-        self.rate = rate
+        self.rate = float(rate)
 
     def getRate(self): #@TODO
         return self.rate

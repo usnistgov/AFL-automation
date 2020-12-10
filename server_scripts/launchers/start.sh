@@ -11,7 +11,7 @@ echo 'Started OT2Server...'
 fi
 
 if [ "$1" == "all" ] | [ "$1" == "sample" ] ; then
-screen -d -m -S SampleServer /home/nistoroboto/NistoRoboto/server_scripts/launchers/SampleServer.sh 
+screen -d -m -S SampleServer /home/nistoroboto/nistoroboto/server_scripts/launchers/SampleServer.sh 
 echo 'Started SampleServer...'
 fi
 

@@ -1,8 +1,9 @@
 import numpy as np
-# from NistoRoboto.prep.Mixture import Mixture
-import NistoRoboto.prep.Mixture 
+from NistoRoboto.prep.Mixture import Mixture
+from NistoRoboto.prep.MassBalance import MassBalance
 from NistoRoboto.prep.PipetteAction import PipetteAction
 from NistoRoboto.shared.exceptions import MixingException
+from NistoRoboto.shared.units import units
 import scipy.optimize
 
 get_pipette='''
@@ -34,13 +35,19 @@ class Deck:
     def __init__(self):
         self.reset_targets()
         self.reset_stocks()
+
+        self.mass_cutoff = 1.0*units('ug')
+        self.volume_cutoff = 30*units('ul')
         
         self.protocol = []
+        self.protocol_checks = []
 
         self.tip_racks    = {}
         self.containers    = {}
         self.pipettes      = {}
         self.catches = {}
+
+        self.balancer = MassBalance()
 
         self.client = None
 
@@ -165,98 +172,79 @@ class Deck:
         return components,target_components,stock_components
 
 
-    def make_protocol(self,deplete=True,volume_cutoff=0.03):
+    def make_protocol(self):
         #build component list
-        components,target_components,stock_components = self.get_components()
-        self.protocol = []
-        for target in self.targets:
-            
-            # build matrix and vector representing mass balance
-            mass_fraction_matrix = []
-            target_component_masses = []
-            for name in components:
-                row = []
-                for stock in self.stocks:
-                    if name in stock.components:
-                        if stock[name]._has_mass:
-                            row.append(stock.mass_fraction[name])
-                        elif stock[name].empty:
-                            row.append(0.0) #this component is set to zero
-                        else:
-                            raise ValueError('Need masses specified for mass balance')
-                    else:
-                        row.append(0)
-                mass_fraction_matrix.append(row)
-                
-                if name in target.components:
-                    if target[name]._has_mass:
-                        target_component_masses.append(target[name].mass)#.mass_fraction[name])# target[name].mass) PB changed in attempt to fix matrix errors
-                    elif target[name].empty:
-                        target_component_masses.append(0.0) #this component is set to zero
-                    else:
-                        raise ValueError('Need masses specified for mass balance')
-                else:
-                    target_component_masses.append(0)
+        self.balancer.reset_stocks()
+        for stock in self.stocks:
+            self.balancer.add_stock(stock,self.stock_location[stock])
 
-            #solve mass balance 
-            # mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
-            mass_transfers,residuals = scipy.optimize.nnls(mass_fraction_matrix,target_component_masses)
-            print(f'Debug: mass fraction matrix is {mass_fraction_matrix} and targeted a solution {target_component_masses}')
-            print(f'Debug: mass transfer result is {mass_transfers}')
-            self.mass_transfers = mass_transfers
-            if any(mass_transfers<0):
-                raise MixingException(f'Mass transfer calculation failed, negative mass transers present:\n{self.mass_transfers}')
-           
-            #
-            for stock,mass in zip(self.stocks,mass_transfers):
-                if mass>0:
-                    removed = stock.copy()
-                    removed.mass = mass
-                    if (removed.volume>0) and (removed.volume<volume_cutoff):
-                        print(f'Trying to take {removed.volume} from {removed}')
-                        print(f'No way to do that.  See what solution looks like without it')
-                        #raise MixingException('Can\'t make solution with loaded pipettes') We need to rethink this.  There will be MANY systems where good enough is good enough.
+        self.protocol = []
+        self.protocol_checks = []
+        for target in self.targets:
+            self.balancer.reset_targets()
+            self.balancer.set_target(target,self.target_location[target])
+            self.balancer.balance_mass()
+            
+            if any([i[1]<0 for i in self.balancer.mass_transfers.values()]):
+                raise MixingException(f'Mass transfer calculation failed, negative mass transers present:\n{self.balancer.mass_transfers}')
 
             #apply mass balance
-            # self.target_check = Mixture()
-            self.target_check = NistoRoboto.prep.Mixture.Mixture()
-            for stock,mass in zip(self.stocks,mass_transfers):
-                if mass>1e-6:#tolerance
-                    if deplete:
-                        removed = stock.remove_mass(mass)
-                    else:
-                        removed = stock.copy()
-                        removed.mass = mass
+            target_check = Mixture()
+            for stock,(stock_loc,mass) in self.balancer.mass_transfers.items():
+                if mass>self.mass_cutoff:#tolerance
+                    removed = stock.copy()
+                    removed.mass = mass
 
-                    #check to make sure that min_tol hasn't been hit
-                    print('Removed Volume',removed.volume,removed.volume>0)
-                    print('Removed Mass',removed.mass)
-                    if (removed.volume>0) and (removed.volume<volume_cutoff):
-                        print(f'Not using action {self.target_check} since it is not physically possible.')
+                    if (removed.volume>0) and (removed.volume<self.volume_cutoff):
                         continue
                     
-                    self.target_check = self.target_check + removed
+                    target_check = target_check + removed
                                                 
                     action = PipetteAction(
-                                source = self.stock_location[stock],
+                                source = stock_loc,
                                 dest = self.target_location[target],
-                                volume = removed.volume*1000, #convet from ml for to ul
+                                volume = removed.volume.to('ul').magnitude, #convet from ml for to ul
                                 dest_loc = 'top'
                                 
                     )
                     self.protocol.append(action)
 
-
             #need to add empty components for equality check
             for name,component in target:
-                if component.empty:
-                    self.target_check = self.target_check + component
+                if not target_check.contains(name):
+                    c = component.copy()
+                    c._mass = 0.0*units('g')
+                    target_check = target_check + c
+            self.protocol_checks.append([target,target_check,self.balancer.mass_transfers.copy()])
                     
-            if not (target == self.target_check):
-                print(f'Wanted to make: {target.volume} mL of {target.mass_fraction}')
-                print(f'Got: {target.volume} mL of {self.target_check.mass_fraction}')
-                print(f'With protocol: {self.protocol}')
-                #raise RuntimeError(f'Mass transfer calculation failed...')
+    def protocol_report(self):
+        passed = []
+        for target,target_check,mass_transfers in self.protocol_checks:
+            print(f'==> Attempting to make {target.volume.to("ml")}  of {target.mass_fraction}')
+            for stock,(loc,mass) in zip(self.stocks,mass_transfers.values()):
+                if (mass>0) and (mass<self.mass_cutoff):
+                    print(f'\t--> Skipping {mass} of {stock} (mass cutoff={self.mass_cutoff})')
+
+                removed = stock.copy()
+                removed.mass=mass
+                if (removed.volume>0) and (removed.volume<self.volume_cutoff):
+                    print(f'\t--> Skipping {removed.volume} of {removed}. (volume cutoff={self.volume_cutoff})')
+
+            if not (target == target_check):
+                print(f'\t~~> Target mass/vol: {target.mass}/{target.volume}')
+                print(f'\t~~> Result mass/vol: {target.mass}/{target.volume}')
+                print(f'\t~~> Target mass_frac: {target.mass_fraction}')
+                print(f'\t~~> Result mass_frac: {target_check.mass_fraction}')
+                for name in target.components.keys():
+                    diff = 100.0*(target_check.mass_fraction[name]-target.mass_fraction[name])/(target_check.mass_fraction[name])
+                    print(f'\t\t~~> {name} %difference: {diff}')
+                print(f'~~> Target Failed?')
+                passed.append(False)
+            else:
+                print(f'==> Target Successful!')
+                passed.append(True)
+            print('-------------------------------------------')
+        return passed
         
     def make_align_script(self,filename,load_last_sample=True):
         with open(filename,'w') as f:

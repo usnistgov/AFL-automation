@@ -1,9 +1,14 @@
 import numpy as np
 import scipy.optimize
+import copy
+from NistoRoboto.shared.units import units
 
 class MassBalance:
     def __init__(self):
         self.reset()
+
+    def copy(self):
+        return copy.deepcopy(self)
         
     def add_stock(self,stock,location):
         stock = stock.copy()
@@ -50,7 +55,7 @@ class MassBalance:
 
 
 
-    def mass_balance(self):
+    def balance_mass(self):
         self.process_components()
 
         # build matrix and vector representing mass balance
@@ -60,7 +65,7 @@ class MassBalance:
             row = []
             for stock in self.stocks:
                 if stock.contains(name):
-                    row.append(stock.mass_fraction[name].magnitude)
+                    row.append(stock.mass_fraction[name])
                 else:
                     row.append(0)
             mass_fraction_matrix.append(row)
@@ -75,7 +80,7 @@ class MassBalance:
         #solve mass balance 
         # mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
         mass_transfers,residuals = scipy.optimize.nnls(self.mass_fraction_matrix,self.target_component_masses)
-        self.mass_transfers = mass_transfers
+        self.mass_transfers = {stock:(self.stock_location[stock],mass*units('g')) for stock,mass in zip(self.stocks,mass_transfers)}
         self.residuals = residuals
 
 

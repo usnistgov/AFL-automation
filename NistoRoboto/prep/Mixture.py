@@ -169,7 +169,7 @@ class Mixture:
         mass_fraction = {}
         for name,component in self.components.items():
             if component._has_mass:
-                mass_fraction[name] = component.mass/total_mass
+                mass_fraction[name] = (component.mass/total_mass).to('dimensionless').magnitude
         return mass_fraction
     
     @property

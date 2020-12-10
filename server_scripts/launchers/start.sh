@@ -6,7 +6,7 @@ echo 'Started LoaderServer...'
 fi
 
 if [ "$1" == "all" ] | [ "$1" == "robot" ] ; then
-ssh piot2 -f 'screen -d -m  -S OT2Server /home/pi/NistoRoboto/server_scripts/launchers/OT2Server.sh '
+ssh piot2 -f 'screen -d -m  -S OT2Server /root/user_storage/server_scripts/launchers/OT2Server.sh '
 echo 'Started OT2Server...'
 fi
 

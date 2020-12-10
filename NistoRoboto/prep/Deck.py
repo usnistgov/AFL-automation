@@ -217,7 +217,7 @@ class Deck:
                     target_check = target_check + c
             self.protocol_checks.append([target,target_check,self.balancer.mass_transfers.copy()])
                     
-    def protocol_report(self):
+    def protocol_report(self,tolerance=0.0):
         passed = []
         for target,target_check,mass_transfers in self.protocol_checks:
             print(f'==> Attempting to make {target.volume.to("ml")}  of {target.mass_fraction}')
@@ -235,11 +235,18 @@ class Deck:
                 print(f'\t~~> Result mass/vol: {target.mass}/{target.volume}')
                 print(f'\t~~> Target mass_frac: {target.mass_fraction}')
                 print(f'\t~~> Result mass_frac: {target_check.mass_fraction}')
+                diffs = []
                 for name in target.components.keys():
                     diff = 100.0*(target_check.mass_fraction[name]-target.mass_fraction[name])/(target_check.mass_fraction[name])
+                    diffs.append(diff/100)
                     print(f'\t\t~~> {name} %difference: {diff}')
-                print(f'~~> Target Failed?')
-                passed.append(False)
+
+                if all(np.abs(np.array(diffs))<=tolerance):
+                    print(f'--> Target Tolerable!')
+                    passed.append(True)
+                else:
+                    print(f'~~> Target Failed...')
+                    passed.append(False)
             else:
                 print(f'==> Target Successful!')
                 passed.append(True)

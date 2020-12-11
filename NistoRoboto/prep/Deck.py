@@ -241,7 +241,10 @@ class Deck:
                     diffs.append(diff/100)
                     print(f'\t\t~~> {name} %difference: {diff}')
 
-                if all(np.abs(np.array(diffs))<=tolerance):
+                diffs = np.array(diffs)
+                diffs = diffs[~np.isnan(diffs)]
+                diffs = np.abs(diffs)
+                if all(diffs<=tolerance):
                     print(f'--> Target Tolerable!')
                     passed.append(True)
                 else:

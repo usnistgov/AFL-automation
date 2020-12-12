@@ -1,6 +1,7 @@
 from NistoRoboto.loading.FlowSelector import FlowSelector
 from NistoRoboto.loading.SerialDevice import SerialDevice
 import serial
+import time
 
 class ViciMultiposSelector(SerialDevice,FlowSelector):
     def __init__(self,port,baudrate=9600,portlabels=None):
@@ -29,7 +30,7 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
         port = self.getPort(as_str=True)
         self.portString = f'{port}/{portnum}'
 
-    def selectPort(self,port,direction=None):
+    def selectPort(self,port,direction=None,block=True):
         '''
             moves the selector to portnum
 
@@ -53,6 +54,10 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
             readback = self.sendCommand('CW%02i\x0D'%portnum,response=False)
         else:
             readback = self.sendCommand('GO%02i\x0D'%portnum,response=False)
+
+        if block:
+            while self.getPort() != portnum:
+                time.sleep(0.1)
 
         self.portString = f'{port}/{portnum}'
 

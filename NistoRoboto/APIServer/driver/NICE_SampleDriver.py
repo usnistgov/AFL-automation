@@ -210,9 +210,8 @@ class NICE_SampleDriver:
         self.update_status(f'Cleaning up sample {name}...')
         self.load_client.enqueue(task_name='blowOutCell')
         self.load_client.enqueue(task_name='rinseCell')
-        self.load_client.enqueue(task_name='blowOutCellForcedAir')
         self.load_client.enqueue(task_name='rinseSyringe')
-        self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCellForcedAir')
+        self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCell')
         
         self.update_status(f'All done for {name}!')
    

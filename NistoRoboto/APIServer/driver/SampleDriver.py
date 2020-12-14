@@ -108,6 +108,9 @@ class SampleDriver:
             self.update_status(f'Waiting for catch rinse...')
             self.load_client.wait(self.catch_rinse_uuid)
             self.update_status(f'Catch rinse done!')
+            
+        self.prep_client.wait(self.pred_uuid)
+        self.take_snapshot(prefix = f'02-after-prep-{name}')
         
         self.update_status(f'Queueing sample {name} load into syringe loader')
         kwargs = {
@@ -122,23 +125,25 @@ class SampleDriver:
         
         self.update_status(f'Waiting for sample prep/catch of {name} to finish: {self.catch_uuid}')
         self.prep_client.wait(self.catch_uuid)
+        self.take_snapshot(prefix = f'03-after-catch-{name}')
         
         if self.cell_rinse_uuid is not None:
             self.update_status(f'Waiting for cell rinse: {self.cell_rinse_uuid}')
             self.load_client.wait(self.cell_rinse_uuid)
-            self.take_snapshot(prefix = f'cleaned-{name}')
+            self.take_snapshot(prefix = f'04-after-cell-rinse-{name}')
             self.update_status(f'Cell rinse done!')
         
         self.load_uuid = self.load_client.enqueue(task_name='loadSample',sampleVolume=sample['volume'])
         self.update_status(f'Loading sample into cell: {self.load_uuid}')
         self.load_client.wait(self.load_uuid)
-        self.take_snapshot(prefix = f'loaded-{name}')
+        self.take_snapshot(prefix = f'05-after-load-{name}')
         
         self.update_status(f'Queueing catch rinse...')
         self.catch_rinse_uuid = self.load_client.enqueue(task_name='rinseCatch')
 
         self.update_status(f'Sample is loading, waiting for {self.wait_time} seconds...')
         time.sleep(self.wait_time)
+        self.take_snapshot(prefix = f'06-after-measure-{name}')
             
         self.update_status(f'Cleaning up sample {name}...')
         self.load_client.enqueue(task_name='blowOutCell')

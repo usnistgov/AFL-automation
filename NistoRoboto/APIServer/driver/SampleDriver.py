@@ -109,7 +109,7 @@ class SampleDriver:
             self.load_client.wait(self.catch_rinse_uuid)
             self.update_status(f'Catch rinse done!')
             
-        self.prep_client.wait(self.pred_uuid)
+        self.prep_client.wait(self.prep_uuid)
         self.take_snapshot(prefix = f'02-after-prep-{name}')
         
         self.update_status(f'Queueing sample {name} load into syringe loader')

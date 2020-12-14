@@ -40,8 +40,8 @@ driver = TwoSelectorBlowoutSampleCell(pump,
                                       cell_to_sel_vol       = Tubing(1517,170).volume()+0.6,
                                       syringe_to_sel_vol    = Tubing(1530,49.27+10.4).volume() ,
                                       selector_internal_vol = None,
-                                      calibrated_catch_to_syringe_vol = 3.4,
-                                      calibrated_syringe_to_cell_vol = 3.2,
+                                      calibrated_catch_to_syringe_vol = 1.5,
+                                      calibrated_syringe_to_cell_vol = 2.1,
                                      )
 server = APIServer('CellServer1',index_template="index_pump.html")
 server.add_standard_routes()

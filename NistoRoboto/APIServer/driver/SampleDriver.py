@@ -141,7 +141,7 @@ class SampleDriver:
         self.update_status(f'Queueing catch rinse...')
         self.catch_rinse_uuid = self.load_client.enqueue(task_name='rinseCatch')
 
-        self.update_status(f'Sample is loading, waiting for {self.wait_time} seconds...')
+        self.update_status(f'Sample is loaded, waiting for {self.wait_time} seconds...')
         time.sleep(self.wait_time)
         self.take_snapshot(prefix = f'06-after-measure-{name}')
             

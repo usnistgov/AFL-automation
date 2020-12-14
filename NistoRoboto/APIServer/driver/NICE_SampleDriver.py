@@ -188,14 +188,12 @@ class NICE_SampleDriver:
         if self.cell_rinse_uuid is not None:
             self.update_status(f'Waiting for cell rinse: {self.cell_rinse_uuid}')
             self.load_client.wait(self.cell_rinse_uuid)
-            time.sleep(10)
             self.take_snapshot(prefix = f'cleaned-{name}')
             self.update_status(f'Cell rinse done!')
         
         self.load_uuid = self.load_client.enqueue(task_name='loadSample',sampleVolume=sample['volume'])
         self.update_status(f'Loading sample into cell: {self.load_uuid}')
         self.load_client.wait(self.load_uuid)
-        time.sleep(10)
         self.take_snapshot(prefix = f'loaded-{name}')
         
         self.update_status(f'Queueing catch rinse...')
@@ -204,7 +202,6 @@ class NICE_SampleDriver:
         self.update_status(f'Asking NICE to measure sample {name}...')
         nice_uuid = self.measure(sample)
         self.update_status(f'Waiting for NICE to measure scattering of {name} with UUID {nice_uuid}...')
-        time.sleep(10)
         # self.nice_client.wait_for(nice_uuid)
         time.sleep(10)
         while str(self.nice_client.queue.queue_state) != 'IDLE':
@@ -213,9 +210,8 @@ class NICE_SampleDriver:
         self.update_status(f'Cleaning up sample {name}...')
         self.load_client.enqueue(task_name='blowOutCell')
         self.load_client.enqueue(task_name='rinseCell')
-        self.load_client.enqueue(task_name='blowOutCellForcedAir')
         self.load_client.enqueue(task_name='rinseSyringe')
-        self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCellForcedAir')
+        self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCell')
         
         self.update_status(f'All done for {name}!')
    

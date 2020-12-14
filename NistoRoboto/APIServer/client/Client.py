@@ -39,18 +39,23 @@ class Client:
             raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
         return response.json()
 
-    def wait(self,target_uuid=None,interval=0.1):
+    def wait(self,target_uuid=None,interval=0.1,for_history=True,first_check_delay=10.0):
+        time.sleep(first_check_delay)
         while True:
             response = requests.get(self.url+'/get_queue',headers=self.headers)
             history,running,queued = response.json()
             if target_uuid is not None:
-                if not any([str(task['uuid'])==str(target_uuid) for task in running + queued]):
-                    break
+                if for_history:
+                    if any([str(task['uuid'])==str(target_uuid) for task in history]):
+                        break
+                else:
+                    if not any([str(task['uuid'])==str(target_uuid) for task in running+queued]):
+                        break
+
             else:
                 if len(running+queued)==0:
                     break
             time.sleep(interval)
-            
 
     def enqueue(self,**kwargs):
         json=kwargs

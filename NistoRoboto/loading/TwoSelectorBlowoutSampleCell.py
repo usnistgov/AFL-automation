@@ -35,6 +35,8 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
                       load_speed=10.0,
                       rinse_flow_delay=3.0,
                       load_flow_delay=10.0,
+                      rinse_tank_level=450,
+                      waste_tank_level=0,
                       ):
         '''
             ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)
@@ -102,6 +104,9 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.load_flow_delay = load_flow_delay
         self.pump.setRate(self.rinse_speed)
 
+        self.rinse_tank_level = rinse_tank_level
+        self.waste_tank_level = waste_tank_level
+
         #variables that we'll allow users to set via the API
         self.remote_parameters = [
             'calibrated_catch_to_syringe_vol',
@@ -141,6 +146,8 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         status.append(f'CellState: {dict(self.cell_state)}')
         status.append(f'SelectorState: {self.selector.portString}')
         status.append(f'BlowSelectorState: {self.blowselector.portString}')
+        status.append(f'Rinse tank: {self.rinse_tank_level} mL')
+        status.append(f'Waste tank: {self.waste_tank_level} mL')
         status.append(f'Pump: {self.pump.name}')
         status.append(f'Selector: {self.selector.name}')
         status.append(f'BlowSelector: {self.blowselector.name}')
@@ -178,6 +185,13 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
             self.app.logger.debug(f'Dumping {vol_source-vol_dest} mL  excess to waste')
             self.selector.selectPort('waste')
             self.pump.dispense(vol_source-vol_dest)
+
+        if source == 'rinse':
+            self.rinse_tank_level -= vol_source
+
+        if dest == 'waste':
+            self.waste_tank_level += vol_dest
+
 
     def catchToSyringe(self,sampleVolume=0):
         self.pump.setRate(self.load_speed)
@@ -348,5 +362,10 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.rinseCatch()
         self.rinseSyringe()
 
+    def setRinseLevel(self,vol):
+        self.rinse_tank_level = vol
+
+    def setWasteLevel(self,vol):
+        self.waste_tank_level = vol
 
 

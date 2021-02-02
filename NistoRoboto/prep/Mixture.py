@@ -28,14 +28,14 @@ class Mixture:
             self.components[component_copy.name] = component_copy
             
     def __str__(self):
-        out_str = '<Mixture v/v%'
-        volume_fraction = self.volume_fraction
+        out_str = '<Mixture m/m%'
+        mass_fraction = self.mass_fraction
         for name,component in self:
-            vfrac = volume_fraction.get(name,None)
-            if vfrac is None:
-                out_str += f' {name}:NoVolume'
+            mfrac = mass_fraction.get(name,None)
+            if mfrac is None:
+                out_str += f' {name}:NoMass'
             else:
-                out_str += f' {name}:{vfrac:4.3f}'
+                out_str += f' {name}:{mfrac:4.3f}'
         out_str +='>'
         return out_str
 

@@ -1,4 +1,6 @@
 import numpy as np
+from NistoRoboto.prep.Sample import Sample
+from NistoRoboto.prep.SampleSeries import SampleSeries
 from NistoRoboto.prep.Mixture import Mixture
 from NistoRoboto.prep.MassBalance import MassBalance
 from NistoRoboto.prep.PipetteAction import PipetteAction
@@ -41,6 +43,7 @@ class Deck:
         
         self.protocol = []
         self.protocol_checks = []
+        self.sample_series = SampleSeries()
 
         self.tip_racks    = {}
         self.containers    = {}
@@ -68,7 +71,6 @@ class Deck:
             self.client.login('NistoRobotoDeck')
 
         self.client.debug(state=False)#unlock the queue
-
 
         kw = {}
         kw['volume'] = volume
@@ -172,14 +174,15 @@ class Deck:
         return components,target_components,stock_components
 
 
-    def make_protocol(self):
+    def make_sample_series(self,reset_sample_series=False):
         #build component list
         self.balancer.reset_stocks()
         for stock in self.stocks:
             self.balancer.add_stock(stock,self.stock_location[stock])
 
-        self.protocol = []
-        self.protocol_checks = []
+        if reset_sample_series:
+            self.sample_series.reset()
+
         for target in self.targets:
             self.balancer.reset_targets()
             self.balancer.set_target(target,self.target_location[target])
@@ -188,26 +191,18 @@ class Deck:
             if any([i[1]<0 for i in self.balancer.mass_transfers.values()]):
                 raise MixingException(f'Mass transfer calculation failed, negative mass transers present:\n{self.balancer.mass_transfers}')
 
-            #apply mass balance
             target_check = Mixture()
             for stock,(stock_loc,mass) in self.balancer.mass_transfers.items():
                 if mass>self.mass_cutoff:#tolerance
                     removed = stock.copy()
                     removed.mass = mass
 
+                    ##if this is changed, make_protocol needs to be updated
                     if (removed.volume>0) and (removed.volume<self.volume_cutoff):
                         continue
-                    
+
                     target_check = target_check + removed
-                                                
-                    action = PipetteAction(
-                                source = stock_loc,
-                                dest = self.target_location[target],
-                                volume = removed.volume.to('ul').magnitude, #convet from ml for to ul
-                                dest_loc = 'top'
-                                
-                    )
-                    self.protocol.append(action)
+
 
             #need to add empty components for equality check
             for name,component in target:
@@ -215,46 +210,94 @@ class Deck:
                     c = component.copy()
                     c._mass = 0.0*units('g')
                     target_check = target_check + c
-            self.protocol_checks.append([target,target_check,self.balancer.mass_transfers.copy()])
+
+            sample = Sample( 
+                    target=target,
+                    target_check = target_check,
+                    balancer = self.balancer,
+                    )
+            self.sample_series.add_sample(sample)
+        return self.sample_series
+
                     
-    def protocol_report(self,tolerance=0.0):
-        passed = []
-        for target,target_check,mass_transfers in self.protocol_checks:
-            print(f'==> Attempting to make {target.volume.to("ml")}  of {target.mass_fraction}')
-            for stock,(loc,mass) in zip(self.stocks,mass_transfers.values()):
+    def validate_sample_series(self,tolerance=0.0,print_report=True):
+        validated = []
+        self.validation_report = []
+        for sample,_ in self.sample_series:
+            report = f'==> Attempting to make {sample.target.volume.to("ml")}  of {sample.target.mass_fraction}\n'
+            for stock,(stock_loc,mass) in sample.balancer.mass_transfers.items():
                 if (mass>0) and (mass<self.mass_cutoff):
-                    print(f'\t--> Skipping {mass} of {stock} (mass cutoff={self.mass_cutoff})')
+                    report += f'\t--> Skipping {mass} of {stock} (mass cutoff={self.mass_cutoff})\n'
 
                 removed = stock.copy()
                 removed.mass=mass
                 if (removed.volume>0) and (removed.volume<self.volume_cutoff):
-                    print(f'\t--> Skipping {removed.volume} of {removed}. (volume cutoff={self.volume_cutoff})')
+                    report+= f'\t--> Skipping {removed.volume} of {removed}. (volume cutoff={self.volume_cutoff})\n'
 
-            if not (target == target_check):
-                print(f'\t~~> Target mass/vol: {target.mass}/{target.volume}')
-                print(f'\t~~> Result mass/vol: {target.mass}/{target.volume}')
-                print(f'\t~~> Target mass_frac: {target.mass_fraction}')
-                print(f'\t~~> Result mass_frac: {target_check.mass_fraction}')
+            if not (sample.target == sample.target_check):
+                report += f'\t~~> Target mass/vol:  {sample.target.mass}/{sample.target.volume}\n'
+                report += f'\t~~> Result mass/vol:  {sample.target.mass}/{sample.target.volume}\n'
+                report += f'\t~~> Target mass_frac: {sample.target.mass_fraction}\n'
+                report += f'\t~~> Result mass_frac: {sample.target_check.mass_fraction}\n'
                 diffs = []
-                for name in target.components.keys():
-                    diff = 100.0*(target_check.mass_fraction[name]-target.mass_fraction[name])/(target_check.mass_fraction[name])
+                for name in sample.target.components.keys():
+                    phi_tc = sample.target_check.mass_fraction[name]
+                    phi_t = sample.target.mass_fraction[name]
+                    diff = (phi_tc - phi_t)/(phi_tc)
                     diffs.append(diff/100)
-                    print(f'\t\t~~> {name} %difference: {diff}')
+                    report += f'\t\t~~> {name} frac difference: {diff}\n'
 
                 diffs = np.array(diffs)
                 diffs = diffs[~np.isnan(diffs)]
                 diffs = np.abs(diffs)
                 if all(diffs<=tolerance):
-                    print(f'--> Target Tolerable!')
-                    passed.append(True)
+                    report += f'--> Target Tolerable!\n'
+                    validated.append(True)
                 else:
-                    print(f'~~> Target Failed...')
-                    passed.append(False)
+                    report += f'~~> Target Failed...\n'
+                    validated.append(False)
             else:
-                print(f'==> Target Successful!')
-                passed.append(True)
-            print('-------------------------------------------')
-        return passed
+                report += f'==> Target Successful!\n'
+                validated.append(True)
+            report += '-------------------------------------------\n'
+            self.validation_report.append(report)
+        self.sample_series.validated = validated
+        if print_report:
+            for report in self.validation_report:
+                print(report)
+        return self.sample_series
+
+    def make_protocol(self,only_validated=False,flatten=False):
+        self.protocol = []
+        for sample,validated in self.sample_series:
+            if only_validated and (not validated):
+                print('Skipping not-validated or invalidated sample')
+                continue
+
+            sample_protocol = []
+            for stock,(stock_loc,mass) in sample.balancer.mass_transfers.items():
+                if mass>self.mass_cutoff:#tolerance
+                    removed = stock.copy()
+                    removed.mass = mass
+
+                    ##if this is changed, balance_mass needs to be updated
+                    if (removed.volume>0) and (removed.volume<self.volume_cutoff):
+                        continue
+                    
+                    action = PipetteAction(
+                                source = stock_loc,
+                                dest = sample.balancer.target_location,
+                                volume = removed.volume.to('ul').magnitude, #convet from ml for to ul
+                                dest_loc = 'top'
+                                
+                    )
+                    sample_protocol.append(action)
+            self.protocol.append(sample_protocol)
+
+        if flatten:
+            return [action for action_group in self.protocol for action in action_group]
+        else:
+            return self.protocol
         
     def make_align_script(self,filename,load_last_sample=True):
         with open(filename,'w') as f:
@@ -363,7 +406,8 @@ class Deck:
             if not self.protocol:
                 return
 
-            for i,action in enumerate(self.protocol):
+            protocol = [action for action_group in self.protocol for action in action_group]
+            for i,action in enumerate(protocol):
                 f.write(' '*4 + f'pipette = get_pipette({action.volume},pipettes)\n')
                 f.write(' '*4 + f'well_source = container_{action.source[0]}[\'{action.source[1:]}\']\n')
                 f.write(' '*4 + f'well_dest = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')

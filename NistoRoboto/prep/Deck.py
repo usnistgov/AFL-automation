@@ -143,14 +143,16 @@ class Deck:
         self.stocks.append(stock)
         self.stock_location[stock] = location
             
-    def add_target(self,target,location):
+    def add_target(self,target,location,name=None):
         target = target.copy()
         self.targets.append(target)
         self.target_location[target] = location
+        self.target_names.append(name)
         
     def reset_targets(self):
         self.targets = []
         self.target_location = {}
+        self.target_names = []
             
     def reset_stocks(self):
         self.stocks = []
@@ -183,7 +185,7 @@ class Deck:
         if reset_sample_series:
             self.sample_series.reset()
 
-        for target in self.targets:
+        for target,target_name in zip(self.targets,self.target_names):
             self.balancer.reset_targets()
             self.balancer.set_target(target,self.target_location[target])
             self.balancer.balance_mass()
@@ -212,6 +214,7 @@ class Deck:
                     target_check = target_check + c
 
             sample = Sample( 
+                    name=target_name,
                     target=target,
                     target_check = target_check,
                     balancer = self.balancer,

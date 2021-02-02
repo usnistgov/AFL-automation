@@ -1,7 +1,8 @@
 
 class Sample:
-    def __init__(self,target,target_check=None,balancer=None):
+    def __init__(self,name,target,target_check=None,balancer=None):
         self.target = target
+        self.name = name
 
         if target_check is not None:
             self.target_check = target_check
@@ -12,6 +13,13 @@ class Sample:
             self.balancer = balancer
         else:
             self._balancer = None
+
+    def __str__(self):
+        out_str = f'<Sample name:{self.name}>'
+        return out_str
+
+    def __repr__(self):
+        return self.__str__()
 
     @property
     def target(self):

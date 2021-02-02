@@ -272,27 +272,27 @@ class Deck:
         for sample,validated in self.sample_series:
             if only_validated and (not validated):
                 print('Skipping not-validated or invalidated sample')
-                continue
+                self.protocol.append([])
+            else:
+                sample_protocol = []
+                for stock,(stock_loc,mass) in sample.balancer.mass_transfers.items():
+                    if mass>self.mass_cutoff:#tolerance
+                        removed = stock.copy()
+                        removed.mass = mass
 
-            sample_protocol = []
-            for stock,(stock_loc,mass) in sample.balancer.mass_transfers.items():
-                if mass>self.mass_cutoff:#tolerance
-                    removed = stock.copy()
-                    removed.mass = mass
-
-                    ##if this is changed, balance_mass needs to be updated
-                    if (removed.volume>0) and (removed.volume<self.volume_cutoff):
-                        continue
-                    
-                    action = PipetteAction(
-                                source = stock_loc,
-                                dest = sample.balancer.target_location,
-                                volume = removed.volume.to('ul').magnitude, #convet from ml for to ul
-                                dest_loc = 'top'
-                                
-                    )
-                    sample_protocol.append(action)
-            self.protocol.append(sample_protocol)
+                        ##if this is changed, balance_mass needs to be updated
+                        if (removed.volume>0) and (removed.volume<self.volume_cutoff):
+                            continue
+                        
+                        action = PipetteAction(
+                                    source = stock_loc,
+                                    dest = sample.balancer.target_location,
+                                    volume = removed.volume.to('ul').magnitude, #convet from ml for to ul
+                                    dest_loc = 'top'
+                                    
+                        )
+                        sample_protocol.append(action)
+                self.protocol.append(sample_protocol)
 
         if flatten:
             return [action for action_group in self.protocol for action in action_group]

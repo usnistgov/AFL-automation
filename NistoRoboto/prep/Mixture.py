@@ -120,6 +120,12 @@ class Mixture:
         for name,component in self.components.items(): 
             if component._has_mass:
                 component.mass = (component.mass*scale_factor)
+
+    def set_mass(self,mass):
+        '''Setter for inline volume changes'''
+        mixture = self.copy()
+        mixture.mass = mass
+        return mixture
     
     @property
     def volume(self):
@@ -140,6 +146,12 @@ class Mixture:
         for name,component in self.components.items(): 
             if component._has_volume:
                 component.volume = (component.volume*scale_factor)
+
+    def set_volume(self,volume):
+        '''Setter for inline volume changes'''
+        mixture = self.copy()
+        mixture.volume = volume
+        return mixture
     
     @property
     def density(self):

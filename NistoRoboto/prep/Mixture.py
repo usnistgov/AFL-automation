@@ -264,11 +264,11 @@ class Mixture:
             
         '''
         if by_dilution:
-            self.volume = self.components[name].mass / concentration
+            self.volume = (self.components[name].mass / concentration).to_base_units()
         else:
-            self.components[name].mass = concentration*self.volume
+            self.components[name].mass = (concentration*self.volume).to_base_units()
 
-    def set_molarity(self,name,molarity,by_dilution=False):
+    def set_molarity(self,name,molarity):
         '''
         Arguments
         ---------
@@ -282,8 +282,8 @@ class Mixture:
         if self.components[name].formula is None:
             raise RuntimeError('Cannot set molarity without formula defined')
 
-        molar_mass = self.components[name].formula.molecular_mass*AVOGADROS
-        self.components[name].mass = molarity*molar_mass*self.volume #Assumes volume is in mL
+        molar_mass = self.components[name].formula.molecular_mass*units('g')*AVOGADROS
+        self.components[name].mass = (molarity*molar_mass*self.volume).to_base_units() #Assumes volume is in mL
 
     def remove_volume(self,amount):
         '''Remove volume from mixture without changing composition

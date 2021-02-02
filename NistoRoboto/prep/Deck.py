@@ -298,6 +298,9 @@ class Deck:
             return [action for action_group in self.protocol for action in action_group]
         else:
             return self.protocol
+
+    def iterate_protocols(self):
+        return zip(self.sample_series,self.protocol)
         
     def make_align_script(self,filename,load_last_sample=True):
         with open(filename,'w') as f:

@@ -2,6 +2,18 @@ from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
 
 class Driver:
+    def makeRegistrar():
+        registry = []
+        def registrar(func):
+            registry.append(func.__name__)
+            return func  # normally a decorator returns a wrapped function, 
+                         # but here we return func unmodified, after registering it
+        registrar.all = registry
+        return registrar
+
+    unqueued = makeRegistrar()
+    queueable = makeRegistrar()
+
     def __init__(self,name):
         self.app = None
         if name is None:
@@ -31,8 +43,6 @@ class Driver:
             getattr(device_obj,task_name)(**kwargs)
         else:
             getattr(self,task_name)(**kwargs)
-
-
 
 
    

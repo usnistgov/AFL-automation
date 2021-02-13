@@ -46,6 +46,9 @@ class APIServer:
         self.driver.app = self.app
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history)
 
+        self.add_unqueued_routes()
+
+
     def reset_queue_daemon(self,driver=None):
         if driver is not None:
             self.driver=driver
@@ -71,6 +74,7 @@ class APIServer:
     def add_standard_routes(self):
         self.app.add_url_rule('/','index',self.index)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
+        self.app.add_url_rule('/query_driver','query_driver',self.query_driver,methods=['GET'])
         self.app.add_url_rule('/clear_queue','clear_queue',self.clear_queue,methods=['POST'])
         self.app.add_url_rule('/clear_history','clear_history',self.clear_history,methods=['POST'])
         self.app.add_url_rule('/debug','debug',self.debug,methods=['POST'])
@@ -84,6 +88,30 @@ class APIServer:
         self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
 
         self.app.before_first_request(self.init)
+
+    def add_unqueued_routes(self):
+        print('Adding unqueued routes')
+        for fn in self.driver.unqueued.all:
+            route = '/' + fn
+            name = fn
+            print(f'Adding route {route} for function named {name}, function {fn}')
+            self.app.add_url_rule(route,name,getattr(self.driver,fn),methods=['GET'])
+
+    def query_driver(self):
+        if request.json:
+            task = request.json
+        else:
+            task = request.args
+        
+        self.app.logger.info(f'Request for {request.args}')
+        if 'r' in task:
+            if task['r'] in self.driver.unqueued.all:
+                return getattr(self.driver,task['r'])(**task),200
+            else:
+                return "No such task found as an unqueued function in driver"
+        else:
+            return "No task specified, add argument r=task to get result",404
+
 
     def init_logging(self,toaddrs=None):
         self.app.logger.setLevel(level=logging.DEBUG)

@@ -1,7 +1,8 @@
 from NistoRoboto.shared.utilities import listify
+from NistoRoboto.APIServer.driver.Driver import Driver
 from math import ceil,sqrt
 
-class DummyDriver:
+class DummyDriver(Driver):
     def __init__(self,name=None):
         self.app = None
         if name is None:
@@ -25,7 +26,11 @@ class DummyDriver:
             if kwargs['task_name'] == 'error':
                 raise RuntimeError()
 
-
-
+    @Driver.unqueued
+    def how_many(self,**kwargs):
+        if 'count' in kwargs:
+            return f'Not sure, but probably something like {kwargs["count"]}'
+        else:
+            return "Not sure"
 
    

@@ -190,7 +190,9 @@ class APIServer:
         elif render_hint == '2d_img':
             return self.send_array_as_jpg(result,**kwargs) #lambda: 
         elif render_hint == 'raw':
-            return result
+            if type(result) is np.ndarray:
+                result = result.tolist()
+            return jsonify(result)
         else:
             return "Error while rendering output",500
 

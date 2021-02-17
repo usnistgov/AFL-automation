@@ -308,6 +308,7 @@ class Deck:
     def make_align_script(self,filename,load_last_sample=True):
         with open(filename,'w') as f:
             f.write('from opentrons import protocol_api\n')
+            f.write('from opentrons.protocol_api.labware import Labware\n')
             f.write('\n')
             f.write('\n')
             f.write(metadata)
@@ -337,7 +338,7 @@ class Deck:
                 
                 f.write(' '*4 + f'tip_racks = []\n')
                 f.write(' '*4 + f'for slot in {tip_rack_slots}:\n')
-                f.write(' '*8 + f'tip_racks.append(protocol.deck[slot])\n')
+                f.write(' '*8 + f'tip_racks.append(Labware(protocol.deck[slot]))\n')
                 f.write(' '*4 + f'pipette_{mount} = protocol.load_instrument(\'{pipette}\',\'{mount}\',tip_racks=tip_racks)\n')
                 f.write(' '*4 + f'pipettes.append(pipette_{mount})\n')
                 f.write(' '*4 + '\n')
@@ -373,6 +374,8 @@ class Deck:
     def make_script(self,filename,load_last_sample=True):
         with open(filename,'w') as f:
             f.write('from opentrons import protocol_api\n')
+            f.write('from opentrons.protocol_api.labware import Labware\n')
+
             f.write('\n')
             f.write('\n')
             #f.write('metadata={\'apiLevel\':\'2.0\'}\n')
@@ -403,7 +406,7 @@ class Deck:
                 
                 f.write(' '*4 + f'tip_racks = []\n')
                 f.write(' '*4 + f'for slot in {tip_rack_slots}:\n')
-                f.write(' '*8 + f'tip_racks.append(protocol.deck[slot])\n')
+                f.write(' '*8 + f'tip_racks.append(Labware(protocol.deck[slot]))\n')
                 f.write(' '*4 + f'pipette_{mount} = protocol.load_instrument(\'{pipette}\',\'{mount}\',tip_racks=tip_racks)\n')
                 f.write(' '*4 + f'pipettes.append(pipette_{mount})\n')
                 f.write(' '*4 + '\n')

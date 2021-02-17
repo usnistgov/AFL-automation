@@ -274,7 +274,7 @@ class Deck:
         self.protocol = []
         for sample,validated in self.sample_series:
             if only_validated and (not validated):
-                print('Skipping not-validated or invalidated sample')
+                print(f'Skipping non-validated sample: {sample.name}')
                 self.protocol.append([])
             else:
                 sample_protocol = []

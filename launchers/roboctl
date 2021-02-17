@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+import argparse
+import json
+import subprocess,shlex
+
+if __name__=="__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('server_names',nargs='*')
+    parser.add_argument('command',choices=['start','stop','restart','status'])
+    parser.add_argument('--config',default='/home/NistoRoboto/nistorboto/launchers/config.json')
+    args = parser.parse_args()
+    
+    with open(args.config) as f:
+        server_config = json.load(f)
+    
+    for server_name in args.server_names:
+        if server_name not in server_config:
+            raise ArgumentError(f'{server_name} not found in loaded config: {list(server_config,keys())}')
+        
+        host = server_config[server_name]['host']
+        screen_name = server_config[server_name]['screen_name']
+        server_script = server_config[server_name]['server_script']
+        if args.command == 'start':
+            print(f'--> Starting {screen_name} in screen session on {host}...')
+            cmd = f'screen -d -m -S {screen_name} {server_script}'
+        elif args.command == 'stop':
+            print(f'--> Stopping {screen_name} in screen session on {host}...')
+            cmd = f'screen -X -S {screen_name} quit'
+        elif args.command == 'restart':
+            print(f'--> Stopping and then restarting {screen_name} in screen session on {host}...')
+            cmd = f'screen -X -S {screen_name} quit;'
+            cmd += f'screen -d -m -S {screen_name} {server_script}'
+        elif args.command == 'status':
+            print(f'--> Getting status of {screen_name} in screen session on {host}...')
+            cmd = f'screen -ls'
+        else:
+            raise ArgumentError(f'Unrecognized command: {args.command}')
+
+        if (not (host=='localhost')):
+            cmd = f"ssh {host} -f '{cmd}'"
+
+        print(f'--> Running command: {cmd}')
+        p = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        stdout = p.communicate()[0].decode('utf8')
+        print(f'--> Command Output:\n{stdout}')
+        print(80*'-')
+    print('==>Done!')
+        
+
+

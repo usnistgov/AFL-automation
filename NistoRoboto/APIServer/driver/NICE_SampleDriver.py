@@ -1,5 +1,6 @@
 from NistoRoboto.APIServer.client.Client import Client
 from NistoRoboto.APIServer.client.OT2Client import OT2Client
+from NistoRoboto.APIServer.driver.Driver import Driver
 from NistoRoboto.shared.utilities import listify
 
 from math import ceil,sqrt
@@ -18,7 +19,7 @@ class NiceDummy:
         pass
 
 
-class NICE_SampleDriver:
+class NICE_SampleDriver(Driver):
     def __init__(self,
             load_url,
             prep_url,

@@ -1,6 +1,7 @@
 from NistoRoboto.APIServer.client.Client import Client
 from NistoRoboto.APIServer.client.OT2Client import OT2Client
 from NistoRoboto.shared.utilities import listify
+from NistoRoboto.APIServer.driver.Driver import Driver
 
 from math import ceil,sqrt
 import json
@@ -11,7 +12,7 @@ import datetime
 import traceback
 
 
-class SampleDriver:
+class SampleDriver(Driver):
     def __init__(self,
             load_url,
             prep_url,

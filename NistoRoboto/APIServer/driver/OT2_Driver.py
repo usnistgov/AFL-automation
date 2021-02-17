@@ -1,5 +1,6 @@
 import opentrons.execute
 import opentrons
+from opentrons.protocol_api.labware import Labware
 from NistoRoboto.APIServer.driver.Driver import Driver
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
@@ -61,7 +62,7 @@ class OT2_Driver(Driver):
     def get_labware(self,slot):
         self.app.logger.debug(f'Getting labware from slot \'{slot}\'')
         if self.protocol.deck[slot] is not None:
-            labware = self.protocol.deck[slot]
+            labware = Labware(self.protocol.deck[slot]) #need Labware() to convert to public interface
             self.app.logger.debug(f'Found labware \'{labware}\'')
             return labware
         else:
@@ -70,12 +71,12 @@ class OT2_Driver(Driver):
     def load_labware(self,name,slot,**kwargs):
         '''Load labware (containers,tipracks) into the protocol'''
         if self.protocol.deck[slot] is not None:
-            if self.protocol.deck[slot].name == name:
+            if self.protocol.deck[slot].get_name() == name: #get_name() is part of the LabwareImplementation interface
                 self.app.logger.info(f'Labware \'{name}\' already loaded into slot \'{slot}\'.\n')
                 #do nothing
             else:
                 raise RuntimeError(f'''Attempted to load labware \'{name}\' into slot \'{slot}\'.
-                        Slot is already filled loaded with {self.protocol.deck[slot]}.''')
+                        Slot is already filled loaded with {self.protocol.deck[slot].get_display_name()}.''')
         else: 
             self.app.logger.debug(f'Loading labware \'{name}\' into slot \'{slot}\' into the protocol context')
             self.protocol.load_labware(name,slot)
@@ -94,7 +95,7 @@ class OT2_Driver(Driver):
             self.app.logger.debug(f'Loading pipette \'{name}\' into mount \'{mount}\' with tip_racks in slots {tip_rack_slots}')
             tip_racks = []
             for slot in listify(tip_rack_slots):
-                tip_rack = self.protocol.deck[slot]
+                tip_rack = Labware(self.protocol.deck[slot]) #need Labware() to convert from LabwareImplementation to public interface
                 if not tip_rack.is_tiprack:
                     raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
                 tip_racks.append(tip_rack)

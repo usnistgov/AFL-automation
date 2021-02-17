@@ -5,18 +5,20 @@ import json
 import subprocess,shlex
 
 if __name__=="__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('server_names',nargs='*')
+    parser = argparse.ArgumentParser(
+            usage= 'roboctl (start || stop || restart || status) (loader || robot || sample)'
+            )
     parser.add_argument('command',choices=['start','stop','restart','status'])
-    parser.add_argument('--config',default='/home/NistoRoboto/nistorboto/launchers/config.json')
+    parser.add_argument('server_names',nargs='*')
+    parser.add_argument('--config_file',default='/home/nistoroboto/nistoroboto/launchers/config.json')
     args = parser.parse_args()
     
-    with open(args.config) as f:
+    with open(args.config_file) as f:
         server_config = json.load(f)
     
     for server_name in args.server_names:
         if server_name not in server_config:
-            raise ArgumentError(f'{server_name} not found in loaded config: {list(server_config,keys())}')
+            raise ValueError(f'{server_name} not found in loaded config: {list(server_config.keys())}')
         
         host = server_config[server_name]['host']
         screen_name = server_config[server_name]['screen_name']
@@ -35,7 +37,7 @@ if __name__=="__main__":
             print(f'--> Getting status of {screen_name} in screen session on {host}...')
             cmd = f'screen -ls'
         else:
-            raise ArgumentError(f'Unrecognized command: {args.command}')
+            raise ValueError(f'Unrecognized command: {args.command}')
 
         if (not (host=='localhost')):
             cmd = f"ssh {host} -f '{cmd}'"

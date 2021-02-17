@@ -63,6 +63,13 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
         return uuid.UUID(response.text)
+   
+    def query_driver(self,**kwargs):
+        json=kwargs
+        response = requests.get(self.url+'/query_driver',headers=self.headers,json=json)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
+        return response.text
 
     def reset_queue_daemon(self):
         response = requests.post(self.url+'/reset_queue_daemon',headers=self.headers)

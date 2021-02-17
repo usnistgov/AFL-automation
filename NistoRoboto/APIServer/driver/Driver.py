@@ -1,7 +1,28 @@
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
+def makeRegistrar():
+    registry = []
+    kwarglist = {}
+    def registrarfactory(**kwargs):
+        #print(f'Set up registrar-factory with registry {registry}...')
+        def registrar(func,render_hint=None):  #kwarg = kwargs):
+            registry.append(func.__name__)
+            kwarglist[func.__name__]=kwargs
+            #print(f'Added {func.__name__} to registry {registry}')
+            return func  # normally a decorator returns a wrapped function, 
+                         # but here we return func unmodified, after registering it
+        return registrar
+    registrarfactory.all = registry
+    registrarfactory.kwarglist = kwarglist
+    return registrarfactory
+
 
 class Driver:
+
+
+    unqueued = makeRegistrar()
+    queueable = makeRegistrar()
+
     def __init__(self,name):
         self.app = None
         if name is None:
@@ -31,8 +52,6 @@ class Driver:
             getattr(device_obj,task_name)(**kwargs)
         else:
             getattr(self,task_name)(**kwargs)
-
-
 
 
    

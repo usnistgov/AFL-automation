@@ -12,7 +12,7 @@ from NistoRoboto.instrument.CDSAXSLabview import CDSAXSLabview
 server_port=5000
 
 driver = CDSAXSLabview()
-server = APIServer('CDSAXS')
+server = APIServer('CDSAXS',contact='pab2@nist.gov')
 server.add_standard_routes()
 
 server.create_queue(driver)
@@ -21,7 +21,7 @@ server.init_logging()#to_addrs=['tbm@nist.gov'])
 
 #process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
 
-server.run(host='0.0.0.0', port=server_port, debug=False,threaded=False)
+server.run(host='0.0.0.0', port=server_port, debug=False)#,threaded=False)
 
 #process.wait()
 

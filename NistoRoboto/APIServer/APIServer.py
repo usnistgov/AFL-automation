@@ -233,16 +233,20 @@ class APIServer:
         script,div = bokeh.embed.components(p)
         return render_template(self.plot_template,script=script,div=div,title=title)
 
-    def send_array_as_jpg(self,array,log_image=False,max_val=None,**kwargs):
+    def send_array_as_jpg(self,array,log_image=False,max_val=None,fillna=0.0,**kwargs):
         #img = Image.fromarray(array.astype('uint8'))
+        array = np.nan_to_num(array,nan=fillna)
         if type(log_image) is str:
             log_image = strtobool(log_image)
         if log_image:
             array = np.log(array)
         if max_val is None:
+            self.app.logger.info(f'Serving image, max val = {np.amax(array)}, min val = {np.amin(array)}, total cts = {np.sum(array)}')
             max_val = np.amax(array)
         else:
             max_val = float(max_val)
+        
+
         array = array/max_val
         img = Image.fromarray(np.uint8(cm.viridis(array)*255)).convert('RGB')
         # create file-object in memory

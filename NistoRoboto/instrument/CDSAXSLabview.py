@@ -1,5 +1,6 @@
 import win32com
 import win32com.client
+import pythoncom
 import time
 from NistoRoboto.APIServer.driver.Driver import Driver
 
@@ -33,34 +34,42 @@ class CDSAXSLabview(Driver):
 
         self.app = None
         self.name = 'CDSAXSLabview'
-
-        self.labview = win32com.client.dynamic.Dispatch("Labview.Application")
-
-        self.main_vi = self.labview.getvireference(vi)
-
-        self.main_vi.setcontrolvalue('Measurement',3) # 3 should bring the single Pilatus tab to the front
-
+        
+        
+    @Driver.unqueued()        
     def getExposure(self):
         '''
             get the currently set exposure time
 
         '''
-        return self.main_vi.getcontrolvalue('Single Pilatus Parameters')[0]
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('Single Pilatus Parameters')[0]
+    @Driver.unqueued()
     def getFilename(self):
         '''
             get the currently set file name
 
         '''
-        return self.main_vi.getcontrolvalue('Single Pilatus Parameters')[1]
+        with LabviewConnection() as lv:
+            return lv.self.main_vi.getcontrolvalue('Single Pilatus Parameters')[1]
 
-
+    @Driver.unqueued()
+    def printMainVi(self):
+        with LabviewConnection() as lv:
+            return str(lv.main_vi)
+    @Driver.unqueued()
+    def printLabviewObj(self):
+         with LabviewConnection() as lv:
+            return str(lv.labview)
+    
     def setExposure(self,exposure):
         if self.app is not None:
             self.app.logger.debug(f'Setting exposure time to {exposure}')
-
+                
         fileName = self.getFilename()
 
-        self.main_vi.setcontrolvalue('Single Pilatus Parameters',(exposure,fileName))
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('Single Pilatus Parameters',(exposure,fileName))
 
     def setFilename(self,name):
         if self.app is not None:
@@ -71,57 +80,82 @@ class CDSAXSLabview(Driver):
             
         exposure = self.getExposure()
 
-        self.main_vi.setcontrolvalue('Single Pilatus Parameters',(exposure,name))
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('Single Pilatus Parameters',(exposure,name))
 
 
     def getPath(self):
-        return self.main_vi.getcontrolvalue('FilePath')   # @TODO: fill in here
-
-    def getData(self):
-        return self.main_vi.getcontrolvalue('Pilatus Data')
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('FilePath')   # @TODO: fill in here
+    
+    @Driver.unqueued(render_hint='2d_img',log_image=True)
+    def getData(self,**kwargs):
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('Pilatus Data')
 
     def setPath(self,path):
         if self.app is not None:
             self.app.logger.debug(f'Setting file path to {path}')
 
         self.path = str(path)
-        self.main_vi.setcontrolvalue('FilePath',path)
-    
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('FilePath',path)
+        
+    @Driver.unqueued()  
     def getStatus(self):
-        return self.main_vi.getcontrolvalue('Process Status Message')
-    
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('Process Status Message')
+   
+    @Driver.unqueued()  
     def getNScans(self):
-        return self.main_vi.getcontrolvalue('# of Scans')
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('# of Scans')
         
     def setNScans(self,nscans):
-        self.main_vi.setcontrolvalue('# of Scans',nscans)
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('# of Scans',nscans)
     
+    @Driver.unqueued()  
     def getSweepAxis(self):
-        return self.axis_id_to_name_lut[self.main_vi.getcontrolvalue('Sweep Axis')]
+        with LabviewConnection() as lv:
+            return self.axis_id_to_name_lut[lv.main_vi.getcontrolvalue('Sweep Axis')]
     def setSweepAxis(self,axis):
         if type(axis)=='str':
             axis=self.axis_name_to_id_lut[axis]
-        self.main_vi.setcontrolvalue('Sweep Axis',axis) # this is an enum, 6 is Y-stage
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('Sweep Axis',axis) # this is an enum, 6 is Y-stage
     
+    @Driver.unqueued()  
     def getYStagePos(self):
-        return self.main_vi.getcontrolvalue('Y-stage')
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('Y-stage')
+    @Driver.unqueued()  
     def getZStagePos(self):
-        return self.main_vi.getcontrolvalue('Z-stage')
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('Z-stage')
+    @Driver.unqueued()  
     def getXStagePos(self):
-        return self.main_vi.getcontrolvalue('X-Stage')
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('X-Stage')
     
     
     def setSweepStart(self,start):
-        self.main_vi.setcontrolvalue('Start Value',start)
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('Start Value',start)
         
+    @Driver.unqueued()  
     def getSweepStart(self):
-        return self.main_vi.getcontrolvalue('Start Value')
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('Start Value')
     
     def setSweepStep(self,step):
-        self.main_vi.setcontrolvalue('Step',step)
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('Step',step)
     
+    @Driver.unqueued()  
     def getSweepStep(self):
-        return self.main_vi.getcontrolvalue('Step')
+        with LabviewConnection() as lv:
+            return lv.main_vi.getcontrolvalue('Step')
         
     def expose(self,name=None,exposure=None,block=False):
         if name is not None:
@@ -141,7 +175,8 @@ class CDSAXSLabview(Driver):
         if self.app is not None:
             self.app.logger.debug(f'Starting exposure with name {name} for {exposure} s')
 
-        self.main_vi.setcontrolvalue('Expose Pilatus',True)
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('Expose Pilatus',True)
         time.sleep(0.5)
         if block:
             while(self.getStatus() != 'Success'):
@@ -166,8 +201,35 @@ class CDSAXSLabview(Driver):
         if self.app is not None:
             self.app.logger.debug(f'Starting exposure with name {name} for {exposure} s')
 
-        self.main_vi.setcontrolvalue('Expose Pilatus',True)
+        with LabviewConnection() as lv:
+            lv.main_vi.setcontrolvalue('Expose Pilatus',True)
         time.sleep(0.5)
         if block:
             while(self.getStatus() != 'Success'):
                 time.sleep(0.1)
+
+class LabviewConnection():
+
+    def __init__(self,vi=r'C:\saxs_control\GIXD controls.vi'):
+        '''
+        connect to locally running labview vi with win32com and 
+
+        parameters:
+            vi: (str) the path to the LabView virtual instrument file for the main interface
+
+        '''
+
+        self.vi = vi
+        
+
+    def __enter__(self):
+        pythoncom.CoInitialize()
+        self.labview = win32com.client.dynamic.Dispatch("Labview.Application")
+        self.main_vi = self.labview.getvireference(self.vi)
+        self.main_vi.setcontrolvalue('Measurement',3) # 3 should bring the single Pilatus tab to the front
+        return self
+        
+    def __exit__(self,exittype,value,traceback):
+        pythoncom.CoUninitialize()
+        self.labview=None
+        self.main_vi=None

@@ -9,14 +9,6 @@ from flask_jwt_extended import (
 )
 
 
-#this import block is all for the web-ui unqueued rendering code
-import bokeh
-import bokeh.plotting
-from PIL import Image
-from matplotlib import cm
-import io
-import numpy as np
-from distutils.util import strtobool
 
 import datetime,requests,subprocess,shlex,os
 import threading,queue,logging,json,pathlib,uuid
@@ -29,6 +21,20 @@ from NistoRoboto.APIServer.LoggerFilter import LoggerFilter
 
 from NistoRoboto.shared.MutableQueue import MutableQueue
 from NistoRoboto.shared.utilities import listify
+
+import warnings
+
+try:
+#this import block is all for the web-ui unqueued rendering code
+    import bokeh
+    import bokeh.plotting
+    from PIL import Image
+    from matplotlib import cm
+    import io
+    import numpy as np
+    from distutils.util import strtobool
+except ImportError:
+    warnings.warn('Ploting imports failed! Live data plottting will no work on this server.')
 
 class APIServer:
     def __init__(self,name,experiment='Development',contact='tbm@nist.gov',index_template='index.html',plot_template='simple-bokeh.html'):

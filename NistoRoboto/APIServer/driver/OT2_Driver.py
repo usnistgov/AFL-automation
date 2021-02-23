@@ -4,6 +4,7 @@ from opentrons.protocol_api.labware import Labware
 from NistoRoboto.APIServer.driver.Driver import Driver
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
+import os,json,pathlib
 
 class OT2_Driver(Driver):
     def __init__(self):
@@ -79,7 +80,14 @@ class OT2_Driver(Driver):
                         Slot is already filled loaded with {self.protocol.deck[slot].get_display_name()}.''')
         else: 
             self.app.logger.debug(f'Loading labware \'{name}\' into slot \'{slot}\' into the protocol context')
+        try:
             self.protocol.load_labware(name,slot)
+        except FileNotFoundError:
+            CUSTOM_PATH = pathlib.Path(os.environ.get('NISTOROBOTO_CUSTOM_LABWARE'))
+            with open(CUSTOM_PATH / (name + '.json')) as f:
+                labware_def = json.load(f)
+            self.protocol.load_labware_from_definition(labware_def,slot)
+            
 
     def load_instrument(self,name,mount,tip_rack_slots,**kwargs):
         '''Load a pipette into the protocol'''

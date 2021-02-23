@@ -20,5 +20,7 @@ export CPATH=/data/packages/usr/local/include:${CPATH}
 export LIBRARY_PATH=/data/packages/usr/local/lib:${LIBRARY_PATH}
 export LD_LIBRARY_PATH=/data/packages/usr/local/lib:${LD_LIBRARY_PATH}
 
+export NISTOROBOTO_CUSTOM_LABWARE=/root/user_storage/custom_labware
+
 cd /root/user_storage/
 python server_scripts/OT2.py

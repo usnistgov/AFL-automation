@@ -126,12 +126,12 @@ class OT2_Driver(Driver):
 
         Arguments
         ---------
-        source: str or list of str
-            Source wells to transfer from. Wells should be specified as three
+        source: str 
+            Source well to transfer from. Wells should be specified as three
             character strings with the first character being the slot number.
 
-        dest: str or list of str
-            Destination wells to transfer from. Wells should be specified as
+        dest: str 
+            Destination well to transfer to. Wells should be specified as
             three character strings with the first character being the slot
             number.
 
@@ -161,11 +161,62 @@ class OT2_Driver(Driver):
         if 'dest_loc' in kwargs:
             dest_wells = [getattr(dw,kwargs['dest_loc'])() for dw in dest_wells]
 
+        self._transfer(
+                pipette, 
+                volume, 
+                source_well, 
+                dest_well, 
+                mix_before=None, 
+                mix_after=None, 
+                air_gap=0, 
+                blow_out=False, 
+                post_aspirate_delay=0.0, 
+                post_dispense_delay=):
+    def _transfer( 
+            self,
+            pipette,
+            volume, 
+            source_well, 
+            dest_well, 
+            mix_before=None, 
+            mix_after=None, 
+            air_gap=0, 
+            blow_out=False,
+            post_aspirate_delay=0.0,
+            post_dispense_delay=0.0):
+                      
+        if blow_out:
+            raise NotImplemented()        
+    
+        pipette.pick_up_tip()
+        
+        #need to mix before final aspirate
         if mix_before is not None:
-            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap,mix_before=mix_before,blow_out=blow_out)
-        else:
-            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap,blow_out=blow_out)
-
+            nmixes,mix_volume = mix_before
+            for _ in range(nmixes):
+                pipette.aspirate(mix_volume,location=source_well)
+                pipette.dispense(mix_volume,location=source_well)        
+        pipette.aspirate(volume+air_gap,location=source_well)
+        
+        if post_aspirate_delay>0.0:
+            pipette.move_to(source_well.top())
+            self.protocol.delay(seconds=post_aspirate_delay)
+        
+        # need to dispense before  mixing
+        pipette.dispense(volume+air_gap,location=dest_well)
+        if mix_after is not None:
+            nmixes,mix_volume = mix_after
+            for _ in range(nmixes):
+                pipette.aspirate(mix_volume,location=dest_well)
+                pipette.dispense(mix_volume,location=dest_well)  
+                
+        if post_dispense_delay>0.0:
+            pipette.move_to(dest_well.top())
+            self.protocol.delay(seconds=post_dispense_delay)
+    
+        pipette.drop_tip(self.protocol.deck[12]['A1'])
+        
+    
     def set_aspirate_rate(self,rate=150):
         '''Set aspirate rate of both pipettes in uL/s. Default is 150 uL/s'''
         for mount,pipette in self.protocol.loaded_instruments.items():

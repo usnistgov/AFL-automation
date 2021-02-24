@@ -22,6 +22,9 @@ class SampleSeries:
         for sample,validated in zip(self.samples,self.validated):
             yield sample,validated
 
+    def __getitem__(self,index):
+        return self.samples[index],self.validated[index]
+
     def add_sample(self,sample):
         self.samples.append(sample)
         self.validated.append(False)
@@ -32,7 +35,7 @@ class SampleSeries:
             if only_validated and (not validated):
                 continue
                 
-            for stock,(loc,mass) in sample.mass_transfers.items():
+            for stock,(loc,mass) in sample.balancer.mass_transfers.items():
                 mass_totals[loc] += mass
         return mass_totals
 

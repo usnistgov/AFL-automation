@@ -291,11 +291,10 @@ class Deck:
                                     source = stock_loc,
                                     dest = sample.balancer.target_location,
                                     volume = removed.volume.to('ul').magnitude, #convet from ml for to ul
-                                    dest_loc = 'top'
-                                    
                         )
                         sample_protocol.append(action)
                 self.protocol.append(sample_protocol)
+                sample.protocol = sample_protocol
 
         if flatten:
             return [action for action_group in self.protocol for action in action_group]

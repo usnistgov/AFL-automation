@@ -19,6 +19,7 @@ class OT2_Driver(Driver):
             dispense = v.flow_rate.dispense
             flow_str = f' @ {aspirate}/{dispense} uL/s'
             status.append(str(v)+flow_str)
+        status.append(f'Gantry Speed: {v.default_speed} mm/s')
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
@@ -225,9 +226,14 @@ class OT2_Driver(Driver):
             pipette.flow_rate.aspirate = rate
 
     def set_dispense_rate(self,rate=300):
-        '''Set aspirate rate of both pipettes in uL/s. Default is 150 uL/s'''
+        '''Set dispense rate of both pipettes in uL/s. Default is 300 uL/s'''
         for mount,pipette in self.protocol.loaded_instruments.items():
             pipette.flow_rate.dispense = rate
+
+    def set_gantry_speed(self,speed=400):
+        '''Set movement speed of gantry. Default is 400 mm/s'''
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            pipette.default_speed = speed
 
     def get_pipette(self,volume,method='min_transfers'):
         self.app.logger.debug(f'Looking for a pipette for volume {volume}')

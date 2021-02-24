@@ -121,7 +121,7 @@ class OT2_Driver(Driver):
 
         pipette.mix(repetitions,volume,location_well)
 
-    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -150,28 +150,30 @@ class OT2_Driver(Driver):
         #get pipette based on volume
         pipette = self.get_pipette(volume)
 
-        #modify source well dispense location
+        #get source well object
         source_wells = self.get_wells(source)
-        if 'source_loc' in kwargs:
-            source_wells = [getattr(sw,kwargs['source_loc'])() for sw in source_wells]
+        if len(source_well)>0:
+            raise ValueError('Transfer only accepts one source well at a time!')
+        else:
+            source_well = source_wells[0]
 
-
-        #modify destination well dispense location
+        #get dest well object
         dest_wells = self.get_wells(dest)
-        if 'dest_loc' in kwargs:
-            dest_wells = [getattr(dw,kwargs['dest_loc'])() for dw in dest_wells]
+        if len(dest_well)>0:
+            raise ValueError('Transfer only accepts one dest well at a time!')
+        else:
+            dest_well = dest_wells[0]
 
         self._transfer(
                 pipette, 
                 volume, 
                 source_well, 
                 dest_well, 
-                mix_before=None, 
-                mix_after=None, 
-                air_gap=0, 
-                blow_out=False, 
-                post_aspirate_delay=0.0, 
-                post_dispense_delay=):
+                mix_before=mix_before, 
+                air_gap=air_gap, 
+                blow_out=blow_out, 
+                post_aspirate_delay=post_aspirate_delay, 
+                post_dispense_delay=post_dipsense_delay)
     def _transfer( 
             self,
             pipette,

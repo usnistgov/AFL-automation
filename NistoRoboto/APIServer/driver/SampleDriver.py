@@ -102,7 +102,7 @@ class SampleDriver(Driver):
     def process_sample(self,sample):
         name = sample['name']
 
-        for task in sample['protocol']:
+        for task in sample['prep_protocol']:
             self.prep_uuid = self.prep_client.transfer(**task)
  
         if self.catch_rinse_uuid is not None:
@@ -114,15 +114,16 @@ class SampleDriver(Driver):
         self.take_snapshot(prefix = f'02-after-prep-{name}')
         
         self.update_status(f'Queueing sample {name} load into syringe loader')
-        kwargs = {
-            'source':sample['target_loc'],
-            'dest':sample['catch_loc'],
-            'volume':sample['volume']*1000,
-            # 'mix_before':(3,sample['volume']*1000),
-            }
-        if 'mix_before_load' in sample:
-            kwargs['mix_before'] = sample['mix_before_load']
-        self.catch_uuid = self.prep_client.transfer(**kwargs)
+        # kwargs = {
+        #     'source':sample['target_loc'],
+        #     'dest':sample['catch_loc'],
+        #     'volume':sample['volume']*1000,
+        #     # 'mix_before':(3,sample['volume']*1000),
+        #     }
+        # if 'mix_before_load' in sample:
+        #     kwargs['mix_before'] = sample['mix_before_load']
+        for task in sample['catch_protocol']:
+            self.catch_uuid = self.prep_client.transfer(**task)
         
         self.update_status(f'Waiting for sample prep/catch of {name} to finish: {self.catch_uuid}')
         self.prep_client.wait(self.catch_uuid)

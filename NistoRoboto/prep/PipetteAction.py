@@ -30,6 +30,9 @@ class PipetteAction:
     
     def __repr__(self):
         return self.__str__()
+
+    def emit_protocol(self):
+        return self.get_kwargs()
     
     def get_kwargs(self):
         kwargs = {}

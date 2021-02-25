@@ -21,6 +21,9 @@ class Sample:
 
     def __repr__(self):
         return self.__str__()
+    
+    def emit_protocol(self):
+        return [p.emit_protocol() for p in self.protocol]
 
     @property
     def target(self):

@@ -59,9 +59,10 @@ class Driver:
                 raise ValueError(f'Device \'{device_name}\' not found in protocol \'{self.name}\'')
 
             self.app.logger.info(f'Sending task \'{task_name}\' to device \'{device_name}\'!')
-            getattr(device_obj,task_name)(**kwargs)
+            return_val = getattr(device_obj,task_name)(**kwargs)
         else:
-            getattr(self,task_name)(**kwargs)
+            return_val = getattr(self,task_name)(**kwargs)
+        return return_val
 
 
    

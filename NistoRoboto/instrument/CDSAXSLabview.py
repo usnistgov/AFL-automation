@@ -4,6 +4,7 @@ import pythoncom
 import time
 from NistoRoboto.APIServer.driver.Driver import Driver
 from NistoRoboto.instrument.ScatteringInstrument import ScatteringInstrument
+import numpy as np # for return types in get data
 
 
 class CDSAXSLabview(ScatteringInstrument,Driver):
@@ -180,6 +181,9 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
             if block or reduce_data:
                 while(self.getStatus(lv=lv) != 'Success'):
                     time.sleep(0.1)
+
+                if reduce_data:
+                    self.getReducedData(write_data=True,filename_kwargs={'lv':lv})
 
                 
     def scan(self,axis,npts,start,step,name=None,exposure=None,block=False):

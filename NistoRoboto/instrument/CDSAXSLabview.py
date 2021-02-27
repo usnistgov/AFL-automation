@@ -39,6 +39,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         
         super().__init__(**kwargs)
         
+        self.setReductionParams({'poni1':0.0246703,'poni2':0.1495366,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':3.484,'npts':500})
+        self.setMaskPath(r'Y:\Peter automation software\CDSAXS_mask_20210225_2.edf')
     @Driver.unqueued()        
     def getExposure(self):
         '''

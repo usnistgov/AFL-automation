@@ -12,10 +12,11 @@ import datetime
 import traceback
 
 
-class SampleDriver(Driver):
+class CDSAXS_SampleDriver(Driver):
     def __init__(self,
             load_url,
             prep_url,
+            saxs_url,
             camera_urls = None,
             snapshot_directory ='/home/nistoroboto/',
             ):
@@ -39,6 +40,11 @@ class SampleDriver(Driver):
         self.load_client.login('SampleServer_LoadClient')
         self.load_client.debug(False)
 
+        #load samples
+        self.saxs_client = Client(saxs_url.split(':')[0],port=load_url.split(':')[1])
+        self.saxs_client.login('SampleServer_SAXSClient')
+        self.saxs_client.debug(False)
+
         self.camera_urls = camera_urls
         self.snapshot_directory = snapshot_directory
 
@@ -46,15 +52,13 @@ class SampleDriver(Driver):
         self.catch_rinse_uuid = None
 
         self.status_str = 'Fresh Server!'
-        self.configurations = []
         self.wait_time = 30.0 #seconds
 
     def status(self):
         status = []
-        for i,config in enumerate(self.configurations):
-            status.append(f'{i}: {config}')
         status.append(f'Snapshots: {self.snapshot_directory}')
         status.append(f'Cameras: {self.camera_urls}')
+        status.append(f'SAXS: {self.saxs_url}')
         status.append(f'Sample Wait Time: {self.wait_time}')
         status.append(self.status_str)
         return status
@@ -81,6 +85,9 @@ class SampleDriver(Driver):
             except Exception as error:
                 output_str  = f'take_snapshot failed with error: {error.__repr__()}\n\n'+traceback.format_exc()+'\n\n'
                 self.app.logger.warning(output_str)
+
+    def measure(self,sample):
+        self.saxs_uuid = self.saxs_client.enqueue(task_name='expose',name=sample['name'],block=True)
 
     def execute(self,**kwargs):
         if self.app is not None:
@@ -114,14 +121,6 @@ class SampleDriver(Driver):
         self.take_snapshot(prefix = f'02-after-prep-{name}')
         
         self.update_status(f'Queueing sample {name} load into syringe loader')
-        # kwargs = {
-        #     'source':sample['target_loc'],
-        #     'dest':sample['catch_loc'],
-        #     'volume':sample['volume']*1000,
-        #     # 'mix_before':(3,sample['volume']*1000),
-        #     }
-        # if 'mix_before_load' in sample:
-        #     kwargs['mix_before'] = sample['mix_before_load']
         for task in sample['catch_protocol']:
             self.catch_uuid = self.prep_client.transfer(**task)
         
@@ -143,12 +142,13 @@ class SampleDriver(Driver):
         self.update_status(f'Queueing catch rinse...')
         self.catch_rinse_uuid = self.load_client.enqueue(task_name='rinseCatch')
 
-        self.update_status(f'Sample is loaded, waiting for {self.wait_time} seconds...')
-        time.sleep(self.wait_time)
+        self.update_status(f'Sample is loaded, asking the SAXS for exposure...')
+        self.saxs_uuid = self.measure(sample)
+        self.update_status(f'Waiting for CDSAXS to measure scattering of {name} with UUID {self.saxs_uuid}...')
+        self.nice_client.wait_for(self.saxs_uuid)
         self.take_snapshot(prefix = f'06-after-measure-{name}')
             
         self.update_status(f'Cleaning up sample {name}...')
-        self.load_client.enqueue(task_name='blowOutCell')
         self.load_client.enqueue(task_name='rinseCell')
         self.load_client.enqueue(task_name='rinseSyringe')
         self.cell_rinse_uuid =  self.load_client.enqueue(task_name='blowOutCell')

@@ -4,6 +4,7 @@ from opentrons.protocol_api.labware import Labware
 from NistoRoboto.APIServer.driver.Driver import Driver
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
+import os,json,pathlib
 
 class OT2_Driver(Driver):
     def __init__(self):
@@ -18,6 +19,7 @@ class OT2_Driver(Driver):
             dispense = v.flow_rate.dispense
             flow_str = f' @ {aspirate}/{dispense} uL/s'
             status.append(str(v)+flow_str)
+        status.append(f'Gantry Speed: {v.default_speed} mm/s')
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
@@ -79,7 +81,15 @@ class OT2_Driver(Driver):
                         Slot is already filled loaded with {self.protocol.deck[slot].get_display_name()}.''')
         else: 
             self.app.logger.debug(f'Loading labware \'{name}\' into slot \'{slot}\' into the protocol context')
-            self.protocol.load_labware(name,slot)
+
+            try:
+                self.protocol.load_labware(name,slot)
+            except FileNotFoundError:
+                CUSTOM_PATH = pathlib.Path(os.environ.get('NISTOROBOTO_CUSTOM_LABWARE'))
+                with open(CUSTOM_PATH / name / '1.json') as f:
+                    labware_def = json.load(f)
+                self.protocol.load_labware_from_definition(labware_def,slot)
+            
 
     def load_instrument(self,name,mount,tip_rack_slots,**kwargs):
         '''Load a pipette into the protocol'''
@@ -112,17 +122,17 @@ class OT2_Driver(Driver):
 
         pipette.mix(repetitions,volume,location_well)
 
-    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
         ---------
-        source: str or list of str
-            Source wells to transfer from. Wells should be specified as three
+        source: str 
+            Source well to transfer from. Wells should be specified as three
             character strings with the first character being the slot number.
 
-        dest: str or list of str
-            Destination wells to transfer from. Wells should be specified as
+        dest: str 
+            Destination well to transfer to. Wells should be specified as
             three character strings with the first character being the slot
             number.
 
@@ -141,31 +151,89 @@ class OT2_Driver(Driver):
         #get pipette based on volume
         pipette = self.get_pipette(volume)
 
-        #modify source well dispense location
+        #get source well object
         source_wells = self.get_wells(source)
-        if 'source_loc' in kwargs:
-            source_wells = [getattr(sw,kwargs['source_loc'])() for sw in source_wells]
-
-
-        #modify destination well dispense location
-        dest_wells = self.get_wells(dest)
-        if 'dest_loc' in kwargs:
-            dest_wells = [getattr(dw,kwargs['dest_loc'])() for dw in dest_wells]
-
-        if mix_before is not None:
-            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap,mix_before=mix_before,blow_out=blow_out)
+        if len(source_well)>0:
+            raise ValueError('Transfer only accepts one source well at a time!')
         else:
-            pipette.transfer(volume,source_wells,dest_wells,air_gap=air_gap,blow_out=blow_out)
+            source_well = source_wells[0]
 
+        #get dest well object
+        dest_wells = self.get_wells(dest)
+        if len(dest_well)>0:
+            raise ValueError('Transfer only accepts one dest well at a time!')
+        else:
+            dest_well = dest_wells[0]
+
+        self._transfer(
+                pipette, 
+                volume, 
+                source_well, 
+                dest_well, 
+                mix_before=mix_before, 
+                air_gap=air_gap, 
+                blow_out=blow_out, 
+                post_aspirate_delay=post_aspirate_delay, 
+                post_dispense_delay=post_dipsense_delay)
+    def _transfer( 
+            self,
+            pipette,
+            volume, 
+            source_well, 
+            dest_well, 
+            mix_before=None, 
+            mix_after=None, 
+            air_gap=0, 
+            blow_out=False,
+            post_aspirate_delay=0.0,
+            post_dispense_delay=0.0):
+                      
+        if blow_out:
+            raise NotImplemented()        
+    
+        pipette.pick_up_tip()
+        
+        #need to mix before final aspirate
+        if mix_before is not None:
+            nmixes,mix_volume = mix_before
+            for _ in range(nmixes):
+                pipette.aspirate(mix_volume,location=source_well)
+                pipette.dispense(mix_volume,location=source_well)        
+        pipette.aspirate(volume+air_gap,location=source_well)
+        
+        if post_aspirate_delay>0.0:
+            pipette.move_to(source_well.top())
+            self.protocol.delay(seconds=post_aspirate_delay)
+        
+        # need to dispense before  mixing
+        pipette.dispense(volume+air_gap,location=dest_well)
+        if mix_after is not None:
+            nmixes,mix_volume = mix_after
+            for _ in range(nmixes):
+                pipette.aspirate(mix_volume,location=dest_well)
+                pipette.dispense(mix_volume,location=dest_well)  
+                
+        if post_dispense_delay>0.0:
+            pipette.move_to(dest_well.top())
+            self.protocol.delay(seconds=post_dispense_delay)
+    
+        pipette.drop_tip(self.protocol.deck[12]['A1'])
+        
+    
     def set_aspirate_rate(self,rate=150):
         '''Set aspirate rate of both pipettes in uL/s. Default is 150 uL/s'''
         for mount,pipette in self.protocol.loaded_instruments.items():
             pipette.flow_rate.aspirate = rate
 
     def set_dispense_rate(self,rate=300):
-        '''Set aspirate rate of both pipettes in uL/s. Default is 150 uL/s'''
+        '''Set dispense rate of both pipettes in uL/s. Default is 300 uL/s'''
         for mount,pipette in self.protocol.loaded_instruments.items():
             pipette.flow_rate.dispense = rate
+
+    def set_gantry_speed(self,speed=400):
+        '''Set movement speed of gantry. Default is 400 mm/s'''
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            pipette.default_speed = speed
 
     def get_pipette(self,volume,method='min_transfers'):
         self.app.logger.debug(f'Looking for a pipette for volume {volume}')

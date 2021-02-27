@@ -3,6 +3,7 @@ class Sample:
     def __init__(self,name,target,target_check=None,balancer=None):
         self.target = target
         self.name = name
+        self.protocol=[]
 
         if target_check is not None:
             self.target_check = target_check
@@ -20,6 +21,9 @@ class Sample:
 
     def __repr__(self):
         return self.__str__()
+    
+    def emit_protocol(self):
+        return [p.emit_protocol() for p in self.protocol]
 
     @property
     def target(self):
@@ -44,3 +48,7 @@ class Sample:
     @balancer.setter
     def balancer(self,value):
         self._balancer = value.copy()
+
+    @property
+    def target_loc(self):
+        return self.balancer.target_location

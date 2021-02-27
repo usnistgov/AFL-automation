@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-import json
+import json 
 import subprocess,shlex
 
 if __name__=="__main__":
@@ -17,36 +17,39 @@ if __name__=="__main__":
         server_config = json.load(f)
     
     for server_name in args.server_names:
+        cmds = []
+
         if server_name not in server_config:
             raise ValueError(f'{server_name} not found in loaded config: {list(server_config.keys())}')
         
         host = server_config[server_name]['host']
         screen_name = server_config[server_name]['screen_name']
         server_script = server_config[server_name]['server_script']
-        if args.command == 'start':
-            print(f'--> Starting {screen_name} in screen session on {host}...')
-            cmd = f'screen -d -m -S {screen_name} {server_script}'
-        elif args.command == 'stop':
+
+        if (args.command == 'stop') or (args.command == 'restart'):
             print(f'--> Stopping {screen_name} in screen session on {host}...')
-            cmd = f'screen -X -S {screen_name} quit'
-        elif args.command == 'restart':
-            print(f'--> Stopping and then restarting {screen_name} in screen session on {host}...')
-            cmd = f'screen -X -S {screen_name} quit;'
-            cmd += f'screen -d -m -S {screen_name} {server_script}'
-        elif args.command == 'status':
+            cmds.append(f'screen -X -S {screen_name} quit')
+            cmds.append(f'rm -f /tmp/nistoroboto.{screen_name}.screenlog.0')
+
+        if (args.command == 'start') or (args.command == 'restart'):
+            print(f'--> Starting {screen_name} in screen session on {host}...')
+            cmds.append(f'screen -d -m -L -Logfile /tmp/nistoroboto.{screen_name}.screenlog.0 -S {screen_name} {server_script}')
+            # cmds.append(f'screen -d -m -S {screen_name} {server_script}')
+
+        if args.command == 'status':
             print(f'--> Getting status of {screen_name} in screen session on {host}...')
-            cmd = f'screen -ls'
-        else:
-            raise ValueError(f'Unrecognized command: {args.command}')
+            cmds.append(f'screen -ls')
+            cmds.append(f'tail -n 100 /tmp/nistoroboto.{screen_name}.screenlog.0')
 
-        if (not (host=='localhost')):
-            cmd = f"ssh {host} -f '{cmd}'"
+        for cmd in cmds:
+            if (not (host=='localhost')):
+                cmd = f"ssh {host} -f '{cmd}'"
 
-        print(f'--> Running command: {cmd}')
-        p = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        stdout = p.communicate()[0].decode('utf8')
-        print(f'--> Command Output:\n{stdout}')
-        print(80*'-')
+            print(f'--> Running command: {cmd}')
+            p = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+            stdout = p.communicate()[0].decode('utf8')
+            print(f'--> Command Output↴\n{stdout}')
+            print(80*'-')
     print('==>Done!')
         
 

@@ -103,15 +103,23 @@ class APIServer:
         self.app.add_url_rule('/login','login',self.login,methods=['POST'])
         self.app.add_url_rule('/login_test','login_test',self.login_test,methods=['GET','POST'])
         self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
+        self.app.add_url_rule('/get_queued_commands','get_queued_commands',self.get_queued_commands,methods=['GET'])
+        self.app.add_url_rule('/get_unqueued_commands','get_unqueued_commands',self.get_unqueued_commands,methods=['GET'])
 
         self.app.before_first_request(self.init)
 
+    def get_unqueued_commands(self):
+        return jsonify(self.driver.unqueued.function_info),200
+
+    def get_queued_commands(self):
+        return jsonify(self.driver.queued.function_info),200
+
     def add_unqueued_routes(self):
         print('Adding unqueued routes')
-        for fn in self.driver.unqueued.all:
+        for fn in self.driver.unqueued.functions:
             route = '/' + fn
             name = fn
-            kwarg_add = self.driver.unqueued.kwarglist[fn]
+            kwarg_add = self.driver.unqueued.decorator_kwargs[fn]
             response_function = None
             response_function = lambda fn=fn,kwarg_add=kwarg_add: self.render_unqueued(getattr(self.driver,fn),kwarg_add)
             print(f'Adding route {route} for function named {name} with baked-in kwargs {kwarg_add}')
@@ -125,7 +133,7 @@ class APIServer:
         
         self.app.logger.info(f'Request for {request.args}')
         if 'r' in task:
-            if task['r'] in self.driver.unqueued.all:
+            if task['r'] in self.driver.unqueued.functions:
                 return getattr(self.driver,task['r'])(**task),200
             else:
                 return "No such task found as an unqueued function in driver"

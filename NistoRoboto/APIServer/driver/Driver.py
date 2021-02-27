@@ -1,28 +1,38 @@
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
+import inspect 
 def makeRegistrar():
-    registry = []
-    kwarglist = {}
+    functions = []
+    decorator_kwargs = {}
+    function_info = {}
     def registrarfactory(**kwargs):
         #print(f'Set up registrar-factory with registry {registry}...')
-        def registrar(func,render_hint=None):  #kwarg = kwargs):
-            registry.append(func.__name__)
-            kwarglist[func.__name__]=kwargs
-            #print(f'Added {func.__name__} to registry {registry}')
+        def registrar(func):#,render_hint=None):  #kwarg = kwargs):
+            functions.append(func.__name__)
+            decorator_kwargs[func.__name__]=kwargs
+
+            argspec = inspect.getfullargspec(func)
+            if argspec.defaults is None:
+                fargs = argspec.args
+                fkwargs = []
+            else:
+                fargs = argspec.args[:-len(argspec.defaults)]
+                fkwargs = [(i,j) for i,j in zip(argspec.args[-len(argspec.defaults):],argspec.defaults)]
+            if fargs[0] == 'self':
+                del fargs[0]
+            function_info[func.__name__] = {'args':fargs,'kwargs':fkwargs,'doc':func.__doc__}
             return func  # normally a decorator returns a wrapped function, 
                          # but here we return func unmodified, after registering it
         return registrar
-    registrarfactory.all = registry
-    registrarfactory.kwarglist = kwarglist
+    registrarfactory.functions = functions
+    registrarfactory.decorator_kwargs = decorator_kwargs
+    registrarfactory.function_info = function_info
     return registrarfactory
 
 
 class Driver:
-
-
     unqueued = makeRegistrar()
-    queueable = makeRegistrar()
-
+    queued = makeRegistrar()
     def __init__(self,name):
         self.app = None
         if name is None:
@@ -49,9 +59,10 @@ class Driver:
                 raise ValueError(f'Device \'{device_name}\' not found in protocol \'{self.name}\'')
 
             self.app.logger.info(f'Sending task \'{task_name}\' to device \'{device_name}\'!')
-            getattr(device_obj,task_name)(**kwargs)
+            return_val = getattr(device_obj,task_name)(**kwargs)
         else:
-            getattr(self,task_name)(**kwargs)
+            return_val = getattr(self,task_name)(**kwargs)
+        return return_val
 
 
    

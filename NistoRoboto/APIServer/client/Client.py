@@ -1,4 +1,5 @@
-import requests,uuid,time
+import requests,uuid,time,copy,inspect
+
 
 class Client:
     '''Communicate with APIServer 
@@ -6,13 +7,14 @@ class Client:
     This class maps pipettor functions to HTTP REST requests that are sent to
     the server
     '''
-    def __init__(self,ip='10.42.0.30',port='5000'):
+    def __init__(self,ip='10.42.0.30',port='5000',interactive=False):
         #trim trailing slash if present
         if ip[-1] == '/':
             ip = ip[:-1]
         self.ip = ip
         self.port = port
         self.url = f'http://{ip}:{port}'
+        self.interactive=interactive
 
     def logged_in(self):
         url = self.url + '/login_test'
@@ -32,6 +34,7 @@ class Client:
         # headers should be included in all HTTP requests 
         self.token  = response.json()['token']
         self.headers = {'Authorization':'Bearer {}'.format(self.token)}
+
 
     def get_queue(self):
         response = requests.get(self.url+'/get_queue',headers=self.headers)
@@ -57,12 +60,48 @@ class Client:
                     break
             time.sleep(interval)
 
-    def enqueue(self,**kwargs):
+        #check the return info of the command we waited on
+        return history[-1]['meta']
+
+    def enqueued_base(self,**kwargs):
+        return self.enqueue(**kwargs)
+
+    def get_queued_commmands(self,inherit_commands=True):
+        response = requests.get(self.url+'/get_queued_commands',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to get_queued_commands command failed with status_code {response.status_code}\n{response.text}')
+
+        if inherit_commands:
+            #XXX Need to find a cleaner way to do this. It works reasonbly
+            #XXX well, but it doesn't support tab completions
+            for function_name,info in response.json().items():
+                parameters = []
+                for parameter_name,default in info['kwargs']:
+                    p = inspect.Parameter(parameter_name,inspect.Parameter.KEYWORD_ONLY,default=default)
+                    parameters.append(p)
+                function = lambda **kwargs: self.enqueued_base(task_name=function_name,**kwargs)
+                function.__name__ = function_name
+                function.__doc__ = info['doc']
+                function.__signature__ = inspect.signature(self.enqueued_base).replace(parameters=parameters)
+                setattr(self,function_name,function)
+
+        return response.json()
+
+    def enqueue(self,interactive=None,**kwargs):
+        if interactive is None:
+            interactive = self.interactive
         json=kwargs
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
             raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
-        return uuid.UUID(response.text)
+        task_uuid = uuid.UUID(response.text)
+        if interactive:
+            meta = self.wait(target_uuid=task_uuid,first_check_delay=0.5)
+            if meta['exit_state']=='Error!':
+                print(meta['return_val'])
+            return meta
+        else:
+            return task_uuid
    
     def query_driver(self,**kwargs):
         json=kwargs

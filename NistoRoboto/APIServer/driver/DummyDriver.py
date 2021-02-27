@@ -27,6 +27,16 @@ class DummyDriver(Driver):
             if kwargs['task_name'] == 'error':
                 raise RuntimeError()
 
+    @Driver.queued()
+    def test_command1(self,kwarg1=None,kwarg2=True):
+        '''A test command with positional and keyword parameters'''
+        pass
+
+    @Driver.queued()
+    def test_command2(self,kwarg1=False,kwarg2=False,kwarg3=True):
+        '''A test command with positional and keyword parameters'''
+        pass
+
     @Driver.unqueued()
     def how_many(self,**kwargs):
         self.app.logger.debug(f'Call to how_many with kwargs: {kwargs}')

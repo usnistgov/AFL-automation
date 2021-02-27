@@ -3,8 +3,10 @@ import win32com.client
 import pythoncom
 import time
 from NistoRoboto.APIServer.driver.Driver import Driver
+from NistoRoboto.instrument.ScatteringInstrument import ScatteringInstrument
 
-class CDSAXSLabview(Driver):
+
+class CDSAXSLabview(ScatteringInstrument,Driver):
     
     axis_name_to_id_lut = {
         'X-stage' : 0,
@@ -23,7 +25,7 @@ class CDSAXSLabview(Driver):
     
     axis_id_to_name_lut = {value:key for key, value in axis_name_to_id_lut.items()}
     
-    def __init__(self,vi=r'C:\saxs_control\GIXD controls.vi'):
+    def __init__(self,vi=r'C:\saxs_control\GIXD controls.vi',**kwargs):
         '''
         connect to locally running labview vi with win32com and 
 
@@ -35,7 +37,10 @@ class CDSAXSLabview(Driver):
         self.app = None
         self.name = 'CDSAXSLabview'
         
+        super().__init__(**kwargs)
         
+        self.setReductionParams({'poni1':0.0246703,'poni2':0.1495366,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':3.484,'npts':500})
+        self.setMaskPath(r'Y:\Peter automation software\CDSAXS_mask_20210225_2.edf')
     @Driver.unqueued()        
     def getExposure(self):
         '''
@@ -44,6 +49,8 @@ class CDSAXSLabview(Driver):
         '''
         with LabviewConnection() as lv:
             return lv.main_vi.getcontrolvalue('Single Pilatus Parameters')[0]
+
+        
     @Driver.unqueued()
     def getFilename(self):
         '''
@@ -228,8 +235,9 @@ class LabviewConnection():
         self.main_vi = self.labview.getvireference(self.vi)
         self.main_vi.setcontrolvalue('Measurement',3) # 3 should bring the single Pilatus tab to the front
         return self
-        
+
     def __exit__(self,exittype,value,traceback):
         pythoncom.CoUninitialize()
+
         self.labview=None
         self.main_vi=None

@@ -210,7 +210,7 @@ class APIServer:
         else:
             return "Error while rendering output",500
 
-    def send_1d_plot(self,result,**kwargs):
+    def send_1d_plot(self,result,multi=False,**kwargs):
         if 'xlin' in kwargs:
             if type(kwargs['xlin']) is str:
                 xlin = strtobool(kwargs['xlin'])
@@ -237,13 +237,17 @@ class APIServer:
         p.xaxis.axis_label = kwargs['xlabel'] if 'xlabel' in kwargs else 'x'
         p.yaxis.axis_label = kwargs['ylabel'] if 'ylabel' in kwargs else 'y'
 
-        for item in listify(result):
-            p.scatter(item[0],item[1],marker='circle', size=2,
-                  line_color='navy', fill_color='orange', alpha=0.5)
-
-        #errors = bokeh.models.Band(base=res[1],upper=res[1]+res[2],lower=res[1]-res[2], level='underlay',
-        #        fill_alpha=1.0, line_width=1, line_color='black')
-        #p.add_layout(band)
+        if multi:
+            for item in listify(result):
+                p.scatter(item[0],item[1],marker='circle', size=2,
+                    line_color='navy', fill_color='orange', alpha=0.5)
+        else:
+            p.scatter(result[0],result[1],marker='circle', size=2,
+                    line_color='navy', fill_color='orange', alpha=0.5)
+            if len(result)>2:
+                errors = bokeh.models.Band(base=result[1],upper=result[1]+result[2],lower=result[1]-result[2], level='underlay',
+                fill_alpha=1.0, line_width=1, line_color='black')
+                p.add_layout(band)
         script,div = bokeh.embed.components(p)
         return render_template(self.plot_template,script=script,div=div,title=title)
 

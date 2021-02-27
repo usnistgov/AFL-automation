@@ -156,9 +156,14 @@ class CetoniSyringePump(SyringePump):
         self.pump.stop()
 
     def withdraw(self,volume,block=True,delay=True):
+        rate = self.getRate()
+        expected_duration = volume / rate * 60 # anticipated duration of pump move in s
+
+        timeout = expected_duration + 30
+
+        timeout = min((timeout),30) # in case things get really weird.
         if self.app is not None:
-            rate = self.getRate()
-            self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
+            self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min, expected to take {expected_duration} s')
 
         if (self.getLevel()+volume) > self.max_volume:
             self.app.logger.warn(f'Requested withdrawal of {volume} but current level is {self.getLevel()} of a max {self.max_volume}.  Moving to {self.max_volume}')
@@ -166,21 +171,29 @@ class CetoniSyringePump(SyringePump):
 
         self.pump.aspirate(float(volume), self.rate)
         if block:
-            self.wait_dosage_finished(self.pump, 30)
+            self.wait_dosage_finished(self.pump, timeout)
         if delay:
             time.sleep(self.flow_delay)
         
     def dispense(self,volume,block=True,delay=True):
+        rate = self.getRate()
+        expected_duration = volume / rate * 60 # anticipated duration of pump move in s
+
+        timeout = expected_duration + 30
+
+        timeout = min((timeout),30) # in case things get really weird.
+
         if self.app is not None:
-            rate = self.getRate()
-            self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min')
+            self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min, expected to take {expected_duration} s')
         if (self.getLevel() - volume) < 0:
             self.app.logger.warn(f'Requested dispense of {volume} but current level is {self.getLevel()} .  Moving to 0')
             self.setLevel(0)
 
+
+
         self.pump.dispense(float(volume), self.rate)
         if block:
-            self.wait_dosage_finished(self.pump, 30)
+            self.wait_dosage_finished(self.pump, timeout)
         if delay:
             time.sleep(self.flow_delay)
         

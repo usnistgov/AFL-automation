@@ -59,16 +59,22 @@ class QueueDaemon(threading.Thread):
             #if debug_mode, pop and wait but don't execute
             if self.debug: 
                 time.sleep(3.0)
+                return_val = None
+                exit_state = 'Debug Mode!'
             else:
                 try:
-                    self.driver.execute(**task)
+                    return_val = self.driver.execute(**task)
+                    exit_state = 'Success!'
                 except Exception as error:
-                    output_str  = f'Error: {error.__repr__()}\n\n'+traceback.format_exc()+'\n\n'
-                    output_str += 'Exception encountered in driver, pausing queue...'
-                    self.app.logger.error(output_str)
+                    return_val= f'Error: {error.__repr__()}\n\n'+traceback.format_exc()+'\n\n'
+                    return_val += 'Exception encountered in driver, pausing queue...'
+                    exit_state = 'Error!'
+                    self.app.logger.error(return_val)
                     self.paused=True
 
             package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')
+            package['meta']['exit_state'] = exit_state
+            package['meta']['return_val'] = return_val
             self.running_task = []
             self.history.append(package)
             self.busy = False

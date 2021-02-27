@@ -1,4 +1,6 @@
 import requests,uuid,time
+import requests,uuid,time,copy,inspect
+
 
 class Client:
     '''Communicate with APIServer 
@@ -7,12 +9,14 @@ class Client:
     the server
     '''
     def __init__(self,ip='10.42.0.30',port='5000'):
+    def __init__(self,ip='10.42.0.30',port='5000',interactive=False):
         #trim trailing slash if present
         if ip[-1] == '/':
             ip = ip[:-1]
         self.ip = ip
         self.port = port
         self.url = f'http://{ip}:{port}'
+        self.interactive=interactive
 
     def logged_in(self):
         url = self.url + '/login_test'
@@ -32,6 +36,7 @@ class Client:
         # headers should be included in all HTTP requests 
         self.token  = response.json()['token']
         self.headers = {'Authorization':'Bearer {}'.format(self.token)}
+
 
     def get_queue(self):
         response = requests.get(self.url+'/get_queue',headers=self.headers)
@@ -58,11 +63,21 @@ class Client:
             time.sleep(interval)
 
     def enqueue(self,**kwargs):
+        #check the return info of the command we waited on
+        return history[-1]['meta']
         json=kwargs
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
             raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
         return uuid.UUID(response.text)
+        task_uuid = uuid.UUID(response.text)
+        if interactive:
+            meta = self.wait(target_uuid=task_uuid,first_check_delay=0.5)
+            if meta['exit_state']=='Error!':
+                print(meta['return_val'])
+            return meta
+        else:
+            return task_uuid
    
     def query_driver(self,**kwargs):
         json=kwargs

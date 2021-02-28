@@ -3,12 +3,12 @@ from flask import Flask, render_template, request, jsonify,send_file
 from flask_cors import CORS
 
 #authentication module
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token,
-    create_refresh_token,
-    get_jwt_identity, set_access_cookies,
-    set_refresh_cookies, unset_jwt_cookies
-)
+# from flask_jwt_extended import (
+#     JWTManager, jwt_required, create_access_token,
+#     create_refresh_token,
+#     get_jwt_identity, set_access_cookies,
+#     set_refresh_cookies, unset_jwt_cookies
+# )
 
 
 
@@ -53,9 +53,9 @@ class APIServer:
         self.app = Flask(name,root_path=root_path)
 
         self.queue_daemon = None
-        self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
-        self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
-        self.jwt = JWTManager(self.app)
+        # self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
+        # self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+        # self.jwt = JWTManager(self.app)
 
         #CORS may have to come after JWTManager
         CORS(self.app)
@@ -301,7 +301,7 @@ class APIServer:
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         return jsonify(output),200
 
-    @jwt_required
+    # @jwt_required
     def enqueue(self):
         task = request.json
         if 'queue_loc' in task:
@@ -311,7 +311,8 @@ class APIServer:
             #insert at back of queue
             queue_loc=self.task_queue.qsize()
 
-        user = get_jwt_identity()
+        # user = get_jwt_identity()
+        user = 'FIX JWT!'
         self.app.logger.info(f'{user} enqueued {request.json}')
         package = {'task':task,'meta':{},'uuid':uuid.uuid4()}
         package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
@@ -379,7 +380,7 @@ class APIServer:
         return now
 
     
-    @jwt_required
+    # @jwt_required
     def login_test(self):
         username = get_jwt_identity()
         self.app.logger.info(f'Login test for {username} successful')

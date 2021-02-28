@@ -5,7 +5,7 @@ from flask_cors import CORS
 #authentication module
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
-    jwt_refresh_token_required, create_refresh_token,
+    create_refresh_token,
     get_jwt_identity, set_access_cookies,
     set_refresh_cookies, unset_jwt_cookies
 )

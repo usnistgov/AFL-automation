@@ -10,7 +10,7 @@ from flask_jwt_extended import (
 
 
 
-import datetime,requests,subprocess,shlex,os
+import datetime,requests,subprocess,shlex,os,time
 import threading,queue,logging,json,pathlib,uuid
 
 from logging.handlers import SMTPHandler
@@ -44,8 +44,7 @@ class APIServer:
         self.index_template = index_template
         self.plot_template = plot_template
 
-        self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status')
-
+        self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status','get_server_time')
 
         #allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
@@ -105,6 +104,7 @@ class APIServer:
         self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
         self.app.add_url_rule('/get_queued_commands','get_queued_commands',self.get_queued_commands,methods=['GET'])
         self.app.add_url_rule('/get_unqueued_commands','get_unqueued_commands',self.get_unqueued_commands,methods=['GET'])
+        self.app.add_url_rule('/get_server_time','get_server_time',self.get_server_time,methods=['GET'])
 
         self.app.before_first_request(self.init)
 
@@ -368,6 +368,10 @@ class APIServer:
         self.app.logger.info(f'Creating login token for user {username}')
         token = create_access_token(identity=username)#,expires=expires)
         return jsonify(token=token), 200
+    
+    def get_server_time(self):
+        now = datetime.datetime.now().strftime('%H:%M:%S - %y/%m/%d')
+        return now
 
     
     @jwt_required

@@ -372,7 +372,8 @@ class APIServer:
         # Identity can be any data that is json serializable
         #expires = datetime.timedelta(days=1)
         self.app.logger.info(f'Creating login token for user {username}')
-        token = create_access_token(identity=username)#,expires=expires)
+        #token = create_access_token(identity=username)#,expires=expires)
+        token ='ABC123FIXME'
         return jsonify(token=token), 200
     
     def get_server_time(self):

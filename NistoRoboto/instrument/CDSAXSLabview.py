@@ -4,6 +4,7 @@ import pythoncom
 import time
 from NistoRoboto.APIServer.driver.Driver import Driver
 from NistoRoboto.instrument.ScatteringInstrument import ScatteringInstrument
+import numpy as np # for return types in get data
 
 
 class CDSAXSLabview(ScatteringInstrument,Driver):
@@ -41,44 +42,35 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         
         self.setReductionParams({'poni1':0.0246703,'poni2':0.1495366,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':3.484,'npts':500})
         self.setMaskPath(r'Y:\Peter automation software\CDSAXS_mask_20210225_2.edf')
+
+
     @Driver.unqueued()        
-    def getExposure(self):
+    def getExposure(self,lv=None):
         '''
             get the currently set exposure time
 
         '''
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('Single Pilatus Parameters')[0]
+        return self._getLabviewValue('Single Pilatus Parameters',lv=lv)[0]
 
         
     @Driver.unqueued()
-    def getFilename(self):
+    def getFilename(self,lv=None):
         '''
             get the currently set file name
 
         '''
-        with LabviewConnection() as lv:
-            return lv.self.main_vi.getcontrolvalue('Single Pilatus Parameters')[1]
+        return self._getLabviewValue('Single Pilatus Parameters',lv=lv)[1]
 
-    @Driver.unqueued()
-    def printMainVi(self):
-        with LabviewConnection() as lv:
-            return str(lv.main_vi)
-    @Driver.unqueued()
-    def printLabviewObj(self):
-         with LabviewConnection() as lv:
-            return str(lv.labview)
-    
-    def setExposure(self,exposure):
+   
+    def setExposure(self,exposure,lv=None):
         if self.app is not None:
             self.app.logger.debug(f'Setting exposure time to {exposure}')
                 
-        fileName = self.getFilename()
+        fileName = self.getFilename(lv=lv)
 
-        with LabviewConnection() as lv:
-            lv.main_vi.setcontrolvalue('Single Pilatus Parameters',(exposure,fileName))
+        self._setLabviewValue('Single Pilatus Parameters',(exposure,fileName),lv=lv)
 
-    def setFilename(self,name):
+    def setFilename(self,name,lv=None):
         if self.app is not None:
             self.app.logger.debug(f'Setting filename to {name}')
 
@@ -87,107 +79,112 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
             
         exposure = self.getExposure()
 
-        with LabviewConnection() as lv:
-            lv.main_vi.setcontrolvalue('Single Pilatus Parameters',(exposure,name))
+        self._setLabviewValue('Single Pilatus Parameters',(exposure,name),lv=lv)
 
-
-    def getPath(self):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('FilePath')   # @TODO: fill in here
     
-    @Driver.unqueued(render_hint='2d_img',log_image=True)
-    def getData(self,**kwargs):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('Pilatus Data')
+    @Driver.unqueued(render_hint='2d_img',log_image=True,lv=None)
+    def getData(self,lv=None,**kwargs):
+        data = np.array(self._getLabviewValue('Pilatus Data',lv=lv))
 
-    def setPath(self,path):
+    def setPath(self,path,lv=None):
         if self.app is not None:
             self.app.logger.debug(f'Setting file path to {path}')
 
         self.path = str(path)
-        with LabviewConnection() as lv:
-            lv.main_vi.setcontrolvalue('FilePath',path)
+        self._setLabviewValue('FilePath',path,lv=lv)
         
     @Driver.unqueued()  
-    def getStatus(self):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('Process Status Message')
+    def getStatus(self,lv=None):
+        return self._getLabviewValue('Process Status Message')
    
     @Driver.unqueued()  
-    def getNScans(self):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('# of Scans')
+    def getNScans(self,lv=None):
+        return self._getLabviewValue('# of Scans',lv=lv)
         
-    def setNScans(self,nscans):
-        with LabviewConnection() as lv:
-            lv.main_vi.setcontrolvalue('# of Scans',nscans)
+    def setNScans(self,nscans,lv=lv):
+        self._setLabviewValue('# of Scans',nscans,lv=lv)
     
     @Driver.unqueued()  
-    def getSweepAxis(self):
-        with LabviewConnection() as lv:
-            return self.axis_id_to_name_lut[lv.main_vi.getcontrolvalue('Sweep Axis')]
-    def setSweepAxis(self,axis):
+    def getSweepAxis(self,lv=None):
+        return self.axis_id_to_name_lut[self._getLabviewValue('Sweep Axis',lv=lv)]
+
+    def setSweepAxis(self,axis,lv=None):
         if type(axis)=='str':
             axis=self.axis_name_to_id_lut[axis]
-        with LabviewConnection() as lv:
-            lv.main_vi.setcontrolvalue('Sweep Axis',axis) # this is an enum, 6 is Y-stage
+        self._setLabviewValue('Sweep Axis',axis,lv=lv) # this is an enum, 6 is Y-stage
     
     @Driver.unqueued()  
-    def getYStagePos(self):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('Y-stage')
+    def getYStagePos(self,lv=None):
+        return self._getLabviewValue('Y-stage',lv=lv)
     @Driver.unqueued()  
-    def getZStagePos(self):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('Z-stage')
+    def getZStagePos(self,lv=None):
+        return self._getLabviewValue('Z-stage',lv=lv)
     @Driver.unqueued()  
-    def getXStagePos(self):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('X-Stage')
+    def getXStagePos(self,lv=None):
+        return self._getLabviewValue('X-Stage',lv=lv)
     
     
-    def setSweepStart(self,start):
-        with LabviewConnection() as lv:
-            lv.main_vi.setcontrolvalue('Start Value',start)
+    def setSweepStart(self,start,lv=None):
+        self._setLabviewValue('Start Value',start,lv=lv)
         
     @Driver.unqueued()  
-    def getSweepStart(self):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('Start Value')
+    def getSweepStart(self,lv=None):
+        return self._getLabviewValue('Start Value',lv=lv)
     
-    def setSweepStep(self,step):
-        with LabviewConnection() as lv:
-            lv.main_vi.setcontrolvalue('Step',step)
+    def setSweepStep(self,step,lv=None):
+        self._setLabviewValue('Step',step,lv=lv)
     
     @Driver.unqueued()  
-    def getSweepStep(self):
-        with LabviewConnection() as lv:
-            return lv.main_vi.getcontrolvalue('Step')
-        
-    def expose(self,name=None,exposure=None,block=False):
-        if name is not None:
-            self.setFilename(name)
-        else:
-            name=self.getFilename()
+    def getSweepStep(self,lv=None):
+        return self._getLabviewValue('Step',lv=lv)
 
-        if exposure is not None:
-            self.setExposure(exposure)
-        else:
-            exposure=self.getExposure()
 
-        self.setNScans(1)
-        self.setSweepAxis('None')
-        
+    def _getLabviewValue(self,val_name,lv=None):
+        if lv is None:
+            with LabviewConnection() as lv:
+                ret_val = lv.main_vi.getcontrolvalue(val_name)
+        else:
+            ret_val = lv.main_vi.getcontrolvalue(val_name)
+        return ret_val
+
+    def _setLabviewValue(self,val_name,val_val,lv=None):
+        if lv is None:
+            with LabviewConnection() as lv:
+                lv.main_vi.setcontrolvalue(val_name,val_val)
+        else:
+            lv.main_vi.setcontrolvalue(val_name,val_val)
+
+
+    def expose(self,name=None,exposure=None,block=True,reduce_data=True):
+        with LabviewConnection() as lv:
+
+            if name is not None:
+                self.setFilename(name,lv=lv)
+            else:
+                name=self.getFilename(lv=lv)
+
+            if exposure is not None:
+                self.setExposure(exposure,lv=lv)
+            else:
+                exposure=self.getExposure(lv=lv)
+
+            self.setNScans(1,lv=lv)
+            self.setSweepAxis('None',lv=lv)
             
-        if self.app is not None:
-            self.app.logger.debug(f'Starting exposure with name {name} for {exposure} s')
+                
+            if self.app is not None:
+                self.app.logger.debug(f'Starting exposure with name {name} for {exposure} s')
 
-        with LabviewConnection() as lv:
-            lv.main_vi.setcontrolvalue('Expose Pilatus',True)
-        time.sleep(0.5)
-        if block:
-            while(self.getStatus() != 'Success'):
-                time.sleep(0.1)
+
+            self._setLabviewValue('Expose Pilatus',True,lv=lv)
+            time.sleep(0.5)
+            if block or reduce_data:
+                while(self.getStatus(lv=lv) != 'Success'):
+                    time.sleep(0.1)
+
+                if reduce_data:
+                    self.getReducedData(write_data=True,filename_kwargs={'lv':lv})
+
                 
     def scan(self,axis,npts,start,step,name=None,exposure=None,block=False):
         if name is not None:
@@ -237,7 +234,7 @@ class LabviewConnection():
         return self
 
     def __exit__(self,exittype,value,traceback):
-        pythoncom.CoUninitialize()
-
         self.labview=None
         self.main_vi=None
+        pythoncom.CoUninitialize()
+        

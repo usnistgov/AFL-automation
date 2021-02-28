@@ -66,11 +66,11 @@ class ScatteringInstrument():
         return self.detector_name
 
     @Driver.unqueued(render_hint='1d_plot',xlin=False,ylin=False,xlabel='q (A^-1)',ylabel='Intensity (AU)')
-    def getReducedData(self,reduce_type='1d',**kwargs):
+    def getReducedData(self,reduce_type='1d',write_data=False,filename_kwargs={},**kwargs):
         start_time = datetime.datetime.now()
         
         
-        img = np.array(self.getData(**kwargs))
+        img = self.getData(**kwargs)
 
         got_image = datetime.datetime.now()
         
@@ -79,11 +79,30 @@ class ScatteringInstrument():
         else:
             mask = self.mask
 
+        if write_data:
+            filename = self.getFilename(**filename_kwargs)
+            filename1d = filename+'_r1d.csv'
+            filename2d = filename+'_r2d.edf'
+        else:
+            filename1d = None
+            filename2d = None
+
         if reduce_type == '1d':
-            res = self.integrator.integrate1d(img,self.reduction_params['npts'],unit='q_A^-1',mask=mask,error_model='azimuthal')
+            res = self.integrator.integrate1d(img,
+                self.reduction_params['npts'],
+                unit='q_A^-1',
+                mask=mask,
+                error_model='azimuthal',
+                filename=filename1d)
+            res = np.array(res)
         elif reduce_type == '2d':
-            res = self.integrator.integrate2d(img,self.reduction_params['npts'],unit='q_A^-1',mask=mask,error_model='azimuthal')    
-            res = res.intensity
+            res = self.integrator.integrate2d(img,
+                self.reduction_params['npts'],
+                unit='q_A^-1',
+                mask=mask,
+                error_model='azimuthal',
+                filename=filename2d)    
+            res = np.array(res.intensity)
         else:
             raise ValueError('unsupported return_type')
         reduced_image = datetime.datetime.now()

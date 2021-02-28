@@ -51,12 +51,14 @@ class APIServer:
         #allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
         self.app = Flask(name,root_path=root_path)
-        CORS(self.app)
 
         self.queue_daemon = None
         self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
         self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
         self.jwt = JWTManager(self.app)
+
+        #CORS may have to come after JWTManager
+        CORS(self.app)
     
     def create_queue(self,driver):
         self.history = []

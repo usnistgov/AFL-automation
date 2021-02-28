@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify,send_file
 
+from flask_cors import CORS
+
 #authentication module
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -49,6 +51,7 @@ class APIServer:
         #allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
         self.app = Flask(name,root_path=root_path)
+        CORS(self.app)
 
         self.queue_daemon = None
         self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?

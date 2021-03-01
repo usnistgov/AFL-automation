@@ -104,8 +104,10 @@ function update(){
         $("#driver_status").html(ul_status);
     })
 
-    var x = new Date()
-    $("#time").text(x)
+    // var x = new Date()
+    $.get('/get_server_time', function( result ) {
+        $("#time").text(result)
+    })
 
     setTimeout(function () {update()}, 500); // this will run every 0.5 seconds  
 

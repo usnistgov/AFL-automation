@@ -1,16 +1,18 @@
 from flask import Flask, render_template, request, jsonify,send_file
 
+from flask_cors import CORS
+
 #authentication module
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
-    jwt_refresh_token_required, create_refresh_token,
+    create_refresh_token,
     get_jwt_identity, set_access_cookies,
     set_refresh_cookies, unset_jwt_cookies
 )
 
 
 
-import datetime,requests,subprocess,shlex,os
+import datetime,requests,subprocess,shlex,os,time
 import threading,queue,logging,json,pathlib,uuid
 
 from logging.handlers import SMTPHandler
@@ -44,8 +46,7 @@ class APIServer:
         self.index_template = index_template
         self.plot_template = plot_template
 
-        self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status')
-
+        self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status','get_server_time')
 
         #allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
@@ -55,6 +56,10 @@ class APIServer:
         self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
         self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
         self.jwt = JWTManager(self.app)
+
+        # CORS may have to come after JWTManager
+        self.cors = CORS(self.app)
+
     
     def create_queue(self,driver):
         self.history = []
@@ -105,6 +110,7 @@ class APIServer:
         self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
         self.app.add_url_rule('/get_queued_commands','get_queued_commands',self.get_queued_commands,methods=['GET'])
         self.app.add_url_rule('/get_unqueued_commands','get_unqueued_commands',self.get_unqueued_commands,methods=['GET'])
+        self.app.add_url_rule('/get_server_time','get_server_time',self.get_server_time,methods=['GET'])
 
         self.app.before_first_request(self.init)
 
@@ -299,7 +305,7 @@ class APIServer:
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         return jsonify(output),200
 
-    @jwt_required
+    @jwt_required()
     def enqueue(self):
         task = request.json
         if 'queue_loc' in task:
@@ -316,6 +322,22 @@ class APIServer:
         self.task_queue.put(package,queue_loc)
         return str(package['uuid']),200
 
+    
+    def _uuid_to_qpos(self,uuid):
+        for idx,item in enumerate(list(self.task_queue.queue)):
+            if item['uuid'] == uuid:
+                pos = idx
+            break
+            
+    # @jwt_required
+    def remove_item(self,uuid):
+        with self.task_queue.lock: #hold the lock so that the UUID-to-index mapping will be guaranteed to hold during the delete operation.
+            self.task_queue.remove(self._uuid_to_qpos(uuid))
+    # @jwt_required
+    def swap_item(self,uuid,pos):
+        with self.task_queue.lock: #hold lock so that UUID-to-index map is held.
+            self.task_queue.move(self._uuid_to_qpos(uuid),pos=pos)
+    
     def clear_queue(self):
         self.task_queue.queue.clear()
         return 'Success',200
@@ -370,10 +392,14 @@ class APIServer:
         #expires = datetime.timedelta(days=1)
         self.app.logger.info(f'Creating login token for user {username}')
         token = create_access_token(identity=username)#,expires=expires)
-        return jsonify(token=token), 200
+        return jsonify(token=token.decode('utf8')), 200
+    
+    def get_server_time(self):
+        now = datetime.datetime.now().strftime('%H:%M:%S - %y/%m/%d')
+        return now
 
     
-    @jwt_required
+    # @jwt_required
     def login_test(self):
         username = get_jwt_identity()
         self.app.logger.info(f'Login test for {username} successful')

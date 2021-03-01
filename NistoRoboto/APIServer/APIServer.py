@@ -111,7 +111,8 @@ class APIServer:
         self.app.add_url_rule('/get_queued_commands','get_queued_commands',self.get_queued_commands,methods=['GET'])
         self.app.add_url_rule('/get_unqueued_commands','get_unqueued_commands',self.get_unqueued_commands,methods=['GET'])
         self.app.add_url_rule('/get_server_time','get_server_time',self.get_server_time,methods=['GET'])
-
+        self.app.add_url_rule('/remove_item','remove_item',self.remove_item,methods=['POST'])
+        self.app.add_url_rule('/move_item','move_item',self.move_item,methods=['POST'])
         self.app.before_first_request(self.init)
 
     def get_unqueued_commands(self):
@@ -305,7 +306,7 @@ class APIServer:
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         return jsonify(output),200
 
-    @jwt_required()
+    #@jwt_required()
     def enqueue(self):
         task = request.json
         if 'queue_loc' in task:
@@ -325,18 +326,22 @@ class APIServer:
     
     def _uuid_to_qpos(self,uuid):
         for idx,item in enumerate(list(self.task_queue.queue)):
-            if item['uuid'] == uuid:
+            if str(item['uuid']) == uuid: 
                 pos = idx
-            break
+                break
+        return pos
             
     # @jwt_required
-    def remove_item(self,uuid):
-        with self.task_queue.lock: #hold the lock so that the UUID-to-index mapping will be guaranteed to hold during the delete operation.
-            self.task_queue.remove(self._uuid_to_qpos(uuid))
+    def remove_item(self):
+        uuid=request.json['uuid']
+        self.task_queue.remove(self._uuid_to_qpos(uuid))
+        return 'Success',200
     # @jwt_required
-    def swap_item(self,uuid,pos):
-        with self.task_queue.lock: #hold lock so that UUID-to-index map is held.
-            self.task_queue.move(self._uuid_to_qpos(uuid),pos=pos)
+    def move_item(self):
+        uuid = request.json['uuid']
+        pos = request.json['pos']
+        self.task_queue.move(self._uuid_to_qpos(uuid),new_index=pos)
+        return 'Success',200
     
     def clear_queue(self):
         self.task_queue.queue.clear()
@@ -392,7 +397,7 @@ class APIServer:
         #expires = datetime.timedelta(days=1)
         self.app.logger.info(f'Creating login token for user {username}')
         token = create_access_token(identity=username)#,expires=expires)
-        return jsonify(token=token.decode('utf8')), 200
+        return jsonify(token=token),200 #.decode('utf8')), 200
     
     def get_server_time(self):
         now = datetime.datetime.now().strftime('%H:%M:%S - %y/%m/%d')

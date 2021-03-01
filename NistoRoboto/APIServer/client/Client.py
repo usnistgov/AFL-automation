@@ -147,3 +147,17 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to queue_state command failed with status_code {response.status_code}\n{response.content}')
         return response
+    
+    
+    def remove_item(self,uuid):
+        response = requests.post(self.url+'/remove_item',headers=self.headers,json={'uuid':uuid})
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to remove_item command failed with status_code {response.status_code}\n{response.content}')
+        return response
+    
+    
+    def move_item(self,uuid,pos):
+        response = requests.post(self.url+'/move_item',headers=self.headers,json={'uuid':uuid,'pos':pos})
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to move_item command failed with status_code {response.status_code}\n{response.content}')
+        return response

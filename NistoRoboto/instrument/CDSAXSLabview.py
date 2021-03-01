@@ -173,7 +173,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 exposure=self.getExposure(lv=lv)
 
             self.setNScans(1,lv=lv)
-            self.setSweepAxis('None',lv=lv)
+            #self.setSweepAxis('None',lv=lv)
             
                 
             if self.app is not None:
@@ -181,9 +181,11 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
 
 
             self._setLabviewValue('Expose Pilatus',True,lv=lv)
-            time.sleep(0.5)
+            #time.sleep(0.5)
             if block or reduce_data:
-                while(self.getStatus(lv=lv) != 'Success'):
+                while(self.getStatus(lv=lv) != 'Loading Image'):
+                    time.sleep(0.1)
+                while(self.getStatus(lv=lv) != 'Success' and self.getStatus(lv=lv) != 'Collection Aborted'):
                     time.sleep(0.1)
 
                 if reduce_data:

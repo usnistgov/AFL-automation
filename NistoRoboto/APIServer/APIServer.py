@@ -319,6 +319,22 @@ class APIServer:
         self.task_queue.put(package,queue_loc)
         return str(package['uuid']),200
 
+    
+    def _uuid_to_qpos(self,uuid):
+        for idx,item in enumerate(list(self.task_queue.queue)):
+            if item['uuid'] == uuid:
+                pos = idx
+            break
+            
+    # @jwt_required
+    def remove_item(self,uuid):
+        with self.task_queue.lock: #hold the lock so that the UUID-to-index mapping will be guaranteed to hold during the delete operation.
+            self.task_queue.remove(self._uuid_to_qpos(uuid))
+    # @jwt_required
+    def swap_item(self,uuid,pos):
+        with self.task_queue.lock: #hold lock so that UUID-to-index map is held.
+            self.task_queue.move(self._uuid_to_qpos(uuid),pos=pos)
+    
     def clear_queue(self):
         self.task_queue.queue.clear()
         return 'Success',200

@@ -5,6 +5,7 @@ import time
 from NistoRoboto.APIServer.driver.Driver import Driver
 from NistoRoboto.instrument.ScatteringInstrument import ScatteringInstrument
 import numpy as np # for return types in get data
+import os
 
 
 class CDSAXSLabview(ScatteringInstrument,Driver):
@@ -26,7 +27,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     
     axis_id_to_name_lut = {value:key for key, value in axis_name_to_id_lut.items()}
     
-    def __init__(self,vi=r'C:\saxs_control\GIXD controls.vi',**kwargs):
+    def __init__(self,vi=r'C:\saxs_control\GIXD controls.vi',reduced_data_dir=None,**kwargs):
         '''
         connect to locally running labview vi with win32com and 
 
@@ -42,6 +43,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         
         self.setReductionParams({'poni1':0.0246703,'poni2':0.1495366,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':3.484,'npts':500})
         self.setMaskPath(r'Y:\Peter automation software\CDSAXS_mask_20210225_2.edf')
+        if reduced_data_dir is not None:
+            os.chdir(reduced_data_dir)
 
 
     @Driver.unqueued()        
@@ -85,6 +88,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     @Driver.unqueued(render_hint='2d_img',log_image=True,lv=None)
     def getData(self,lv=None,**kwargs):
         data = np.array(self._getLabviewValue('Pilatus Data',lv=lv))
+        return data
 
     def setPath(self,path,lv=None):
         if self.app is not None:
@@ -101,7 +105,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     def getNScans(self,lv=None):
         return self._getLabviewValue('# of Scans',lv=lv)
         
-    def setNScans(self,nscans,lv=lv):
+    def setNScans(self,nscans,lv=None):
         self._setLabviewValue('# of Scans',nscans,lv=lv)
     
     @Driver.unqueued()  
@@ -230,7 +234,7 @@ class LabviewConnection():
         pythoncom.CoInitialize()
         self.labview = win32com.client.dynamic.Dispatch("Labview.Application")
         self.main_vi = self.labview.getvireference(self.vi)
-        self.main_vi.setcontrolvalue('Measurement',3) # 3 should bring the single Pilatus tab to the front
+        #self.main_vi.setcontrolvalue('Measurement',3) # 3 should bring the single Pilatus tab to the front
         return self
 
     def __exit__(self,exittype,value,traceback):

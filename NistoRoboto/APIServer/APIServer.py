@@ -253,10 +253,13 @@ class APIServer:
 
     def send_array_as_jpg(self,array,log_image=False,max_val=None,fillna=0.0,**kwargs):
         #img = Image.fromarray(array.astype('uint8'))
+        #self.app.logger.info(type(array))
         array = np.nan_to_num(array,nan=fillna)
+        #self.app.logger.info(str(array))
         if type(log_image) is str:
             log_image = strtobool(log_image)
         if log_image:
+
             array = np.log(array)
         if max_val is None:
             self.app.logger.info(f'Serving image, max val = {np.amax(array)}, min val = {np.amin(array)}, total cts = {np.sum(array)}')

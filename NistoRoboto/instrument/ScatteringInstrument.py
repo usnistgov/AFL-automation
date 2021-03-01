@@ -87,23 +87,25 @@ class ScatteringInstrument():
             filename1d = None
             filename2d = None
 
-        if reduce_type == '1d':
+        if reduce_type == '1d' or write_data:
             res = self.integrator.integrate1d(img,
                 self.reduction_params['npts'],
                 unit='q_A^-1',
                 mask=mask,
                 error_model='azimuthal',
                 filename=filename1d)
-            res = np.array(res)
-        elif reduce_type == '2d':
+            if reduce_type == '1d':
+                retval = np.array(res)
+        if reduce_type == '2d' or write_data:
             res = self.integrator.integrate2d(img,
                 self.reduction_params['npts'],
                 unit='q_A^-1',
                 mask=mask,
                 error_model='azimuthal',
                 filename=filename2d)    
-            res = np.array(res.intensity)
-        else:
+            if reduce_type == '2d':
+                retval = np.array(res.intensity)
+        if reduce_type != '1d' and reduce_type != '2d':
             raise ValueError('unsupported return_type')
         reduced_image = datetime.datetime.now()
         
@@ -112,7 +114,7 @@ class ScatteringInstrument():
         except AttributeError:
             pass
         
-        return res
+        return retval
 
 
 

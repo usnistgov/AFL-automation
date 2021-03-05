@@ -320,6 +320,7 @@ class APIServer:
         package = {'task':task,'meta':{},'uuid':uuid.uuid4()}
         package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
         self.task_queue.put(package,queue_loc)
+
         return str(package['uuid']),200
 
     
@@ -392,7 +393,13 @@ class APIServer:
         #expires = datetime.timedelta(days=1)
         self.app.logger.info(f'Creating login token for user {username}')
         token = create_access_token(identity=username)#,expires=expires)
-        return jsonify(token=token.decode('utf8')), 200
+        
+        try:
+            #sometimes the token comes as a bytestring, possible due to different versions of jwt
+            token = token.decode('utf8')
+        except AttributeError:
+            pass
+        return jsonify(token=token), 200
     
     def get_server_time(self):
         now = datetime.datetime.now().strftime('%H:%M:%S - %y/%m/%d')

@@ -45,7 +45,36 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         self.setMaskPath(r'Y:\Peter automation software\CDSAXS_mask_20210225_2.edf')
         if reduced_data_dir is not None:
             os.chdir(reduced_data_dir)
+        self.config = {}
+        self.config['beamstop axis'] = 'Beamstop-z'
+        self.config['beamstop in'] = 12.5
+        self.config['beamstop out'] = 3
+        self.config['sample axis'] = 'Z-stage'
+        self.config['sample in'] = 25.75
+        self.config['sample out'] = 27.0
+        self.config['empty transmission'] = None
+        self.config['transmission strategy'] = 'sum'
+        
+        
 
+    def measureTransmission(self,exp=5,fn='trans',set_empty_transmission=False,lv=None):
+        with (LabviewConnection() if lv is None else lv) as lv:
+            self.moveAxis(self.config['beamstop axis'],self.config['beamstop out'],lv=lv)
+            open_beam = self.moveAxis(self.config['sample axis'],self.config['sample out'],exposure=exp,filename = 't-open-beam-'+fn,return_data=True,lv=lv)
+            sample_transmission = self.moveAxis(self.config['sample axis'],self.config['sample in'],exposure=exp,filename = 't-'+fn,return_data=True,lv=lv)
+            self.moveAxis(self.config['beamstop axis'],self.config['beamstop in'],lv=lv,block=False)
+            trans = np.nan_to_num(sample_transmission).sum() / np.nan_to_num(open_beam).sum()
+            self.app.logger.info(f'Measured raw transmission of {trans*100}%, with {np.nan_to_num(sample_transmission).sum()} counts on samp and {np.nan_to_num(open_beam).sum()} in open beam.')
+            if set_empty_transmission:
+                self.config['empty transmission'] = trans
+                retval = 'Done'
+            if self.config['empty transmission'] is not None:
+                retval = trans / self.config['empty transmission']
+                self.app.logger.info(f'Scaling raw transmission of {trans*100}% using empty transmission of {self.config['empty transmission']*100} % for reported sample transmission of {retval*100}%')
+            else:
+                retval = trans
+            return retval
+        
 
     @Driver.unqueued()        
     def getExposure(self,lv=None):
@@ -77,8 +106,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         if self.app is not None:
             self.app.logger.debug(f'Setting filename to {name}')
 
-        if '\\' in name:
-            raise ValueError('cannot have slashes in filename')
+        name = name.replace('\\','').replace('/','').replace(':','')
             
         exposure = self.getExposure()
 
@@ -113,7 +141,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         return self.axis_id_to_name_lut[self._getLabviewValue('Sweep Axis',lv=lv)]
 
     def setSweepAxis(self,axis,lv=None):
-        if type(axis)=='str':
+        print(f'setting sweep axis to {axis}')
+        if type(axis) is str:
             axis=self.axis_name_to_id_lut[axis]
         self._setLabviewValue('Sweep Axis',axis,lv=lv) # this is an enum, 6 is Y-stage
     
@@ -127,7 +156,24 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     def getXStagePos(self,lv=None):
         return self._getLabviewValue('X-Stage',lv=lv)
     
-    
+    def moveAxis(self,axis,value,exposure=0.001,filename = 'axis-move',return_data=False,block=True,lv=None):
+        #this is very hacky, I apologize.  The strategy is simply to set a sweep and do an exposure.  This is because of  labview-COM issue where we can't click the 'move axis' button.
+        
+        with (LabviewConnection() if lv is None else lv) as lv:
+            self.setSweepAxis(axis,lv=lv)
+            self.setSweepStart(value,lv=lv)
+            self.setExposure(exposure,lv=lv)
+            self.setFilename(filename,lv=lv)
+            self.setNScans(1,lv=lv)
+            self._setLabviewValue('Expose Pilatus',True,lv=lv)
+            if block or return_data:
+                while(self.getStatus(lv=lv) != 'Loading Image'):
+                    time.sleep(0.1)
+                while(self.getStatus(lv=lv) != 'Success' and self.getStatus(lv=lv) != 'Collection Aborted'):
+                    time.sleep(0.1)
+            if return_data:
+                return self.getData(lv=lv)
+        
     def setSweepStart(self,start,lv=None):
         self._setLabviewValue('Start Value',start,lv=lv)
         
@@ -144,24 +190,18 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
 
 
     def _getLabviewValue(self,val_name,lv=None):
-        if lv is None:
-            with LabviewConnection() as lv:
-                ret_val = lv.main_vi.getcontrolvalue(val_name)
-        else:
-            ret_val = lv.main_vi.getcontrolvalue(val_name)
-        return ret_val
+        with (LabviewConnection() if lv is None else lv) as lv:
+            return lv.main_vi.getcontrolvalue(val_name)
+
 
     def _setLabviewValue(self,val_name,val_val,lv=None):
-        if lv is None:
-            with LabviewConnection() as lv:
-                lv.main_vi.setcontrolvalue(val_name,val_val)
-        else:
+        with (LabviewConnection() if lv is None else lv) as lv:
             lv.main_vi.setcontrolvalue(val_name,val_val)
 
 
-    def expose(self,name=None,exposure=None,block=True,reduce_data=True):
-        with LabviewConnection() as lv:
 
+    def expose(self,name=None,exposure=None,block=True,reduce_data=True,measure_transmission=True,lv=None):
+        with (LabviewConnection() if lv is None else lv) as lv:
             if name is not None:
                 self.setFilename(name,lv=lv)
             else:
@@ -173,7 +213,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 exposure=self.getExposure(lv=lv)
 
             self.setNScans(1,lv=lv)
-            #self.setSweepAxis('None',lv=lv)
+            self.setSweepAxis('None',lv=lv)
             
                 
             if self.app is not None:
@@ -182,12 +222,13 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
 
             self._setLabviewValue('Expose Pilatus',True,lv=lv)
             #time.sleep(0.5)
-            if block or reduce_data:
+            if block or reduce_data or measure_transmission:
                 while(self.getStatus(lv=lv) != 'Loading Image'):
                     time.sleep(0.1)
                 while(self.getStatus(lv=lv) != 'Success' and self.getStatus(lv=lv) != 'Collection Aborted'):
                     time.sleep(0.1)
-
+                if measure_transmission:
+                    transmission = self.measureTransmission()
                 if reduce_data:
                     self.getReducedData(write_data=True,filename_kwargs={'lv':lv})
 
@@ -217,7 +258,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         if block:
             while(self.getStatus() != 'Success'):
                 time.sleep(0.1)
-
+                
+                
 class LabviewConnection():
 
     def __init__(self,vi=r'C:\saxs_control\GIXD controls.vi'):

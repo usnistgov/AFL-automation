@@ -91,6 +91,9 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.rinse_prime_vol = 3
 
         self.rinse_vol_ml = 3
+        
+        self.dry_vol_ml = 2
+
         self.blow_out_vol = 6
         self.nrinses_cell_flood = 2
         self.nrinses_syringe = 2
@@ -214,7 +217,9 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
 
         if not self.cell_state[cellname] =='clean':
             self.rinseCell(cellname=cellname)
-        
+       
+        self.drySyringe()
+
         self.pump.setRate(self.load_speed)
         self.pump.flow_delay = self.load_flow_delay
 
@@ -280,6 +285,13 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
             self.transfer('rinse','waste',self.rinse_vol_ml)
         self.syringe_dirty = False
 
+    def drySyringe(self):
+        '''
+            transfer from air to waste, to push out any residual liquid.
+        '''
+        self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
+        self.transfer('air','waste',self.dry_vol_ml)
         
     def rinseCell(self,cellname='cell'):
         self.pump.setRate(self.rinse_speed)

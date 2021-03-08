@@ -306,7 +306,7 @@ class APIServer:
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         return jsonify(output),200
 
-    #@jwt_required()
+    @jwt_required()
     def enqueue(self):
         task = request.json
         if 'queue_loc' in task:
@@ -332,12 +332,12 @@ class APIServer:
                 break
         return pos
             
-    # @jwt_required
+    @jwt_required
     def remove_item(self):
         uuid=request.json['uuid']
         self.task_queue.remove(self._uuid_to_qpos(uuid))
         return 'Success',200
-    # @jwt_required
+    @jwt_required
     def move_item(self):
         uuid = request.json['uuid']
         pos = request.json['pos']

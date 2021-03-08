@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import datetime
 import fabio
+import h5py,six
 
 
 class ScatteringInstrument():
@@ -66,7 +67,7 @@ class ScatteringInstrument():
         return self.detector_name
 
     @Driver.unqueued(render_hint='1d_plot',xlin=False,ylin=False,xlabel='q (A^-1)',ylabel='Intensity (AU)')
-    def getReducedData(self,reduce_type='1d',write_data=False,filename_kwargs={},**kwargs):
+    def getReducedData(self,reduce_type='1d',write_data=False,filename=None,filename_kwargs={},**kwargs):
         start_time = datetime.datetime.now()
         
         
@@ -80,7 +81,8 @@ class ScatteringInstrument():
             mask = self.mask
 
         if write_data:
-            filename = self.getFilename(**filename_kwargs)
+            if filename is None:
+                filename = self.getFilename(**filename_kwargs)
             filename1d = filename+'_r1d.csv'
             filename2d = filename+'_r2d.edf'
         else:
@@ -115,6 +117,81 @@ class ScatteringInstrument():
             pass
         
         return retval
+
+    def _writeNexus(self,data,filename,sample_name,transmission):
+        timestamp = 'T'.join(str(datetime.datetime.now()))
+        with h5py.File(filename+'.h5','w') as f:
+            f.attrs[u'default'] = u'entry'
+            f.attrs[u'file_name'] = filename
+            f.attrs[u'file_time'] = timestamp
+            f.attrs[u'instrument'] = self.__instrument_name__
+            f.attrs[u'creator'] = u'NistoRoboto ScatteringInstrument driver'
+            f.attrs[u'NeXus_version'] = u'4.3.0'
+            f.attrs[u'HDF5_version'] = six.u(h5py.version.hdf5_version)
+            f.attrs[u'h5py_version'] = six.u(h5py.version.version)
+
+            nxentry = f.create_group(u'entry')
+            nxentry.attrs[u'NX_class'] = u'NXentry'
+            nxentry.attrs[u'canSAS_class'] = u'SASentry'
+            nxentry.attrs[u'default'] = u'data'
+            nxentry.create_dataset(u'title',data=filename)
+            
+            nxinstr = nxentry.create_group(u'instrument')
+            nxinstr.attrs[u'NX_class'] = u'NXinstrument'
+            nxinstr.attrs[u'canSAS_class'] = u'SASinstrument'
+            try:
+                nxinstr.create_dataset(u'temp_pyfai_calib',data=self.reduction_params)
+            except:
+                pass
+            nxsrc = nxentry.create_group(u'source')
+            nxsrc.attrs[u'NX_class'] = u'NXsource'
+            nxsrc.attrs[u'canSAS_class'] = u'SASsource'
+            wl = nxsrc.create_dataset(u'wavelength',data=self.reduction_params['wavelength']) #@TODO: are these units right?
+            wl.attrs[u'unit'] = u'm'
+            nxsamp = nxentry.create_group(u'sample')
+            nxsamp.attrs[u'NX_class'] = u'sample'
+            nxsamp.attrs[u'canSAS_class'] = u'sample'
+            
+            nxsamp.create_dataset(u'name',data=sample_name)
+            
+            nxtrans = nxsamp.create_dataset(u'transmission',data=transmission[0])
+            nxtrans.attrs[u'open_cts'] = transmission[1]
+            nxtrans.attrs[u'sample_cts'] = transmission[2]
+            try:
+                nxtrans.attrs[u'empty_trans'] = transmission[3]
+            except IndexError:
+                pass
+                
+            nxdata = nxentry.create_group('sasdata')
+            nxdata.attrs[u'NX_class'] = u'NXdata'
+            nxdata.attrs[u'canSAS_class'] = u'SASdata'
+            nxdata.attrs[u'signal'] = u'I'
+            nxdata.attrs[u'I_axes'] = u'pix_x,pix_y'
+            
+            ds = nxdata.create_dataset(u'I',data=data)
+            ds.attrs[u'units'] = u'arbitrary'
+            ds.attrs[u'long_name'] = u'Intensity (arbitrary units)'
+            ds.attrs[u'signal'] = 1
+            
+    def _appendReducedToNexus(self,data,filename,sample_name):
+        with h5py.File(filename+'.h5','a') as f:
+            nxentry = f['entry']
+            
+            nxdata = nxentry.create_group('sasdata_reduced')
+            nxdata.attrs[u'NX_class'] = u'NXdata'
+            nxdata.attrs[u'canSAS_class'] = u'SASdata'
+            nxdata.attrs[u'signal'] = u'I'
+            nxdata.attrs[u'I_axes'] = u'|Q|'
+            
+            Ids = nxdata.create_dataset(u'I',data=data[1])
+            Ids.attrs[u'units'] = u'arbitrary'
+            Ids.attrs[u'long_name'] = u'Intensity (arbitrary units)'
+            Ids.attrs[u'signal'] = 1
+            
+            Qds = nxdata.create_dataset(u'I',data=data[0])
+            Qds.attrs[u'units'] = u'arbitrary'
+            Qds.attrs[u'long_name'] = u'Intensity (arbitrary units)'
+            Qds.attrs[u'signal'] = 1
 
 
 

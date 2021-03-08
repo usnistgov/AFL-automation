@@ -4,10 +4,8 @@ import copy
 import numbers
 from pyparsing import ParseException
 
-from NistoRoboto.shared.units import units
+from NistoRoboto.shared.units import units,AVOGADROS
 from NistoRoboto.prep.types import types
-
-AVOGADROS_NUMBER = 6.0221409e+23*units('1/mol')
 
 class Component(object):
     '''Base class for all materials

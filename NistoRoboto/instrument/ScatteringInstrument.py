@@ -10,13 +10,24 @@ import h5py,six
 class ScatteringInstrument():
 
     def __init__(self,
-                reduction_params={'poni1':0,'poni2':0,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':2.5,'npts':500},
-                detector_name='pilatus300kw',
+                reduction_params=None,
+                detector_name=None,
                 mask_path=None,
                 ):
-        self.reduction_params = reduction_params
-        self.detector_name = detector_name
-        self.mask_path = mask_path
+        if self.config_override is None:
+            self.config_override = {}
+        if self.config_default is None:
+            self.config_default = {}
+        self.config_default['reduction_params'] = {'poni1':0,'poni2':0,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':2.5,'npts':500}
+        self.config_default['detector_name'] = 'pilatus300kw'
+        self.config_default['mask_path'] = None
+        if self.reduction_params is not None:
+            self.config_override['reduction_params'] = reduction_params
+        if self.detector_name is not None:
+            self.config_override['detector_name'] = detector_name
+        if self.mask_path is not None:
+            self.config_override['mask_path'] = mask_path
+
         self.generateIntegrator()
 
     def cell_in_beam(self,cellid):
@@ -28,43 +39,43 @@ class ScatteringInstrument():
         raise NotImplementedError
 
     def generateIntegrator(self):
-        self.detector = pyFAI.detector_factory(name=self.detector_name)
-        if(self.mask_path is None):
+        self.detector = pyFAI.detector_factory(name=self.config['detector_name'])
+        if(self.config['mask_path'] is None):
             self.mask=None
         else:
-           self.mask = fabio.open(self.mask_path).data
+           self.mask = fabio.open(self.config['mask_path']).data
         self.integrator = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=self.detector,
-                                                                        wavelength = self.reduction_params['wavelength'],
-                                                                        dist = self.reduction_params['dist'],
-                                                                        poni1 = self.reduction_params['poni1'],
-                                                                        poni2 = self.reduction_params['poni2'],
-                                                                        rot1 = self.reduction_params['rot1'],
-                                                                        rot2 = self.reduction_params['rot2'],
-                                                                        rot3 = self.reduction_params['rot3'],
+                                                                        wavelength = self.config['reduction_params']['wavelength'],
+                                                                        dist = self.config['reduction_params']['dist'],
+                                                                        poni1 = self.config['reduction_params']['poni1'],
+                                                                        poni2 = self.config['reduction_params']['poni2'],
+                                                                        rot1 = self.config['reduction_params']['rot1'],
+                                                                        rot2 = self.config['reduction_params']['rot2'],
+                                                                        rot3 = self.config['reduction_params']['rot3'],
                                                                         )
 
     def setReductionParams(self,reduction_params):
-        self.reduction_params.update(reduction_params)
+        self.config['reduction_params'].update(reduction_params)
         self.generateIntegrator()
 
     def setMaskPath(self,mask_path):
-        self.mask_path = mask_path
+        self.config['mask_path'] = mask_path
         self.generateIntegrator()
 
     def setDetectorName(self,detector_name):
-        self.detector_name=detector_name
+        self.config['detector_name']=detector_name
 
     @Driver.unqueued()
     def getReductionParams(self):
-        return self.reduction_params
+        return self.config['reduction_params']
 
     @Driver.unqueued()
     def getMaskPath(self):
-        return self.mask_path
+        return self.config['mask_path']
 
     @Driver.unqueued()
     def getDetectorName(self):
-        return self.detector_name
+        return self.config['detector_name']
 
     @Driver.unqueued(render_hint='1d_plot',xlin=False,ylin=False,xlabel='q (A^-1)',ylabel='Intensity (AU)')
     def getReducedData(self,reduce_type='1d',write_data=False,filename=None,filename_kwargs={},**kwargs):
@@ -140,13 +151,13 @@ class ScatteringInstrument():
             nxinstr.attrs[u'NX_class'] = u'NXinstrument'
             nxinstr.attrs[u'canSAS_class'] = u'SASinstrument'
             try:
-                nxinstr.create_dataset(u'temp_pyfai_calib',data=self.reduction_params)
+                nxinstr.create_dataset(u'temp_pyfai_calib',data=self.config['reduction_params'])
             except:
                 pass
             nxsrc = nxentry.create_group(u'source')
             nxsrc.attrs[u'NX_class'] = u'NXsource'
             nxsrc.attrs[u'canSAS_class'] = u'SASsource'
-            wl = nxsrc.create_dataset(u'wavelength',data=self.reduction_params['wavelength']) #@TODO: are these units right?
+            wl = nxsrc.create_dataset(u'wavelength',data=self.config['reduction_params']['wavelength']) #@TODO: are these units right?
             wl.attrs[u'unit'] = u'm'
             nxsamp = nxentry.create_group(u'sample')
             nxsamp.attrs[u'NX_class'] = u'sample'

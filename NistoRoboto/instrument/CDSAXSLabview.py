@@ -36,29 +36,31 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
             vi: (str) the path to the LabView virtual instrument file for the main interface
 
         '''
-
+        
+        self.config_default = {}
+        self.config_default['beamstop axis'] = 'Beamstop-z'
+        self.config_default['beamstop in'] = 12.5
+        self.config_default['beamstop out'] = 3
+        self.config_default['sample axis'] = 'Z-stage'
+        self.config_default['sample in'] = 26.5
+        self.config_default['sample out'] = 25.0
+        self.config_default['empty transmission'] = None
+        self.config_default['transmission strategy'] = 'sum'
         self.app = None
         self.name = 'CDSAXSLabview'
         
-        super().__init__(**kwargs)
+        super(Driver).__init__(**kwargs)
+
+
         
-        self.setReductionParams({'poni1':0.0251146,'poni2':0.150719,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':3.4925,'npts':500})
-        self.setMaskPath(r'Y:\Peter automation software\CDSAXS_mask_20210306.edf')
+        #self.setReductionParams({'poni1':0.0251146,'poni2':0.150719,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':3.4925,'npts':500})
+        #self.setMaskPath(r'Y:\Peter automation software\CDSAXS_mask_20210306.edf')
         if reduced_data_dir is not None:
             os.chdir(reduced_data_dir)
-        self.config = {}
-        self.config['beamstop axis'] = 'Beamstop-z'
-        self.config['beamstop in'] = 12.5
-        self.config['beamstop out'] = 3
-        self.config['sample axis'] = 'Z-stage'
-        self.config['sample in'] = 26.5
-        self.config['sample out'] = 25.0
-        self.config['empty transmission'] = None
-        self.config['transmission strategy'] = 'sum'
-        
+
         self.__instrument_name__ = 'NIST CDSAXS instrument'
         
-        
+
 
     def measureTransmission(self,exp=5,fn='trans',set_empty_transmission=False,return_full=False,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:

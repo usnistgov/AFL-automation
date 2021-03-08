@@ -1,4 +1,6 @@
 from NistoRoboto.shared.utilities import listify
+from NistoRoboto.shared.PersistentConfig import PersistentConfig
+import pathlib
 from math import ceil,sqrt
 import inspect 
 def makeRegistrar():
@@ -39,6 +41,12 @@ class Driver:
             self.name = 'Driver'
         else:
             self.name = name
+
+        self.config = PersistentConfig(
+            path= (pathlib.Path.home() / 'NistoRoboto' / (self.name + '.json')),
+            defaults= (self.config_default if (self.config_default is not None) else None),
+            )
+
         
     def status(self):
         status = []

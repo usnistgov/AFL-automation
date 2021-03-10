@@ -10,9 +10,7 @@ from NistoRoboto.prep.types import types
 
 
 class Solute(Component):
-    '''Specialization class for solute components
-    
-    '''
+    '''Specialization class for solute components'''
     def __init__(self,name,mass=None,density=None,formula=None):
         super().__init__(name=name,mass=mass,formula=formula,density=density,volume=None)
         self._volume=None

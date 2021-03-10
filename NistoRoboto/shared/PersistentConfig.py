@@ -86,6 +86,12 @@ class PersistentConfig:
             
         self.lock = lock #In case of True, only lock configuration at end of constructor
                 
+    def __str__(self):
+        return f'<PersistentConfig entries: {len(self.config)} last_saved: {self._get_sorted_history_keys()[-1]}>'
+    
+    def __repr__(self):
+        return self.__str__()
+    
     def ___getitem__(self,key):
         '''Dictionary-like getter via config["param"]'''
         return self.config[key]
@@ -164,7 +170,7 @@ class PersistentConfig:
             key = self._get_datetime_key()
             self.history[key] = copy.deepcopy(self.config)
             with open(self.path,'w') as f:
-                json.dump(self.history,f)
+                json.dump(self.history,f,indent=4)
         else:
             warnings.warn(
                 '''

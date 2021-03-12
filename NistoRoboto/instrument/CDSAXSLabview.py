@@ -10,6 +10,16 @@ import os
 
 
 class CDSAXSLabview(ScatteringInstrument,Driver):
+    defaults['beamstop axis'] = 'Beamstop-z'
+    defaults['beamstop in'] = 12.5
+    defaults['beamstop out'] = 3
+    defaults['sample axis'] = 'Z-stage'
+    defaults['sample in'] = 26.5
+    defaults['sample out'] = 25.0
+    defaults['empty transmission'] = None
+    defaults['transmission strategy'] = 'sum'
+    defaults['vi'] = 'C:\saxs_control\GIXD controls.vi'
+    defaults['reduced_data_dir'] = None
     
     axis_name_to_id_lut = {
         'X-stage' : 0,
@@ -28,7 +38,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     
     axis_id_to_name_lut = {value:key for key, value in axis_name_to_id_lut.items()}
     
-    def __init__(self,vi=r'C:\saxs_control\GIXD controls.vi',reduced_data_dir=None,**kwargs):
+    def __init__(self,overrides=None):
         '''
         connect to locally running labview vi with win32com and 
 
@@ -38,27 +48,19 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         '''
 
         self.app = None
-        self.name = 'CDSAXSLabview'
+        Driver.__init__(self,name='CDSAXSLabview',defaults=self.gather_defaults(),overrides=overrides)
+        ScatteringInstrument.__init__(self)
         
-        super().__init__(**kwargs)
-        
-        self.setReductionParams({'poni1':0.0251146,'poni2':0.150719,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':3.4925,'npts':500})
-        self.setMaskPath(r'Y:\Peter automation software\CDSAXS_mask_20210306.edf')
-        if reduced_data_dir is not None:
+        if self.config['reduced_data_dir'] is not None:
             os.chdir(reduced_data_dir)
-        self.config = {}
-        self.config['beamstop axis'] = 'Beamstop-z'
-        self.config['beamstop in'] = 12.5
-        self.config['beamstop out'] = 3
-        self.config['sample axis'] = 'Z-stage'
-        self.config['sample in'] = 26.5
-        self.config['sample out'] = 25.0
-        self.config['empty transmission'] = None
-        self.config['transmission strategy'] = 'sum'
         
         self.__instrument_name__ = 'NIST CDSAXS instrument'
         
         
+
+    def setReducedDataDir(self,path):
+        self.config['reduced_data_dir'] = path
+        os.chdir(path)
 
     def measureTransmission(self,exp=5,fn='trans',set_empty_transmission=False,return_full=False,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:
@@ -69,7 +71,11 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
             trans = np.nan_to_num(sample_transmission).sum() / np.nan_to_num(open_beam).sum()
             self.app.logger.info(f'Measured raw transmission of {trans*100}%, with {np.nan_to_num(sample_transmission).sum()} counts on samp and {np.nan_to_num(open_beam).sum()} in open beam.')
             if set_empty_transmission:
+
+
+                #XXX! Should this be stored in config?
                 self.config['empty transmission'] = trans
+                 
                 retval = 'Done'
             elif self.config['empty transmission'] is not None:
                 if return_full:

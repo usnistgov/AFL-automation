@@ -161,7 +161,11 @@ class APIServer:
             self.app.logger.addHandler(mail_handler)
 
 
-        file_handler = FileHandler(f'nistoroboto.{self.name}.log')
+
+        path = pathlib.Path.home() / '.nistoroboto' 
+        path.mkdir(exist_ok=True,parents=True)
+        filepath = path / f'{self.name}.log'
+        file_handler = FileHandler(filepath)
         file_handler.setFormatter(logging.Formatter(
                 '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
                 ))

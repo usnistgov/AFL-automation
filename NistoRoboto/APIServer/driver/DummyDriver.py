@@ -2,14 +2,17 @@ from NistoRoboto.shared.utilities import listify
 from NistoRoboto.APIServer.driver.Driver import Driver
 from math import ceil,sqrt
 import numpy as np
+import pathlib
 
 class DummyDriver(Driver):
-    def __init__(self,name=None):
+    defaults = {}
+    defaults['speed of light'] = 3.0e8
+    defaults['density of water'] = 1.0
+    def __init__(self,name=None,overrides=None):
         self.app = None
         if name is None:
-            self.name = 'DummyDriver'
-        else:
-            self.name = name
+            name = 'DummyDriver'
+        Driver.__init__(self,name=name,defaults=self.gather_defaults(),overrides=overrides)
 
     def status(self):
         status = []
@@ -26,6 +29,11 @@ class DummyDriver(Driver):
         if 'task_name' in kwargs:
             if kwargs['task_name'] == 'error':
                 raise RuntimeError()
+            elif kwargs['task_name'] in ('get_parameter','get_parameters','set_parameter','set_parameters'):
+                task_name = kwargs.get('task_name',None)
+                del kwargs['task_name']
+                return_val = getattr(self,task_name)(**kwargs)
+                return return_val
 
     @Driver.queued()
     def test_command1(self,kwarg1=None,kwarg2=True):

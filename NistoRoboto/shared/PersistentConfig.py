@@ -22,7 +22,8 @@ class PersistentConfig:
         overrides=None, 
         lock=False,
         write=True,
-        datetime_key_format='%y/%d/%m %H:%M:%S'
+        max_history=10000,
+        datetime_key_format='%y/%d/%m %H:%M:%S.%f'
                 ):
         '''Constructor
         
@@ -57,6 +58,7 @@ class PersistentConfig:
         self.datetime_key_format = datetime_key_format
         self.write = write  
         self.lock = False  # In case of True, only lock configuration at end of constructor
+        self.max_history = max_history
         
         need_update=False
         if self.path.exists():
@@ -92,7 +94,7 @@ class PersistentConfig:
     def __repr__(self):
         return self.__str__()
     
-    def ___getitem__(self,key):
+    def __getitem__(self,key):
         '''Dictionary-like getter via config["param"]'''
         return self.config[key]
     
@@ -112,6 +114,10 @@ class PersistentConfig:
             
         self.config[key] = value
         self._update_history()
+
+    def __iter__(self):
+        for key,value in self.config.items():
+            yield key,value
     
     def update(self,update_dict): 
         '''Update several values in config at once
@@ -165,19 +171,6 @@ class PersistentConfig:
         return dates,values
             
         
-    def _update_history(self):
-        if self.write:
-            key = self._get_datetime_key()
-            self.history[key] = copy.deepcopy(self.config)
-            with open(self.path,'w') as f:
-                json.dump(self.history,f,indent=4)
-        else:
-            warnings.warn(
-                '''
-                PersistentConfig writing disabled. To save changes to config, 
-                set self.write to True.
-                '''
-            )
         
     def _get_datetime_key(self):
         return datetime.datetime.now().strftime(self.datetime_key_format)
@@ -197,3 +190,22 @@ class PersistentConfig:
             
         return keys
     
+    def _update_history(self):
+        if self.write:
+            if len(self.history)>self.max_history:
+                keys = self._get_sorted_history_keys()
+                #print(f'History reached max # of entries ( removing oldest key: {keys[0]}')
+                # delete all keys more than max history
+                for key in keys[:-self.max_history]:
+                    del self.history[key]
+            key = self._get_datetime_key()
+            self.history[key] = copy.deepcopy(self.config)
+            with open(self.path,'w') as f:
+                json.dump(self.history,f,indent=4)
+        else:
+            warnings.warn(
+                '''
+                PersistentConfig writing disabled. To save changes to config, 
+                set self.write to True.
+                '''
+            )

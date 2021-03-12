@@ -8,15 +8,19 @@ import h5py,six
 
 
 class ScatteringInstrument():
+    defaults = {}
+    defaults['poni1'] = 0.0251146,
+    defaults['poni2'] = 0.150719
+    defaults['rot1'] = 0
+    defaults['rot2'] = 0
+    defaults['rot3'] = 0
+    defaults['wavelength'] = 1.3421e-10
+    defaults['dist'] = 3.4925
+    defaults['npts'] = 500
+    defaults['detector_name'] = 'pilatus300kw'
+    defaults['mask_path'] = r'Y:\Peter automation software\CDSAXS_mask_20210306.edf'
 
-    def __init__(self,
-                reduction_params={'poni1':0,'poni2':0,'rot1':0,'rot2':0,'rot3':0,'wavelength':1.3421e-10,'dist':2.5,'npts':500},
-                detector_name='pilatus300kw',
-                mask_path=None,
-                ):
-        self.reduction_params = reduction_params
-        self.detector_name = detector_name
-        self.mask_path = mask_path
+    def __init__(self):
         self.generateIntegrator()
 
     def cell_in_beam(self,cellid):
@@ -29,42 +33,44 @@ class ScatteringInstrument():
 
     def generateIntegrator(self):
         self.detector = pyFAI.detector_factory(name=self.detector_name)
-        if(self.mask_path is None):
+        if(self.config['mask_path'] is None):
             self.mask=None
         else:
            self.mask = fabio.open(self.mask_path).data
-        self.integrator = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(detector=self.detector,
-                                                                        wavelength = self.reduction_params['wavelength'],
-                                                                        dist = self.reduction_params['dist'],
-                                                                        poni1 = self.reduction_params['poni1'],
-                                                                        poni2 = self.reduction_params['poni2'],
-                                                                        rot1 = self.reduction_params['rot1'],
-                                                                        rot2 = self.reduction_params['rot2'],
-                                                                        rot3 = self.reduction_params['rot3'],
-                                                                        )
+        self.integrator = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(
+                detector=self.detector,
+                wavelength = self.config['wavelength'],
+                dist       = self.config['dist'],
+                poni1      = self.config['poni1'],
+                poni2      = self.config['poni2'],
+                rot1       = self.config['rot1'],
+                rot2       = self.config['rot2'],
+                rot3       = self.config['rot3']
+                )
 
     def setReductionParams(self,reduction_params):
-        self.reduction_params.update(reduction_params)
+        self.config.update(reduction_params)
         self.generateIntegrator()
 
     def setMaskPath(self,mask_path):
-        self.mask_path = mask_path
+        self.config['mask_path'] = mask_path
         self.generateIntegrator()
 
     def setDetectorName(self,detector_name):
-        self.detector_name=detector_name
+        self.config['detector_name']=detector_name
 
     @Driver.unqueued()
     def getReductionParams(self):
-        return self.reduction_params
+        params = ['poni1', 'poni2', 'rot1', 'rot2', 'rot3', 'wavelength', 'dist', 'npts']
+        return {k:self.config[k] for k in params}
 
     @Driver.unqueued()
     def getMaskPath(self):
-        return self.mask_path
+        return self.config['mask_path']
 
     @Driver.unqueued()
     def getDetectorName(self):
-        return self.detector_name
+        return self.config['detector_name']
 
     @Driver.unqueued(render_hint='1d_plot',xlin=False,ylin=False,xlabel='q (A^-1)',ylabel='Intensity (AU)')
     def getReducedData(self,reduce_type='1d',write_data=False,filename=None,filename_kwargs={},**kwargs):
@@ -91,7 +97,7 @@ class ScatteringInstrument():
 
         if reduce_type == '1d' or write_data:
             res = self.integrator.integrate1d(img,
-                self.reduction_params['npts'],
+                self.config['npts'],
                 unit='q_A^-1',
                 mask=mask,
                 error_model='azimuthal',
@@ -100,7 +106,7 @@ class ScatteringInstrument():
                 retval = np.array(res)
         if reduce_type == '2d' or write_data:
             res = self.integrator.integrate2d(img,
-                self.reduction_params['npts'],
+                self.config['npts'],
                 unit='q_A^-1',
                 mask=mask,
                 error_model='azimuthal',
@@ -140,13 +146,13 @@ class ScatteringInstrument():
             nxinstr.attrs[u'NX_class'] = u'NXinstrument'
             nxinstr.attrs[u'canSAS_class'] = u'SASinstrument'
             try:
-                nxinstr.create_dataset(u'temp_pyfai_calib',data=self.reduction_params)
+                nxinstr.create_dataset(u'temp_pyfai_calib',data=self.getReductionParams())
             except:
                 pass
             nxsrc = nxentry.create_group(u'source')
             nxsrc.attrs[u'NX_class'] = u'NXsource'
             nxsrc.attrs[u'canSAS_class'] = u'SASsource'
-            wl = nxsrc.create_dataset(u'wavelength',data=self.reduction_params['wavelength']) #@TODO: are these units right?
+            wl = nxsrc.create_dataset(u'wavelength',data=self.config['wavelength']) #@TODO: are these units right?
             wl.attrs[u'unit'] = u'm'
             nxsamp = nxentry.create_group(u'sample')
             nxsamp.attrs[u'NX_class'] = u'sample'

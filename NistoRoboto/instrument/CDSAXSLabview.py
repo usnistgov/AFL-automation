@@ -10,6 +10,7 @@ import os
 
 
 class CDSAXSLabview(ScatteringInstrument,Driver):
+    defaults = {}
     defaults['beamstop axis'] = 'Beamstop-z'
     defaults['beamstop in'] = 12.5
     defaults['beamstop out'] = 3
@@ -19,7 +20,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     defaults['empty transmission'] = None
     defaults['transmission strategy'] = 'sum'
     defaults['vi'] = 'C:\saxs_control\GIXD controls.vi'
-    defaults['reduced_data_dir'] = None
+    defaults['reduced_data_dir'] = r'Y:\\CDSAXS data\\autoreduce\\'
     
     axis_name_to_id_lut = {
         'X-stage' : 0,
@@ -52,18 +53,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         ScatteringInstrument.__init__(self)
         
         if self.config['reduced_data_dir'] is not None:
-            os.chdir(reduced_data_dir)
+            os.chdir(self.config['reduced_data_dir'])
 
-        self.config = {}
-        self.config['beamstop axis'] = 'Beamstop-z'
-        self.config['beamstop in'] = 12.5
-        self.config['beamstop out'] = 3
-        self.config['sample axis'] = 'Z-stage'
-        self.config['sample in'] = 29.25
-        self.config['sample out'] = 26.5
-        self.config['empty transmission'] = None
-        self.config['transmission strategy'] = 'sum'
-        
         self.__instrument_name__ = 'NIST CDSAXS instrument'
         
         

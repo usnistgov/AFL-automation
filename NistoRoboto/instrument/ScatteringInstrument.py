@@ -9,7 +9,7 @@ import h5py,six
 
 class ScatteringInstrument():
     defaults = {}
-    defaults['poni1'] = 0.0251146,
+    defaults['poni1'] = 0.0251146
     defaults['poni2'] = 0.150719
     defaults['rot1'] = 0
     defaults['rot2'] = 0
@@ -32,11 +32,11 @@ class ScatteringInstrument():
         raise NotImplementedError
 
     def generateIntegrator(self):
-        self.detector = pyFAI.detector_factory(name=self.detector_name)
+        self.detector = pyFAI.detector_factory(name=self.config['detector_name'])
         if(self.config['mask_path'] is None):
             self.mask=None
         else:
-           self.mask = fabio.open(self.mask_path).data
+           self.mask = fabio.open(self.config['mask_path']).data
         self.integrator = pyFAI.azimuthalIntegrator.AzimuthalIntegrator(
                 detector=self.detector,
                 wavelength = self.config['wavelength'],

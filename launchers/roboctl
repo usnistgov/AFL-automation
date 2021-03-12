@@ -3,6 +3,8 @@
 import argparse
 import json 
 import subprocess,shlex
+import pathlib
+
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
@@ -10,10 +12,19 @@ if __name__=="__main__":
             )
     parser.add_argument('command',choices=['start','stop','restart','status'])
     parser.add_argument('server_names',nargs='*')
-    parser.add_argument('--config_file',default='/home/nistoroboto/nistoroboto/launchers/config.json')
+    parser.add_argument('-v',action='store_true')
+    parser.add_argument('--config_file',default='launchers.json')
+    parser.add_argument('--storage_path',default=pathlib.Path.home()/'.nistoroboto')
     args = parser.parse_args()
+
+    #make directory if it doesn't exist
+    storage_path = args.storage_path
+    args.storage_path.mkdir(exist_ok=True,parents=True)
+
+    config_file = storage_path / args.config_file
+
     
-    with open(args.config_file) as f:
+    with open(config_file) as f:
         server_config = json.load(f)
     
     for server_name in args.server_names:
@@ -25,32 +36,34 @@ if __name__=="__main__":
         host = server_config[server_name]['host']
         screen_name = server_config[server_name]['screen_name']
         server_script = server_config[server_name]['server_script']
+        screenlog_path = storage_path / f'{screen_name}.screenlog'
 
         if (args.command == 'stop') or (args.command == 'restart'):
             print(f'--> Stopping {screen_name} in screen session on {host}...')
             cmds.append(f'screen -X -S {screen_name} quit')
-            cmds.append(f'rm -f /tmp/nistoroboto.{screen_name}.screenlog.0')
+            # cmds.append(f'rm -f {screenlog_path}')
 
         if (args.command == 'start') or (args.command == 'restart'):
             print(f'--> Starting {screen_name} in screen session on {host}...')
-            cmds.append(f'screen -d -m -L -Logfile /tmp/nistoroboto.{screen_name}.screenlog.0 -S {screen_name} {server_script}')
+            cmds.append(f'screen -d -m -L -Logfile {screenlog_path} -S {screen_name} {server_script}')
             # cmds.append(f'screen -d -m -S {screen_name} {server_script}')
 
         if args.command == 'status':
             print(f'--> Getting status of {screen_name} in screen session on {host}...')
             cmds.append(f'screen -ls')
-            cmds.append(f'tail -n 100 /tmp/nistoroboto.{screen_name}.screenlog.0')
+            cmds.append(f'tail -n 100 {screenlog_path}')
 
         for cmd in cmds:
             if (not (host=='localhost')):
                 cmd = f"ssh {host} -f '{cmd}'"
 
-            print(f'--> Running command: {cmd}')
+            if args.v: print(f'--> Running command: {cmd}')
             p = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
             stdout = p.communicate()[0].decode('utf8')
-            print(f'--> Command Output↴\n{stdout}')
-            print(80*'-')
-    print('==>Done!')
+            if args.v: print(f'--> Command Output↴\n{stdout}')
+            if ('tail' in cmd or 'screen -ls' in cmd) and not args.v: print(f'{stdout}')
+            if args.v: print(80*'-')
+    if args.v: print('==>Done!')
         
 
 

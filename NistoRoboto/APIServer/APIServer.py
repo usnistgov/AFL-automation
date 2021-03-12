@@ -161,7 +161,11 @@ class APIServer:
             self.app.logger.addHandler(mail_handler)
 
 
-        file_handler = FileHandler(f'nistoroboto.{self.name}.log')
+
+        path = pathlib.Path.home() / '.nistoroboto' 
+        path.mkdir(exist_ok=True,parents=True)
+        filepath = path / f'{self.name}.log'
+        file_handler = FileHandler(filepath)
         file_handler.setFormatter(logging.Formatter(
                 '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
                 ))
@@ -332,12 +336,13 @@ class APIServer:
                 break
         return pos
             
-    @jwt_required
+    @jwt_required()
     def remove_item(self):
         uuid=request.json['uuid']
         self.task_queue.remove(self._uuid_to_qpos(uuid))
         return 'Success',200
-    @jwt_required
+
+    @jwt_required()
     def move_item(self):
         uuid = request.json['uuid']
         pos = request.json['pos']
@@ -411,7 +416,7 @@ class APIServer:
         return now
 
     
-    # @jwt_required
+    @jwt_required()
     def login_test(self):
         username = get_jwt_identity()
         self.app.logger.info(f'Login test for {username} successful')

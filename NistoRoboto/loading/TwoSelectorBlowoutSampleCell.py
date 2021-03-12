@@ -92,7 +92,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
 
         self.rinse_vol_ml = 3
         
-        self.dry_vol_ml = 2
+        self.dry_vol_ml = 5
 
         self.blow_out_vol = 6
         self.nrinses_cell_flood = 2

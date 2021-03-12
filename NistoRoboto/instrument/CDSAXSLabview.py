@@ -51,8 +51,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         self.config['beamstop in'] = 12.5
         self.config['beamstop out'] = 3
         self.config['sample axis'] = 'Z-stage'
-        self.config['sample in'] = 26.5
-        self.config['sample out'] = 25.0
+        self.config['sample in'] = 29.25
+        self.config['sample out'] = 26.5
         self.config['empty transmission'] = None
         self.config['transmission strategy'] = 'sum'
         
@@ -130,7 +130,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         if self.app is not None:
             self.app.logger.debug(f'Setting filename to {name}')
 
-        name = name.replace('\\','').replace('/','').replace(':','')
+        name = name.replace('\\','').replace('/','').replace(':','').replace('%','')
             
         exposure = self.getExposure()
 

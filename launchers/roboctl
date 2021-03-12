@@ -11,6 +11,7 @@ if __name__=="__main__":
     parser.add_argument('command',choices=['start','stop','restart','status'])
     parser.add_argument('server_names',nargs='*')
     parser.add_argument('--config_file',default='/home/nistoroboto/nistoroboto/launchers/config.json')
+    parser.add_argument('-v',action='store_true')
     args = parser.parse_args()
     
     with open(args.config_file) as f:
@@ -45,12 +46,13 @@ if __name__=="__main__":
             if (not (host=='localhost')):
                 cmd = f"ssh {host} -f '{cmd}'"
 
-            print(f'--> Running command: {cmd}')
+            if args.v: print(f'--> Running command: {cmd}')
             p = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
             stdout = p.communicate()[0].decode('utf8')
-            print(f'--> Command Output↴\n{stdout}')
-            print(80*'-')
-    print('==>Done!')
+            if args.v: print(f'--> Command Output↴\n{stdout}')
+            if ('tail' in cmd or 'screen -ls' in cmd) and not args.v: print(f'{stdout}')
+            if args.v: print(80*'-')
+    if args.v: print('==>Done!')
         
 
 

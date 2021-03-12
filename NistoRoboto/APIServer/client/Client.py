@@ -102,6 +102,15 @@ class Client:
             return meta
         else:
             return task_uuid
+
+    def set_config(self,interactive=None,**kwargs):
+        return self.enqueue(interactive=interactive,task_name='set_config',**kwargs)
+
+    def get_config(self,name,print_console=True,interactive=None):
+        if name == 'all':
+            return self.enqueue(interactive=interactive,task_name='get_configs',print_console=print_console)
+        else:
+            return self.enqueue(interactive=interactive,task_name='get_config',name=name,print_console=print_console)
    
     def query_driver(self,**kwargs):
         json=kwargs

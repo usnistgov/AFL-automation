@@ -247,7 +247,7 @@ class Deck:
                     phi_tc = sample.target_check.mass_fraction[name]
                     phi_t = sample.target.mass_fraction[name]
                     diff = (phi_tc - phi_t)/(phi_tc)
-                    diffs.append(diff/100)
+                    diffs.append(diff)
                     report += f'\t\t~~> {name} frac difference: {diff}\n'
 
                 diffs = np.array(diffs)

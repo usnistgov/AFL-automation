@@ -28,22 +28,29 @@ from NistoRoboto.prep.PipetteAction import PipetteAction
 from collections import defaultdict
 from itertools import cycle
 
-prep = OT2Client(interactive=True)
-prep.login('RobotoStation')
-prep.debug(False)
+import argparse
 
-inst = Client(ip='cdsaxs',port='5000',interactive=True)
-inst.login('RobotoStation')
-inst.debug(False)
+parser = argparse.ArgumentParser()
+parser.add_argument('--noclients',action='store_true')
+args = parser.parse_args()
+    
+if not args.noclients:
+    prep = OT2Client(interactive=True)
+    prep.login('RobotoStation')
+    prep.debug(False)
+    
+    inst = Client(ip='cdsaxs',port='5000',interactive=True)
+    inst.login('RobotoStation')
+    inst.debug(False)
+    
+    load = Client('piloader2',interactive=True)
+    load.login('RobotoStation')
+    load.debug(False)
 
-load = Client('piloader2',interactive=True)
-load.login('RobotoStation')
-load.debug(False)
 
-
-sample = Client(ip='localhost',port='5000',interactive=True)
-sample.login('RobotoStation')
-sample.debug(False)
+    sample = Client(ip='localhost',port='5000',interactive=True)
+    sample.login('RobotoStation')
+    sample.debug(False)
 
 def measureEmptyTransmission():
     load.enqueue(task_name='rinseCell',interactive=True)
@@ -104,6 +111,7 @@ def calibrateLoaderToCell():
     print(f'    @{vol_remaining}, trans={trans}')
     print('Scan complete')
     return data
+
 print('''
 
 Welcome to NistoRoboto's notebook interface!!

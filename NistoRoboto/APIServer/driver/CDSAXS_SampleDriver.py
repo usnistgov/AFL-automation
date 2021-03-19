@@ -109,7 +109,23 @@ class CDSAXS_SampleDriver(Driver):
     def process_sample(self,sample):
         name = sample['name']
 
+        targets = set()
         for task in sample['prep_protocol']:
+            targets.append(task.target_loc)
+
+        for task in sample['catch_protocol']:
+            targets.append(task.target_loc)
+
+        target_map = {}
+        for t in targets:
+            prep_target = self.prep_client.enqueue(task_name='get_prep_target',interactive=True)['return_val']
+            target_map[t] = prep_target
+
+        for task in sample['prep_protocol']:
+            if 'target' in task['source']:
+                task['source'] = target_map[task['source']]
+            if 'target' in task['dest']:
+                task['dest'] = target_map[task['dest']]
             self.prep_uuid = self.prep_client.transfer(**task)
  
         if self.catch_rinse_uuid is not None:
@@ -122,6 +138,10 @@ class CDSAXS_SampleDriver(Driver):
         
         self.update_status(f'Queueing sample {name} load into syringe loader')
         for task in sample['catch_protocol']:
+            if 'target' in task['source']:
+                task['source'] = target_map[task['source']]
+            if 'target' in task['dest']:
+                task['dest'] = target_map[task['dest']]
             self.catch_uuid = self.prep_client.transfer(**task)
         
         self.update_status(f'Waiting for sample prep/catch of {name} to finish: {self.catch_uuid}')

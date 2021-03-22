@@ -3,22 +3,8 @@ import numpy as np
 import periodictable
 
 from NistoRoboto.prepare.Solution import Solution
-from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
 from NistoRoboto.shared.units import units,has_units,is_mass,is_volume,is_molarity,is_concentration
 from NistoRoboto.shared.utilities import listify
-
-
-def componentFactory(name,preptype,formula=None,density=None,sld=None,description=None,**kw):
-    cls = prepRegistrar.registry[preptype]
-        
-    component = cls(
-        name    = name,
-        density =  density,
-        formula =  formula,
-        sld = sld,
-        description = description
-    )
-    return component
 
 
 def HD2OFactory(name,phi_D2O=None,sld=None,properties=None):

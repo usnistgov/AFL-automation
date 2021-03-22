@@ -3,12 +3,12 @@ import copy
 
 from NistoRoboto.prepare.Component import Component
 from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
-from NistoRoboto.prepare.factory import componentFactory
+from NistoRoboto.prepare.ComponentDB import componentFactory
 from NistoRoboto.shared.utilities import listify
 from NistoRoboto.shared.exceptions import EmptyException,NotFoundError
 from NistoRoboto.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER
 
-from NistoRoboto.prep import componentDB
+from NistoRoboto.prepare import db
 
 @prepRegistrar(PrepType.Solution)
 class Solution:
@@ -55,14 +55,14 @@ class Solution:
             solution = self.copy()
             
         try:
-            solution.components[name] = componentDB[name]
+            solution.components[name] = db[name]
         except NotFoundError:
             if name in properties:
                 #attempt to make component based on properties dict
                 solution.component[name] = componentFactory(name=name,**properties[name])
             else:
-                componentDB.add_interative()
-                solution.components[name] = componentDB[name]
+                db.add_interactive(name)
+                solution.components[name] = db[name]
             
         return solution
     

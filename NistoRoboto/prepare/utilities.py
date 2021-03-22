@@ -10,11 +10,11 @@ def make_locs(slot,nrows,ncols):
     return locs
 
 def make_wellplate_locs(slot,size):
-    if size==96
+    if size==96:
         locs = make_locs(slot,8,12)
-    elif size==24
+    elif size==24:
         locs = make_locs(slot,4,6)
-    elif size==6
+    elif size==6:
         locs = make_locs(slot,2,3)
     else:
         raise ValueError(f'Not set up for wellplate size: {size}')

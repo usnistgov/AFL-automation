@@ -82,9 +82,13 @@ class APIServer:
         self.app.add_url_rule('/login','login',self.login,methods=['POST'])
         self.app.add_url_rule('/login_test','login_test',self.login_test,methods=['GET','POST'])
         self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
-
+        self.app.add_url_rule('/is_server_live','is_server_live',self.is_server_live,methods=['GET'])
         self.app.before_first_request(self.init)
-
+        
+    def is_server_live(self):
+        self.app.logger.debug("Server is live.")
+        return 200
+        
     def init_logging(self,toaddrs=None):
         self.app.logger.setLevel(level=logging.DEBUG)
 

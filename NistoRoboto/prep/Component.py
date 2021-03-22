@@ -4,10 +4,8 @@ import copy
 import numbers
 from pyparsing import ParseException
 
-from NistoRoboto.shared.units import units
+from NistoRoboto.shared.units import units,AVOGADROS
 from NistoRoboto.prep.types import types
-
-AVOGADROS_NUMBER = 6.0221409e+23*units('1/mol')
 
 class Component(object):
     '''Base class for all materials
@@ -91,7 +89,7 @@ class Component(object):
     def mass(self,value):
         self._mass = value
         if self._has_mass and self._has_density:
-            self._volume = self._mass/self.density
+            self._volume = (self._mass/self.density).to_base_units()
         else:
             self._volume = None
 
@@ -110,7 +108,7 @@ class Component(object):
         self._volume = value
 
         if self._has_volume and self._has_density:
-            self._mass = self._volume*self.density
+            self._mass = (self._volume*self.density).to_base_units()
         else:
             self._mass = None
 

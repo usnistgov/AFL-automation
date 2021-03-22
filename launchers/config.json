@@ -1,0 +1,19 @@
+{
+  "robot": { 
+    "host":"piot2", 
+    "screen_name":"OT2Server", 
+    "server_script": "sh -i /root/user_storage/server_scripts/OT2.sh"
+   },
+
+  "loader": {
+    "host":"piloader2",
+    "screen_name":"LoaderServer",
+    "server_script": "/home/pi/NistoRoboto/server_scripts/OnePumpCetoni.sh"
+   },
+
+  "sample": {
+    "host":"localhost",
+    "screen_name":"SampleServer",
+    "server_script":"/home/nistoroboto/nistoroboto/server_scripts/SampleServer.sh" 
+  }
+}

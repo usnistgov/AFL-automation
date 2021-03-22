@@ -9,10 +9,19 @@ except:
 
 from NistoRoboto.APIServer.APIServer import APIServer
 from NistoRoboto.APIServer.driver.NICE_SampleDriver import NICE_SampleDriver
+from NistoRoboto.APIServer.driver.SampleDriver import SampleDriver
 
 
-driver =NICE_SampleDriver(
-        nice_url='NGBSANS.ncnr.nist.gov',
+# driver =NICE_SampleDriver(
+#         nice_url='NGBSANS.ncnr.nist.gov',
+#         load_url='piloader2:5000',
+#         prep_url='piot2:5000',
+#         camera_urls = [
+#             'http://robocam:8081/101/current',
+#             'http://robocam:8081/102/current',
+#             ]
+#         )
+driver =SampleDriver(
         load_url='piloader2:5000',
         prep_url='piot2:5000',
         camera_urls = [

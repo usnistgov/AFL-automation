@@ -26,7 +26,7 @@ from qmixsdk import qmixvalve
 from qmixsdk.qmixbus import UnitPrefix, TimeUnit
 
 import time
-
+import datetime
 class CetoniSyringePump(SyringePump):
 
     def __init__(self,deviceconfig,configdir='/home/pi/QmixSDK_Raspi/config/',lookupByName=False,pumpName=None,existingBus=None,syringeName=None,flow_delay=5):
@@ -137,12 +137,15 @@ class CetoniSyringePump(SyringePump):
         timer = qmixbus.PollingTimer(timeout_seconds * 1000)
         message_timer = qmixbus.PollingTimer(500)
         result = True
+        start = datetime.datetime.now()
         while (result == True) and not timer.is_expired():
             time.sleep(0.1)
             if message_timer.is_expired():
                 print("Fill level: ", pump.get_fill_level())
                 message_timer.restart()
             result = pump.is_pumping()
+            #print(f'Polling loop status: pump reports is_pumping() = {result}, timeout timer is_expired() = {timer.is_expired()}, it has been {datetime.datetime.now()-start} since start by snek-watch and expiration should be {timeout_seconds}')
+            
         return not result
         
 
@@ -156,9 +159,14 @@ class CetoniSyringePump(SyringePump):
         self.pump.stop()
 
     def withdraw(self,volume,block=True,delay=True):
+        rate = self.getRate()
+        expected_duration = volume / rate * 60 # anticipated duration of pump move in s
+
+        timeout = expected_duration + 30
+
+        timeout = max((timeout),30) # in case things get really weird.
         if self.app is not None:
-            rate = self.getRate()
-            self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min')
+            self.app.logger.debug(f'Withdrawing {volume}mL at {rate} mL/min, expected to take {expected_duration} s')
 
         if (self.getLevel()+volume) > self.max_volume:
             self.app.logger.warn(f'Requested withdrawal of {volume} but current level is {self.getLevel()} of a max {self.max_volume}.  Moving to {self.max_volume}')
@@ -166,21 +174,29 @@ class CetoniSyringePump(SyringePump):
 
         self.pump.aspirate(float(volume), self.rate)
         if block:
-            self.wait_dosage_finished(self.pump, 30)
+            self.wait_dosage_finished(self.pump, timeout)
         if delay:
             time.sleep(self.flow_delay)
         
     def dispense(self,volume,block=True,delay=True):
+        rate = self.getRate()
+        expected_duration = volume / rate * 60 # anticipated duration of pump move in s
+
+        timeout = expected_duration + 30
+
+        timeout = max((timeout),30) # in case things get really weird.
+
         if self.app is not None:
-            rate = self.getRate()
-            self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min')
+            self.app.logger.debug(f'Dispensing {volume}mL at {rate} mL/min, expected to take {expected_duration} s')
         if (self.getLevel() - volume) < 0:
             self.app.logger.warn(f'Requested dispense of {volume} but current level is {self.getLevel()} .  Moving to 0')
             self.setLevel(0)
 
+
+
         self.pump.dispense(float(volume), self.rate)
         if block:
-            self.wait_dosage_finished(self.pump, 30)
+            self.wait_dosage_finished(self.pump, timeout)
         if delay:
             time.sleep(self.flow_delay)
         

@@ -13,7 +13,6 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         a separate selector channel (in contrast to an inline selector cell where the cell is in the pump line).
 
         @TODO: write support for multiple cells on separate channels (up to 6 cells on a 10-position selector)
-        @TODO: figure out when/where to pull in air to the syringe to make up for extra_vol_to_empty_ml
 
 
     '''
@@ -35,8 +34,9 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
                       load_speed=10.0,
                       rinse_flow_delay=3.0,
                       load_flow_delay=10.0,
-                      rinse_tank_level=450,
+                      rinse_tank_level=950,
                       waste_tank_level=0,
+                      cell_waste_tank_level=0,
                       ):
         '''
             ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)
@@ -91,6 +91,9 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.rinse_prime_vol = 3
 
         self.rinse_vol_ml = 3
+        
+        self.dry_vol_ml = 5
+
         self.blow_out_vol = 6
         self.nrinses_cell_flood = 2
         self.nrinses_syringe = 2
@@ -106,6 +109,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
 
         self.rinse_tank_level = rinse_tank_level
         self.waste_tank_level = waste_tank_level
+        self.cell_waste_tank_level = cell_waste_tank_level
 
         #variables that we'll allow users to set via the API
         self.remote_parameters = [
@@ -148,6 +152,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         status.append(f'BlowSelectorState: {self.blowselector.portString}')
         status.append(f'Rinse tank: {self.rinse_tank_level} mL')
         status.append(f'Waste tank: {self.waste_tank_level} mL')
+        status.append(f'Cell Waste: {self.cell_waste_tank_level} mL')
         status.append(f'Pump: {self.pump.name}')
         status.append(f'Selector: {self.selector.name}')
         status.append(f'BlowSelector: {self.blowselector.name}')
@@ -192,6 +197,9 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         if dest == 'waste':
             self.waste_tank_level += vol_dest
 
+        if dest == 'cell':
+            self.cell_waste_tank_level += min(vol_source,vol_dest)
+
 
     def catchToSyringe(self,sampleVolume=0):
         self.pump.setRate(self.load_speed)
@@ -209,7 +217,9 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
 
         if not self.cell_state[cellname] =='clean':
             self.rinseCell(cellname=cellname)
-        
+       
+        self.drySyringe()
+
         self.pump.setRate(self.load_speed)
         self.pump.flow_delay = self.load_flow_delay
 
@@ -275,6 +285,13 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
             self.transfer('rinse','waste',self.rinse_vol_ml)
         self.syringe_dirty = False
 
+    def drySyringe(self):
+        '''
+            transfer from air to waste, to push out any residual liquid.
+        '''
+        self.pump.setRate(self.rinse_speed)
+        self.pump.flow_delay = self.rinse_flow_delay
+        self.transfer('air','waste',self.dry_vol_ml)
         
     def rinseCell(self,cellname='cell'):
         self.pump.setRate(self.rinse_speed)

@@ -17,6 +17,8 @@ class OT2Client(Client):
             air_gap=0,
             aspirate_rate=None,
             dispense_rate=None,
+            post_aspirate_delay=0.0,
+            post_dispense_delay=0.0,
             blow_out=False,
             ):
         '''Transfer fluid from one location to another
@@ -49,6 +51,8 @@ class OT2Client(Client):
             json['dest_loc'] = dest_loc
         json['aspirate_rate']=aspirate_rate
         json['dispense_rate']=dispense_rate
+        json['post_aspirate_delay']=post_aspirate_delay
+        json['post_dispense_delay']=post_dispense_delay
 
         UUID = self.enqueue(**json)
         return UUID

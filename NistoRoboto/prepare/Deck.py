@@ -1,9 +1,9 @@
 import numpy as np
-from NistoRoboto.prep.Sample import Sample
-from NistoRoboto.prep.SampleSeries import SampleSeries
-from NistoRoboto.prep.Mixture import Mixture
-from NistoRoboto.prep.MassBalance import MassBalance
-from NistoRoboto.prep.PipetteAction import PipetteAction
+from NistoRoboto.prepare.Sample import Sample
+from NistoRoboto.prepare.SampleSeries import SampleSeries
+from NistoRoboto.prepare.Solution import Solution
+from NistoRoboto.prepare.MassBalance import MassBalance
+from NistoRoboto.prepare.PipetteAction import PipetteAction
 from NistoRoboto.shared.exceptions import MixingException
 from NistoRoboto.shared.units import units
 import scipy.optimize
@@ -193,7 +193,7 @@ class Deck:
             if any([i[1]<0 for i in self.balancer.mass_transfers.values()]):
                 raise MixingException(f'Mass transfer calculation failed, negative mass transers present:\n{self.balancer.mass_transfers}')
 
-            target_check = Mixture()
+            target_check = Solution('target_check',components=[])
             for stock,(stock_loc,mass) in self.balancer.mass_transfers.items():
                 if mass>self.mass_cutoff:#tolerance
                     removed = stock.copy()

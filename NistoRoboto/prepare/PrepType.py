@@ -9,6 +9,7 @@ class PrepType(Enum):
     Solution=auto()
 
 
-# Registrar decorator for prepType classes
-prepRegistrar = makeRegistar()
+if not ('prepRegistrar' in locals()):
+    # Registrar decorator for prepType classes
+    prepRegistrar = makeRegistar()
 

@@ -14,17 +14,13 @@ import copy
 import random
 
 import NistoRoboto
-from NistoRoboto.prep.Component import Component
-from NistoRoboto.prep.Mixture import Mixture
-from NistoRoboto.prep.Deck import Deck
+import NistoRoboto.prepare
+from NistoRoboto import prepare
 from NistoRoboto.APIServer.client.Client import Client
 from NistoRoboto.APIServer.client.OT2Client import OT2Client
 from NistoRoboto.shared.utilities import tprint
 from NistoRoboto.shared.exceptions import MixingException
-from NistoRoboto.prep.util import make_locs
 from NistoRoboto.shared.units import units
-from NistoRoboto.prep.types import types
-from NistoRoboto.prep.PipetteAction import PipetteAction
 from collections import defaultdict
 from itertools import cycle
 

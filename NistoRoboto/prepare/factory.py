@@ -10,7 +10,7 @@ from NistoRoboto.shared.utilities import listify
 def HD2OFactory(name,phi_D2O=None,sld=None,properties=None):
     '''Create a list of H2O/D2O solutions'''
     solution_base = Solution(name,['H2O','D2O'])
-    solution_base.set_properties_from_dict(properties)
+    solution_base.set_properties_from_dict(properties,inplace=True)
     
     results = []
     if (phi_D2O is not None) and (sld is not None):

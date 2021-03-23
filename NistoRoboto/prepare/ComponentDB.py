@@ -52,7 +52,7 @@ class ComponentDB:
         
     def add(self,name,preptype,formula=None,density=None,sld=None,write=False,description=None,overwrite=False):
         if (not overwrite) and (name in self.db):
-            raise ValueError(f'{name} already exists in database!')
+            raise ValueError(f'{name} already exists in database!') from None
             
         self.db[name] = {
             'name':str(name),
@@ -68,7 +68,7 @@ class ComponentDB:
     def add_interactive(self,name):
         resp = input(f'==> Attempting to add {name} to ComponentDB, continue? [yes]:')
         if resp.lower() in ['n','no','nope']:
-            raise ValueError('Interactive add failed...')
+            raise ValueError('Interactive add failed...') from None
         
         description = input('--> Description of Component?:').strip()
         
@@ -80,7 +80,7 @@ class ComponentDB:
         elif not resp: #empty string, default to solute
             preptype = PrepType.Solute
         else:
-            raise ValueError(f'PrepType {resp.lower()} not recognized')
+            raise ValueError(f'PrepType {resp.lower()} not recognized') from None
         
         resp = input('--> Empirical formula? [None]:').strip()
         if not resp:

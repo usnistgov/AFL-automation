@@ -25,8 +25,8 @@ driver =SampleDriver(
         load_url='piloader2:5000',
         prep_url='piot2:5000',
         camera_urls = [
-            'http://robocam:8081/101/current',
             'http://robocam:8081/102/current',
+            'http://robocam:8081/105/current',
             ]
         )
 server = APIServer('SampleServer')

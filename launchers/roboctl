@@ -55,8 +55,7 @@ if __name__=="__main__":
             cmds.append(f'tail -n 100 ${{HOME}}/{screenlog_path}')
 
         for cmd in cmds:
-            if (not (host=='localhost')):
-                cmd = f"ssh {host} -f '{cmd}'"
+            cmd = f"ssh {host} -f '{cmd}'"
 
             if args.v: print(f'--> Running command: {cmd}')
             p = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)

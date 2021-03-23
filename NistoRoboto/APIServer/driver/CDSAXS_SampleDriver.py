@@ -135,12 +135,9 @@ class CDSAXS_SampleDriver(Driver):
             target_map[t] = prep_target
 
         for task in sample['prep_protocol']:
-            if 'target' in task['source']:
-                #if the well isn't in the map, just use the well
-                task['source'] = target_map.get(task['source'],task['source'])
-            if 'target' in task['dest']:
-                #if the well isn't in the map, just use the well
-                task['dest'] = target_map.get(task['dest'],task['dest'])
+            #if the well isn't in the map, just use the well
+            task['source'] = target_map.get(task['source'],task['source'])
+            task['dest'] = target_map.get(task['dest'],task['dest'])
             self.prep_uuid = self.prep_client.transfer(**task)
  
         if self.catch_rinse_uuid is not None:
@@ -154,12 +151,9 @@ class CDSAXS_SampleDriver(Driver):
         
         self.update_status(f'Queueing sample {name} load into syringe loader')
         for task in sample['catch_protocol']:
-            if 'target' in task['source']:
-                #if the well isn't in the map, just use the well
-                task['source'] = target_map.get(task['source'],task['source'])
-            if 'target' in task['dest']:
-                #if the well isn't in the map, just use the well
-                task['dest'] = target_map.get(task['dest'],task['dest'])
+            #if the well isn't in the map, just use the well
+            task['source'] = target_map.get(task['source'],task['source'])
+            task['dest'] = target_map.get(task['dest'],task['dest'])
             self.catch_uuid = self.prep_client.transfer(**task)
         
         if self.catch_uuid is not None:

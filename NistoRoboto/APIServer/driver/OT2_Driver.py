@@ -19,7 +19,7 @@ class OT2_Driver(Driver):
             dispense = v.flow_rate.dispense
             flow_str = f' @ {aspirate}/{dispense} uL/s'
             status.append(str(v)+flow_str)
-        status.append(f'Gantry Speed: {v.default_speed} mm/s')
+            status.append(f'Gantry Speed: {v.default_speed} mm/s')
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
@@ -153,14 +153,14 @@ class OT2_Driver(Driver):
 
         #get source well object
         source_wells = self.get_wells(source)
-        if len(source_well)>0:
+        if len(source_wells)>1:
             raise ValueError('Transfer only accepts one source well at a time!')
         else:
             source_well = source_wells[0]
 
         #get dest well object
         dest_wells = self.get_wells(dest)
-        if len(dest_well)>0:
+        if len(dest_wells)>1:
             raise ValueError('Transfer only accepts one dest well at a time!')
         else:
             dest_well = dest_wells[0]
@@ -174,7 +174,7 @@ class OT2_Driver(Driver):
                 air_gap=air_gap, 
                 blow_out=blow_out, 
                 post_aspirate_delay=post_aspirate_delay, 
-                post_dispense_delay=post_dipsense_delay)
+                post_dispense_delay=post_dispense_delay)
     def _transfer( 
             self,
             pipette,

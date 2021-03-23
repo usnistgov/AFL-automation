@@ -35,7 +35,7 @@ parser.add_argument('--noclients',action='store_true')
 args = parser.parse_args()
     
 if not args.noclients:
-    prep = OT2Client(interactive=True)
+    prep = OT2Client(ip='piot2',interactive=True)
     prep.login('RobotoStation')
     prep.debug(False)
     

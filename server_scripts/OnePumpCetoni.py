@@ -36,9 +36,6 @@ selector2 = CetoniMultiPosValve(pump,portlabels={'pump':0,'blow':1})
 driver = TwoSelectorBlowoutSampleCell(pump,
                                       selector,
                                       selector2,
-                                      catch_to_sel_vol      = Tubing(1517,112).volume(),
-                                      cell_to_sel_vol       = Tubing(1517,170).volume()+0.6,
-                                      syringe_to_sel_vol    = Tubing(1530,49.27+10.4).volume() ,
                                      )
 server = APIServer('CellServer1',index_template="index_pump.html")
 server.add_standard_routes()

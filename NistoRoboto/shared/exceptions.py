@@ -13,3 +13,6 @@ class SerialCommsException(Exception):
 class NoDeviceFoundException(Exception):
     '''Raised when no matching device can be found on the selected port'''
     pass
+
+class NotFoundError(Exception):
+    pass

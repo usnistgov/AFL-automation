@@ -6,6 +6,7 @@ import copy
 from NistoRoboto.shared.units import units,AVOGADROS
 from NistoRoboto.prep.Mixture import Mixture
 from NistoRoboto.prep.types import types
+from NistoRoboto.shared.utilities import listify
 
 
 class Solution(Mixture):
@@ -15,9 +16,8 @@ class Solution(Mixture):
 
         if components is None:
             components = []
-        elif isinstance(components,Component):
-            # make listy so that iterator works below
-            components = [components]
+        else:
+            components = listify(components)
 
         self.components = {}
         for component in components:
@@ -26,78 +26,17 @@ class Solution(Mixture):
             self.components[component_copy.name] = component_copy
             
     def __str__(self):
-        out_str = '<Solution v/v%'
-        volume_fraction = self.volume_fraction
+        out_str = '<Solution m/m'
+        mass_fraction = self.mass_fraction
         for name,component in self:
-            vfrac = volume_fraction.get(name,None)
-            if vfrac is None:
-                out_str += f' {name}:NoVolume'
+            mfrac = mass_fraction.get(name,None)
+            if mfrac is None:
+                out_str += f' {name}:NoMass'
             else:
-                out_str += f' {name}:{vfrac:4.3f}'
+                out_str += f' {name}:{mfrac:4.3f}'
         out_str +='>'
         return out_str
 
-    def __repr__(self):
-        return self.__str__()
-    
-    def __getitem__(self,name):
-        try:
-            return self.components[name]
-        except KeyError:
-            raise KeyError(f'The component \'{name}\' is not in this mixture which contains: {list(self.components.keys())}')
-
-    def __iter__(self):
-        for name,component in self.components.items():
-            yield name,component
-    
-    def __add__(self,other):
-        mixture = self.copy()
-        for name,component in other:
-            if mixture.contains(name):
-                mixture.components[name] = (mixture.components[name] + component.copy())
-            else:
-                mixture.components[name] = component.copy()
-        return mixture
-    
-    def __eq__(self,other):
-        ''''Compare the mass,volume, and composition of two mixtures'''
-
-        if isinstance(other,Mixture):
-            checks = []# list of true/false values that represent equality checks
-            checks.append(np.isclose(self.mass,other.mass))
-            checks.append(np.isclose(self.volume,other.volume))
-
-            for name,component in self:
-                if component._has_mass:
-                    checks.append(np.isclose(self[name].mass,other[name].mass))
-                    checks.append(np.isclose(self.mass_fraction[name],other.mass_fraction[name]))
-
-                if component._has_volume:
-                    checks.append(np.isclose(self[name].volume,other[name].volume))
-                    checks.append(np.isclose(self.volume_fraction[name],other.volume_fraction[name]))
-
-            return all(checks)
-
-        else:
-            raise TypeError(f'Unsure how to compare Mixture with {type(other)}')
-
-    def __hash__(self):
-        '''Needed so Mixtures can be dictionary keys'''
-        return id(self)
-
-    def copy(self):
-        return copy.deepcopy(self)
-
-    @property
-    def num_components(self):
-        return len(self.components)
-            
-    def contains(self,name):
-        if name in self.components:
-            return True
-        else:
-            return False
-        
     @property
     def mass(self):
         '''Total mass of mixture. Components with mass = None will be ignored.'''
@@ -202,7 +141,7 @@ class Solution(Mixture):
             pass
         return result
     
-    def set_mass_fractions(self,fractions,total_mass=None):
+    def set_mass_fractions(self,total_mass=None,**fractions):
         '''
         Arguments
         ---------
@@ -216,8 +155,9 @@ class Solution(Mixture):
             mixture is used
             
         '''
+        raise NotImplemented()
         
-        if not (len(fractions) == len(self.components)):
+        if not (len(fractions) >= (len(self.components)-1)):
             raise ValueError('Fraction dictionary doesn\'t match size of mixture')
 
         if total_mass is None:
@@ -284,16 +224,15 @@ class Solution(Mixture):
         molar_mass = self.components[name].formula.molecular_mass*AVOGADROS
         self.components[name].mass = molarity*molar_mass*self.volume #Assumes volume is in mL
 
-
     @property
     def solutes(self):
-        return [c for c in self.components if c.is_solute()]
+        return [c for n,c in self.components.items() if c.is_solute()]
 
     @property
     def solvents(self):
-        return [c for c in self.components if c.is_solvent()]
+        return [c for n,c in self.components.items() if c.is_solvent()]
 
-    def remove_volume(self,amount):
+    def remove_volume(self,amount,deplete=False):
         '''Remove volume from mixture without changing composition
 
         Returns

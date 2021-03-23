@@ -1,4 +1,3 @@
-
 class Sample:
     def __init__(self,name,target,target_check=None,balancer=None):
         self.target = target

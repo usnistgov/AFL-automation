@@ -1,5 +1,5 @@
 from collections import defaultdict
-from NistoRoboto.prep.Mixture import Mixture
+from NistoRoboto.prepare.Solution import Solution
 
 class SampleSeries:
     def __init__(self):
@@ -41,10 +41,10 @@ class SampleSeries:
 
     def mass_totals_component(self,only_validated=True):
         mass_totals = defaultdict(float)
-        mixture = Mixture([])
+        solution = Solution('dummy',[])
         for sample,validated in zip(self.samples,self.validated):
             if only_validated and (not validated):
                 continue
-            mixture = mixture + sample.target_check
-        return {name:component.mass for name,component  in mixture}
+            solution = solution + sample.target_check
+        return {name:component.mass for name,component  in solution}
 

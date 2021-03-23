@@ -11,6 +11,7 @@ from NistoRoboto.prepare.Deck import Deck
 from NistoRoboto.prepare.utilities import make_locs,make_wellplate_locs
 
 from NistoRoboto.prepare.MassBalance import MassBalance
+from NistoRoboto.prepare.PipetteAction import PipetteAction
 
 from NistoRoboto.prepare.factory import compositionSweepFactory,HD2OFactory
 

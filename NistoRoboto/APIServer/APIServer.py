@@ -60,7 +60,7 @@ class APIServer:
         # CORS may have to come after JWTManager
         self.cors = CORS(self.app)
 
-    
+
     def create_queue(self,driver):
         self.history = []
         self.task_queue = MutableQueue()
@@ -108,12 +108,17 @@ class APIServer:
         self.app.add_url_rule('/login','login',self.login,methods=['POST'])
         self.app.add_url_rule('/login_test','login_test',self.login_test,methods=['GET','POST'])
         self.app.add_url_rule('/reset_queue_daemon','reset_queue_daemon',self.reset_queue_daemon,methods=['POST'])
+        self.app.add_url_rule('/is_server_live','is_server_live',self.is_server_live,methods=['GET'])
         self.app.add_url_rule('/get_queued_commands','get_queued_commands',self.get_queued_commands,methods=['GET'])
         self.app.add_url_rule('/get_unqueued_commands','get_unqueued_commands',self.get_unqueued_commands,methods=['GET'])
         self.app.add_url_rule('/get_server_time','get_server_time',self.get_server_time,methods=['GET'])
         self.app.add_url_rule('/remove_item','remove_item',self.remove_item,methods=['POST'])
         self.app.add_url_rule('/move_item','move_item',self.move_item,methods=['POST'])
         self.app.before_first_request(self.init)
+
+    def is_server_live(self):
+        self.app.logger.debug("Server is live.")
+        return 200
 
     def get_unqueued_commands(self):
         return jsonify(self.driver.unqueued.function_info),200
@@ -137,7 +142,7 @@ class APIServer:
             task = request.json
         else:
             task = request.args
-        
+
         self.app.logger.info(f'Request for {request.args}')
         if 'r' in task:
             if task['r'] in self.driver.unqueued.functions:
@@ -148,21 +153,22 @@ class APIServer:
             return "No task specified, add argument r=task to get result",404
 
 
+
     def init_logging(self,toaddrs=None):
         self.app.logger.setLevel(level=logging.DEBUG)
 
         if toaddrs is not None:
             # setup error emails
             mail_handler = SMTPHandler(mailhost=('smtp.nist.gov',25),
-                               fromaddr=f'{self.name}@pg903001.ncnr.nist.gov', 
-                               toaddrs=toaddrs, 
+                               fromaddr=f'{self.name}@pg903001.ncnr.nist.gov',
+                               toaddrs=toaddrs,
                                subject='Driver Error')
             mail_handler.setLevel(logging.ERROR)
             self.app.logger.addHandler(mail_handler)
 
 
 
-        path = pathlib.Path.home() / '.nistoroboto' 
+        path = pathlib.Path.home() / '.nistoroboto'
         path.mkdir(exist_ok=True,parents=True)
         filepath = path / f'{self.name}.log'
         file_handler = FileHandler(filepath)
@@ -185,7 +191,7 @@ class APIServer:
         kw['name']        = self.name
         kw['driver']    = self.queue_daemon.driver.name
         return render_template(self.index_template,**kw),200
-    
+
     def render_unqueued(self,func,kwargs_add,**kwargs):
         '''Convert an unqueued return item into web-suitable output'''
         self.app.logger.info(f'Serving unqueued function: {func.__name__} received with decorator kwargs {kwargs_add}')
@@ -206,14 +212,14 @@ class APIServer:
                     render_hint = '2d_img'
                 else:
                     #how do we support a 3d array?  throw up our hands.
-                    render_hint = 'raw' 
+                    render_hint = 'raw'
             else:
                 #don't do complicated rendering
                 render_hint='raw'
         if render_hint == '1d_plot':
-            return self.send_1d_plot(result,**kwargs) #lambda: 
+            return self.send_1d_plot(result,**kwargs) #lambda:
         elif render_hint == '2d_img':
-            return self.send_array_as_jpg(result,**kwargs) #lambda: 
+            return self.send_array_as_jpg(result,**kwargs) #lambda:
         elif render_hint == 'raw':
             if type(result) is np.ndarray:
                 result = result.tolist()
@@ -238,12 +244,12 @@ class APIServer:
             ymode = 'linear' if ylin else 'log'
         else:
             ymode = 'log'
-        
+
 
         TOOLS = 'pan,wheel_zoom,box_zoom,reset,save'
 
         title = kwargs['title'] if 'title' in kwargs else ''
- 
+
         p = bokeh.plotting.figure(title=title,tools=TOOLS,x_axis_type=xmode,y_axis_type=ymode)
         p.xaxis.axis_label = kwargs['xlabel'] if 'xlabel' in kwargs else 'x'
         p.yaxis.axis_label = kwargs['ylabel'] if 'ylabel' in kwargs else 'y'
@@ -277,7 +283,7 @@ class APIServer:
             max_val = np.amax(array)
         else:
             max_val = float(max_val)
-        
+
 
         array = array/max_val
         img = Image.fromarray(np.uint8(cm.viridis(array)*255)).convert('RGB')
@@ -287,7 +293,7 @@ class APIServer:
         # write PNG in file-object
         img.save(file_object, 'jpeg')
 
-        # move to beginning of file so `send_file()` it will read from start    
+        # move to beginning of file so `send_file()` it will read from start
         file_object.seek(0)
         return send_file(file_object, mimetype='image/jpeg')
 
@@ -328,14 +334,14 @@ class APIServer:
 
         return str(package['uuid']),200
 
-    
+
     def _uuid_to_qpos(self,uuid):
         for idx,item in enumerate(list(self.task_queue.queue)):
-            if str(item['uuid']) == uuid: 
+            if str(item['uuid']) == uuid:
                 pos = idx
                 break
         return pos
-            
+
     @jwt_required()
     def remove_item(self):
         uuid=request.json['uuid']
@@ -348,7 +354,7 @@ class APIServer:
         pos = request.json['pos']
         self.task_queue.move(self._uuid_to_qpos(uuid),new_index=pos)
         return 'Success',200
-    
+
     def clear_queue(self):
         self.task_queue.queue.clear()
         return 'Success',200
@@ -387,7 +393,7 @@ class APIServer:
     def login(self):
         if not request.is_json:
             return jsonify({"msg": "Missing JSON in request"}), 400
-    
+
         username = request.json.get('username', None)
         if username is None:
             return jsonify({"msg": "Missing username parameter"}), 400
@@ -395,10 +401,10 @@ class APIServer:
         password = request.json.get('password', None)
         if password is None:
             return jsonify({"msg": "Missing password parameter"}), 400
-    
+
         if password != 'domo_arigato':
             return jsonify({"msg": "Bad password"}), 401
-    
+
         # Identity can be any data that is json serializable
         #expires = datetime.timedelta(days=1)
         self.app.logger.info(f'Creating login token for user {username}')
@@ -415,7 +421,7 @@ class APIServer:
         now = datetime.datetime.now().strftime('%H:%M:%S - %y/%m/%d')
         return now
 
-    
+
     @jwt_required()
     def login_test(self):
         username = get_jwt_identity()
@@ -431,4 +437,3 @@ if __name__ =='__main__':
     server.add_standard_routes()
     server.create_queue(DummyDriver())
     server.run(host='0.0.0.0',debug=True)
-

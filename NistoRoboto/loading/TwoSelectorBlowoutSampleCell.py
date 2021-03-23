@@ -75,6 +75,11 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.waste_tank_level = waste_tank_level
         self.cell_waste_tank_level = cell_waste_tank_level
 
+    def reset_tank_levels(self,rinse=950,waste=0,cell_waste=0):
+        self.rinse_tank_level = rinse
+        self.waste_tank_level = waste
+        self.cell_waste_tank_level = cell_waste
+
     @property
     def app(self):
         return self._app

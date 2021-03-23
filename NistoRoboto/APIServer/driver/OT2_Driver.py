@@ -13,20 +13,24 @@ class OT2_Driver(Driver):
         self.protocol = opentrons.execute.get_protocol_api('2.0')
         self.prep_targets = []
 
-    def reset_prep_targets(targets):
+    def reset_prep_targets(self):
         self.prep_targets = []
 
-    def add_prep_targets(targets,reset=False):
+    def add_prep_targets(self,targets,reset=False):
         if reset:
             self.reset_prep_targets()
         self.prep_targets.extend(targets)
 
-    def get_prep_target():
+    def get_prep_target(self):
         return self.prep_targets.pop(0)
 
     def status(self):
         status = []
-        status.append([f'{self.prep_targets[0]}/{len(self.prep_targets} next/remaining prep target']
+        if len(self.prep_targets)>0:
+                status.append(f'Next prep target: {self.prep_targets[0]}')
+                status.append(f'Remaining prep targets: {len(self.prep_targets)}')
+        else:
+                status.append('No prep targets loaded')
         for k,v in self.protocol.loaded_instruments.items():
             aspirate = v.flow_rate.aspirate
             dispense = v.flow_rate.dispense

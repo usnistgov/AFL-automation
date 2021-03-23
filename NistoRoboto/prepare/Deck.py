@@ -143,7 +143,7 @@ class Deck:
         self.stocks.append(stock)
         self.stock_location[stock] = location
             
-    def add_target(self,target,location,name=None):
+    def add_target(self,target,location='target',name=None):
         target = target.copy()
         self.targets.append(target)
         self.target_location[target] = location
@@ -227,7 +227,7 @@ class Deck:
         validated = []
         self.validation_report = []
         for sample,_ in self.sample_series:
-            report = f'==> Attempting to make {sample.target.volume.to("ml")}  of {sample.target.mass_fraction}\n'
+            report = f'==> Attempting to make {sample.target.volume.to("ml")} with mass fraction {sample.target.mass_fraction}\n'
             for stock,(stock_loc,mass) in sample.balancer.mass_transfers.items():
                 if (mass>0) and (mass<self.mass_cutoff):
                     report += f'\t--> Skipping {mass} of {stock} (mass cutoff={self.mass_cutoff})\n'

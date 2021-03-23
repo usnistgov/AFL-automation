@@ -11,9 +11,22 @@ class OT2_Driver(Driver):
         self.app = None
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.prep_targets = []
+
+    def reset_prep_targets(targets):
+        self.prep_targets = []
+
+    def add_prep_targets(targets,reset=False):
+        if reset:
+            self.reset_prep_targets()
+        self.prep_targets.extend(targets)
+
+    def get_prep_target():
+        return self.prep_targets.pop(0)
 
     def status(self):
         status = []
+        status.append([f'{self.prep_targets[0]}/{len(self.prep_targets} next/remaining prep target']
         for k,v in self.protocol.loaded_instruments.items():
             aspirate = v.flow_rate.aspirate
             dispense = v.flow_rate.dispense
@@ -69,6 +82,7 @@ class OT2_Driver(Driver):
             return labware
         else:
             raise ValueError('Specified slot ({slot}) is empty of labware')
+
 
     def load_labware(self,name,slot,**kwargs):
         '''Load labware (containers,tipracks) into the protocol'''

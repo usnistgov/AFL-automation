@@ -46,6 +46,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
                       rinse_tank_level=950,
                       waste_tank_level=0,
                       cell_waste_tank_level=0,
+                      overrides=None, 
                       ):
         '''
             ncells = number of connected cells (up to 6 cells with a 10-position flow selector, with four positions taken by load port, rinse, waste, and air)

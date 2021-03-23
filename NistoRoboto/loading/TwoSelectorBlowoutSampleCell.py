@@ -81,9 +81,12 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
 
     @app.setter
     def app(self,app):
-        self._app = app
-        self.pump.app = app
-        self.selector.app = app
+        if app is None:
+            self._app = app
+        else:
+            self._app = app
+            self.pump.app = app
+            self.selector.app = app
 
     def status(self):
         status = []

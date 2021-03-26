@@ -38,25 +38,24 @@ class MassBalance:
         self.reset_targets()
 
     def process_components(self):
-        #start out as set to ensure no duplicates are added
-        self.components        = set()
-        self.target_components = set()
-        self.stock_components  = set()
+        self.components        = []
+        self.target_components = []
+        self.stock_components  = []
 
         for target in self.targets:
             for name,component in target:
-                self.components.add(name)
-                self.target_components.add(name)
+                if name not in self.components:
+                    self.components.append(name)
+                if name not in self.target_components:
+                    self.target_components.append(name)
 
         for stock in self.stocks:
             for name,component in stock:
-                self.components.add(name)
-                self.stock_components.add(name)
+                if name not in self.components:
+                    self.components.append(name)
+                if name not in self.stock_components:
+                    self.stock_components.append(name)
 
-        #convert to list to ensure iteration order
-        self.components = list(self.components)
-        self.target_components = list(self.target_components)
-        self.stock_components = list(self.stock_components)
     def make_mass_fraction_matrix(self):
 
         # build matrix and vector representing mass balance
@@ -82,7 +81,6 @@ class MassBalance:
                 target_component_masses.append(0)
         self.target_component_masses = target_component_masses
         return target_component_masses 
-
 
     def balance_mass(self):
         self.process_components()

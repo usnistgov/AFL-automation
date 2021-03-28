@@ -32,6 +32,9 @@ class PipetteAction:
 
     def emit_protocol(self):
         return self.get_kwargs()
+
+    def serialize(self):
+        return self.get_kwargs()
     
     def get_kwargs(self):
         kwargs = {}

@@ -208,7 +208,24 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                     time.sleep(0.1)
             if return_data:
                 return self.getData(lv=lv)
-        
+#    def moveAxis(self,axis,value,exposure=0.001,filename = 'axis-move',return_data=False,block=True,lv=None):
+#        with LabviewConnection(vi=r'C:\saxs_control\Move for Peter.vi') as lvm:
+#            if type(axis) is str:
+#                axis = axis_name_to_id_lut[axis]
+#            lvm.main_vi.setcontrolvalue('Axis',axis)
+#            lvm.main_vi.setcontrolvalue('New Position',value)
+#            lvm.main_vi.setcontrolvalue('Motor Move',True)
+#            
+#            if return_data or block:
+#                with (LabviewConnection() if lv is None else lv) as lv:
+#                    axis_str = axis_id_to_name_lut[axis]
+#                    pos = None
+#                    while pos is None or pos != value:
+#                        pos = lv.main_vi.getcontrolvalue(axis_str)
+#                        time.sleep(0.1)
+#                    if return_data:
+#                        self.expose(self,name=filename,exposure=exposure,block=True,reduce_data=False,measure_transmission=False,save_nexus=False,lv=lv)
+#                        return self.getData(lv=lv)
     def setSweepStart(self,start,lv=None):
         self._setLabviewValue('Start Value',start,lv=lv)
         

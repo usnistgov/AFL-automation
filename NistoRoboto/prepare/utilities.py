@@ -1,4 +1,5 @@
 import string
+from NistoRoboto.prepare.PrepType import prepRegistrar
 
 def make_locs(slot,nrows,ncols):
     locs = []
@@ -21,4 +22,14 @@ def make_wellplate_locs(slot,size):
     return locs
 
 
-
+def componentFactory(name,preptype,formula=None,density=None,sld=None,description=None,**kw):
+    cls = prepRegistrar.registry[preptype]
+        
+    component = cls(
+        name    = name,
+        density =  density,
+        formula =  formula,
+        sld = sld,
+        description = description
+    )
+    return component

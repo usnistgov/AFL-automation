@@ -4,21 +4,10 @@ from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
 from NistoRoboto.shared.units import units,AVOGADROS_NUMBER
 
 from NistoRoboto.shared.exceptions import NotFoundError
+from NistoRoboto.prepare.utilities import componentFactory
 
 def _process_NoneType_string(value,mapping=lambda x: x):
     return  (None if value.lower()=='none' else mapping(value))
-
-def componentFactory(name,preptype,formula=None,density=None,sld=None,description=None,**kw):
-    cls = prepRegistrar.registry[preptype]
-        
-    component = cls(
-        name    = name,
-        density =  density,
-        formula =  formula,
-        sld = sld,
-        description = description
-    )
-    return component
 
 class ComponentDB:
     def __init__(self,path='.nistoroboto/component.db.json'):
@@ -36,8 +25,6 @@ class ComponentDB:
     def __repr__(self):
         return self.__str__()
 
-
-            
     def read(self,path=None):
         if path is not None:
             self.path = pathlib.Path.home()/pathlib.Path(path)

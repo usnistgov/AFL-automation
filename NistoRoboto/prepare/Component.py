@@ -1,11 +1,13 @@
 import numpy as np
 import periodictable
 import copy
+import json
 import numbers
 from pyparsing import ParseException
 
 from NistoRoboto.shared.units import units, AVOGADROS_NUMBER, enforce_units
 from NistoRoboto.prepare.PrepType import PrepType
+from NistoRoboto.prepare.utilities import componentFactory
 
 
 class Component(object):
@@ -23,16 +25,38 @@ class Component(object):
         self._sld     = None
         self.preptype = PrepType.BaseComponent
         
-    def emit(self):
-        return {
+    @staticmethod
+    def deserialize(path=None,json_dict=None):
+        if path is not None:
+            with open(path,'w') as f:
+                json_dict = json.load(f)
+        elif json_dict is None:
+            raise ValueError('')
+        component = componentFactory(**json_dict)
+        component.mass = json_dict['mass']
+        return component
+                
+
+    def serialize(self,write=False,path=None):
+        out_data = {
         'name':self.name,
+        'mass':self.mass,
         'description':self.description,
         'density':self.density,
-        'formula':self.formula,
+        'formula':self.formula.atoms,
         'sld':self.sld,
         'preptype':self.preptype
         }
+
+        if write:
+            if path is None:
+                path = f'./{self.name}.json'
+                
+            with open(path,'w') as f:
+                json.dump(out_data,f,indent=4)
         
+        return out_data
+
     def __str__(self):
         out_str  = '<Component '
         out_str += f' M={self.mass:4.3f}' if self._has_mass else ' M=None'
@@ -53,7 +77,7 @@ class Component(object):
 
     def __iter__(self):
         '''Dummy iterator to mimic behavior of Mixture.'''
-        for name,component in [(self.name,self)]:
+        
             yield name,component
     
     @property

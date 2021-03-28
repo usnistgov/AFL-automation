@@ -3,8 +3,8 @@ import copy
 
 from NistoRoboto.prepare.Component import Component
 from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
-from NistoRoboto.prepare.ComponentDB import componentFactory
 from NistoRoboto.shared.utilities import listify
+from NistoRoboto.prepare.utilities import componentFactory
 from NistoRoboto.shared.exceptions import EmptyException,NotFoundError
 from NistoRoboto.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER
 
@@ -44,6 +44,32 @@ class Solution:
     def __hash__(self):
         '''Needed so Solutions can be dictionary keys'''
         return id(self)
+
+    @staticmethod
+    def deserialize(path):
+        with open(path,'w') as f:
+            in_data = json.load(f)
+        solution = self.__class__(in_data['name'])
+        solution.preptype = in_data['preptype']
+        for name,json_dict in in_data['components'].items():
+            #maybe switch to the right sub class based on preptype
+            solution.components[name] = Component.deserialize(json_dict=json_dict)
+        return solution
+    
+    def serialize(self,write=False,path=None):
+        out_data = { 
+            'name':self.name, 
+            'preptype':self.preptype, 
+            'components':{name:c.emit() for name,component in self}
+        }
+        if write:
+            if path is None:
+                path = f'./{self.name}.json'
+                
+            with open(path,'w') as f:
+                json.dump(out_data,f,indent=4)
+
+        return out_data
     
     def add_component_from_name(self,name,properties=None,inplace=False):
         if properties is None:

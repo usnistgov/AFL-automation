@@ -38,21 +38,40 @@ class Deck:
         self.reset_targets()
         self.reset_stocks()
 
-        self.mass_cutoff = 1.0*units('ug')
+        self.mass_cutoff   = 1.0*units('ug')
         self.volume_cutoff = 30*units('ul')
         
-        self.protocol = []
+        self.protocol        = []
         self.protocol_checks = []
-        self.sample_series = SampleSeries()
+        self.sample_series   = SampleSeries()
 
         self.tip_racks    = {}
-        self.containers    = {}
-        self.pipettes      = {}
-        self.catches = {}
+        self.containers   = {}
+        self.pipettes     = {}
+        self.catches      = {}
 
         self.balancer = MassBalance()
 
         self.client = None
+
+    def serialize(self,write=False,path=None):
+        out_dict ={
+            'protocol':[p.serialize() for p in self.protocol]
+            'sample_series':
+            'tip_racks':self.tip_racks,
+            'containers':self.containers,
+            'pipettes':self.pipettes,
+            'catches':self.catches,
+            'balancer':self.balancer.serialize(),
+        }
+        if write:
+            if path is None:
+                path = f'./{self.name}.json'
+                
+            with open(path,'w') as f:
+                json.dump(out_dict,f,indent=4)
+
+        return out_dict
 
     def init_remote_connection(self,url,home=False):
         from NistoRoboto.APIServer.client.OT2Client import OT2Client
@@ -175,7 +194,6 @@ class Deck:
 
         return components,target_components,stock_components
 
-
     def make_sample_series(self,reset_sample_series=False):
         #build component list
         self.balancer.reset_stocks()
@@ -221,7 +239,6 @@ class Deck:
                     )
             self.sample_series.add_sample(sample)
         return self.sample_series
-
                     
     def validate_sample_series(self,tolerance=0.0,print_report=True):
         validated = []

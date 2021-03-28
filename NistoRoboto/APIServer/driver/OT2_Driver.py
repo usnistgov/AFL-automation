@@ -11,15 +11,32 @@ class OT2_Driver(Driver):
         self.app = None
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.prep_targets = []
+
+    def reset_prep_targets(self):
+        self.prep_targets = []
+
+    def add_prep_targets(self,targets,reset=False):
+        if reset:
+            self.reset_prep_targets()
+        self.prep_targets.extend(targets)
+
+    def get_prep_target(self):
+        return self.prep_targets.pop(0)
 
     def status(self):
         status = []
+        if len(self.prep_targets)>0:
+                status.append(f'Next prep target: {self.prep_targets[0]}')
+                status.append(f'Remaining prep targets: {len(self.prep_targets)}')
+        else:
+                status.append('No prep targets loaded')
         for k,v in self.protocol.loaded_instruments.items():
             aspirate = v.flow_rate.aspirate
             dispense = v.flow_rate.dispense
             flow_str = f' @ {aspirate}/{dispense} uL/s'
             status.append(str(v)+flow_str)
-        status.append(f'Gantry Speed: {v.default_speed} mm/s')
+            status.append(f'Gantry Speed: {v.default_speed} mm/s')
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
@@ -69,6 +86,7 @@ class OT2_Driver(Driver):
             return labware
         else:
             raise ValueError('Specified slot ({slot}) is empty of labware')
+
 
     def load_labware(self,name,slot,**kwargs):
         '''Load labware (containers,tipracks) into the protocol'''
@@ -153,14 +171,14 @@ class OT2_Driver(Driver):
 
         #get source well object
         source_wells = self.get_wells(source)
-        if len(source_well)>0:
+        if len(source_wells)>1:
             raise ValueError('Transfer only accepts one source well at a time!')
         else:
             source_well = source_wells[0]
 
         #get dest well object
         dest_wells = self.get_wells(dest)
-        if len(dest_well)>0:
+        if len(dest_wells)>1:
             raise ValueError('Transfer only accepts one dest well at a time!')
         else:
             dest_well = dest_wells[0]
@@ -174,7 +192,7 @@ class OT2_Driver(Driver):
                 air_gap=air_gap, 
                 blow_out=blow_out, 
                 post_aspirate_delay=post_aspirate_delay, 
-                post_dispense_delay=post_dipsense_delay)
+                post_dispense_delay=post_dispense_delay)
     def _transfer( 
             self,
             pipette,

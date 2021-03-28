@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Add the user pip install directories to the PATH and PYTHONPATH
-##pip install --user flask flask_jwt_extended
+##pip install --user flask flask_jwt_extended pint
 export PATH=/var/user-packages/root/.local/bin:${PATH}
 
 if [[ -z "$PYTHONPATH" ]];

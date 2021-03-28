@@ -1,9 +1,9 @@
 import numpy as np
-from NistoRoboto.prep.Sample import Sample
-from NistoRoboto.prep.SampleSeries import SampleSeries
-from NistoRoboto.prep.Mixture import Mixture
-from NistoRoboto.prep.MassBalance import MassBalance
-from NistoRoboto.prep.PipetteAction import PipetteAction
+from NistoRoboto.prepare.Sample import Sample
+from NistoRoboto.prepare.SampleSeries import SampleSeries
+from NistoRoboto.prepare.Solution import Solution
+from NistoRoboto.prepare.MassBalance import MassBalance
+from NistoRoboto.prepare.PipetteAction import PipetteAction
 from NistoRoboto.shared.exceptions import MixingException
 from NistoRoboto.shared.units import units
 import scipy.optimize
@@ -143,7 +143,7 @@ class Deck:
         self.stocks.append(stock)
         self.stock_location[stock] = location
             
-    def add_target(self,target,location,name=None):
+    def add_target(self,target,location='target',name=None):
         target = target.copy()
         self.targets.append(target)
         self.target_location[target] = location
@@ -193,7 +193,7 @@ class Deck:
             if any([i[1]<0 for i in self.balancer.mass_transfers.values()]):
                 raise MixingException(f'Mass transfer calculation failed, negative mass transers present:\n{self.balancer.mass_transfers}')
 
-            target_check = Mixture()
+            target_check = Solution('target_check',components=[])
             for stock,(stock_loc,mass) in self.balancer.mass_transfers.items():
                 if mass>self.mass_cutoff:#tolerance
                     removed = stock.copy()
@@ -227,7 +227,7 @@ class Deck:
         validated = []
         self.validation_report = []
         for sample,_ in self.sample_series:
-            report = f'==> Attempting to make {sample.target.volume.to("ml")}  of {sample.target.mass_fraction}\n'
+            report = f'==> Attempting to make {sample.target.volume.to("ml")} with mass fraction {sample.target.mass_fraction}\n'
             for stock,(stock_loc,mass) in sample.balancer.mass_transfers.items():
                 if (mass>0) and (mass<self.mass_cutoff):
                     report += f'\t--> Skipping {mass} of {stock} (mass cutoff={self.mass_cutoff})\n'
@@ -247,7 +247,7 @@ class Deck:
                     phi_tc = sample.target_check.mass_fraction[name]
                     phi_t = sample.target.mass_fraction[name]
                     diff = (phi_tc - phi_t)/(phi_tc)
-                    diffs.append(diff/100)
+                    diffs.append(diff)
                     report += f'\t\t~~> {name} frac difference: {diff}\n'
 
                 diffs = np.array(diffs)

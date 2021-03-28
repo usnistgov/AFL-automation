@@ -8,10 +8,6 @@ from NistoRoboto.prep.types import types
 
 
 class Mixture:
-    '''
-    ToDo:
-        - unit support
-    '''
     def __init__(self,components=None):
         self.type=types.BaseMixture
 

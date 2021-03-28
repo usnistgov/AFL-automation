@@ -41,7 +41,8 @@ class CDSAXS_SampleDriver(Driver):
         self.load_client.debug(False)
 
         #load samples
-        self.saxs_client = Client(saxs_url.split(':')[0],port=load_url.split(':')[1])
+        self.saxs_url = saxs_url
+        self.saxs_client = Client(saxs_url.split(':')[0],port=saxs_url.split(':')[1])
         self.saxs_client.login('SampleServer_SAXSClient')
         self.saxs_client.debug(False)
 
@@ -50,9 +51,12 @@ class CDSAXS_SampleDriver(Driver):
 
         self.cell_rinse_uuid = None
         self.catch_rinse_uuid = None
+        self.prep_uuid = None
+        self.catch_uuid = None
 
         self.status_str = 'Fresh Server!'
         self.wait_time = 30.0 #seconds
+
 
     def status(self):
         status = []
@@ -87,7 +91,10 @@ class CDSAXS_SampleDriver(Driver):
                 self.app.logger.warning(output_str)
 
     def measure(self,sample):
-        self.saxs_uuid = self.saxs_client.enqueue(task_name='expose',name=sample['name'],block=True)
+        exposure = sample.get('exposure',None)
+
+        saxs_uuid = self.saxs_client.enqueue(task_name='expose',name=sample['name'],block=True,exposure=exposure)
+        return saxs_uuid
 
     def execute(self,**kwargs):
         if self.app is not None:
@@ -109,7 +116,28 @@ class CDSAXS_SampleDriver(Driver):
     def process_sample(self,sample):
         name = sample['name']
 
+        targets = set()
         for task in sample['prep_protocol']:
+            if 'target' in task['source'].lower():
+                targets.add(task['source'])
+            if 'target' in task['dest'].lower():
+                targets.add(task['dest'])
+
+        for task in sample['catch_protocol']:
+            if 'target' in task['source'].lower():
+                targets.add(task['source'])
+            if 'target' in task['dest'].lower():
+                targets.add(task['dest'])
+
+        target_map = {}
+        for t in targets:
+            prep_target = self.prep_client.enqueue(task_name='get_prep_target',interactive=True)['return_val']
+            target_map[t] = prep_target
+
+        for task in sample['prep_protocol']:
+            #if the well isn't in the map, just use the well
+            task['source'] = target_map.get(task['source'],task['source'])
+            task['dest'] = target_map.get(task['dest'],task['dest'])
             self.prep_uuid = self.prep_client.transfer(**task)
  
         if self.catch_rinse_uuid is not None:
@@ -117,16 +145,21 @@ class CDSAXS_SampleDriver(Driver):
             self.load_client.wait(self.catch_rinse_uuid)
             self.update_status(f'Catch rinse done!')
             
-        self.prep_client.wait(self.prep_uuid)
-        self.take_snapshot(prefix = f'02-after-prep-{name}')
+        if self.prep_uuid is not None: 
+            self.prep_client.wait(self.prep_uuid)
+            self.take_snapshot(prefix = f'02-after-prep-{name}')
         
         self.update_status(f'Queueing sample {name} load into syringe loader')
         for task in sample['catch_protocol']:
+            #if the well isn't in the map, just use the well
+            task['source'] = target_map.get(task['source'],task['source'])
+            task['dest'] = target_map.get(task['dest'],task['dest'])
             self.catch_uuid = self.prep_client.transfer(**task)
         
-        self.update_status(f'Waiting for sample prep/catch of {name} to finish: {self.catch_uuid}')
-        self.prep_client.wait(self.catch_uuid)
-        self.take_snapshot(prefix = f'03-after-catch-{name}')
+        if self.catch_uuid is not None:
+            self.update_status(f'Waiting for sample prep/catch of {name} to finish: {self.catch_uuid}')
+            self.prep_client.wait(self.catch_uuid)
+            self.take_snapshot(prefix = f'03-after-catch-{name}')
         
         if self.cell_rinse_uuid is not None:
             self.update_status(f'Waiting for cell rinse: {self.cell_rinse_uuid}')
@@ -145,7 +178,7 @@ class CDSAXS_SampleDriver(Driver):
         self.update_status(f'Sample is loaded, asking the SAXS for exposure...')
         self.saxs_uuid = self.measure(sample)
         self.update_status(f'Waiting for CDSAXS to measure scattering of {name} with UUID {self.saxs_uuid}...')
-        self.nice_client.wait_for(self.saxs_uuid)
+        self.saxs_client.wait(self.saxs_uuid)
         self.take_snapshot(prefix = f'06-after-measure-{name}')
             
         self.update_status(f'Cleaning up sample {name}...')

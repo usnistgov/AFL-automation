@@ -10,6 +10,7 @@ data/*
 *swp
 *.DS_Store
 dev/*
+.idea/*
 hardware-designs/capillary-holder-CHESS/OldVersions/*
 NistoRoboto/EpicsADLiveProcess/templates/static/.gitkeep
 NistoRoboto/EpicsADLiveProcess/templates/static/deck.jpeg

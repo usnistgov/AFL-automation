@@ -82,6 +82,22 @@ class Driver:
         status = []
         return status
 
+    def pre_execute(self,**kwargs):
+        '''Executed before each call to execute
+
+           All of the kwargs passed to execute are also pass to this method. It
+           is expected that this method be overridden by subclasses.
+        '''
+        pass
+
+    def post_execute(self,**kwargs):
+        '''Executed after each call to execute
+
+           All of the kwargs passed to execute are also pass to this method. It
+           is expected that this method be overridden by subclasses.
+        '''
+        pass
+
     def execute(self,**kwargs):
         task_name = kwargs.get('task_name',None)
         if task_name is None:

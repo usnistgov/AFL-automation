@@ -53,62 +53,77 @@ def measureEmptyTransmission():
     load.enqueue(task_name='blowOutCell',interactive=True)
     inst.enqueue(task_name='measureTransmission',set_empty_transmission=True,interactive=True)
 
-def calibrateLoaderToCell():
-    a = input('Manually load 300 uL of strongly absorbing sample with comparable viscosity to your experiment into the catch.  Press any key to confirm sample is loaded.')
-    upper = float(input('Enter an upper bound for the transfer volume loader-cell (mL)'))
-    step = float(input('Enter the desired step size (mL)'))
-    lower = float(input('Enter a lower bound for the transfer volume loader-cell (mL)') )
+def calibrateLoaderToCell(autoload=False,upper=None,step=None,lower=None,rate=None,delay=2):
+     if autoload is not False:
+         prep.transfer(source=autoload,dest='10A1',
+                       volume=500,
+                       aspirate_rate=100,
+                       dispense_rate=100
+                      )
+     else:
+         a = input('Manually load 300 uL of strongly absorbing sample with comparable viscosity to your experiment into the catch.  Press any key to confirm sample is loaded.')
+     if upper is None:
+         upper = float(input('Enter an upper bound for the transfer volume loader-cell (mL)'))
+     if step is None:
+         step = float(input('Enter the desired step size (mL)'))
+     if lower is None:
+         lower = float(input('Enter a lower bound for the transfer volume loader-cell (mL)') )
+     #withdraw the larger of the syringe-to-loader volume OR the
+     vol_air=0
+     vol_catch=upper
+     load.enqueue(device='selector',
+                  task_name='selectPort',
+                  port='air',
+                  interactive=True)
+     load.enqueue(device='pump',
+                  task_name='withdraw',
+                  volume=vol_air,
+                  interactive=True)
+     load.enqueue(device='selector',
+                  task_name='selectPort',
+                  port='catch',
+                  interactive=True)
+     load.enqueue(device='pump',
+                  task_name='withdraw',
+                  volume=vol_catch,
+                  interactive=True)
+     load.enqueue(device='selector',
+                  task_name='selectPort',
+                  port='cell',
+                  interactive=True)
+     trans = inst.enqueue(task_name='measureTransmissionQuick',
+                 setup=True)['return_val']
+     load.enqueue(device='pump',
+                 task_name='setRate',
+                 rate=rate)
+     load.enqueue(device='pump',
+                  task_name='dispense',
+                  volume=lower,
+                  interactive=True)
+     vol_remaining = upper
+     transfer_vol = lower
+     data = []
+     data.append([transfer_vol,trans])
+     print(f'    @{transfer_vol}, trans={trans}')
+     while vol_remaining>lower:
+         load.enqueue(device='pump',
+                  task_name='dispense',
+                  volume=step,
+                  interactive=True)
+         time.sleep(delay)
+         vol_remaining -= step
+         transfer_vol += step
+         trans = inst.enqueue(task_name='measureTransmissionQuick',
+                              interactive=True)['return_val']
+         print(f'    @{transfer_vol}, trans={trans}')
+         data.append([transfer_vol,trans])
 
-    #withdraw the larger of the syringe-to-loader volume OR the
-    vol_air=0
-    vol_catch=upper
-    load.enqueue(device='selector',
-                 task_name='selectPort',
-                 port='air',
-                 interactive=True)
-    load.enqueue(device='pump',
-                 task_name='withdraw',
-                 volume=vol_air,
-                 interactive=True)
-    load.enqueue(device='selector',
-                 task_name='selectPort',
-                 port='catch',
-                 interactive=True)
-    load.enqueue(device='pump',
-                 task_name='withdraw',
-                 volume=vol_catch,
-                 interactive=True)
-    load.enqueue(device='selector',
-                 task_name='selectPort',
-                 port='cell',
-                 interactive=True)
-    trans = inst.enqueue(task_name='measureTransmissionQuick',
-                setup=True)
-    load.enqueue(device='pump',
-                 task_name='dispense',
-                 volume=lower,
-                 interactive=True)
-    vol_remaining = upper - lower
-    data = []
-    data.append([vol_remaining,trans])
-    print(f'    @{vol_remaining}, trans={trans}')
-    while vol_remaining>0:
-        load.enqueue(device='pump',
-                 task_name='dispense',
-                 volume=step,
-                 interactive=True)
-        vol_remaining -= step
-        trans = inst.enqueue(task_name='measureTransmissionQuick')
-        print(f'    @{vol_remaining}, trans={trans}')
-        data.append([vol_remaining,trans])
-        
-    trans = inst.enqueue(task_name='measureTransmissionQuick',
-                        cleanup=True)
-    data.append([vol_remaining,trans])
-    print(f'    @{vol_remaining}, trans={trans}')
-    print('Scan complete')
-    return data
-
+     trans = inst.enqueue(task_name='measureTransmissionQuick',
+                         restore=True)['return_val']
+     data.append([transfer_vol,trans])
+     print(f'    @{transfer_vol}, trans={trans}')
+     print('Scan complete')
+     return data
 print('''
 
 Welcome to NistoRoboto's notebook interface!!

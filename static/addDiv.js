@@ -16,22 +16,15 @@ class Div {
         this.#addHeader();
 
         var contentDiv;
-        var content;
 
         if(this.type == 'status') {
-            // TODO make content specific for div type
-            content = '<p>the content</p>';
-            contentDiv = '<div class="content">'+content+'</div>';
+            contentDiv = '<div class="content">'+this.#statusContent()+'</div>';
         }
         if(this.type == 'controls') {
-            // TODO make content specific for div type
-            content = '<p>the content</p>';
-            contentDiv = '<div class="content">'+content+'</div>';
+            contentDiv = '<div class="content">'+this.#controlsContent()+'</div>';
         }
         if(this.type == 'queue') {
-            // TODO make content specific for div type
-            content = '<p>the content</p>';
-            contentDiv = '<div class="content">'+content+'</div>';
+            contentDiv = '<div class="content">'+this.#queueContent()+'</div>';
         }
 
         this.#addToDiv(contentDiv);
@@ -73,6 +66,20 @@ class Div {
         });
     }
 
+    // TODO complete the function
+    #statusContent() {
+        return '<p>the content for status div</p>';
+    }
+
+    // TODO complete the function
+    #controlsContent() {
+        return '<p>the content for controls div</p>';
+    }
+
+    // TODO complete the function
+    #queueContent(){
+        return '<p>the content for queue div</p>';
+    }
 }
 
 /**

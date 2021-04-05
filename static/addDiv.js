@@ -84,48 +84,36 @@ class Div {
 
 /**
  * Creates and adds a status div for the corresponding server
- * @param {String} btnID 
+ * @param {String} key
  */
-function addStatusDiv(btnID) {
-    id = '#'+btnID;
-    var serverKey = $(id).attr('serverKey');
-    // console.log(serverKey); // prints the serverKey to the console
-    
-    var div = new Div(serverKey, 'status', btnID);
-    div.add();
-    // console.log(div); // prints the div object to the console
+function addStatusDiv(key) {
+    var server = getServer(key);
+    server.statusDiv.add();
 
+    var id = '#'+server.statusDiv.addBtnID;
     disableBtn($(id));
 }
 
 /**
  * Creates and adds a controls div for the corresponding server
- * @param {String} btnID 
+ * @param {String} key
  */
-function addControlsDiv(btnID) {
-    id = '#'+btnID;
-    var serverKey = $(id).attr('serverKey');
-    // console.log(serverKey); // prints the serverKey to the console
-    
-    var div = new Div(serverKey, 'controls', btnID);
-    div.add();
-    // console.log(div); // prints the div object to the console
-    
+function addControlsDiv(key) {
+    var server = getServer(key);
+    server.controlsDiv.add();
+
+    var id = '#'+server.controlsDiv.addBtnID;
     disableBtn($(id));
 }
 
 /**
  * Creates and adds a queue div for the corresponding server
- * @param {String} btnID 
+ * @param {String} key
  */
-function addQueueDiv(btnID) {
-    id = '#'+btnID;
-    var serverKey = $(id).attr('serverKey');
-    // console.log(serverKey); // prints the serverKey to the console
-    
-    var div = new Div(serverKey, 'queue', btnID);
-    div.add();
-    // console.log(div); // prints the div object to the console
-    
+function addQueueDiv(key) {
+    var server = getServer(key);
+    server.queueDiv.add();
+
+    var id = '#'+server.queueDiv.addBtnID;
     disableBtn($(id));
 }

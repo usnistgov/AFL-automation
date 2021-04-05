@@ -146,6 +146,10 @@ button {
         background-color: whitesmoke;
     }
 
+    .debug {
+        background-color: blue;
+    }
+
 /* CSS for the pop-up */
     #popup {
         border-style: solid;

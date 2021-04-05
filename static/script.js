@@ -10,14 +10,14 @@ function addServerToMenu(server) {
     $('#servers').append(parent);
 
     addStatusBtnID = server.key+'_addStatusBtn';
-    addStatusBtn = '<li><button id="'+addStatusBtnID+'" onclick="addStatusDiv(\''+addStatusBtnID+'\')" class="add-status-btn" serverKey="'+server.key+'">Add Status</button></li>';
-    
+    addStatusBtn = '<li><button id="'+addStatusBtnID+'" onclick="addStatusDiv(\''+server.key+'\')" class="add-status-btn">Add Status</button></li>';
+
     addControlsBtnID = server.key+'_addControlsBtn';
-    addControlsBtn = '<li><button id="'+addControlsBtnID+'" onclick="addControlsDiv(\''+addControlsBtnID+'\')" class="add-controls-btn" serverKey="'+server.key+'">Add Controls</button></li>';
-    
+    addControlsBtn = '<li><button id="'+addControlsBtnID+'" onclick="addControlsDiv(\''+server.key+'\')" class="add-controls-btn">Add Controls</button></li>';
+
     addQueueBtnID = server.key+'_addQueueBtn';
-    addQueueBtn = '<li><button id="'+addQueueBtnID+'" onclick="addQueueDiv(\''+addQueueBtnID+'\')" class="add-queue-btn" serverKey="'+server.key+'">Add Queue</button></li>';
-    
+    addQueueBtn = '<li><button id="'+addQueueBtnID+'" onclick="addQueueDiv(\''+server.key+'\')" class="add-queue-btn">Add Queue</button></li>';
+
     queuedCommandsID = server.key+'_queuedCommands';
     queuedCommands = '<li class="parent"><a href="#">Queued Commands >></a><ul id="'+queuedCommandsID+'" class="child"></ul></li>';
 

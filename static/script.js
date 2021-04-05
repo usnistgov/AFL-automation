@@ -75,6 +75,10 @@ function closeDiv(div) {
 
     // removes the div
     div.remove();
+
+    // Updates the div's onScreen attribute
+    var div2 = getDiv(serverKey, divType);
+    div2.setOnScreen(false);
 }
 
 /**

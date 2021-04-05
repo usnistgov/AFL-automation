@@ -108,5 +108,10 @@ $(function() {
 // check robot status every 5 seconds and adjust background color accordingly
 // setInterval(function(){ 
 //     console.log('checked');
-        // check servers states and adjust background color accordingly
+//     for(let s in servers){
+//         console.log(servers[s]);
+//         servers[s].getQueueState(function(result) {
+//             console.log(result);
+//         });
+//     }
 // }, 5000);

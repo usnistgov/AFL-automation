@@ -5,6 +5,11 @@ class Div {
         this.addBtnID = addBtnID;
         this.id = serverKey + '_' + type;
         this.div = '<div id="'+this.id+'" class="container" serverKey="'+this.serverKey+'" divType="'+this.type+'"></div>';
+        this.onScreen = false;
+    }
+
+    setOnScreen(bool) {
+        this.onScreen = bool;
     }
 
     /**
@@ -28,6 +33,7 @@ class Div {
         }
 
         this.#addToDiv(contentDiv);
+        this.setOnScreen(true);
     }
 
     /**

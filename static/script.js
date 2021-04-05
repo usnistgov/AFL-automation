@@ -28,7 +28,7 @@ function addServerToMenu(server) {
     id = '#'+server.key;
     $(id).append(child);
 
-    queuedCommands += server.getQueuedCommands(function(result) {
+    server.getQueuedCommands(function(result) {
         var commands = '';
         for(let key in result) {
             // console.log(key + ' is ' + result[key]['doc']);

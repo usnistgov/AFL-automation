@@ -18,25 +18,37 @@ function addServerToMenu(server) {
     addQueueBtnID = server.key+'_addQueueBtn';
     addQueueBtn = '<li><button id="'+addQueueBtnID+'" onclick="addQueueDiv(\''+addQueueBtnID+'\')" class="add-queue-btn" serverKey="'+server.key+'">Add Queue</button></li>';
     
-    queuedCommands = '<li class="parent"><a href="#">Queued Commands >></a><ul class="child">';
-    // TODO for loop to add the queued commands from the server
-    server.getQueuedCommands(function(result) {
-        //console.log(result);
-        for(let key in result) {
-            console.log(key + ' is ' + result[key]['doc']);
-        }
-    });
-    queuedCommands += '</ul></li>'
+    queuedCommandsID = server.key+'_queuedCommands';
+    queuedCommands = '<li class="parent"><a href="#">Queued Commands >></a><ul id="'+queuedCommandsID+'" class="child"></ul></li>';
 
-    unqueuedCommands = '<li class="parent"><a href="#">Unqueued Commands >></a><ul class="child">';
-    // TODO for loop to add the unqueued commands from the server
-    server.getUnqueuedCommands();
-    unqueuedCommands += '</ul></li>'
+    unqueuedCommandsID = server.key+'_unqueuedCommands';
+    unqueuedCommands = '<li class="parent"><a href="#">Unqueued Commands >></a><ul id="'+unqueuedCommandsID+'" class="child"></ul></li>';
 
-    // TODO add the queued and unqueued sections to the menu
-    child = '<ul class="child">'+addStatusBtn+addControlsBtn+addQueueBtn+'</ul>';
+    child = '<ul class="child">'+addStatusBtn+addControlsBtn+addQueueBtn+queuedCommands+unqueuedCommands+'</ul>';
     id = '#'+server.key;
     $(id).append(child);
+
+    // TODO for loop to add the queued commands from the server
+    queuedCommands += server.getQueuedCommands(function(result) {
+        var commands = '';
+        for(let key in result) {
+            // console.log(key + ' is ' + result[key]['doc']);
+            commands += '<li><button>'+key+'</button></li>';
+        }
+        id = '#'+server.key+'_queuedCommands';
+        $(id).append(commands);
+    });
+
+    // TODO for loop to add the unqueued commands from the server
+    server.getUnqueuedCommands(function(result) {
+        var commands = '';
+        for(let key in result) {
+            // console.log(key + ' is ' + result[key]['doc']);
+            commands += '<li><button>'+key+'</button></li>';
+        }
+        id = '#'+server.key+'_unqueuedCommands';
+        $(id).append(commands);
+    });
 }
 
 /**

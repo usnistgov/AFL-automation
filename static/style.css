@@ -1,0 +1,182 @@
+body {
+    background-color:lightsteelblue;
+    font-family: 'Times New Roman';
+}
+button {
+    font-family: 'Times New Roman';
+    font-size: medium;
+}
+/* CSS for the header */
+    header {
+        background-color: #173F5F;
+        color: whitesmoke;
+        text-align: center;
+        height: 35px;
+        margin-bottom: 5px;
+    }
+
+/* CSS for Menu */
+    .menu {
+        background-color: #20639B;
+        /* border: solid black; */
+        height: 45px;
+        width: 98%;
+        margin: 0 auto;
+    }
+
+    .menu a {
+        background-color: #ED553B;
+        display:inline-block;
+        color: whitesmoke;
+        width: fill;
+        margin: 0px;
+        padding: 10px;
+        text-decoration: none;
+        text-align: center;
+        cursor: default;
+        /* min-width: 130px; */
+    }
+
+    .menu button {
+        background-color: #ED553B;
+        border-style: none;
+        color: whitesmoke;
+        cursor: pointer;
+        width: 100%;
+        padding: 15px;
+    }
+
+    #add-server-btn {
+        position: relative;
+        float: right;
+        width: 100px;
+        padding: 10px;
+        line-height: 25px;
+        border-left:#CCC 1px solid;
+    }
+
+    /* CSS for Multi-Level Dropdown */
+        .parent {
+            display: block;
+            position: relative;
+            float: left;
+            line-height: 25px;
+            border-right:#CCC 1px solid;
+        }
+
+        /* shows dropdown on hover */
+        .parent:hover > ul {display:block;position:absolute;}
+
+        .child {
+            display: none;
+        }
+
+        .child li {
+            line-height: 30px;
+            border-bottom:#CCC 1px solid;
+            border-right:#CCC 1px solid;
+            width:100%;
+        }
+
+        .child a {
+            min-width: 130px;
+        }
+
+        .menu ul{
+            list-style: none;
+            margin: 0;
+            padding: 0px;
+            min-width:130px;
+        }
+
+        .menu ul ul ul{
+            left: 100%;
+            top: 0;
+            margin-left:1px;
+        }
+
+        /* greys background on hover */
+        .menu li a:hover {background-color:orange;}
+        .menu li button:hover {background-color: orange !important;}
+
+/* CSS for the divs */
+    #containers {
+        /* background-color: #3CAEA3; */
+        text-align: center;
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    .container {
+        outline: #173F5F solid 1px;
+        padding: auto;
+        box-shadow: 1px 2px 4px 2px;
+    }
+
+    .header {
+        text-align: left;
+        text-decoration: underline;
+    }
+
+    .content {
+        background-color: whitesmoke;
+    }
+
+    .container h3 {
+        padding: 4px;
+    }
+
+    .container p {
+        padding: 4px;
+    }
+
+    .working {
+        background-color: green;
+    }
+
+    .error {
+        background-color: red;
+    }
+
+    .paused {
+        background-color:orange;
+    }
+
+    .idle {
+        background-color: whitesmoke;
+    }
+
+/* CSS for the pop-up */
+    #popup {
+        border-style: solid;
+        background-color: white;
+        padding: 10px;
+        text-align: center;
+
+        /* make the pop up alway centered */
+        position:absolute;
+        top: 50%;
+        left: 50%;
+        width:300px;
+        height:200px;
+        margin-left:-150px;
+        margin-top:-100px;
+        
+        /* width: 40%;
+        float: right;
+        left: -30%;
+        position: relative; */
+    }
+
+/* CSS for the footer */
+    footer {
+        background-color: #173F5F;
+        color: whitesmoke;
+        height: 35px;
+        margin-top: 5px;
+
+        /* position: absolute;
+        bottom: 0;
+        width: 98.5%; */
+    }
+/* CSS for smaller screens */

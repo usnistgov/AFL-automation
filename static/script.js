@@ -28,7 +28,6 @@ function addServerToMenu(server) {
     id = '#'+server.key;
     $(id).append(child);
 
-    // TODO for loop to add the queued commands from the server
     queuedCommands += server.getQueuedCommands(function(result) {
         var commands = '';
         for(let key in result) {
@@ -39,7 +38,6 @@ function addServerToMenu(server) {
         $(id).append(commands);
     });
 
-    // TODO for loop to add the unqueued commands from the server
     server.getUnqueuedCommands(function(result) {
         var commands = '';
         for(let key in result) {

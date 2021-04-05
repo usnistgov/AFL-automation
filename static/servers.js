@@ -8,9 +8,11 @@ class Server {
         this.key = 'S'+(++numOfServers);
         
         var addStatusBtnID = this.key+'_addStatusBtn';
+        this.statusDiv = new Div(this.key,'status',addStatusBtnID);
         var addControlsBtnID = this.key+'_addControlsBtn';
+        this.controlsDiv = new Div(this.key,'controls',addControlsBtnID);
         var addQueueBtnID = this.key+'_addQueueBtn';
-        this.divs = [new Div(this.key,'status',addStatusBtnID), new Div(this.key,'controls',addControlsBtnID), new Div(this.key,'queue',addQueueBtnID)];
+        this.queueDiv = new Div(this.key,'queue',addQueueBtnID);
         
         servers.push(this);
         console.log(servers);
@@ -58,7 +60,7 @@ class Server {
         var link = this.address + 'queue_state';
         $.ajax({
             type:"GET",
-            dataType:"json",
+            dataType:"text",
             url:link,
             success:success_func
         });

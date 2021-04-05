@@ -88,6 +88,19 @@ class Div {
     }
 }
 
+function getDiv(serverKey, divType) {
+    var server = getServer(serverKey);
+    if(divType == 'status') {
+        return server.statusDiv;
+    }
+    if(divType == 'controls') {
+        return server.controlsDiv;
+    }
+    if(divType == 'queue') {
+        return server.queueDiv;
+    }
+}
+
 /**
  * Creates and adds a status div for the corresponding server
  * @param {String} key

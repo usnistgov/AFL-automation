@@ -10,7 +10,7 @@ class Server {
         console.log(servers);
     }
 
-    /** NOT FINISHED
+    /**
      * Returns the name of the server
      * @returns the name of the server
      */
@@ -18,9 +18,16 @@ class Server {
         return this.address;
     }
 
-    /** NOT FINISHED
-     * 
-     */
+    getQueue(success_func) {
+        var link = this.address + 'get_queue';
+        $.ajax({
+            type:"GET",
+            dataType:"json",
+            url:link,
+            success:success_func
+        });
+    }
+
     getQueuedCommands(success_func) {
         var link = this.address + 'get_queued_commands';
         $.ajax({
@@ -31,37 +38,23 @@ class Server {
         });
     }
 
-    getHistory() {
-
-    }
-
-    /** NOT FINISHED
-     * 
-     */
-    getUnqueuedCommands() {
+    getUnqueuedCommands(success_func) {
         var link = this.address + 'get_unqueued_commands';
         $.ajax({
             type:"GET",
             dataType:"json",
             url:link,
-            success:function(result) {
-                //console.log(result);
-                for(let key in result) {
-                    console.log(key + ' is ' + result[key]['doc']);
-                }
-            }
+            success:success_func
         });
     }
 
-    getQueueState() {
+    getQueueState(success_func) {
         var link = this.address + 'queue_state';
         $.ajax({
             type:"GET",
             dataType:"json",
             url:link,
-            success:function(result) {
-                console.log(result);
-            }
+            success:success_func
         });
     }
 }

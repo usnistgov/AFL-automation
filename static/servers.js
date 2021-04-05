@@ -18,6 +18,42 @@ class Server {
         console.log(servers);
     }
 
+    updateDivsStatus() {
+        if(this.statusDiv.onScreen == true) {
+            var key = this.key;
+            this.getQueueState(function(result) {
+                var div = getDiv(key, 'status');
+                console.log(div);
+                var id = '#' + div.id;
+                console.log(id);
+                // TODO make color correspond to result
+                $(id).css('background-color', 'red');
+            });
+        }
+        if(this.controlsDiv.onScreen == true) {
+            var key = this.key;
+            this.getQueueState(function(result) {
+                var div = getDiv(key, 'controls');
+                console.log(div);
+                var id = '#' + div.id;
+                console.log(id);
+                // TODO make color correspond to result
+                $(id).css('background-color', 'red');
+            });
+        }
+        if(this.queueDiv.onScreen == true) {
+            var key = this.key;
+            this.getQueueState(function(result) {
+                var div = getDiv(key, 'queue');
+                console.log(div);
+                var id = '#' + div.id;
+                console.log(id);
+                // TODO make color correspond to result
+                $(id).css('background-color', 'red');
+            });
+        }
+    }
+
     /**
      * Returns the name of the server
      * @returns the name of the server

@@ -6,6 +6,12 @@ class Server {
     constructor(address) {
         this.address = address;
         this.key = 'S'+(++numOfServers);
+        
+        var addStatusBtnID = this.key+'_addStatusBtn';
+        var addControlsBtnID = this.key+'_addControlsBtn';
+        var addQueueBtnID = this.key+'_addQueueBtn';
+        this.divs = [new Div(this.key,'status',addStatusBtnID), new Div(this.key,'controls',addControlsBtnID), new Div(this.key,'queue',addQueueBtnID)];
+        
         servers.push(this);
         console.log(servers);
     }

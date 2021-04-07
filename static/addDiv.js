@@ -90,9 +90,17 @@ class Div {
         });
     }
 
-    // TODO complete the function
+    /**
+     * Creates the html content for a status div and returns it
+     * @returns content for the div
+     */
     #statusContent() {
-        return '<p>the content for status div</p>';
+        // TODO fill in top content with ???
+        var topContent = '<p>Driver: [driver name] | Queue State: [state] | Experiment: Development | Completed: # | Queue: # | Last Update: [date] [time]</p>';
+        // TODO fill in bottom content with driver status
+        var bottomContent = '<p>[Info from server] | [Info from server] | [Info from server]</p>';
+        var content = topContent + '<hr>' + bottomContent;
+        return content;
     }
 
     // TODO complete the function

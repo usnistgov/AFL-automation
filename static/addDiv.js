@@ -90,6 +90,48 @@ class Div {
         });
     }
 
+    updateDivContent() {
+        if(this.type == 'status') {
+            
+        }
+
+        if(this.type == 'controls') {
+            
+        }
+
+        if(this.type == 'queue') {
+            var completedID = '#' + this.serverKey + '_history';
+            var currentID = '#' + this.serverKey + '_running';
+            var upcomingID = '#' + this.serverKey + '_queued';
+
+            var server = getServer(this.serverKey);
+            server.getQueue(function(result) {
+                // console.log(result[0]);
+
+                $(completedID).empty();
+                for(let i in result[0]) {
+                    // console.log(result[0][i]);
+                    var task = '<li>'+result[0][i].task.task_name+'</li>';
+                    $(completedID).append(task);
+                }
+
+                $(currentID).empty();
+                for(let i in result[1]) {
+                    // console.log(result[0][i]);
+                    var task = '<li>'+result[0][i].task.task_name+'</li>';
+                    $(currentID).append(task);
+                }
+
+                $(upcomingID).empty();
+                for(let i in result[2]) {
+                    // console.log(result[0][i]);
+                    var task = '<li>'+result[0][i].task.task_name+'</li>';
+                    $(upcomingID).append(task);
+                }
+            });
+        }
+    }
+
     /**
      * Creates the html content for a status div and returns it
      * @returns content for the div

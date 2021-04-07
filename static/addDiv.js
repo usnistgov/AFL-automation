@@ -37,6 +37,24 @@ class Div {
     }
 
     /**
+     * Updates the background color of the div to correspond to the server's status
+     * @param {String} status 
+     */
+    updateDivColor(status) {
+        var id = '#' + this.id;
+        if(status == 'Paused') {
+            $(id).css('background-color', '#FFBF00');
+        } else if(status == 'Debug') {
+            // Q - what should be the debug color?
+            $(id).css('background-color', 'blue');
+        } else if(status == 'Active') {
+            $(id).css('background-color', 'green');
+        } else {
+            $(id).css('background-color', 'white');
+        }
+    }
+
+    /**
      * Adds the content to the div in the html
      * @param {String} content 
      */

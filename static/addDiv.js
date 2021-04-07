@@ -34,6 +34,9 @@ class Div {
 
         this.#addToDiv(contentDiv);
         this.setOnScreen(true);
+
+        var server = getServer(this.serverKey);
+        server.updateDivs();
     }
 
     /**

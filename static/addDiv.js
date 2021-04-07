@@ -109,7 +109,7 @@ class Div {
 
             var server = getServer(this.serverKey);
             server.getQueue(function(result) {
-                // console.log(result[0]);
+                // console.log(result);
 
                 $(completedID).empty();
                 for(let i in result[0]) {
@@ -121,14 +121,14 @@ class Div {
                 $(currentID).empty();
                 for(let i in result[1]) {
                     // console.log(result[0][i]);
-                    var task = '<li>'+result[0][i].task.task_name+'</li>';
+                    var task = '<li>'+result[1][i].task.task_name+'</li>';
                     $(currentID).append(task);
                 }
 
                 $(upcomingID).empty();
                 for(let i in result[2]) {
                     // console.log(result[0][i]);
-                    var task = '<li>'+result[0][i].task.task_name+'</li>';
+                    var task = '<li>'+result[2][i].task.task_name+'</li>';
                     $(upcomingID).append(task);
                 }
             });

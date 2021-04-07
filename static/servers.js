@@ -18,9 +18,15 @@ class Server {
         console.log(servers);
     }
 
-    updateDivsStatus() {
+    updateDivs() {
+        var key = this.key;
+
         if(this.statusDiv.onScreen == true) {
-            var key = this.key;
+            // updates the status div's content
+            var div = getDiv(key, 'status');
+            div.updateDivContent();
+
+            // updates the status div's color
             this.getQueueState(function(result) {
                 var div = getDiv(key, 'status');
                 div.updateDivColor(result);
@@ -28,7 +34,11 @@ class Server {
         }
 
         if(this.controlsDiv.onScreen == true) {
-            var key = this.key;
+            // updates the controls div's content
+            var div = getDiv(key, 'controls');
+            div.updateDivContent();
+
+            // updates the controls div's color
             this.getQueueState(function(result) {
                 var div = getDiv(key, 'controls');
                 div.updateDivColor(result);
@@ -36,7 +46,11 @@ class Server {
         }
 
         if(this.queueDiv.onScreen == true) {
-            var key = this.key;
+            // updates the queue div's content
+            var div = getDiv(key, 'queue');
+            div.updateDivContent();
+
+            // updates the queue div's color
             this.getQueueState(function(result) {
                 var div = getDiv(key, 'queue');
                 div.updateDivColor(result);

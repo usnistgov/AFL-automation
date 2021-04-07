@@ -102,7 +102,7 @@ button {
 /* CSS for the divs */
     #containers {
         /* background-color: #3CAEA3; */
-        text-align: center;
+        /* text-align: center; */
         width: 90%;
         margin: 0 auto;
     }
@@ -120,6 +120,30 @@ button {
 
     .content {
         background-color: whitesmoke;
+        overflow: hidden;
+    }
+
+    .content > ul > li > ul > li {
+        outline: 2px black solid;
+        padding: 5px;
+        margin-bottom: 5px;
+    }
+
+    .content ul {
+        list-style:none;
+        padding-left: 5px;
+        padding-bottom: 10px;
+    }
+
+    .content > ul > li {
+        display: inline;
+        text-align: center;
+        float:left;
+        width: 33%;
+    }
+
+    .content h4 {
+        text-decoration: underline;
     }
 
     .container h3 {
@@ -128,26 +152,6 @@ button {
 
     .container p {
         padding: 4px;
-    }
-
-    .working {
-        background-color: green;
-    }
-
-    .error {
-        background-color: red;
-    }
-
-    .paused {
-        background-color:orange;
-    }
-
-    .idle {
-        background-color: whitesmoke;
-    }
-
-    .debug {
-        background-color: blue;
     }
 
 /* CSS for the pop-up */

@@ -96,7 +96,7 @@ class Div {
      */
     #statusContent() {
         // TODO fill in top content with ???
-        var topContent = '<p>Driver: [driver name] | Queue State: [state] | Experiment: Development | Completed: # | Queue: # | Last Update: [date] [time]</p>';
+        var topContent = '<p>Driver: [driver name] | Queue State: [state] | Experiment: Development | Completed: # | Queue: # | Time: [date] [time]</p>';
         // TODO fill in bottom content with driver status
         var bottomContent = '<p>[Info from server] | [Info from server] | [Info from server]</p>';
         var content = topContent + '<hr>' + bottomContent;
@@ -110,7 +110,17 @@ class Div {
 
     // TODO complete the function
     #queueContent(){
-        return '<p>the content for queue div</p>';
+        var completedID = this.serverKey + '_history';
+        var completed = '<h4>Completed</h4><ul id="'+completedID+'"></ul>';
+
+        var currentID = this.serverKey + '_running';
+        var current = '<h4>Current Task</h4><ul id="'+currentID+'"></ul>';
+        
+        var upcomingID = this.serverKey + '_queued';
+        var upcoming = '<h4>Upcoming</h4><ul id="'+upcomingID+'"></ul>';
+
+        var content = completed + current + upcoming;
+        return content;
     }
 }
 

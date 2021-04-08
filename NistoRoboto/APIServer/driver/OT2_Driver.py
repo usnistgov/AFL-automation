@@ -40,6 +40,12 @@ class OT2_Driver(Driver):
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
+    
+    def reset_tipracks(self,mount='both'):
+        for k,pipette in self.protocol.loaded_instruments.items():
+            if (mount.lower()=='both') or (k==mount.lower()):
+                pipette.reset_tipracks()
+                
 
     def reset(self):
         self.app.logger.info('Resetting the protocol context')

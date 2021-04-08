@@ -1,5 +1,9 @@
 import win32com
 import win32com.client
+from win32process import SetProcessWorkingSetSize
+from win32api import GetCurrentProcessId,OpenProcess
+from win32con import PROCESS_ALL_ACCESS
+import gc
 import pythoncom
 import time
 import datetime
@@ -22,6 +26,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     defaults['transmission strategy'] = 'sum'
     defaults['vi'] = 'C:\saxs_control\GIXD controls.vi'
     defaults['reduced_data_dir'] = r'Y:\\CDSAXS data\\autoreduce\\'
+    defaults['absolute_pressure_limit']=1
+    defaults['relative_pressure_ratio_limit']=10
     
     axis_name_to_id_lut = {
         'X-stage' : 0,
@@ -59,8 +65,19 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         self.__instrument_name__ = 'NIST CDSAXS instrument'
         
         self.status_txt = 'Just started...'
-        self.last_measured_transmission = 0
+        self.last_measured_transmission = [0,0,0,0]
         
+
+    def pre_execute(self,**kwargs):
+        pressure = self._getLabviewValue("Pressure (mbar)")
+        #historical_pressure = self._getLabviewValue("Pressure Level Chart",lv=lv)
+        print(f'Pressure: {pressure}')
+        #print(f'Hist Press: {historical_pressure}')
+        abs_trip = pressure > self.config['absolute_pressure_limit']
+        #rel_trip = (pressure/historical_pressure.mean())>self.config['relative_pressure_ratio_limit']
+        if abs_trip:# or rel_trip:
+            #something has gone wrong -- vacuum excursion.  raise an exception so the queue pauses.
+            raise Exception(f'Vacuum excursion!!  Trip reason {"abs_trip" if abs_trip else "rel_trip"} Current pressure is {pressure}')#, historical average{historical_pressure.mean()}.')
 
     def setReducedDataDir(self,path):
         self.config['reduced_data_dir'] = path
@@ -68,19 +85,24 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
 
     def measureTransmission(self,exp=5,fn='trans',set_empty_transmission=False,return_full=False,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:
-            self.moveAxis(self.config['beamstop axis'],self.config['beamstop out'],lv=lv)
-            open_beam = self.moveAxis(self.config['sample axis'],self.config['sample out'],exposure=exp,filename = 't-open-beam-'+fn,return_data=True,lv=lv)
-            sample_transmission = self.moveAxis(self.config['sample axis'],self.config['sample in'],exposure=exp,filename = 't-'+fn,return_data=True,lv=lv)
+            self.status_txt = 'Moving beamstop out for transmission...'
+            self.moveAxis(self.config['beamstop axis'],self.config['beamstop out'],block=True,lv=lv)
+            self.moveAxis(self.config['sample axis'],self.config['sample out'],block=True,lv=lv)
+            self.status_txt = 'Measuring open beam intensity...'
+            open_beam = self._simple_expose(exposure=exp,filename = 't-open-beam-'+fn,block=True,lv=lv)
+            self.status_txt = 'Measuring sample direct beam intensity...'
+            self.moveAxis(self.config['sample axis'],self.config['sample in'],block=True)
+            sample_transmission = self._simple_expose(exposure=exp,filename = 't-'+fn,block=True,lv=lv)
+            self.status_txt = 'Moving beamstop back in...'
             self.moveAxis(self.config['beamstop axis'],self.config['beamstop in'],lv=lv,block=True)
+            self.status_txt = 'Processing transmission measurement...'
             trans = np.nan_to_num(sample_transmission).sum() / np.nan_to_num(open_beam).sum()
             self.app.logger.info(f'Measured raw transmission of {trans*100}%, with {np.nan_to_num(sample_transmission).sum()} counts on samp and {np.nan_to_num(open_beam).sum()} in open beam.')
             if set_empty_transmission:
-
-
                 #XXX! Should this be stored in config?
                 self.config['empty transmission'] = trans
                  
-                retval = trans
+                retval = (trans,np.nan_to_num(open_beam).sum(),np.nan_to_num(sample_transmission).sum(),self.config['empty transmission'])
             elif self.config['empty transmission'] is not None:
                 if return_full:
                     retval = (trans / self.config['empty transmission'],np.nan_to_num(open_beam).sum(),np.nan_to_num(sample_transmission).sum(),self.config['empty transmission'])
@@ -93,21 +115,27 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 else:
                     retval = trans
             self.last_measured_transmission = retval
+            self.status_txt = 'Idle'
             return retval
     
     def measureTransmissionQuick(self,exp=1,fn='trans',setup=False,restore=False,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:
             if setup:
-                self.moveAxis(self.config['beamstop axis'],self.config['beamstop out'],lv=lv)
-                open_beam = self.moveAxis(self.config['sample axis'],self.config['sample out'],exposure=exp,filename = 't-open-beam-'+fn,return_data=True,lv=lv)
+                self.moveAxis(self.config['beamstop axis'],self.config['beamstop out'],block=True,lv=lv)
+                self.moveAxis(self.config['sample axis'],self.config['sample out'],block=True,lv=lv)
+                open_beam = self._simple_expose(exposure=exp,filename = 't-open-beam-'+fn,block=True,lv=lv)
                 self.config['open beam intensity'] = np.nan_to_num(open_beam).sum()
                 #self.config['open beam intensity updated'] = datetime.datetime.now()
-            sample_transmission = self.moveAxis(self.config['sample axis'],self.config['sample in'],exposure=exp,filename = 't-'+fn,return_data=True,lv=lv)
+                
+                self.moveAxis(self.config['sample axis'],self.config['sample in'],block=True,lv=lv)
+                self.status_txt = 'Staged for rapid transmission measurement'
+            sample_transmission = self._simple_expose(exposure=exp,filename = 't-'+fn,block=True,lv=lv)
             retval = np.nan_to_num(sample_transmission).sum()
             if self.config['open beam intensity'] is not None:
                 retval = retval / self.config['open beam intensity']
             if restore:
                 self.moveAxis(self.config['beamstop axis'],self.config['beamstop in'],lv=lv,block=True)
+                self.status_txt = 'Idle'
             return retval          
 
 
@@ -162,7 +190,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         
     @Driver.unqueued()  
     def getStatus(self,lv=None):
-        return self._getLabviewValue('Process Status Message')
+        return self._getLabviewValue('Process Status Message',lv=lv)
    
     @Driver.unqueued()  
     def getNScans(self,lv=None):
@@ -191,41 +219,38 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     def getXStagePos(self,lv=None):
         return self._getLabviewValue('X-Stage',lv=lv)
     
-    def moveAxis(self,axis,value,exposure=0.001,filename = 'axis-move',return_data=False,block=True,lv=None):
-        #this is very hacky, I apologize.  The strategy is simply to set a sweep and do an exposure.  This is because of  labview-COM issue where we can't click the 'move axis' button.
-        
-        with (LabviewConnection() if lv is None else lv) as lv:
-            self.setSweepAxis(axis,lv=lv)
-            self.setSweepStart(value,lv=lv)
-            self.setExposure(exposure,lv=lv)
-            self.setFilename(filename,lv=lv)
-            self.setNScans(1,lv=lv)
-            self._setLabviewValue('Expose Pilatus',True,lv=lv)
-            if block or return_data:
-                while(self.getStatus(lv=lv) != 'Loading Image'):
-                    time.sleep(0.1)
-                while(self.getStatus(lv=lv) != 'Success' and self.getStatus(lv=lv) != 'Collection Aborted'):
-                    time.sleep(0.1)
-            if return_data:
-                return self.getData(lv=lv)
 #    def moveAxis(self,axis,value,exposure=0.001,filename = 'axis-move',return_data=False,block=True,lv=None):
-#        with LabviewConnection(vi=r'C:\saxs_control\Move for Peter.vi') as lvm:
-#            if type(axis) is str:
-#                axis = axis_name_to_id_lut[axis]
-#            lvm.main_vi.setcontrolvalue('Axis',axis)
-#            lvm.main_vi.setcontrolvalue('New Position',value)
-#            lvm.main_vi.setcontrolvalue('Motor Move',True)
-#            
-#            if return_data or block:
-#                with (LabviewConnection() if lv is None else lv) as lv:
-#                    axis_str = axis_id_to_name_lut[axis]
-#                    pos = None
-#                    while pos is None or pos != value:
-#                        pos = lv.main_vi.getcontrolvalue(axis_str)
-#                        time.sleep(0.1)
-#                    if return_data:
-#                        self.expose(self,name=filename,exposure=exposure,block=True,reduce_data=False,measure_transmission=False,save_nexus=False,lv=lv)
-#                        return self.getData(lv=lv)
+#        #this is very hacky, I apologize.  The strategy is simply to set a sweep and do an exposure.  This is because of  labview-COM issue where we can't click the 'move axis' button.
+#        
+#        with (LabviewConnection() if lv is None else lv) as lv:
+#            self.setSweepAxis(axis,lv=lv)
+#            self.setSweepStart(value,lv=lv)
+#            self.setExposure(exposure,lv=lv)
+#            self.setFilename(filename,lv=lv)
+#            self.setNScans(1,lv=lv)
+#            self._setLabviewValue('Expose Pilatus',True,lv=lv)
+#            if block or return_data:
+#                while(self.getStatus(lv=lv) != 'Loading Image'):
+#                    time.sleep(0.1)
+#                while(self.getStatus(lv=lv) != 'Success' and self.getStatus(lv=lv) != 'Collection Aborted'):
+#                    time.sleep(0.1)
+#            if return_data:
+#                return self.getData(lv=lv)
+    def moveAxis(self,axis,value,block=True,lv=None):
+        with LabviewConnection(vi=r'C:\saxs_control\Move for Peter.vi') as lvm:
+            if type(axis) is str:
+                axis = self.axis_name_to_id_lut[axis]
+            lvm.main_vi.setcontrolvalue('Axis',axis)
+            lvm.main_vi.setcontrolvalue('New Position',value)
+            lvm.main_vi.setcontrolvalue('Motor Move',True)
+            
+            if block:
+                with (LabviewConnection() if lv is None else lv) as lv:
+                    while('Moving' not in self.getStatus(lv=lv)):
+                        time.sleep(0.1)
+                    while(self.getStatus(lv=lv) != 'Finished'):
+                        time.sleep(0.1)
+
     def setSweepStart(self,start,lv=None):
         self._setLabviewValue('Start Value',start,lv=lv)
         
@@ -250,7 +275,36 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         with (LabviewConnection() if lv is None else lv) as lv:
             lv.main_vi.setcontrolvalue(val_name,val_val)
 
+    def _simple_expose(self,filename=None,exposure=None,block=True,lv=None):
+        with (LabviewConnection() if lv is None else lv) as lv:
+            if filename is None:
+                filename=self.getFilename(lv=lv)
 
+            if exposure is None:
+                exposure=self.getExposure(lv=lv)
+            
+            self.status_txt = f'Starting {exposure} s count named {filename}'
+            
+            self.setFilename(filename,lv=lv)
+            self.setExposure(exposure,lv=lv)
+            self.setNScans(1,lv=lv)
+            self.setSweepAxis('None',lv=lv)
+            
+                
+            if self.app is not None:
+                self.app.logger.debug(f'Starting exposure with name {filename} for {exposure} s')
+
+
+            self._setLabviewValue('Expose Pilatus',True,lv=lv)
+            #time.sleep(0.5)
+            if block:
+                while(self.getStatus(lv=lv) != 'Loading Image'):
+                    time.sleep(0.1)
+                #name = self._getLabviewValue('Displayed Image P') # read back the actual name, including sequence number, for later steps.
+                while(self.getStatus(lv=lv) != 'Success' and self.getStatus(lv=lv) != 'Collection Aborted'):
+                    time.sleep(0.1)
+                self.status_txt = 'Accessing Image'
+                return self.getData(lv=lv)
 
     def expose(self,name=None,exposure=None,block=True,reduce_data=True,measure_transmission=True,save_nexus=True,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:
@@ -263,6 +317,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
             self.status_txt = f'Starting {exposure} s count named {name}'
             
             if measure_transmission:
+                self.status_txt = f'Measuring transmission...'
                 transmission = self.measureTransmission(return_full=True,lv=lv)
                 self.status_txt = f'Starting {exposure} s count named {name} with transmission {str(transmission)}'
             else:
@@ -286,7 +341,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 while(self.getStatus(lv=lv) != 'Success' and self.getStatus(lv=lv) != 'Collection Aborted'):
                     time.sleep(0.1)
                 self.status_txt = 'Accessing Image'
-                data = self.getData()
+                data = self.getData(lv=lv)
                 if save_nexus:
                     self.status_txt = 'Writing Nexus'
                     self._writeNexus(data,name,name,transmission)
@@ -327,6 +382,10 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         status = []
         status.append(f'Last Measured Transmission: scaled={self.last_measured_transmission[0]} using empty cell trans of {self.last_measured_transmission[3]} with {self.last_measured_transmission[2:3]} raw counts in open/sample')
         status.append(f'Status: {self.status_txt}')
+        #lmj = self._getLabviewValue("LMJ Status")
+        
+        #status.append(f'LMJ status: {"running, power on target = "+str(lmj[0]*lmj[1])+"W" if lmj[6]==1 else "not running"}')
+        #status.append(f'Vacuum (mbar): {self._getLabviewValue("Pressure (mbar)")}')
         status.append(f'<a href="getData" target="_blank">Live Data (2D)</a>')
         status.append(f'<a href="getReducedData" target="_blank">Live Data (1D)</a>')
         status.append(f'<a href="getReducedData?render_hint=2d_img&reduce_type=2d">Live Data (2D, reduced)</a>')
@@ -341,19 +400,27 @@ class LabviewConnection():
             vi: (str) the path to the LabView virtual instrument file for the main interface
 
         '''
-
+        #print(f'init labview context...')
         self.vi = vi
-        
-
-    def __enter__(self):
+        #print(f'Entering Labview context...')
         pythoncom.CoInitialize()
         self.labview = win32com.client.dynamic.Dispatch("Labview.Application")
         self.main_vi = self.labview.getvireference(self.vi)
         #self.main_vi.setcontrolvalue('Measurement',3) # 3 should bring the single Pilatus tab to the front
+
+    def __enter__(self):
+        
         return self
 
     def __exit__(self,exittype,value,traceback):
-        self.labview=None
-        self.main_vi=None
-        pythoncom.CoUninitialize()
+        pass #print(f'Exiting LabView context...')
         
+    def __del__(self):
+        #print(f'Deleting Labview object...')
+        self.main_vi = None
+        self.labview = None
+        gc.collect()
+        pythoncom.CoUninitialize()
+        if(pythoncom._GetInterfaceCount()>0):
+            print(f'Closed COM connection, but had remaining objects: {pythoncom._GetInterfaceCount()}')
+            SetProcessWorkingSetSize(OpenProcess(PROCESS_ALL_ACCESS,True,GetCurrentProcessId()),-1,-1)

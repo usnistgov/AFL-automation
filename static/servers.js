@@ -115,6 +115,71 @@ class Server {
             success:success_func
         });
     }
+
+    halt() {
+        var link = this.address + 'halt';
+        $.ajax({
+            type:"POST",
+            dataType:"text",
+            url:link,
+            success: function(result) {
+                console.log(result);
+            }
+        });
+    }
+
+    clearQueue() {
+        var link = this.address + 'clear_queue';
+        $.ajax({
+            type:"POST",
+            dataType:"text",
+            url:link,
+            success: function(result) {
+                console.log(result);
+            }
+        });
+    }
+
+    clearHistory() {
+        var link = this.address + 'clear_history';
+        $.ajax({
+            type:"POST",
+            dataType:"text",
+            url:link,
+            success: function(result) {
+                console.log(result);
+            }
+        });
+    }
+
+    pause() {
+        var link = this.address + 'pause';
+        // TODO fix ajax calls to work
+        this.getQueueState(function(result) {
+            console.log(result);
+            if(result == 'Paused') {
+                $.ajax({
+                    type:"POST",
+                    url:link,
+                    data: "{'state':true}",
+                    success: function(result) {
+                        console.log(result);
+                    },
+                    dataType: "json"
+                });
+            } else {
+                $.ajax({
+                    type:"POST",
+                    url:link,
+                    data: "{'state':false}",
+                    success: function(result) {
+                        console.log(result);
+                    },
+                    dataType: "json"
+                });
+            }
+        });
+    }
 }
 
 /**

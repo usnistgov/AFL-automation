@@ -158,6 +158,7 @@ class Div {
         queuedCommands = '#'+this.serverKey+'_queuedCommands';
         unqueuedCommands = '#'+this.serverKey+'_unqueuedCommands';
         var addtionalControls = '<ul><li style="display: none;">Additional Controls</li>'+$(queuedCommands).html()+$(unqueuedCommands).html()+'</ul>';
+        // TODO make additional controls appear as a dropdown when needed based on screen size
 
         var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + addtionalControls;
         return content;

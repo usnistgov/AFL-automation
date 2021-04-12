@@ -60,11 +60,19 @@ class Popup {
         });
     }
 
+    addText(text) {
+        var html = '<p>'+text+'</p>';
+        this.html += html;
+    }
+
     /**
      * Adds the popup's html to the popup div in the html
      */
     addToHTML() {
-        var content = this.html + '<br><button id="popupEnterBtn">Enter</button>';
+        var content = this.html;
+        if(this.inputs.length > 0) {
+            content += '<br><button id="popupEnterBtn">Enter</button>';
+        }
         $('#popup').append(content);
     }
 }

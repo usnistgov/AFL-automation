@@ -97,13 +97,26 @@ class Div {
         var server = getServer(this.serverKey);
 
         if(this.type == 'status') {
-            var driverID = this.serverKey + '_driver';
-            var stateID = this.serverKey + '_state';
-            var experimentID = this.serverKey + '_experiment';
+            var driverID = '#' + this.serverKey + '_driver';
+            var stateID = '#' + this.serverKey + '_state';
+            var experimentID = '#' + this.serverKey + '_experiment';
+            var numCompletedID = '#' + this.serverKey + '_numCompleted';
+            var numQueuedID = '#' + this.serverKey + '_numQueued';
 
-            // server.getInfo(function(result) {
-            //     console.log(result);
-            // });
+            server.getInfo(function(result) {
+                var r = JSON.parse(result);
+                // console.log(r);
+
+                $(driverID).text(r["driver"]);
+                $(stateID).text(r["queue_state"]);
+                $(experimentID).text(r["experiment"]);
+
+                var completed = r.queue[0].length;
+                $(numCompletedID).text(completed);
+
+                var queued = r.queue[2].length + r.queue[1].length;
+                $(numQueuedID).text(queued);
+            });
         }
 
         if(this.type == 'queue') {
@@ -148,8 +161,10 @@ class Div {
         var driverID = this.serverKey + '_driver';
         var stateID = this.serverKey + '_state';
         var experimentID = this.serverKey + '_experiment';
+        var numCompletedID = this.serverKey + '_numCompleted';
+        var numQueuedID = this.serverKey + '_numQueued';
         
-        var topContent = '<p>Driver: <span id="'+driverID+'">[driver name]</span> | Queue State: <span id="'+stateID+'">[state]</span> | Experiment: <span id="'+experimentID+'">[experiment]</span> | Completed: # | Queue: # | Time: [date] [time]</p>';
+        var topContent = '<p>Driver: <span id="'+driverID+'">[driver name]</span> | Queue State: <span id="'+stateID+'">[state]</span> | Experiment: <span id="'+experimentID+'">[experiment]</span> | Completed: <span id="'+numCompletedID+'">[#]</span> | Queue: <span id="'+numQueuedID+'">[#]</span> | Time: [date] [time]</p>';
         // TODO fill in bottom content with driver status
         var bottomContent = '<p>[Info from server] | [Info from server] | [Info from server]</p>';
         var content = topContent + '<hr>' + bottomContent;

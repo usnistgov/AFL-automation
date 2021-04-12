@@ -97,7 +97,13 @@ class Div {
         var server = getServer(this.serverKey);
 
         if(this.type == 'status') {
-            
+            var driverID = this.serverKey + '_driver';
+            var stateID = this.serverKey + '_state';
+            var experimentID = this.serverKey + '_experiment';
+
+            // server.getInfo(function(result) {
+            //     console.log(result);
+            // });
         }
 
         if(this.type == 'queue') {

@@ -111,6 +111,7 @@ class Div {
             var currentID = '#' + this.serverKey + '_running';
             var upcomingID = '#' + this.serverKey + '_queued';
 
+            // TODO make tasks show info for onClick event
             server.getQueue(function(result) {
                 // console.log(result);
 

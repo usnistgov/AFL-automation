@@ -150,6 +150,7 @@ class Div {
      * @returns String of html content for controls div
      */
     #controlsContent() {
+        // TODO make the buttons functional for onClick event
         var haltBtn = '<button class="halt-btn">HALT</button>';
         var clearQueueBtn = '<button>Clear Queue</button>';
         var clearHistoryBtn = '<button>Clear History</button>';

@@ -28,6 +28,7 @@ function addServerToMenu(server) {
     id = '#'+server.key;
     $(id).append(child);
 
+    // TODO make the queued command buttons functional on onClick event
     server.getQueuedCommands(function(result) {
         var commands = '';
         for(let key in result) {
@@ -38,6 +39,7 @@ function addServerToMenu(server) {
         $(id).append(commands);
     });
 
+    // TODO make the unqueued command buttons functional on onClick event
     server.getUnqueuedCommands(function(result) {
         var commands = '';
         for(let key in result) {

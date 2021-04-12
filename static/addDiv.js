@@ -138,7 +138,11 @@ class Div {
      */
     #statusContent() {
         // TODO fill in top content with ???
-        var topContent = '<p>Driver: [driver name] | Queue State: [state] | Experiment: Development | Completed: # | Queue: # | Time: [date] [time]</p>';
+        var driverID = this.serverKey + '_driver';
+        var stateID = this.serverKey + '_state';
+        var experimentID = this.serverKey + '_experiment';
+        
+        var topContent = '<p>Driver: <span id="'+driverID+'">[driver name]</span> | Queue State: <span id="'+stateID+'">[state]</span> | Experiment: <span id="'+experimentID+'">[experiment]</span> | Completed: # | Queue: # | Time: [date] [time]</p>';
         // TODO fill in bottom content with driver status
         var bottomContent = '<p>[Info from server] | [Info from server] | [Info from server]</p>';
         var content = topContent + '<hr>' + bottomContent;

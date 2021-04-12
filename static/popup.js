@@ -104,3 +104,18 @@ function addServerPopup() {
 
     $('#popup').css('visibility', 'visible');
 }
+
+function addTaskPopup(serverKey, x, y) {
+    var server = getServer(serverKey);
+
+    server.getQueue(function(result) {
+        var title = 'Task: ' + result[x][y].task.task_name;
+        let popup = new Popup(title);
+
+        var task = JSON.stringify(result[1][0].task);
+        popup.addText(task);
+
+        popup.addToHTML();
+        $('#popup').css('visibility', 'visible');
+    });
+}

@@ -164,7 +164,7 @@ class Div {
         var upcomingID = this.serverKey + '_queued';
         var upcoming = '<h4>Upcoming</h4><ul id="'+upcomingID+'"></ul>';
 
-        var content = '<ul><li>'+ completed +'</li><li>'+ current +'</li><li>'+ upcoming +'</li></ul>';
+        var content = '<ul><li>'+ upcoming +'</li><li>'+ current +'</li><li>'+ completed +'</li></ul>';
         return content;
     }
 }

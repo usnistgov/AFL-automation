@@ -195,6 +195,30 @@ class Div {
     }
 }
 
+function halt(serverKey) {
+    var server = getServer(serverKey);
+    // console.log(server);
+    server.halt();
+}
+
+function clearQueue(serverKey) {
+    var server = getServer(serverKey);
+    // console.log(server);
+    server.clearQueue();
+}
+
+function clearHistory(serverKey) {
+    var server = getServer(serverKey);
+    // console.log(server);
+    server.clearHistory();
+}
+
+function pause(serverKey) {
+    var server = getServer(serverKey);
+    // console.log(server);
+    server.pause();
+}
+
 function getDiv(serverKey, divType) {
     var server = getServer(serverKey);
     if(divType == 'status') {

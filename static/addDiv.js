@@ -162,10 +162,10 @@ class Div {
      */
     #controlsContent() {
         // TODO make the buttons functional for onClick event
-        var haltBtn = '<button class="halt-btn">HALT</button>';
-        var clearQueueBtn = '<button>Clear Queue</button>';
-        var clearHistoryBtn = '<button>Clear History</button>';
-        var togglePauseBtn = '<button>Pause/Unpause</button>';
+        var haltBtn = '<button class="halt-btn" onclick="halt(\''+this.serverKey+'\')">HALT</button>';
+        var clearQueueBtn = '<button onclick="clearQueue(\''+this.serverKey+'\')">Clear Queue</button>';
+        var clearHistoryBtn = '<button onclick="clearHistory(\''+this.serverKey+'\')">Clear History</button>';
+        var togglePauseBtn = '<button onclick="pause(\''+this.serverKey+'\')">Pause/Unpause</button>';
 
         queuedCommands = '#'+this.serverKey+'_queuedCommands';
         unqueuedCommands = '#'+this.serverKey+'_unqueuedCommands';

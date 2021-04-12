@@ -106,7 +106,6 @@ class Div {
 
             server.getInfo(function(result) {
                 var r = JSON.parse(result);
-                // console.log(r);
 
                 $(driverID).text(r["driver"]);
                 $(stateID).text(r["queue_state"]);
@@ -169,18 +168,17 @@ class Div {
      * @returns String of html content for status div
      */
     #statusContent() {
-        // TODO fill in top content with ???
         var driverID = this.serverKey + '_driver';
         var stateID = this.serverKey + '_state';
         var experimentID = this.serverKey + '_experiment';
         var numCompletedID = this.serverKey + '_numCompleted';
         var numQueuedID = this.serverKey + '_numQueued';
-        
         var topContent = '<p>Driver: <span id="'+driverID+'">[driver name]</span> | Queue State: <span id="'+stateID+'">[state]</span> | Experiment: <span id="'+experimentID+'">[experiment]</span> | Completed: <span id="'+numCompletedID+'">[#]</span> | Queue: <span id="'+numQueuedID+'">[#]</span> | Time: [date] [time]</p>';
-        // TODO fill in bottom content with driver status
+
         var driverStatusID = this.serverKey + '_driverStatus';
         var bottomContent = '<p><span id="'+driverStatusID+'"></span></p>';
         var content = topContent + '<hr>' + bottomContent;
+
         return content;
     }
 
@@ -189,7 +187,6 @@ class Div {
      * @returns String of html content for controls div
      */
     #controlsContent() {
-        // TODO make the buttons functional for onClick event
         var haltBtn = '<button class="halt-btn" onclick="halt(\''+this.serverKey+'\')">HALT</button>';
         var clearQueueBtn = '<button onclick="clearQueue(\''+this.serverKey+'\')">Clear Queue</button>';
         var clearHistoryBtn = '<button onclick="clearHistory(\''+this.serverKey+'\')">Clear History</button>';

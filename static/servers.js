@@ -164,7 +164,7 @@ class Server {
 
     pause() {
         var link = this.address + 'pause';
-        // TODO fix ajax calls to work
+        // TODO fix ajax call so that it to works
         this.getQueueState(function(result) {
             console.log(result);
             if(result == 'Paused') {

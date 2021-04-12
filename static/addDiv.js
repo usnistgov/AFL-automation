@@ -94,11 +94,9 @@ class Div {
     }
 
     updateDivContent() {
-        if(this.type == 'status') {
-            
-        }
+        var server = getServer(this.serverKey);
 
-        if(this.type == 'controls') {
+        if(this.type == 'status') {
             
         }
 
@@ -107,7 +105,6 @@ class Div {
             var currentID = '#' + this.serverKey + '_running';
             var upcomingID = '#' + this.serverKey + '_queued';
 
-            var server = getServer(this.serverKey);
             server.getQueue(function(result) {
                 // console.log(result);
 

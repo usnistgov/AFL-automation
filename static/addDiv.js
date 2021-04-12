@@ -8,6 +8,10 @@ class Div {
         this.onScreen = false;
     }
 
+    /**
+     * Sets the onScreen attribute to the boolean passed
+     * @param {Boolean} bool 
+     */
     setOnScreen(bool) {
         this.onScreen = bool;
     }
@@ -77,7 +81,7 @@ class Div {
         this.#addToDiv(divControls);
     }
 
-    /** NOT FINISHED
+    /**
      * Adds the div header to the div in the html
      */
     #addHeader() {
@@ -93,6 +97,9 @@ class Div {
         });
     }
 
+    /**
+     * Updates the content of the div with server info
+     */
     updateDivContent() {
         var server = getServer(this.serverKey);
 
@@ -136,8 +143,6 @@ class Div {
 
             // TODO make tasks show info for onClick event
             server.getQueue(function(result) {
-                // console.log(result);
-
                 $(completedID).empty();
                 for(let i in result[0]) {
                     var j = result[0].length - i - 1;

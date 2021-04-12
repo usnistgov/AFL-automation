@@ -105,6 +105,16 @@ class Server {
             success:success_func
         });
     }
+
+    getInfo(success_func) {
+        var link = this.address + 'get_info';
+        $.ajax({
+            type:"GET",
+            dataType:"text",
+            url:link,
+            success:success_func
+        });
+    }
 }
 
 /**

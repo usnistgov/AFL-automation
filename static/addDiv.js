@@ -141,8 +141,8 @@ class Div {
 
                 $(completedID).empty();
                 for(let i in result[0]) {
-                    // console.log(result[0][i]);
-                    var task = '<li>'+result[0][i].task.task_name+'</li>';
+                    var j = result[0].length - i - 1;
+                    var task = '<li>'+result[0][j].task.task_name+'</li>';
                     $(completedID).append(task);
                 }
 

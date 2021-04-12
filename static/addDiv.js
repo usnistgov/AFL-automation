@@ -140,21 +140,21 @@ class Div {
         if(this.type == 'queue') {
             var completedID = '#' + this.serverKey + '_history';
             var uncompletedID = '#' + this.serverKey + '_queued';
+            var key = this.serverKey;
 
-            // TODO make tasks show info for onClick event
             server.getQueue(function(result) {
                 $(completedID).empty();
                 for(let i in result[0]) {
                     var j = result[0].length - i - 1;
-                    var task = '<li>'+result[0][j].task.task_name+'</li>';
+                    var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+j+')">'+result[0][j].task.task_name+'</li>';
                     $(completedID).append(task);
                 }
 
                 $(uncompletedID).empty();
-                var currentTask = '<li>'+result[1][0].task.task_name+'</li><hr>';
+                var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+result[1][0].task.task_name+'</li><hr>';
                 $(uncompletedID).append(currentTask);
                 for(let i in result[2]) {
-                    var task = '<li>'+result[2][i].task.task_name+'</li>';
+                    var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
                     $(uncompletedID).append(task);
                 }
             });

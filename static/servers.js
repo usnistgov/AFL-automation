@@ -216,6 +216,7 @@ function addServer(popup) {
 
     addServerToMenu(server); // adds the menu items related to the server to the menu
 
+    // TODO change to have divs appear if checkbox is checked
     // prints the popup's input results to the console
     for(var i=0; i<popup.inputs.length; i++) {
         if(popup.inputs[i].type == 'checkbox') {

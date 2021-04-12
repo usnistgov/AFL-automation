@@ -150,7 +150,17 @@ class Div {
      * @returns String of html content for controls div
      */
     #controlsContent() {
-        return '<p>the content for controls div</p>';
+        var haltBtn = '<button class="halt-btn">HALT</button>';
+        var clearQueueBtn = '<button>Clear Queue</button>';
+        var clearHistoryBtn = '<button>Clear History</button>';
+        var togglePauseBtn = '<button>Pause/Unpause</button>';
+
+        queuedCommands = '#'+this.serverKey+'_queuedCommands';
+        unqueuedCommands = '#'+this.serverKey+'_unqueuedCommands';
+        var addtionalControls = '<ul><li style="display: none;">Additional Controls</li>'+$(queuedCommands).html()+$(unqueuedCommands).html()+'</ul>';
+
+        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + addtionalControls;
+        return content;
     }
 
     /**

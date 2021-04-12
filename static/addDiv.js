@@ -102,6 +102,7 @@ class Div {
             var experimentID = '#' + this.serverKey + '_experiment';
             var numCompletedID = '#' + this.serverKey + '_numCompleted';
             var numQueuedID = '#' + this.serverKey + '_numQueued';
+            var driverStatusID = '#' + this.serverKey + '_driverStatus';
 
             server.getInfo(function(result) {
                 var r = JSON.parse(result);
@@ -116,6 +117,17 @@ class Div {
 
                 var queued = r.queue[2].length + r.queue[1].length;
                 $(numQueuedID).text(queued);
+            });
+
+            server.getDriverStatus(function(result) {
+                var r = JSON.parse(result);
+                var status = '';
+
+                for(let i in r) {
+                    status += r[i] + ' | ';
+                }
+                
+                $(driverStatusID).text(status);
             });
         }
 
@@ -166,7 +178,8 @@ class Div {
         
         var topContent = '<p>Driver: <span id="'+driverID+'">[driver name]</span> | Queue State: <span id="'+stateID+'">[state]</span> | Experiment: <span id="'+experimentID+'">[experiment]</span> | Completed: <span id="'+numCompletedID+'">[#]</span> | Queue: <span id="'+numQueuedID+'">[#]</span> | Time: [date] [time]</p>';
         // TODO fill in bottom content with driver status
-        var bottomContent = '<p>[Info from server] | [Info from server] | [Info from server]</p>';
+        var driverStatusID = this.serverKey + '_driverStatus';
+        var bottomContent = '<p><span id="'+driverStatusID+'"></span></p>';
         var content = topContent + '<hr>' + bottomContent;
         return content;
     }

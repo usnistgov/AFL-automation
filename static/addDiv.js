@@ -132,8 +132,7 @@ class Div {
 
         if(this.type == 'queue') {
             var completedID = '#' + this.serverKey + '_history';
-            var currentID = '#' + this.serverKey + '_running';
-            var upcomingID = '#' + this.serverKey + '_queued';
+            var uncompletedID = '#' + this.serverKey + '_queued';
 
             // TODO make tasks show info for onClick event
             server.getQueue(function(result) {
@@ -146,18 +145,12 @@ class Div {
                     $(completedID).append(task);
                 }
 
-                $(currentID).empty();
-                for(let i in result[1]) {
-                    // console.log(result[0][i]);
-                    var task = '<li>'+result[1][i].task.task_name+'</li>';
-                    $(currentID).append(task);
-                }
-
-                $(upcomingID).empty();
+                $(uncompletedID).empty();
+                var currentTask = '<li>'+result[1][0].task.task_name+'</li><hr>';
+                $(uncompletedID).append(currentTask);
                 for(let i in result[2]) {
-                    // console.log(result[0][i]);
                     var task = '<li>'+result[2][i].task.task_name+'</li>';
-                    $(upcomingID).append(task);
+                    $(uncompletedID).append(task);
                 }
             });
         }
@@ -207,40 +200,33 @@ class Div {
      */
     #queueContent(){
         var completedID = this.serverKey + '_history';
-        var completed = '<h4>Completed</h4><ul id="'+completedID+'"></ul>';
+        var completed = '<ul id="'+completedID+'"></ul>';
 
-        var currentID = this.serverKey + '_running';
-        var current = '<h4>Current Task</h4><ul id="'+currentID+'"></ul>';
-        
-        var upcomingID = this.serverKey + '_queued';
-        var upcoming = '<h4>Upcoming</h4><ul id="'+upcomingID+'"></ul>';
+        var uncompletedID = this.serverKey + '_queued';
+        var uncompleted = '<ul id="'+uncompletedID+'"></ul>';
 
-        var content = '<ul><li>'+ upcoming +'</li><li>'+ current +'</li><li>'+ completed +'</li></ul>';
+        var content = '<ul><li>'+ uncompleted +'</li><li>'+ completed +'</li></ul>';
         return content;
     }
 }
 
 function halt(serverKey) {
     var server = getServer(serverKey);
-    // console.log(server);
     server.halt();
 }
 
 function clearQueue(serverKey) {
     var server = getServer(serverKey);
-    // console.log(server);
     server.clearQueue();
 }
 
 function clearHistory(serverKey) {
     var server = getServer(serverKey);
-    // console.log(server);
     server.clearHistory();
 }
 
 function pause(serverKey) {
     var server = getServer(serverKey);
-    // console.log(server);
     server.pause();
 }
 

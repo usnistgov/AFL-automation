@@ -116,6 +116,16 @@ class Server {
         });
     }
 
+    getDriverStatus(success_func) {
+        var link = this.address + 'driver_status';
+        $.ajax({
+            type:"GET",
+            dataType:"text",
+            url:link,
+            success:success_func
+        });
+    }
+
     halt() {
         var link = this.address + 'halt';
         $.ajax({

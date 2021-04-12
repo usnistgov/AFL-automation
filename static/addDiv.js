@@ -133,8 +133,8 @@ class Div {
     }
 
     /**
-     * Creates the html content for a status div and returns it
-     * @returns content for the div
+     * Creates and returns the status div content
+     * @returns String of html content for status div
      */
     #statusContent() {
         // TODO fill in top content with ???
@@ -145,12 +145,18 @@ class Div {
         return content;
     }
 
-    // TODO complete the function
+    /**
+     * Creates and returns the controls div content
+     * @returns String of html content for controls div
+     */
     #controlsContent() {
         return '<p>the content for controls div</p>';
     }
 
-    // TODO complete the function
+    /**
+     * Creates and returns the queue div content
+     * @returns String of html content for queue div
+     */
     #queueContent(){
         var completedID = this.serverKey + '_history';
         var completed = '<h4>Completed</h4><ul id="'+completedID+'"></ul>';

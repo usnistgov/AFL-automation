@@ -113,7 +113,7 @@ function addTaskPopup(serverKey, x, y) {
         let popup = new Popup(title);
 
         // TODO make task show as JsTree
-        var task = JSON.stringify(result[1][0].task);
+        var task = JSON.stringify(result[x][y].task);
         popup.addText(task);
 
         popup.addToHTML();

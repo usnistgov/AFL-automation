@@ -85,7 +85,8 @@ class Div {
      * Adds the div header to the div in the html
      */
     #addHeader() {
-        var headerContent = '<h3>'+this.serverKey+' - '+this.type+'</h3>'; // TODO (after finishing Server class) should be the server name
+        var server = getServer(this.serverKey);
+        var headerContent = '<h3>'+server.name+' - '+this.type+'</h3>';
         var headerDiv = '<div class="header">'+headerContent+'</div>';
 
         this.#addToDiv(headerDiv);

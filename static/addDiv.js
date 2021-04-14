@@ -152,8 +152,11 @@ class Div {
                 }
 
                 $(uncompletedID).empty();
-                var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+result[1][0].task.task_name+'</li><hr>';
-                $(uncompletedID).append(currentTask);
+                if(result[1].length > 0) {
+                    var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+result[1][0].task.task_name+'</li><hr>';
+                    $(uncompletedID).append(currentTask);
+                }
+
                 for(let i in result[2]) {
                     var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
                     $(uncompletedID).append(task);

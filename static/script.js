@@ -115,5 +115,6 @@ $(function() {
 setInterval(function(){ 
     for(let s in servers){
         servers[s].updateDivs();
+        servers[s].updateStatusBar();
     }
 }, 500);

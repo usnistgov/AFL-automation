@@ -216,18 +216,22 @@ function addServer(popup) {
 
     addServerToMenu(server); // adds the menu items related to the server to the menu
 
-    // TODO change to have divs appear if checkbox is checked
-    // prints the popup's input results to the console
+    // adds divs to the page if checked by user
+    var input;
     for(var i=0; i<popup.inputs.length; i++) {
-        if(popup.inputs[i].type == 'checkbox') {
-            console.log(document.getElementById(popup.inputs[i].id).checked);
-        }
-        if(popup.inputs[i].type == 'text') {
-            console.log(document.getElementById(popup.inputs[i].id).value);
-        }
-        if(popup.inputs[i].type == 'number') {
-            // TODO check if this works
-            console.log(document.getElementById(popup.inputs[i].id).value);
+        input = document.getElementById(popup.inputs[i].id);
+
+        if(input.type == 'checkbox') {
+            if(input.checked == true) {
+                if(input.id == 'status') {
+                    addStatusDiv(server.key);
+                } else if(input.id == 'controls') {
+                    // TODO fix so that the controls div includes the extra server controls
+                    addControlsDiv(server.key);
+                } else {
+                    addQueueDiv(server.key);
+                }
+            }
         }
     }
 

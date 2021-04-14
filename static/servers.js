@@ -200,6 +200,27 @@ class Server {
     }
 }
 
+function isValidURL(url) {
+    var link = url + 'get_queue'; // TODO change to something else
+    var isValid = false;
+
+    
+    $.ajax({
+        type:"GET",
+        dataType:"json",
+        url:link,
+        async: false,
+        success:function(result) {
+            isValid = true;
+        },
+        error:function() {
+            isValid = false;
+        }
+    }); 
+    
+    return isValid;
+}
+
 /**
  * Returns the server with the key attribute of the Server object
  * @param {String} key 

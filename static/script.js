@@ -116,4 +116,4 @@ setInterval(function(){
     for(let s in servers){
         servers[s].updateDivs();
     }
-}, 5000);
+}, 500);

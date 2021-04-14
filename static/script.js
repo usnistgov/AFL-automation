@@ -6,7 +6,7 @@ addServerToMenu(defaultServer); // adds the default server to the menu
  * @param {Server} server the server object to be added to the menu
  */
 function addServerToMenu(server) {
-    parent = '<li id="'+server.key+'" class="parent"><a href="#">'+server.getName()+'</a>';
+    parent = '<li id="'+server.key+'" class="parent"><a href="#">'+server.name+'</a>';
     $('#servers').append(parent);
 
     addStatusBtnID = server.key+'_addStatusBtn';

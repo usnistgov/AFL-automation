@@ -11,22 +11,17 @@
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <header>
-        <!-- <div class="logos">
-            <img src="" alt="NIST Logo">
-            <img src="" alt="Center for Neutron Research Logo">
-            <img src="" alt="nSoft Logo">
-        </div> -->
-        <h2>NistoRoboto</h2>
-    </header>
-
-    <div class="menu">
-        <ul id="servers"></ul>
-
-        <!-- TODO add live cam button -->
-        <button id="add-server-btn">Add Server</button>
-
+    <div id="topbar">
+        <header>
+            <h2>NistoRoboto</h2>
+        </header>    
+        <div class="menu">
+            <ul id="servers"></ul>
+            <button id="add-server-btn">Add Server</button>
+            <!-- <button id="add-live-cam-btn">Add Live Cam</button> -->
+        </div>
     </div>
+    <div style="visibility: hidden; height: 45px;"></div> <!-- topbar spacing -->
 
     <div id="popup" style="visibility: hidden;"></div>
     

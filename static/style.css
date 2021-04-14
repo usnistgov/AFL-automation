@@ -6,13 +6,29 @@ button {
     font-family: 'Times New Roman';
     font-size: medium;
 }
+
+#topbar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+}
+
 /* CSS for the header */
     header {
         background-color: #173F5F;
         color: whitesmoke;
         text-align: center;
-        height: 35px;
-        margin-bottom: 5px;
+        height: 25px;
+        width: 100%;
+        margin: 0;
+
+    }
+
+    header h2 {
+        margin: 0;
+    }
+
 /* CSS for the footer */
     footer {
         background-color: #173F5F;
@@ -27,8 +43,7 @@ button {
 /* CSS for Menu */
     .menu {
         background-color: #20639B;
-        /* border: solid black; */
-        height: 45px;
+        height: 41px; /* 45px to 41px*/
         width: 98%;
         margin: 0 auto;
     }
@@ -39,11 +54,10 @@ button {
         color: whitesmoke;
         width: fill;
         margin: 0px;
-        padding: 10px;
+        padding: 8px; /* 10px to 8px */
         text-decoration: none;
         text-align: center;
         cursor: default;
-        /* min-width: 130px; */
     }
 
     .menu button {
@@ -52,14 +66,23 @@ button {
         color: whitesmoke;
         cursor: pointer;
         width: 100%;
-        padding: 15px;
+        padding: 10px; /* 15px to 10px */
+    }
+
+    #add-live-cam-btn {
+        position: relative;
+        float: right;
+        width: 120px;
+        padding: 8px; /* 10px to 8px */
+        line-height: 25px;
+        border-left:#CCC 1px solid;
     }
 
     #add-server-btn {
         position: relative;
         float: right;
         width: 100px;
-        padding: 10px;
+        padding: 8px; /* 10px to 8px */
         line-height: 25px;
         border-left:#CCC 1px solid;
     }
@@ -110,8 +133,6 @@ button {
 
 /* CSS for the divs */
     #containers {
-        /* background-color: #3CAEA3; */
-        /* text-align: center; */
         width: 90%;
         margin: 0 auto;
     }
@@ -199,7 +220,7 @@ button {
         padding: 10px;
         text-align: center;
 
-        /* make the pop up alway centered */
+        /* makes the pop up centered */
         position:absolute;
         top: 50%;
         left: 50%;
@@ -207,11 +228,6 @@ button {
         height:200px;
         margin-left:-150px;
         margin-top:-100px;
-        
-        /* width: 40%;
-        float: right;
-        left: -30%;
-        position: relative; */
     }
 
 /* CSS for smaller screens */

@@ -13,6 +13,20 @@ class Server {
         this.controlsDiv = new Div(this.key,'controls',addControlsBtnID);
         var addQueueBtnID = this.key+'_addQueueBtn';
         this.queueDiv = new Div(this.key,'queue',addQueueBtnID);
+
+        var name;
+        var link = this.address + 'get_info';
+        $.ajax({
+            type:"GET",
+            dataType:"text",
+            url:link,
+            async: false,
+            success:function(result) {
+                var r = JSON.parse(result);
+                name = r["driver"];
+            }
+        });
+        this.name = name;
         
         servers.push(this);
         console.log(servers);
@@ -56,14 +70,6 @@ class Server {
                 div.updateDivColor(result);
             });
         }
-    }
-
-    /**
-     * Returns the name of the server
-     * @returns the name of the server
-     */
-    getName() {
-        return this.address;
     }
 
     getQueue(success_func) {
@@ -164,27 +170,29 @@ class Server {
 
     pause() {
         var link = this.address + 'pause';
-        // TODO fix ajax call so that it to works
+    
         this.getQueueState(function(result) {
             console.log(result);
             if(result == 'Paused') {
                 $.ajax({
                     type:"POST",
                     url:link,
-                    data: "{'state':true}",
+                    data: JSON.stringify({'state':false}),
                     success: function(result) {
                         console.log(result);
                     },
+                    contentType: "application/json",
                     dataType: "json"
                 });
             } else {
                 $.ajax({
                     type:"POST",
                     url:link,
-                    data: "{'state':false}",
+                    data: JSON.stringify({'state':true}),
                     success: function(result) {
                         console.log(result);
                     },
+                    contentType: "application/json",
                     dataType: "json"
                 });
             }

@@ -40,6 +40,11 @@ button {
         width: 100%;
     }
 
+    footer p {
+        margin: 4px;
+        text-align: center;
+    }
+
 /* CSS for Menu */
     .menu {
         background-color: #20639B;

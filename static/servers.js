@@ -27,6 +27,9 @@ class Server {
             }
         });
         this.name = name;
+
+        this.statusbarIDs = [this.key+'_sb_state', this.key+'_sb_time', ];
+        $('#status-bar').append(this.name + ': <span id="'+this.statusbarIDs[0]+'"></span>, <span id="'+this.statusbarIDs[1]+'"></span> | ');
         
         servers.push(this);
         console.log(servers);
@@ -70,6 +73,20 @@ class Server {
                 div.updateDivColor(result);
             });
         }
+    }
+
+    updateStatusBar() {
+        var state = '#'+this.statusbarIDs[0];
+        var time = '#'+this.statusbarIDs[1];
+
+        this.getQueueState(function(result) {
+            $(state).text(result);
+        });
+
+        this.getServerTime(function(result) {
+            $(time).text(result);
+        })
+        
     }
 
     getQueue(success_func) {
@@ -124,6 +141,16 @@ class Server {
 
     getDriverStatus(success_func) {
         var link = this.address + 'driver_status';
+        $.ajax({
+            type:"GET",
+            dataType:"text",
+            url:link,
+            success:success_func
+        });
+    }
+
+    getServerTime(success_func) {
+        var link = this.address + 'get_server_time';
         $.ajax({
             type:"GET",
             dataType:"text",

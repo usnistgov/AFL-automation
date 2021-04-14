@@ -241,27 +241,33 @@ function getServer(key) {
  */
 function addServer(popup) {
     var route = document.getElementById(popup.inputs[0].id).value; // the address of the server to add
-    let server = new Server(route); // a new Server object created from the route
 
-    addServerToMenu(server); // adds the menu items related to the server to the menu
+    var isValid = isValidURL(route);
+    if(isValid) {
+        let server = new Server(route); // a new Server object created from the route
 
-    // adds divs to the page if checked by user
-    var input;
-    for(var i=0; i<popup.inputs.length; i++) {
-        input = document.getElementById(popup.inputs[i].id);
+        addServerToMenu(server); // adds the menu items related to the server to the menu
 
-        if(input.type == 'checkbox') {
-            if(input.checked == true) {
-                if(input.id == 'status') {
-                    addStatusDiv(server.key);
-                } else if(input.id == 'controls') {
-                    // TODO fix so that the controls div includes the extra server controls
-                    addControlsDiv(server.key);
-                } else {
-                    addQueueDiv(server.key);
+        // adds divs to the page if checked by user
+        var input;
+        for(var i=0; i<popup.inputs.length; i++) {
+            input = document.getElementById(popup.inputs[i].id);
+
+            if(input.type == 'checkbox') {
+                if(input.checked == true) {
+                    if(input.id == 'status') {
+                        addStatusDiv(server.key);
+                    } else if(input.id == 'controls') {
+                        // TODO fix so that the controls div includes the extra server controls
+                        addControlsDiv(server.key);
+                    } else {
+                        addQueueDiv(server.key);
+                    }
                 }
             }
         }
+    } else {
+        alert('URL was not valid.');
     }
 
     $('#popup').css('visibility', 'hidden'); // hides the popup from view

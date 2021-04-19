@@ -78,6 +78,14 @@ class Popup {
 }
 
 /**
+ * Displays the popup on screen
+ */
+function displayPopup() {
+    $('#popup').css('visibility', 'visible');
+    $('#popup-background').css('visibility', 'visible');
+}
+
+/**
  * Hides the popup from view and empties the popup div
  */
 function closePopup() {
@@ -102,7 +110,7 @@ function addServerPopup() {
         addServer(popup);
     });
 
-    $('#popup').css('visibility', 'visible');
+    displayPopup();
 }
 
 function addTaskPopup(serverKey, x, y) {

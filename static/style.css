@@ -169,6 +169,11 @@ button {
     }
 
     /* CSS for Queue Divs */
+        #containers div[divType="queue"] .content {
+            height: 300px;
+            overflow-y: auto;
+        }
+
         #containers div[divType="queue"] .content > ul > li > ul > li {
             outline: 2px black solid;
             padding: 5px;

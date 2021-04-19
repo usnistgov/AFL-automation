@@ -148,6 +148,7 @@ button {
     #containers {
         width: 90%;
         margin: 0 auto;
+        margin-top: 25px;
     }
 
     .container {
@@ -170,6 +171,7 @@ button {
 
     .container h3 {
         padding: 4px;
+        margin: 0;
     }
 
     .container p {

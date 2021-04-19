@@ -40,6 +40,15 @@ class Div {
         this.setOnScreen(true);
     }
 
+    /**
+     * Updates the div's color and content if the div is on screen
+     * @param {String} status 
+     */
+    update(status) {
+        if(this.onScreen) {
+            this.updateDivColor(status);
+            this.updateDivContent();
+        }
     }
 
     /**
@@ -184,6 +193,44 @@ class Div {
     }
 
     /**
+     * Updates the content of a status div
+     * @param {Server} server 
+     */
+    #updateStatusContent(server) {
+        var driverID = '#' + this.serverKey + '_driver';
+        var stateID = '#' + this.serverKey + '_state';
+        var experimentID = '#' + this.serverKey + '_experiment';
+        var numCompletedID = '#' + this.serverKey + '_numCompleted';
+        var numQueuedID = '#' + this.serverKey + '_numQueued';
+        var driverStatusID = '#' + this.serverKey + '_driverStatus';
+
+        server.getInfo(function(result) {
+            var r = JSON.parse(result);
+
+            $(driverID).text(r["driver"]);
+            $(stateID).text(r["queue_state"]);
+            $(experimentID).text(r["experiment"]);
+
+            var completed = r.queue[0].length;
+            $(numCompletedID).text(completed);
+
+            var queued = r.queue[2].length + r.queue[1].length;
+            $(numQueuedID).text(queued);
+        });
+
+        server.getDriverStatus(function(result) {
+            var r = JSON.parse(result);
+            var status = '';
+
+            for(let i in r) {
+                status += r[i] + ' | ';
+            }
+            
+            $(driverStatusID).text(status);
+        });
+    }
+
+    /**
      * Creates and returns the controls div content
      * @returns String of html content for controls div
      */
@@ -215,6 +262,36 @@ class Div {
 
         var content = '<ul><li>'+ uncompleted +'</li><li>'+ completed +'</li></ul>';
         return content;
+    }
+
+    /**
+     * Updates the content of a queue div
+     * @param {Server} server 
+     */
+    #updateQueueContent(server) {
+        var completedID = '#' + this.serverKey + '_history';
+        var uncompletedID = '#' + this.serverKey + '_queued';
+        var key = this.serverKey;
+
+        server.getQueue(function(result) {
+            $(completedID).empty();
+            for(let i in result[0]) {
+                var j = result[0].length - i - 1;
+                var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+j+')">'+result[0][j].task.task_name+'</li>';
+                $(completedID).append(task);
+            }
+
+            $(uncompletedID).empty();
+            if(result[1].length > 0) {
+                var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+result[1][0].task.task_name+'</li><hr>';
+                $(uncompletedID).append(currentTask);
+            }
+
+            for(let i in result[2]) {
+                var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
+                $(uncompletedID).append(task);
+            }
+        });
     }
 }
 

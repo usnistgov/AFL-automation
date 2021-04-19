@@ -282,7 +282,7 @@ function getDiv(serverKey, divType) {
  */
 function addStatusDiv(key) {
     var server = getServer(key);
-    server.statusDiv.add();
+    server.statusDiv.display();
 
     var id = '#'+server.statusDiv.addBtnID;
     disableBtn($(id));
@@ -294,7 +294,7 @@ function addStatusDiv(key) {
  */
 function addControlsDiv(key) {
     var server = getServer(key);
-    server.controlsDiv.add();
+    server.controlsDiv.display();
 
     var id = '#'+server.controlsDiv.addBtnID;
     disableBtn($(id));
@@ -306,7 +306,7 @@ function addControlsDiv(key) {
  */
 function addQueueDiv(key) {
     var server = getServer(key);
-    server.queueDiv.add();
+    server.queueDiv.display();
 
     var id = '#'+server.queueDiv.addBtnID;
     disableBtn($(id));

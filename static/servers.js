@@ -85,8 +85,7 @@ class Server {
 
         this.getServerTime(function(result) {
             $(time).text(result);
-        })
-        
+        })  
     }
 
     getQueue(success_func) {
@@ -286,6 +285,7 @@ function addServer(popup) {
                         addStatusDiv(server.key);
                     } else if(input.id == 'controls') {
                         // TODO fix so that the controls div includes the extra server controls
+                        // Not working b/c addServerToMenu() has two async ajax calls to fill additional controls
                         addControlsDiv(server.key);
                     } else {
                         addQueueDiv(server.key);

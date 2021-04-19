@@ -20,6 +20,7 @@ class Div {
      * Adds the div to the html and fills it in accordance to the div type
      */
     add() {
+        // TODO rename this method as 'display'
         $("#containers").append(this.div);
         this.#addDivControls();
         this.#addHeader();

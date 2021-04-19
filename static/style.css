@@ -27,6 +27,14 @@ button {
 
     header h2 {
         margin: 0;
+        display: inline;
+    }
+
+    #version {
+        display: inline;
+        float: right;
+        padding-top: 4px;
+        padding-right: 10px;
     }
 
 /* CSS for the footer */

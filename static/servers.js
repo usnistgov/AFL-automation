@@ -297,6 +297,5 @@ function addServer(popup) {
         alert('URL was not valid.');
     }
 
-    $('#popup').css('visibility', 'hidden'); // hides the popup from view
-    $('#popup').empty(); // emties the popup html
+    closePopup();
 }

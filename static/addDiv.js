@@ -82,6 +82,10 @@ class Div {
         if(this.type == 'queue') {
             this.#updateQueueContent(server);
         }
+
+        if(this.type == 'controls') {
+            this.#updateControlsContent();
+        }
     }
 
     /**
@@ -188,13 +192,25 @@ class Div {
         var clearHistoryBtn = '<button onclick="clearHistory(\''+this.serverKey+'\')">Clear History</button>';
         var togglePauseBtn = '<button onclick="pause(\''+this.serverKey+'\')">Pause/Unpause</button>';
 
-        queuedCommands = '#'+this.serverKey+'_queuedCommands';
-        unqueuedCommands = '#'+this.serverKey+'_unqueuedCommands';
-        var addtionalControls = '<ul><li style="display: none;">Additional Controls</li>'+$(queuedCommands).html()+$(unqueuedCommands).html()+'</ul>';
+        var additionalControlsID = this.serverKey+'_additionalControls';
+        var additionalControls = '<ul id="'+additionalControlsID+'"></ul>';
         // TODO make additional controls appear as a dropdown when needed based on screen size
 
-        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + addtionalControls;
+        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + additionalControls;
         return content;
+    }
+
+    /**
+     * Updates the content of a controls div
+     */
+    #updateControlsContent() {
+        var additionalControlsID = '#'+this.serverKey+'_additionalControls';
+        var queuedCommands = '#'+this.serverKey+'_queuedCommands';
+        var unqueuedCommands = '#'+this.serverKey+'_unqueuedCommands';
+
+        var fill = '<li style="display: none;">Additional Controls</li>'+$(queuedCommands).html()+$(unqueuedCommands).html();
+        
+        $(additionalControlsID).html(fill);
     }
 
     /**

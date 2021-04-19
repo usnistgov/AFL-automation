@@ -1,7 +1,6 @@
 var numOfServers = 0; // counter for the number of Server objects made
 var servers = []; // array for the Server objects
 
-// TODO finish the server class
 class Server {
     constructor(address) {
         this.address = address;
@@ -35,6 +34,9 @@ class Server {
         console.log(servers);
     }
 
+    /**
+     * Updates the server's divs on screen
+     */
     updateDivs() {
         var key = this.key;
 
@@ -75,6 +77,9 @@ class Server {
         }
     }
 
+    /**
+     * Updates the server's information in the status bar
+     */
     updateStatusBar() {
         var state = '#'+this.statusbarIDs[0];
         var time = '#'+this.statusbarIDs[1];
@@ -88,6 +93,10 @@ class Server {
         })  
     }
 
+    /**
+     * Runs a GET ajax call for the server's queue which runs success_func on success
+     * @param {Function} success_func 
+     */
     getQueue(success_func) {
         var link = this.address + 'get_queue';
         $.ajax({
@@ -98,6 +107,10 @@ class Server {
         });
     }
 
+    /**
+     * Runs a GET ajax call for the server's queued commands which runs success_func on success
+     * @param {Function} success_func 
+     */
     getQueuedCommands(success_func) {
         var link = this.address + 'get_queued_commands';
         $.ajax({
@@ -108,6 +121,10 @@ class Server {
         });
     }
 
+    /**
+     * Runs a GET ajax call for the server's unqueued commands which runs success_func on success
+     * @param {Function} success_func 
+     */
     getUnqueuedCommands(success_func) {
         var link = this.address + 'get_unqueued_commands';
         $.ajax({
@@ -118,6 +135,10 @@ class Server {
         });
     }
 
+    /**
+     * Runs a GET ajax call for the server's queue state which runs success_func on success
+     * @param {Function} success_func 
+     */
     getQueueState(success_func) {
         var link = this.address + 'queue_state';
         $.ajax({
@@ -128,6 +149,10 @@ class Server {
         });
     }
 
+    /**
+     * Runs a GET ajax call for the server's info which runs success_func on success
+     * @param {Function} success_func 
+     */
     getInfo(success_func) {
         var link = this.address + 'get_info';
         $.ajax({
@@ -138,6 +163,10 @@ class Server {
         });
     }
 
+    /**
+     * Runs a GET ajax call for the server's driver status which runs success_func on success
+     * @param {Function} success_func 
+     */
     getDriverStatus(success_func) {
         var link = this.address + 'driver_status';
         $.ajax({
@@ -148,6 +177,10 @@ class Server {
         });
     }
 
+    /**
+     * Runs a GET ajax call for the server's time which runs success_func on success
+     * @param {Function} success_func 
+     */
     getServerTime(success_func) {
         var link = this.address + 'get_server_time';
         $.ajax({
@@ -158,6 +191,9 @@ class Server {
         });
     }
 
+    /**
+     * Runs a POST ajax call to halt
+     */
     halt() {
         var link = this.address + 'halt';
         $.ajax({
@@ -170,6 +206,9 @@ class Server {
         });
     }
 
+    /**
+     * Runs a POST ajax call to clear the server's queue
+     */
     clearQueue() {
         var link = this.address + 'clear_queue';
         $.ajax({
@@ -182,6 +221,9 @@ class Server {
         });
     }
 
+    /**
+     * Runs a POST ajax call to clear the server's history
+     */
     clearHistory() {
         var link = this.address + 'clear_history';
         $.ajax({
@@ -194,6 +236,9 @@ class Server {
         });
     }
 
+    /**
+     * Runs a POST ajax call to pause or unpause the server's queue
+     */
     pause() {
         var link = this.address + 'pause';
     
@@ -226,6 +271,11 @@ class Server {
     }
 }
 
+/**
+ * Returns true if the url is a valid server and false if not
+ * @param {String} url 
+ * @returns {Boolean} isValid
+ */
 function isValidURL(url) {
     var link = url + 'get_queue'; // TODO change to something else
     var isValid = false;

@@ -60,6 +60,10 @@ class Popup {
         });
     }
 
+    /**
+     * Adds text to the popup's html
+     * @param {String} text 
+     */
     addText(text) {
         var html = '<p>'+text+'</p>';
         this.html += html;
@@ -114,6 +118,12 @@ function addServerPopup() {
     displayPopup();
 }
 
+/**
+ * Displays all information about a task in a popup
+ * @param {String} serverKey 
+ * @param {Integer} x 
+ * @param {Integer} y 
+ */
 function addTaskPopup(serverKey, x, y) {
     var server = getServer(serverKey);
 
@@ -126,6 +136,6 @@ function addTaskPopup(serverKey, x, y) {
         popup.addText(task);
 
         popup.addToHTML();
-        $('#popup').css('visibility', 'visible');
+        displayPopup();
     });
 }

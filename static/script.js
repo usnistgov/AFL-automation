@@ -111,7 +111,6 @@ $(function() {
 // check robot status every 5 seconds and adjust background color accordingly
 setInterval(function(){ 
     for(let s in servers){
-        servers[s].updateDivs();
-        servers[s].updateStatusBar();
+        servers[s].update();
     }
 }, 500);

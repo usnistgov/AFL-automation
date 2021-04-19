@@ -35,62 +35,26 @@ class Server {
     }
 
     /**
-     * Updates the server's divs on screen
+     * Updates all shown info about the server
      */
-    updateDivs() {
+    update() {
         var key = this.key;
-
-        if(this.statusDiv.onScreen == true) {
-            // updates the status div's content
-            var div = getDiv(key, 'status');
-            div.updateDivContent();
-
-            // updates the status div's color
-            this.getQueueState(function(result) {
-                var div = getDiv(key, 'status');
-                div.updateDivColor(result);
-            });
-        }
-
-        if(this.controlsDiv.onScreen == true) {
-            // updates the controls div's content
-            var div = getDiv(key, 'controls');
-            div.updateDivContent();
-
-            // updates the controls div's color
-            this.getQueueState(function(result) {
-                var div = getDiv(key, 'controls');
-                div.updateDivColor(result);
-            });
-        }
-
-        if(this.queueDiv.onScreen == true) {
-            // updates the queue div's content
-            var div = getDiv(key, 'queue');
-            div.updateDivContent();
-
-            // updates the queue div's color
-            this.getQueueState(function(result) {
-                var div = getDiv(key, 'queue');
-                div.updateDivColor(result);
-            });
-        }
-    }
-
-    /**
-     * Updates the server's information in the status bar
-     */
-    updateStatusBar() {
         var state = '#'+this.statusbarIDs[0];
         var time = '#'+this.statusbarIDs[1];
 
         this.getQueueState(function(result) {
             $(state).text(result);
+            var statusDiv = getDiv(key, 'status');
+            var controlsDiv = getDiv(key, 'controls');
+            var queueDiv = getDiv(key, 'queue');
+            statusDiv.update(result);
+            queueDiv.update(result);
+            controlsDiv.update(result);
         });
 
         this.getServerTime(function(result) {
             $(time).text(result);
-        })  
+        })
     }
 
     /**

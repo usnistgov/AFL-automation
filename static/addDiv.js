@@ -102,8 +102,10 @@ class Div {
      */
     #addDivControls() {
         var colExp = '<button onclick="collapseDiv('+this.id+')">Collapse/Expand</button>';
-        var closeButton = '<button onclick="closeDiv('+this.id+')" class="closebtn">x</button>';
-        var divControls = '<span style="float:right;">'+colExp+closeButton+'</span>';
+        var closeBtn = '<button onclick="closeDiv('+this.id+')" class="closebtn">x</button>';
+        var moveUpBtn = '<button onclick="moveDivUp('+this.id+')" class="closebtn">+</button>'; // TODO make moveDivUp() function
+        var moveDownBtn = '<button onclick="moveDivDown('+this.id+')" class="closebtn">-</button>'; // TODO make moveDivDown() function
+        var divControls = '<span style="float:right;">'+moveUpBtn+moveDownBtn+colExp+closeBtn+'</span>';
 
         this.#addToDiv(divControls);
     }

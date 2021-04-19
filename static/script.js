@@ -1,6 +1,3 @@
-var defaultServer = new Server('http://localhost:5051/'); // the default server (the server added on page load)
-addServerToMenu(defaultServer); // adds the default server to the menu
-
 /**
  * Adds the menu items related to the server to the menu
  * @param {Server} server the server object to be added to the menu

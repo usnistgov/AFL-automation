@@ -61,7 +61,7 @@ class Div {
             $(id).css('background-color', '#FFBF00');
         } else if(status == 'Debug') {
             // Q - what should be the debug color?
-            $(id).css('background-color', 'blue');
+            $(id).css('background-color', 'darkcyan');
         } else if(status == 'Active') {
             $(id).css('background-color', 'green');
         } else {

@@ -261,26 +261,48 @@ class Div {
     }
 }
 
+/**
+ * Halts the server given the server key
+ * @param {String} serverKey 
+ */
 function halt(serverKey) {
     var server = getServer(serverKey);
     server.halt();
 }
 
+/**
+ * Clear's the server's queue given the server key
+ * @param {String} serverKey 
+ */
 function clearQueue(serverKey) {
     var server = getServer(serverKey);
     server.clearQueue();
 }
 
+/**
+ * Clear's the server's history given the server key
+ * @param {String} serverKey 
+ */
 function clearHistory(serverKey) {
     var server = getServer(serverKey);
     server.clearHistory();
 }
 
+/**
+ * Pauses the server's queue given the server key
+ * @param {String} serverKey 
+ */
 function pause(serverKey) {
     var server = getServer(serverKey);
     server.pause();
 }
 
+/**
+ * Returns a particular div object given the server key and the div type 
+ * @param {String} serverKey 
+ * @param {String} divType 
+ * @returns Div object
+ */
 function getDiv(serverKey, divType) {
     var server = getServer(serverKey);
     if(divType == 'status') {

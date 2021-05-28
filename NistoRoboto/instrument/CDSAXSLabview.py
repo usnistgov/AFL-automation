@@ -237,19 +237,27 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
 #            if return_data:
 #                return self.getData(lv=lv)
     def moveAxis(self,axis,value,block=True,lv=None):
+        ‘’’
+        Moves a single axis using a connection to a labview vi.
+        @param axis: the axis id or name of the motor to move
+        @param value: the position of the motor to move to
+        @param block: if True, this function will not return until the move is complete.
+        @param lv: a LabviewConnection object for use in integration with broader functions.  If None (default) will make a new connection.
+        ‘’’
         with LabviewConnection(vi=r'C:\saxs_control\Move for Peter.vi') as lvm:
             if type(axis) is str:
-                axis = self.axis_name_to_id_lut[axis]
-            lvm.main_vi.setcontrolvalue('Axis',axis)
-            lvm.main_vi.setcontrolvalue('New Position',value)
-            lvm.main_vi.setcontrolvalue('Motor Move',True)
+                axis = self.axis_name_to_id_lut[axis]#this converts the axis name to an ID number used by labview
+            lvm.main_vi.setcontrolvalue('Axis',axis) #set the ‘axis’ drop-down box to the right axis
+            lvm.main_vi.setcontrolvalue('New Position',value) # type the position into the destination position box
+            lvm.main_vi.setcontrolvalue('Motor Move',True) # click the motor move button
             
             if block:
-                with (LabviewConnection() if lv is None else lv) as lv:
-                    while('Moving' not in self.getStatus(lv=lv)):
+                with (LabviewConnection() if lv is None else lv) as lv: # this makes a connection to the main vi or uses an existing one if passed in
+                    while('Moving' not in self.getStatus(lv=lv)): # wait for the instrument status to actually go to ‘moving’
+                        time.sleep(0.1) #this just keeps the traffic down on the labview interface by only checking every 100 ms
+                    while(self.getStatus(lv=lv) != 'Finished'): # wait for the instrument status to change to ‘finished’
                         time.sleep(0.1)
-                    while(self.getStatus(lv=lv) != 'Finished'):
-                        time.sleep(0.1)
+
 
     def setSweepStart(self,start,lv=None):
         self._setLabviewValue('Start Value',start,lv=lv)

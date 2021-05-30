@@ -222,13 +222,21 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
             self.transfer('rinse','waste',self.config['rinse_vol_ml'])
         self.syringe_dirty = False
 
-    def drySyringe(self):
+    def drySyringe(self,blow=True,waittime=1):
         '''
             transfer from air to waste, to push out any residual liquid.
+            
+            if blow is True, additionally use a 1 s pulse of nitrogen to clear the syringe transfer line.
         '''
         self.pump.setRate(self.config['rinse_speed'])
         self.pump.flow_delay = self.config['rinse_flow_delay']
         self.transfer('air','waste',self.config['dry_vol_ml'])
+        
+        if blow:
+            self.selector.selectPort('waste')
+            self.blowselector.selectPort('blow')
+            time.sleep(waittime)
+            self.blowselector.selectPort('pump')
         
     def rinseCell(self,cellname='cell'):
         self.pump.setRate(self.config['rinse_speed'])

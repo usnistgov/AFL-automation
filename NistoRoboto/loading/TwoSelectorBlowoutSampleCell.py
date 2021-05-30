@@ -304,6 +304,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
             self.transfer('rinse','catch',from_vol,to_vol)
 
             for i in range(1):
+                self.selector.selectPort('catch')
                 self.swish(self.config['rinse_vol_ml'])
 
             if (self.config['calibrated_catch_to_syringe_vol'] is None) or (self.config['calibrated_catch_to_syringe_vol']=='None'):

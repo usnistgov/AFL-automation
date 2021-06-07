@@ -137,7 +137,8 @@ class Div {
         var experimentID = this.serverKey + '_experiment';
         var numCompletedID = this.serverKey + '_numCompleted';
         var numQueuedID = this.serverKey + '_numQueued';
-        var topContent = '<p>Driver: <span id="'+driverID+'">[driver name]</span> | Queue State: <span id="'+stateID+'">[state]</span> | Experiment: <span id="'+experimentID+'">[experiment]</span> | Completed: <span id="'+numCompletedID+'">[#]</span> | Queue: <span id="'+numQueuedID+'">[#]</span> | Time: [date] [time]</p>';
+        var dateTimeID = this.serverKey + '_dateTime';
+        var topContent = '<p>Driver: <span id="'+driverID+'">[driver name]</span> | Queue State: <span id="'+stateID+'">[state]</span> | Experiment: <span id="'+experimentID+'">[experiment]</span> | Completed: <span id="'+numCompletedID+'">[#]</span> | Queue: <span id="'+numQueuedID+'">[#]</span> | Time: <span id="'+dateTimeID+'">[time] [date]</span></p>';
 
         var driverStatusID = this.serverKey + '_driverStatus';
         var bottomContent = '<p><span id="'+driverStatusID+'"></span></p>';
@@ -157,6 +158,7 @@ class Div {
         var numCompletedID = '#' + this.serverKey + '_numCompleted';
         var numQueuedID = '#' + this.serverKey + '_numQueued';
         var driverStatusID = '#' + this.serverKey + '_driverStatus';
+        var dateTimeID = '#' + this.serverKey + '_dateTime';
 
         server.getInfo(function(result) {
             var r = JSON.parse(result);
@@ -182,6 +184,10 @@ class Div {
             
             $(driverStatusID).text(status);
         });
+
+        server.getServerTime(function(result) {
+            $(dateTimeID).text(result);
+        })
     }
 
     /**

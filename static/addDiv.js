@@ -199,12 +199,13 @@ class Div {
         var clearQueueBtn = '<button onclick="clearQueue(\''+this.serverKey+'\')">Clear Queue</button>';
         var clearHistoryBtn = '<button onclick="clearHistory(\''+this.serverKey+'\')">Clear History</button>';
         var togglePauseBtn = '<button onclick="pause(\''+this.serverKey+'\')">Pause/Unpause</button>';
+        var editQueueBtn = '<button onclick="editQueue(\''+this.serverKey+'\')">Edit Queue</button>';
 
         var additionalControlsID = this.serverKey+'_additionalControls';
         var additionalControls = '<ul id="'+additionalControlsID+'"></ul>';
         // TODO make additional controls appear as a dropdown when needed based on screen size
 
-        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + additionalControls;
+        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + editQueueBtn + additionalControls;
         return content;
     }
 
@@ -295,12 +296,18 @@ function clearHistory(serverKey) {
 }
 
 /**
- * Pauses the server's queue given the server key
+ * Pauses/Unpauses the server's queue given the server key
  * @param {String} serverKey 
  */
 function pause(serverKey) {
     var server = getServer(serverKey);
     server.pause();
+}
+
+// TODO complete the editQueue function
+function editQueue(serverKey) {
+    // pause the server
+    // enable reordering of tasks in the queue
 }
 
 /**

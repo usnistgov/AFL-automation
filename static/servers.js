@@ -298,8 +298,6 @@ function addServer(popup) {
                     if(input.id == 'status') {
                         addStatusDiv(server.key);
                     } else if(input.id == 'controls') {
-                        // TODO fix so that the controls div includes the extra server controls
-                        // Not working b/c addServerToMenu() has two async ajax calls to fill additional controls
                         addControlsDiv(server.key);
                     } else {
                         addQueueDiv(server.key);

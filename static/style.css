@@ -263,5 +263,22 @@ button {
         background-color: rgb(128, 128, 128, 0.5);
     }
 
+/* CSS for the Queue Editor */
+    #queueEditor {
+        border-style: solid;
+        background-color: white;
+        padding: 10px;
+        text-align: center;
+        overflow-y: auto;
+
+        /* makes the pop up centered */
+        position:absolute;
+        top: 50%;
+        left: 50%;
+        width:600px;
+        height:800px;
+        margin-left:-300px;
+        margin-top:-400px;
+    }
 /* CSS for smaller screens */
 /* TODO add the CSS for smaller screen sizes */

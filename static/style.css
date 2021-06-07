@@ -145,7 +145,7 @@ button {
         .menu li button:hover {background-color: orange !important;}
 
 /* CSS for the divs */
-        /* TODO fix the container's spacing so that when a div is collapsed it is still spaced at the bottomv */
+        /* TODO fix the container's spacing so that when a div is collapsed it is still spaced at the bottom */
     #containers {
         width: 90%;
         margin: 0 auto;

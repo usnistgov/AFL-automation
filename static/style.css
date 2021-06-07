@@ -145,6 +145,7 @@ button {
         .menu li button:hover {background-color: orange !important;}
 
 /* CSS for the divs */
+        /* TODO fix the container's spacing so that when a div is collapsed it is still spaced at the bottomv */
     #containers {
         width: 90%;
         margin: 0 auto;
@@ -179,6 +180,8 @@ button {
     }
 
     /* CSS for Queue Divs */
+        /* TODO make the queued tasks and completed tasks scrollable rather than the entire queue content */
+
         #containers div[divType="queue"] .content {
             height: 300px;
             overflow-y: auto;

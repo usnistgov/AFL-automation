@@ -304,12 +304,6 @@ function pause(serverKey) {
     server.pause();
 }
 
-// TODO complete the editQueue function
-function editQueue(serverKey) {
-    // pause the server
-    // enable reordering of tasks in the queue
-}
-
 /**
  * Returns a particular div object given the server key and the div type 
  * @param {String} serverKey 

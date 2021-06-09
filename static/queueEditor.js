@@ -1,4 +1,5 @@
-var queueTasks = [];
+var queueTasks = []; // array for queued tasks
+
 class Task {
     constructor(position, info) {
         this.position = position;

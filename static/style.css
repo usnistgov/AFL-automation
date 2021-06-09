@@ -276,9 +276,9 @@ button {
         top: 50%;
         left: 50%;
         width:600px;
-        height:800px;
+        height:350px;
         margin-left:-300px;
-        margin-top:-400px;
+        margin-top:-175px;
     }
 /* CSS for smaller screens */
 /* TODO add the CSS for smaller screen sizes */

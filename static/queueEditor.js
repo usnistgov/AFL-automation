@@ -51,4 +51,11 @@ function editQueue(serverKey) {
     $('#popup-background').css('visibility', 'visible');
 }
 
+function closeQueueEditor() {
+    queueTasks = []; // clears all tasks from queueTasks
+
+    // hide the queue editor w/ the popup background
+    $('#queueEditor').css('visibility', 'hidden');
+    $('#popup-background').css('visibility', 'hidden');
+    $('#queueEditor').empty();
 }

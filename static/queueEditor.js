@@ -18,10 +18,9 @@ class Task {
 
 // TODO complete the editQueue function
 function editQueue(serverKey) {
-    console.log('Edit Queue Button was clicked.');
+    var server = getServer(serverKey);
 
     // pause the server
-    var server = getServer(serverKey);
     server.getQueueState(function(result){
         console.log(result);
         if(result != 'Paused') {
@@ -31,10 +30,25 @@ function editQueue(serverKey) {
 
     // setup the queue editor w/ the server key
     server.getQueue(function(result) {
-        
+        for(let i in result[2]) {
+            var tempTask = new Task(i, result[2][i]);
+            console.log(tempTask);
+        }
+
+        var editorControls = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
+
+        var tasks = '';
+        for(let i in queueTasks) {
+            tasks += queueTasks[i].html;
+        }
+
+        var content = editorControls + tasks;
+        $('#queueEditor').html(content);
     });
 
     // display the queue editor w/ the popup background
     $('#queueEditor').css('visibility', 'visible');
     $('#popup-background').css('visibility', 'visible');
+}
+
 }

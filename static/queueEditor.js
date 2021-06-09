@@ -1,6 +1,16 @@
 var queueTasks = [];
 class Task {
-    constructor() {
+    constructor(position, info) {
+        this.position = position;
+        this.info = info;
+
+        var name = this.info.task.task_name;
+        var uuid = this.info.uuid;
+        this.html = '<input type="checkbox" id="'+uuid+'" name="'+name+'"><label for="'+name+'">['+this.position+'] '+name+' ('+uuid+')</label><br>';
+
+        queueTasks.push(this);
+        console.log(queueTasks);
+    }
 
     }
 }

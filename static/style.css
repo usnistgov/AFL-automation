@@ -268,7 +268,7 @@ button {
         border-style: solid;
         background-color: white;
         padding: 10px;
-        text-align: center;
+        /* text-align: center; */
         overflow-y: auto;
 
         /* makes the pop up centered */

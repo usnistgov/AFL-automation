@@ -66,3 +66,21 @@ function closeQueueEditor() {
     $('#popup-background').css('visibility', 'hidden');
     $('#queueEditor').empty();
 }
+
+function moveTaskPos(taskID) {
+    var id = '#'+taskID+'_num';
+    var pos = $(id).val();
+    console.log(pos);
+
+    if(pos < queueTasks.length-1) {
+        console.log('valid');
+        for(let i in queueTasks) {
+            if(queueTasks[i].info.uuid == taskID) {
+                console.log(queueTasks[i]);
+                queueTasks[i].movePosition(pos);
+            }
+        }
+    } else {
+        console.log('invalid position');
+    }
+}

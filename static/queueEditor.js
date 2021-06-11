@@ -42,7 +42,12 @@ function editQueue(serverKey) {
             console.log(tempTask);
         }
 
-        var editorControls = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
+        var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
+        var moveSelectedTopBtn = '<button onclick="">Move Selected Task(s) to Top</button>'; // TODO make the function(s) for the button
+        var moveSelectedBottomBtn = '<button onclick="">Move Selected Task(s) to Bottom</button>'; // TODO make the function(s) for the button
+        var removeSelectedBtn = '<button onclick="">Remove Selected Task(s)</button>'; // TODO make the function(s) for the button
+        var commitBtn = '<button onclick="">Commit Queue Edits</button>'; // TODO make the function(s) for the button
+        var editorControls = moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+commitBtn+closeBtn+'<hr>'; 
 
         var tasks = '';
         for(let i in queueTasks) {

@@ -7,7 +7,14 @@ class Task {
 
         var name = this.info.task.task_name;
         var uuid = this.info.uuid;
-        this.html = '<input type="checkbox" id="'+uuid+'" name="'+name+'"><label for="'+name+'">['+this.position+'] '+name+' ('+uuid+')</label><br>';
+        var checkbox = '<input type="checkbox" id="'+uuid+'_check" name="'+name+'_check"><label for="'+name+'_check">['+this.position+'] '+name+' (UUID: '+uuid+')</label>';
+        var moveToFirstBtn = '<button onclick="">Move to First</button>';
+        var moveToLastBtn = '<button onclick="">Move to Last</button>';
+        var moveUpBtn = '<button onclick="">+</button>';
+        var moveDownBtn = '<button onclick="">-</button>';
+        var numInput = '<label for="'+name+'_num">Move to position: </label><input type="number" id="'+uuid+'_num" name="'+name+'_num" min="0">';
+        var numInputBtn = '<button onclick="moveTaskPos(\''+uuid+'\')">Enter</button>';
+        this.html = '<div id="'+uuid+'">'+checkbox+'<br>'+numInput+numInputBtn+'<br>'+moveUpBtn+moveDownBtn+moveToFirstBtn+moveToLastBtn+'<hr></div>';
 
         queueTasks.push(this);
         console.log(queueTasks);

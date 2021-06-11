@@ -20,6 +20,26 @@ class Task {
         console.log(queueTasks);
     }
 
+    movePosition(newPosition) {
+        console.log('moves the position to '+newPosition);
+        var oldPosition = this.position;
+        
+    }
+
+    moveUp() {
+
+    }
+
+    moveDown() {
+
+    }
+
+    moveToFirst() {
+
+    }
+
+    moveToLast() {
+
     }
 }
 

@@ -65,6 +65,7 @@ function editQueue(serverKey) {
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
         var moveSelectedTopBtn = '<button onclick="">Move Selected Task(s) to Top</button>'; // TODO make the function(s) for the button
         var moveSelectedBottomBtn = '<button onclick="">Move Selected Task(s) to Bottom</button>'; // TODO make the function(s) for the button
+        var moveSelectedBtn = '<label for="newTaskPos">Move Selected Task(s) to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="">Enter</button>'; // TODO make the function(s) for the button
         var removeSelectedBtn = '<button onclick="">Remove Selected Task(s)</button>'; // TODO make the function(s) for the button
         var commitBtn = '<button onclick="">Commit Queue Edits</button>'; // TODO make the function(s) for the button
         var searchBar = '<br><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks">';

@@ -68,8 +68,9 @@ function editQueue(serverKey) {
         var moveSelectedBtn = '<label for="newTaskPos">Move Selected Task(s) to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="">Enter</button>'; // TODO make the function(s) for the button
         var removeSelectedBtn = '<button onclick="">Remove Selected Task(s)</button>'; // TODO make the function(s) for the button
         var commitBtn = '<button onclick="">Commit Queue Edits</button>'; // TODO make the function(s) for the button
-        var searchBar = '<br><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks">';
-        var editorControls = moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+searchBar+commitBtn+closeBtn+'<hr>'; 
+        var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
+        // var editorControls = closeBtn+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+commitBtn+moveSelectedBtn+searchBar+'<hr>';
+        var editorControls = closeBtn+commitBtn+'<br>'+moveSelectedBtn+'<br>'+moveSelectedTopBtn+moveSelectedBottomBtn+'<br>'+removeSelectedBtn+'<br>'+searchBar+'<hr>';
 
         var tasks = '';
         for(let i in queueTasks) {

@@ -93,6 +93,19 @@ function closeQueueEditor() {
     $('#queueEditor').empty();
 }
 
+function searchFilter() {
+    var input = $('#taskSearchBar').val().toUpperCase();
+
+    for(let i = 0; i<queueTasks.length; i++) {
+        var taskID = '#'+queueTasks[i].info.uuid;
+        if(queueTasks[i].info.task.task_name.toUpperCase().indexOf(input) > -1) {
+            $(taskID).css('display','');
+        } else {
+            $(taskID).css('display','none');
+        }
+    }
+}
+
 function moveTaskPos(taskID) {
     var id = '#'+taskID+'_num';
     var pos = $(id).val();

@@ -122,6 +122,6 @@ function moveTaskPos(taskID) {
             }
         }
     } else {
-        console.log('invalid position');
+        alert('You entered an invalid position.');
     }
 }

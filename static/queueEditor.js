@@ -14,7 +14,9 @@ class Task {
         var moveDownBtn = '<button onclick="">-</button>';
         var numInput = '<label for="'+name+'_num">Move to position: </label><input type="number" id="'+uuid+'_num" name="'+name+'_num" min="0">';
         var numInputBtn = '<button onclick="moveTaskPos(\''+uuid+'\')">Enter</button>';
-        this.html = '<div id="'+uuid+'">'+checkbox+'<br>'+numInput+numInputBtn+'<br>'+moveUpBtn+moveDownBtn+moveToFirstBtn+moveToLastBtn+'<hr></div>';
+        var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
+        var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">View/Close Task Meta Data</button>';
+        this.html = '<div id="'+uuid+'">'+checkbox+'<br>'+numInput+numInputBtn+'<br>'+moveUpBtn+moveDownBtn+moveToFirstBtn+moveToLastBtn+viewDataBtn+metaData+'<hr></div>';
 
         queueTasks.push(this);
         console.log(queueTasks);
@@ -124,4 +126,9 @@ function moveTaskPos(taskID) {
     } else {
         alert('You entered an invalid position.');
     }
+}
+
+function toggleTaskData(taskID) {
+    var id = '#'+taskID+'_data';
+    $(id).slideToggle(400);
 }

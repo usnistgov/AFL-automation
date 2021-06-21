@@ -280,5 +280,9 @@ button {
         margin-left:-300px;
         margin-top:-175px;
     }
-/* CSS for smaller screens */
+
+    #queueEditor h4 {
+        margin: 5px;
+    }
+/* TODO CSS for smaller screens */
 /* TODO add the CSS for smaller screen sizes */

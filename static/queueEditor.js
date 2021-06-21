@@ -54,22 +54,6 @@ class Task {
         var oldPosition = this.position;
         
     }
-
-    moveUp() {
-
-    }
-
-    moveDown() {
-
-    }
-
-    moveToFirst() {
-
-    }
-
-    moveToLast() {
-
-    }
 }
 
 // TODO complete the editQueue function

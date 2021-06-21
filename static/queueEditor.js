@@ -103,6 +103,14 @@ function editQueue(serverKey) {
     $('#popup-background').css('visibility', 'visible');
 }
 
+function select(taskID) {
+    for(let i = 0; i<queueTasks.length; i++) {
+        if(queueTasks[i].info.uuid == taskID) {
+            queueTasks[i].select();
+        }
+    }
+}
+
 function closeQueueEditor() {
     queueTasks = []; // clears all tasks from queueTasks
 

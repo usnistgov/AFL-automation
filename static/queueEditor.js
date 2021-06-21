@@ -2,26 +2,53 @@ var queueTasks = []; // array for queued tasks
 
 class Task {
     constructor(position, info) {
+        this.ogPosition = position;
         this.position = position;
         this.info = info;
+        this.selected = false;
 
         var name = this.info.task.task_name;
         var uuid = this.info.uuid;
-        var checkbox = '<input type="checkbox" id="'+uuid+'_check" name="'+name+'_check"><label for="'+name+'_check">['+this.position+'] '+name+' (UUID: '+uuid+')</label>';
-        var moveToFirstBtn = '<button onclick="">Move to First</button>';
-        var moveToLastBtn = '<button onclick="">Move to Last</button>';
-        var moveUpBtn = '<button onclick="">+</button>';
-        var moveDownBtn = '<button onclick="">-</button>';
+        var taskLabel = '<h4 onclick="select(\''+uuid+'\')">['+this.position+'] '+name+' (UUID: '+uuid+')</h4>';
+        var moveToFirstBtn = '<button onclick="">Move to First</button>'; // TODO make the function(s) for the button
+        var moveToLastBtn = '<button onclick="">Move to Last</button>'; // TODO make the function(s) for the button
+        var moveUpBtn = '<button onclick="">+</button>'; // TODO make the function(s) for the button
+        var moveDownBtn = '<button onclick="">-</button>'; // TODO make the function(s) for the button
         var numInput = '<label for="'+name+'_num">Move to position: </label><input type="number" id="'+uuid+'_num" name="'+name+'_num" min="0">';
         var numInputBtn = '<button onclick="moveTaskPos(\''+uuid+'\')">Enter</button>';
         var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
         var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">View/Close Task Meta Data</button>';
-        this.html = '<div id="'+uuid+'">'+checkbox+'<br>'+numInput+numInputBtn+'<br>'+moveUpBtn+moveDownBtn+moveToFirstBtn+moveToLastBtn+viewDataBtn+metaData+'<hr></div>';
+        var removeBtn = '<button onclick="">Remove Task</button>'; // TODO make the function(s) for the button
+        this.html = '<div id="'+uuid+'">'+taskLabel+numInput+numInputBtn+'<br>'+moveUpBtn+moveDownBtn+moveToFirstBtn+moveToLastBtn+viewDataBtn+removeBtn+metaData+'<hr></div>';
 
         queueTasks.push(this);
-        console.log(queueTasks);
     }
 
+    select() {
+        var id = '#'+this.info.uuid;
+
+        if(this.selected == false) {
+            this.selected = true;
+            $(id).find('h4').css('color','green');
+        } else {
+            this.selected = false;
+            $(id).find('h4').css('color','black');
+        }
+    }
+
+    removeToggle() {
+        if(this.position < 0) {
+            var index = removedTasks.indexOf(this);
+            if(index > -1) {
+                removedTasks.splice(index, 1);
+            }
+        } else {
+            this.position = -1;
+            removedTasks.push(this);
+        }
+    }
+
+    // TODO complete the function
     movePosition(newPosition) {
         console.log('moves the position to '+newPosition);
         var oldPosition = this.position;

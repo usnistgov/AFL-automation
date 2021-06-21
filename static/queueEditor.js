@@ -103,6 +103,10 @@ function editQueue(serverKey) {
     $('#popup-background').css('visibility', 'visible');
 }
 
+/**
+ * Selects the given task
+ * @param {String} taskID 
+ */
 function select(taskID) {
     for(let i = 0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
@@ -111,6 +115,9 @@ function select(taskID) {
     }
 }
 
+/**
+ * Closes the queue editor
+ */
 function closeQueueEditor() {
     queueTasks = []; // clears all tasks from queueTasks
 
@@ -120,6 +127,9 @@ function closeQueueEditor() {
     $('#queueEditor').empty();
 }
 
+/**
+ * Filters the tasks shown in the queue editor based on the search bar input
+ */
 function searchFilter() {
     var input = $('#taskSearchBar').val().toUpperCase();
 
@@ -133,6 +143,10 @@ function searchFilter() {
     }
 }
 
+/**
+ * Changes the position of the given task in the queuedTasks array
+ * @param {String} taskID 
+ */
 function moveTaskPos(taskID) {
     var id = '#'+taskID+'_num';
     var pos = $(id).val();
@@ -151,6 +165,10 @@ function moveTaskPos(taskID) {
     }
 }
 
+/**
+ * Displays/Hides task's meta data within the queue editor
+ * @param {String} taskID 
+ */
 function toggleTaskData(taskID) {
     var id = '#'+taskID+'_data';
     $(id).slideToggle(400);

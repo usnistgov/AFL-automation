@@ -1,4 +1,5 @@
 var queueTasks = []; // array for queued tasks
+var removedTasks = [];
 
 class Task {
     constructor(position, info) {
@@ -41,6 +42,7 @@ class Task {
             var index = removedTasks.indexOf(this);
             if(index > -1) {
                 removedTasks.splice(index, 1);
+                console.log(removedTasks);
             }
         } else {
             this.position = -1;

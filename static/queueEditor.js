@@ -18,7 +18,7 @@ class Task {
         var numInput = '<label for="'+name+'_num">Move to position: </label><input type="number" id="'+uuid+'_num" name="'+name+'_num" min="0">';
         var numInputBtn = '<button onclick="moveTaskPos(\''+uuid+'\')">Enter</button>';
         var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
-        var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">View/Close Task Meta Data</button>';
+        var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">Task Meta Data</button>';
         var removeBtn = '<button onclick="">Remove Task</button>'; // TODO make the function(s) for the button
         this.html = '<div id="'+uuid+'">'+taskLabel+numInput+numInputBtn+'<br>'+moveUpBtn+moveDownBtn+moveToFirstBtn+moveToLastBtn+viewDataBtn+removeBtn+metaData+'<hr></div>';
 
@@ -30,7 +30,7 @@ class Task {
 
         if(this.selected == false) {
             this.selected = true;
-            $(id).find('h4').css('color','green');
+            $(id).find('h4').css('color','blue');
         } else {
             this.selected = false;
             $(id).find('h4').css('color','black');

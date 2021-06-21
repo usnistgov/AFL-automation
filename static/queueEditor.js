@@ -87,7 +87,7 @@ function editQueue(serverKey) {
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
         var commitBtn = '<button onclick="commitQueueEdits()">Commit Queue Edits</button>';
         var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
-        var editorControls = closeBtn+commitBtn+searchBar+'<br>'+selectedControls+'<hr>';
+        var editorControls = '<div id="queueEditorControls" style="background-color:lightgrey;">'+closeBtn+commitBtn+searchBar+'<br>'+selectedControls+'<hr></div>';
 
         var tasks = '';
         for(let i in queueTasks) {

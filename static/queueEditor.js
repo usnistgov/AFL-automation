@@ -88,18 +88,20 @@ function editQueue(serverKey) {
     server.getQueue(function(result) {
         for(let i in result[2]) {
             var tempTask = new Task(i, result[2][i]);
-            console.log(tempTask);
+            // console.dir(tempTask);
         }
 
+        // TODO make the function(s) for the buttons for the selected task controls
+        var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="">Enter</button>';
+        var moveSelectedTopBtn = '<button onclick="">Move to Top</button>';
+        var moveSelectedBottomBtn = '<button onclick="">Move to Bottom</button>';
+        var removeSelectedBtn = '<button onclick="">Remove Task(s)</button>';
+        var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+'<br>'+moveSelectedBtn;
+        
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
-        var moveSelectedTopBtn = '<button onclick="">Move Selected Task(s) to Top</button>'; // TODO make the function(s) for the button
-        var moveSelectedBottomBtn = '<button onclick="">Move Selected Task(s) to Bottom</button>'; // TODO make the function(s) for the button
-        var moveSelectedBtn = '<label for="newTaskPos">Move Selected Task(s) to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="">Enter</button>'; // TODO make the function(s) for the button
-        var removeSelectedBtn = '<button onclick="">Remove Selected Task(s)</button>'; // TODO make the function(s) for the button
-        var commitBtn = '<button onclick="">Commit Queue Edits</button>'; // TODO make the function(s) for the button
+        var commitBtn = '<button onclick="commitQueueEdits()">Commit Queue Edits</button>';
         var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
-        // var editorControls = closeBtn+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+commitBtn+moveSelectedBtn+searchBar+'<hr>';
-        var editorControls = closeBtn+commitBtn+'<br>'+moveSelectedBtn+'<br>'+moveSelectedTopBtn+moveSelectedBottomBtn+'<br>'+removeSelectedBtn+'<br>'+searchBar+'<hr>';
+        var editorControls = closeBtn+commitBtn+searchBar+'<br>'+selectedControls+'<hr>';
 
         var tasks = '';
         for(let i in queueTasks) {

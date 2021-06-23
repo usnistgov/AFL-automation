@@ -119,6 +119,36 @@ function addServerPopup() {
 }
 
 /**
+ * Returns the task's meta data reformatted for jsTree
+ * @param {JSON} data 
+ */
+ function formatData(data) {
+    var keys = Object.keys(data);
+    console.log(keys);
+    var  id, parent, text;
+    var items = [];
+    for(let i in keys) {
+        id = 'temp'+i;
+        parent = '#'; // TODO change to allow for parents
+        text = keys[i]+': '+data[keys[i]];
+
+        var temp = '{"id": "'+id+'", "parent": "'+parent+'", "text": "'+text+'"}';
+        items.push(temp);
+    }
+
+    var dataStr = '[';
+    for (let i = 0; i  < items.length; i++) {
+        if(i == items.length-1) {
+            dataStr += items[i]+']';
+        } else {
+            dataStr += items[i]+',';
+        }
+    }
+
+    return dataStr; 
+}
+
+/**
  * Displays all information about a task in a popup
  * @param {String} serverKey 
  * @param {Integer} x 

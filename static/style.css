@@ -150,6 +150,8 @@ button {
         width: 90%;
         margin: 0 auto;
         margin-top: 25px;
+
+        column-count: 2;
     }
 
     .container {

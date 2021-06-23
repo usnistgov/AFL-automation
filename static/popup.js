@@ -130,12 +130,23 @@ function addTaskPopup(serverKey, x, y) {
     server.getQueue(function(result) {
         var title = 'Task: ' + result[x][y].task.task_name;
         let popup = new Popup(title);
-
-        // TODO make task show as JsTree
+        
         var task = JSON.stringify(result[x][y].task);
         popup.addText(task);
-
         popup.addToHTML();
+
+        var data = JSON.parse(formatData(result[x][y].task));
+        console.log(data);
+
+        $('#popup').append('<div id="taskData1"></div>');
+        $('#taskData1').jstree({
+            'core': {
+                'data': data
+        }});
+        // $('#taskData1').on("changed.jstree", function (e, data) {
+        //     console.log(data.selected);
+        // });
+
         displayPopup();
     });
 }

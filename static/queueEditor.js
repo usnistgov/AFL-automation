@@ -50,11 +50,25 @@ class Task {
         }
     }
 
-    // TODO complete the function
+    setPosition(pos) {
+        this.position = pos;
+    }
+
     movePosition(newPosition) {
         console.log('moves the position to '+newPosition);
-        var oldPosition = this.position;
-        
+        var task = queueTasks.splice(this.position,1); // deletes only the task object from the array
+        var temp = queueTasks.splice(newPosition);
+        queueTasks.push(task[0]);
+
+        for(let i in temp) {
+            queueTasks.push(temp[i]);
+        }
+
+        for(let i in queueTasks) {
+            queueTasks[i].setPosition(i);
+        }
+
+        console.log(queueTasks);
     }
 }
 

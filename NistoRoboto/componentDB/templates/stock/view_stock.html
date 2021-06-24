@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Stock View{% endblock %}
+    <br>
+    <a class="action" href="{{ url_for('stock_component.create') }}">New Entry</a>
+{% endblock %}
+
+{% block content %}
+
+  {% for post in posts %}
+    <article class="post">
+      <header>
+        <div>
+          <h1>{{ post['name'] }} | ID: {{ post['id'] }}</h1>
+          <form action="{{ url_for('stock.delete', id=post['id']) }}" method="post">
+          <input class="stock_danger" type="submit" value="Delete" onclick="return confirm('WARNING: Are you sure you want to delete this entry?');">
+          </form>
+          <div class="about">created on {{ post['created'] }}</div>
+        </div>
+
+
+      </header>
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+    {% if posts|length < 1 %}
+    <p>There are no stocks</p>
+    {% endif %}
+{% endblock %}
+

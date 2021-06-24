@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Component View{% endblock %}
+    <br>
+    <a class="action" href="{{ url_for('component.create') }}">New Entry</a>
+{% endblock %}
+
+{% block content %}
+
+  {% for post in posts %}
+    <article class="post">
+      <header>
+        <div>
+          <h1>{{ post['name'] }} | ID:{{ post['id'] }}</h1>
+          <div class="about">created on {{ post['created'] }}</div>
+        </div>
+          <a class="action" href="{{ url_for('component.update', id=post['id']) }}">Edit</a>
+
+      </header>
+      <p class="body">{{ post['description'] }}</p>
+
+          <table class="table" style="width:100%">
+                  <tr>
+                    <th>Mass</th>
+                    <td>{{ post['mass'] }}</td>
+                  </tr>
+                  <tr>
+                    <th>Mass Units</th>
+                    <td>{{ post['mass_units'] }}</td>
+                  </tr>
+                  <tr>
+                    <th>Density</th>
+                    <td>{{ post['density'] }}</td>
+                  </tr>
+                  <tr>
+                    <th>Density Units</th>
+                    <td>{{ post['density_units'] }}</td>
+                  </tr>
+                  <tr>
+                    <th>Formula</th>
+                    <td>{{ post['formula'] }}</td>
+                  </tr>
+                  <tr>
+                    <th>SLD</th>
+                    <td>{{ post['sld'] }}</td>
+                  </tr>
+                </table>
+
+
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+    {% if posts|length < 1 %}
+    <p>There are no components</p>
+    {% endif %}
+{% endblock %}
+

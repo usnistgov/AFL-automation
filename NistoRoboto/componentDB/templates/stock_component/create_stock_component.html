@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Create Stock / Stock Component{% endblock %}
+    <br>
+    <a class="action" href="{{ url_for('stock_component.index') }}">Back</a>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+
+    <p>This will link a stock and component together. If the specified stock (ID) does not already exist
+    a new stock in the stock table will be created.</p>
+
+    <label for="stock_name">Stock Name (for stock entry)</label>
+    <input name="stock_name" id="stock_name" value="{{ request.form['stock_name'] }}" required>
+
+    <label for="stock_id">Stock ID (must be unique)</label>
+    <input name="stock_id" id="stock_id" value="{{ request.form['stock_id'] }}" required>
+
+    <label for="component_id">Component ID (must be existing component)</label>
+    <input name="component_id" id="component_id" value="{{ request.form['component_id'] }}" required>
+
+    <label for="amount">Amount</label>
+    <input name="amount" id="amount" value="{{ request.form['amount'] }}" required>
+
+    <label for="units">Units</label>
+    <input name="units" id="units" value="{{ request.form['units'] }}" required>
+
+    <input type="submit" value="Save">
+
+  </form>
+{% endblock %}

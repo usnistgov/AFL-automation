@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Stock Component View{% endblock %}
+    <br>
+    <a class="action" href="{{ url_for('stock_component.create') }}">New Entry</a>
+{% endblock %}
+
+{% block content %}
+
+  {% for post in posts %}
+    <article class="post">
+      <header>
+        <div>
+          <h1>ID: {{ post['id'] }}</h1>
+          <div class="about">created on {{ post['created'] }}</div>
+        </div>
+          <a class="action" href="{{ url_for('stock_component.update', id=post['id']) }}">Edit</a>
+
+      </header>
+          <br>
+          <table class="table" style="width:100%">
+                  <tr>
+                    <th>Stock ID</th>
+                    <td>{{ post['stock_id'] }}</td>
+                  </tr>
+                  <tr>
+                    <th>Component ID</th>
+                    <td>{{ post['component_id'] }}</td>
+                  </tr>
+                  <tr>
+                    <th>Amount</th>
+                    <td>{{ post['amount'] }}</td>
+                  </tr>
+                  <tr>
+                    <th>Units</th>
+                    <td>{{ post['units'] }}</td>
+                  </tr>
+                </table>
+
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+    {% if posts|length < 1 %}
+    <p>There are no stock components</p>
+    {% endif %}
+{% endblock %}
+

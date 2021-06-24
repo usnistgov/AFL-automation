@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Main Directory{% endblock %}
+{% endblock %}
+{% block content %}
+<div class="directory">
+    <li><a class="action" href="{{ url_for('component.index') }}">Component View</a></li>
+    <br>
+    <li><a class="action" href="{{ url_for('stock_component.index') }}">Stock Component View (create stocks here)</a></li>
+    <br>
+    <li><a class="action" href="{{ url_for('stock.stock_index') }}">Stock View</a></li>
+</div>
+{% endblock %}
+

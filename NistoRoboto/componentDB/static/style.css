@@ -1,0 +1,129 @@
+body {
+    font-family: 'Lato', sans-serif;
+    margin: 0px;
+    background-color: #222636;
+    color: white;
+}
+
+.page-top {
+    background-color: rgb(47, 52, 71);
+    box-shadow: rgba(0, 0, 0, 0.5) 0px 3px 12px 0px;
+    min-height: 56px;
+}
+
+.page-logo {
+    display: inline-block;
+    width: auto;
+    height: 45px;
+    padding-top: 0.8em;
+    padding-left: 0.5em;
+}
+
+.page-title {
+    display: inline-block;
+    font-size: x-large;
+    font-weight: bold;
+    padding-bottom: 0.5em;
+    padding-left: 0.5em;
+}
+
+.directory {
+    padding: 0.8em;
+    font-size: x-large;
+}
+
+.content {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.content h1 {
+    font-size: xx-large;
+    padding-top: 0.5em;
+    padding-bottom: 0.2em;
+    margin: auto;
+}
+
+.about {
+    color: #ccd2e6;
+    font-style: italic;
+    padding-bottom: 1em;
+}
+
+.content form {
+    margin: 1em 0;
+    display: flex;
+    flex-direction:
+    column;
+    width: 95%;
+    margin: auto;
+}
+
+.content label {
+    font-weight: bold;
+    font-size: x-large;
+    margin-top: 0.5em;
+    margin-bottom: 0.1em;
+}
+.content input, .content textarea {
+    margin-bottom: 1em;
+    box-shadow: inset 0px 0px 12px 0px rgba(0,0,0,0.5);
+    color: white;
+    background-color: #091426;
+    font-size: large;
+}
+
+.content textarea {
+    min-height: 10em;
+    resize: vertical;
+    font-size: large;
+}
+
+input.submit {
+    background-color: green;
+    margin: auto;
+    margin-top: 0.5em;
+    margin-bottom: 1.5em;
+    min-width: 20em;
+    padding: 0.2em;
+}
+
+input.danger {
+    background-color: red;
+    margin: auto;
+    margin-top: 0.5em;
+    margin-bottom: 1.5em;
+    min-width: 20em;
+    padding: 0.2em;
+}
+
+input.stock_danger {
+    background-color: red;
+    display: inline;
+    max-width: 10em;
+}
+
+
+.flash {
+    margin: 2em;
+    text-align: center;
+    padding: 1em;
+    background: red;
+    border: 1px solid #1c222b;
+}
+
+.table-table, th, td {
+    table-layout: fixed;
+    width: 50%;
+    text-align: left;
+    border: 1px solid white;
+    color: white;
+    background-color: rgba(0,0,0,0.2);
+    padding: 0.2em;
+}
+
+a {
+    color: hotpink;
+}
+
+

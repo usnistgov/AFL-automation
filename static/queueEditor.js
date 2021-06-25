@@ -155,12 +155,18 @@ function moveSelected(place) {
             pos++;
         }
     } else if(place == "b") { // move to bottom
-        // TODO move selected tasks to bottom of array
+        pos = queueTasks.length-1;
+        for(let i in selected) {
+            selected[i].movePosition(pos);
+        }
     } else { // move to specified position
-        var id = '#'+newTaskPos;
-        pos = $(id).val();
+        pos = $('#newTaskPos').val();
         console.log('move to '+pos);
         // TODO move selected tasks to pos
+        // for(let i in selected) {
+        //     selected[i].movePosition(pos);
+        //     pos++;
+        // }
     }
 }
 

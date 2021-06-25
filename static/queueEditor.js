@@ -10,7 +10,7 @@ class Task {
 
         var name = this.info.task.task_name;
         var uuid = this.info.uuid;
-        var taskLabel = '<h4 onclick="select(\''+uuid+'\')">['+this.position+'] '+name+' (UUID: '+uuid+')</h4>';
+        var taskLabel = '<h4 onclick="select(\''+uuid+'\')">[<span class="taskPos">'+this.position+'</span>] '+name+' (UUID: '+uuid+')</h4>';
         var moveToFirstBtn = '<button onclick="">Move to First</button>'; // TODO make the function(s) for the button
         var moveToLastBtn = '<button onclick="">Move to Last</button>'; // TODO make the function(s) for the button
         var moveUpBtn = '<button onclick="">+</button>'; // TODO make the function(s) for the button
@@ -37,32 +37,38 @@ class Task {
         }
     }
 
+    // TODO test this function
     removeToggle() {
         if(this.position < 0) {
             var index = removedTasks.indexOf(this);
             if(index > -1) {
-                removedTasks.splice(index, 1);
+                queueTasks.push(removedTasks.splice(index, 1));
+                // TODO change the task label position to reflect it's re-added
                 console.log(removedTasks);
             }
         } else {
             this.position = -1;
             removedTasks.push(this);
+            // TODO change the task label position to - to reflect it's removed
         }
     }
 
     setPosition(pos) {
-        this.position = pos;
+        if(this.position != pos) {
+            this.position = pos; // sets the new task position
+        
+            var div = '#'+this.info.uuid;
+            $(div).find('.taskPos').html(pos); // changes the task label to display the new position
+        }
     }
 
     movePosition(newPosition) {
         console.log('moves the position to '+newPosition);
-        var task = queueTasks.splice(this.position,1); // deletes only the task object from the array
+
+        var task = queueTasks.splice(this.position,1);
         var temp = queueTasks.splice(newPosition);
         queueTasks.push(task[0]);
-
-        for(let i in temp) {
-            queueTasks.push(temp[i]);
-        }
+        queueTasks = queueTasks.concat(temp);
 
         for(let i in queueTasks) {
             queueTasks[i].setPosition(i);

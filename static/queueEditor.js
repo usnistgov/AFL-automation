@@ -78,7 +78,6 @@ class Task {
     }
 }
 
-// TODO complete the editQueue function
 function editQueue(serverKey) {
     var server = getServer(serverKey);
 
@@ -98,9 +97,9 @@ function editQueue(serverKey) {
         }
 
         // TODO make the function(s) for the buttons for the selected task controls
-        var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="">Enter</button>';
-        var moveSelectedTopBtn = '<button onclick="">Move to Top</button>';
-        var moveSelectedBottomBtn = '<button onclick="">Move to Bottom</button>';
+        var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="moveSelected(\'m\')">Enter</button>';
+        var moveSelectedTopBtn = '<button onclick="moveSelected(\'t\')">Move to Top</button>';
+        var moveSelectedBottomBtn = '<button onclick="moveSelected(\'b\')">Move to Bottom</button>';
         var removeSelectedBtn = '<button onclick="">Remove Task(s)</button>';
         var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+'<br>'+moveSelectedBtn;
         
@@ -132,6 +131,36 @@ function select(taskID) {
         if(queueTasks[i].info.uuid == taskID) {
             queueTasks[i].select();
         }
+    }
+}
+
+/**
+ * (incomplete) Moves selected tasks to the top, the bottom, or to a specified position in the queue editor
+ * @param {String} place 
+ */
+function moveSelected(place) {
+    var selected = [];
+    for(let i in queueTasks) {
+        if(queueTasks[i].selected) {
+            selected.push(queueTasks[i]);
+        }
+    }
+    console.log(selected);
+    
+    var pos;
+    if(place == "t") { // move to top
+        pos = 0;
+        for(let i in selected) {
+            selected[i].movePosition(pos);
+            pos++;
+        }
+    } else if(place == "b") { // move to bottom
+        // TODO move selected tasks to bottom of array
+    } else { // move to specified position
+        var id = '#'+newTaskPos;
+        pos = $(id).val();
+        console.log('move to '+pos);
+        // TODO move selected tasks to pos
     }
 }
 

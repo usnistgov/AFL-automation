@@ -201,7 +201,7 @@ function moveTaskPos(taskID) {
     var pos = $(id).val();
     console.log(pos);
 
-    if(pos < queueTasks.length-1) {
+    if(pos < queueTasks.length) {
         console.log('valid position');
 
         var notMoved = true;

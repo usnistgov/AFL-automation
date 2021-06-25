@@ -164,7 +164,7 @@ function searchFilter() {
 }
 
 /**
- * Changes the position of the given task in the queuedTasks array
+ * (incomplete) Changes the position of the given task in the queuedTasks array
  * @param {String} taskID 
  */
 function moveTaskPos(taskID) {
@@ -173,16 +173,28 @@ function moveTaskPos(taskID) {
     console.log(pos);
 
     if(pos < queueTasks.length-1) {
-        console.log('valid');
-        for(let i in queueTasks) {
-            if(queueTasks[i].info.uuid == taskID) {
-                console.log(queueTasks[i]);
-                queueTasks[i].movePosition(pos);
+        console.log('valid position');
+
+        var notMoved = true;
+        var index = 0;
+        while(notMoved) {
+            if(queueTasks[index].info.uuid == taskID) {
+                console.log(queueTasks[index]);
+                queueTasks[index].movePosition(pos);
+                notMoved = false;
             }
+
+            if(index > (queueTasks.length-1)) {
+                alert('Error: task not found.');
+            }
+
+            index++;
         }
     } else {
-        alert('You entered an invalid position.');
+        alert('Error: You entered an invalid position.');
     }
+
+    // TODO reorder the display of the tasks in the editor (jQuery funciton: insertafter)
 }
 
 /**

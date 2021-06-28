@@ -75,6 +75,16 @@ class Task {
         }
 
         console.log(queueTasks);
+
+        // reorders the display order of the tasks
+        var taskDivID = '#'+this.info.uuid;
+        if(newPosition == 0) {
+            var nextTaskDivID = '#'+queueTasks[1].info.uuid;
+            $(taskDivID).insertBefore(nextTaskDivID);
+        } else {
+            var prevTaskDivID = '#'+queueTasks[newPosition-1].info.uuid;
+            $(taskDivID).insertAfter(prevTaskDivID);
+        }
     }
 }
 
@@ -228,8 +238,6 @@ function moveTaskPos(taskID) {
     } else {
         alert('Error: You entered an invalid position.');
     }
-
-    // TODO reorder the display of the tasks in the editor (jQuery funciton: insertafter)
 }
 
 /**

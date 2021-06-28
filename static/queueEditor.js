@@ -29,12 +29,14 @@ class Task {
     select() {
         var id = '#'+this.info.uuid;
 
-        if(this.selected == false) {
-            this.selected = true;
-            $(id).find('h4').css('color','blue');
-        } else {
-            this.selected = false;
-            $(id).find('h4').css('color','black');
+        if(this.removed == false) {
+            if(this.selected == false) {
+                this.selected = true;
+                $(id).css('background-color','green');
+            } else {
+                this.selected = false;
+                $(id).css('background-color','white');
+            }
         }
     }
 

@@ -1,3 +1,5 @@
+from math import ceil
+
 from flask import *
 from werkzeug.exceptions import abort
 
@@ -8,14 +10,30 @@ from flaskr.db import get_db
 bp = Blueprint("component", __name__)
 
 
-@bp.route("/component")
-def index():
-
+@bp.route("/component/<int:page>/<int:per_page>", methods=("GET", "POST"))
+def index(page, per_page):
     db = get_db()
     posts = db.execute(
-        "SELECT * FROM component ORDER BY created DESC"
+        "SELECT * FROM component ORDER BY created DESC",
     ).fetchall()
-    return render_template("component/view_component.html", posts=posts)
+
+    per_page = int(request.form.get("number", per_page))
+    radius = 2
+    total = len(posts)
+    pages = ceil(total / per_page)  # this is the number of pages
+    offset = (page - 1) * per_page  # offset for SQL query
+
+    session['component_url'] = url_for('component.index', page=page, per_page=per_page)  # save last URL for going back. easier than using cookies
+
+    if page > pages + 1 or page < 1:
+        abort(404, "Out of range")
+
+    posts = db.execute(
+        "SELECT * FROM component ORDER BY created DESC LIMIT ? OFFSET ?", (per_page, offset)
+    ).fetchall()
+
+    return render_template("component/view_component.html", posts=posts, total=total, per_page=per_page, pages=pages, page=page,
+                           radius=radius)
 
 
 def get_post(id, check_author=True):
@@ -39,7 +57,6 @@ def get_post(id, check_author=True):
 
 
 def componentobj():
-
     name = request.form["name"]
     description = request.form["description"]
     mass = request.form["mass"]
@@ -64,7 +81,6 @@ def componentobj():
 
 @bp.route("/component/create", methods=("GET", "POST"))
 def create():
-
     if request.method == "POST":
 
         component = componentobj()
@@ -77,14 +93,13 @@ def create():
                  component.density_units, component.formula, component.sld),
             )
             db.commit()
-            return redirect(url_for("component.index"))
+            return redirect(session['component_url'])
 
-    return render_template("component/create_component.html")
+    return render_template("component/create_component.html", back=session['component_url'])
 
 
 @bp.route("/component/<int:id>/update", methods=("GET", "POST"))
 def update(id):
-
     post = get_post(id)
 
     if request.method == "POST":
@@ -98,15 +113,17 @@ def update(id):
                  component.density_units, component.formula, component.sld, id)
             )
             db.commit()
-            return redirect(url_for("component.index"))
+            # return redirect(url_for("component.index", page=g.page, per_page=g.per_page))
+            return redirect(session['component_url'])
 
-    return render_template("component/update_component.html", post=post)
+    return render_template("component/update_component.html", post=post, back=session['component_url'])
 
 
-@bp.route("/component/<int:id>/delete", methods=("GET","POST"))
+@bp.route("/component/<int:id>/delete", methods=("GET", "POST"))
 def delete(id):
     get_post(id)
     db = get_db()
     db.execute("DELETE FROM component WHERE id = ?", (id,))
     db.commit()
-    return redirect(url_for("component.index"))
+    #return redirect(url_for("component.index, page=1, per_page=10"))
+    return redirect(session['component_url'])

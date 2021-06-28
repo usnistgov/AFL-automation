@@ -8,6 +8,20 @@
 
 {% block content %}
 
+    <div class="display">
+
+     <form method="post">
+
+            Number of entries per page: <input class="number" type="number" id="number" name="number"
+            min="1" max="100" value="{{ per_page }}">
+            <input class="pagechange" type="submit" value="Submit">
+            <br>
+            {{ total }} total entries
+
+     </form>
+
+    </div>
+
   {% for post in posts %}
     <article class="post">
       <header>
@@ -43,8 +57,72 @@
       <hr>
     {% endif %}
   {% endfor %}
+
+<div class="pager">
+
+    <form action="{{ url_for('stock_component.index', per_page = per_page, page = 1) }}">
+        {% if page < 2 %}
+        <input class="pagination" type="submit" value="<< first" disabled>
+         {% else %}
+        <input class="pagination" type="submit" value="<< first">
+         {% endif %}
+    </form>
+
+    <form action="{{ url_for('stock_component.index', per_page = per_page, page = page - 1) }}">
+        {% if page < 2 %}
+        <input class="pagination" type="submit" value="< prev" disabled>
+         {% else %}
+        <input class="pagination" type="submit" value="< prev">
+         {% endif %}
+    </form>
+
+    {% if page-radius > 1 %}
+    <form action="{{ url_for('stock_component.index', per_page = per_page, page = page) }}">
+        <input class="pagination" type="submit" value="..." disabled>
+    </form>
+    {% endif %}
+
+    {% for i in range(radius*2+1) %}
+        {% if (page - radius + i > 0) and (page - radius + i < pages + 1) %}
+        <form action="{{ url_for('stock_component.index', per_page = per_page, page = page - radius + i) }}">
+            {% if i == radius %}
+            <input class="pagin" type="submit" value="{{ page - radius + i }}" disabled>
+            {% else %}
+            <input class="pagination" type="submit" value="{{ page - radius + i }}">
+            {% endif %}
+        </form>
+        {% endif %}
+    {% endfor %}
+
+    {% if page+radius < pages %}
+    <form action="{{ url_for('stock_component.index', per_page = per_page, page = page) }}">
+        <input class="pagination" type="submit" value="..." disabled>
+    </form>
+    {% endif %}
+
+    <form action="{{ url_for('stock_component.index', per_page = per_page, page = page + 1) }}">
+         {% if page >= pages %}
+        <input class="pagination" type="submit" value="next >" disabled>
+          {% else %}
+        <input class="pagination" type="submit" value="next >">
+        {% endif %}
+    </form>
+
+     <form action="{{ url_for('stock_component.index', per_page = per_page, page = pages) }}">
+         {% if page >= pages %}
+        <input class="pagination" type="submit" value="last >>" disabled>
+          {% else %}
+        <input class="pagination" type="submit" value="last >>">
+        {% endif %}
+    </form>
+
+</div>
+
+
     {% if posts|length < 1 %}
     <p>There are no stock components</p>
     {% endif %}
+
 {% endblock %}
+
 

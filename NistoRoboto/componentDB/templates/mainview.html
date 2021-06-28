@@ -5,11 +5,14 @@
 {% endblock %}
 {% block content %}
 <div class="directory">
-    <li><a class="action" href="{{ url_for('component.index') }}">Component View</a></li>
+
+    <li><a class="action" href="{{ url_for('component.index', page=1, per_page=10) }}">Component View</a></li>
     <br>
-    <li><a class="action" href="{{ url_for('stock_component.index') }}">Stock Component View (create stocks here)</a></li>
+
+    <li><a class="action" href="{{ url_for('stock_component.index', page=1, per_page=10) }}">Stock Component View (create stocks here)</a></li>
     <br>
-    <li><a class="action" href="{{ url_for('stock.stock_index') }}">Stock View</a></li>
+
+    <li><a class="action" href="{{ url_for('stock.stock_index', page=1, per_page=10) }}">Stock View</a></li>
 </div>
 {% endblock %}
 

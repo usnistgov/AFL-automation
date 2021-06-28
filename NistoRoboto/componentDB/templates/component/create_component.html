@@ -3,7 +3,7 @@
 {% block header %}
     {% block title %}New Component{% endblock %}
     <br>
-    <a class="action" href="{{ url_for('component.index') }}">Back</a>
+    <a class="action" href="{{ back }}">Back</a>
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
     <label for="sld">SLD (Optional)</label>
     <input name="sld" id="sld" value="{{ request.form['sld'] }}">
 
-    <input type="submit" value="Save">
+    <input class="submit" type="submit" value="Save">
 
 
   </form>

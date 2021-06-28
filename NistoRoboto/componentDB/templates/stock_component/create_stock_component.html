@@ -3,7 +3,7 @@
 {% block header %}
     {% block title %}Create Stock / Stock Component{% endblock %}
     <br>
-    <a class="action" href="{{ url_for('stock_component.index') }}">Back</a>
+    <a class="action" href="{{ back }}">Back</a>
 {% endblock %}
 
 {% block content %}
@@ -27,7 +27,7 @@
     <label for="units">Units</label>
     <input name="units" id="units" value="{{ request.form['units'] }}" required>
 
-    <input type="submit" value="Save">
+    <input class="submit" type="submit" value="Save">
 
   </form>
 {% endblock %}

@@ -15,7 +15,7 @@ class Task {
         var moveUpBtn = '<button onclick="">+</button>'; // TODO make the function(s) for the button
         var moveDownBtn = '<button onclick="">-</button>'; // TODO make the function(s) for the button
         var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
-        var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">Task Meta Data</button>';
+        var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">&#x1F6C8;</button>';
         this.html = '<div id="'+uuid+'">'+taskLabel+moveUpBtn+moveDownBtn+viewDataBtn+metaData+'<hr></div>';
 
         queueTasks.push(this);

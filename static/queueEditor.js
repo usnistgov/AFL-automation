@@ -219,22 +219,18 @@ function searchFilter() {
 }
 
 /**
- * (incomplete) Changes the position of the given task in the queuedTasks array
+ * Changes the position of the given task in the queuedTasks array
  * @param {String} taskID 
  */
 function moveTaskPos(taskID) {
     var id = '#'+taskID+'_num';
     var pos = $(id).val();
-    console.log(pos);
 
     if(pos < queueTasks.length) {
-        console.log('valid position');
-
         var notMoved = true;
         var index = 0;
         while(notMoved) {
             if(queueTasks[index].info.uuid == taskID) {
-                console.log(queueTasks[index]);
                 queueTasks[index].movePosition(pos);
                 notMoved = false;
             }

@@ -7,6 +7,7 @@ class Task {
         this.position = position;
         this.info = info;
         this.selected = false;
+        this.removed = false;
 
         var name = this.info.task.task_name;
         var uuid = this.info.uuid;

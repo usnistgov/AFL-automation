@@ -40,20 +40,22 @@ class Task {
         }
     }
 
-    // TODO test this function
-    removeToggle() {
-        if(this.position < 0) {
-            var index = removedTasks.indexOf(this);
-            if(index > -1) {
-                queueTasks.push(removedTasks.splice(index, 1));
-                // TODO change the task label position to reflect it's re-added
-                console.log(removedTasks);
-            }
+    remove() {
+        var div = '#'+this.info.uuid;
+        if(this.removed = false) {
+            this.removed = true;
+            removedTasks.push(queueTasks.splice(this.position,1)); // removes the task from queueTasks and moves it to removedTasks
+            this.position = -1;    
+            $(div).find('.taskPos').html('-'); // changes the task label position to - to reflect it's removed
+            // TODO move task div somewhere and/or indicate that the task is removed in editor
         } else {
-            this.position = -1;
-            removedTasks.push(this);
-            // TODO change the task label position to - to reflect it's removed
-        }
+            this.removed = false;
+            queueTasks.push(this);
+            var pos = queueTasks.length-1;
+            this.position = pos;
+            $(div).find('.taskPos').html(pos);
+            // TODO move task div to bottom
+        } 
     }
 
     setPosition(pos) {

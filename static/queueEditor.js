@@ -12,16 +12,11 @@ class Task {
         var name = this.info.task.task_name;
         var uuid = this.info.uuid;
         var taskLabel = '<h4 onclick="select(\''+uuid+'\')">[<span class="taskPos">'+this.position+'</span>] '+name+' (UUID: '+uuid+')</h4>';
-        var moveToFirstBtn = '<button onclick="">Move to First</button>'; // TODO make the function(s) for the button
-        var moveToLastBtn = '<button onclick="">Move to Last</button>'; // TODO make the function(s) for the button
         var moveUpBtn = '<button onclick="">+</button>'; // TODO make the function(s) for the button
         var moveDownBtn = '<button onclick="">-</button>'; // TODO make the function(s) for the button
-        var numInput = '<label for="'+name+'_num">Move to position: </label><input type="number" id="'+uuid+'_num" name="'+name+'_num" min="0">';
-        var numInputBtn = '<button onclick="moveTaskPos(\''+uuid+'\')">Enter</button>';
         var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
         var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">Task Meta Data</button>';
-        var removeBtn = '<button onclick="">Remove Task</button>'; // TODO make the function(s) for the button
-        this.html = '<div id="'+uuid+'">'+taskLabel+numInput+numInputBtn+'<br>'+moveUpBtn+moveDownBtn+moveToFirstBtn+moveToLastBtn+viewDataBtn+removeBtn+metaData+'<hr></div>';
+        this.html = '<div id="'+uuid+'">'+taskLabel+moveUpBtn+moveDownBtn+viewDataBtn+metaData+'<hr></div>';
 
         queueTasks.push(this);
     }

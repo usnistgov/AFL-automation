@@ -151,7 +151,8 @@ button {
         margin: 0 auto;
         margin-top: 25px;
 
-        column-count: 2;
+        /* column-count: 2;
+        column-fill: auto; */
     }
 
     .container {

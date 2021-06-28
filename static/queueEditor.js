@@ -171,12 +171,22 @@ function moveSelected(place) {
         }
     } else { // move to specified position
         pos = $('#newTaskPos').val();
-        console.log('move to '+pos);
-        // TODO move selected tasks to pos
-        // for(let i in selected) {
-        //     selected[i].movePosition(pos);
-        //     pos++;
-        // }
+
+        var spaceAvailable = queueTasks.length - pos;
+        if(selected.length <= spaceAvailable) {
+            for(let i in selected) {
+                selected[i].movePosition(queueTasks.length-1);
+            }
+
+            for(let i in selected) {
+                console.dir(selected[i]);
+                console.log(pos);
+                selected[i].movePosition(pos);
+                pos++;
+            }
+        } else {
+            alert('Error: cannot make this edit (more tasks than spaces available at that position in the queue)');
+        }
     }
 }
 

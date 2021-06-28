@@ -219,34 +219,6 @@ function searchFilter() {
 }
 
 /**
- * Changes the position of the given task in the queuedTasks array
- * @param {String} taskID 
- */
-function moveTaskPos(taskID) {
-    var id = '#'+taskID+'_num';
-    var pos = $(id).val();
-
-    if(pos < queueTasks.length) {
-        var notMoved = true;
-        var index = 0;
-        while(notMoved) {
-            if(queueTasks[index].info.uuid == taskID) {
-                queueTasks[index].movePosition(pos);
-                notMoved = false;
-            }
-
-            if(index > (queueTasks.length-1)) {
-                alert('Error: task not found.');
-            }
-
-            index++;
-        }
-    } else {
-        alert('Error: You entered an invalid position.');
-    }
-}
-
-/**
  * Displays/Hides task's meta data within the queue editor
  * @param {String} taskID 
  */

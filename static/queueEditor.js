@@ -114,7 +114,7 @@ function editQueue(serverKey) {
         var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+'<br>'+moveSelectedBtn;
         
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
-        var commitBtn = '<button onclick="commitQueueEdits()">Commit Queue Edits</button>';
+        var commitBtn = '<button onclick="commitQueueEdits(\''+serverKey+'\')">Commit Queue Edits</button>';
         var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
         var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+searchBar+'<br>'+selectedControls+'</div><hr style="margin-top:80px;">';
 
@@ -188,6 +188,16 @@ function moveSelected(place) {
             alert('Error: cannot make this edit (more tasks than spaces available at that position in the queue)');
         }
     }
+}
+
+/**
+ * (incomplete) Commits the edits made in the queue editor
+ * @param {String} serverKey 
+ */
+function commitQueueEdits(serverKey) {
+    var server = getServer(serverKey);
+    server.clearQueue(); // clears the queue
+    // TODO enqueue the editor queued tasks (ajax request to python code to enqueue tasks)
 }
 
 /**

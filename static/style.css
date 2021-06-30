@@ -287,5 +287,12 @@ button {
     #queueEditor h4 {
         margin: 5px;
     }
+
+    #queueEditorControls {
+        position:fixed;
+        width:585px;
+        padding: 5px;
+        background-color:lightgrey;
+    }
 /* TODO CSS for smaller screens */
 /* TODO add the CSS for smaller screen sizes */

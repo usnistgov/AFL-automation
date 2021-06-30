@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Edit Sample / Sample Stock{% endblock %}
+    <br>
+    <a class="action" href="{{ back }}">Back</a>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+
+    <p>This will link a sample and stock together. If the specified sample (ID) does not already exist
+    a new sample in the sample table will be created.</p>
+
+    <label for="sample_id">Sample ID</label>
+    <input name="sample_id" id="sample_id" value="{{ request.form['sample_id'] or post['sample_id'] }}" required>
+
+    <label for="stock_id">Stock ID (must be existing stock)</label>
+    <input name="stock_id" id="stock_id" value="{{ request.form['stock_id'] or post['stock_id'] }}" required>
+
+    <label for="amount">Amount</label>
+    <input name="amount" id="amount" value="{{ request.form['amount'] or post['amount'] }}" required>
+
+    <label for="units">Units</label>
+    <input name="units" id="units" value="{{ request.form['units'] or post['units'] }}" required>
+
+    <label for="volmass">Volume or Mass</label>
+    <select name="volmass" id="volmass" value="{{ request.form['volmass'] or post['volmass'] }}" required>
+      <option value="volume">Volume</option>
+      <option value="mass">Mass</option>
+    </select>
+
+    <input class="submit" type="submit" value="Save">
+
+  </form>
+{% endblock %}

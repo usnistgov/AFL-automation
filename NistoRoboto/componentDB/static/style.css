@@ -15,7 +15,7 @@ body {
     display: inline-block;
     width: auto;
     height: 45px;
-    padding-top: 0.8em;
+    padding-top: 0.9em;
     padding-left: 0.5em;
 }
 
@@ -71,7 +71,7 @@ body {
     margin-top: 0.5em;
     margin-bottom: 0.1em;
 }
-.content input, .content textarea {
+.content input, .content textarea, .content select {
     margin-bottom: 1em;
     box-shadow: inset 0px 0px 12px 0px rgba(0,0,0,0.5);
     color: white;
@@ -112,11 +112,12 @@ input.stock_danger {
     border: 1px solid #1c222b;
 }
 
-.table-table, th, td {
+.content table, th, td {
     table-layout: fixed;
     width: 50%;
     text-align: left;
     border: 1px solid white;
+    border-collapse: collapse;
     color: white;
     background-color: rgba(0,0,0,0.2);
     padding: 0.2em;
@@ -165,7 +166,6 @@ input.number {
    display: inline-block;
    margin: auto;
    max-width: 100%;
-   max-height: 8%;
 }
 
 a {

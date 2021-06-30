@@ -12,10 +12,10 @@
     <p>This will link a stock and component together. If the specified stock (ID) does not already exist
     a new stock in the stock table will be created.</p>
 
-    <label for="stock_name">Stock Name (for stock entry)</label>
-    <input name="stock_name" id="stock_name" value="{{ request.form['stock_name'] }}" required>
+    <label for="stock_name">Stock Name (for stock entry, will not be used if the stock already exists)</label>
+    <input name="stock_name" id="stock_name" value="{{ request.form['stock_name'] }}">
 
-    <label for="stock_id">Stock ID (must be unique)</label>
+    <label for="stock_id">Stock ID</label>
     <input name="stock_id" id="stock_id" value="{{ request.form['stock_id'] }}" required>
 
     <label for="component_id">Component ID (must be existing component)</label>
@@ -26,6 +26,12 @@
 
     <label for="units">Units</label>
     <input name="units" id="units" value="{{ request.form['units'] }}" required>
+
+    <label for="volmass">Volume or Mass</label>
+    <select name="volmass" id="volmass" value="{{ request.form['volmass'] }}" required>
+      <option value="volume">Volume</option>
+      <option value="mass">Mass</option>
+    </select>
 
     <input class="submit" type="submit" value="Save">
 

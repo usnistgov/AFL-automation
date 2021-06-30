@@ -10,20 +10,29 @@ from flaskr.db import get_db
 bp = Blueprint("component", __name__)
 
 
-@bp.route("/component/<int:page>/<int:per_page>", methods=("GET", "POST"))
-def index(page, per_page):
+@bp.route("/component/<int:page>", methods=("GET", "POST"))
+def index(page):
     db = get_db()
     posts = db.execute(
         "SELECT * FROM component ORDER BY created DESC",
     ).fetchall()
 
-    per_page = int(request.form.get("number", per_page))
+    session['per_page'] = 10
+
+    per_page = request.form.get("number")
+
+    if per_page == '' or per_page is None:
+        per_page = session['per_page']
+
+    per_page = int(per_page)
+    session['per_page'] = per_page
+
     radius = 2
     total = len(posts)
     pages = ceil(total / per_page)  # this is the number of pages
     offset = (page - 1) * per_page  # offset for SQL query
 
-    session['component_url'] = url_for('component.index', page=page, per_page=per_page)  # save last URL for going back. easier than using cookies
+    session['component_url'] = url_for('component.index', page=page)  # save last URL for going back. easier than using cookies
 
     if page > pages + 1 or page < 1:
         abort(404, "Out of range")

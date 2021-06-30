@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Sample Detail{% endblock %}
+    <br>
+    <a class="action" href="{{ back }}">Back</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="display">
+    <p>To edit the associated stock IDs, amount, units, and volmass go to sample stock view.</p>
+</div>
+
+
+<article class="post">
+  <header>
+    <div>
+      <h1>{{ post['name'] }} | ID:{{ post['id'] }}</h1>
+      <div class="about">created on {{ post['created'] }}</div>
+    </div>
+
+  </header>
+
+      <table class="table_detail" style="width:100%">
+
+          <tr>
+            <th>Stock ID</th>
+            <th>Stock Name</th>
+            <th>Amount</th>
+            <th>Units</th>
+            <th>Volmass</th>
+          </tr>
+
+        {% for post in stocks %}
+
+        <tr>
+        <td>{{ post['stock_id'] }}</td>
+        <td>{{ names[loop.index0] }}</td>
+        <td>{{ post['amount'] }}</td>
+        <td>{{ post['units'] }}</td>
+        <td>{{ post['volmass'] }}</td>
+        </tr>
+
+        {% endfor %}
+
+      </table>
+
+
+</article>
+
+{% endblock %}
+

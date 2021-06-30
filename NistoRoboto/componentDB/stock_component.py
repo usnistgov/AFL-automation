@@ -3,35 +3,57 @@ from math import ceil
 
 from flask import *
 from werkzeug.exceptions import abort
+
+from componentDB.utility.utility_function import isfloat
 from flaskr.db import get_db
 
 bp = Blueprint("stock_component", __name__)
 
 
-@bp.route("/stock_component/<int:page>/<int:per_page>", methods=("GET", "POST"))
-def index(page, per_page):
+@bp.route("/stock_component/<int:page>", methods=("GET", "POST"))
+def index(page):
     db = get_db()
     posts = db.execute(
-        "SELECT * FROM stock_component ORDER BY created DESC"
+        "SELECT * FROM stock_component"
     ).fetchall()
 
-    per_page = int(request.form.get("number", per_page))
+    session['per_page'] = 10
+
+    per_page = request.form.get("number")
+
+    if per_page == '' or per_page is None:
+        per_page = session['per_page']
+
+    per_page = int(per_page)
+    session['per_page'] = per_page
+
+    stock_id = request.form.get("stock_id")
+
     radius = 2
     total = len(posts)
     pages = ceil(total / per_page)  # this is the number of pages
     offset = (page - 1) * per_page  # offset for SQL query
 
-    session['stock_component_url'] = url_for('stock_component.index', page=page,
-                                             per_page=per_page)  # save last URL for going back. easier than using cookies
+    session['stock_component_url'] = url_for('stock_component.index', page=page)  # save last URL for going back. easier than using cookies
 
     if page > pages + 1 or page < 1:
         abort(404, "Out of range")
 
-    posts = db.execute(
-        "SELECT * FROM stock_component ORDER BY created DESC LIMIT ? OFFSET ?", (per_page, offset)
-    ).fetchall()
+    if stock_id == '' or stock_id is None:
+        session['stock_id'] = ''
+        posts = db.execute(
+            "SELECT * FROM stock_component ORDER BY stock_id LIMIT ? OFFSET ?", (per_page, offset)
+        ).fetchall()
+    else:
+        stock_id = int(stock_id)
+        session['stock_id'] = stock_id
+        posts = db.execute(
+            "SELECT * FROM stock_component WHERE stock_id = ? ORDER BY stock_id LIMIT ? OFFSET ?", (stock_id, per_page, offset)
+        ).fetchall()
 
-    return render_template("stock_component/view_stock_component.html", posts=posts, total=total, per_page=per_page, pages=pages,
+    filtercount = len(posts)
+
+    return render_template("stock_component/view_stock_component.html", posts=posts, total=total, filtercount=filtercount, per_page=per_page, pages=pages,
                            page=page,
                            radius=radius)
 
@@ -70,28 +92,34 @@ def create():
         component_id = request.form['component_id']
         amount = request.form['amount']
         units = request.form['units']
+        volmass = request.form['volmass']
 
-        if not (stock_id.isdecimal() and component_id.isdecimal()):
-            flash("Stock and component ID must be valid numbers")
+        if not (stock_id.isdecimal() and component_id.isdecimal() and isfloat(amount)):
+            flash("Stock, component ID, and amount must be valid numbers")
             passed = False
 
-        if units.isdecimal():
+        if units.isdecimal() or volmass.isdecimal():
             flash("Input valid units")
             passed = False
 
         if passed:
             db = get_db()
             db.execute(
-                "INSERT INTO stock_component (stock_id, component_id, amount, units) VALUES (?, ?, ?, ?)",
-                (stock_id, component_id, amount, units),
+                "INSERT INTO stock_component (stock_id, component_id, amount, units, volmass) VALUES (?, ?, ?, ?, ?)",
+                (stock_id, component_id, amount, units, volmass),
             )
             db.commit()
 
-            db.execute("INSERT INTO stock (name, id) VALUES (?, ?)",
-                       (stock_name, stock_id))  # SQL does a check so you'll get a error if the id isn't unique
-            db.commit()
+            posts = db.execute(
+                "SELECT * FROM stock WHERE id = ?", (stock_id,)
+            ).fetchall()
 
-            # return redirect(url_for("stock_component.index"))
+            if len(posts) == 0:
+
+                db.execute("INSERT INTO stock (name, id) VALUES (?, ?)",
+                           (stock_name, stock_id))  # SQL does a check so you'll get a error if the id isn't unique
+                db.commit()
+
             return redirect(session['stock_component_url'])
 
     return render_template("stock_component/create_stock_component.html", back=session['stock_component_url'])
@@ -109,20 +137,21 @@ def update(id):
         component_id = request.form['component_id']
         amount = request.form['amount']
         units = request.form['units']
+        volmass = request.form['volmass']
 
-        if not (stock_id.isdecimal() and component_id.isdecimal()):
-            flash("Stock and component ID must be valid numbers")
+        if not (stock_id.isdecimal() and component_id.isdecimal() and isfloat(amount)):
+            flash("Stock, component ID, and amount must be valid numbers")
             passed = False
 
-        if units.isdecimal():
+        if units.isdecimal() or volmass.isdecimal():
             flash("Input valid units")
             passed = False
 
         if passed:
             db = get_db()
             db.execute(
-                "UPDATE stock_component SET stock_id = ?, component_id = ?, amount = ?, units = ? WHERE id = ?",
-                (stock_id, component_id, amount, units, id)
+                "UPDATE stock_component SET stock_id = ?, component_id = ?, amount = ?, units = ?, volmass = ? WHERE id = ?",
+                (stock_id, component_id, amount, units, volmass, id)
             )  # update stock_component table
 
             db.commit()

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Edit Measurement{% endblock %}
+    <br>
+    <a class="action" href="{{ back }}">Back</a>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+
+    <label for="sample_id">Sample ID (must be existing sample)</label>
+    <input name="sample_id" id="sample_id" value="{{ request.form['name'] or post['name'] }}" required>
+
+    <label for="metadata">Measurement Metadata</label>
+    <textarea name="metadata" id="metadata">{{ request.form['description'] or post['description'] }}</textarea>
+
+    <input class="submit" type="submit" value="Save">
+
+  </form>
+{% endblock %}

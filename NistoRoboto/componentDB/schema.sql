@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS stock;
 DROP TABLE IF EXISTS stock_component;
 DROP TABLE IF EXISTS sample;
 DROP TABLE IF EXISTS sample_stock;
-
+DROP TABLE IF EXISTS measurement;
 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,12 +38,13 @@ CREATE TABLE stock_component (
     stock_id INTEGER NOT NULL,
     amount INTEGER NOT NULL,
     units TEXT NOT NULL,
+    volmass TEXT NOT NULL,
     FOREIGN KEY (component_id) REFERENCES component (id),
     FOREIGN KEY (stock_id) REFERENCES stock (id)
 );
 
 CREATE TABLE sample (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER UNIQUE NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     name TEXT NOT NULL
 );
@@ -55,6 +56,15 @@ CREATE TABLE sample_stock (
     stock_id INTEGER NOT NULL,
     amount REAL NOT NULL,
     units TEXT NOT NULL,
+    volmass TEXT NOT NULL,
     FOREIGN KEY (sample_id) REFERENCES sample (id),
     FOREIGN KEY (stock_id) REFERENCES stock (id)
+);
+
+CREATE TABLE measurement (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sample_id INTEGER NOT NULL,
+    metadata BLOB NOT NULL,
+    FOREIGN KEY (sample_id) REFERENCES sample (id)
 );

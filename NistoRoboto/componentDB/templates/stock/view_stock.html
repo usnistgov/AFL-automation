@@ -27,12 +27,13 @@
       <header>
         <div>
           <h1>{{ post['name'] }} | ID: {{ post['id'] }}</h1>
-          <form action="{{ url_for('stock.delete', id=post['id']) }}" method="post">
-          <input class="stock_danger" type="submit" value="Delete" onclick="return confirm('WARNING: Are you sure you want to delete this entry?');">
-          </form>
+
           <div class="about">created on {{ post['created'] }}</div>
+
         </div>
 
+        <a class="action" href="{{ url_for('stock.update', id=post['id']) }}">Edit</a>
+        <a class="action" href="{{ url_for('stock.detail', id=post['id']) }}">Detail</a>
 
       </header>
     </article>
@@ -43,7 +44,7 @@
 
 <div class="pager">
 
-    <form action="{{ url_for('stock.stock_index', per_page = per_page, page = 1) }}">
+    <form action="{{ url_for('stock.index', per_page = per_page, page = 1) }}">
         {% if page < 2 %}
         <input class="pagination" type="submit" value="<< first" disabled>
          {% else %}
@@ -51,7 +52,7 @@
          {% endif %}
     </form>
 
-    <form action="{{ url_for('stock.stock_index', per_page = per_page, page = page - 1) }}">
+    <form action="{{ url_for('stock.index', per_page = per_page, page = page - 1) }}">
         {% if page < 2 %}
         <input class="pagination" type="submit" value="< prev" disabled>
          {% else %}
@@ -60,14 +61,14 @@
     </form>
 
     {% if page-radius > 1 %}
-    <form action="{{ url_for('stock.stock_index', per_page = per_page, page = page) }}">
+    <form action="{{ url_for('stock.index', per_page = per_page, page = page) }}">
         <input class="pagination" type="submit" value="..." disabled>
     </form>
     {% endif %}
 
     {% for i in range(radius*2+1) %}
         {% if (page - radius + i > 0) and (page - radius + i < pages + 1) %}
-        <form action="{{ url_for('stock.stock_index', per_page = per_page, page = page - radius + i) }}">
+        <form action="{{ url_for('stock.index', per_page = per_page, page = page - radius + i) }}">
             {% if i == radius %}
             <input class="pagin" type="submit" value="{{ page - radius + i }}" disabled>
             {% else %}
@@ -78,12 +79,12 @@
     {% endfor %}
 
     {% if page+radius < pages %}
-    <form action="{{ url_for('stock.stock_index', per_page = per_page, page = page) }}">
+    <form action="{{ url_for('stock.index', per_page = per_page, page = page) }}">
         <input class="pagination" type="submit" value="..." disabled>
     </form>
     {% endif %}
 
-    <form action="{{ url_for('stock.stock_index', per_page = per_page, page = page + 1) }}">
+    <form action="{{ url_for('stock.index', per_page = per_page, page = page + 1) }}">
          {% if page >= pages %}
         <input class="pagination" type="submit" value="next >" disabled>
           {% else %}
@@ -91,7 +92,7 @@
         {% endif %}
     </form>
 
-   <form action="{{ url_for('stock.stock_index', per_page = per_page, page = pages) }}">
+   <form action="{{ url_for('stock.index', per_page = per_page, page = pages) }}">
          {% if page >= pages %}
         <input class="pagination" type="submit" value="last >>" disabled>
           {% else %}
@@ -101,8 +102,5 @@
 
 </div>
 
-    {% if posts|length < 1 %}
-    <p>There are no stocks</p>
-    {% endif %}
 {% endblock %}
 

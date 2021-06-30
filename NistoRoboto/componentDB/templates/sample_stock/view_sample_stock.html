@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
 {% block header %}
-    {% block title %}Stock Component View{% endblock %}
+    {% block title %}Sample Stock View{% endblock %}
     <br>
-    <a class="action" href="{{ url_for('stock_component.create') }}">New Entry</a>
+    <a class="action" href="{{ url_for('sample_stock.create') }}">New Entry</a>
 {% endblock %}
 
 {% block content %}
@@ -17,12 +17,12 @@
             <input class="pagechange" type="submit" value="Submit">
             <br>
 
-            Filter by Stock ID (leave blank for no filter): <input class="number" type="number" id="stock_id" name="stock_id"
-            min="1" value="{{ session['stock_id'] }}">
+            Filter by Sample ID (leave blank for no filter): <input class="number" type="number" id="sample_id" name="sample_id"
+            min="1" value="{{ session['sample_id'] }}">
             <input class="pagechange" type="submit" value="Submit">
             <br>
 
-            {{ total }} existing entries. {% if session['stock_id'] != None and session['stock_id'] != '' %} Filtered {{ filtercount }} entries. {% endif %}
+            {{ total }} existing entries. {% if session['sample_id'] != None and session['sample_id'] != '' %} Filtered {{ filtercount }} entries. {% endif %}
 
      </form>
 
@@ -35,18 +35,18 @@
           <h1>ID: {{ post['id'] }}</h1>
           <div class="about">created on {{ post['created'] }}</div>
         </div>
-          <a class="action" href="{{ url_for('stock_component.update', id=post['id']) }}">Edit</a>
+          <a class="action" href="{{ url_for('sample_stock.update', id=post['id']) }}">Edit</a>
 
       </header>
           <br>
           <table class="table" style="width:100%">
                   <tr>
-                    <th>Stock ID</th>
-                    <td>{{ post['stock_id'] }}</td>
+                    <th>Sample ID</th>
+                    <td>{{ post['sample_id'] }}</td>
                   </tr>
                   <tr>
-                    <th>Component ID</th>
-                    <td>{{ post['component_id'] }}</td>
+                    <th>Stock ID</th>
+                    <td>{{ post['stock_id'] }}</td>
                   </tr>
                   <tr>
                     <th>Amount</th>
@@ -70,7 +70,7 @@
 
 <div class="pager">
 
-    <form action="{{ url_for('stock_component.index', per_page = per_page, page = 1) }}">
+    <form action="{{ url_for('sample_stock.index', per_page = per_page, page = 1) }}">
         {% if page < 2 %}
         <input class="pagination" type="submit" value="<< first" disabled>
          {% else %}
@@ -78,7 +78,7 @@
          {% endif %}
     </form>
 
-    <form action="{{ url_for('stock_component.index', per_page = per_page, page = page - 1) }}">
+    <form action="{{ url_for('sample_stock.index', per_page = per_page, page = page - 1) }}">
         {% if page < 2 %}
         <input class="pagination" type="submit" value="< prev" disabled>
          {% else %}
@@ -87,14 +87,14 @@
     </form>
 
     {% if page-radius > 1 %}
-    <form action="{{ url_for('stock_component.index', per_page = per_page, page = page) }}">
+    <form action="{{ url_for('sample_stock.index', per_page = per_page, page = page) }}">
         <input class="pagination" type="submit" value="..." disabled>
     </form>
     {% endif %}
 
     {% for i in range(radius*2+1) %}
         {% if (page - radius + i > 0) and (page - radius + i < pages + 1) %}
-        <form action="{{ url_for('stock_component.index', per_page = per_page, page = page - radius + i) }}">
+        <form action="{{ url_for('sample_stock.index', per_page = per_page, page = page - radius + i) }}">
             {% if i == radius %}
             <input class="pagin" type="submit" value="{{ page - radius + i }}" disabled>
             {% else %}
@@ -105,12 +105,12 @@
     {% endfor %}
 
     {% if page+radius < pages %}
-    <form action="{{ url_for('stock_component.index', per_page = per_page, page = page) }}">
+    <form action="{{ url_for('sample_stock.index', per_page = per_page, page = page) }}">
         <input class="pagination" type="submit" value="..." disabled>
     </form>
     {% endif %}
 
-    <form action="{{ url_for('stock_component.index', per_page = per_page, page = page + 1) }}">
+    <form action="{{ url_for('sample_stock.index', per_page = per_page, page = page + 1) }}">
          {% if page >= pages %}
         <input class="pagination" type="submit" value="next >" disabled>
           {% else %}
@@ -118,7 +118,7 @@
         {% endif %}
     </form>
 
-     <form action="{{ url_for('stock_component.index', per_page = per_page, page = pages) }}">
+     <form action="{{ url_for('sample_stock.index', per_page = per_page, page = pages) }}">
          {% if page >= pages %}
         <input class="pagination" type="submit" value="last >>" disabled>
           {% else %}

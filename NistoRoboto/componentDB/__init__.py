@@ -42,4 +42,16 @@ def create_app(test_config=None):
     app.register_blueprint(stock_component.bp)
     app.add_url_rule('/', endpoint='index')
 
+    from . import sample_stock
+    app.register_blueprint(sample_stock.bp)
+    app.add_url_rule('/', endpoint='index')
+
+    from . import sample
+    app.register_blueprint(sample.bp)
+    app.add_url_rule('/', endpoint='index')
+
+    from . import measurement
+    app.register_blueprint(measurement.bp)
+    app.add_url_rule('/', endpoint='index')
+
     return app

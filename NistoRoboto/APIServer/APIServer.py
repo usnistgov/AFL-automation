@@ -46,7 +46,7 @@ class APIServer:
         self.index_template = index_template
         self.plot_template = plot_template
 
-        self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status','get_server_time')
+        self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status','get_server_time','get_info')
 
         #allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
@@ -114,7 +114,20 @@ class APIServer:
         self.app.add_url_rule('/get_server_time','get_server_time',self.get_server_time,methods=['GET'])
         self.app.add_url_rule('/remove_item','remove_item',self.remove_item,methods=['POST'])
         self.app.add_url_rule('/move_item','move_item',self.move_item,methods=['POST'])
+        self.app.add_url_rule('/get_info','get_info',self.get_info,methods=['GET'])
         self.app.before_first_request(self.init)
+
+    def get_info(self):
+        '''Live, status page of the robot'''
+        #self.app.logger.error(print(self.get_queue()[0].json))
+        kw = {}
+        kw['queue']       = self.get_queue()[0].json
+        kw['contact']     = self.contact
+        kw['experiment']  = self.experiment
+        kw['queue_state'] = self.queue_state()[0]
+        kw['name']        = self.name
+        kw['driver']    = self.queue_daemon.driver.name
+        return jsonify(kw),200
 
     def is_server_live(self):
         self.app.logger.debug("Server is live.")

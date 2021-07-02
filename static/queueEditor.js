@@ -119,7 +119,6 @@ function editQueue(serverKey) {
             // console.dir(tempTask);
         }
 
-        // TODO make the function(s) for the buttons for the selected task controls
         var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="moveSelected(\'m\')">Enter</button>';
         var moveSelectedTopBtn = '<button onclick="moveSelected(\'t\')">Move to Top</button>';
         var moveSelectedBottomBtn = '<button onclick="moveSelected(\'b\')">Move to Bottom</button>';
@@ -158,7 +157,7 @@ function select(taskID) {
 }
 
 /**
- * (incomplete) Moves selected tasks to the top, the bottom, or to a specified position in the queue editor
+ * Moves selected tasks to the top, the bottom, or to a specified position in the queue editor
  * @param {String} place 
  */
 function moveSelected(place) {

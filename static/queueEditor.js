@@ -12,8 +12,8 @@ class Task {
         var name = this.info.task.task_name;
         var uuid = this.info.uuid;
         var taskLabel = '<h4 onclick="select(\''+uuid+'\')">[<span class="taskPos">'+this.position+'</span>] '+name+' (UUID: '+uuid+')</h4>';
-        var moveUpBtn = '<button onclick="">+</button>'; // TODO make the function(s) for the button
-        var moveDownBtn = '<button onclick="">-</button>'; // TODO make the function(s) for the button
+    var moveUpBtn = '<button onclick="moveTaskUp(\''+uuid+'\')">+</button>';
+        var moveDownBtn = '<button onclick="moveTaskDown(\''+uuid+'\')">-</button>';
         var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
         var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">&#x1F6C8;</button>';
         this.html = '<div id="'+uuid+'">'+taskLabel+moveUpBtn+moveDownBtn+viewDataBtn+metaData+'<hr></div>';
@@ -235,4 +235,51 @@ function searchFilter() {
 function toggleTaskData(taskID) {
     var id = '#'+taskID+'_data';
     $(id).slideToggle(400);
+
+/**
+ * Moves the task up one position in the queue editor
+ * @param {String} taskID 
+ */
+function moveTaskUp(taskID) {
+    var currPos, newPos;
+    for(let i=0; i<queueTasks.length; i++) {
+        if(queueTasks[i].info.uuid == taskID) {
+            currPos = queueTasks[i].position; // gets task's current position
+            console.log(currPos);
+        }
+    }
+
+    if(currPos == 0) { // in case task is already at top of queue
+        alert('Task is already at top of queue.');
+    } else {
+        newPos = currPos-1;
+        console.log(newPos);
+
+        queueTasks[currPos].movePosition(newPos); // moves task to up a position from current position
+    }
+}
+
+/**
+ * Moves the task down one position in the queue editor
+ * @param {String} taskID 
+ */
+function moveTaskDown(taskID) {
+    var currPos, newPos, bottom;
+    bottom = queueTasks.length-1;
+
+    for(let i=0; i<queueTasks.length; i++) {
+        if(queueTasks[i].info.uuid == taskID) {
+            currPos = queueTasks[i].position; // gets task's current position
+            console.log(currPos);
+        }
+    }
+
+    if(currPos == bottom) { // in case task is already at bottom of queue
+        alert('Task is already at bottom of queue.');
+    } else {
+        newPos = currPos++;
+        console.log(newPos);
+
+        queueTasks[currPos].movePosition(newPos); // moves the task below up a position
+    }
 }

@@ -339,9 +339,14 @@ class APIServer:
             #insert at back of queue
             queue_loc=self.task_queue.qsize()
 
+        if 'uuid' in task:
+            task_uuid = task['uuid']
+        else:
+            task_uuid = uuid.uuid4()
+        
         user = get_jwt_identity()
         self.app.logger.info(f'{user} enqueued {request.json}')
-        package = {'task':task,'meta':{},'uuid':uuid.uuid4()}
+        package = {'task':task,'meta':{},'uuid':task_uuid}
         package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
         self.task_queue.put(package,queue_loc)
 

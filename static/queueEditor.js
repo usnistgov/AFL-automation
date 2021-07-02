@@ -28,9 +28,11 @@ class Task {
             if(this.selected == false) {
                 this.selected = true;
                 $(id).css('background-color','green');
+                $(id).css('color','white');
             } else {
                 this.selected = false;
                 $(id).css('background-color','white');
+                $(id).css('color','black');
             }
         }
     }

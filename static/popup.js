@@ -119,33 +119,27 @@ function addServerPopup() {
 }
 
 /**
- * Returns the task's meta data reformatted for jsTree
+ * Adds the task meta data to the given div as a JsTree
+ * @param {String} divID 
  * @param {JSON} data 
  */
- function formatData(data) {
-    var keys = Object.keys(data);
-    console.log(keys);
-    var  id, parent, text;
-    var items = [];
+function addTaskData(divID, data) {
+    var div = '#'+divID;
+    $(div).append('<div id="taskData"></div>');
+    
+    var keys, root, child, html;
+    html = '<ul>';
+    keys = Object.keys(data);
+
     for(let i in keys) {
-        id = 'temp'+i;
-        parent = '#'; // TODO change to allow for parents
-        text = keys[i]+': '+data[keys[i]];
-
-        var temp = '{"id": "'+id+'", "parent": "'+parent+'", "text": "'+text+'"}';
-        items.push(temp);
+        root =  keys[i];
+        child = data[keys[i]];
+        html += '<li>'+root+'<ul><li>'+child+'</li></ul></li>';
     }
 
-    var dataStr = '[';
-    for (let i = 0; i  < items.length; i++) {
-        if(i == items.length-1) {
-            dataStr += items[i]+']';
-        } else {
-            dataStr += items[i]+',';
-        }
-    }
-
-    return dataStr; 
+    html += '</ul>';
+    $('#taskData').append(html); // adds the HTML formated task data
+    $('#taskData').jstree(); // creates the JsTree
 }
 
 /**
@@ -161,21 +155,13 @@ function addTaskPopup(serverKey, x, y) {
         var title = 'Task: ' + result[x][y].task.task_name;
         let popup = new Popup(title);
         
+        // raw data
         var task = JSON.stringify(result[x][y].task);
         popup.addText(task);
         popup.addToHTML();
 
-        var data = JSON.parse(formatData(result[x][y].task));
-        console.log(data);
-
-        $('#popup').append('<div id="taskData1"></div>');
-        $('#taskData1').jstree({
-            'core': {
-                'data': data
-        }});
-        // $('#taskData1').on("changed.jstree", function (e, data) {
-        //     console.log(data.selected);
-        // });
+        // HTML JsTree
+        addTaskData('popup', result[x][y].task);
 
         displayPopup();
     });

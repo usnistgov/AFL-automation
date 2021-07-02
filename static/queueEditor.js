@@ -252,12 +252,15 @@ function searchFilter() {
 }
 
 /**
- * Displays/Hides task's meta data within the queue editor
+ * (incomplete) Displays the task's meta data
  * @param {String} taskID 
  */
-function toggleTaskData(taskID) {
-    var id = '#'+taskID+'_data';
-    $(id).slideToggle(400);
+function displayTaskData(taskID) {
+    let popup = new Popup('Task Meta Data');
+    // TODO pass task's JSON data to addTaskData()
+    // ex. addTaskData('popup', result[x][y].task);
+    displayPopup();
+}
 
 /**
  * Moves the task up one position in the queue editor

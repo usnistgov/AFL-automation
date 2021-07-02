@@ -39,20 +39,30 @@ class Task {
 
     remove() {
         var div = '#'+this.info.uuid;
-        if(this.removed = false) {
-            this.removed = true;
-            removedTasks.push(queueTasks.splice(this.position,1)); // removes the task from queueTasks and moves it to removedTasks
-            this.position = -1;    
-            $(div).find('.taskPos').html('-'); // changes the task label position to - to reflect it's removed
-            // TODO move task div somewhere and/or indicate that the task is removed in editor
-        } else {
-            this.removed = false;
-            queueTasks.push(this);
-            var pos = queueTasks.length-1;
-            this.position = pos;
-            $(div).find('.taskPos').html(pos);
-            // TODO move task div to bottom
-        } 
+        var pos = this.position;
+
+        this.select();
+        removedTasks.push(queueTasks.splice(pos,1)); // removes the task from queueTasks and moves it to removedTasks
+        this.position = -1;
+        this.removed = true;
+
+        $(div).find('.taskPos').html('-'); // changes the task label position to - to reflect it's removed
+        
+        // moves task div to bottom of queue
+        var lastTask = '#'+queueTasks[queueTasks.length-1].info.uuid;
+        $(div).insertAfter(lastTask);
+        
+        // adds button to task div to re-add task + removes move task up and move task down buttons
+        var restoreBtn = '<button onclick="">Re-Add Task</button>'; // TODO make function for button
+        var viewDataBtn = '<button onclick="displayTaskData(\''+this.info.uuid+'\')">&#x1F6C8;</button>';
+        var content = restoreBtn+viewDataBtn;
+        $(div).find('.taskControls').html(content);
+
+        // repostitions/corrects the positions of lower tasks
+        while(pos<queueTasks.length) {
+            queueTasks[pos].setPosition(pos);
+            pos++;
+        }
     }
 
     setPosition(pos) {
@@ -112,7 +122,7 @@ function editQueue(serverKey) {
         var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="moveSelected(\'m\')">Enter</button>';
         var moveSelectedTopBtn = '<button onclick="moveSelected(\'t\')">Move to Top</button>';
         var moveSelectedBottomBtn = '<button onclick="moveSelected(\'b\')">Move to Bottom</button>';
-        var removeSelectedBtn = '<button onclick="" style="background-color:red;color:white;">Remove Task(s)</button>';
+        var removeSelectedBtn = '<button onclick="removeSelected()" style="background-color:red;color:white;">Remove Task(s)</button>';
         var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+'<br>'+moveSelectedBtn;
         
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
@@ -188,6 +198,17 @@ function moveSelected(place) {
             }
         } else {
             alert('Error: cannot make this edit (more tasks than spaces available at that position in the queue)');
+        }
+    }
+}
+
+/**
+ * Removes the selected tasks from the queue in the editor
+ */
+function removeSelected() {
+    for(let i in queueTasks) {
+        if(queueTasks[i].selected) {
+            queueTasks[i].remove();
         }
     }
 }

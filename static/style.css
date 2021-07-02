@@ -263,5 +263,9 @@ button {
         background-color: rgb(128, 128, 128, 0.5);
     }
 
+    #taskData {
+        text-align: left;
+    }
+
 /* CSS for smaller screens */
 /* TODO add the CSS for smaller screen sizes */

@@ -13,10 +13,11 @@ class Task {
         var uuid = this.info.uuid;
         var taskLabel = '<h4 onclick="select(\''+uuid+'\')" style="display:inline;">[<span class="taskPos">'+this.position+'</span>] '+name+'</h4>';
         var uuidLabel = '<p>(UUID: '+uuid+')</p>';
+        var moveUpBtn = '<button onclick="moveTaskUp(\''+uuid+'\')">+</button>';
         var moveDownBtn = '<button onclick="moveTaskDown(\''+uuid+'\')">-</button>';
-        var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
-        var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">&#x1F6C8;</button>';
-        this.html = '<div id="'+uuid+'">'+taskLabel+moveUpBtn+moveDownBtn+viewDataBtn+metaData+'<hr></div>';
+        // var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
+        var viewDataBtn = '<button onclick="displayTaskData(\''+uuid+'\')">&#x1F6C8;</button>';
+        this.html = '<div id="'+uuid+'"><span class="taskControls" style="float:right;">'+moveUpBtn+moveDownBtn+viewDataBtn+'</span>'+taskLabel+uuidLabel+'<hr></div>';
 
         queueTasks.push(this);
     }

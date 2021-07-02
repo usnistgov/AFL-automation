@@ -11,8 +11,8 @@ class Task {
 
         var name = this.info.task.task_name;
         var uuid = this.info.uuid;
-        var taskLabel = '<h4 onclick="select(\''+uuid+'\')">[<span class="taskPos">'+this.position+'</span>] '+name+' (UUID: '+uuid+')</h4>';
-    var moveUpBtn = '<button onclick="moveTaskUp(\''+uuid+'\')">+</button>';
+        var taskLabel = '<h4 onclick="select(\''+uuid+'\')" style="display:inline;">[<span class="taskPos">'+this.position+'</span>] '+name+'</h4>';
+        var uuidLabel = '<p>(UUID: '+uuid+')</p>';
         var moveDownBtn = '<button onclick="moveTaskDown(\''+uuid+'\')">-</button>';
         var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
         var viewDataBtn = '<button onclick="toggleTaskData(\''+uuid+'\')" class="toggleTaskDataBtn">&#x1F6C8;</button>';

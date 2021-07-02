@@ -266,6 +266,10 @@ button {
         background-color: rgb(128, 128, 128, 0.5);
     }
 
+    #taskData {
+        text-align: left;
+    }
+
 /* CSS for the Queue Editor */
     #queueEditor {
         border-style: solid;

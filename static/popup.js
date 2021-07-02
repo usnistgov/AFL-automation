@@ -119,6 +119,30 @@ function addServerPopup() {
 }
 
 /**
+ * Adds the task meta data to the given div as a JsTree
+ * @param {String} divID 
+ * @param {JSON} data 
+ */
+function addTaskData(divID, data) {
+    var div = '#'+divID;
+    $(div).append('<div id="taskData"></div>');
+    
+    var keys, root, child, html;
+    html = '<ul>';
+    keys = Object.keys(data);
+
+    for(let i in keys) {
+        root =  keys[i];
+        child = data[keys[i]];
+        html += '<li>'+root+'<ul><li>'+child+'</li></ul></li>';
+    }
+
+    html += '</ul>';
+    $('#taskData').append(html); // adds the HTML formated task data
+    $('#taskData').jstree(); // creates the JsTree
+}
+
+/**
  * Displays all information about a task in a popup
  * @param {String} serverKey 
  * @param {Integer} x 
@@ -130,12 +154,15 @@ function addTaskPopup(serverKey, x, y) {
     server.getQueue(function(result) {
         var title = 'Task: ' + result[x][y].task.task_name;
         let popup = new Popup(title);
-
-        // TODO make task show as JsTree
+        
+        // raw data
         var task = JSON.stringify(result[x][y].task);
         popup.addText(task);
-
         popup.addToHTML();
+
+        // HTML JsTree
+        addTaskData('popup', result[x][y].task);
+
         displayPopup();
     });
 }

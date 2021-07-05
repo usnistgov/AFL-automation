@@ -7,7 +7,10 @@
 {% endblock %}
 
 {% block content %}
+
   <form method="post">
+
+    <a class="action" href="{{ url_for('component.upload') }}">Upload CSV</a>
 
     <label for="name">Name</label>
     <input name="name" id="name" value="{{ request.form['name'] }}" required>

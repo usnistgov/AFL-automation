@@ -10,7 +10,9 @@
   <form method="post">
 
     <p>This will link a stock and component together. If the specified stock (ID) does not already exist
-    a new stock in the stock table will be created.</p>
+    a new stock in the stock table will be created using the provided stock name.</p>
+
+    <a class="action" href="{{ url_for('stock_component.upload') }}">Upload CSV</a>
 
     <label for="stock_name">Stock Name (for stock entry, will not be used if the stock already exists)</label>
     <input name="stock_name" id="stock_name" value="{{ request.form['stock_name'] }}">

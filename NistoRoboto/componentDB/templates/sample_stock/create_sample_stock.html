@@ -10,7 +10,9 @@
   <form method="post">
 
     <p>This will link a sample and stock together. If the specified sample (ID) does not already exist
-    a new sample in the sample table will be created.</p>
+    a new sample in the sample table will be created using the provided sample name.</p>
+
+    <a class="action" href="{{ url_for('sample_stock.upload') }}">Upload CSV</a>
 
     <label for="sample_name">Sample Name (for sample entry, will not be used if the sample already exists)</label>
     <input name="sample_name" id="sample_name" value="{{ request.form['sample_name'] }}" required>

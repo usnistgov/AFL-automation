@@ -35,11 +35,11 @@ def index(page):
         "SELECT * FROM stock"
     ).fetchall()
 
-    session['per_page'] = 10
-
     per_page = request.form.get("number")
 
     if per_page == '' or per_page is None:
+        if 'per_page' not in session:
+            session['per_page'] = 10
         per_page = session['per_page']
 
     per_page = int(per_page)
@@ -75,7 +75,6 @@ def detail(id):
 
     for p in components:
         nombre = db.execute("SELECT name FROM component WHERE id = ?", (p[2],)).fetchone()
-        print("NOMBRE" + nombre[0])
         names.append(nombre[0])
 
     return render_template("stock/view_stock_detail.html", post=post, components=components, names=names, back=session['stock_url'])

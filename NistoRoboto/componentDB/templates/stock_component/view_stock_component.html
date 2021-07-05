@@ -24,6 +24,8 @@
 
             {{ total }} existing entries. {% if session['stock_id'] != None and session['stock_id'] != '' %} Filtered {{ filtercount }} entries. {% endif %}
 
+            <a class="action" href="{{ url_for('stock_component.export') }}">Export CSV</a>
+
      </form>
 
     </div>

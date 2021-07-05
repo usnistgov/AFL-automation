@@ -35,11 +35,11 @@ def index(page):
         "SELECT * FROM sample"
     ).fetchall()
 
-    session['per_page'] = 10
-
     per_page = request.form.get("number")
 
     if per_page == '' or per_page is None:
+        if 'per_page' not in session:
+            session['per_page'] = 10
         per_page = session['per_page']
 
     per_page = int(per_page)

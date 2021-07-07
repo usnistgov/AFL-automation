@@ -42,28 +42,47 @@ class Task {
         var div = '#'+this.info.uuid;
         var pos = this.position;
 
-        this.select();
-        removedTasks.push(queueTasks.splice(pos,1)); // removes the task from queueTasks and moves it to removedTasks
-        this.position = -1;
-        this.removed = true;
+        if(this.removed) {
+            queueTasks.push(removedTasks.splice(pos,1).pop()); // removes the task from removedTasks and moves it to queueTasks
+            this.position = queueTasks.length-1;
+            this.removed = false;
 
-        $(div).find('.taskPos').html('-'); // changes the task label position to - to reflect it's removed
-        
-        // moves task div to bottom of queue
-        var lastTask = '#'+queueTasks[queueTasks.length-1].info.uuid;
-        $(div).insertAfter(lastTask);
-        
-        // adds button to task div to re-add task + removes move task up and move task down buttons
-        var restoreBtn = '<button onclick="">Re-Add Task</button>'; // TODO make function for button
-        var viewDataBtn = '<button onclick="displayTaskData(\''+this.info.uuid+'\')">&#x1F6C8;</button>';
-        var content = restoreBtn+viewDataBtn;
-        $(div).find('.taskControls').html(content);
+            $(div).find('.taskPos').html(this.position); // changes the task label position
 
-        // repostitions/corrects the positions of lower tasks
-        while(pos<queueTasks.length) {
-            queueTasks[pos].setPosition(pos);
-            pos++;
-        }
+            // adds buttons to move task up or down one position + to view task meta data
+            var moveUpBtn = '<button onclick="moveTaskUp(\''+this.info.uuid+'\')">+</button>';
+            var moveDownBtn = '<button onclick="moveTaskDown(\''+this.info.uuid+'\')">-</button>';
+            var viewDataBtn = '<button onclick="displayTaskData(\''+this.info.uuid+'\')">&#x1F6C8;</button>';
+            var content = moveUpBtn+moveDownBtn+viewDataBtn;
+            $(div).find('.taskControls').html(content);
+
+            // moves task div to bottom of queue
+            var lastTask = '#'+queueTasks[queueTasks.length-2].info.uuid;
+            $(div).insertAfter(lastTask);
+        } else {
+            this.select();
+            removedTasks.push(queueTasks.splice(pos,1).pop()); // removes the task from queueTasks and moves it to removedTasks
+            this.position = removedTasks.length-1;
+            this.removed = true;
+
+            $(div).find('.taskPos').html('-'); // changes the task label position to - to reflect it's removed
+            
+            // moves task div to bottom of queue
+            var lastTask = '#'+queueTasks[queueTasks.length-1].info.uuid;
+            $(div).insertAfter(lastTask);
+            
+            // adds button to task div to re-add task + removes move task up and move task down buttons
+            var restoreBtn = '<button onclick="addTaskBack(\''+this.info.uuid+'\')">Re-Add Task</button>'; // TODO make function for button
+            var viewDataBtn = '<button onclick="displayTaskData(\''+this.info.uuid+'\')">&#x1F6C8;</button>';
+            var content = restoreBtn+viewDataBtn;
+            $(div).find('.taskControls').html(content);
+
+            // repostitions/corrects the positions of lower tasks
+            while(pos<queueTasks.length) {
+                queueTasks[pos].setPosition(pos);
+                pos++;
+            }
+        }  
     }
 
     setPosition(pos) {
@@ -209,6 +228,18 @@ function removeSelected() {
     for(let i in queueTasks) {
         if(queueTasks[i].selected) {
             queueTasks[i].remove();
+        }
+    }
+}
+
+/**
+ * Adds a removed task back to the queue
+ * @param {String} taskID 
+ */
+function addTaskBack(taskID) {
+    for(let i=0; i<removedTasks.length; i++) {
+        if(removedTasks[i].info.uuid == taskID) {
+            removedTasks[i].remove();
         }
     }
 }

@@ -225,10 +225,14 @@ function moveSelected(place) {
  * Removes the selected tasks from the queue in the editor
  */
 function removeSelected() {
+    var selected = [];
     for(let i in queueTasks) {
         if(queueTasks[i].selected) {
-            queueTasks[i].remove();
+            selected.push(queueTasks[i]);
         }
+    }
+    for(let i=0; i<selected.length; i++) {
+        selected[i].remove();
     }
 }
 

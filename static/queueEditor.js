@@ -126,6 +126,7 @@ class Task {
 
 function editQueue(serverKey) {
     var server = getServer(serverKey);
+    api_login(server.address); // logs into api server
 
     // pause the server
     server.getQueueState(function(result){
@@ -355,3 +356,21 @@ function moveTaskDown(taskID) {
         queueTasks[currPos].movePosition(newPos); // moves the task below up a position
     }
 }
+
+function api_login(url){
+    var link = url+'login';
+    $.ajax({
+        url:link,
+        type: 'POST',
+        data:'{"username":"HTML","password":"domo_arigato"}',
+        contentType:'application/json',
+        error : function(err) {
+            console.log('Login Error!',err)
+        },
+        success : function(data) {
+            console.log('Login Success!',data)
+            localStorage.setItem('token',data.token)
+        }
+
+    });
+ }

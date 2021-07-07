@@ -261,7 +261,33 @@ function addTaskBack(taskID) {
 function commitQueueEdits(serverKey) {
     var server = getServer(serverKey);
     server.clearQueue(); // clears the queue
-    // TODO enqueue the editor queued tasks (ajax request to python code to enqueue tasks)
+
+    for(let i=0; i<queueTasks.length; i++) {
+        console.log(queueTasks[i].info);
+
+        // TODO enqueue the editor queued tasks
+        var enqueuLink = server.address + 'enqueue';
+        $.ajax({
+            url:enqueuLink,
+            type: 'POST',
+            data: JSON.stringify(queueTasks[i].info),
+            contentType:'application/json',
+            //header: {'Authorization': 'Bearer '+localStorage.getItem('token')},
+            beforeSend: function(request){
+                            request.withCredentials = true;
+                            request.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'));
+                        },
+            error : function(err) {
+                console.log('Enqueue Error!',err);
+            },
+            success : function(data) {
+                console.log('Enqueue Success!');
+            }
+
+        });  
+    }
+
+    closeQueueEditor(); // closes the queue editor
 }
 
 /**

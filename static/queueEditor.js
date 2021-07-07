@@ -252,13 +252,19 @@ function searchFilter() {
 }
 
 /**
- * (incomplete) Displays the task's meta data
+ * Displays the task's meta data
  * @param {String} taskID 
  */
 function displayTaskData(taskID) {
     let popup = new Popup('Task Meta Data');
-    // TODO pass task's JSON data to addTaskData()
-    // ex. addTaskData('popup', result[x][y].task);
+    popup.addToHTML();
+    
+    for(let i=0; i<queueTasks.length; i++) {
+        if(queueTasks[i].info.uuid == taskID) {
+            addTaskData('popup', queueTasks[i].info.task);
+        }
+    }
+
     displayPopup();
 }
 

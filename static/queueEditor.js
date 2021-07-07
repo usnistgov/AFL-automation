@@ -1,5 +1,6 @@
 var queueTasks = []; // array for queued tasks
 var removedTasks = [];
+var numSelected = 0; // number of selected tasks
 
 class Task {
     constructor(position, info) {
@@ -30,11 +31,14 @@ class Task {
                 this.selected = true;
                 $(id).css('background-color','green');
                 $(id).css('color','white');
+                numSelected++;
             } else {
                 this.selected = false;
                 $(id).css('background-color','white');
                 $(id).css('color','black');
+                numSelected--;
             }
+            $('#numSelected').html(numSelected);
         }
     }
 
@@ -138,6 +142,7 @@ function editQueue(serverKey) {
             // console.dir(tempTask);
         }
 
+        var selectedInfo = '<span id="numSelected">0</span> Task(s) Selected | <span id="numShown">0</span> Shown';
         var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="moveSelected(\'m\')">Enter</button>';
         var moveSelectedTopBtn = '<button onclick="moveSelected(\'t\')">Move to Top</button>';
         var moveSelectedBottomBtn = '<button onclick="moveSelected(\'b\')">Move to Bottom</button>';
@@ -147,7 +152,7 @@ function editQueue(serverKey) {
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
         var commitBtn = '<button onclick="commitQueueEdits(\''+serverKey+'\')">Commit Queue Edits</button>';
         var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
-        var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+searchBar+'<br>'+selectedControls+'</div><hr style="margin-top:80px;">';
+        var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+'<br>'+searchBar+selectedInfo+'<br>'+selectedControls+'</div><hr style="margin-top:100px;">';
 
         var tasks = '';
         for(let i in queueTasks) {

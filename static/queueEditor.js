@@ -16,7 +16,6 @@ class Task {
         var uuidLabel = '<p>(UUID: '+uuid+')</p>';
         var moveUpBtn = '<button onclick="moveTaskUp(\''+uuid+'\')">+</button>';
         var moveDownBtn = '<button onclick="moveTaskDown(\''+uuid+'\')">-</button>';
-        // var metaData = '<div id="'+uuid+'_data" style="display: none;">'+JSON.stringify(this.info)+'</div>';
         var viewDataBtn = '<button onclick="displayTaskData(\''+uuid+'\')">&#x1F6C8;</button>';
         this.html = '<div id="'+uuid+'"><span class="taskControls" style="float:right;">'+moveUpBtn+moveDownBtn+viewDataBtn+'</span>'+taskLabel+uuidLabel+'<hr></div>';
 
@@ -383,6 +382,10 @@ function moveTaskDown(taskID) {
     }
 }
 
+/**
+ * Logs into the api server given the server's url
+ * @param {String} url 
+ */
 function api_login(url){
     var link = url+'login';
     $.ajax({

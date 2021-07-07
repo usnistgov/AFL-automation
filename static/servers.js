@@ -243,7 +243,6 @@ class Server {
 function isValidURL(url) {
     var link = url + 'get_queue'; // TODO change to something else
     var isValid = false;
-
     
     $.ajax({
         type:"GET",

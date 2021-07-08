@@ -1,6 +1,10 @@
 import csv
 import os
-from flask import current_app
+from math import ceil
+
+from flask import current_app, request, session
+from werkzeug.exceptions import abort
+
 from componentDB.db import get_db
 
 
@@ -24,7 +28,6 @@ def csvread(path):
     for row in reader:
       rows.append(row)
     return rows
-
 
 def csvwrite(table, path, name):
 
@@ -91,6 +94,43 @@ def csvwrite(table, path, name):
       writer.writerow(post)
 
   return os.path.join(current_app.root_path, path)
+
+def pagination(page, posts):
+
+  per_page = request.form.get("number")
+
+  if per_page == '' or per_page is None:
+    if 'per_page' not in session:
+      session['per_page'] = 10
+    per_page = session['per_page']
+
+  per_page = int(per_page)
+  session['per_page'] = per_page
+  radius = 2
+  total = len(posts)
+  pages = ceil(total / per_page)  # this is the number of pages
+  offset = (page - 1) * per_page  # offset for SQL query
+
+  return paginated(per_page, radius, total, pages, offset)
+
+class paginated:
+
+  per_page = None
+  radius = None
+  total = None
+  pages = None
+  offset = None
+
+  def __init__(self, per_page, radius, total, pages, offset):
+    self.per_page = per_page
+    self.radius = radius
+    self.total = total
+    self.pages = pages
+    self.offset = offset
+
+def page_range(page, pages):
+  if page > pages + 1 or page < 1:
+    abort(404, "Out of range")
 
 
 

@@ -1,6 +1,5 @@
-from math import ceil
-
 import os
+from io import StringIO
 from os.path import *
 
 from flask import *
@@ -8,7 +7,7 @@ from werkzeug.exceptions import *
 from werkzeug.utils import secure_filename
 
 from componentDB.utility.component_object import ComponentObject
-from componentDB.utility.utility_function import isfloat, csvread, csvwrite
+from componentDB.utility.utility_function import isfloat, csvread, csvwrite, pagination, page_range
 from flaskr.db import get_db
 
 bp = Blueprint("component", __name__)
@@ -21,34 +20,20 @@ def index(page):
         "SELECT * FROM component",
     ).fetchall()
 
-    per_page = request.form.get("number")
-
-    if per_page == '' or per_page is None:
-        if 'per_page' not in session:
-            session['per_page'] = 10
-        per_page = session['per_page']
-
-    per_page = int(per_page)
-    session['per_page'] = per_page
-
-    radius = 2
-    total = len(posts)
-    pages = ceil(total / per_page)  # this is the number of pages
-    offset = (page - 1) * per_page  # offset for SQL query
+    paged = pagination(page, posts)
 
     session['component_url'] = url_for('component.index',
                                        page=page)  # save last URL for going back. easier than using cookies
 
-    if page > pages + 1 or page < 1:
-        abort(404, "Out of range")
+    page_range(page, paged.pages)
 
     posts = db.execute(
-        "SELECT * FROM component ORDER BY id DESC LIMIT ? OFFSET ?", (per_page, offset)
+        "SELECT * FROM component ORDER BY id DESC LIMIT ? OFFSET ?", (paged.per_page, paged.offset)
     ).fetchall()
 
-    return render_template("component/view_component.html", posts=posts, total=total, per_page=per_page, pages=pages,
-                           page=page,
-                           radius=radius)
+    return render_template("component/view_component.html", posts=posts, total=paged.total, per_page=paged.per_page,
+                           pages=paged.pages,
+                           page=page, radius=paged.radius)
 
 
 def get_post(id, check_author=True):
@@ -117,7 +102,8 @@ def upload():
                 if row[7] != '':
                     row[7] = float(row[7].strip())
 
-                insert(row[0].strip(), row[1].strip(), float(row[2].strip()), row[3].strip(), float(row[4].strip()), row[5].strip(), row[6].strip(), row[7])
+                insert(row[0].strip(), row[1].strip(), float(row[2].strip()), row[3].strip(), float(row[4].strip()),
+                       row[5].strip(), row[6].strip(), row[7])
 
         return redirect(session['component_url'])
 
@@ -131,12 +117,13 @@ def create():
         component = componentobj()
 
         if component.passed:
-            insert (component.name, component.description, component.mass, component.mass_units, component.density,
-                 component.density_units, component.formula, component.sld)
+            insert(component.name, component.description, component.mass, component.mass_units, component.density,
+                   component.density_units, component.formula, component.sld)
 
             return redirect(session['component_url'])
 
     return render_template("component/create_component.html", back=session['component_url'])
+
 
 def insert(name, description, mass, mass_units, density, density_units, formula, sld):
     db = get_db()
@@ -145,7 +132,17 @@ def insert(name, description, mass, mass_units, density, density_units, formula,
         (name, description, mass, mass_units, density, density_units, formula, sld),
     )
     db.commit()
-    
+
+
+def update_help(id, component):
+    db = get_db()
+    db.execute(
+        "UPDATE component SET name = ?, description = ?, mass = ?, mass_units = ?, density = ?, density_units = ?, formula = ?, sld = ? WHERE id = ?",
+        (component.name, component.description, component.mass, component.mass_units, component.density,
+         component.density_units, component.formula, component.sld, id)
+    )
+    db.commit()
+
 
 @bp.route("/component/<int:id>/update", methods=("GET", "POST"))
 def update(id):
@@ -155,21 +152,69 @@ def update(id):
         component = componentobj()
 
         if component.passed:
-            db = get_db()
-            db.execute(
-                "UPDATE component SET name = ?, description = ?, mass = ?, mass_units = ?, density = ?, density_units = ?, formula = ?, sld = ? WHERE id = ?",
-                (component.name, component.description, component.mass, component.mass_units, component.density,
-                 component.density_units, component.formula, component.sld, id)
-            )
-            db.commit()
+            update_help(id, component)
             return redirect(session['component_url'])
 
     return render_template("component/update_component.html", post=post, back=session['component_url'])
+
 
 @bp.route("/component/export")
 def export():
     path = csvwrite('component', 'static/export', '/component_export.txt')
     return send_from_directory(path, 'component_export.txt', as_attachment=True)
+
+
+@bp.route("/component/send_json", methods=("GET", "POST"))
+def send_json():
+    if request.method == "POST":
+        dictionary = request.get_json()
+        db = get_db()
+        for entry in dictionary:
+
+            entry['id'] = int(entry['id'])
+            entry['mass'] = float(entry['mass'])
+            entry['density'] = float(entry['density'])
+            if entry['sld'] != '':
+                entry['sld'] = float(entry['sld'])
+
+            posts = db.execute(
+                "SELECT * FROM component WHERE id = ?", (entry['id'],),
+            ).fetchall()
+            if len(posts) == 0:
+                insert(entry['name'], entry['description'], entry['mass'], entry['mass_units'], entry['density'],
+                       entry['density_units'], entry['formula'], entry['sld'])
+            else:
+                update_help(entry['id'],
+                            ComponentObject(entry['name'], entry['description'], entry['mass'], entry['mass_units'],
+                                            entry['density'], entry['density_units'], entry['formula'], entry['sld'],
+                                            True))
+
+    return "Send JSONS to this url."
+
+
+@bp.route("/component/json")
+def generate_json():
+    db = get_db()
+    posts = db.execute(
+        "SELECT id, name, description, mass, mass_units, density, density_units, formula, sld FROM component ORDER BY id",
+    ).fetchall()
+
+    component_list = []
+
+    for i, post in enumerate(posts):
+        component_list.append({})
+
+        component_list[i]['id'] = post[0]
+        component_list[i]['name'] = post[1]
+        component_list[i]['description'] = post[2]
+        component_list[i]['mass'] = post[3]
+        component_list[i]['mass_units'] = post[4]
+        component_list[i]['density'] = post[5]
+        component_list[i]['density_units'] = post[6]
+        component_list[i]['formula'] = post[7]
+        component_list[i]['sld'] = post[8]
+
+    return jsonify(component_list)
 
 
 @bp.route("/component/<int:id>/delete", methods=("GET", "POST"))

@@ -3,6 +3,8 @@ from math import ceil
 
 from flask import *
 from werkzeug.exceptions import abort
+
+from componentDB.utility.utility_function import pagination, page_range
 from flaskr.db import get_db
 
 bp = Blueprint("sample", __name__)
@@ -35,32 +37,18 @@ def index(page):
         "SELECT * FROM sample"
     ).fetchall()
 
-    per_page = request.form.get("number")
-
-    if per_page == '' or per_page is None:
-        if 'per_page' not in session:
-            session['per_page'] = 10
-        per_page = session['per_page']
-
-    per_page = int(per_page)
-    session['per_page'] = per_page
-
-    radius = 2
-    total = len(posts)
-    pages = ceil(total / per_page)  # this is the number of pages
-    offset = (page - 1) * per_page  # offset for SQL query
+    paged = pagination(page, posts)
 
     session['sample_url'] = url_for('sample.index', page=page)  # save last URL for going back. easier than using cookies
 
-    if page > pages + 1 or page < 1:
-        abort(404, "Out of range")
+    page_range(page, paged.pages)
 
     posts = db.execute(
-        "SELECT * FROM sample ORDER BY id LIMIT ? OFFSET ?", (per_page, offset)
+        "SELECT * FROM sample ORDER BY id LIMIT ? OFFSET ?", (paged.per_page, paged.offset)
     ).fetchall()
 
-    return render_template("sample/view_sample.html", posts=posts, total=total, per_page=per_page, pages=pages,
-                           page=page, radius=radius)
+    return render_template("sample/view_sample.html", posts=posts, total=paged.total, per_page=paged.per_page, pages=paged.pages,
+                           page=page, radius=paged.radius)
 
 @bp.route("/sample/<int:id>/detail", methods=("GET", "POST"))
 def detail(id):
@@ -74,7 +62,6 @@ def detail(id):
 
     for p in stocks:
         nombre = db.execute("SELECT name FROM stock WHERE id = ?", (p[2],)).fetchone()
-        print("NOMBREADADADAD" + nombre[0])
         names.append(nombre[0])
 
     return render_template("sample/view_sample_detail.html", post=post, stocks=stocks, names=names, back=session['sample_url'])

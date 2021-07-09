@@ -254,7 +254,7 @@ function addTaskBack(taskID) {
 }
 
 /**
- * (incomplete) Commits the edits made in the queue editor
+ * Commits the edits made in the queue editor
  * @param {String} serverKey 
  */
 function commitQueueEdits(serverKey) {
@@ -262,16 +262,18 @@ function commitQueueEdits(serverKey) {
     server.clearQueue(); // clears the queue
 
     for(let i=0; i<queueTasks.length; i++) {
-        console.log(queueTasks[i].info);
+        var taskData = queueTasks[i].info.task;
+        var uuidData = { uuid: queueTasks[i].info.uuid };
+        $.extend(taskData, uuidData); // merges uuidData into taskData
+        console.log(taskData);
 
-        // TODO enqueue the editor queued tasks
+        // enqueues the editor queued tasks
         var enqueuLink = server.address + 'enqueue';
         $.ajax({
             url:enqueuLink,
             type: 'POST',
-            data: JSON.stringify(queueTasks[i].info),
+            data: JSON.stringify(taskData),
             contentType:'application/json',
-            //header: {'Authorization': 'Bearer '+localStorage.getItem('token')},
             beforeSend: function(request){
                             request.withCredentials = true;
                             request.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'));

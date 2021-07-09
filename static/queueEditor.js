@@ -1,6 +1,7 @@
 var queueTasks = []; // array for queued tasks
 var removedTasks = [];
 var numSelected = 0; // number of selected tasks
+var numShown = 0;
 
 class Task {
     constructor(position, info) {
@@ -34,6 +35,7 @@ class Task {
                 $(id).css('background-color','green');
                 $(id).css('color','white');
                 numSelected++;
+                numShown++;
             } else {
                 this.selected = false;
                 $(id).css('background-color','white');
@@ -41,6 +43,7 @@ class Task {
                 numSelected--;
             }
             $('#numSelected').html(numSelected);
+            $('#numShown').html(numShown);
         }
     }
 
@@ -326,6 +329,7 @@ function closeQueueEditor() {
  */
 function searchFilter() {
     var input = $('#taskSearchBar').val().toUpperCase();
+    var count = numSelected;
 
     for(let i = 0; i<queueTasks.length; i++) {
         var taskID = '#'+queueTasks[i].info.uuid;
@@ -333,8 +337,15 @@ function searchFilter() {
             $(taskID).css('display','');
         } else {
             $(taskID).css('display','none');
+
+            if(queueTasks[i].selected) {
+                --count;
+            }
         }
     }
+
+    numShown = count;
+    $('#numShown').html(numShown);
 }
 
 /**

@@ -40,6 +40,7 @@ class Task {
                 $(id).css('background-color','white');
                 $(id).css('color','black');
                 numSelected--;
+                numShown--;
             }
             $('#numSelected').html(numSelected);
             $('#numShown').html(numShown);

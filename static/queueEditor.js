@@ -68,6 +68,10 @@ class Task {
             var content = moveUpBtn+moveDownBtn+viewDataBtn;
             $(div).find('.taskControls').html(content);
 
+            // changes the look of the task div
+            $(div).css('background-color','white');
+            $(div).css('color','black');
+
             // moves task div to bottom of queue
             var lastTask = '#'+queueTasks[queueTasks.length-2].info.uuid;
             $(div).insertAfter(lastTask);
@@ -88,6 +92,10 @@ class Task {
             var viewDataBtn = '<button onclick="displayTaskData(\''+this.info.uuid+'\')">&#x1F6C8;</button>';
             var content = restoreBtn+viewDataBtn;
             $(div).find('.taskControls').html(content);
+
+            // changes the look of the task div
+            $(div).css('background-color','black');
+            $(div).css('color','white');
 
             // repostitions/corrects the positions of lower tasks
             while(pos<queueTasks.length) {

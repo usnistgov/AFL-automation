@@ -341,6 +341,7 @@ class APIServer:
 
         if 'uuid' in task:
             task_uuid = task['uuid']
+            del task['uuid']
         else:
             task_uuid = uuid.uuid4()
         

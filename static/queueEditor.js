@@ -22,6 +22,9 @@ class Task {
         queueTasks.push(this);
     }
 
+    /**
+     * Toggles the task's 'selected' boolean attribute
+     */
     select() {
         var id = '#'+this.info.uuid;
 
@@ -41,6 +44,9 @@ class Task {
         }
     }
 
+    /**
+     * Toogles if the task is in the queue or not
+     */
     remove() {
         var div = '#'+this.info.uuid;
         var pos = this.position;
@@ -88,6 +94,10 @@ class Task {
         }  
     }
 
+    /**
+     * Sets the task's position to the given position
+     * @param {Integer} pos 
+     */
     setPosition(pos) {
         if(this.position != pos) {
             this.position = pos; // sets the new task position
@@ -97,6 +107,10 @@ class Task {
         }
     }
 
+    /**
+     * Moves the tasks to a given position
+     * @param {Integer} newPosition 
+     */
     movePosition(newPosition) {
         console.log('moves the position to '+newPosition);
 
@@ -123,6 +137,10 @@ class Task {
     }
 }
 
+/**
+ * Sets up and opens the queue editor
+ * @param {String} serverKey 
+ */
 function editQueue(serverKey) {
     var server = getServer(serverKey);
     api_login(server.address); // logs into api server

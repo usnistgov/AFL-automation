@@ -122,7 +122,7 @@ class Task {
      * @param {Integer} newPosition 
      */
     movePosition(newPosition) {
-        console.log('moves the position to '+newPosition);
+        // console.log('moves the position to '+newPosition);
 
         var task = queueTasks.splice(this.position,1);
         var temp = queueTasks.splice(newPosition);
@@ -133,7 +133,7 @@ class Task {
             queueTasks[i].setPosition(i);
         }
 
-        console.log(queueTasks);
+        // console.log(queueTasks);
 
         // reorders the display order of the tasks
         var taskDivID = '#'+this.info.uuid;
@@ -222,7 +222,7 @@ function moveSelected(place) {
             selected.push(queueTasks[i]);
         }
     }
-    console.log(selected);
+    // console.log(selected);
     
     var pos;
     if(place == "t") { // move to top
@@ -246,8 +246,8 @@ function moveSelected(place) {
             }
 
             for(let i in selected) {
-                console.dir(selected[i]);
-                console.log(pos);
+                // console.dir(selected[i]);
+                // console.log(pos);
                 selected[i].movePosition(pos);
                 pos++;
             }
@@ -315,7 +315,6 @@ function commitQueueEdits(serverKey) {
             success : function(data) {
                 console.log('Enqueue Success!');
             }
-
         });  
     }
 
@@ -384,7 +383,7 @@ function moveTaskUp(taskID) {
     for(let i=0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
             currPos = queueTasks[i].position; // gets task's current position
-            console.log(currPos);
+            // console.log(currPos);
         }
     }
 
@@ -392,7 +391,7 @@ function moveTaskUp(taskID) {
         alert('Task is already at top of queue.');
     } else {
         newPos = currPos-1;
-        console.log(newPos);
+        // console.log(newPos);
 
         queueTasks[currPos].movePosition(newPos); // moves task to up a position from current position
     }
@@ -409,7 +408,7 @@ function moveTaskDown(taskID) {
     for(let i=0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
             currPos = queueTasks[i].position; // gets task's current position
-            console.log(currPos);
+            // console.log(currPos);
         }
     }
 
@@ -417,7 +416,7 @@ function moveTaskDown(taskID) {
         alert('Task is already at bottom of queue.');
     } else {
         newPos = currPos++;
-        console.log(newPos);
+        // console.log(newPos);
 
         queueTasks[currPos].movePosition(newPos); // moves the task below up a position
     }
@@ -441,6 +440,5 @@ function api_login(url){
             console.log('Login Success!',data)
             localStorage.setItem('token',data.token)
         }
-
     });
  }

@@ -34,6 +34,15 @@ class QueueDaemon(threading.Thread):
     def run(self):
         self.app.logger.info('Initializing QueueDaemon run-loop')
         while not self.stop:
+            # pause queue but notify user of state every minute
+            count = 600
+            while self.paused:
+                time.sleep(0.1)
+                count+=1
+                if count>600:
+                    self.app.logger.info('Queued is paused. Set paused state to false to continue execution')
+                    count = 0
+
             self.app.logger.debug('Getting item from queue')
             package = self.task_queue.get(block=True, timeout=None)
             self.app.logger.debug('Got item from queue')
@@ -49,14 +58,6 @@ class QueueDaemon(threading.Thread):
             package['meta']['started'] = datetime.datetime.now().strftime('%H:%M:%S')
             self.running_task = [package]
 
-            # pause queue but notify user of state every minute
-            count = 600
-            while self.paused:
-                time.sleep(0.1)
-                count+=1
-                if count>600:
-                    self.app.logger.info('Queued is paused. Set paused state to false to continue execution')
-                    count = 0
 
             # if debug_mode, pop and wait but don't execute
             if self.debug:

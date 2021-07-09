@@ -1,7 +1,6 @@
 var queueTasks = []; // array for queued tasks
 var removedTasks = [];
-var numSelected = 0; // number of selected tasks
-var numShown = 0;
+var numSelected, numShown; // number of selected tasks and selected tasks shown
 
 class Task {
     constructor(position, info) {
@@ -155,6 +154,9 @@ class Task {
 function editQueue(serverKey) {
     var server = getServer(serverKey);
     api_login(server.address); // logs into api server
+
+    numSelected = 0;
+    numShown = 0;
 
     // pause the server
     server.getQueueState(function(result){

@@ -94,8 +94,11 @@ function displayPopup() {
  */
 function closePopup() {
     $('#popup').css('visibility', 'hidden');
-    $('#popup-background').css('visibility', 'hidden');
     $('#popup').empty();
+    
+    if(queueEditorOpen == false) {
+        $('#popup-background').css('visibility', 'hidden');
+    }
 }
 
 /**

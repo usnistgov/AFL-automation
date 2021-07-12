@@ -1,6 +1,7 @@
 var queueTasks = []; // array for queued tasks
 var removedTasks = [];
 var numSelected, numShown; // number of selected tasks and selected tasks shown
+var queueEditorOpen = false;
 
 class Task {
     constructor(position, info) {
@@ -198,6 +199,8 @@ function editQueue(serverKey) {
     // display the queue editor w/ the popup background
     $('#queueEditor').css('visibility', 'visible');
     $('#popup-background').css('visibility', 'visible');
+
+    queueEditorOpen = true;
 }
 
 /**
@@ -332,6 +335,8 @@ function closeQueueEditor() {
     $('#queueEditor').css('visibility', 'hidden');
     $('#popup-background').css('visibility', 'hidden');
     $('#queueEditor').empty();
+
+    queueEditorOpen = false;
 }
 
 /**

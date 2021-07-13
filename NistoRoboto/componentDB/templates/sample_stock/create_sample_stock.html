@@ -31,6 +31,7 @@
 
     <label for="volmass">Volume or Mass</label>
     <select name="volmass" id="volmass" value="{{ request.form['volmass'] }}" required>
+      <option value="none" selected disabled hidden>select an option...</option>
       <option value="volume">Volume</option>
       <option value="mass">Mass</option>
     </select>

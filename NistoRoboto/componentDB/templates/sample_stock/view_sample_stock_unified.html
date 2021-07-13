@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Sample Stock View{% endblock %}
+    <br>
+    <a class="action" href="{{ url_for('sample_stock.create') }}">New Entry</a>
+{% endblock %}
+
+{% block content %}
+
+    <div class="display">
+
+     <form method="post">
+
+            Number of entries per page: <input class="number" type="number" id="number" name="number"
+            min="1" max="100" value="{{ per_page }}" disabled>
+            <input class="pagechange" type="submit" value="Submit" disabled>
+
+            <br> Toggle Unified View:
+
+            {% if unified %}
+
+            <input class="checkbox" onChange="this.form.submit()" type="checkbox" id="checkbox" name="unified" checked>
+
+            {% else %}
+
+            <input class="checkbox" onChange="this.form.submit()" type="checkbox" id="checkbox" name="unified">
+
+            {% endif %}
+
+            <br><br>
+
+            Sort By:
+            <select name="filter" id="filter" required>
+              <option value="none" selected disabled hidden>{{ filter_by }}</option>
+              <option value="id">ID</option>
+              <option value="created">Created</option>
+              <option value="sample_id">Sample ID</option>
+              <option value="stock_id">Stock ID</option>
+              <option value="amount">Amount</option>
+              <option value="units">Units</option>
+              <option value="volmass">Volmass</option>
+            </select>
+
+             <input class="pagechange" type="submit" value="Submit">
+
+            <br>
+            {{ total }} total entries
+
+            <a class="action" href="{{ url_for('sample_stock.export') }}">Export CSV</a>
+
+            <a class="action" href="{{ url_for('sample_stock.generate_json') }}">JSON</a>
+
+            <br><br> Send JSONS to component/send_json
+
+     </form>
+
+    </div>
+
+    <table class="table" style="width:100%">
+
+        <tr>
+            <th>ID</th>
+            <th>Created</th>
+            <th>Sample ID</th>
+            <th>Stock ID</th>
+            <th>Amount</th>
+            <th>Units</th>
+            <th>Volmass</th>
+        </tr>
+
+      {% for post in posts %}
+
+          <tr>
+            <td>{{ post['id'] }}</td>
+            <td>{{ post['created'] }}</td>
+            <td>{{ post['sample_id'] }}</td>
+            <td>{{ post['stock_id'] }}</td>
+            <td>{{ post['amount'] }}</td>
+            <td>{{ post['units'] }}</td>
+            <td>{{ post['volmass'] }}</td>
+        </tr>
+
+      {% endfor %}
+     </table>
+
+{% endblock %}
+

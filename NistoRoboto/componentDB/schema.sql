@@ -36,7 +36,7 @@ CREATE TABLE stock_component (
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     component_id INTEGER NOT NULL,
     stock_id INTEGER NOT NULL,
-    amount INTEGER NOT NULL,
+    amount REAL NOT NULL,
     units TEXT NOT NULL,
     volmass TEXT NOT NULL,
     FOREIGN KEY (component_id) REFERENCES component (id),

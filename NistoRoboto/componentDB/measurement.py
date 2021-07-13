@@ -1,4 +1,3 @@
-from math import ceil
 import os
 from os.path import *
 
@@ -100,19 +99,26 @@ def create():
     return render_template("measurement/create_measurement.html", back=session['measurement_url'])
 
 
-def insert(sample_id, metadata, id = -1):
+def insert(sample_id, metadata):
     db = get_db()
-    if id != -1:
+
+    posts = db.execute(
+        "SELECT * FROM measurement WHERE sample_id = ?", (sample_id,)
+    ).fetchone()
+
+    if posts is None:
+
         db.execute(
             "INSERT INTO measurement (sample_id, metadata) VALUES (?, ?)",
             (sample_id, metadata),
         )
+
     else:
-        db.execute(
-            "INSERT INTO measurement (id, sample_id, metadata) VALUES (?, ?, ?)",
-            (id, sample_id, metadata),
-        )
+
+        update_help(sample_id, metadata, posts[0])
+
     db.commit()
+
 
 def update_help(sample_id, metadata, id):
     db = get_db()
@@ -147,6 +153,7 @@ def export():
     path = csvwrite('measurement', 'static/export', '/measurement_export.txt')
     return send_from_directory(path, 'measurement_export.txt', as_attachment=True)
 
+
 @bp.route("/measurement/send_json", methods=("GET", "POST"))
 def send_json():
     if request.method == "POST":
@@ -162,6 +169,7 @@ def send_json():
                 update_help(entry['id'], entry['sample_id'], entry['metadata'])
 
     return "Send JSONS to this url."
+
 
 @bp.route("/measurement/json")
 def generate_json():

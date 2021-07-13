@@ -10,10 +10,10 @@
   <form method="post">
 
     <label for="sample_id">Sample ID (must be existing sample)</label>
-    <input name="sample_id" id="sample_id" value="{{ request.form['name'] or post['name'] }}" required>
+    <input name="sample_id" id="sample_id" value="{{ request.form['sample_id'] or post['sample_id'] }}" required>
 
     <label for="metadata">Measurement Metadata</label>
-    <textarea name="metadata" id="metadata">{{ request.form['description'] or post['description'] }}</textarea>
+    <textarea name="metadata" id="metadata">{{ request.form['metadata'] or post['metadata'] }}</textarea>
 
     <input class="submit" type="submit" value="Save">
 

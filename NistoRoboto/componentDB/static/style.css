@@ -72,6 +72,7 @@ body {
     margin-top: 0.5em;
     margin-bottom: 0.1em;
 }
+
 .content input, .content textarea, .content select {
     margin-bottom: 1em;
     box-shadow: inset 0px 0px 12px 0px rgba(0,0,0,0.5);
@@ -157,8 +158,19 @@ input.pagechange {
     width: 5em;
 }
 
+input.pagechange:disabled {
+    opacity: 0.5;
+}
+
 input.number {
-    max-width: 3.5em;
+    max-width: 3em;
+    margin-bottom: 0.6em;
+}
+
+input.checkbox {
+    width: 0.8em;
+    height: 0.8em;
+    margin-bottom: 0.2em;
 }
 
 .display {
@@ -171,5 +183,10 @@ input.number {
 
 a {
     color: hotpink;
+}
+
+canvas {
+    margin: auto;
+    padding-top: 2em;
 }
 

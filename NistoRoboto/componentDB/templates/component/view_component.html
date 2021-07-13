@@ -15,14 +15,27 @@
             Number of entries per page: <input class="number" type="number" id="number" name="number"
             min="1" max="100" value="{{ per_page }}">
             <input class="pagechange" type="submit" value="Submit">
-            <br>
+
+            <br> Toggle Unified View:
+
+            {% if unified %}
+
+            <input class="checkbox" onChange="this.form.submit()" type="checkbox" id="checkbox" name="unified" checked>
+
+            {% else %}
+
+            <input class="checkbox" onChange="this.form.submit()" type="checkbox" id="checkbox" name="unified">
+
+            {% endif %}
+
+            <br><br>
             {{ total }} total entries
 
             <a class="action" href="{{ url_for('component.export') }}">Export CSV</a>
 
             <a class="action" href="{{ url_for('component.generate_json') }}">JSON</a>
 
-            <br> <br> Send JSONS to component/send_json
+            <br><br> Send JSONS to component/send_json
 
      </form>
 

@@ -1,5 +1,4 @@
 import os
-from io import StringIO
 from os.path import *
 
 from flask import *
@@ -16,8 +15,11 @@ bp = Blueprint("component", __name__)
 @bp.route("/component/<int:page>", methods=("GET", "POST"))
 def index(page):
     db = get_db()
+
+    filter_by = request.form.get('filter', 'id')
+
     posts = db.execute(
-        "SELECT * FROM component",
+        f"SELECT * FROM component ORDER BY {filter_by}"
     ).fetchall()
 
     paged = pagination(page, posts)
@@ -27,13 +29,19 @@ def index(page):
 
     page_range(page, paged.pages)
 
-    posts = db.execute(
-        "SELECT * FROM component ORDER BY id DESC LIMIT ? OFFSET ?", (paged.per_page, paged.offset)
-    ).fetchall()
+    if paged.unified:
 
-    return render_template("component/view_component.html", posts=posts, total=paged.total, per_page=paged.per_page,
-                           pages=paged.pages,
-                           page=page, radius=paged.radius)
+        return render_template("component/view_component_unified.html", posts=posts, total=paged.total,
+                               unified=paged.unified, filter_by=filter_by)
+
+    else:
+
+        posts = db.execute(
+            "SELECT * FROM component ORDER BY id DESC LIMIT ? OFFSET ?", (paged.per_page, paged.offset)
+        ).fetchall()
+
+        return render_template("component/view_component.html", posts=posts, total=paged.total, per_page=paged.per_page,
+                               pages=paged.pages, page=page, radius=paged.radius, unified=paged.unified)
 
 
 def get_post(id, check_author=True):
@@ -127,10 +135,22 @@ def create():
 
 def insert(name, description, mass, mass_units, density, density_units, formula, sld):
     db = get_db()
-    db.execute(
-        "INSERT INTO component (name, description, mass, mass_units, density, density_units, formula, sld) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        (name, description, mass, mass_units, density, density_units, formula, sld),
-    )
+
+    posts = db.execute(
+        "SELECT id FROM component WHERE name = ?", (name,)
+    ).fetchone()
+
+    if posts is None:
+
+        db.execute(
+            "INSERT INTO component (name, description, mass, mass_units, density, density_units, formula, sld) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (name, description, mass, mass_units, density, density_units, formula, sld),
+        )
+
+    else:
+
+        update_help(posts[0], ComponentObject(name, description, mass, mass_units, density, density_units, formula, sld, True))
+
     db.commit()
 
 

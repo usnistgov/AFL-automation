@@ -1,9 +1,9 @@
-"""Stock components are made here. Stocks are also made here based off the stock ID you give the stock component"""
-from math import ceil
+import random
 
 from flask import *
 from werkzeug.exceptions import abort
 
+from componentDB.utility.units import *
 from componentDB.utility.utility_function import pagination, page_range
 from flaskr.db import get_db
 
@@ -59,12 +59,27 @@ def detail(id):
     ).fetchall()
 
     names = []
+    colors = []
+    amounts = []
 
     for p in stocks:
-        nombre = db.execute("SELECT name FROM stock WHERE id = ?", (p[2],)).fetchone()
-        names.append(nombre[0])
+        name = db.execute("SELECT name FROM stock WHERE id = ?", (p[2],)).fetchone()[0]
+        names.append(name)
+        color = '#' + "%06x" % random.randint(0, 0xFFFFFF)
+        colors.append(color)
 
-    return render_template("sample/view_sample_detail.html", post=post, stocks=stocks, names=names, back=session['sample_url'])
+        amount = float(p[4]) * units(p[5])
+
+        if is_volume(amount):
+            amount.ito('ml')
+
+        if is_mass(amount):
+            amount.ito('g')
+
+        amounts.append(amount.magnitude)
+
+    return render_template("sample/view_sample_detail.html", post=post, stocks=stocks,
+                           amounts=amounts, names=names, colors=colors, back=session['sample_url'])
 
 
 @bp.route("/sample/<int:id>/update", methods=("GET", "POST"))

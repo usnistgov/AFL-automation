@@ -1,5 +1,3 @@
-"""Stock components are made here. Stocks are also made here based off the stock ID you give the stock component"""
-from math import ceil
 import os
 from os.path import *
 
@@ -16,8 +14,11 @@ bp = Blueprint("stock_component", __name__)
 @bp.route("/stock_component/<int:page>", methods=("GET", "POST"))
 def index(page):
     db = get_db()
+
+    filter_by = request.form.get('filter', 'id')
+
     posts = db.execute(
-        "SELECT * FROM stock_component"
+        f"SELECT * FROM stock_component ORDER BY {filter_by}"
     ).fetchall()
 
     paged = pagination(page, posts)
@@ -29,24 +30,31 @@ def index(page):
 
     page_range(page, paged.pages)
 
-    if stock_id == '' or stock_id is None:
-        session['stock_id'] = ''
-        posts = db.execute(
-            "SELECT * FROM stock_component ORDER BY stock_id LIMIT ? OFFSET ?", (paged.per_page, paged.offset)
-        ).fetchall()
+    if paged.unified:
+
+        return render_template("stock_component/view_stock_component_unified.html", posts=posts, total=paged.total,
+                               unified=paged.unified, filter_by=filter_by)
+
     else:
-        stock_id = int(stock_id)
-        session['stock_id'] = stock_id
-        posts = db.execute(
-            "SELECT * FROM stock_component WHERE stock_id = ? ORDER BY stock_id LIMIT ? OFFSET ?",
-            (stock_id, paged.per_page, paged.offset)
-        ).fetchall()
 
-    filtercount = len(posts)
+        if stock_id == '' or stock_id is None:
+            session['stock_id'] = ''
+            posts = db.execute(
+                "SELECT * FROM stock_component ORDER BY stock_id LIMIT ? OFFSET ?", (paged.per_page, paged.offset)
+            ).fetchall()
+        else:
+            stock_id = int(stock_id)
+            session['stock_id'] = stock_id
+            posts = db.execute(
+                "SELECT * FROM stock_component WHERE stock_id = ? ORDER BY stock_id LIMIT ? OFFSET ?",
+                (stock_id, paged.per_page, paged.offset)
+            ).fetchall()
 
-    return render_template("stock_component/view_stock_component.html", posts=posts, total=paged.total,
-                           filtercount=filtercount, per_page=paged.per_page, pages=paged.pages,
-                           page=page, radius=paged.radius)
+        filtercount = len(posts)
+
+        return render_template("stock_component/view_stock_component.html", posts=posts, total=paged.total,
+                               filtercount=filtercount, per_page=paged.per_page, pages=paged.pages,
+                               page=page, radius=paged.radius)
 
 
 def get_post(id, check_author=True):
@@ -111,7 +119,12 @@ def create():
         component_id = request.form['component_id']
         amount = request.form['amount']
         units = request.form['units']
-        volmass = request.form['volmass']
+        volmass = request.form.get('volmass', '')
+
+        if volmass == '':
+            flash("Choose volume or mass")
+            volmass = ''
+            passed = False
 
         if not (stock_id.isdecimal() and component_id.isdecimal() and isfloat(amount)):
             flash("Stock, component ID, and amount must be valid numbers")
@@ -134,9 +147,9 @@ def insert(stock_name, stock_id, component_id, amount, units, volmass):
 
     posts = db.execute(
         "SELECT * FROM stock_component WHERE stock_id = ? AND component_id = ?", (stock_id, component_id)
-    ).fetchall()
+    ).fetchone()
 
-    if len(posts) == 0:
+    if posts is None:
 
         db.execute(
             "INSERT INTO stock_component (stock_id, component_id, amount, units, volmass) VALUES (?, ?, ?, ?, ?)",
@@ -154,9 +167,9 @@ def insert(stock_name, stock_id, component_id, amount, units, volmass):
 
     posts = db.execute(
         "SELECT * FROM stock WHERE id = ?", (stock_id,)
-    ).fetchall()
+    ).fetchone()
 
-    if len(posts) == 0:
+    if posts is None:
         db.execute("INSERT INTO stock (name, id) VALUES (?, ?)",
                    (stock_name, stock_id))  # SQL does a check so you'll get a error if the id isn't unique
         db.commit()
@@ -174,7 +187,12 @@ def update(id):
         component_id = request.form['component_id']
         amount = request.form['amount']
         units = request.form['units']
-        volmass = request.form['volmass']
+        volmass = request.form.get('volmass', '')
+
+        if volmass == '':
+            flash("Choose volume or mass")
+            volmass = ''
+            passed = False
 
         if not (stock_id.isdecimal() and component_id.isdecimal() and isfloat(amount)):
             flash("Stock, component ID, and amount must be valid numbers")

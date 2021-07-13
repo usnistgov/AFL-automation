@@ -15,12 +15,24 @@
             Number of entries per page: <input class="number" type="number" id="number" name="number"
             min="1" max="100" value="{{ per_page }}">
             <input class="pagechange" type="submit" value="Submit">
+
             <br>
 
             Filter by Stock ID (leave blank for no filter): <input class="number" type="number" id="stock_id" name="stock_id"
             min="1" value="{{ session['stock_id'] }}">
             <input class="pagechange" type="submit" value="Submit">
-            <br>
+
+            <br> Toggle Unified View:
+
+            {% if unified %}
+
+            <input class="checkbox" onChange="this.form.submit()" type="checkbox" id="checkbox" name="unified" checked>
+
+            {% else %}
+
+            <input class="checkbox" onChange="this.form.submit()" type="checkbox" id="checkbox" name="unified">
+
+            {% endif %} <br> <br>
 
             {{ total }} existing entries. {% if session['stock_id'] != None and session['stock_id'] != '' %} Filtered {{ filtercount }} entries. {% endif %}
 

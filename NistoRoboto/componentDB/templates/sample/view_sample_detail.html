@@ -46,6 +46,42 @@
 
       </table>
 
+        <br><i>Numbers displayed in chart are in g or ml.</i>
+
+        <canvas id="myChart" width="900" height="600"></canvas>
+        <script>
+
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ names | safe }},
+                    datasets: [{
+                        label: 'Data Points',
+                        data: {{ amounts }},
+                        backgroundColor: {{ colors | safe }},
+                        borderColor: 'rgba(255,255,255,0.7)',
+                        borderWidth: 2,
+                        hoverBorderColor: '#222636',
+                        hoverBorderWidth: 6
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    legend: {
+                               labels: {
+                                   fontColor: 'white',
+                                   fontSize: 15
+                               }
+                            }
+
+
+                }
+
+            });
+
+        </script>
+
 
 </article>
 

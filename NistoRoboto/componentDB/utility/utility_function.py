@@ -4,9 +4,7 @@ from math import ceil
 
 from flask import current_app, request, session
 from werkzeug.exceptions import abort
-
 from componentDB.db import get_db
-
 
 def isfloat(value):
   if value == '':
@@ -90,6 +88,7 @@ def csvwrite(table, path, name):
 
     writer = csv.writer(csvfile, dialect='excel', delimiter=',', quotechar='"', lineterminator='\n')
     writer.writerow(header)
+
     for post in posts:
       writer.writerow(post)
 
@@ -99,6 +98,8 @@ def pagination(page, posts):
 
   per_page = request.form.get("number")
 
+  unified = 'unified' in request.form
+
   if per_page == '' or per_page is None:
     if 'per_page' not in session:
       session['per_page'] = 10
@@ -106,12 +107,13 @@ def pagination(page, posts):
 
   per_page = int(per_page)
   session['per_page'] = per_page
+  session['unified'] = unified
   radius = 2
   total = len(posts)
   pages = ceil(total / per_page)  # this is the number of pages
   offset = (page - 1) * per_page  # offset for SQL query
 
-  return paginated(per_page, radius, total, pages, offset)
+  return paginated(per_page, radius, total, pages, offset, unified)
 
 class paginated:
 
@@ -120,13 +122,15 @@ class paginated:
   total = None
   pages = None
   offset = None
+  unified = False
 
-  def __init__(self, per_page, radius, total, pages, offset):
+  def __init__(self, per_page, radius, total, pages, offset, unified):
     self.per_page = per_page
     self.radius = radius
     self.total = total
     self.pages = pages
     self.offset = offset
+    self.unified = unified
 
 def page_range(page, pages):
   if page > pages + 1 or page < 1:

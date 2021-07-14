@@ -304,6 +304,7 @@ function commitQueueEdits(serverKey) {
 
         // enqueues the editor queued tasks
         var enqueuLink = server.address + 'enqueue';
+        // TODO ajax request must complete before next loop run
         $.ajax({
             url:enqueuLink,
             type: 'POST',

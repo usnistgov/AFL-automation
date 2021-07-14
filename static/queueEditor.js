@@ -128,7 +128,8 @@ class Task {
 
         var task = queueTasks.splice(this.position,1);
         var temp = queueTasks.splice(newPosition);
-        queueTasks.push(task[0]);
+        // queueTasks.push(task[0]);
+        queueTasks.push(task.pop());
         queueTasks = queueTasks.concat(temp);
 
         for(let i in queueTasks) {

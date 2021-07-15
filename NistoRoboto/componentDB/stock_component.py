@@ -102,7 +102,7 @@ def upload():
 
         return redirect(url_for('stock.index', page=1))
 
-    return render_template("stock_component/upload_stock_component.html", back=session['stock_component_url'])
+    return render_template("stock_component/upload_stock_component.html", back=url_for('stock_component.create'))
 
 
 @bp.route("/stock_component/create", methods=("GET", "POST"))
@@ -137,9 +137,9 @@ def create():
         if passed:
             insert(stock_name, stock_id, component_id, amount, units, volmass)
 
-            return redirect(session['stock_component_url'])
+            return redirect(url_for('stock.detail', id=stock_id))
 
-    return render_template("stock_component/create_stock_component.html", back=session['stock_component_url'])
+    return render_template("stock_component/create_stock_component.html", back=session['stock_url'])
 
 
 def insert(stock_name, stock_id, component_id, amount, units, volmass):
@@ -210,15 +210,32 @@ def update(id):
             )
 
             db.commit()
-            return redirect(session['stock_component_url'])
+            return redirect(url_for('stock.detail', id=stock_id))
 
     return render_template("stock_component/update_stock_component.html", post=post,
-                           back=session['stock_component_url'])
+                           back=session['stock_detail_url'])
 
 
 @bp.route("/stock_component/export")
 def export():
-    path = csvwrite('stock_component', 'static/export', '/stock_component_export.txt')
+    db = get_db()
+    posts1 = db.execute(
+        "SELECT stock_id, component_id, amount, units, volmass FROM stock_component ORDER BY id"
+    ).fetchall()
+
+    posts = []
+
+    for index, post in enumerate(posts1):
+
+        name = db.execute("SELECT name FROM stock WHERE id = ?", (post[0],)).fetchone()[0]
+        posts.append([])
+        posts[index].append(name)
+        for en in post:
+            posts[index].append(en)
+
+    header = ['STOCK NAME', 'STOCK ID', 'COMPONENT ID', 'AMOUNT', 'UNITS', 'VOLMASS']
+
+    path = csvwrite(posts, header, 'static/export', '/stock_component_export.txt')
     return send_from_directory(path, 'stock_component_export.txt', as_attachment=True)
 
 
@@ -263,4 +280,4 @@ def delete(id):
     db = get_db()
     db.execute("DELETE FROM stock_component WHERE id = ?", (id,))
     db.commit()
-    return redirect(session['stock_component_url'])
+    return redirect(session['stock_detail_url'])

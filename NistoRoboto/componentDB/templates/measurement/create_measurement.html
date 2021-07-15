@@ -12,7 +12,7 @@
     <a class="action" href="{{ url_for('measurement.upload') }}">Upload CSV</a>
 
     <label for="sample_id">Sample ID (must be existing sample)</label>
-    <input name="sample_id" id="sample_id" value="{{ request.form['name'] }}" required>
+    <input name="sample_id" type="number" id="sample_id" value="{{ request.form['name'] }}" required>
 
     <label for="metadata">Measurement Metadata</label>
     <textarea name="metadata" id="metadata">{{ request.form['description'] }}</textarea>

@@ -14,10 +14,10 @@
       To change a stock's name use the stock view.</p>
 
     <label for="stock_id">Stock ID</label>
-    <input name="stock_id" id="stock_id" value="{{ request.form['stock_id'] or post['stock_id']}}" required>
+    <input name="stock_id" type="number" id="stock_id" value="{{ request.form['stock_id'] or post['stock_id']}}" required>
 
     <label for="component_id">Component ID (must be existing component)</label>
-    <input name="component_id" id="component_id" value="{{ request.form['component_id'] or post['component_id']}}" required>
+    <input name="component_id" type="number" id="component_id" value="{{ request.form['component_id'] or post['component_id']}}" required>
 
     <label for="amount">Amount</label>
     <input name="amount" id="amount" value="{{ request.form['amount'] or post['amount']}}" required>
@@ -27,9 +27,19 @@
 
     <label for="volmass">Volume or Mass</label>
     <select name="volmass" id="volmass" required>
-      <option value="none" selected disabled hidden>select an option...</option>
-      <option value="volume">Volume</option>
+
+      {% if post['volmass'] == 'volume' %}
+
+      <option value="volume" selected>Volume</option>
       <option value="mass">Mass</option>
+
+      {% else %}
+
+      <option value="volume">Volume</option>
+      <option value="mass" selected>Mass</option>
+
+      {% endif %}
+
     </select>
 
     <input class="submit" type="submit" value="Save">

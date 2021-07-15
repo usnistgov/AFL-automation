@@ -11,7 +11,6 @@ from flaskr.db import get_db
 
 bp = Blueprint("component", __name__)
 
-
 @bp.route("/component/<int:page>", methods=("GET", "POST"))
 def index(page):
     db = get_db()
@@ -180,7 +179,16 @@ def update(id):
 
 @bp.route("/component/export")
 def export():
-    path = csvwrite('component', 'static/export', '/component_export.txt')
+
+    db = get_db()
+    posts = db.execute(
+        "SELECT name, description, mass, mass_units, density, density_units, formula, sld FROM component ORDER BY id"
+    ).fetchall()
+
+    header = ['NAME', 'DESCRIPTION', 'MASS', 'MASS UNITS', 'DENSITY', 'DENSITY UNITS', 'FORMULA',
+              'SLD (LEAVE BLANK IF OPTIONAL)']
+
+    path = csvwrite(posts, header, 'static/export', '/component_export.txt')
     return send_from_directory(path, 'component_export.txt', as_attachment=True)
 
 

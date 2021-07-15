@@ -100,6 +100,14 @@ input.danger {
     background-color: red;
 }
 
+input.print {
+    background-color: green;
+    margin-right: 100%;
+    margin-bottom: 1em;
+    min-width: 10em;
+    padding: 0.2em;
+}
+
 input.stock_danger {
     background-color: red;
     display: inline;
@@ -163,7 +171,12 @@ input.pagechange:disabled {
 }
 
 input.number {
-    max-width: 3em;
+    max-width: 4em;
+    margin-bottom: 0.6em;
+}
+
+input.number_edit {
+    min-width: 20em;
     margin-bottom: 0.6em;
 }
 

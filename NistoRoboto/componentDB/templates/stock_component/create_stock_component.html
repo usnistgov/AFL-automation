@@ -3,14 +3,15 @@
 {% block header %}
     {% block title %}Create Stock / Stock Component{% endblock %}
     <br>
-    <a class="action" href="{{ back }}">Back</a>
+    <a class="action" href="{{ back }}">Back to Stock View</a>
 {% endblock %}
 
 {% block content %}
   <form method="post">
 
     <p>This will link a stock and component together. If the specified stock (ID) does not already exist
-    a new stock in the stock table will be created using the provided stock name.</p>
+    a new stock in the stock table will be created using the provided stock name. If a link with the same
+    IDs are found information will be overwritten.</p>
 
     <a class="action" href="{{ url_for('stock_component.upload') }}">Upload CSV</a>
 
@@ -18,10 +19,10 @@
     <input name="stock_name" id="stock_name" value="{{ request.form['stock_name'] }}">
 
     <label for="stock_id">Stock ID</label>
-    <input name="stock_id" id="stock_id" value="{{ request.form['stock_id'] }}" required>
+    <input name="stock_id" type="number" id="stock_id" value="{{ request.form['stock_id'] }}" required>
 
     <label for="component_id">Component ID (must be existing component)</label>
-    <input name="component_id" id="component_id" value="{{ request.form['component_id'] }}" required>
+    <input name="component_id" type="number" id="component_id" value="{{ request.form['component_id'] }}" required>
 
     <label for="amount">Amount</label>
     <input name="amount" id="amount" value="{{ request.form['amount'] }}" required>

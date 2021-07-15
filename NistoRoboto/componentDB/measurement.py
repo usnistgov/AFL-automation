@@ -150,7 +150,12 @@ def update(id):
 
 @bp.route("/measurement/export")
 def export():
-    path = csvwrite('measurement', 'static/export', '/measurement_export.txt')
+    db = get_db()
+    posts = db.execute(
+        "SELECT sample_id, metadata FROM measurement ORDER BY id"
+    ).fetchall()
+    header = ['SAMPLE ID', 'METADATA']
+    path = csvwrite(posts, header, 'static/export', '/measurement_export.txt')
     return send_from_directory(path, 'measurement_export.txt', as_attachment=True)
 
 

@@ -4,7 +4,7 @@ from flask import *
 from werkzeug.exceptions import abort
 
 from componentDB.utility.units import *
-from componentDB.utility.utility_function import pagination, page_range
+from componentDB.utility.utility_function import pagination, page_range, generate_label, csvwrite
 from flaskr.db import get_db
 
 bp = Blueprint("sample", __name__)
@@ -52,6 +52,9 @@ def index(page):
 
 @bp.route("/sample/<int:id>/detail", methods=("GET", "POST"))
 def detail(id):
+
+    session['sample_detail_url'] = url_for('sample.detail', id=id)
+
     post = get_post(id)
     db = get_db()
     stocks = db.execute(
@@ -102,6 +105,29 @@ def update(id):
 
     return render_template("sample/update_sample.html", post=post, back=session['sample_url'])
 
+@bp.route("/sample/<int:id>/export", methods=("GET", "POST"))
+def export(id):
+    db = get_db()
+
+    posts1 = db.execute(
+        "SELECT sample_id, stock_id, amount, units, volmass FROM sample_stock WHERE sample_id = ? ORDER BY id", (id,)
+    ).fetchall()
+
+    posts = []
+
+    for index, post in enumerate(posts1):
+
+        nombre = db.execute("SELECT name FROM sample WHERE id = ?", (id,)).fetchone()[0]
+        posts.append([])
+        posts[index].append(nombre)
+        for en in post:
+            posts[index].append(en)
+
+    header = ['SAMPLE NAME', f'SAMPLE ID: {id}', 'STOCK ID', 'AMOUNT', 'UNITS', 'VOLMASS']
+
+    path = csvwrite(posts, header, 'static/export', '/sample_stock_export_in.txt')
+    return send_from_directory(path, 'sample_stock_export_in.txt', as_attachment=True)
+
 
 @bp.route("/sample/<int:id>/delete", methods=("GET", "POST"))
 def delete(id):
@@ -110,3 +136,13 @@ def delete(id):
     db.execute("DELETE FROM sample WHERE id = ?", (id,))
     db.commit()
     return redirect(session['sample_url'])
+
+@bp.route("/sample/<int:id>/label")
+def label(id):
+    db = get_db()
+
+    name = db.execute("SELECT name FROM sample WHERE id = ?", (id,)).fetchone()[0]
+
+    generate_label(id, name, 'sample')
+
+    return "Label printed..."

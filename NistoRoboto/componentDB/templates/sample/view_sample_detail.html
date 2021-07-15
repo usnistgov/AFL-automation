@@ -4,14 +4,10 @@
     {% block title %}Sample Detail{% endblock %}
     <br>
     <a class="action" href="{{ back }}">Back</a>
+    <a class="action" href="{{ url_for('sample_stock.create') }}">New Entry</a>
 {% endblock %}
 
 {% block content %}
-
-<div class="display">
-    <p>To edit the associated stock IDs, amount, units, and volmass go to sample stock view.</p>
-</div>
-
 
 <article class="post">
   <header>
@@ -30,6 +26,7 @@
             <th>Amount</th>
             <th>Units</th>
             <th>Volmass</th>
+            <th></th>
           </tr>
 
         {% for post in stocks %}
@@ -40,6 +37,7 @@
         <td>{{ post['amount'] }}</td>
         <td>{{ post['units'] }}</td>
         <td>{{ post['volmass'] }}</td>
+        <td><a class="action" href="{{ url_for('sample_stock.update', id=post['id']) }}">Edit</a></td>
         </tr>
 
         {% endfor %}
@@ -47,6 +45,8 @@
       </table>
 
         <br><i>Numbers displayed in chart are in g or ml.</i>
+
+        <br> <br> <a class="action" href="{{ url_for('sample.export', id=post['id']) }}">Export Individual Sample</a>
 
         <canvas id="myChart" width="900" height="600"></canvas>
         <script>

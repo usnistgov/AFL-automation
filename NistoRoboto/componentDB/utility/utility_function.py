@@ -1,7 +1,10 @@
 import csv
 import os
 from math import ceil
-
+import PIL
+import datetime
+import qrcode
+import rasterprynt
 from flask import current_app, request, session
 from werkzeug.exceptions import abort
 from componentDB.db import get_db
@@ -15,6 +18,24 @@ def isfloat(value):
   except ValueError:
     return False
 
+def generate_label(id, name, type):
+
+  qrimg = qrcode.make(f"id:{id}")
+  img = PIL.Image.new(mode='LA', size=[800, 290])
+  canvas = PIL.ImageDraw.Draw(img)
+  canvas.text((300, 25), f"ID: {id}", font=PIL.ImageFont.truetype('arial.ttf', size=36),
+              fill='#000000')  # You may need to change filepath for fonts if using linux
+  canvas.text((300, 75), f"Type: {type}", font=PIL.ImageFont.truetype('arial.ttf', size=24), fill='#000000')
+  canvas.text((300, 125), f"Name: {name}", font=PIL.ImageFont.truetype('arial.ttf', size=48), fill='#000000')
+  canvas.text((300, 225), f"Last Printed: {datetime.datetime.now()}",
+              font=PIL.ImageFont.truetype('arial.ttf', size=24),
+              fill='#000000')
+  img.paste(qrimg, box=(0, 0))
+  img.show()
+
+  # printer_ip = '192.168.1.123' # Replace the ip with whatever the printer IP is
+  # rasterprynt.prynt([img], printer_ip)
+
 def csvread(path):
 
   path = os.path.join(current_app.root_path, path)
@@ -27,62 +48,9 @@ def csvread(path):
       rows.append(row)
     return rows
 
-def csvwrite(table, path, name):
+def csvwrite(posts, header, path, name):
 
   path = os.path.join(current_app.root_path, path)
-
-  db = get_db()
-
-  header = []
-
-  if table == 'component':
-
-    posts = db.execute(
-      "SELECT name, description, mass, mass_units, density, density_units, formula, sld FROM component ORDER BY id"
-    ).fetchall()
-
-    header = ['NAME', 'DESCRIPTION', 'MASS', 'MASS UNITS', 'DENSITY', 'DENSITY UNITS', 'FORMULA', 'SLD (LEAVE BLANK IF OPTIONAL)']
-
-  elif table == 'stock_component':
-    posts1 = db.execute(
-      "SELECT stock_id, component_id, amount, units, volmass FROM stock_component ORDER BY id"
-    ).fetchall()
-
-    posts = []
-
-    for index, post in enumerate(posts1):
-
-      nombre = db.execute("SELECT name FROM stock WHERE id = ?", (post[0],)).fetchone()[0]
-      posts.append([])
-      posts[index].append(nombre)
-      for en in post:
-        posts[index].append(en)
-
-    header = ['STOCK NAME', 'STOCK ID', 'COMPONENT ID', 'AMOUNT', 'UNITS', 'VOLMASS']
-
-  elif table == 'sample_stock':
-    posts1 = db.execute(
-      "SELECT sample_id, stock_id, amount, units, volmass FROM sample_stock ORDER BY id"
-    ).fetchall()
-
-    posts = []
-
-    for index, post in enumerate(posts1):
-
-      nombre = db.execute("SELECT name FROM sample WHERE id = ?", (post[0],)).fetchone()[0]
-      posts.append([])
-      posts[index].append(nombre)
-      for en in post:
-        posts[index].append(en)
-
-    header = ['SAMPLE NAME', 'SAMPLE ID', 'STOCK ID', 'AMOUNT', 'UNITS', 'VOLMASS']
-
-  elif table == 'measurement':
-
-    posts = db.execute(
-      "SELECT sample_id, metadata FROM measurement ORDER BY id"
-    ).fetchall()
-    header = ['SAMPLE ID', 'METADATA']
 
   with open(path+name, mode='w') as csvfile:
 

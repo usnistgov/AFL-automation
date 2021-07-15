@@ -98,7 +98,7 @@ def upload():
 
         return redirect(url_for('sample.index', page=1))
 
-    return render_template("sample_stock/upload_sample_stock.html", back=session['sample_stock_url'])
+    return render_template("sample_stock/upload_sample_stock.html", back=url_for('sample_stock.create'))
 
 @bp.route("/sample_stock/create", methods=("GET", "POST"))
 def create():
@@ -131,9 +131,9 @@ def create():
         if passed:
             insert(sample_name, sample_id, stock_id, amount, units, volmass)
 
-            return redirect(session['sample_stock_url'])
+            return redirect(url_for('sample.detail', id=sample_id))
 
-    return render_template("sample_stock/create_sample_stock.html", back=session['sample_stock_url'])
+    return render_template("sample_stock/create_sample_stock.html", back=session['sample_url'])
 
 def insert(sample_name, sample_id, stock_id, amount, units, volmass):
     db = get_db()
@@ -201,13 +201,30 @@ def update(id):
             )
 
             db.commit()
-            return redirect(session['sample_stock_url'])
+            return redirect(url_for('sample.detail', id=sample_id))
 
-    return render_template("sample_stock/update_sample_stock.html", post=post, back=session['sample_stock_url'])
+    return render_template("sample_stock/update_sample_stock.html", post=post, back=session['sample_detail_url'])
 
 @bp.route("/sample_stock/export")
 def export():
-    path = csvwrite('sample_stock', 'static/export', '/sample_stock_export.txt')
+    db = get_db()
+    posts1 = db.execute(
+        "SELECT sample_id, stock_id, amount, units, volmass FROM sample_stock ORDER BY id"
+    ).fetchall()
+
+    posts = []
+
+    for index, post in enumerate(posts1):
+
+        name = db.execute("SELECT name FROM sample WHERE id = ?", (post[0],)).fetchone()[0]
+        posts.append([])
+        posts[index].append(name)
+        for en in post:
+            posts[index].append(en)
+
+    header = ['SAMPLE NAME', 'SAMPLE ID', 'STOCK ID', 'AMOUNT', 'UNITS', 'VOLMASS']
+
+    path = csvwrite(posts, header, 'static/export', '/sample_stock_export.txt')
     return send_from_directory(path, 'sample_stock_export.txt', as_attachment=True)
 
 @bp.route("/sample_stock/send_json", methods=("GET", "POST"))
@@ -250,4 +267,4 @@ def delete(id):
     db.execute("DELETE FROM sample_stock WHERE id = ?", (id,))
     db.commit()
     print("SAMPLE STOCK DELETED!")
-    return redirect(session['sample_stock_url'])
+    return redirect(session['sample_detail_url'])

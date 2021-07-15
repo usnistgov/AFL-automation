@@ -11,14 +11,14 @@
   <form method="post">
 
     <p>This will link a sample and stock together. If the specified sample (ID) does not already exist
-    a new sample in the sample table <b>WILL NOT</b> be created. To create a stock, go <a class="action" href="{{ url_for('sample_stock.create') }}">here</a>.
+    a new sample in the sample table <b>WILL NOT</b> be created. To create a sample, go <a class="action" href="{{ url_for('sample_stock.create') }}">here</a>.
       To change a sample's name use the sample view.</p>
 
     <label for="sample_id">Sample ID</label>
-    <input name="sample_id" id="sample_id" value="{{ request.form['sample_id'] or post['sample_id'] }}" required>
+    <input name="sample_id" type="number" id="sample_id" value="{{ request.form['sample_id'] or post['sample_id'] }}" required>
 
     <label for="stock_id">Stock ID (must be existing stock)</label>
-    <input name="stock_id" id="stock_id" value="{{ request.form['stock_id'] or post['stock_id'] }}" required>
+    <input name="stock_id" type="number" id="stock_id" value="{{ request.form['stock_id'] or post['stock_id'] }}" required>
 
     <label for="amount">Amount</label>
     <input name="amount" id="amount" value="{{ request.form['amount'] or post['amount'] }}" required>
@@ -28,9 +28,19 @@
 
     <label for="volmass">Volume or Mass</label>
     <select name="volmass" id="volmass" required>
-      <option value="none" selected disabled hidden>select an option...</option>
-      <option value="volume">Volume</option>
+
+      {% if post['volmass'] == 'volume' %}
+
+      <option value="volume" selected>Volume</option>
       <option value="mass">Mass</option>
+
+      {% else %}
+
+      <option value="volume">Volume</option>
+      <option value="mass" selected>Mass</option>
+
+      {% endif %}
+
     </select>
 
     <input class="submit" type="submit" value="Save">

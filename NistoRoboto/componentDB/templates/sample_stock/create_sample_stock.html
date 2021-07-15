@@ -3,14 +3,15 @@
 {% block header %}
     {% block title %}Create Sample / Sample Stock{% endblock %}
     <br>
-    <a class="action" href="{{ back }}">Back</a>
+    <a class="action" href="{{ back }}">Back to Sample View</a>
 {% endblock %}
 
 {% block content %}
   <form method="post">
 
     <p>This will link a sample and stock together. If the specified sample (ID) does not already exist
-    a new sample in the sample table will be created using the provided sample name.</p>
+    a new sample in the sample table will be created using the provided sample name. If a link with the same
+    IDs are found information will be overwritten.</p>
 
     <a class="action" href="{{ url_for('sample_stock.upload') }}">Upload CSV</a>
 
@@ -18,10 +19,10 @@
     <input name="sample_name" id="sample_name" value="{{ request.form['sample_name'] }}">
 
     <label for="sample_id">Sample ID</label>
-    <input name="sample_id" id="sample_id" value="{{ request.form['sample_id'] }}" required>
+    <input name="sample_id" type="number" id="sample_id" value="{{ request.form['sample_id'] }}" required>
 
     <label for="stock_id">Stock ID (must be existing stock)</label>
-    <input name="stock_id" id="stock_id" value="{{ request.form['stock_id'] }}" required>
+    <input name="stock_id" type="number" id="stock_id" value="{{ request.form['stock_id'] }}" required>
 
     <label for="amount">Amount</label>
     <input name="amount" id="amount" value="{{ request.form['amount'] }}" required>

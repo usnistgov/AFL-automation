@@ -1,15 +1,13 @@
 {% extends 'base.html' %}
 
 {% block header %}
-    {% block title %}Edit Stock{% endblock %}
+    {% block title %}Edit Stock Name{% endblock %}
     <br>
     <a class="action" href="{{ back }}">Back</a>
 {% endblock %}
 
 {% block content %}
   <form method="post">
-
-    <p>To edit connections, use stock component view. To edit component, use component view.</p>
 
     <label for="name">Stock Name</label>
     <input name="name" id="name" value="{{ request.form['name'] or post['name'] }}" required>

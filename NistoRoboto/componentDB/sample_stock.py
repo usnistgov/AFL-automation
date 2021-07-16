@@ -6,7 +6,7 @@ from werkzeug.exceptions import *
 from werkzeug.utils import secure_filename
 
 from componentDB.utility.utility_function import isfloat, csvwrite, csvread, pagination, page_range
-from flaskr.db import get_db
+from componentDB.db import get_db
 
 bp = Blueprint("sample_stock", __name__)
 

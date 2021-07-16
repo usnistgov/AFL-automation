@@ -1,13 +1,17 @@
 import os
 from os.path import *
 
+import sys
+sys.path.append('/Users/pab2/Documents/GitHub/NistoRoboto/NistoRoboto/')
+sys.path.append('/Users/pab2/Documents/GitHub/NistoRoboto/')
+
 from flask import *
 from werkzeug.exceptions import *
 from werkzeug.utils import secure_filename
 
 from componentDB.utility.component_object import ComponentObject
 from componentDB.utility.utility_function import isfloat, csvread, csvwrite, pagination, page_range
-from flaskr.db import get_db
+from componentDB.db import get_db
 
 bp = Blueprint("component", __name__)
 

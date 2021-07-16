@@ -297,7 +297,6 @@ function addTaskBack(taskID) {
 function commitQueueEdits(serverKey) {
     var reorderedQueue = [];
     for(let i=0; i<queueTasks.length; i++) {
-        console.log(taskData);
         reorderedQueue.push(queueTasks[i].info);
     }
     console.log(reorderedQueue);
@@ -309,6 +308,10 @@ function commitQueueEdits(serverKey) {
         type: 'POST',
         data: JSON.stringify(reorderedQueue),
         contentType: 'applicaiton/json',
+        beforeSend: function(request){
+            request.withCredentials = true;
+            request.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'));
+        },
         success: function(result) {
             console.log(result);
         }

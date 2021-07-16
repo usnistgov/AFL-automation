@@ -294,35 +294,24 @@ function addTaskBack(taskID) {
  * @param {String} serverKey 
  */
 function commitQueueEdits(serverKey) {
-    var server = getServer(serverKey);
-    server.clearQueue(); // clears the queue
-
+    var reorderedQueue = [];
     for(let i=0; i<queueTasks.length; i++) {
-        var taskData = queueTasks[i].info.task;
-        var uuidData = { uuid: queueTasks[i].info.uuid };
-        $.extend(taskData, uuidData); // merges uuidData into taskData
         console.log(taskData);
-
-        // enqueues the editor queued tasks
-        var enqueuLink = server.address + 'enqueue';
-        // TODO ajax request must complete before next loop run
-        $.ajax({
-            url:enqueuLink,
-            type: 'POST',
-            data: JSON.stringify(taskData),
-            contentType:'application/json',
-            beforeSend: function(request){
-                            request.withCredentials = true;
-                            request.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'));
-                        },
-            error : function(err) {
-                console.log('Enqueue Error!',err);
-            },
-            success : function(data) {
-                console.log('Enqueue Success!');
-            }
-        });  
+        reorderedQueue.push(queueTasks[i].info);
     }
+    console.log(reorderedQueue);
+
+    var server = getServer(serverKey);
+    var link = server.address + 'reorder_queue';
+    $.ajax({
+        url: link,
+        type: 'POST',
+        data: JSON.stringify(reorderedQueue),
+        contentType: 'applicaiton/json',
+        success: function(result) {
+            console.log(result);
+        }
+    });
 
     closeQueueEditor(); // closes the queue editor
 }

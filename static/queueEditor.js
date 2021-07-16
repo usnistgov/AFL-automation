@@ -295,22 +295,25 @@ function addTaskBack(taskID) {
  * @param {String} serverKey 
  */
 function commitQueueEdits(serverKey) {
-    var reorderedQueue = [];
+    var queue = [];
     for(let i=0; i<queueTasks.length; i++) {
-        reorderedQueue.push(queueTasks[i].info);
+        queue.push(queueTasks[i].info);
     }
-    console.log(reorderedQueue);
+    console.log(queue);
 
     var server = getServer(serverKey);
     var link = server.address + 'reorder_queue';
     $.ajax({
         url: link,
         type: 'POST',
-        data: JSON.stringify(reorderedQueue),
-        contentType: 'applicaiton/json',
+        data: JSON.stringify(queue),
+        contentType: 'application/json',
         beforeSend: function(request){
             request.withCredentials = true;
             request.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'));
+        },
+        error : function(err) {
+            console.log('Enqueue Error!',err);
         },
         success: function(result) {
             console.log(result);

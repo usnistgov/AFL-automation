@@ -6,7 +6,7 @@ from werkzeug.exceptions import *
 from werkzeug.utils import secure_filename
 
 from componentDB.utility.utility_function import isfloat, csvwrite, csvread, pagination, page_range
-from flaskr.db import get_db
+from componentDB.db import get_db
 
 bp = Blueprint("sample_stock", __name__)
 
@@ -133,7 +133,13 @@ def create():
 
             return redirect(url_for('sample.detail', id=sample_id))
 
-    return render_template("sample_stock/create_sample_stock.html", back=session['sample_url'])
+    db = get_db()
+
+    stocks = db.execute(
+        "SELECT id FROM stock ORDER BY id"
+    ).fetchall()
+
+    return render_template("sample_stock/create_sample_stock.html", stocks=stocks, back=session['sample_url'])
 
 def insert(sample_name, sample_id, stock_id, amount, units, volmass):
     db = get_db()
@@ -203,7 +209,13 @@ def update(id):
             db.commit()
             return redirect(url_for('sample.detail', id=sample_id))
 
-    return render_template("sample_stock/update_sample_stock.html", post=post, back=session['sample_detail_url'])
+    db = get_db()
+
+    stocks = db.execute(
+        "SELECT id FROM stock ORDER BY id"
+    ).fetchall()
+
+    return render_template("sample_stock/update_sample_stock.html", post=post, stocks=stocks, back=session['sample_detail_url'])
 
 @bp.route("/sample_stock/export")
 def export():

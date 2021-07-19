@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 
 from componentDB.utility.component_object import ComponentObject
 from componentDB.utility.utility_function import isfloat, csvread, csvwrite, pagination, page_range
-from flaskr.db import get_db
+from componentDB.db import get_db
 
 bp = Blueprint("component", __name__)
 
@@ -196,26 +196,31 @@ def export():
 def send_json():
     if request.method == "POST":
         dictionary = request.get_json()
+
+        if type(dictionary) is dict:
+            copy = dictionary
+            dictionary = [copy]
+
         db = get_db()
         for entry in dictionary:
 
-            entry['id'] = int(entry['id'])
-            entry['mass'] = float(entry['mass'])
-            entry['density'] = float(entry['density'])
-            if entry['sld'] != '':
-                entry['sld'] = float(entry['sld'])
+            if entry['id'] is None or entry['id'] == '':
 
-            posts = db.execute(
-                "SELECT * FROM component WHERE id = ?", (entry['id'],),
-            ).fetchall()
-            if len(posts) == 0:
+                posts = db.execute(
+                    "SELECT * FROM component WHERE id = ?", (entry['id'],),
+                ).fetchone()
+                if posts is None:
+                    insert(entry['name'], entry['description'], entry['mass'], entry['mass_units'], entry['density'],
+                           entry['density_units'], entry['formula'], entry['sld'])
+                else:
+                    update_help(entry['id'],
+                                ComponentObject(entry['name'], entry['description'], entry['mass'], entry['mass_units'],
+                                                entry['density'], entry['density_units'], entry['formula'], entry['sld'],
+                                                True))
+            else:
+
                 insert(entry['name'], entry['description'], entry['mass'], entry['mass_units'], entry['density'],
                        entry['density_units'], entry['formula'], entry['sld'])
-            else:
-                update_help(entry['id'],
-                            ComponentObject(entry['name'], entry['description'], entry['mass'], entry['mass_units'],
-                                            entry['density'], entry['density_units'], entry['formula'], entry['sld'],
-                                            True))
 
     return "Send JSONS to this url."
 

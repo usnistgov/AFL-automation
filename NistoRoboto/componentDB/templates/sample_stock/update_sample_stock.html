@@ -17,8 +17,24 @@
     <label for="sample_id">Sample ID</label>
     <input name="sample_id" type="number" id="sample_id" value="{{ request.form['sample_id'] or post['sample_id'] }}" required>
 
-    <label for="stock_id">Stock ID (must be existing stock)</label>
-    <input name="stock_id" type="number" id="stock_id" value="{{ request.form['stock_id'] or post['stock_id'] }}" required>
+    <label for="stock_id">Stock ID</label>
+    <select name="stock_id" id="stock_id" required>
+
+        {% for stock in stocks %}
+
+          {% if post['stock_id'] == stock[0] %}
+
+          <option value="{{ stock[0] }}" selected>{{ stock[0] }}</option>
+
+          {% else %}
+
+          <option value="{{ stock[0] }}">{{ stock[0] }}</option>
+
+          {% endif %}
+
+        {% endfor %}
+
+    </select>
 
     <label for="amount">Amount</label>
     <input name="amount" id="amount" value="{{ request.form['amount'] or post['amount'] }}" required>

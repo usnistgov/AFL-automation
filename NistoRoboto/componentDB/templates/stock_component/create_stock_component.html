@@ -21,8 +21,17 @@
     <label for="stock_id">Stock ID</label>
     <input name="stock_id" type="number" id="stock_id" value="{{ request.form['stock_id'] }}" required>
 
-    <label for="component_id">Component ID (must be existing component)</label>
-    <input name="component_id" type="number" id="component_id" value="{{ request.form['component_id'] }}" required>
+    <label for="component_id">Component ID</label>
+    <select name="component_id" id="component_id" required>
+      <option value="none" selected disabled hidden>select an option...</option>
+
+      {% for component in components %}
+
+        <option value="{{ component[0] }}">{{ component[0] }}</option>
+
+      {% endfor %}
+
+    </select>
 
     <label for="amount">Amount</label>
     <input name="amount" id="amount" value="{{ request.form['amount'] }}" required>
@@ -31,7 +40,7 @@
     <input name="units" id="units" value="{{ request.form['units'] }}" required>
 
     <label for="volmass">Volume or Mass</label>
-    <select name="volmass" id="volmass" value="{{ request.form['volmass'] }}" required>
+    <select name="volmass" id="volmass" required>
       <option value="none" selected disabled hidden>select an option...</option>
       <option value="volume">Volume</option>
       <option value="mass">Mass</option>

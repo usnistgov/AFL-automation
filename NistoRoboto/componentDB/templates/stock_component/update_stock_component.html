@@ -16,8 +16,24 @@
     <label for="stock_id">Stock ID</label>
     <input name="stock_id" type="number" id="stock_id" value="{{ request.form['stock_id'] or post['stock_id']}}" required>
 
-    <label for="component_id">Component ID (must be existing component)</label>
-    <input name="component_id" type="number" id="component_id" value="{{ request.form['component_id'] or post['component_id']}}" required>
+    <label for="component_id">Component ID</label>
+    <select name="component_id" id="component_id" required>
+
+        {% for component in components %}
+
+          {% if post['component_id'] == component[0] %}
+
+          <option value="{{ component[0] }}" selected>{{ component[0] }}</option>
+
+          {% else %}
+
+          <option value="{{ component[0] }}">{{ component[0] }}</option>
+
+          {% endif %}
+
+        {% endfor %}
+
+    </select>
 
     <label for="amount">Amount</label>
     <input name="amount" id="amount" value="{{ request.form['amount'] or post['amount']}}" required>

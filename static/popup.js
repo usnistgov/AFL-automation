@@ -166,3 +166,29 @@ function addTaskPopup(serverKey, x, y) {
         displayPopup();
     });
 }
+
+/**
+ * (inprogress) Returns JSON data as HTML list
+ * @param {String} html 
+ * @param {JSON} input 
+ * @returns 
+ */
+function buildListData(html,input) {
+    var keys = Object.keys(input);
+
+    for(let i in keys) {
+        html += '<li>'+keys[i]+'</li>';
+
+        if(typeof(input[keys[i]]) == 'object') {
+            html += '<ul>';
+            var temp2 = '';
+            html += buildListData(temp2, input[keys[i]]);
+            html += '</ul>';
+        } else {
+            html += '<ul><li>'+input[keys[i]]+'</li></ul>';
+        }
+    }
+    
+    console.log(html);
+    return html;
+}

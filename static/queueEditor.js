@@ -330,10 +330,9 @@ function commitQueueEdits(serverKey) {
         },
         success: function(result) {
             console.log(result);
+            closeQueueEditor(); // closes the queue editor
         }
     });
-
-    closeQueueEditor(); // closes the queue editor
 }
 
 /**

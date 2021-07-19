@@ -177,12 +177,14 @@ function editQueue(serverKey) {
         }
 
         var selectedInfo = '<span id="numSelected">0</span> Task(s) Selected | <span id="numShown">0</span> Shown';
+        var unselectAllBtn = '<button onclick="unselectAll()">Unselect</button>';
+
         var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="moveSelected(\'m\')">Enter</button>';
         var moveSelectedTopBtn = '<button onclick="moveSelected(\'t\')">Move to Top</button>';
         var moveSelectedBottomBtn = '<button onclick="moveSelected(\'b\')">Move to Bottom</button>';
         // var removeSelectedBtn = '<button onclick="removeSelected()" style="background-color:red;color:white;">Remove Task(s)</button>';
         // var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+'<br>'+moveSelectedBtn;
-        var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+'<br>'+moveSelectedBtn;
+        var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+unselectAllBtn+'<br>'+moveSelectedBtn;
         
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
         var commitBtn = '<button onclick="commitQueueEdits(\''+serverKey+'\')">Commit Queue Edits</button>';
@@ -212,6 +214,17 @@ function editQueue(serverKey) {
 function select(taskID) {
     for(let i = 0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
+            queueTasks[i].select();
+        }
+    }
+}
+
+/**
+ * (incomplete) Unselectes all selected tasks
+ */
+function unselectAll() {
+    for(let i = 0; i<queueTasks.length; i++) {
+        if(queueTasks[i].selected) {
             queueTasks[i].select();
         }
     }

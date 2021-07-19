@@ -78,6 +78,13 @@ class Popup {
         var keys, root, child, html, text;
         html = '<div id="taskData"><ul>';
         text = JSON.stringify(data);
+
+        // TODO solve the issue with generating 3+ levels in jsTree
+        // html = '';
+        // var add = buildListData(html, data);
+        // html = '<div id="taskData"><ul>'+add+'</ul></div><p>'+text+'</p>';
+        // console.log(html);
+
         keys = Object.keys(data);
         for(let i in keys) {
             root =  keys[i];

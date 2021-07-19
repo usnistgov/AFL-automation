@@ -220,7 +220,7 @@ function select(taskID) {
 }
 
 /**
- * (incomplete) Unselectes all selected tasks
+ * Unselects all selected tasks
  */
 function unselectAll() {
     for(let i = 0; i<queueTasks.length; i++) {
@@ -383,6 +383,8 @@ function displayTaskData(taskID) {
     for(let i=0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
             popup.addTaskData(queueTasks[i].info.task);
+            // TODO fix issue in Popup Class addTaskData function
+            // popup.addTaskData(queueTasks[i].info);
         }
     }
 

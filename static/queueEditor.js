@@ -1,6 +1,6 @@
 var queueTasks = []; // array for queued tasks
 var removedTasks = [];
-var numSelected, numShown; // number of selected tasks and selected tasks shown
+var numSelected, numSelectedShown; // number of selected tasks and selected tasks shown
 var queueEditorOpen = false;
 
 class Task {
@@ -35,16 +35,16 @@ class Task {
                 $(id).css('background-color','green');
                 $(id).css('color','white');
                 numSelected++;
-                numShown++;
+                numSelectedShown++;
             } else {
                 this.selected = false;
                 $(id).css('background-color','white');
                 $(id).css('color','black');
                 numSelected--;
-                numShown--;
+                numSelectedShown--;
             }
             $('#numSelected').html(numSelected);
-            $('#numShown').html(numShown);
+            $('#numSelectedShown').html(numSelectedShown);
         }
     }
 
@@ -159,7 +159,7 @@ function editQueue(serverKey) {
     api_login(server.address); // logs into api server
 
     numSelected = 0;
-    numShown = 0;
+    numSelectedShown = 0;
 
     // pause the server
     server.getQueueState(function(result){
@@ -176,20 +176,21 @@ function editQueue(serverKey) {
             // console.dir(tempTask);
         }
 
-        var selectedInfo = '<span id="numSelected">0</span> Task(s) Selected | <span id="numShown">0</span> Shown';
+        var selectedInfo = '<span id="numSelected">0</span> Selected | <span id="numSelectedShown">0</span> Shown';
         var unselectAllBtn = '<button onclick="unselectAll()">Unselect</button>';
+        var tasksShownInfo = '<span id="numShown">0</span> Task(s) Shown'; // TODO edit numShown
 
         var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="moveSelected(\'m\')">Enter</button>';
         var moveSelectedTopBtn = '<button onclick="moveSelected(\'t\')">Move to Top</button>';
         var moveSelectedBottomBtn = '<button onclick="moveSelected(\'b\')">Move to Bottom</button>';
         // var removeSelectedBtn = '<button onclick="removeSelected()" style="background-color:red;color:white;">Remove Task(s)</button>';
         // var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+'<br>'+moveSelectedBtn;
-        var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+unselectAllBtn+'<br>'+moveSelectedBtn;
+        var selectedControls = '<label>Selected Task(s): </label>'+selectedInfo+' | '+moveSelectedTopBtn+moveSelectedBottomBtn+unselectAllBtn+'<br>'+moveSelectedBtn;
         
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
         var commitBtn = '<button onclick="commitQueueEdits(\''+serverKey+'\')">Commit Queue Edits</button>';
         var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
-        var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+'<br>'+searchBar+selectedInfo+'<br>'+selectedControls+'</div><hr style="margin-top:100px;">';
+        var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+'<br>'+searchBar+tasksShownInfo+'<br>'+selectedControls+'</div><hr style="margin-top:100px;">';
 
         var tasks = '';
         for(let i in queueTasks) {
@@ -370,8 +371,8 @@ function searchFilter() {
         }
     }
 
-    numShown = count;
-    $('#numShown').html(numShown);
+    numSelectedShown = count;
+    $('#numSelectedShown').html(numSelectedShown);
 }
 
 /**

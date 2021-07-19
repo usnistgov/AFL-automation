@@ -380,14 +380,14 @@ function searchFilter() {
  */
 function displayTaskData(taskID) {
     let popup = new Popup('Task Meta Data');
-    popup.addToHTML();
     
     for(let i=0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
-            addTaskData('popup', queueTasks[i].info.task);
+            popup.addTaskData(queueTasks[i].info.task);
         }
     }
 
+    popup.addToHTML();
     displayPopup();
 }
 

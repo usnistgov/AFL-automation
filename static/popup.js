@@ -1,6 +1,7 @@
 class Popup {
     constructor(name) {
         this.name = name;
+        this.hasTaskData = false;
 
         var closeBtn = '<button onclick="closePopup()" style="float:right;">x</button>';
         var title = '<h3>'+this.name+'</h3>';
@@ -70,6 +71,26 @@ class Popup {
     }
 
     /**
+     * Adds task meta data as jsTree and plain text to popup's html
+     * @param {JSON} data 
+     */
+    addTaskData(data) {
+        var keys, root, child, html, text;
+        html = '<div id="taskData"><ul>';
+        text = JSON.stringify(data);
+        keys = Object.keys(data);
+        for(let i in keys) {
+            root =  keys[i];
+            child = data[keys[i]];
+            html += '<li>'+root+'<ul><li>'+child+'</li></ul></li>';
+        }
+        html += '</ul></div><p>'+text+'</p>';
+
+        this.html += html;
+        this.hasTaskData = true;
+    }
+
+    /**
      * Adds the popup's html to the popup div in the html
      */
     addToHTML() {
@@ -78,6 +99,13 @@ class Popup {
             content += '<br><button id="popupEnterBtn">Enter</button>';
         }
         $('#popup').append(content);
+
+        if(this.hasTaskData){
+            $('#taskData').on('ready.jstree', function() {
+                $('#taskData').jstree('open_all');
+            });
+            $('#taskData').jstree(); // creates the JsTree
+        }
     }
 }
 
@@ -122,30 +150,6 @@ function addServerPopup() {
 }
 
 /**
- * Adds the task meta data to the given div as a JsTree
- * @param {String} divID 
- * @param {JSON} data 
- */
-function addTaskData(divID, data) {
-    var div = '#'+divID;
-    $(div).append('<div id="taskData"></div>');
-    
-    var keys, root, child, html;
-    html = '<ul>';
-    keys = Object.keys(data);
-
-    for(let i in keys) {
-        root =  keys[i];
-        child = data[keys[i]];
-        html += '<li>'+root+'<ul><li>'+child+'</li></ul></li>';
-    }
-
-    html += '</ul>';
-    $('#taskData').append(html); // adds the HTML formated task data
-    $('#taskData').jstree(); // creates the JsTree
-}
-
-/**
  * Displays all information about a task in a popup
  * @param {String} serverKey 
  * @param {Integer} x 
@@ -155,17 +159,10 @@ function addTaskPopup(serverKey, x, y) {
     var server = getServer(serverKey);
 
     server.getQueue(function(result) {
-        var title = 'Task: ' + result[x][y].task.task_name;
+        var title = 'Task: ' + result[x][y].task.task_name; // TODO check if there will always be a task_name (if not, this needs to change to 'Task Meta Data')
         let popup = new Popup(title);
-        
-        // raw data
-        var task = JSON.stringify(result[x][y].task);
-        popup.addText(task);
+        popup.addTaskData(result[x][y].task);
         popup.addToHTML();
-
-        // HTML JsTree
-        addTaskData('popup', result[x][y].task);
-
         displayPopup();
     });
 }

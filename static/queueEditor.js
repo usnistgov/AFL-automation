@@ -327,6 +327,7 @@ function commitQueueEdits(serverKey) {
         },
         error : function(err) {
             console.log('Enqueue Error!',err);
+            alert('Failed to commit queue edits.');
         },
         success: function(result) {
             console.log(result);

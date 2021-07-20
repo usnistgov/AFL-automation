@@ -3,8 +3,8 @@ import random
 from flask import *
 from werkzeug.exceptions import abort
 
-from NistoRoboto.shared.units import *
-from componentDB.utility.utility_function import pagination, page_range, generate_label, csvwrite
+from componentDB.utility.units import *
+from componentDB.utility.utility_function import pagination, page_range, generate_label, csvwrite, sample_stock_json
 from componentDB.db import get_db
 
 bp = Blueprint("sample", __name__)
@@ -128,6 +128,45 @@ def export(id):
     path = csvwrite(posts, header, 'static/export', '/sample_stock_export_in.txt')
     return send_from_directory(path, 'sample_stock_export_in.txt', as_attachment=True)
 
+@bp.route("/sample/<string:name>/json")
+def generate_json_name(name):
+    db = get_db()
+
+    name = name.replace("_", " ")
+
+    id = db.execute("SELECT id FROM sample WHERE name = ?", (name,), ).fetchone()
+
+    if id is None:
+        abort(404, f"Sample '{name}' doesn't exist. Names are case sensitive. Use underscores for spaces in name.")
+
+    id = id[0]
+
+    posts = db.execute(
+        "SELECT sample_id, stock_id, amount, units, volmass FROM sample_stock WHERE sample_id = ? ORDER BY id", (id,)
+    ).fetchall()
+
+    return dictionary_gen(posts)
+
+@bp.route("/sample/<int:id>/json")
+def generate_json_id(id):
+    db = get_db()
+    posts = db.execute(
+        "SELECT sample_id, stock_id, amount, units, volmass FROM sample_stock WHERE sample_id = ? ORDER BY id", (id,)
+    ).fetchall()
+
+    if len(posts) == 0:
+        abort(404, f"Sample ID {id} doesn't exist.")
+
+    return dictionary_gen(posts)
+
+def dictionary_gen(posts):
+    stock_component_list = sample_stock_json(posts)
+
+    if len(stock_component_list) == 1:
+
+        stock_component_list = stock_component_list[0]
+
+    return jsonify(stock_component_list)
 
 @bp.route("/sample/<int:id>/delete", methods=("GET", "POST"))
 def delete(id):

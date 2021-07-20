@@ -1,10 +1,10 @@
 import random
-from NistoRoboto.shared.units import * # CHANGE THIS IMPORT PATH WHEN YOU USE THE REAL PROJECT!!!!
+from componentDB.utility.units import * # CHANGE THIS IMPORT PATH WHEN YOU USE THE REAL PROJECT!!!!
 
 from flask import *
 from werkzeug.exceptions import abort
 
-from componentDB.utility.utility_function import pagination, page_range, generate_label, csvwrite
+from componentDB.utility.utility_function import pagination, page_range, generate_label, csvwrite, stock_component_json
 from componentDB.db import get_db
 
 bp = Blueprint("stock", __name__)
@@ -128,6 +128,46 @@ def export(id):
 
     path = csvwrite(posts, header, 'static/export', '/stock_component_export_in.txt')
     return send_from_directory(path, 'stock_component_export_in.txt', as_attachment=True)
+
+@bp.route("/stock/<string:name>/json")
+def generate_json_name(name):
+    db = get_db()
+
+    name = name.replace("_", " ")
+
+    id = db.execute("SELECT id FROM stock WHERE name = ?", (name,), ).fetchone()
+
+    if id is None:
+        abort(404, f"Stock '{name}' doesn't exist. Names are case sensitive. Use underscores for spaces in name.")
+
+    id = id[0]
+
+    posts = db.execute(
+        "SELECT component_id, stock_id, amount, units, volmass FROM stock_component WHERE stock_id = ? ORDER BY id", (id,),
+    ).fetchall()
+
+    return dictionary_gen(posts)
+
+@bp.route("/stock/<int:id>/json")
+def generate_json_id(id):
+    db = get_db()
+    posts = db.execute(
+        "SELECT component_id, stock_id, amount, units, volmass FROM stock_component WHERE stock_id = ? ORDER BY id", (id,),
+    ).fetchall()
+
+    if len(posts) == 0:
+        abort(404, f"Stock ID {id} doesn't exist.")
+
+    return dictionary_gen(posts)
+
+def dictionary_gen(posts):
+    stock_component_list = stock_component_json(posts)
+
+    if len(stock_component_list) == 1:
+
+        stock_component_list = stock_component_list[0]
+
+    return jsonify(stock_component_list)
 
 @bp.route("/stock/<int:id>/delete", methods=("GET", "POST"))
 def delete(id):

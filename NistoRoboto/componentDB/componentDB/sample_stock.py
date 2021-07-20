@@ -5,7 +5,7 @@ from flask import *
 from werkzeug.exceptions import *
 from werkzeug.utils import secure_filename
 
-from componentDB.utility.utility_function import isfloat, csvwrite, csvread, pagination, page_range
+from componentDB.utility.utility_function import isfloat, csvwrite, csvread, pagination, page_range, sample_stock_json
 from componentDB.db import get_db
 
 bp = Blueprint("sample_stock", __name__)
@@ -256,19 +256,7 @@ def generate_json():
         "SELECT sample_id, stock_id, amount, units, volmass FROM sample_stock ORDER BY id",
     ).fetchall()
 
-    sample_stock_list = []
-
-    for i, post in enumerate(posts):
-        sample_stock_list.append({})
-
-        name = db.execute("SELECT name FROM sample WHERE id = ?", (post[0],)).fetchone()[0]
-
-        sample_stock_list[i]['sample_name'] = name
-        sample_stock_list[i]['sample_id'] = post[0]
-        sample_stock_list[i]['stock_id'] = post[1]
-        sample_stock_list[i]['amount'] = post[2]
-        sample_stock_list[i]['units'] = post[3]
-        sample_stock_list[i]['volmass'] = post[4]
+    sample_stock_list = sample_stock_json(posts)
 
     return jsonify(sample_stock_list)
 

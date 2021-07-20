@@ -41,6 +41,7 @@
         <a class="action" href="{{ url_for('sample.update', id=post['id']) }}">Edit</a>
         <a class="action" href="{{ url_for('sample.detail', id=post['id']) }}">Detail</a>
         <a class="action" href="{{ url_for('sample.export', id=post['id']) }}">Export Individual Sample</a>
+        <a class="action" href="{{ url_for('sample.generate_json_id', id=post['id']) }}" target="_blank">Individual JSON</a>
 
         <form action="{{ url_for('sample.label', id=post['id']) }}">
         <input class="print" type="submit" value="Print Label" onclick="return confirm('Are you sure you want to print a label?');">

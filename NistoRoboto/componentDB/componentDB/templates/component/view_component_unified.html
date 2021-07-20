@@ -73,6 +73,7 @@
             <th>Density Units</th>
             <th>Formula</th>
             <th>SLD</th>
+            <th></th>
         </tr>
 
       {% for post in posts %}
@@ -88,6 +89,9 @@
             <td>{{ post['density_units'] }}</td>
             <td>{{ post['formula'] }}</td>
             <td>{{ post['sld'] }}</td>
+            <td><a class="action" href="{{ url_for('component.update', id=post['id']) }}">Edit</a>
+          <a class="action" href="{{ url_for('component.export_individual', id=post['id']) }}">CSV</a>
+          <a class="action" href="{{ url_for('component.generate_json_id', id=post['id']) }}" target="_blank">JSON</a></td>
         </tr>
 
       {% endfor %}

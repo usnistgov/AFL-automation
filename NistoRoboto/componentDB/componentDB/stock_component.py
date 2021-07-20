@@ -115,15 +115,19 @@ def create():
         stock_name = request.form['stock_name']
         """"""
 
-        stock_id = request.form['stock_id']
+        # stock_id = request.form['stock_id']
+        stock_id = request.form.get('stock_id', '')
         component_id = request.form['component_id']
         amount = request.form['amount']
         units = request.form['units']
         volmass = request.form.get('volmass', '')
 
+        if stock_id == '':
+            flash("Choose Stock ID")
+            passed = False
+
         if volmass == '':
             flash("Choose volume or mass")
-            volmass = ''
             passed = False
 
         if not (stock_id.isdecimal() and component_id.isdecimal() and isfloat(amount)):
@@ -139,7 +143,13 @@ def create():
 
             return redirect(url_for('stock.detail', id=stock_id))
 
-    return render_template("stock_component/create_stock_component.html", back=session['stock_url'])
+    db = get_db()
+
+    components = db.execute(
+        "SELECT id FROM component ORDER BY id"
+    ).fetchall()
+
+    return render_template("stock_component/create_stock_component.html", components=components, back=session['stock_url'])
 
 
 def insert(stock_name, stock_id, component_id, amount, units, volmass):
@@ -212,8 +222,14 @@ def update(id):
             db.commit()
             return redirect(url_for('stock.detail', id=stock_id))
 
+    db = get_db()
+
+    components = db.execute(
+        "SELECT id FROM component ORDER BY id"
+    ).fetchall()
+
     return render_template("stock_component/update_stock_component.html", post=post,
-                           back=session['stock_detail_url'])
+                           components=components, back=session['stock_detail_url'])
 
 
 @bp.route("/stock_component/export")

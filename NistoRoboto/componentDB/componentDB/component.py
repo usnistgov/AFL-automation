@@ -196,27 +196,33 @@ def export():
 def send_json():
     if request.method == "POST":
         dictionary = request.get_json()
-        db = get_db()
-        #for entry in dictionary:
-        #    print(entry)
-        entry = dictionary
-        entry['id'] = int(entry['id'])
-        entry['mass'] = float(entry['mass'])
-        entry['density'] = float(entry['density'])
-        if entry['sld'] != '':
-            entry['sld'] = float(entry['sld'])
 
-        posts = db.execute(
-            "SELECT * FROM component WHERE id = ?", (entry['id'],),
-                 ).fetchall()
-        if len(posts) == 0:
-            insert(entry['name'], entry['description'], entry['mass'], entry['mass_units'], entry['density'],
-                   entry['density_units'], entry['formula'], entry['sld'])
-        else:
-            update_help(entry['id'],
-                            ComponentObject(entry['name'], entry['description'], entry['mass'], entry['mass_units'],
-                                            entry['density'], entry['density_units'], entry['formula'], entry['sld'],
-                                            True))
+        if type(dictionary) is dict:
+            copy = dictionary
+            dictionary = [copy]
+
+        db = get_db()
+
+        for entry in dictionary:
+
+            if entry['id'] is None or entry['id'] == '':
+
+                posts = db.execute(
+                    "SELECT * FROM component WHERE id = ?", (entry['id'],),
+                ).fetchone()
+                if posts is None:
+                    insert(entry['name'], entry['description'], entry['mass'], entry['mass_units'], entry['density'],
+                           entry['density_units'], entry['formula'], entry['sld'])
+                else:
+                    update_help(entry['id'],
+                                ComponentObject(entry['name'], entry['description'], entry['mass'], entry['mass_units'],
+                                                entry['density'], entry['density_units'], entry['formula'], entry['sld'],
+                                                True))
+            else:
+
+                insert(entry['name'], entry['description'], entry['mass'], entry['mass_units'], entry['density'],
+                       entry['density_units'], entry['formula'], entry['sld'])
+
 
     return "Send JSONS to this url."
 

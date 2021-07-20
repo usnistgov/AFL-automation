@@ -5,7 +5,8 @@ from flask import *
 from werkzeug.exceptions import *
 from werkzeug.utils import secure_filename
 
-from componentDB.utility.utility_function import isfloat, csvwrite, csvread, pagination, page_range
+from componentDB.utility.utility_function import isfloat, csvwrite, csvread, pagination, page_range, \
+    stock_component_json
 from componentDB.db import get_db
 
 bp = Blueprint("stock_component", __name__)
@@ -273,21 +274,7 @@ def generate_json():
         "SELECT component_id, stock_id, amount, units, volmass FROM stock_component ORDER BY id",
     ).fetchall()
 
-    stock_component_list = []
-
-    for i, post in enumerate(posts):
-        stock_component_list.append({})
-
-        name = db.execute("SELECT name FROM stock WHERE id = ?", (post[1],)).fetchone()[0]
-
-        stock_component_list[i]['stock_name'] = name
-        stock_component_list[i]['component_id'] = post[0]
-        stock_component_list[i]['stock_id'] = post[1]
-        stock_component_list[i]['amount'] = post[2]
-        stock_component_list[i]['units'] = post[3]
-        stock_component_list[i]['volmass'] = post[4]
-
-    return jsonify(stock_component_list)
+    return jsonify(stock_component_json(posts))
 
 
 @bp.route("/stock_component/<int:id>/delete", methods=("GET", "POST"))

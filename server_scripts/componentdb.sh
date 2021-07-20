@@ -9,4 +9,4 @@ git pull
 export FLASK_APP=componentDB
 export FLASK_ENV=development
 
-python ../../server_scripts/ComponentDB.py
+python /home/nistoroboto/NistoRoboto/server_scripts/ComponentDB.py

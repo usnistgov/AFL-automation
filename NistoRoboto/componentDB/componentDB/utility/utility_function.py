@@ -22,8 +22,8 @@ def isfloat(value):
 def generate_label(id, name, type):
 
   qrimg = qrcode.make(f"id:{id}")
-  img = PIL.Image.new(mode='LA', size=[800, 290])
-  canvas = PIL.ImageDraw.Draw(img)
+  img = PIL.Image.new(mode='RGB', size=[1100, 290],color='#ffffff')
+  canvas = PIL.ImageDraw.Draw(img,)
   canvas.text((300, 25), f"ID: {id}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=36),
               fill='#000000')  # You may need to change filepath for fonts if using linux
   canvas.text((300, 75), f"Type: {type}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24), fill='#000000')

@@ -1,4 +1,5 @@
 import os
+import webbrowser
 from os.path import *
 
 from flask import *
@@ -58,7 +59,7 @@ def get_post(id, check_author=True):
     )
 
     if post is None:
-        abort(404, f"Component id {id} doesn't exist.")
+        abort(404, f"Component ID {id} doesn't exist.")
 
     return post
 
@@ -191,6 +192,19 @@ def export():
     path = csvwrite(posts, header, 'static/export', '/component_export.txt')
     return send_from_directory(path, 'component_export.txt', as_attachment=True)
 
+@bp.route("/component/<int:id>/export")
+def export_individual(id):
+
+    db = get_db()
+    posts = db.execute(
+        "SELECT name, description, mass, mass_units, density, density_units, formula, sld FROM component WHERE id = ? ORDER BY id", (id,)
+    ).fetchall()
+
+    header = ['NAME', 'DESCRIPTION', 'MASS', 'MASS UNITS', 'DENSITY', 'DENSITY UNITS', 'FORMULA',
+              'SLD (LEAVE BLANK IF OPTIONAL)']
+
+    path = csvwrite(posts, header, 'static/export', '/component_export_in.txt')
+    return send_from_directory(path, 'component_export_in.txt', as_attachment=True)
 
 @bp.route("/component/send_json", methods=("GET", "POST"))
 def send_json():
@@ -202,7 +216,6 @@ def send_json():
             dictionary = [copy]
 
         db = get_db()
-
         for entry in dictionary:
 
             if entry['id'] is None or entry['id'] == '':
@@ -223,9 +236,34 @@ def send_json():
                 insert(entry['name'], entry['description'], entry['mass'], entry['mass_units'], entry['density'],
                        entry['density_units'], entry['formula'], entry['sld'])
 
-
     return "Send JSONS to this url."
 
+@bp.route("/component/<string:name>/json")
+def generate_json_name(name):
+    db = get_db()
+
+    name = name.replace("_", " ")
+
+    posts = db.execute(
+        "SELECT id, name, description, mass, mass_units, density, density_units, formula, sld FROM component WHERE name = ? ORDER BY id", (name,)
+    ).fetchall()
+
+    if len(posts) == 0:
+        abort(404, f"Component '{name}' doesn't exist. Names are case sensitive.")
+
+    return dictionary_gen(posts)
+
+@bp.route("/component/<int:id>/json")
+def generate_json_id(id):
+    db = get_db()
+    posts = db.execute(
+        "SELECT id, name, description, mass, mass_units, density, density_units, formula, sld FROM component WHERE id = ? ORDER BY id", (id,)
+    ).fetchall()
+
+    if len(posts) == 0:
+        abort(404, f"Component ID {id} doesn't exist.")
+
+    return dictionary_gen(posts)
 
 @bp.route("/component/json")
 def generate_json():
@@ -233,6 +271,10 @@ def generate_json():
     posts = db.execute(
         "SELECT id, name, description, mass, mass_units, density, density_units, formula, sld FROM component ORDER BY id",
     ).fetchall()
+
+    return dictionary_gen(posts)
+
+def dictionary_gen(posts):
 
     component_list = []
 
@@ -248,6 +290,10 @@ def generate_json():
         component_list[i]['density_units'] = post[6]
         component_list[i]['formula'] = post[7]
         component_list[i]['sld'] = post[8]
+
+    if len(component_list) == 1:
+
+        component_list = component_list[0]
 
     return jsonify(component_list)
 

@@ -47,6 +47,7 @@
         <br><i>Numbers displayed in chart are in g or ml.</i>
 
         <br> <br> <a class="action" href="{{ url_for('sample.export', id=post['id']) }}">Export Individual Sample</a>
+        <br> <br> <a class="action" href="{{ url_for('sample.generate_json_id', id=post['id']) }}">Individual JSON</a>
 
         <canvas id="myChart" width="900" height="600"></canvas>
         <script>

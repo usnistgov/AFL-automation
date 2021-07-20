@@ -2,11 +2,10 @@ import csv
 import os
 from math import ceil
 import PIL
-import PIL.ImageFont
 import datetime
 import qrcode
 import rasterprynt
-from flask import current_app, request, session
+from flask import current_app, request, session, jsonify
 from werkzeug.exceptions import abort
 from componentDB.db import get_db
 
@@ -23,14 +22,14 @@ def generate_label(id, name, type):
 
   qrimg = qrcode.make(f"id:{id}")
   img = PIL.Image.new(mode='RGB', size=[1100, 290],color='#ffffff')
-  canvas = PIL.ImageDraw.Draw(img,)
+  canvas = PIL.ImageDraw.Draw(img)
   canvas.text((300, 25), f"ID: {id}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=36),
-              fill='#000000')  # You may need to change filepath for fonts if using linux
+            fill='#000000')  # You may need to change filepath for fonts if using linux
   canvas.text((300, 75), f"Type: {type}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24), fill='#000000')
   canvas.text((300, 125), f"Name: {name}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=48), fill='#000000')
   canvas.text((300, 225), f"Last Printed: {datetime.datetime.now()}",
-              font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24),
-              fill='#000000')
+                         font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24),
+   fill='#000000')
   img.paste(qrimg, box=(0, 0))
   img.show()
 
@@ -83,6 +82,42 @@ def pagination(page, posts):
   offset = (page - 1) * per_page  # offset for SQL query
 
   return paginated(per_page, radius, total, pages, offset, unified)
+
+def stock_component_json(posts):
+  db = get_db()
+  stock_component_list = []
+
+  for i, post in enumerate(posts):
+    stock_component_list.append({})
+
+    name = db.execute("SELECT name FROM stock WHERE id = ?", (post[1],)).fetchone()[0]
+
+    stock_component_list[i]['stock_name'] = name
+    stock_component_list[i]['component_id'] = post[0]
+    stock_component_list[i]['stock_id'] = post[1]
+    stock_component_list[i]['amount'] = post[2]
+    stock_component_list[i]['units'] = post[3]
+    stock_component_list[i]['volmass'] = post[4]
+
+  return stock_component_list
+
+def sample_stock_json(posts):
+  db = get_db()
+  sample_stock_list = []
+
+  for i, post in enumerate(posts):
+    sample_stock_list.append({})
+
+    name = db.execute("SELECT name FROM sample WHERE id = ?", (post[0],)).fetchone()[0]
+
+    sample_stock_list[i]['sample_name'] = name
+    sample_stock_list[i]['sample_id'] = post[0]
+    sample_stock_list[i]['stock_id'] = post[1]
+    sample_stock_list[i]['amount'] = post[2]
+    sample_stock_list[i]['units'] = post[3]
+    sample_stock_list[i]['volmass'] = post[4]
+
+    return sample_stock_list
 
 class paginated:
 

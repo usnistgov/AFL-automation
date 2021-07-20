@@ -2,6 +2,7 @@ import csv
 import os
 from math import ceil
 import PIL
+import PIL.ImageFont
 import datetime
 import qrcode
 import rasterprynt
@@ -21,20 +22,20 @@ def isfloat(value):
 def generate_label(id, name, type):
 
   qrimg = qrcode.make(f"id:{id}")
-  img = PIL.Image.new(mode='LA', size=[800, 290])
-  canvas = PIL.ImageDraw.Draw(img)
-  canvas.text((300, 25), f"ID: {id}", font=PIL.ImageFont.truetype('arial.ttf', size=36),
+  img = PIL.Image.new(mode='RGB', size=[1100, 290],color='#ffffff')
+  canvas = PIL.ImageDraw.Draw(img,)
+  canvas.text((300, 25), f"ID: {id}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=36),
               fill='#000000')  # You may need to change filepath for fonts if using linux
-  canvas.text((300, 75), f"Type: {type}", font=PIL.ImageFont.truetype('arial.ttf', size=24), fill='#000000')
-  canvas.text((300, 125), f"Name: {name}", font=PIL.ImageFont.truetype('arial.ttf', size=48), fill='#000000')
+  canvas.text((300, 75), f"Type: {type}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24), fill='#000000')
+  canvas.text((300, 125), f"Name: {name}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=48), fill='#000000')
   canvas.text((300, 225), f"Last Printed: {datetime.datetime.now()}",
-              font=PIL.ImageFont.truetype('arial.ttf', size=24),
+              font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24),
               fill='#000000')
   img.paste(qrimg, box=(0, 0))
   img.show()
 
-  # printer_ip = '192.168.1.123' # Replace the ip with whatever the printer IP is
-  # rasterprynt.prynt([img], printer_ip)
+  printer_ip = '10.42.0.184' # Replace the ip with whatever the printer IP is
+  rasterprynt.prynt([img], printer_ip)
 
 def csvread(path):
 

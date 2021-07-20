@@ -202,6 +202,7 @@ def send_json():
             dictionary = [copy]
 
         db = get_db()
+
         for entry in dictionary:
 
             if entry['id'] is None or entry['id'] == '':
@@ -221,6 +222,7 @@ def send_json():
 
                 insert(entry['name'], entry['description'], entry['mass'], entry['mass_units'], entry['density'],
                        entry['density_units'], entry['formula'], entry['sld'])
+
 
     return "Send JSONS to this url."
 

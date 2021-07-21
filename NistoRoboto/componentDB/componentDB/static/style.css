@@ -87,13 +87,19 @@ body {
     font-size: large;
 }
 
-input.submit, input.danger {
+input.submit, input.danger, button.submit {
     background-color: green;
+    color: white;
     margin: auto;
     margin-top: 0.5em;
     margin-bottom: 1em;
     min-width: 20em;
     padding: 0.2em;
+}
+
+button.submit {
+    font-size: large;
+    box-shadow: inset 0px 0px 12px 0px rgba(0,0,0,0.5);
 }
 
 input.danger {
@@ -160,14 +166,32 @@ input.pagination:disabled {
     opacity: 0.5;
 }
 
-input.pagechange {
+input.pagechange, button.pagechange {
     background-color: #e74c3c;
+    color: white;
     margin: auto;
     width: 5em;
 }
 
+button.pagechange {
+    font-size: large;
+    box-shadow: inset 0px 0px 12px 0px rgba(0,0,0,0.5);
+}
+
 input.pagechange:disabled {
     opacity: 0.5;
+}
+
+.totalD {
+    float: left;
+}
+
+.gmlD {
+    float: right;
+}
+
+.createAlt {
+    display: inline-block;
 }
 
 input.number {

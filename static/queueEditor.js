@@ -1,6 +1,6 @@
 var queueTasks = []; // array for queued tasks
 var removedTasks = [];
-var numSelected, numSelectedShown; // number of selected tasks and selected tasks shown
+var numSelected, numSelectedShown, numShown; // number of selected tasks and selected tasks shown
 var queueEditorOpen = false;
 
 class Task {
@@ -357,6 +357,7 @@ function closeQueueEditor() {
 function searchFilter() {
     var input = $('#taskSearchBar').val().toUpperCase();
     var count = numSelected;
+    var count2 = queueTasks.length;
 
     for(let i = 0; i<queueTasks.length; i++) {
         var taskID = '#'+queueTasks[i].info.uuid;
@@ -365,12 +366,15 @@ function searchFilter() {
         } else {
             $(taskID).css('display','none');
 
+            --count2;
             if(queueTasks[i].selected) {
                 --count;
             }
         }
     }
 
+    numShown = count2;
+    $('#numShown').html(numShown);
     numSelectedShown = count;
     $('#numSelectedShown').html(numSelectedShown);
 }

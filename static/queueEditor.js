@@ -1,6 +1,6 @@
 var queueTasks = []; // array for queued tasks
 var removedTasks = [];
-var numSelected, numSelectedShown, numShown; // number of selected tasks and selected tasks shown
+var numSelected, numSelectedShown, numShown, priorState; // number of selected tasks and selected tasks shown
 var queueEditorOpen = false;
 
 class Task {
@@ -164,6 +164,7 @@ function editQueue(serverKey) {
     // pause the server
     server.getQueueState(function(result){
         console.log(result);
+        priorState = result;
         if(result != 'Paused') {
             server.pause();
         }
@@ -314,13 +315,14 @@ function commitQueueEdits(serverKey) {
         queue.push(queueTasks[i].info);
     }
     console.log(queue);
+    var data = {'prior_state':priorState, 'queue':queue};
 
     var server = getServer(serverKey);
     var link = server.address + 'reorder_queue';
     $.ajax({
         url: link,
         type: 'POST',
-        data: JSON.stringify(queue),
+        data: JSON.stringify(data), // JSON.stringify(queue),
         contentType: 'application/json',
         beforeSend: function(request){
             request.withCredentials = true;

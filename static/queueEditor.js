@@ -193,12 +193,15 @@ function editQueue(serverKey) {
         var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+'<br>'+searchBar+tasksShownInfo+'<br>'+selectedControls+'</div><hr style="margin-top:100px;">';
 
         var tasks = '';
+        numShown = 0;
         for(let i in queueTasks) {
             tasks += queueTasks[i].html;
+            numShown++;
         }
 
         var content = editorControls + tasks;
         $('#queueEditor').html(content);
+        $('#numShown').html(numShown);
     });
 
     // display the queue editor w/ the popup background

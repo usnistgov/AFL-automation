@@ -184,9 +184,8 @@ function editQueue(serverKey) {
         var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="moveSelected(\'m\')">Enter</button>';
         var moveSelectedTopBtn = '<button onclick="moveSelected(\'t\')">Move to Top</button>';
         var moveSelectedBottomBtn = '<button onclick="moveSelected(\'b\')">Move to Bottom</button>';
-        // var removeSelectedBtn = '<button onclick="removeSelected()" style="background-color:red;color:white;">Remove Task(s)</button>';
-        // var selectedControls = '<label>Selected Task(s) Controls: </label>'+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+'<br>'+moveSelectedBtn;
-        var selectedControls = '<label>Selected Task(s): </label>'+selectedInfo+' | '+moveSelectedTopBtn+moveSelectedBottomBtn+unselectAllBtn+'<br>'+moveSelectedBtn;
+        var removeSelectedBtn = '<button onclick="removeSelected()" style="background-color:red;color:white;">Remove</button>';
+        var selectedControls = '<label>Selected Task(s): </label>'+selectedInfo+' | '+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+unselectAllBtn+moveSelectedBtn;
         
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
         var commitBtn = '<button onclick="commitQueueEdits(\''+serverKey+'\')">Commit Queue Edits</button>';
@@ -310,6 +309,60 @@ function addTaskBack(taskID) {
  * @param {String} serverKey 
  */
 function commitQueueEdits(serverKey) {
+    var server = getServer(serverKey);
+    
+    if(removedTasks.length != 0) {
+        var removed = [];
+        let popup = new Popup('Removing Task(s) Comfirmation');
+
+        for(let i=0; i<removedTasks.length; i++) {
+            removed.push(removedTasks[i].info);
+            popup.addText(JSON.stringify(removedTasks[i].info.task));
+        }
+        console.log(removed);
+
+        popup.addCheckboxInput('procceed','procceed','Yes, I want to remove the task(s) listed');
+        popup.addToHTML();
+        $('#popupEnterBtn').click(function() {
+            var input = document.getElementById(popup.inputs[0].id);
+            console.log(input.checked);
+            if(input.checked) {
+                var link = server.address + 'remove_items';
+                $.ajax({
+                    url: link,
+                    type: 'POST',
+                    data: JSON.stringify(removed),
+                    contentType: 'application/json',
+                    beforeSend: function(request){
+                        request.withCredentials = true;
+                        request.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'));
+                    },
+                    error : function(err) {
+                        console.log('Enqueue Error!',err);
+                        alert('Failed to remove items.');
+                    },
+                    success: function(result) {
+                        console.log(result);
+                        console.log('Removed items');
+                        reorderQueue(serverKey);
+                    }
+                });
+            } else {
+                console.log('Did not confirm');
+            }
+            closePopup();
+        });
+        displayPopup();
+    } else {
+        reorderQueue(serverKey);
+    }
+}
+
+/**
+ * Reorders the server's queue to be identical to the queue editor's queue
+ * @param {String} serverKey 
+ */
+function reorderQueue(serverKey) {
     var queue = [];
     for(let i=0; i<queueTasks.length; i++) {
         queue.push(queueTasks[i].info);
@@ -322,7 +375,7 @@ function commitQueueEdits(serverKey) {
     $.ajax({
         url: link,
         type: 'POST',
-        data: JSON.stringify(data), // JSON.stringify(queue),
+        data: JSON.stringify(data),
         contentType: 'application/json',
         beforeSend: function(request){
             request.withCredentials = true;
@@ -344,6 +397,7 @@ function commitQueueEdits(serverKey) {
  */
 function closeQueueEditor() {
     queueTasks = []; // clears all tasks from queueTasks
+    removedTasks = [];
 
     // hide the queue editor w/ the popup background
     $('#queueEditor').css('visibility', 'hidden');

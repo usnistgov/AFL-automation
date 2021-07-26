@@ -1,6 +1,6 @@
 var queueTasks = []; // array for queued tasks
-var removedTasks = [];
-var numSelected, numSelectedShown, numShown, priorState; // number of selected tasks and selected tasks shown
+var removedTasks = []; // array for removed tasks
+var numSelected, numSelectedShown, numShown, priorState;
 var queueEditorOpen = false;
 
 class Task {
@@ -90,7 +90,7 @@ class Task {
             $(div).insertAfter(lastTask);
             
             // adds button to task div to re-add task + removes move task up and move task down buttons
-            var restoreBtn = '<button onclick="addTaskBack(\''+this.info.uuid+'\')">Re-Add Task</button>'; // TODO make function for button
+            var restoreBtn = '<button onclick="addTaskBack(\''+this.info.uuid+'\')">Re-Add Task</button>';
             var viewDataBtn = '<button onclick="displayTaskData(\''+this.info.uuid+'\')">&#x1F6C8;</button>';
             var content = restoreBtn+viewDataBtn;
             $(div).find('.taskControls').html(content);
@@ -125,19 +125,15 @@ class Task {
      * @param {Integer} newPosition 
      */
     movePosition(newPosition) {
-        // console.log('moves the position to '+newPosition);
-
         var task = queueTasks.splice(this.position,1);
         var temp = queueTasks.splice(newPosition);
-        // queueTasks.push(task[0]);
+
         queueTasks.push(task.pop());
         queueTasks = queueTasks.concat(temp);
 
         for(let i in queueTasks) {
             queueTasks[i].setPosition(i);
         }
-
-        // console.log(queueTasks);
 
         // reorders the display order of the tasks
         var taskDivID = '#'+this.info.uuid;
@@ -164,7 +160,6 @@ function editQueue(serverKey) {
 
     // pause the server
     server.getQueueState(function(result){
-        console.log(result);
         priorState = result;
         if(result != 'Paused') {
             server.pause();
@@ -175,7 +170,6 @@ function editQueue(serverKey) {
     server.getQueue(function(result) {
         for(let i in result[2]) {
             var tempTask = new Task(i, result[2][i]);
-            // console.dir(tempTask);
         }
 
         var selectedInfo = '<span id="numSelected">0</span> Selected | <span id="numSelectedShown">0</span> Shown';
@@ -238,7 +232,7 @@ function unselectAll() {
 }
 
 /**
- * (in-progress) Selects all tasks shown in queue editor
+ * Selects all tasks shown in queue editor
  */
 function selectShown() {
     for(let i = 0; i<queueTasks.length; i++) {
@@ -251,7 +245,7 @@ function selectShown() {
 }
 
 /**
- * (in-progress) Unselects all tasks shown in queue editor
+ * Unselects all tasks shown in queue editor
  */
 function unselectShown() {
     for(let i = 0; i<queueTasks.length; i++) {
@@ -274,7 +268,6 @@ function moveSelected(place) {
             selected.push(queueTasks[i]);
         }
     }
-    // console.log(selected);
     
     var pos;
     if(place == "t") { // move to top
@@ -298,8 +291,6 @@ function moveSelected(place) {
             }
 
             for(let i in selected) {
-                // console.dir(selected[i]);
-                // console.log(pos);
                 selected[i].movePosition(pos);
                 pos++;
             }
@@ -358,7 +349,6 @@ function commitQueueEdits(serverKey) {
         popup.addToHTML();
         $('#popupEnterBtn').click(function() {
             var input = document.getElementById(popup.inputs[0].id);
-            console.log(input.checked);
             if(input.checked) {
                 var link = server.address + 'remove_items';
                 $.ajax({
@@ -430,7 +420,7 @@ function reorderQueue(serverKey) {
  */
 function closeQueueEditor() {
     queueTasks = []; // clears all tasks from queueTasks
-    removedTasks = [];
+    removedTasks = []; // clears all tasks from removedTasks
 
     // hide the queue editor w/ the popup background
     $('#queueEditor').css('visibility', 'hidden');
@@ -502,7 +492,6 @@ function moveTaskUp(taskID) {
     for(let i=0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
             currPos = queueTasks[i].position; // gets task's current position
-            // console.log(currPos);
         }
     }
 
@@ -510,8 +499,6 @@ function moveTaskUp(taskID) {
         alert('Task is already at top of queue.');
     } else {
         newPos = currPos-1;
-        // console.log(newPos);
-
         queueTasks[currPos].movePosition(newPos); // moves task to up a position from current position
     }
 }
@@ -527,7 +514,6 @@ function moveTaskDown(taskID) {
     for(let i=0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
             currPos = queueTasks[i].position; // gets task's current position
-            // console.log(currPos);
         }
     }
 
@@ -535,8 +521,6 @@ function moveTaskDown(taskID) {
         alert('Task is already at bottom of queue.');
     } else {
         newPos = currPos++;
-        // console.log(newPos);
-
         queueTasks[currPos].movePosition(newPos); // moves the task below up a position
     }
 }

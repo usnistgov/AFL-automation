@@ -20,8 +20,6 @@ class Task {
         var moveDownBtn = '<button onclick="moveTaskDown(\''+uuid+'\')">-</button>';
         var viewDataBtn = '<button onclick="displayTaskData(\''+uuid+'\')">&#x1F6C8;</button>';
         this.html = '<div id="'+uuid+'"><span class="taskControls" style="float:right;">'+moveUpBtn+moveDownBtn+viewDataBtn+'</span>'+taskLabel+uuidLabel+'<hr></div>';
-
-        queueTasks.push(this);
     }
 
     /**
@@ -170,6 +168,7 @@ function editQueue(serverKey) {
     server.getQueue(function(result) {
         for(let i in result[2]) {
             var tempTask = new Task(i, result[2][i]);
+            queueTasks.push(tempTask);
         }
 
         var selectedInfo = '<span id="numSelected">0</span> Selected | <span id="numSelectedShown">0</span> Shown';

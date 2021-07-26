@@ -266,7 +266,7 @@ button {
         background-color: rgb(128, 128, 128, 0.5);
     }
 
-    #taskData {
+    .jsTree {
         text-align: left;
     }
 

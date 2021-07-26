@@ -8,6 +8,7 @@ class Popup {
         this.html = closeBtn + title;
 
         this.inputs = [];
+        this.jsTrees = [];
     }
 
     /**
@@ -72,11 +73,13 @@ class Popup {
 
     /**
      * Adds task meta data as jsTree and plain text to popup's html
+     * @param {String} id
      * @param {JSON} data 
      */
-    addTaskData(data) {
+    addTaskData(id, data) {
+        this.jsTrees.push(id);
         var keys, root, child, html, text;
-        html = '<div id="taskData"><ul>';
+        html = '<div id="'+id+'" class="jsTree"><ul>';
         text = JSON.stringify(data);
 
         // TODO solve the issue with generating 3+ levels in jsTree
@@ -108,10 +111,13 @@ class Popup {
         $('#popup').append(content);
 
         if(this.hasTaskData){
-            $('#taskData').on('ready.jstree', function() {
-                $('#taskData').jstree('open_all');
-            });
-            $('#taskData').jstree(); // creates the JsTree
+            for(let i = 0; i<this.jsTrees.length; i++) {
+                var treeID = '#'+this.jsTrees[i];
+                $(treeID).on('ready.jstree', function() {
+                    $(treeID).jstree('open_all');
+                });
+                $(treeID).jstree(); // creates the JsTree
+            }
         }
     }
 }
@@ -168,7 +174,8 @@ function addTaskPopup(serverKey, x, y) {
     server.getQueue(function(result) {
         var title = 'Task: ' + result[x][y].task.task_name; // TODO check if there will always be a task_name (if not, this needs to change to 'Task Meta Data')
         let popup = new Popup(title);
-        popup.addTaskData(result[x][y].task);
+        var treeID = serverKey+'_taskJsTree';
+        popup.addTaskData(treeID, result[x][y].task);
         popup.addToHTML();
         displayPopup();
     });

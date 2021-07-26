@@ -320,7 +320,8 @@ function commitQueueEdits(serverKey) {
 
         for(let i=0; i<removedTasks.length; i++) {
             removed.push(removedTasks[i].info);
-            popup.addText(JSON.stringify(removedTasks[i].info.task));
+            var treeID = removedTasks[i].info.uuid+'_jsTree';
+            popup.addTaskData(treeID,removedTasks[i].info.task);
         }
         console.log(removed);
 
@@ -447,9 +448,10 @@ function displayTaskData(taskID) {
     
     for(let i=0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
-            popup.addTaskData(queueTasks[i].info.task);
-            // TODO fix issue in Popup Class addTaskData function
-            // popup.addTaskData(queueTasks[i].info);
+            var treeID = taskID+'_jsTree';
+            popup.addTaskData(treeID, queueTasks[i].info.task);
+        }
+    }
     for(let i=0; i<removedTasks.length; i++) {
         if(removedTasks[i].info.uuid == taskID) {
             var treeID = taskID+'_jsTree';

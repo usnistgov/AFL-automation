@@ -10,6 +10,7 @@ class Task {
         this.info = info;
         this.selected = false;
         this.removed = false;
+        this.shown = true;
 
         var name = this.info.task.task_name;
         var uuid = this.info.uuid;
@@ -179,7 +180,9 @@ function editQueue(serverKey) {
 
         var selectedInfo = '<span id="numSelected">0</span> Selected | <span id="numSelectedShown">0</span> Shown';
         var unselectAllBtn = '<button onclick="unselectAll()">Unselect</button>';
-        var tasksShownInfo = '<span id="numShown">0</span> Task(s) Shown'; // TODO edit numShown
+        var tasksShownInfo = '<span id="numShown">0</span> Task(s) Shown';
+        var selectShownBtn = '<button onClick="selectShown()">Select Shown</button>';
+        var unselectShownBtn = '<button onClick="unselectShown()">Unselect Shown</button>';
 
         var moveSelectedBtn = '<label for="newTaskPos">Move to Position: </label><input type="number" id="newTaskPos" name="newTaskPos" min="0"><button onclick="moveSelected(\'m\')">Enter</button>';
         var moveSelectedTopBtn = '<button onclick="moveSelected(\'t\')">Move to Top</button>';
@@ -190,7 +193,7 @@ function editQueue(serverKey) {
         var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
         var commitBtn = '<button onclick="commitQueueEdits(\''+serverKey+'\')">Commit Queue Edits</button>';
         var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
-        var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+'<br>'+searchBar+tasksShownInfo+'<br>'+selectedControls+'</div><hr style="margin-top:100px;">';
+        var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+' '+searchBar+'<br>'+tasksShownInfo+' '+selectShownBtn+unselectShownBtn+'<br>'+selectedControls+'</div><hr style="margin-top:100px;">';
 
         var tasks = '';
         numShown = 0;
@@ -230,6 +233,32 @@ function unselectAll() {
     for(let i = 0; i<queueTasks.length; i++) {
         if(queueTasks[i].selected) {
             queueTasks[i].select();
+        }
+    }
+}
+
+/**
+ * (in-progress) Selects all tasks shown in queue editor
+ */
+function selectShown() {
+    for(let i = 0; i<queueTasks.length; i++) {
+        if(queueTasks[i].shown) {
+            if(!queueTasks[i].selected) {
+                queueTasks[i].select();
+            }
+        }
+    }
+}
+
+/**
+ * (in-progress) Unselects all tasks shown in queue editor
+ */
+function unselectShown() {
+    for(let i = 0; i<queueTasks.length; i++) {
+        if(queueTasks[i].shown) {
+            if(queueTasks[i].selected) {
+                queueTasks[i].select();
+            }
         }
     }
 }
@@ -425,6 +454,7 @@ function searchFilter() {
             $(taskID).css('display','');
         } else {
             $(taskID).css('display','none');
+            queueTasks[i].shown = false;
 
             --count2;
             if(queueTasks[i].selected) {

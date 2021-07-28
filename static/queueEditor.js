@@ -469,19 +469,31 @@ function searchFilter() {
  * @param {String} taskID 
  */
 function displayTaskData(taskID) {
-    let popup = new Popup('Task Meta Data');
-    
+    var popup, title, treeID;
+
     for(let i=0; i<queueTasks.length; i++) {
         if(queueTasks[i].info.uuid == taskID) {
-            var treeID = taskID+'_jsTree';
-            popup.addTaskData(treeID, queueTasks[i].info.task);
+            if(queueTasks[i].info.task.hasOwnProperty('task_name')) {
+                title = 'Task: ' + queueTasks[i].info.task.task_name;
+            } else {
+                title = 'Task Meta Data';
+            }
+            popup = new Popup(title);
+
+            treeID = taskID+'_jsTree';
             popup.addTaskData(treeID, queueTasks[i].info);
         }
     }
     for(let i=0; i<removedTasks.length; i++) {
         if(removedTasks[i].info.uuid == taskID) {
-            var treeID = taskID+'_jsTree';
-            popup.addTaskData(treeID, removedTasks[i].info.task);
+            if(queueTasks[i].info.task.hasOwnProperty('task_name')) {
+                title = 'Task: ' + queueTasks[i].info.task.task_name;
+            } else {
+                title = 'Task Meta Data';
+            }
+            popup = new Popup(title);
+
+            treeID = taskID+'_jsTree';
             popup.addTaskData(treeID, removedTasks[i].info);
         }
     }

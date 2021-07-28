@@ -346,7 +346,7 @@ function commitQueueEdits(serverKey) {
         for(let i=0; i<removedTasks.length; i++) {
             removed.push(removedTasks[i].info);
             var treeID = removedTasks[i].info.uuid+'_jsTree';
-            popup.addTaskData(treeID,removedTasks[i].info.task);
+            popup.addTaskData(treeID,removedTasks[i].info);
         }
         console.log(removed);
 
@@ -475,12 +475,14 @@ function displayTaskData(taskID) {
         if(queueTasks[i].info.uuid == taskID) {
             var treeID = taskID+'_jsTree';
             popup.addTaskData(treeID, queueTasks[i].info.task);
+            popup.addTaskData(treeID, queueTasks[i].info);
         }
     }
     for(let i=0; i<removedTasks.length; i++) {
         if(removedTasks[i].info.uuid == taskID) {
             var treeID = taskID+'_jsTree';
             popup.addTaskData(treeID, removedTasks[i].info.task);
+            popup.addTaskData(treeID, removedTasks[i].info);
         }
     }
 

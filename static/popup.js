@@ -80,7 +80,7 @@ class Popup {
         this.jsTrees.push(id);
         var keys, root, child, html, text;
         html = '<div id="'+id+'" class="jsTree"><ul>';
-        text = JSON.stringify(data);
+        text = JSON.stringify(data.task);
 
         // TODO solve the issue with generating 3+ levels in jsTree
         // html = '';
@@ -88,10 +88,10 @@ class Popup {
         // html = '<div id="taskData"><ul>'+add+'</ul></div><p>'+text+'</p>';
         // console.log(html);
 
-        keys = Object.keys(data);
+        keys = Object.keys(data.task);
         for(let i in keys) {
             root =  keys[i];
-            child = data[keys[i]];
+            child = data.task[keys[i]];
             html += '<li>'+root+'<ul><li>'+child+'</li></ul></li>';
         }
         html += '</ul></div><p>'+text+'</p>';
@@ -180,7 +180,7 @@ function addTaskPopup(serverKey, x, y) {
         }
         let popup = new Popup(title);
         var treeID = serverKey+'_taskJsTree';
-        popup.addTaskData(treeID, result[x][y].task);
+        popup.addTaskData(treeID, result[x][y]);
         popup.addToHTML();
         displayPopup();
     });

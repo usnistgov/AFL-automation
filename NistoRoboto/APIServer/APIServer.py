@@ -115,6 +115,8 @@ class APIServer:
         self.app.add_url_rule('/remove_item','remove_item',self.remove_item,methods=['POST'])
         self.app.add_url_rule('/move_item','move_item',self.move_item,methods=['POST'])
         self.app.add_url_rule('/get_info','get_info',self.get_info,methods=['GET'])
+        self.app.add_url_rule('/reorder_queue','reorder_queue',self.reorder_queue,methods=['POST'])
+        self.app.add_url_rule('/remove_items','remove_items',self.remove_items,methods=['POST'])
         self.app.before_first_request(self.init)
 
     def get_info(self):
@@ -353,6 +355,51 @@ class APIServer:
 
         return str(package['uuid']),200
 
+    @jwt_required()
+    def reorder_queue(self):
+        data = request.json
+        prior_state = data['prior_state']
+        reordered_queue = data['queue']
+        matches = True
+        
+        print(prior_state)
+        if prior_state != 'Paused':
+            self.app.logger.info(f'Setting queue paused state to true')
+            self.queue_daemon.paused = True
+        
+        temp_queue = list()
+        for n in range(self.task_queue.qsize()):
+            q_task = self.task_queue.queue[n] #server queue task
+            task_found = False
+            for i in range(len(reordered_queue)):
+                rq_task = reordered_queue[i] #reordered queue task
+                if rq_task['uuid'] == str(q_task['uuid']):
+                    task_found = True
+                    temp_queue.insert(i, q_task)
+                    print('found', rq_task)
+            if task_found == False:
+                matches = False
+                print('failed')
+                return 'Failed',400
+        if matches:
+            print('matched')
+            self.task_queue.queue = temp_queue
+            print(self.task_queue.queue)
+            
+        if prior_state != 'Paused':
+            self.app.logger.info(f'Setting queue paused state to false')
+            self.queue_daemon.paused = False
+        
+        return 'Success',200
+        
+    @jwt_required()
+    def remove_items(self):
+        items = request.json
+        for i in range(len(items)):
+            print('remove', items[i])
+            uuid = items[i]['uuid']
+            self.task_queue.remove(self._uuid_to_qpos(uuid))
+        return 'Success',200
 
     def _uuid_to_qpos(self,uuid):
         for idx,item in enumerate(list(self.task_queue.queue)):

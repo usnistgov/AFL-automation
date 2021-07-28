@@ -250,18 +250,33 @@ class Div {
             $(completedID).empty();
             for(let i in result[0]) {
                 var j = result[0].length - i - 1;
-                var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+j+')">'+result[0][j].task.task_name+'</li>';
+                if(result[0][j].task.hasOwnProperty('task_name')) {
+                    var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+j+')">'+result[0][j].task.task_name+'</li>';
+                } else {
+                    var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+j+')">'+JSON.stringify(result[0][j].task)+'</li>';
+                }
+                
                 $(completedID).append(task);
             }
 
             $(uncompletedID).empty();
             if(result[1].length > 0) {
-                var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+result[1][0].task.task_name+'</li><hr>';
+                if(result[1][0].task.hasOwnProperty('task_name')) {
+                    var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+result[1][0].task.task_name+'</li><hr>';
+                } else {
+                    var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+JSON.stringify(result[1][0].task)+'</li><hr>';
+                }
+                
                 $(uncompletedID).append(currentTask);
             }
 
             for(let i in result[2]) {
-                var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
+                if(result[2][i].task.hasOwnProperty('task_name')) {
+                    var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
+                } else {
+                    var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+JSON.stringify(result[2][i].task)+'</li>';
+                }
+                
                 $(uncompletedID).append(task);
             }
         });

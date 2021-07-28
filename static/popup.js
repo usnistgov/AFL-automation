@@ -172,7 +172,12 @@ function addTaskPopup(serverKey, x, y) {
     var server = getServer(serverKey);
 
     server.getQueue(function(result) {
-        var title = 'Task: ' + result[x][y].task.task_name; // TODO check if there will always be a task_name (if not, this needs to change to 'Task Meta Data')
+        var title;
+        if(result[x][y].task.hasOwnProperty('task_name')) {
+            title = 'Task: ' + result[x][y].task.task_name;
+        } else {
+            title = 'Task Meta Data';
+        }
         let popup = new Popup(title);
         var treeID = serverKey+'_taskJsTree';
         popup.addTaskData(treeID, result[x][y].task);

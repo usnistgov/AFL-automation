@@ -12,7 +12,13 @@ class Task {
         this.removed = false;
         this.shown = true;
 
-        var name = this.info.task.task_name;
+        var name;
+        if(this.info.task.hasOwnProperty('task_name')) {
+            name = this.info.task.task_name;
+        } else {
+            name = JSON.stringify(this.info.task);
+        }
+
         var uuid = this.info.uuid;
         var taskLabel = '<h4 onclick="select(\''+uuid+'\')" style="display:inline;">[<span class="taskPos">'+this.position+'</span>] '+name+'</h4>';
         var uuidLabel = '<p>(UUID: '+uuid+')</p>';

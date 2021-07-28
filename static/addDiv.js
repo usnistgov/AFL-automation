@@ -101,7 +101,7 @@ class Div {
      * Adds the div controls to the div in the html
      */
     #addDivControls() {
-        var colExp = '<button onclick="collapseDiv('+this.id+')">Collapse/Expand</button>';
+        var colExp = '<button onclick="collapseDiv('+this.id+')" class="col_exp_btn">Collapse</button>';
         var closeBtn = '<button onclick="closeDiv('+this.id+')" class="closebtn">x</button>';
         var moveUpBtn = '<button onclick="moveDivUp('+this.id+')" class="closebtn">+</button>'; // TODO make moveDivUp() function
         var moveDownBtn = '<button onclick="moveDivDown('+this.id+')" class="closebtn">-</button>'; // TODO make moveDivDown() function

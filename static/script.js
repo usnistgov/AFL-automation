@@ -86,6 +86,13 @@ function closeDiv(div) {
  */
 function collapseDiv(div) {
     $(div).find('div.content').slideToggle(400);
+    
+    var currText = $(div).find('button.col_exp_btn').html();
+    if(currText == 'Collapse') {
+        $(div).find('button.col_exp_btn').html('Expand');
+    } else {
+        $(div).find('button.col_exp_btn').html('Collapse');
+    }
 }
 
 /**

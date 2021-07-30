@@ -304,9 +304,9 @@ function addServer(popup) {
                 }
             }
         }
+
+        closePopup();
     } else {
         alert('URL was not valid.');
     }
-
-    closePopup();
 }

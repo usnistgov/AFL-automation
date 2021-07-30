@@ -148,7 +148,7 @@ function closePopup() {
 function addServerPopup() {
     let popup = new Popup('Add a Server');
 
-    popup.addTextInput('userInput', 'route', 'Server Address', 'Server Address');
+    popup.addTextInput('userInput', 'route', 'Server Address', 'http://localhost:5051/');
     popup.addCheckboxInput('status', 'status', 'Add Status');
     popup.addCheckboxInput('controls', 'controls', 'Add Controls');
     popup.addCheckboxInput('queue', 'queue', 'Add Queue');

@@ -280,6 +280,9 @@ function getServer(key) {
  */
 function addServer(popup) {
     var route = document.getElementById(popup.inputs[0].id).value; // the address of the server to add
+    if(route[route.length-1] != '/') {
+        route = route + '/';
+    }
 
     var isValid = isValidURL(route);
     if(isValid) {

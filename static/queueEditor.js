@@ -189,7 +189,7 @@ function editQueue(serverKey) {
         var removeSelectedBtn = '<button onclick="removeSelected()" style="background-color:red;color:white;">Remove</button>';
         var selectedControls = '<label>Selected Task(s): </label>'+selectedInfo+' | '+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+unselectAllBtn+moveSelectedBtn;
         
-        var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
+        var closeBtn = '<button onclick="closeQueueEditor(\''+serverKey+'\')" style="float:right;">x</button>';
         var commitBtn = '<button onclick="commitQueueEdits(\''+serverKey+'\')">Commit Queue Edits</button>';
         var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
         var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+' '+searchBar+'<br>'+tasksShownInfo+' '+selectShownBtn+unselectShownBtn+'<br>'+selectedControls+'</div><hr style="margin-top:100px;">';
@@ -415,15 +415,16 @@ function reorderQueue(serverKey) {
         },
         success: function(result) {
             console.log(result);
-            closeQueueEditor(); // closes the queue editor
+            closeQueueEditor(serverKey); // closes the queue editor
         }
     });
 }
 
 /**
  * Closes the queue editor
+ * @param {String} serverKey 
  */
-function closeQueueEditor() {
+function closeQueueEditor(serverKey) {
     queueTasks = []; // clears all tasks from queueTasks
     removedTasks = []; // clears all tasks from removedTasks
 
@@ -431,6 +432,13 @@ function closeQueueEditor() {
     $('#queueEditor').css('visibility', 'hidden');
     $('#popup-background').css('visibility', 'hidden');
     $('#queueEditor').empty();
+
+    var server = getServer(serverKey);
+    server.getQueueState(function(result){
+        if(priorState != result) {
+            server.pause();
+        }
+    });
 
     queueEditorOpen = false;
 }

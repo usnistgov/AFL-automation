@@ -145,20 +145,23 @@ button {
         .menu li button:hover {background-color: orange !important;}
 
 /* CSS for the divs */
-    #containers {
+    #main-content {
         width: 100%;
         margin: 0 auto;
         margin-top: 25px;
+        margin-bottom: 15px;
+    }
 
-        /* column-count: 2;
-        column-fill: auto; */
+    #containers {
+        column-count: 2;
+        column-fill: auto;
     }
 
     .container {
         outline: #173F5F solid 1px;
         padding: auto;
         box-shadow: 1px 2px 4px 2px;
-        margin: 15px;
+        margin: 0px 5px 15px;
     }
 
     .header {

@@ -286,6 +286,7 @@ function addServer(popup) {
 
     var isValid = isValidURL(route);
     if(isValid) {
+        storeServerRoute(route);
         let server = new Server(route); // a new Server object created from the route
 
         addServerToMenu(server); // adds the menu items related to the server to the menu
@@ -312,4 +313,29 @@ function addServer(popup) {
     } else {
         alert('URL was not valid.');
     }
+}
+
+/**
+ * Stores the server route in local storage (provided the route is not already stored)
+ * @param {String} route 
+ */
+function storeServerRoute(route) {
+    if(localStorage.getItem('routes') == null) {
+        localStorage.setItem('routes',JSON.stringify([route]));
+    } else {
+        var storedRoutes = JSON.parse(localStorage.getItem('routes'));
+        var found = false;
+
+        for(let i=0; i<storedRoutes.length; i++) {
+            if(storedRoutes[i] == route) {
+                found = true;
+            }
+        }
+
+        if(!found) {
+            storedRoutes.push(route);
+            localStorage.setItem('routes',JSON.stringify(storedRoutes));
+        }
+    }
+    console.log('Stored Routes: ',localStorage.getItem('routes'));
 }

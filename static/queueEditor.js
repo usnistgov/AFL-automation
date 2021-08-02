@@ -65,6 +65,9 @@ class Task {
             this.position = queueTasks.length-1;
             this.removed = false;
 
+            numShown++;
+            $('#numShown').html(numShown);
+
             $(div).find('.taskPos').html(this.position); // changes the task label position
 
             // adds buttons to move task up or down one position + to view task meta data
@@ -86,6 +89,9 @@ class Task {
             removedTasks.push(queueTasks.splice(pos,1).pop()); // removes the task from queueTasks and moves it to removedTasks
             this.position = removedTasks.length-1;
             this.removed = true;
+
+            numShown--;
+            $('#numShown').html(numShown);
 
             $(div).find('.taskPos').html('-'); // changes the task label position to - to reflect it's removed
             
@@ -189,7 +195,7 @@ function editQueue(serverKey) {
         var removeSelectedBtn = '<button onclick="removeSelected()" style="background-color:red;color:white;">Remove</button>';
         var selectedControls = '<label>Selected Task(s): </label>'+selectedInfo+' | '+moveSelectedTopBtn+moveSelectedBottomBtn+removeSelectedBtn+unselectAllBtn+moveSelectedBtn;
         
-        var closeBtn = '<button onclick="closeQueueEditor()" style="float:right;">x</button>';
+        var closeBtn = '<button onclick="closeQueueEditor(\''+serverKey+'\')" style="float:right;">x</button>';
         var commitBtn = '<button onclick="commitQueueEdits(\''+serverKey+'\')">Commit Queue Edits</button>';
         var searchBar = '<label>Task Search: </label><input type="text" id="taskSearchBar" onkeyup="searchFilter()" placeholder="Search for tasks by name">';
         var editorControls = '<div id="queueEditorControls">'+closeBtn+commitBtn+' '+searchBar+'<br>'+tasksShownInfo+' '+selectShownBtn+unselectShownBtn+'<br>'+selectedControls+'</div><hr style="margin-top:100px;">';
@@ -415,15 +421,16 @@ function reorderQueue(serverKey) {
         },
         success: function(result) {
             console.log(result);
-            closeQueueEditor(); // closes the queue editor
+            closeQueueEditor(serverKey); // closes the queue editor
         }
     });
 }
 
 /**
  * Closes the queue editor
+ * @param {String} serverKey 
  */
-function closeQueueEditor() {
+function closeQueueEditor(serverKey) {
     queueTasks = []; // clears all tasks from queueTasks
     removedTasks = []; // clears all tasks from removedTasks
 
@@ -431,6 +438,13 @@ function closeQueueEditor() {
     $('#queueEditor').css('visibility', 'hidden');
     $('#popup-background').css('visibility', 'hidden');
     $('#queueEditor').empty();
+
+    var server = getServer(serverKey);
+    server.getQueueState(function(result){
+        if(priorState != result) {
+            server.pause();
+        }
+    });
 
     queueEditorOpen = false;
 }
@@ -440,27 +454,42 @@ function closeQueueEditor() {
  */
 function searchFilter() {
     var input = $('#taskSearchBar').val().toUpperCase();
-    var count = numSelected;
-    var count2 = queueTasks.length;
+    var numSelectedShownCount = numSelected;
+    var numShownCount = queueTasks.length;
 
     for(let i = 0; i<queueTasks.length; i++) {
         var taskID = '#'+queueTasks[i].info.uuid;
-        if(queueTasks[i].info.task.task_name.toUpperCase().indexOf(input) > -1) {
-            $(taskID).css('display','');
+        if(queueTasks[i].info.task.hasOwnProperty('task_name')) {
+            if(queueTasks[i].info.task.task_name.toUpperCase().indexOf(input) > -1) {
+                $(taskID).css('display','');
+            } else {
+                $(taskID).css('display','none');
+                queueTasks[i].shown = false;
+    
+                --numShownCount;
+                if(queueTasks[i].selected) {
+                    --numSelectedShownCount;
+                }
+            }
         } else {
-            $(taskID).css('display','none');
-            queueTasks[i].shown = false;
-
-            --count2;
-            if(queueTasks[i].selected) {
-                --count;
+            if(JSON.stringify(queueTasks[i].info.task).toUpperCase().indexOf(input) > -1) {
+                $(taskID).css('display','');
+            } else {
+                $(taskID).css('display','none');
+                queueTasks[i].shown = false;
+    
+                --numShownCount;
+                if(queueTasks[i].selected) {
+                    --numSelectedShownCount;
+                }
             }
         }
+        
     }
 
-    numShown = count2;
+    numShown = numShownCount;
     $('#numShown').html(numShown);
-    numSelectedShown = count;
+    numSelectedShown = numSelectedShownCount;
     $('#numSelectedShown').html(numSelectedShown);
 }
 

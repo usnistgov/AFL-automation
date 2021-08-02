@@ -32,10 +32,22 @@ class Popup {
      * @param {String} id 
      * @param {String} name 
      * @param {String} label 
-     * @param {String} placeholder 
+     * @param {String} placeholder
+     * @param {String[]} datalist
      */
-    addTextInput(id, name, label, placeholder) {
-        var html = '<label for="'+name+'">'+label+': </label><input type="text" id="'+id+'" name="'+name+'" placeholder="'+placeholder+'"><br>';
+    addTextInput(id, name, label, placeholder, datalist = null) {
+        var html = '<label for="'+name+'">'+label+': </label>';
+        if(datalist != null) {
+            html += '<input type="text" id="'+id+'" name="'+name+'" placeholder="'+placeholder+'" list="list-'+id+'">';
+            html += '<datalist id="list-'+id+'">';
+            for(let i=0; i<datalist.length; i++) {
+                html += '<option value="'+datalist[i]+'">';
+            }
+            html += '</datalist><br>';
+        } else {
+            html += '<input type="text" id="'+id+'" name="'+name+'" placeholder="'+placeholder+'"><br>';
+        }
+
         this.html += html;
         this.inputs.push({
             id: id,
@@ -148,7 +160,13 @@ function closePopup() {
 function addServerPopup() {
     let popup = new Popup('Add a Server');
 
-    popup.addTextInput('userInput', 'route', 'Server Address', 'Server Address');
+    if(localStorage.getItem('routes') != null) {
+        var storedRoutes = JSON.parse(localStorage.getItem('routes'));
+        popup.addTextInput('userInput', 'route', 'Server Address', 'http://localhost:5051/', storedRoutes);
+    } else {
+        popup.addTextInput('userInput', 'route', 'Server Address', 'http://localhost:5051/');
+    }
+
     popup.addCheckboxInput('status', 'status', 'Add Status');
     popup.addCheckboxInput('controls', 'controls', 'Add Controls');
     popup.addCheckboxInput('queue', 'queue', 'Add Queue');

@@ -24,7 +24,7 @@ class Task {
         var uuidLabel = '<p>(UUID: '+uuid+')</p>';
         var moveUpBtn = '<button onclick="moveTaskUp(\''+uuid+'\')">+</button>';
         var moveDownBtn = '<button onclick="moveTaskDown(\''+uuid+'\')">-</button>';
-        var viewDataBtn = '<button onclick="displayTaskData(\''+uuid+'\')">&#x1F6C8;</button>';
+        var viewDataBtn = '<button onclick="displayTaskData(\''+uuid+'\')">i</button>';
         this.html = '<div id="'+uuid+'"><span class="taskControls" style="float:right;">'+moveUpBtn+moveDownBtn+viewDataBtn+'</span>'+taskLabel+uuidLabel+'<hr></div>';
     }
 
@@ -158,13 +158,36 @@ class Task {
 }
 
 /**
- * Sets up and opens the queue editor
+ * Promts user for API Serve password to open the queue editor
  * @param {String} serverKey 
  */
 function editQueue(serverKey) {
     var server = getServer(serverKey);
-    api_login(server.address); // logs into api server
 
+    var popup = new Popup('API Login');
+    popup.addTextInput('result','pass','Password','');
+    popup.addToHTML();
+    displayPopup();
+
+    $('#popupEnterBtn').click(function() {
+        var result = $('#result').val();
+        var success = api_login(server.address, result); // logs into api server
+        console.log(success);
+        if(success) {
+            setupQueueEditor(serverKey);
+            closePopup();
+        } else {
+            alert('Incorrect Password.');
+        }
+    });
+}
+
+/**
+ * Sets up the queue editor
+ * @param {String} serverKey 
+ */
+function setupQueueEditor(serverKey) {
+    var server = getServer(serverKey);
     numSelected = 0;
     numSelectedShown = 0;
 
@@ -574,22 +597,30 @@ function moveTaskDown(taskID) {
 }
 
 /**
- * Logs into the api server given the server's url
+ * Logs into the api server given the server's url and the password
  * @param {String} url 
+ * @param {String} pass
  */
-function api_login(url){
+function api_login(url, pass){
+    var login = '{"username":"HTML","password":"'+pass+'"}';
     var link = url+'login';
+    var loggedIn;
+
     $.ajax({
         url:link,
+        async: false,
         type: 'POST',
-        data:'{"username":"HTML","password":"domo_arigato"}',
+        data:login,
         contentType:'application/json',
         error : function(err) {
             console.log('Login Error!',err)
+            loggedIn = false;
         },
         success : function(data) {
             console.log('Login Success!',data)
             localStorage.setItem('token',data.token)
+            loggedIn = true;
         }
     });
- }
+    return loggedIn;
+}

@@ -162,6 +162,7 @@ button {
         padding: auto;
         box-shadow: 1px 2px 4px 2px;
         margin: 0px 5px 15px;
+        page-break-inside: avoid;
     }
 
     .header {

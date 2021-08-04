@@ -37,6 +37,19 @@ button {
         padding-right: 10px;
     }
 
+    #column-select {
+        display: inline;
+        float: left;
+        padding-left: 8px;
+        padding-top: 4px;
+        padding-right: 10px;
+    }
+
+    #column-select a {
+        color: whitesmoke;
+        text-decoration: none;
+    }
+
 /* CSS for the footer */
     footer {
         background-color: #173F5F;

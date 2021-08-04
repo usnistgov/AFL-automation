@@ -105,6 +105,14 @@ function disableBtn(btn) {
     btn.css('cursor','default')
 }
 
+/**
+ * Sets the column count
+ * @param {Int} count 
+ */
+function setColCount(count) {
+    $('#containers').css('column-count', count);
+}
+
 $(function() {
     // On event that the add-server-btn is clicked, add the add server popup
     $('#add-server-btn').click(function() {

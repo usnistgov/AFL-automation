@@ -231,7 +231,10 @@ class Div {
         var uncompletedID = this.serverKey + '_queued';
         var uncompleted = '<ul id="'+uncompletedID+'"></ul>';
 
-        var content = '<ul><li>'+ uncompleted +'</li><li>'+ completed +'</li></ul>';
+        var currentID = this.serverKey + '_current';
+        var current = '<span id="'+currentID+'"></span>';
+
+        var content = '<ul><li>'+ completed +'</li><hr>'+current+'<hr><li>'+ uncompleted +'</li></ul>';
         return content;
     }
 
@@ -242,39 +245,25 @@ class Div {
     #updateQueueContent(server) {
         var completedID = '#' + this.serverKey + '_history';
         var uncompletedID = '#' + this.serverKey + '_queued';
+        var currentID = '#' + this.serverKey + '_current';
         var key = this.serverKey;
 
         server.getQueue(function(result) {
             $(completedID).empty();
             for(let i in result[0]) {
-                var j = result[0].length - i - 1;
-                if(result[0][j].task.hasOwnProperty('task_name')) {
-                    var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+j+')">'+result[0][j].task.task_name+'</li>';
-                } else {
-                    var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+j+')">'+JSON.stringify(result[0][j].task)+'</li>';
-                }
-                
+                var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+i+')">'+result[0][i].task.task_name+'</li>';
                 $(completedID).append(task);
             }
 
-            $(uncompletedID).empty();
+            $(currentID).empty();
             if(result[1].length > 0) {
-                if(result[1][0].task.hasOwnProperty('task_name')) {
-                    var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+result[1][0].task.task_name+'</li><hr>';
-                } else {
-                    var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)">'+JSON.stringify(result[1][0].task)+'</li><hr>';
-                }
-                
-                $(uncompletedID).append(currentTask);
+                var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)" class="currentTask">'+result[1][0].task.task_name+'</li>';
+                $(currentID).append(currentTask);
             }
 
+            $(uncompletedID).empty();
             for(let i in result[2]) {
-                if(result[2][i].task.hasOwnProperty('task_name')) {
-                    var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
-                } else {
-                    var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+JSON.stringify(result[2][i].task)+'</li>';
-                }
-                
+                var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
                 $(uncompletedID).append(task);
             }
         });

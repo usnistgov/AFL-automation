@@ -185,8 +185,6 @@ button {
     }
 
     /* CSS for Queue Divs */
-        /* TODO make the queued tasks and completed tasks scrollable rather than the entire queue content */
-
         #containers div[divType="queue"] .content {
             height: 300px;
             overflow-y: auto;
@@ -201,18 +199,29 @@ button {
         #containers div[divType="queue"] .content ul {
             list-style:none;
             padding-left: 5px;
-            padding-bottom: 10px;
+            /* padding-bottom: 10px; */
         }
 
         #containers div[divType="queue"] .content > ul > li {
-            display: inline;
+            /* display: inline; */
             text-align: center;
-            float:left;
-            width: 49.5%;
+            width: 98%;
+            /* float:left;
+            width: 49.5%; */
         }
 
-        #containers div[divType="queue"] .content h4 {
-            text-decoration: underline;
+        #containers div[divType="queue"] .content hr {
+            border: 1px solid black;
+            width: 98%;
+        }
+
+        .currentTask {
+            padding: 5px;
+            margin-bottom: 5px;
+            text-align: center;
+            background-color: gray;
+            width: 98%;
+            color: whitesmoke;
         }
 
     /* CSS for Controls Divs */

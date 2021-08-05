@@ -212,15 +212,11 @@ button {
         #containers div[divType="queue"] .content ul {
             list-style:none;
             padding-left: 5px;
-            /* padding-bottom: 10px; */
         }
 
         #containers div[divType="queue"] .content > ul > li {
-            /* display: inline; */
             text-align: center;
             width: 98%;
-            /* float:left;
-            width: 49.5%; */
         }
 
         #containers div[divType="queue"] .content hr {
@@ -233,7 +229,7 @@ button {
             margin-bottom: 5px;
             text-align: center;
             background-color: gray;
-            width: 98%;
+            width: 97%;
             color: whitesmoke;
         }
 

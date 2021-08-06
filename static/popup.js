@@ -3,7 +3,7 @@ class Popup {
         this.name = name;
         this.hasTaskData = false;
 
-        var closeBtn = '<button onclick="closePopup()" style="float:right;">x</button>';
+        var closeBtn = '<button id="close-popup-btn" onclick="closePopup()" style="float:right;">x</button>';
         var title = '<h3>'+this.name+'</h3>';
         this.html = closeBtn + title;
 

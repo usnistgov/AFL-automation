@@ -164,10 +164,21 @@ class Task {
 function editQueue(serverKey) {
     var server = getServer(serverKey);
 
+    // pause the server
+    server.getQueueState(function(result){
+        priorState = result;
+        if(result != 'Paused') {
+            server.pause();
+        }
+    });
+
     var popup = new Popup('API Login');
     popup.addTextInput('result','pass','Password','');
     popup.addToHTML();
     displayPopup();
+
+    var temp = 'returnToPriorState("'+serverKey+'");closePopup();';
+    $('#close-popup-btn').attr('onclick',temp);
 
     $('#popupEnterBtn').click(function() {
         var result = $('#result').val();
@@ -190,14 +201,6 @@ function setupQueueEditor(serverKey) {
     var server = getServer(serverKey);
     numSelected = 0;
     numSelectedShown = 0;
-
-    // pause the server
-    server.getQueueState(function(result){
-        priorState = result;
-        if(result != 'Paused') {
-            server.pause();
-        }
-    });
 
     // setup the queue editor w/ the server key
     server.getQueue(function(result) {
@@ -462,14 +465,22 @@ function closeQueueEditor(serverKey) {
     $('#popup-background').css('visibility', 'hidden');
     $('#queueEditor').empty();
 
+    returnToPriorState(serverKey);
+
+    queueEditorOpen = false;
+}
+
+/**
+ * Returns the server queue to its prior state
+ * @param {String} serverKey 
+ */
+function returnToPriorState(serverKey) {
     var server = getServer(serverKey);
     server.getQueueState(function(result){
         if(priorState != result) {
             server.pause();
         }
     });
-
-    queueEditorOpen = false;
 }
 
 /**

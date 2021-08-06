@@ -226,10 +226,10 @@ class Div {
      */
     #queueContent(){
         var completedID = this.serverKey + '_history';
-        var completed = '<ul id="'+completedID+'"></ul>';
+        var completed = '<div class="queue_tasks"><ul id="'+completedID+'"></ul></div>';
 
         var uncompletedID = this.serverKey + '_queued';
-        var uncompleted = '<ul id="'+uncompletedID+'"></ul>';
+        var uncompleted = '<div class="queue_tasks"><ul id="'+uncompletedID+'"></ul></div>';
 
         var currentID = this.serverKey + '_current';
         var current = '<span id="'+currentID+'"></span>';

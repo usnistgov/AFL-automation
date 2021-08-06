@@ -198,12 +198,7 @@ button {
     }
 
     /* CSS for Queue Divs */
-        #containers div[divType="queue"] .content {
-            height: 300px;
-            overflow-y: auto;
-        }
-
-        #containers div[divType="queue"] .content > ul > li > ul > li {
+        #containers div[divType="queue"] .content > ul > li > div > ul > li {
             outline: 2px black solid;
             padding: 5px;
             margin-bottom: 5px;
@@ -231,6 +226,12 @@ button {
             background-color: gray;
             width: 97%;
             color: whitesmoke;
+        }
+
+        .queue_tasks {
+            max-height: 130px;
+            overflow-y: auto;
+            padding: 2px;
         }
 
     /* CSS for Controls Divs */

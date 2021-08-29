@@ -12,6 +12,7 @@ import time
 import json
 import copy
 import random
+import warnings
 
 import NistoRoboto
 import NistoRoboto.prepare
@@ -39,22 +40,34 @@ parser.add_argument('--noui',action='store_true')
 args = parser.parse_args()
     
 if not args.noclients:
-    prep = OT2Client(ip='piot2',interactive=True)
-    prep.login('RobotoStation')
-    prep.debug(False)
+    try:
+        prep = OT2Client(ip='piot2',interactive=True)
+        prep.login('RobotoStation')
+        prep.debug(False)
+    except requests.ConnectionError as e:
+        warnings.warn('Failed to connect to OT2 server.')
     
-    inst = Client(ip='cdsaxs',port='5000',interactive=True)
-    inst.login('RobotoStation')
-    inst.debug(False)
+    try:
+        inst = Client(ip='cdsaxs',port='5000',interactive=True)
+        inst.login('RobotoStation')
+        inst.debug(False)
+    except requests.ConnectionError as e:
+        warnings.warn('Failed to connect to CDSAXS server.')
     
-    load = Client('piloader2',interactive=True)
-    load.login('RobotoStation')
-    load.debug(False)
+    try:
+        load = Client('piloader2',interactive=True)
+        load.login('RobotoStation')
+        load.debug(False)
+    except requests.ConnectionError as e:
+        warnings.warn('Failed to connect to loader server.')
 
 
-    sample = Client(ip='localhost',port='5000',interactive=True)
-    sample.login('RobotoStation')
-    sample.debug(False)
+    try:
+        sample = Client(ip='localhost',port='5000',interactive=True)
+        sample.login('RobotoStation')
+        sample.debug(False)
+    except requests.ConnectionError as e:
+        warnings.warn('Failed to connect to sample server.')
     
     sample_client = sample
     

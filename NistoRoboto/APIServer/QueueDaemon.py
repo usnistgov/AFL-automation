@@ -9,7 +9,7 @@ class QueueDaemon(threading.Thread):
     '''
     '''
 
-    def __init__(self, app, driver, task_queue, history, debug=True):
+    def __init__(self, app, driver, task_queue, history, debug=False):
         app.logger.info('Creating QueueDaemon thread')
 
         threading.Thread.__init__(self, name='QueueDaemon', daemon=True)

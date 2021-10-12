@@ -39,18 +39,18 @@ class PySpecClient():
         print('')
         print(self.conn)
 
-        self.Spec = SCM.SpecConnection.SpecConnection(self.conn) #hard coded connection
-        while not self.Spec.is_connected():
+        self.spec = SCM.SpecConnection.SpecConnection(self.conn) #hard coded connection
+        while not self.spec.is_connected():
             pass
 
-        if self.Spec.is_connected():
+        if self.spec.is_connected():
             print(f'established connection to {self.conn}')
         
         #need to register our desired channels:
-        self.Spec.register('status/ready',self._update_channel) #this channel can be read as if spec is busy or not??
-        self.Spec.register('output/tty',self._update_output) #this channel returns the output from the cmd line and passes it into the output list
+        self.spec.register('status/ready',self._update_channel) #this channel can be read as if spec is busy or not??
+        self.spec.register('output/tty',self._update_output) #this channel returns the output from the cmd line and passes it into the output list
         print('List of registered channels')
-        for ch in list(self.Spec.reg_channels):
+        for ch in list(self.spec.reg_channels):
             print(ch)
         print("")
         return
@@ -62,35 +62,35 @@ class PySpecClient():
         """ A generic mv command. Moves the Spec directory to the specified path
         """
 
-        self.Spec.run_cmd(f'cd {path}')
+        self.spec.run_cmd(f'cd {path}')
 
     def mkdir(self, path):
         """A generic mkdir command. makes the specified directory or set of directories """
-        self.Spec.run_cmd(f'u mkdir {path}')
+        self.spec.run_cmd(f'u mkdir {path}')
 
     def get_detector_status(self):
         """Will output to the cmd line the status of the detector"""
         self.queryDetOut_cmd = "p epics_get('EIG1:cam1:DetectorState_RBV')"
-        self.Spec.run_cmd(self.queryDetOut_cmd, timeout=60)
-        self.last_output = self.Spec.reg_channels['output/tty'].read()
+        self.spec.run_cmd(self.queryDetOut_cmd, timeout=60)
+        self.last_output = self.spec.reg_channels['output/tty'].read()
         return self.last_output
 
     def GetTimeToFill(self):
         """Returns the time in seconds until beam refill at chess"""
         self.queryTTF_cmd = "p epics_get('cesr_run_left')"
-        self.Spec.run_cmd(self.queryTTF_cmd)
-        self.last_output = self.Spec.reg_channels['output/tty'].read()
+        self.spec.run_cmd(self.queryTTF_cmd)
+        self.last_output = self.spec.reg_channels['output/tty'].read()
         return self.last_output
 
     def GetIntensity(self):
         self.queryIC_low = "p epics_get('ID3B_CNT04_VLT')"
         self.queryIC_high = "p epics_get('ID3B_CNT04_VLT')"
-        self.Spec.run_cmd(self.queryIC_low)
+        self.spec.run_cmd(self.queryIC_low)
 
-        iclow = self.Spec.reg_channels['output/tty'].read()
-        self.Spec.run_cmd(self.queryIC_high)
-        self.last_output = self.Spec.reg_channels['output/tty'].read()
-        ichigh = self.Spec.reg_channels['output/tty'].read()
+        iclow = self.spec.reg_channels['output/tty'].read()
+        self.spec.run_cmd(self.queryIC_high)
+        self.last_output = self.spec.reg_channels['output/tty'].read()
+        ichigh = self.spec.reg_channels['output/tty'].read()
         return iclow
 
 

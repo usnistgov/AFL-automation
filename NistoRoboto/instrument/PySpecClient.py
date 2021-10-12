@@ -1,5 +1,6 @@
 ﻿import numpy as np
-import pyspec.client.SpecConnectionsManager as SCM
+import pyspec.client.SpecConnection import SpecConnection
+import pyspec.client.SpecCounter import SpecCounter
 import sys
 import time
 
@@ -7,11 +8,6 @@ import time
 class PySpecClient():
     """
     This class will interact with the spec server on the hutch IDB3 computer and allow SARA pass the appropriate commands
-
-    ConnectToServer()                 Creates the spec connection from sara to the spec server
-    SetFilePaths(path,filename2D)     Creates the directory structure and moves to the proper location. sends newfile cmd to spec
-    SetFlyScan()                     Sets up flyscan cmd and arms the detector for XRD collection
-
     """
     def __init__(self, address='id3b.classe.cornell.edu', port='spec'):
         self.address = address
@@ -19,6 +15,7 @@ class PySpecClient():
         self.connected = False        
         self.output = []
         self.last_output = None
+        self.counter = {}
 
     def _update_output(self, value, channel):
         self.output.append(value)
@@ -39,7 +36,7 @@ class PySpecClient():
         print('')
         print(self.conn)
 
-        self.spec = SCM.SpecConnection.SpecConnection(self.conn) #hard coded connection
+        self.spec = SpecConnection(self.conn) #hard coded connection
         while not self.spec.is_connected():
             pass
 
@@ -68,31 +65,8 @@ class PySpecClient():
         """A generic mkdir command. makes the specified directory or set of directories """
         self.spec.run_cmd(f'u mkdir {path}')
 
-    def get_detector_status(self):
-        """Will output to the cmd line the status of the detector"""
-        self.queryDetOut_cmd = "p epics_get('EIG1:cam1:DetectorState_RBV')"
-        self.spec.run_cmd(self.queryDetOut_cmd, timeout=60)
-        self.last_output = self.spec.reg_channels['output/tty'].read()
-        return self.last_output
-
-    def GetTimeToFill(self):
-        """Returns the time in seconds until beam refill at chess"""
-        self.queryTTF_cmd = "p epics_get('cesr_run_left')"
-        self.spec.run_cmd(self.queryTTF_cmd)
-        self.last_output = self.spec.reg_channels['output/tty'].read()
-        return self.last_output
-
-    def GetIntensity(self):
-        self.queryIC_low = "p epics_get('ID3B_CNT04_VLT')"
-        self.queryIC_high = "p epics_get('ID3B_CNT04_VLT')"
-        self.spec.run_cmd(self.queryIC_low)
-
-        iclow = self.spec.reg_channels['output/tty'].read()
-        self.spec.run_cmd(self.queryIC_high)
-        self.last_output = self.spec.reg_channels['output/tty'].read()
-        ichigh = self.spec.reg_channels['output/tty'].read()
-        return iclow
-
+    def register_counter(self,name):
+        self.counter[name] = SpecCounter(name,self.conn)
 
 
 

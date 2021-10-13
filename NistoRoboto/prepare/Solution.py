@@ -154,10 +154,11 @@ class Solution:
         value = enforce_units(value,'mass')
         scale_factor = value/self.mass
         for name,component in self: 
-            component.mass = (component.mass*scale_factor)
+            component.mass = enforce_units((component.mass*scale_factor),'mass')
             
     def set_mass(self,value):
         '''Setter for inline mass changes'''
+        value = enforce_units(value,'mass')
         solution = self.copy()
         solution.mass = value
         return solution
@@ -170,6 +171,9 @@ class Solution:
     @volume.setter
     def volume(self,value):
         '''Set total volume of mixture. Mass composition will be preserved'''
+        if len(self.solvents)==0:
+            raise  ValueError('Cannot set Solution volume without any Solvents')
+
         total_volume = enforce_units(value,'volume')
         
         w = self.mass_fraction

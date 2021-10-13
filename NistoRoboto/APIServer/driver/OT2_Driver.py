@@ -12,6 +12,7 @@ class OT2_Driver(Driver):
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
         self.prep_targets = []
+        self.modules = {}
 
     def reset_prep_targets(self):
         self.prep_targets = []
@@ -40,6 +41,12 @@ class OT2_Driver(Driver):
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
+    
+    def reset_tipracks(self,mount='both'):
+        for k,pipette in self.protocol.loaded_instruments.items():
+            if (mount.lower()=='both') or (k==mount.lower()):
+                pipette.reset_tipracks()
+                
 
     def reset(self):
         self.app.logger.info('Resetting the protocol context')
@@ -80,34 +87,62 @@ class OT2_Driver(Driver):
 
     def get_labware(self,slot):
         self.app.logger.debug(f'Getting labware from slot \'{slot}\'')
-        if self.protocol.deck[slot] is not None:
-            labware = Labware(self.protocol.deck[slot]) #need Labware() to convert to public interface
+        contents = self.protocol.deck[slot]
+        if contents is not None:
+            if type(contents) == opentrons.protocols.geometry.module_geometry.ModuleGeometry:
+                labware = contents.labware
+            else:
+                labware = Labware(contents) #need Labware() to convert to public interface
             self.app.logger.debug(f'Found labware \'{labware}\'')
             return labware
         else:
             raise ValueError('Specified slot ({slot}) is empty of labware')
 
 
-    def load_labware(self,name,slot,**kwargs):
+    def load_labware(self,name,slot,module=None,**kwargs):
         '''Load labware (containers,tipracks) into the protocol'''
+        
         if self.protocol.deck[slot] is not None:
-            if self.protocol.deck[slot].get_name() == name: #get_name() is part of the LabwareImplementation interface
-                self.app.logger.info(f'Labware \'{name}\' already loaded into slot \'{slot}\'.\n')
-                #do nothing
+            try:
+                if self.protocol.deck[slot].get_name() == name: #get_name() is part of the LabwareImplementation interface
+                        self.app.logger.info(f'Labware \'{name}\' already loaded into slot \'{slot}\'.\n')
+                        #do nothing
+            except AttributeError:
+                if self.protocol.deck[slot].labware.load_name == name:
+                        self.app.logger.info(f'Labware \'{name}\' already loaded into module on slot \'{slot}\'/\n')
+                        #do nothing
             else:
                 raise RuntimeError(f'''Attempted to load labware \'{name}\' into slot \'{slot}\'.
                         Slot is already filled loaded with {self.protocol.deck[slot].get_display_name()}.''')
         else: 
             self.app.logger.debug(f'Loading labware \'{name}\' into slot \'{slot}\' into the protocol context')
 
-            try:
-                self.protocol.load_labware(name,slot)
-            except FileNotFoundError:
-                CUSTOM_PATH = pathlib.Path(os.environ.get('NISTOROBOTO_CUSTOM_LABWARE'))
-                with open(CUSTOM_PATH / name / '1.json') as f:
-                    labware_def = json.load(f)
-                self.protocol.load_labware_from_definition(labware_def,slot)
-            
+        if module is not None:
+            self.modules[slot] = self.protocol.load_module(module,slot)
+            loadee = self.modules[slot]
+        else:
+            loadee = self.protocol
+
+        try:
+            loadee.load_labware(name,slot)
+        except FileNotFoundError:
+            CUSTOM_PATH = pathlib.Path(os.environ.get('NISTOROBOTO_CUSTOM_LABWARE'))
+            with open(CUSTOM_PATH / name / '1.json') as f:
+                labware_def = json.load(f)
+            loadee.load_labware_from_definition(labware_def,slot)
+
+
+    def set_temp(self,slot,temp):
+        '''Set the temperature of a tempdeck in slot slot'''
+        self.modules[slot].set_temperature(temp)
+    
+    def get_temp(self,slot):
+        '''Get the temperature of a tempdeck in slot slot'''
+        return (self.modules[slot].target,self.modules[slot].temperature)
+    def deactivate_temp(self,slot):
+        '''Disablea tempdeck in slot slot'''
+        return self.modules[slot].deactivate()
+
 
     def load_instrument(self,name,mount,tip_rack_slots,**kwargs):
         '''Load a pipette into the protocol'''

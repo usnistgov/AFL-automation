@@ -56,6 +56,13 @@ class OT2Client(Client):
 
         UUID = self.enqueue(**json)
         return UUID
+    
+    def reset_tipracks(self,mount='both'):
+        json = {}
+        json['task_name']  = 'reset_tipracks'
+        json['mount'] = mount
+        UUID = self.enqueue(**json)
+        return UUID
 
     def load_labware(self,name,slot):
         json = {}

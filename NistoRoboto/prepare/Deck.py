@@ -116,9 +116,10 @@ class Deck:
         if send_deck_config:
             self.send_deck_config(debug_mode)
 
-        for task in self.protocol:
-            kw = task.get_kwargs()
-            UUID = self.client.transfer(**kw)
+        for sample_protocol in self.protocol:
+            for task in sample_protocol:
+                kw = task.get_kwargs()
+                UUID = self.client.transfer(**kw)
         return UUID
 
     def add_pipette(self,name,mount,tipracks):

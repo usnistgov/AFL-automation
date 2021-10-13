@@ -1,5 +1,6 @@
 from collections import defaultdict
 from NistoRoboto.prepare.Solution import Solution
+import random
 
 class SampleSeries:
     def __init__(self):
@@ -21,6 +22,13 @@ class SampleSeries:
     def __iter__(self):
         for sample,validated in zip(self.samples,self.validated):
             yield sample,validated
+            
+    def shuffle(self):
+        temp = list(zip(self.samples.copy(), self.validated.copy()))
+        random.shuffle(temp)
+        samples, validated = zip(*temp)
+        self.samples = list(samples)
+        self.validated = list(validated)
 
     def __getitem__(self,index):
         return self.samples[index],self.validated[index]

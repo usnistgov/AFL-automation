@@ -135,10 +135,6 @@ class OT2_Driver(Driver):
                 labware_def = json.load(f)
             loadee.load_labware_from_definition(labware_def,slot)
             
-        for mount,pipette in self.protocol.loaded_instruments.items():
-            self.min_transfer = min(self.min_transfer,pipette.min_volume)
-            self.max_transfer = max(self.max_transfer,pipette.max_volume)
-            
 
 
     def set_temp(self,slot,temp):
@@ -172,6 +168,10 @@ class OT2_Driver(Driver):
                     raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
                 tip_racks.append(tip_rack)
             self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
+            
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            self.min_transfer = min(self.min_transfer,pipette.min_volume)
+            self.max_transfer = max(self.max_transfer,pipette.max_volume)
 
     def mix(self,volume, location, repetitions=1,**kwargs):
         self.app.logger.info(f'Mixing {volume}uL {repetitions} times at {location}')

@@ -143,6 +143,13 @@ class Deck:
         stock = stock.copy()
         self.stocks.append(stock)
         self.stock_location[stock] = location
+    
+    def get_stock(self,name):
+        for stock in self.stocks:
+            if stock.name==name:
+                return stock,self.stock_location[stock]
+            
+        raise ValueError(f'Stock with name={name} not found! Available stocks: {self.stocks}')
             
     def add_target(self,target,location='target',name=None):
         target = target.copy()
@@ -271,11 +278,14 @@ class Deck:
                 print(report)
         return self.sample_series
 
-    def make_protocol(self,only_validated=False,flatten=False):
+    def make_protocol(self,only_validated=False,flatten=False,pipette_kw=None):
+        if pipette_kw is None:
+            pipette_kw = {}
         self.protocol = []
+        skip_count = 0
         for sample,validated in self.sample_series:
             if only_validated and (not validated):
-                print(f'Skipping non-validated sample: {sample.name}')
+                skip_count+=1
                 self.protocol.append([])
             else:
                 sample_protocol = []
@@ -292,11 +302,13 @@ class Deck:
                                     source = stock_loc,
                                     dest = sample.balancer.target_location,
                                     volume = removed.volume.to('ul').magnitude, #convet from ml for to ul
+                                    **pipette_kw,
                         )
                         sample_protocol.append(action)
                 self.protocol.append(sample_protocol)
                 sample.protocol = sample_protocol
 
+        print(f'Skipped {skip_count}/{len(self.sample_series.samples)} non-validated samples')
         if flatten:
             return [action for action_group in self.protocol for action in action_group]
         else:

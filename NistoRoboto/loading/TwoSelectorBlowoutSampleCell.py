@@ -33,6 +33,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
     defaults['to_waste_vol'] = 1
     defaults['rinse_prime_vol'] = 3
     defaults['rinse_vol_ml'] = 3
+    defaults['rinse_vol_catch_ml'] = 2
     defaults['dry_vol_ml'] = 5
     defaults['blow_out_vol'] = 6
     defaults['nrinses_cell_flood'] = 2
@@ -263,7 +264,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.pump.flow_delay = self.config['rinse_flow_delay']
         if self.syringe_dirty:
             self.rinseSyringe()
-        self.blowOutCell(cellname)
+        # self.blowOutCell(cellname)
         for i in range(self.config['nrinses_cell_flood']):
             self.transfer('rinse',cellname,self.config['rinse_vol_ml'])
         self.blowOutCell(cellname)
@@ -296,22 +297,22 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
 
 
         for i in range(self.config['nrinses_catch']):
-            from_vol = self.config['rinse_vol_ml'] + self.config['syringe_to_selector_vol']
+            from_vol = self.config['rinse_vol_catch_ml'] + self.config['syringe_to_selector_vol']
             if (self.config['calibrated_catch_to_syringe_vol'] is None) or (self.config['calibrated_catch_to_syringe_vol']=='None'):
-                to_vol   = self.config['rinse_vol_ml'] + self.config['catch_to_selector_vol']
+                to_vol   = self.config['rinse_vol_catch_ml'] + self.config['catch_to_selector_vol']
             else:
-                to_vol   = self.config['calibrated_catch_to_syringe_vol'] + self.config['rinse_vol_ml']
+                to_vol   = self.config['calibrated_catch_to_syringe_vol'] + self.config['rinse_vol_catch_ml']
             self.transfer('rinse','catch',from_vol,to_vol)
 
             for i in range(1):
                 self.selector.selectPort('catch')
-                self.swish(self.config['rinse_vol_ml'])
+                self.swish(self.config['rinse_vol_catch_ml'])
 
             if (self.config['calibrated_catch_to_syringe_vol'] is None) or (self.config['calibrated_catch_to_syringe_vol']=='None'):
-                from_vol = self.config['rinse_vol_ml'] + self.config['catch_to_selector_vol'] + self.config['catch_empty_ffvol']
+                from_vol = self.config['rinse_vol_catch_ml'] + self.config['catch_to_selector_vol'] + self.config['catch_empty_ffvol']
             else:
-                from_vol   = self.config['calibrated_catch_to_syringe_vol'] + self.config['catch_empty_ffvol'] + self.config['rinse_vol_ml']
-            to_vol   = self.config['rinse_vol_ml'] + self.config['syringe_to_selector_vol']
+                from_vol   = self.config['calibrated_catch_to_syringe_vol'] + self.config['catch_empty_ffvol'] + self.config['rinse_vol_catch_ml']
+            to_vol   = self.config['rinse_vol_catch_ml'] + self.config['syringe_to_selector_vol']
             self.transfer('catch','waste',from_vol,to_vol)
 
         #clear out any remaining volume in the syringe

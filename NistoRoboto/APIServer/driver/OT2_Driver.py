@@ -175,7 +175,7 @@ class OT2_Driver(Driver):
 
         pipette.mix(repetitions,volume,location_well)
 
-    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -217,17 +217,38 @@ class OT2_Driver(Driver):
             raise ValueError('Transfer only accepts one dest well at a time!')
         else:
             dest_well = dest_wells[0]
-
-        self._transfer(
-                pipette, 
-                volume, 
-                source_well, 
-                dest_well, 
-                mix_before=mix_before, 
-                air_gap=air_gap, 
-                blow_out=blow_out, 
-                post_aspirate_delay=post_aspirate_delay, 
-                post_dispense_delay=post_dispense_delay)
+        
+        transfers = self.split_up_transfers(volume)
+        for sub_volume in transfers:
+            #get pipette based on volume
+            pipette = self.get_pipette(sub_volume)
+    
+            self._transfer(
+                    pipette, 
+                    sub_volume, 
+                    source_well, 
+                    dest_well, 
+                    mix_before=mix_before, 
+                    mix_after=mix_after, 
+                    air_gap=air_gap, 
+                    blow_out=blow_out, 
+                    post_aspirate_delay=post_aspirate_delay, 
+                    post_dispense_delay=post_dispense_delay)
+        
+    def split_up_transfers(self,vol):
+        transfers = []
+        while True:
+            if sum(transfers)<vol:
+                transfer = min(self.max_transfer,vol-sum(transfers))
+                if transfer<self.min_transfer and (len(transfers)>0) and (transfers[-1]>=(2*(self.min_transfer))):
+                    transfers[-1]-=(self.min_transfer-transfer)
+                    transfer = self.min_transfer
+                
+                transfers.append(transfer)
+            else:
+                break
+        return transfers
+        
     def _transfer( 
             self,
             pipette,

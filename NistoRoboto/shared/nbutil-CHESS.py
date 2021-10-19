@@ -48,11 +48,11 @@ if not args.noclients:
         warnings.warn('Failed to connect to OT2 server.')
     
     try:
-        inst = Client(ip='CHESSID3B',port='5000',interactive=True)
+        inst = Client(ip='lnx-id3b-1.classe.cornell.edu',port='5000',interactive=True)
         inst.login('RobotoStation')
         inst.debug(False)
     except requests.ConnectionError as e:
-        warnings.warn('Failed to connect to CDSAXS server.')
+        warnings.warn('Failed to connect to CHESSID3B server.')
     
     try:
         load = Client('piloader',interactive=True)

@@ -14,6 +14,7 @@ class OT2Client(Client):
             source_loc=None,
             dest_loc=None,
             mix_before=None,
+            mix_after=None,
             air_gap=0,
             aspirate_rate=None,
             dispense_rate=None,
@@ -43,6 +44,7 @@ class OT2Client(Client):
         json['dest']   = dest
         json['volume'] = volume
         json['mix_before'] = mix_before
+        json['mix_after'] = mix_after
         json['air_gap'] = air_gap
         json['blow_out'] = blow_out
         if source_loc is not None:

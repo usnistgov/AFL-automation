@@ -184,7 +184,7 @@ class OT2_Driver(Driver):
 
         pipette.mix(repetitions,volume,location_well)
 
-    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -236,6 +236,7 @@ class OT2_Driver(Driver):
                     source_well, 
                     dest_well, 
                     mix_before=mix_before, 
+                    mix_after=mix_after, 
                     air_gap=air_gap, 
                     blow_out=blow_out, 
                     post_aspirate_delay=post_aspirate_delay, 

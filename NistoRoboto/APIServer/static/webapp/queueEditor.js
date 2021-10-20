@@ -172,15 +172,17 @@ function editQueue(serverKey) {
         }
     });
 
-    var popup = new Popup('API Login');
+    var popup = new Popup('API Login',modal=true);
     popup.addTextInput('result','pass','Password','');
     popup.addToHTML();
-    displayPopup();
 
-    var temp = 'returnToPriorState("'+serverKey+'");closePopup();';
-    $('#close-popup-btn').attr('onclick',temp);
+    popup.addBottomButton("Cancel",function() {
+        returnToPriorState(serverKey)
+        closePopup();
 
-    $('#popupEnterBtn').click(function() {
+    });
+
+    popup.addBottomButton("Enter",function() {
         var result = $('#result').val();
         var success = api_login(server.address, result); // logs into api server
         console.log(success);
@@ -373,7 +375,7 @@ function commitQueueEdits(serverKey) {
     
     if(removedTasks.length != 0) {
         var removed = [];
-        let popup = new Popup('Removing Task(s) Comfirmation');
+        let popup = new Popup('Removing Task(s) Comfirmation',modal=true);
 
         for(let i=0; i<removedTasks.length; i++) {
             removed.push(removedTasks[i].info);
@@ -412,7 +414,7 @@ function commitQueueEdits(serverKey) {
             }
             closePopup();
         });
-        displayPopup();
+        //displayPopup();
     } else {
         reorderQueue(serverKey);
     }
@@ -562,7 +564,7 @@ function displayTaskData(taskID) {
     }
 
     popup.addToHTML();
-    displayPopup();
+    // displayPopup();
 }
 
 /**

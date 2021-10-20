@@ -1,14 +1,14 @@
 class Popup {
-    constructor(name) {
+    constructor(name,modal=true) {
         this.name = name;
         this.hasTaskData = false;
+        this.modal=modal;
 
-        var closeBtn = '<button id="close-popup-btn" onclick="closePopup()" style="float:right;">x</button>';
-        var title = '<h3>'+this.name+'</h3>';
-        this.html = closeBtn + title;
+        this.html = `<div id="dialog" class="modal fade" title="${this.name}" role="dialog">`;
 
         this.inputs = [];
         this.jsTrees = [];
+        this.buttons = {};
     }
 
     /**
@@ -112,15 +112,28 @@ class Popup {
         this.hasTaskData = true;
     }
 
+    addBottomButton(name,callback) {
+      this.buttons[name] = callback
+    }
+
     /**
      * Adds the popup's html to the popup div in the html
      */
     addToHTML() {
         var content = this.html;
-        if(this.inputs.length > 0) {
-            content += '<br><button id="popupEnterBtn">Enter</button>';
-        }
+        var buttons = this.buttons;
+        var modal = this.modal;
+        content += '</div>'
         $('#popup').append(content);
+
+        $( function() {
+          $( "#dialog" ).dialog({
+            backdrop: true,
+            modal:modal,
+            close: function( event, ui ) {$(this).dialog('destroy').remove()},
+            buttons: buttons,
+          });
+        });
 
         if(this.hasTaskData){
             for(let i = 0; i<this.jsTrees.length; i++) {
@@ -146,8 +159,7 @@ function displayPopup() {
  * Hides the popup from view and empties the popup div
  */
 function closePopup() {
-    $('#popup').css('visibility', 'hidden');
-    $('#popup').empty();
+    $('#dialog').dialog('destroy').remove();
     
     if(queueEditorOpen == false) {
         $('#popup-background').css('visibility', 'hidden');
@@ -158,7 +170,7 @@ function closePopup() {
  * Creates and adds an add server popup
  */
 function addServerPopup() {
-    let popup = new Popup('Add a Server');
+    let popup = new Popup('Add a Server',modal=true);
 
     if(localStorage.getItem('routes') != null) {
         var storedRoutes = JSON.parse(localStorage.getItem('routes'));
@@ -171,13 +183,9 @@ function addServerPopup() {
     popup.addCheckboxInput('controls', 'controls', 'Add Controls');
     popup.addCheckboxInput('queue', 'queue', 'Add Queue');
 
+    popup.addBottomButton("Enter",function() { addServer(popup) })
+
     popup.addToHTML();
-
-    $('#popupEnterBtn').click(function() {
-        addServer(popup);
-    });
-
-    displayPopup();
 }
 
 /**
@@ -196,11 +204,10 @@ function addTaskPopup(serverKey, x, y) {
         } else {
             title = 'Task Meta Data';
         }
-        let popup = new Popup(title);
+        let popup = new Popup(title, modal=false);
         var treeID = serverKey+'_taskJsTree';
         popup.addTaskData(treeID, result[x][y]);
         popup.addToHTML();
-        displayPopup();
     });
 }
 

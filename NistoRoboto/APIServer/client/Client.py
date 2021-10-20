@@ -42,7 +42,7 @@ class Client:
             raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
         return response.json()
 
-    def wait(self,target_uuid=None,interval=0.1,for_history=True,first_check_delay=10.0):
+    def wait(self,target_uuid=None,interval=0.1,for_history=True,first_check_delay=5.0):
         time.sleep(first_check_delay)
         while True:
             response = requests.get(self.url+'/get_queue',headers=self.headers)

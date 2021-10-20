@@ -13,8 +13,6 @@ class OT2_Driver(Driver):
         self.protocol = opentrons.execute.get_protocol_api('2.0')
         self.prep_targets = []
         self.modules = {}
-        self.min_transfer = 1e6
-        self.max_transfer = -1e6
 
     def reset_prep_targets(self):
         self.prep_targets = []
@@ -40,8 +38,6 @@ class OT2_Driver(Driver):
             flow_str = f' @ {aspirate}/{dispense} uL/s'
             status.append(str(v)+flow_str)
             status.append(f'Gantry Speed: {v.default_speed} mm/s')
-        status.append(f'Min transfer: {self.min_transfer} uL')
-        status.append(f'Max transfer: {self.max_transfer} uL')
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
@@ -134,7 +130,6 @@ class OT2_Driver(Driver):
             with open(CUSTOM_PATH / name / '1.json') as f:
                 labware_def = json.load(f)
             loadee.load_labware_from_definition(labware_def,slot)
-            
 
 
     def set_temp(self,slot,temp):
@@ -168,10 +163,6 @@ class OT2_Driver(Driver):
                     raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
                 tip_racks.append(tip_rack)
             self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
-            
-        for mount,pipette in self.protocol.loaded_instruments.items():
-            self.min_transfer = min(self.min_transfer,pipette.min_volume)
-            self.max_transfer = max(self.max_transfer,pipette.max_volume)
 
     def mix(self,volume, location, repetitions=1,**kwargs):
         self.app.logger.info(f'Mixing {volume}uL {repetitions} times at {location}')
@@ -184,7 +175,7 @@ class OT2_Driver(Driver):
 
         pipette.mix(repetitions,volume,location_well)
 
-    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -210,6 +201,9 @@ class OT2_Driver(Driver):
         if dispense_rate is not None:
             self.set_dispense_rate(dispense_rate)
 
+        #get pipette based on volume
+        pipette = self.get_pipette(volume)
+
         #get source well object
         source_wells = self.get_wells(source)
         if len(source_wells)>1:
@@ -223,7 +217,6 @@ class OT2_Driver(Driver):
             raise ValueError('Transfer only accepts one dest well at a time!')
         else:
             dest_well = dest_wells[0]
-            
         
         transfers = self.split_up_transfers(volume)
         for sub_volume in transfers:
@@ -236,6 +229,7 @@ class OT2_Driver(Driver):
                     source_well, 
                     dest_well, 
                     mix_before=mix_before, 
+                    mix_after=mix_after, 
                     air_gap=air_gap, 
                     blow_out=blow_out, 
                     post_aspirate_delay=post_aspirate_delay, 

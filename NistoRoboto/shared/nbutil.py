@@ -54,12 +54,15 @@ if not args.noclients:
     except requests.ConnectionError as e:
         warnings.warn('Failed to connect to CDSAXS server.')
     
-    try:
-        load = Client('piloader2',interactive=True)
-        load.login('RobotoStation')
-        load.debug(False)
-    except requests.ConnectionError as e:
-        warnings.warn('Failed to connect to loader server.')
+    for loader_name in ['piloader','piloader2']:
+        try:
+            load = Client(loader_name,interactive=True)
+            load.login('RobotoStation')
+            load.debug(False)
+        except requests.ConnectionError as e:
+            warnings.warn('Failed to connect to loader server.')
+        else:
+            break
 
 
     try:

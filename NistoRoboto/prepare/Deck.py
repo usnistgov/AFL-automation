@@ -254,7 +254,12 @@ class Deck:
                 for name in sample.target.components.keys():
                     phi_tc = sample.target_check.mass_fraction[name]
                     phi_t = sample.target.mass_fraction[name]
-                    diff = (phi_tc - phi_t)/(phi_tc)
+                    if (phi_tc<1e-6) and (phi_t<1e-6):
+                        diff = 0.0
+                    elif (phi_tc<1e-6):
+                        diff = phi_t #just take mass fraction as frac_difference
+                    else: 
+                        diff = (phi_tc - phi_t)/(phi_tc)
                     diffs.append(diff)
                     report += f'\t\t~~> {name} frac difference: {diff}\n'
 

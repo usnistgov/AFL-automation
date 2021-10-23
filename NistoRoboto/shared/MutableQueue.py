@@ -32,8 +32,10 @@ class MutableQueue:
     def _get(self,loc=0):
         return self.queue.pop(loc)
     
-    def put(self,item,loc):
+    def put(self,item,loc=None):
         '''Insert an item at the top of the queue'''
+        if loc is None:
+            loc = self.qsize()
         with self.lock:
             self._put(item,loc)
             self.not_empty.notify()# notify any waiting threads

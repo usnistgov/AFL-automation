@@ -4,7 +4,24 @@ class Popup {
         this.hasTaskData = false;
         this.modal=modal;
 
-        this.html = `<div id="dialog" class="modal fade" title="${this.name}" role="dialog">`;
+        // this.html = `<div id="dialog" class="modal fade" title="${this.name}" role="dialog">`;
+      
+        this.html = $(`<div class="modal" tabindex="-1" role="dialog">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">${this.name}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button> 
+              </div> 
+              <div class="modal-body" id="popup-body"> 
+              </div> 
+              <div class="modal-footer" id="popup-footer">
+              </div>
+            </div>
+          </div>
+        </div>`)
 
         this.inputs = [];
         this.jsTrees = [];
@@ -19,7 +36,10 @@ class Popup {
      */
     addCheckboxInput(id, name, label) {
         var html = '<input type="checkbox" id="'+id+'" name="'+name+'"><label for="'+name+'">'+label+'</label><br>';
-        this.html += html;
+        //this.html += html;
+      
+        this.html.find("#popup-body").append(html)
+      
         this.inputs.push({
             id: id,
             type: 'checkbox',
@@ -48,7 +68,8 @@ class Popup {
             html += '<input type="text" id="'+id+'" name="'+name+'" placeholder="'+placeholder+'"><br>';
         }
 
-        this.html += html;
+        // this.html += html;
+        this.html.find("#popup-body").append(html)
         this.inputs.push({
             id: id,
             type: 'text',
@@ -66,7 +87,8 @@ class Popup {
      */
     addNumberInput(id, name, label, min, max) {
         var html = '<label for="'+name+'">'+label+': </label><input type="number" id="'+id+'" name="'+name+'" min="'+min+'" max="'+max+'"><br>';
-        this.html += html;
+        // this.html += html;
+        this.html.find("#popup-body").append(html)
         this.inputs.push({
             id: id,
             type: 'number',
@@ -80,7 +102,8 @@ class Popup {
      */
     addText(text) {
         var html = '<p>'+text+'</p>';
-        this.html += html;
+        // this.html += html;
+        this.html.find("#popup-body").append(html)
     }
 
     /**
@@ -108,11 +131,16 @@ class Popup {
         }
         html += '</ul></div><p>'+text+'</p>';
 
-        this.html += html;
+        // this.html += html;
+        this.html.find("#popup-body").append(html)
         this.hasTaskData = true;
     }
 
     addBottomButton(name,callback) {
+      var pname = this.name.replaceAll(' ','_');
+      //var html = `<button id="${pname}_${name}_button" type="button" class="btn btn-primary">${name}</button>`
+      var html = `<button id="${name}_button" type="button" class="btn btn-primary">${name}</button>`
+      this.html.find("#popup-footer").append(html)
       this.buttons[name] = callback
     }
 
@@ -121,19 +149,18 @@ class Popup {
      */
     addToHTML() {
         var content = this.html;
-        var buttons = this.buttons;
-        var modal = this.modal;
-        content += '</div>'
-        $('#popup').append(content);
 
-        $( function() {
-          $( "#dialog" ).dialog({
-            backdrop: true,
-            modal:modal,
-            close: function( event, ui ) {$(this).dialog('destroy').remove()},
-            buttons: buttons,
-          });
-        });
+        $('body').append(content.html());
+        $('.modal-dialog').draggable();
+        // $('.modal-dialog').modal();
+      
+
+        for (let button_name in this.buttons) {
+          // var button_id = '#' + this.name.replaceAll(' ','_') + '_' + button_name + '_button'
+          var button_id = '#' + button_name + '_button'
+          console.log(button_id)
+          $(button_id).on('click',this.buttons[button_name])
+        }
 
         if(this.hasTaskData){
             for(let i = 0; i<this.jsTrees.length; i++) {
@@ -183,7 +210,7 @@ function addServerPopup() {
     popup.addCheckboxInput('controls', 'controls', 'Add Controls');
     popup.addCheckboxInput('queue', 'queue', 'Add Queue');
 
-    popup.addBottomButton("Enter",function() { addServer(popup) })
+    popup.addBottomButton("Enter",function() { console.log('Adding server');addServer(popup) })
 
     popup.addToHTML();
 }

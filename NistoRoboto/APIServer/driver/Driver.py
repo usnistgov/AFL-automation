@@ -36,6 +36,7 @@ def makeRegistrar():
 class Driver:
     unqueued = makeRegistrar()
     queued = makeRegistrar()
+    quickbar = makeRegistrar()
     def __init__(self,name,defaults=None,overrides=None):
         self.app = None
         if name is None:

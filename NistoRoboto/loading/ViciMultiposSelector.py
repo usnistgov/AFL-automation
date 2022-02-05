@@ -37,6 +37,14 @@ class ViciMultiposSelector(SerialDevice,FlowSelector):
             if direction is set to either "CW" or "CCW" it moves the actuator in that direction.  
             if unset or other value, will move via most efficient route.
 
+            Parameters
+            ------------
+            port : String or int
+                the name, or number, of the port to switch to
+            direction : String, default=None
+                direction "CW" or "CCW" to perform the move in
+            block : bool, default=True
+                block return until move completes
         '''
         if self.app is not None:
             self.app.logger.debug(f'Setting port to {port}')

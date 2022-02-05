@@ -93,7 +93,27 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         os.chdir(path)
 
     def measureTransmission(self,exp=5,fn='trans',set_empty_transmission=False,return_full=False,update_beam_center=True,lv=None):
-        with (LabviewConnection() if lv is None else lv) as lv:
+        '''
+            Perform a transmission measurement on the currently loaded sample.
+
+            Parameters
+            -------------
+            exp: float, default=5
+                exposure time
+            fn: string, default='trans'
+                file name to save the measurement in
+            set_empty_transmission: bool, default=False
+                set the currently-held empty transmission to the outcome of this measurement
+            return_full: bool, default=False
+                return more data.  breaks some old API parts.
+            update_beam_center: bool, default=True
+                fit and update the beam center based on this measurement
+            lv: LabViewConnection, default=None
+                use this labview connection rather than making a new one if given
+ 
+
+
+        '''with (LabviewConnection() if lv is None else lv) as lv:
             self.status_txt = 'Moving beamstop out for transmission...'
             self.moveAxis(self.config['nmc_beamstop_out'],block=True,lv=lv)
             self.moveAxis(self.config['nmc_sample_out'],block=True,lv=lv)

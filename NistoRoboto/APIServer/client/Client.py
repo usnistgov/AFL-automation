@@ -15,6 +15,14 @@ class Client:
         self.port = port
         self.url = f'http://{ip}:{port}'
         self.interactive=interactive
+        try:
+            import NistoRoboto.shared.widgetui
+            import IPython
+        except ImportError:
+            pass
+        else:
+            #Client.ui = NistoRoboto.shared.widgetui.client_construct_ui
+            setattr(Client,'ui',NistoRoboto.shared.widgetui.client_construct_ui)
 
     def logged_in(self):
         url = self.url + '/login_test'
@@ -63,6 +71,20 @@ class Client:
         #check the return info of the command we waited on
         return history[-1]['meta']
 
+    def get_quickbar(self):
+        response = requests.get(self.url+'/get_quickbar',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to get_queued_commands command failed with status_code {response.status_code}\n{response.text}')
+
+        return response.json()
+
+    def server_cmd(self,cmd,**kwargs):
+        json=kwargs
+        response = requests.get(self.url+'/'+cmd,headers=self.headers,json=json)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to server command failed with status_code {response.status_code}\n{response.text}')
+        return response.json()
+
     def enqueued_base(self,**kwargs):
         return self.enqueue(**kwargs)
 
@@ -90,6 +112,10 @@ class Client:
     def enqueue(self,interactive=None,**kwargs):
         if interactive is None:
             interactive = self.interactive
+        if 'params' in kwargs:
+            additional_kwargs = kwargs['params']()
+            del kwargs['params']
+            kwargs.update(additional_kwargs)
         json=kwargs
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:

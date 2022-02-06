@@ -3,14 +3,18 @@ import time
 from NistoRoboto.shared.exceptions import SerialCommsException
 
 class SerialDevice():
-    def __init__(self,port,baudrate=19200,timeout=0.5):
+    def __init__(self,port,baudrate=19200,timeout=0.5,raw_writes=False):
         self.serialport = serial.Serial(port,baudrate=baudrate,timeout=timeout)
         self.busy = False
+        self.raw_writes = raw_writes
     def sendCommand(self,cmd,response=True,questionmarkOK=False,timeout=-1):
         while self.busy:
             time.sleep(0.1)
         self.busy=True
-        self.serialport.write(bytes(cmd,'utf8'))
+        if self.raw_writes:
+            self.serialport.write(cmd)
+        else:
+            self.serialport.write(bytes(cmd,'utf8'))
 
         if response:
             if timeout is not -1:

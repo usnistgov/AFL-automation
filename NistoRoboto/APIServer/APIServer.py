@@ -95,6 +95,8 @@ class APIServer:
 
     def add_standard_routes(self):
         self.app.add_url_rule('/','index',self.index)
+        self.app.add_url_rule('/app','app',self.webapp)
+        self.app.add_url_rule('/webapp','webapp',self.webapp)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
         self.app.add_url_rule('/query_driver','query_driver',self.query_driver,methods=['GET'])
         self.app.add_url_rule('/clear_queue','clear_queue',self.clear_queue,methods=['POST'])
@@ -213,6 +215,12 @@ class APIServer:
         kw['name']        = self.name
         kw['driver']    = self.queue_daemon.driver.name
         return render_template(self.index_template,**kw),200
+
+    def webapp(self):
+        '''Live, status page of the robot'''
+        self.app.logger.info('Serving WebApp')
+
+        return render_template('webapp.html'),200
 
     def render_unqueued(self,func,kwargs_add,**kwargs):
         '''Convert an unqueued return item into web-suitable output'''

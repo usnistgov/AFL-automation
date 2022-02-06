@@ -1,0 +1,323 @@
+body {
+    background-color:lightsteelblue;
+    font-family: 'Times New Roman';
+}
+button {
+    font-family: 'Times New Roman';
+    font-size: medium;
+}
+
+#topbar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+}
+
+/* CSS for the header */
+    header {
+        background-color: #173F5F;
+        color: whitesmoke;
+        text-align: center;
+        height: 25px;
+        width: 100%;
+        margin: 0;
+
+    }
+
+    header h2 {
+        margin: 0;
+        display: inline;
+    }
+
+    #version {
+        display: inline;
+        float: right;
+        padding-top: 4px;
+        padding-right: 10px;
+    }
+
+    #column-select {
+        display: inline;
+        float: left;
+        padding-left: 8px;
+        padding-top: 4px;
+        padding-right: 10px;
+    }
+
+    #column-select a {
+        color: whitesmoke;
+        text-decoration: none;
+    }
+
+/* CSS for the footer */
+    footer {
+        background-color: #173F5F;
+        color: whitesmoke;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        height: 25px;
+        width: 100%;
+    }
+
+    footer p {
+        margin: 4px;
+        text-align: center;
+    }
+
+/* CSS for Menu */
+    .menu {
+        background-color: #20639B;
+        height: 41px; /* 45px to 41px*/
+        width: 98%;
+        margin: 0 auto;
+    }
+
+    .menu a {
+        background-color: #ED553B;
+        display:inline-block;
+        color: whitesmoke;
+        width: fill;
+        margin: 0px;
+        padding: 8px; /* 10px to 8px */
+        text-decoration: none;
+        text-align: center;
+        cursor: default;
+    }
+
+    .menu button {
+        background-color: #ED553B;
+        border-style: none;
+        color: whitesmoke;
+        cursor: pointer;
+        width: 100%;
+        padding: 10px; /* 15px to 10px */
+    }
+
+    #add-live-cam-btn {
+        position: relative;
+        float: right;
+        width: 120px;
+        padding: 8px; /* 10px to 8px */
+        line-height: 25px;
+        border-left:#CCC 1px solid;
+    }
+
+    #add-server-btn {
+        position: relative;
+        float: right;
+        width: 100px;
+        padding: 8px; /* 10px to 8px */
+        line-height: 25px;
+        border-left:#CCC 1px solid;
+    }
+
+    /* CSS for Multi-Level Dropdown */
+        .parent {
+            display: block;
+            position: relative;
+            float: left;
+            line-height: 25px;
+            border-right:#CCC 1px solid;
+        }
+
+        /* shows dropdown on hover */
+        .parent:hover > ul {display:block;position:absolute;}
+
+        .child {
+            display: none;
+        }
+
+        .child li {
+            line-height: 30px;
+            border-bottom:#CCC 1px solid;
+            border-right:#CCC 1px solid;
+            width:100%;
+        }
+
+        .child a {
+            min-width: 130px;
+        }
+
+        .menu ul{
+            list-style: none;
+            margin: 0;
+            padding: 0px;
+            min-width:130px;
+        }
+
+        .menu ul ul ul{
+            left: 100%;
+            top: 0;
+            margin-left:1px;
+        }
+
+        /* greys background on hover */
+        .menu li a:hover {background-color:orange;}
+        .menu li button:hover {background-color: orange !important;}
+
+/* CSS for the divs */
+    #main-content {
+        width: 100%;
+        margin: 0 auto;
+        margin-top: 25px;
+        margin-bottom: 15px;
+    }
+
+    #containers {
+        column-count: 2;
+        column-fill: balance;
+    }
+
+    .container {
+        outline: #173F5F solid 1px;
+        padding: auto;
+        box-shadow: 1px 2px 4px 2px;
+        margin: 0px 5px 15px;
+        page-break-inside: avoid;
+    }
+
+    .header {
+        text-align: left;
+        text-decoration: underline;
+    }
+
+    .content {
+        background-color: whitesmoke;
+        overflow: hidden;
+    }
+
+    .container h3 {
+        padding: 4px;
+        margin: 0;
+    }
+
+    .container p {
+        padding: 4px;
+    }
+
+    /* CSS for Queue Divs */
+        #containers div[divType="queue"] .content > ul > li > div > ul > li {
+            outline: 2px black solid;
+            padding: 5px;
+            margin-bottom: 5px;
+        }
+
+        #containers div[divType="queue"] .content ul {
+            list-style:none;
+            padding-left: 5px;
+        }
+
+        #containers div[divType="queue"] .content > ul > li {
+            text-align: center;
+            width: 98%;
+        }
+
+        #containers div[divType="queue"] .content hr {
+            border: 1px solid black;
+            width: 98%;
+        }
+
+        .currentTask {
+            padding: 5px;
+            margin-bottom: 5px;
+            text-align: center;
+            background-color: gray;
+            width: 97%;
+            color: whitesmoke;
+        }
+
+        .queue_tasks {
+            max-height: 130px;
+            overflow-y: auto;
+            padding: 2px;
+        }
+
+    /* CSS for Controls Divs */
+        #containers div[divType="controls"] .content button{
+            border: solid black 1px;
+            cursor: pointer;
+            padding: 10px;
+            margin: 10px 0px 10px 10px;
+            display: inline;
+            float:left;
+        }
+
+        .halt-btn {
+            background-color: red;
+            color: whitesmoke;
+        }
+
+        #containers div[divType="controls"] .content ul {
+            list-style:none;
+            display: inline;
+        }
+
+        #containers div[divType="controls"] .content li {
+            display: inline;
+            text-align: center;
+            float:left;
+        }
+
+/* CSS for the pop-up */
+    #popup {
+        border-style: solid;
+        background-color: white;
+        padding: 10px;
+        text-align: center;
+        overflow-y: auto;
+
+        /* makes the pop up centered */
+        position:absolute;
+        top: 50%;
+        left: 50%;
+        width:300px;
+        height:200px;
+        margin-left:-150px;
+        margin-top:-100px;
+    }
+
+    #popup-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgb(128, 128, 128, 0.5);
+    }
+
+    .jsTree {
+        text-align: left;
+    }
+
+/* CSS for the Queue Editor */
+    #queueEditor {
+        border-style: solid;
+        background-color: white;
+        padding: 10px;
+        /* text-align: center; */
+        overflow-y: auto;
+
+        /* makes the pop up centered */
+        position:absolute;
+        top: 50%;
+        left: 50%;
+        width:600px;
+        height:350px;
+        margin-left:-300px;
+        margin-top:-175px;
+    }
+
+    #queueEditor h4 {
+        margin: 5px;
+    }
+
+    #queueEditorControls {
+        position:fixed;
+        width:580px;
+        padding: 5px;
+        background-color:lightgrey;
+    }
+/* TODO CSS for smaller screens */
+/* TODO add the CSS for smaller screen sizes */

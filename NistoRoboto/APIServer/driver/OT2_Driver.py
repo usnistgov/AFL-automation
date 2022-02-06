@@ -41,7 +41,10 @@ class OT2_Driver(Driver):
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
-    
+    @Driver.quickbar(qb={'button_text':'Refill Tipracks',
+        'params':{
+        'mount':{'label':'Which Pipet left/right/both','type':'text','default':'both'},
+        }})
     def reset_tipracks(self,mount='both'):
         for k,pipette in self.protocol.loaded_instruments.items():
             if (mount.lower()=='both') or (k==mount.lower()):
@@ -62,7 +65,8 @@ class OT2_Driver(Driver):
         # self.app.logger.debug(opentrons.execute._HWCONTROL)
 
         # self.protocol = opentrons.execute.get_protocol_api('2.0')
-
+    @Driver.quickbar(qb={'button_text':'Home',
+        })
     def home(self,**kwargs):
         self.app.logger.info('Homing the robot\'s axes')
         self.protocol.home()
@@ -174,7 +178,13 @@ class OT2_Driver(Driver):
         location_well = self.get_wells(location)[0]
 
         pipette.mix(repetitions,volume,location_well)
-
+    
+    @Driver.quickbar(qb={'button_text':'Transfer',
+        'params':{
+        'source':{'label':'Source Well','type':'text','default':'1A1'},
+        'rinse2':{'label':'Dest Well','type':'text','default':'1A1'},
+        'waste':{'label':'Volume (uL)','type':'float','default':300}
+        }})
     def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
         '''Transfer fluid from one location to another
 

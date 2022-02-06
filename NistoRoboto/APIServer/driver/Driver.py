@@ -24,6 +24,8 @@ def makeRegistrar():
             if fargs[0] == 'self':
                 del fargs[0]
             function_info[func.__name__] = {'args':fargs,'kwargs':fkwargs,'doc':func.__doc__}
+            if 'qb' in kwargs:
+                function_info[func.__name__]['qb'] = kwargs['qb']
             return func  # normally a decorator returns a wrapped function, 
                          # but here we return func unmodified, after registering it
         return registrar

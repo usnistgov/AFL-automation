@@ -68,7 +68,12 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.state = 'READY'
         
 
-
+    @Driver.quickbar(qb={'button_text':'Reset Tank Levels',
+        'params':{
+        'rinse1':{'label':'Rinse1 (mL)','type':'float','default':950},
+        'rinse2':{'label':'Rinse2 (mL)','type':'float','default':950},
+        'waste':{'label':'Waste (mL)','type':'float','default':0}
+        }})
     def reset_tank_levels(self,rinse1=950,rinse2=950,waste=0):
         self.rinse1_tank_level = rinse1
         self.waste_tank_level = waste
@@ -108,6 +113,8 @@ class PneumaticSampleCell(Driver,SampleCell):
         #when equipped with limit switch, add limit switch logic here
         self.arm_state = 'DOWN'
 
+    @Driver.quickbar(qb={'button_text':'Load Sample',
+        'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
     def loadSample(self,cellname='cell',sampleVolume=0):
         if self.state != 'READY':
             raise Exception('Tried to load sample but cell not READY.')
@@ -135,7 +142,8 @@ class PneumaticSampleCell(Driver,SampleCell):
                 return 'Wrong secret.'
         except KeyError:
             return 'Need valid secret to stop load.'
-     
+
+    @Driver.quickbar(qb={'button_text':'Rinse Cell'})
     def rinseCell(self,cellname='cell'):
         if self.state != 'LOADED':
             if self.state == 'READY':

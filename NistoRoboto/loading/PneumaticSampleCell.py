@@ -123,7 +123,7 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
         self.pump.setRate(self.config['load_speed'])
         self.state = 'LOAD IN PROGRESS'
-        self.pump.dispense(self.config['catch_to_cell_vol'])
+        self.pump.dispense(self.config['catch_to_cell_vol']+sampleVolume/2)
         self.relayboard.setChannels({'postsample':False})
         self.state = 'LOADED'
 

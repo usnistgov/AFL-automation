@@ -290,24 +290,27 @@ function addServer(popup) {
         let server = new Server(route); // a new Server object created from the route
 
         addServerToMenu(server); // adds the menu items related to the server to the menu
+        addStatusDiv(server.key);
+        addControlsDiv(server.key);
+        addQueueDiv(server.key);
 
-        // adds divs to the page if checked by user
-        var input;
-        for(var i=0; i<popup.inputs.length; i++) {
-            input = document.getElementById(popup.inputs[i].id);
+        // // adds divs to the page if checked by user
+        // var input;
+        // for(var i=0; i<popup.inputs.length; i++) {
+        //     input = document.getElementById(popup.inputs[i].id);
 
-            if(input.type == 'checkbox') {
-                if(input.checked == true) {
-                    if(input.id == 'status') {
-                        addStatusDiv(server.key);
-                    } else if(input.id == 'controls') {
-                        addControlsDiv(server.key);
-                    } else {
-                        addQueueDiv(server.key);
-                    }
-                }
-            }
-        }
+        //     if(input.type == 'checkbox') {
+        //         if(input.checked == true) {
+        //             if(input.id == 'status') {
+        //                 addStatusDiv(server.key);
+        //             } else if(input.id == 'controls') {
+        //                 addControlsDiv(server.key);
+        //             } else {
+        //                 addQueueDiv(server.key);
+        //             }
+        //         }
+        //     }
+        // }
 
         closePopup();
     } else {

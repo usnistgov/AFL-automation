@@ -306,6 +306,14 @@ button {
         text-align: left;
     }
 
+		#saved_servers .ui-selecting { background: #FECA40; }
+  	#saved_servers .ui-selected { background: #F39814; color: white; }
+  	#saved_servers { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+  	#saved_servers ol {width:100%}
+  	#saved_servers li { margin: 5px; padding: 1.0em; font-size: 1.0em; height: 10px; display: inline-block; }
+    #userInput {width:100%}
+
+
 /* CSS for the Queue Editor */
     #queueEditor {
         border-style: solid;

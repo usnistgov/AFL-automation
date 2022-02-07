@@ -38,14 +38,14 @@ class Popup {
     addTextInput(id, name, label, placeholder, datalist = null) {
         var html = '<label for="'+name+'">'+label+': </label>';
         if(datalist != null) {
-            html += '<input type="text" id="'+id+'" name="'+name+'" placeholder="'+placeholder+'" list="list-'+id+'">';
+            html += '<input type="text" id="'+id+'" name="'+name+'" value="'+placeholder+'" list="list-'+id+'">';
             html += '<datalist id="list-'+id+'">';
             for(let i=0; i<datalist.length; i++) {
                 html += '<option value="'+datalist[i]+'">';
             }
             html += '</datalist><br>';
         } else {
-            html += '<input type="text" id="'+id+'" name="'+name+'" placeholder="'+placeholder+'"><br>';
+            html += '<input type="text" id="'+id+'" name="'+name+'" value="'+placeholder+'"><br>';
         }
 
         this.html += html;
@@ -65,7 +65,7 @@ class Popup {
      * @param {number} max 
      */
     addNumberInput(id, name, label, min, max) {
-        var html = '<label for="'+name+'">'+label+': </label><input type="number" id="'+id+'" name="'+name+'" min="'+min+'" max="'+max+'"><br>';
+        var html = '<ul for="'+name+'">'+label+': </label><input type="number" id="'+id+'" name="'+name+'" min="'+min+'" max="'+max+'"><br>';
         this.html += html;
         this.inputs.push({
             id: id,
@@ -73,6 +73,25 @@ class Popup {
             name: name
         });
     }
+
+    addListSelection(id,name,label,options) {
+        var html = '<label for="'+name+'">'+label+': </label>';
+        html += `<ol id="saved_servers" for=${name}>\n`;
+        for(let i in options){
+          html+='<li class="ui-widget-content">';
+          html+=options[i];
+          html+='</li>\n';
+        }
+        html += '</ol>';
+        this.html += html;
+
+        this.inputs.push({
+            id: id,
+            type: 'list',
+            name: name
+        });
+    }
+
 
     /**
      * Adds text to the popup's html
@@ -130,7 +149,11 @@ class Popup {
           $( "#dialog" ).dialog({
             backdrop: true,
             modal:modal,
-            close: function( event, ui ) {$(this).dialog('destroy').remove()},
+            close: closePopup,
+            // function( event, ui ) {
+						// 	$(this).dialog('destroy').remove();
+     				// 	$('#popup-background').hide();
+						// },
             buttons: buttons,
           });
         });
@@ -151,8 +174,9 @@ class Popup {
  * Displays the popup on screen
  */
 function displayPopup() {
-    $('#popup').css('visibility', 'visible');
-    $('#popup-background').css('visibility', 'visible');
+    // $('#popup').css('visibility', 'visible');
+    // $('#popup-background').css('visibility', 'visible');
+    $('#popup-background').show();
 }
 
 /**
@@ -160,10 +184,11 @@ function displayPopup() {
  */
 function closePopup() {
     $('#dialog').dialog('destroy').remove();
+    $('#popup-background').hide();
     
-    if(queueEditorOpen == false) {
-        $('#popup-background').css('visibility', 'hidden');
-    }
+    // if(queueEditorOpen == false) {
+    //     $('#popup-background').css('visibility', 'hidden');
+    // }
 }
 
 /**
@@ -176,16 +201,26 @@ function addServerPopup() {
         var storedRoutes = JSON.parse(localStorage.getItem('routes'));
         popup.addTextInput('userInput', 'route', 'Server Address', 'http://localhost:5051/', storedRoutes);
     } else {
+        var storedRoutes = [];
         popup.addTextInput('userInput', 'route', 'Server Address', 'http://localhost:5051/');
     }
 
-    popup.addCheckboxInput('status', 'status', 'Add Status');
-    popup.addCheckboxInput('controls', 'controls', 'Add Controls');
-    popup.addCheckboxInput('queue', 'queue', 'Add Queue');
+    // popup.addCheckboxInput('status', 'status', 'Add Status');
+    // popup.addCheckboxInput('controls', 'controls', 'Add Controls');
+    // popup.addCheckboxInput('queue', 'queue', 'Add Queue');
 
-    popup.addBottomButton("Enter",function() { addServer(popup) })
+    popup.addListSelection('saved','saved','Saved Routes',storedRoutes)
 
+    popup.addBottomButton("Enter",function() { 
+			addServer(popup); 
+     	$('#popup-background').hide();
+
+		})
+
+     $('#popup-background').show();
     popup.addToHTML();
+
+    $('#saved_servers').selectable()
 }
 
 /**

@@ -111,28 +111,28 @@ function disableBtn(btn) {
  */
 function setColCount(count) {
     if(count==1) {
-      $('#flex-child2').hide();
-      $('#flex-child3').hide();
-      $("#flex-child2, #flex-child3").children(".container").each(function () {$(this).appendTo("#flex-child1");})
+      $('#column2').hide();
+      $('#column3').hide();
+      $("#column2, #column3").children(".container").each(function () {$(this).appendTo("#column1");})
     } else if(count==2){
-      $('#flex-child2').show();
-      $('#flex-child3').hide();
-      $("#flex-child3").children(".container").each(function () {$(this).appendTo("#flex-child1");})
+      $('#column2').show();
+      $('#column3').hide();
+      $("#column3").children(".container").each(function () {$(this).appendTo("#column1");})
     } else if(count==3){
-      $('#flex-child2').show();
-      $('#flex-child3').show();
+      $('#column2').show();
+      $('#column3').show();
     }
 }
 
 function distributeContainers() {
-    var ncols = $(".flex-child:visible").length
-    var nper =  parseInt($(".flex-child").children(".container").length/ncols)
-    var containers = $(".flex-child").children(".container").toArray()
+    var ncols = $(".container-column:visible").length
+    var nper =  parseInt($(".container-column").children(".container").length/ncols)
+    var containers = $(".container-column").children(".container").toArray()
     console.log(ncols,nper)
     for (let dest_index=1;dest_index<=ncols;dest_index++){
       for (let j=0;j<nper;j++){
-        console.log(`#flex-child${dest_index} ${j}`)
-        $(`#flex-child${dest_index}`).append(containers.pop());
+        console.log(`#column${dest_index} ${j}`)
+        $(`#column${dest_index}`).append(containers.pop());
       }
     }
 
@@ -145,10 +145,11 @@ $(function() {
     });
 
     // Makes the divs sortable with the header class
-    $("#flex-child1, #flex-child2, #flex-child3").sortable({ 
+    $("#column1, #column2, #column3").sortable({ 
       handle: '.header', 
-      connectWith:".flex-child",
-      cancel: ''
+      connectWith:".container-column",
+      cancel: '',
+      placeholder: "container-placeholder"
     });
 
 });

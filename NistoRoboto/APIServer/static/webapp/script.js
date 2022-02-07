@@ -110,7 +110,32 @@ function disableBtn(btn) {
  * @param {Int} count 
  */
 function setColCount(count) {
-    $('#containers').css('column-count', count);
+    if(count==1) {
+      $('#flex-child2').hide();
+      $('#flex-child3').hide();
+      $("#flex-child2, #flex-child3").children(".container").each(function () {$(this).appendTo("#flex-child1");})
+    } else if(count==2){
+      $('#flex-child2').show();
+      $('#flex-child3').hide();
+      $("#flex-child3").children(".container").each(function () {$(this).appendTo("#flex-child1");})
+    } else if(count==3){
+      $('#flex-child2').show();
+      $('#flex-child3').show();
+    }
+}
+
+function distributeContainers() {
+    var ncols = $(".flex-child:visible").length
+    var nper =  parseInt($(".flex-child").children(".container").length/ncols)
+    var containers = $(".flex-child").children(".container").toArray()
+    console.log(ncols,nper)
+    for (let dest_index=1;dest_index<=ncols;dest_index++){
+      for (let j=0;j<nper;j++){
+        console.log(`#flex-child${dest_index} ${j}`)
+        $(`#flex-child${dest_index}`).append(containers.pop());
+      }
+    }
+
 }
 
 $(function() {
@@ -120,7 +145,12 @@ $(function() {
     });
 
     // Makes the divs sortable with the header class
-    $("#containers").sortable({ handle: '.header', cancel: ''});
+    $("#flex-child1, #flex-child2, #flex-child3").sortable({ 
+      handle: '.header', 
+      connectWith:".flex-child",
+      cancel: ''
+    });
+
 });
 
 // check robot status every 5 seconds and adjust background color accordingly

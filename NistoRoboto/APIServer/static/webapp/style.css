@@ -260,6 +260,18 @@ button {
             float:left;
         }
 
+	/* Added by TBM*/
+	.flex-container {
+	    display: flex;
+	}
+	
+	.flex-child {
+	    flex: 1;
+	    border: 2px solid black;
+	    margin-left: 5px;
+	    margin-right: 5px;
+	}  
+	
 /* CSS for the pop-up */
     #popup {
         border-style: solid;

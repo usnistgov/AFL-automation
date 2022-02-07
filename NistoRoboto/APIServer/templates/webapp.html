@@ -26,7 +26,12 @@
 <body>
     <div id="topbar">
         <header>
-            <span id="column-select">Column-Count: <a href="javascript:setColCount(1);">[1]</a> <a href="javascript:setColCount(2);">[2]</a> <a href="javascript:setColCount(3);">[3]</a></span>
+            <span id="column-select">Column-Count: 
+              <a href="javascript:setColCount(1);">[1]</a> 
+              <a href="javascript:setColCount(2);">[2]</a> 
+              <a href="javascript:setColCount(3);">[3]</a>
+              <a href="javascript:distributeContainers();">[Distribute]</a>
+            </span>
             <h2>Autonomous Formulations Lab</h2>
             <span id="version">ver. 0.0.0</span>
         </header>    
@@ -45,7 +50,12 @@
     </div>
     
     <div id="main-content">
-        <div id="containers" class="wrapper"></div>
+      <!--<div id="containers" class="wrapper"></div>-->
+        <div id="flex-container" class="flex-container wrapper">
+          <div id='flex-child1' class="flex-child"></div>
+          <div id='flex-child2' class="flex-child"></div>
+          <div id='flex-child3' class="flex-child"></div>
+        </div>
     </div>
 
     <div style="visibility: hidden; height: 5px;"></div> <!-- footer spacing -->

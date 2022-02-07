@@ -166,8 +166,7 @@ button {
     }
 
     #containers {
-        column-count: 2;
-        column-fill: balance;
+      display: flex;
     }
 
     .container {
@@ -177,6 +176,12 @@ button {
         margin: 0px 5px 15px;
         page-break-inside: avoid;
     }
+
+    .container-column {
+        flex: 1;
+        margin-left: 5px;
+        margin-right: 5px;
+    }  
 
     .header {
         text-align: left;
@@ -196,6 +201,15 @@ button {
     .container p {
         padding: 4px;
     }
+
+    .container-placeholder {
+      border: 3px dashed #aaa;
+      height:50px;
+      margin: 0px 5px 15px;
+      background: #ccc;
+    }
+
+
 
     /* CSS for Queue Divs */
         #containers div[divType="queue"] .content > ul > li > div > ul > li {
@@ -260,6 +274,7 @@ button {
             float:left;
         }
 
+	
 /* CSS for the pop-up */
     #popup {
         border-style: solid;

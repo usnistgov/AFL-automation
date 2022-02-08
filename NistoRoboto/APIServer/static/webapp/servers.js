@@ -204,6 +204,51 @@ class Server {
     }
 
     /**
+     * Runs a POST ajax call to clear the server's queue
+     */
+    executeQuickbarTask(task,param_key) { 
+
+      var link = this.address + 'enqueue';
+      var params = $(`.${param_key}`).toArray()
+      var python_param, value;
+
+      // first need to build json task data that we'll
+      // send to the APIServer
+      var task_dict = {'task_name':task};
+      for(let key in params){
+        python_param = params[key].getAttribute('python_param')
+        if (params[key].value) {
+          value = params[key].value
+        } else {
+          value = params[key].placeholder
+        }
+        task_dict[python_param] = value
+      }
+      console.log("Quickbar Task Dict:",task_dict)
+
+      // Make sure we're logged in
+      // XXX Need to check for staleness of this token...
+      if(!localStorage["token"]){
+        api_login(this.address,"domo_arigato")
+      }
+
+      // Send request to APIServer
+      $.ajax({
+          type:"POST",
+          contentType:"application/json",
+          url:link,
+          data: JSON.stringify(task_dict),
+          beforeSend: function(request){
+              request.withCredentials = true;
+              request.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'));
+          },
+          success: function(result) {
+              console.log(result);
+          }
+      });
+    }
+
+    /**
      * Runs a POST ajax call to clear the server's history
      */
     clearHistory() {

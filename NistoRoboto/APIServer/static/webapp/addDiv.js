@@ -328,6 +328,15 @@ function pause(serverKey) {
 }
 
 /**
+ * Clear's the server's queue given the server key
+ * @param {String} serverKey 
+ */
+function executeQuickbarTask(serverKey,task,param_key) {
+    var server = getServer(serverKey);
+    server.executeQuickbarTask(task,param_key);
+}
+
+/**
  * Returns a particular div object given the server key and the div type 
  * @param {String} serverKey 
  * @param {String} divType 

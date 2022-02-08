@@ -53,23 +53,27 @@ function addServerToMenu(server) {
     // TODO make the unqueued command buttons functional on onClick event
     server.getQuickbar(function(result) {
       var commands = ''; 
-      var button_text, params, default_value, label;
+      var button_text, params, default_value, label, button_cass;
       for(let function_name in result) { 
         button_text = result[function_name]['qb']['button_text'];
         params = result[function_name]['qb']['params'];
+        params_class = `${button_text.replaceAll(' ','_').toLowerCase()}_params`
 
         for(let field_name in params) {
           if(params[field_name]['type']=='float'){
             default_value = params[field_name]['default']
             label = params[field_name]['label']
             commands += `<label for=${name}>${label}:</label>`;
-            commands += `<li><input type="text" name="${label}" class="${button_text}_params" placeholder=${default_value}></li>`;
+            commands += `<li><input type="text" python_param="${field_name}" name="${label}" class="${params_class}" placeholder=${default_value}></li>`;
           } else {
             throw `Parameter type not recognized: ${params[field_name]['type']}`
           }
 
         }
-        commands += '<li><button>'+button_text+'</button></li>';
+        commands += "<li>";
+        commands += `<button onclick="executeQuickbarTask('${server.key}','${function_name}','${params_class}')">`;
+        commands += `${button_text}`
+        commands += "</button></li>";
       }
       
       id = '#'+server.key+'_quickbarContent'; 

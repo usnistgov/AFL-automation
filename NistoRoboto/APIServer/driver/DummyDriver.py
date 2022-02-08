@@ -69,7 +69,7 @@ class DummyDriver(Driver):
         'params':{
         'rinse1':{'label':'Rinse1 (mL)','type':'float','default':950},
         'rinse2':{'label':'Rinse2 (mL)','type':'float','default':950},
-        'waste':{'label':'Waste (mL)','type':'float','default':0}
+        'waste': {'label':'Waste (mL)','type':'float','default':0}
         }})
     @Driver.unqueued()
     def dummy_reset_tank_levels(self,rinse1=950,rinse2=950,waste=0):

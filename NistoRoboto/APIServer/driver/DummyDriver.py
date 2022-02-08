@@ -64,4 +64,18 @@ class DummyDriver(Driver):
         self.app.logger.debug(f'Call to test_image with kwargs: {kwargs}')
         return np.random.rand(1024,1024)
 
-   
+
+    @Driver.quickbar(qb={'button_text':'Reset Tank Levels',
+        'params':{
+        'rinse1':{'label':'Rinse1 (mL)','type':'float','default':950},
+        'rinse2':{'label':'Rinse2 (mL)','type':'float','default':950},
+        'waste':{'label':'Waste (mL)','type':'float','default':0}
+        }})
+    @Driver.unqueued()
+    def dummy_reset_tank_levels(self,rinse1=950,rinse2=950,waste=0):
+        pass
+
+    @Driver.quickbar(qb={'button_text':'Load Sample',
+        'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
+    def loadSample(self,cellname='cell',sampleVolume=0):
+        pass

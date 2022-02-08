@@ -274,7 +274,18 @@ button {
             float:left;
         }
 
-	
+/* CSS for the quickbar*/
+        #containers div[divType="quickbar"] .content button{
+            border: solid black 1px;
+            cursor: pointer;
+            padding: 10px;
+            margin: 10px 0px 10px 10px;
+        }
+
+        #containers div[divType="quickbar"] .content ul {
+            list-style:none;
+        }
+
 /* CSS for the pop-up */
     #popup {
         border-style: solid;

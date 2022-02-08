@@ -15,13 +15,16 @@ function addServerToMenu(server) {
     addQueueBtnID = server.key+'_addQueueBtn';
     addQueueBtn = '<li><button id="'+addQueueBtnID+'" onclick="addQueueDiv(\''+server.key+'\')" class="add-queue-btn">Add Queue</button></li>';
 
+    addQuickbarBtnID = server.key+'_addQuickbarBtn';
+    addQuickbarBtn = '<li><button id="'+addQuickbarBtnID+'" onclick="addQuickbarDiv(\''+server.key+'\')" class="add-quickbar-btn">Add Quickbar</button></li>';
+
     queuedCommandsID = server.key+'_queuedCommands';
     queuedCommands = '<li class="parent"><a href="#">Queued Commands >></a><ul id="'+queuedCommandsID+'" class="child"></ul></li>';
 
     unqueuedCommandsID = server.key+'_unqueuedCommands';
     unqueuedCommands = '<li class="parent"><a href="#">Unqueued Commands >></a><ul id="'+unqueuedCommandsID+'" class="child"></ul></li>';
 
-    child = '<ul class="child">'+addStatusBtn+addControlsBtn+addQueueBtn+queuedCommands+unqueuedCommands+'</ul>';
+    child = '<ul class="child">'+addStatusBtn+addControlsBtn+addQueueBtn+addQuickbarBtn+queuedCommands+unqueuedCommands+'</ul>';
     id = '#'+server.key;
     $(id).append(child);
 
@@ -45,6 +48,32 @@ function addServerToMenu(server) {
         }
         id = '#'+server.key+'_unqueuedCommands';
         $(id).append(commands);
+    });
+
+    // TODO make the unqueued command buttons functional on onClick event
+    server.getQuickbar(function(result) {
+      var commands = ''; 
+      var button_text, params, default_value, label;
+      for(let function_name in result) { 
+        button_text = result[function_name]['qb']['button_text'];
+        params = result[function_name]['qb']['params'];
+
+        for(let field_name in params) {
+          if(params[field_name]['type']=='float'){
+            default_value = params[field_name]['default']
+            label = params[field_name]['label']
+            commands += `<label for=${name}>${label}:</label>`;
+            commands += `<li><input type="text" name="${label}" class="${button_text}_params" placeholder=${default_value}></li>`;
+          } else {
+            throw `Parameter type not recognized: ${params[field_name]['type']}`
+          }
+
+        }
+        commands += '<li><button>'+button_text+'</button></li>';
+      }
+      
+      id = '#'+server.key+'_quickbarContent'; 
+      $(id).append(commands);
     });
 }
 

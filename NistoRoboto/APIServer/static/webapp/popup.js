@@ -179,9 +179,9 @@ function addServerPopup() {
         popup.addTextInput('userInput', 'route', 'Server Address', 'http://localhost:5051/');
     }
 
-    popup.addCheckboxInput('status', 'status', 'Add Status');
-    popup.addCheckboxInput('controls', 'controls', 'Add Controls');
-    popup.addCheckboxInput('queue', 'queue', 'Add Queue');
+    // popup.addCheckboxInput('status', 'status', 'Add Status');
+    // popup.addCheckboxInput('controls', 'controls', 'Add Controls');
+    // popup.addCheckboxInput('queue', 'queue', 'Add Queue');
 
     popup.addBottomButton("Enter",function() { addServer(popup) })
 

@@ -28,12 +28,14 @@ class Div {
 
         if(this.type == 'status') {
             contentDiv = '<div class="content">'+this.#statusContent()+'</div>';
-        }
-        if(this.type == 'controls') {
+        } else if(this.type == 'controls') {
             contentDiv = '<div class="content">'+this.#controlsContent()+'</div>';
-        }
-        if(this.type == 'queue') {
+        } else if(this.type == 'queue') {
             contentDiv = '<div class="content">'+this.#queueContent()+'</div>';
+        } else if(this.type == 'quickbar') {
+            contentDiv = '<div class="content">'+this.#quickbarContent()+'</div>';
+        } else {
+          throw "Div type not recognized!"
         }
 
         this.#addToDiv(contentDiv);
@@ -239,6 +241,25 @@ class Div {
     }
 
     /**
+     * Creates and returns the quickbar div content
+     * @returns String of html content for queue div
+     */
+    #quickbarContent(){
+        var haltBtn = '<button class="halt-btn" onclick="halt(\''+this.serverKey+'\')">HALT</button>';
+        var clearQueueBtn = '<button onclick="clearQueue(\''+this.serverKey+'\')">Clear Queue</button>';
+        var clearHistoryBtn = '<button onclick="clearHistory(\''+this.serverKey+'\')">Clear History</button>';
+        var togglePauseBtn = '<button onclick="pause(\''+this.serverKey+'\')">Pause/Unpause</button>';
+        var editQueueBtn = '<button onclick="editQueue(\''+this.serverKey+'\')">Edit Queue</button>';
+
+        var additionalControlsID = this.serverKey+'_quickbarContent';
+        var additionalControls = '<ul id="'+additionalControlsID+'"></ul>';
+        // TODO make additional controls appear as a dropdown when needed based on screen size
+
+        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + editQueueBtn + additionalControls;
+        return content;
+    }
+
+    /**
      * Updates the content of a queue div
      * @param {Server} server 
      */
@@ -316,12 +337,14 @@ function getDiv(serverKey, divType) {
     var server = getServer(serverKey);
     if(divType == 'status') {
         return server.statusDiv;
-    }
-    if(divType == 'controls') {
+    } else if(divType == 'controls') {
         return server.controlsDiv;
-    }
-    if(divType == 'queue') {
+    } else if(divType == 'queue') {
         return server.queueDiv;
+    } else if(divType == 'quickbar') {
+        return server.quickbarDiv;
+    } else {
+      throw "Div not found!"
     }
 }
 
@@ -358,5 +381,17 @@ function addQueueDiv(key) {
     server.queueDiv.display();
 
     var id = '#'+server.queueDiv.addBtnID;
+    disableBtn($(id));
+}
+
+/**
+ * Creates and adds a quickbar div for the corresponding server
+ * @param {String} key
+ */
+function addQuickbarDiv(key) {
+    var server = getServer(key);
+    server.quickbarDiv.display();
+
+    var id = '#'+server.quickbarDiv.addBtnID;
     disableBtn($(id));
 }

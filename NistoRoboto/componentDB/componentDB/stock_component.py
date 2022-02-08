@@ -152,6 +152,63 @@ def create():
 
     return render_template("stock_component/create_stock_component.html", components=components, back=session['stock_url'])
 
+@bp.route("/stock_component/createAlt", methods=("GET", "POST"))
+def create_alt():
+    number = None
+    if request.method == "POST":
+
+        number = int(request.form['number'])
+
+        if number == '' or number is None:
+            if 'number' not in session:
+                session['number'] = 5
+            number = session['number']
+
+        if request.form.get('submit'):
+
+            passed = True
+
+            if 'gml' not in request.form:
+                flash(f"Please specify units")
+                passed = False
+            else:
+                units = request.form['gml']
+
+                if units == 'g':
+                    volmass = 'mass'
+                else:
+                    volmass = 'volume'
+
+            for i in range(number):
+
+                fraction = f"fraction_{i}"
+                component = f"component_id_{i}"
+
+                if request.form[fraction] == '' or request.form['stock_name'] == '' or request.form['stock_id'] == '':
+                    flash(f"Incomplete entry at number {i+1}")
+                    passed = False
+                else:
+                    fraction = float(request.form[fraction])
+                    amount = fraction * float(request.form['total']) / 100.0
+
+                if passed:
+                    insert(request.form['stock_name'], request.form['stock_id'], request.form[component],
+                       amount, units, volmass)
+
+            return redirect(url_for('stock.detail', id=request.form['stock_id']))
+
+    db = get_db()
+
+    components = db.execute(
+        "SELECT id FROM component ORDER BY id"
+    ).fetchall()
+
+    if number == '' or number is None:
+        number = 5
+
+    return render_template("stock_component/create_stock_component_alt.html", components=components,
+                           number=number, back=session['stock_url'])
+
 
 def insert(stock_name, stock_id, component_id, amount, units, volmass):
     db = get_db()

@@ -28,8 +28,7 @@ def generate_label(id, name, type):
   canvas.text((300, 75), f"Type: {type}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24), fill='#000000')
   canvas.text((300, 125), f"Name: {name}", font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=48), fill='#000000')
   canvas.text((300, 225), f"Last Printed: {datetime.datetime.now()}",
-                         font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24),
-   fill='#000000')
+                         font=PIL.ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', size=24), fill='#000000')
   img.paste(qrimg, box=(0, 0))
   img.show()
 

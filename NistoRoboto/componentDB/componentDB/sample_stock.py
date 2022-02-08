@@ -141,6 +141,63 @@ def create():
 
     return render_template("sample_stock/create_sample_stock.html", stocks=stocks, back=session['sample_url'])
 
+@bp.route("/sample_stock/createAlt", methods=("GET", "POST"))
+def create_alt():
+    number = None
+    if request.method == "POST":
+
+        number = int(request.form['number'])
+
+        if number == '' or number is None:
+            if 'number' not in session:
+                session['number'] = 5
+            number = session['number']
+
+        if request.form.get('submit'):
+
+            passed = True
+
+            if 'gml' not in request.form:
+                flash(f"Please specify units")
+                passed = False
+            else:
+                units = request.form['gml']
+
+                if units == 'g':
+                    volmass = 'mass'
+                else:
+                    volmass = 'volume'
+
+            for i in range(number):
+
+                fraction = f"fraction_{i}"
+                stock = f"stock_id_{i}"
+
+                if request.form[fraction] == '' or request.form['sample_name'] == '' or request.form['sample_id'] == '':
+                    flash(f"Incomplete entry at number {i+1}")
+                    passed = False
+                else:
+                    fraction = float(request.form[fraction])
+                    amount = fraction * float(request.form['total']) / 100.0
+
+                if passed:
+                    insert(request.form['sample_name'], request.form['sample_id'], request.form[stock],
+                       amount, units, volmass)
+
+            return redirect(url_for('sample.detail', id=request.form['sample_id']))
+
+    db = get_db()
+
+    stocks = db.execute(
+        "SELECT id FROM stock ORDER BY id"
+    ).fetchall()
+
+    if number == '' or number is None:
+        number = 5
+
+    return render_template("sample_stock/create_sample_stock_alt.html", stocks=stocks,
+                           number=number, back=session['sample_url'])
+
 def insert(sample_name, sample_id, stock_id, amount, units, volmass):
     db = get_db()
 

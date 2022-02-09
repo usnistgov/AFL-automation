@@ -101,8 +101,9 @@ function addServerToMenu(server) {
         commands += '</div>'
       }
       
-      id = '#'+server.key+'_quickbarContent'; 
-      $(id).append(commands);
+      // id = '#'+server.key+'_quickbarContent'; 
+      // slect the div of class content inside of the div with custom attr divType='quickbar"
+      $(`#${server.key}_quickbar>div.content`).append(commands);
     });
 }
 

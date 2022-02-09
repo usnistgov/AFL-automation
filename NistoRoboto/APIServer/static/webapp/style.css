@@ -339,15 +339,9 @@ button {
 /* TODO add the CSS for smaller screen sizes */
 
 /* CSS for the quickbar*/
-#containers div[divType="quickbar"] .content button{
-    border: solid black 1px;
-    cursor: pointer;
-    padding: 10px;
-
-}
-
-#containers div[divType="quickbar"] .content ul {
-    list-style:none;
+#containers  div[divType="quickbar"]  div.content {
+    display:flex;
+    flex-wrap:wrap;
 }
 
 div.quickbar_group {
@@ -356,8 +350,15 @@ div.quickbar_group {
     grid-gap:5px;
     margin: 10px 10px 10px 10px;
     border: solid black 0.5px;
-    padding: 5px
+    padding: 5px;
 }
 div.quickbar_group label       { text-align:right; }
 div.quickbar_group label:after { content: ":"; }
 div.quickbar_button {grid-column:2}
+
+#containers div[divType="quickbar"] .content button{
+    border: solid black 1px;
+    cursor: pointer;
+    padding: 10px;
+
+}

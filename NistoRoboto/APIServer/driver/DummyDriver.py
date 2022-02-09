@@ -74,6 +74,10 @@ class DummyDriver(Driver):
     def quickbar_test(self,text_field="Three",int_field=3,float_field=3.14,bool_field=True):
         pass
 
+    @Driver.quickbar(qb={'button_text':'Just A Button'})
+    def quickbar_test2(self):
+        pass
+
     @Driver.quickbar(qb={'button_text':'Reset Tank Levels',
         'params':{
         'rinse1':{'label':'Rinse1 (mL)','type':'float','default':950},

@@ -252,7 +252,7 @@ class Server {
               request.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'));
           },
           success: function(result) {
-              console.log(result);
+              console.log('Submitted UUID:',result);
           }
       });
     }

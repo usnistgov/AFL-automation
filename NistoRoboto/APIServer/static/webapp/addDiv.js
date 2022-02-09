@@ -33,7 +33,7 @@ class Div {
         } else if(this.type == 'queue') {
             contentDiv = '<div class="content">'+this.#queueContent()+'</div>';
         } else if(this.type == 'quickbar') {
-            contentDiv = '<div class="content">'+this.#quickbarContent()+'</div>';
+            contentDiv = '<div class="content"></div>';
         } else {
           throw "Div type not recognized!"
         }
@@ -245,6 +245,11 @@ class Div {
      * @returns String of html content for queue div
      */
     #quickbarContent(){
+        //XXX some thought needs to go into why addDiv and server are separated
+        //    also why is the addToMenu function in script.js? 
+
+
+      
         // var haltBtn = '<button class="halt-btn" onclick="halt(\''+this.serverKey+'\')">HALT</button>';
         // var clearQueueBtn = '<button onclick="clearQueue(\''+this.serverKey+'\')">Clear Queue</button>';
         // var clearHistoryBtn = '<button onclick="clearHistory(\''+this.serverKey+'\')">Clear History</button>';
@@ -256,10 +261,10 @@ class Div {
         // // TODO make additional controls appear as a dropdown when needed based on screen size
 
         // var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + editQueueBtn + additionalControls;
-        var additionalControlsID = this.serverKey+'_quickbarContent';
-        var additionalControls = '<div id="'+additionalControlsID+'"></ul>';
-        var content = additionalControls;
-        return content;
+        // var additionalControlsID = this.serverKey+'_quickbarContent';
+        // var additionalControls = '<div id="'+additionalControlsID+'"></ul>';
+        // var content = additionalControls;
+        // return content;
     }
 
     /**

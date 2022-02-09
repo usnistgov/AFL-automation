@@ -181,6 +181,7 @@ button {
         flex: 1;
         margin-left: 5px;
         margin-right: 5px;
+        width: 33%;
     }  
 
     .header {
@@ -274,17 +275,6 @@ button {
             float:left;
         }
 
-/* CSS for the quickbar*/
-        #containers div[divType="quickbar"] .content button{
-            border: solid black 1px;
-            cursor: pointer;
-            padding: 10px;
-            margin: 10px 0px 10px 10px;
-        }
-
-        #containers div[divType="quickbar"] .content ul {
-            list-style:none;
-        }
 
 /* CSS for the pop-up */
     #popup {
@@ -347,3 +337,27 @@ button {
     }
 /* TODO CSS for smaller screens */
 /* TODO add the CSS for smaller screen sizes */
+
+/* CSS for the quickbar*/
+#containers div[divType="quickbar"] .content button{
+    border: solid black 1px;
+    cursor: pointer;
+    padding: 10px;
+
+}
+
+#containers div[divType="quickbar"] .content ul {
+    list-style:none;
+}
+
+div.quickbar_group {
+    display:grid;
+    grid-template-columns: max-content max-content;
+    grid-gap:5px;
+    margin: 10px 10px 10px 10px;
+    border: solid black 0.5px;
+    padding: 5px
+}
+div.quickbar_group label       { text-align:right; }
+div.quickbar_group label:after { content: ":"; }
+div.quickbar_button {grid-column:2}

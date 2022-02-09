@@ -205,7 +205,7 @@ class Div {
         var additionalControls = '<ul id="'+additionalControlsID+'"></ul>';
         // TODO make additional controls appear as a dropdown when needed based on screen size
 
-        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + editQueueBtn + additionalControls;
+        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + editQueueBtn ;//+ additionalControls;
         return content;
     }
 
@@ -213,13 +213,13 @@ class Div {
      * Updates the content of a controls div
      */
     #updateControlsContent() {
-        var additionalControlsID = '#'+this.serverKey+'_additionalControls';
-        var queuedCommands = '#'+this.serverKey+'_queuedCommands';
-        var unqueuedCommands = '#'+this.serverKey+'_unqueuedCommands';
+        // var additionalControlsID = '#'+this.serverKey+'_additionalControls';
+        // var queuedCommands = '#'+this.serverKey+'_queuedCommands';
+        // var unqueuedCommands = '#'+this.serverKey+'_unqueuedCommands';
 
-        var fill = '<li style="display: none;">Additional Controls</li>'+$(queuedCommands).html()+$(unqueuedCommands).html();
+        // var fill = '<li style="display: none;">Additional Controls</li>'+$(queuedCommands).html()+$(unqueuedCommands).html();
         
-        $(additionalControlsID).html(fill);
+        //$(additionalControlsID).html(fill);
     }
 
     /**
@@ -245,17 +245,20 @@ class Div {
      * @returns String of html content for queue div
      */
     #quickbarContent(){
-        var haltBtn = '<button class="halt-btn" onclick="halt(\''+this.serverKey+'\')">HALT</button>';
-        var clearQueueBtn = '<button onclick="clearQueue(\''+this.serverKey+'\')">Clear Queue</button>';
-        var clearHistoryBtn = '<button onclick="clearHistory(\''+this.serverKey+'\')">Clear History</button>';
-        var togglePauseBtn = '<button onclick="pause(\''+this.serverKey+'\')">Pause/Unpause</button>';
-        var editQueueBtn = '<button onclick="editQueue(\''+this.serverKey+'\')">Edit Queue</button>';
+        // var haltBtn = '<button class="halt-btn" onclick="halt(\''+this.serverKey+'\')">HALT</button>';
+        // var clearQueueBtn = '<button onclick="clearQueue(\''+this.serverKey+'\')">Clear Queue</button>';
+        // var clearHistoryBtn = '<button onclick="clearHistory(\''+this.serverKey+'\')">Clear History</button>';
+        // var togglePauseBtn = '<button onclick="pause(\''+this.serverKey+'\')">Pause/Unpause</button>';
+        // var editQueueBtn = '<button onclick="editQueue(\''+this.serverKey+'\')">Edit Queue</button>';
 
+        // var additionalControlsID = this.serverKey+'_quickbarContent';
+        // var additionalControls = '<ul id="'+additionalControlsID+'"></ul>';
+        // // TODO make additional controls appear as a dropdown when needed based on screen size
+
+        // var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + editQueueBtn + additionalControls;
         var additionalControlsID = this.serverKey+'_quickbarContent';
-        var additionalControls = '<ul id="'+additionalControlsID+'"></ul>';
-        // TODO make additional controls appear as a dropdown when needed based on screen size
-
-        var content = haltBtn + clearQueueBtn + clearHistoryBtn + togglePauseBtn + editQueueBtn + additionalControls;
+        var additionalControls = '<div id="'+additionalControlsID+'"></ul>';
+        var content = additionalControls;
         return content;
     }
 
@@ -331,9 +334,9 @@ function pause(serverKey) {
  * Clear's the server's queue given the server key
  * @param {String} serverKey 
  */
-function executeQuickbarTask(serverKey,task,param_key) {
+function executeQuickbarTask(serverKey,task) {
     var server = getServer(serverKey);
-    server.executeQuickbarTask(task,param_key);
+    server.executeQuickbarTask(task);
 }
 
 /**

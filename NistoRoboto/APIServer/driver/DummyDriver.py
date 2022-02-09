@@ -64,6 +64,15 @@ class DummyDriver(Driver):
         self.app.logger.debug(f'Call to test_image with kwargs: {kwargs}')
         return np.random.rand(1024,1024)
 
+    @Driver.quickbar(qb={'button_text':'Submit',
+        'params':{
+        'text_field':{'label':'How many(text)?','type':'text','default':'Three'},
+        'int_field':{'label':'How many(int)?','type':'int','default':3},
+        'float_field':{'label':'How many(float)?','type':'float','default':3.14},
+        'bool_field':{'label':'Any(bool)?','type':'bool','default':True},
+        }})
+    def quickbar_test(self,text_field="Three",int_field=3,float_field=3.14,bool_field=True):
+        pass
 
     @Driver.quickbar(qb={'button_text':'Reset Tank Levels',
         'params':{

@@ -53,27 +53,52 @@ function addServerToMenu(server) {
     // TODO make the unqueued command buttons functional on onClick event
     server.getQuickbar(function(result) {
       var commands = ''; 
-      var button_text, params, default_value, label, button_cass;
+      var button_text, params, default_value, label, button_class, python_type;
       for(let function_name in result) { 
+        commands += '<div class="quickbar_group">'
         button_text = result[function_name]['qb']['button_text'];
         params = result[function_name]['qb']['params'];
-        params_class = `${button_text.replaceAll(' ','_').toLowerCase()}_params`
+        params_class = `${function_name.replaceAll(' ','_').toLowerCase()}_params`
 
         for(let field_name in params) {
-          if(params[field_name]['type']=='float'){
-            default_value = params[field_name]['default']
-            label = params[field_name]['label']
-            commands += `<label for=${name}>${label}:</label>`;
-            commands += `<li><input type="text" python_param="${field_name}" name="${label}" class="${params_class}" placeholder=${default_value}></li>`;
+          label = params[field_name]['label']
+          commands += `<label for=${name}>${label}</label>`;
+
+          // commands += `<li>`
+          python_type = params[field_name]['type']
+          default_value = params[field_name]['default']
+          if((python_type=='float') | (python_type=='int') | (python_type=="text")){
+            commands += `<input `
+            commands += `type="text" `
+            commands += `python_param="${field_name}" `
+            commands += `python_type="${python_type}" `
+            commands += `name="${label}" `
+            commands += `class="${params_class}" `
+            commands += `placeholder=${default_value} `
+            commands += `>`
+          } else if(python_type=='bool'){
+            commands += `<input `
+            commands += `type="checkbox" `
+            commands += `python_param="${field_name}" `
+            commands += `python_type="${python_type}" `
+            commands += `name="${label}" `
+            commands += `class="${params_class}" `
+            commands += `>`
           } else {
             throw `Parameter type not recognized: ${params[field_name]['type']}`
           }
 
         }
-        commands += "<li>";
-        commands += `<button onclick="executeQuickbarTask('${server.key}','${function_name}','${params_class}')">`;
+        //commands +=`</li>`;
+        // commands += "<li>";
+        commands += `<div class="quickbar_button">`
+        commands += `<button `
+        commands += `onclick="executeQuickbarTask('${server.key}','${function_name}')">`;
         commands += `${button_text}`
-        commands += "</button></li>";
+        commands += "</button>";
+        commands += '</div>'
+        //commands +=`</li>`;
+        commands += '</div>'
       }
       
       id = '#'+server.key+'_quickbarContent'; 

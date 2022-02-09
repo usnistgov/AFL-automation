@@ -206,21 +206,30 @@ class Server {
     /**
      * Runs a POST ajax call to clear the server's queue
      */
-    executeQuickbarTask(task,param_key) { 
+    executeQuickbarTask(task) { 
 
-      var link = this.address + 'enqueue';
-      var params = $(`.${param_key}`).toArray()
-      var python_param, value;
+      var address = this.address + 'enqueue';
+      var params = $(`.${task.replaceAll(' ','_').toLowerCase()}_params`).toArray()
+
+      var python_param, python_type,value;
 
       // first need to build json task data that we'll
       // send to the APIServer
       var task_dict = {'task_name':task};
+      var value;
       for(let key in params){
         python_param = params[key].getAttribute('python_param')
-        if (params[key].value) {
-          value = params[key].value
+        python_type = params[key].getAttribute('python_type')
+        if(python_type=='float'){
+          value = parseFloat(getInputValue(params[key]))
+        } else if (python_type=='int'){
+          value = parseInt(getInputValue(params[key]))
+        } else if (python_type=='text'){
+          value = getInputValue(params[key])
+        } else if (python_type=='bool'){
+          value = params[key].checked
         } else {
-          value = params[key].placeholder
+          throw `Not set up to parse this python_type: ${python_type}`
         }
         task_dict[python_param] = value
       }
@@ -236,7 +245,7 @@ class Server {
       $.ajax({
           type:"POST",
           contentType:"application/json",
-          url:link,
+          url:address,
           data: JSON.stringify(task_dict),
           beforeSend: function(request){
               request.withCredentials = true;
@@ -296,6 +305,21 @@ class Server {
             }
         });
     }
+}
+
+/**
+ *Helper function for extracting values from 
+ *input text fields
+ */
+
+function getInputValue(input){
+  var value;
+  if (input.value) {
+    value = input.value
+  } else {
+    value = input.placeholder
+  }
+  return value
 }
 
 /**

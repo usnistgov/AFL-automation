@@ -350,6 +350,8 @@ div.quickbar_group {
     margin: 5px 5px 5px 5px;
     border: solid black 0.5px;
     padding: 2px;
+    box-shadow: 0.5px 0.5px 1px 0.5px;
+    background-color:white;
 }
 div.quickbar_group label       { display:block; text-align:left; }
 div.quickbar_group label:after { content: ":"; }

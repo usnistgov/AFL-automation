@@ -89,15 +89,12 @@ function addServerToMenu(server) {
           }
 
         }
-        //commands +=`</li>`;
-        // commands += "<li>";
         commands += `<div class="quickbar_button">`
         commands += `<button `
         commands += `onclick="executeQuickbarTask('${server.key}','${function_name}')">`;
         commands += `${button_text}`
         commands += "</button>";
         commands += '</div>'
-        //commands +=`</li>`;
         commands += '</div>'
       }
       
@@ -205,7 +202,7 @@ $(function() {
 
     // Makes the divs sortable with the header class
     $("#column1, #column2, #column3").sortable({ 
-      //handle: '.header', 
+      handle: '.header', 
       connectWith:".container-column",
       cancel: '',
       placeholder: "container-placeholder"

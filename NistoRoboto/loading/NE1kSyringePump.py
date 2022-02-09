@@ -144,5 +144,3 @@ class NE1kSyringePump(SyringePump):
 
 
 
-
-

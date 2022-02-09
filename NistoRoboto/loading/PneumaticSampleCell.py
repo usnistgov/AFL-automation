@@ -59,7 +59,12 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.waste_tank_level = waste_tank_level
         self.rinse2_tank_level = rinse2_tank_level
 
-        self.relayboard.setChannels({'enable':True,'piston-vent':True})
+        self.loadStoppedExternally = False
+
+        if 'enable' in self.relayboard.labels.keys():
+            self.relayboard.setChannels({'enable':True})
+
+        self.relayboard.setChannels({'piston-vent':True})
         self._arm_up()
         time.sleep(0.2)
         self.pump.setRate(self.config['air_speed'])
@@ -123,7 +128,11 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
         self.pump.setRate(self.config['load_speed'])
         self.state = 'LOAD IN PROGRESS'
-        self.pump.dispense(self.config['catch_to_cell_vol']+sampleVolume/2)
+        self.pump.dispense(self.config['catch_to_cell_vol']+sampleVolume/2,block=False)
+        while(self.pump.getStatus()[0] != 'S' and self.loadStoppedExternally == False):
+            time.sleep(0.1)
+
+        self.loadStoppedExternally = False
         self.relayboard.setChannels({'postsample':False})
         self.state = 'LOADED'
 
@@ -137,6 +146,7 @@ class PneumaticSampleCell(Driver,SampleCell):
                 else:
                     self.pump.stop()
                     self.relayboard.setChannels({'postsample':False})
+                    self.loadStoppedExternally=True
                     return 'Load stopped successfully.'
             else:
                 return 'Wrong secret.'

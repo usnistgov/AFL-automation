@@ -204,7 +204,7 @@ $(function() {
 
     // Makes the divs sortable with the header class
     $("#column1, #column2, #column3").sortable({ 
-      handle: '.header', 
+      //handle: '.header', 
       connectWith:".container-column",
       cancel: '',
       placeholder: "container-placeholder"

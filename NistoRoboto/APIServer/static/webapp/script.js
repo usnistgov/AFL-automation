@@ -15,13 +15,16 @@ function addServerToMenu(server) {
     addQueueBtnID = server.key+'_addQueueBtn';
     addQueueBtn = '<li><button id="'+addQueueBtnID+'" onclick="addQueueDiv(\''+server.key+'\')" class="add-queue-btn">Add Queue</button></li>';
 
+    addQuickbarBtnID = server.key+'_addQuickbarBtn';
+    addQuickbarBtn = '<li><button id="'+addQuickbarBtnID+'" onclick="addQuickbarDiv(\''+server.key+'\')" class="add-quickbar-btn">Add Quickbar</button></li>';
+
     queuedCommandsID = server.key+'_queuedCommands';
     queuedCommands = '<li class="parent"><a href="#">Queued Commands >></a><ul id="'+queuedCommandsID+'" class="child"></ul></li>';
 
     unqueuedCommandsID = server.key+'_unqueuedCommands';
     unqueuedCommands = '<li class="parent"><a href="#">Unqueued Commands >></a><ul id="'+unqueuedCommandsID+'" class="child"></ul></li>';
 
-    child = '<ul class="child">'+addStatusBtn+addControlsBtn+addQueueBtn+queuedCommands+unqueuedCommands+'</ul>';
+    child = '<ul class="child">'+addStatusBtn+addControlsBtn+addQueueBtn+addQuickbarBtn+queuedCommands+unqueuedCommands+'</ul>';
     id = '#'+server.key;
     $(id).append(child);
 
@@ -45,6 +48,59 @@ function addServerToMenu(server) {
         }
         id = '#'+server.key+'_unqueuedCommands';
         $(id).append(commands);
+    });
+
+    // TODO make the unqueued command buttons functional on onClick event
+    server.getQuickbar(function(result) {
+      var commands = ''; 
+      var button_text, params, default_value, label, button_class, python_type;
+      for(let function_name in result) { 
+        commands += '<div class="quickbar_group">'
+        button_text = result[function_name]['qb']['button_text'];
+        params = result[function_name]['qb']['params'];
+        params_class = `${function_name.replaceAll(' ','_').toLowerCase()}_params`
+
+        for(let field_name in params) {
+          label = params[field_name]['label']
+          commands += `<label for=${name}>${label}</label>`;
+
+          // commands += `<li>`
+          python_type = params[field_name]['type']
+          default_value = params[field_name]['default']
+          if((python_type=='float') | (python_type=='int') | (python_type=="text")){
+            commands += `<input `
+            commands += `type="text" `
+            commands += `python_param="${field_name}" `
+            commands += `python_type="${python_type}" `
+            commands += `name="${label}" `
+            commands += `class="${params_class}" `
+            commands += `placeholder=${default_value} `
+            commands += `>`
+          } else if(python_type=='bool'){
+            commands += `<input `
+            commands += `type="checkbox" `
+            commands += `python_param="${field_name}" `
+            commands += `python_type="${python_type}" `
+            commands += `name="${label}" `
+            commands += `class="${params_class}" `
+            commands += `>`
+          } else {
+            throw `Parameter type not recognized: ${params[field_name]['type']}`
+          }
+
+        }
+        commands += `<div class="quickbar_button">`
+        commands += `<button `
+        commands += `onclick="executeQuickbarTask('${server.key}','${function_name}')">`;
+        commands += `${button_text}`
+        commands += "</button>";
+        commands += '</div>'
+        commands += '</div>'
+      }
+      
+      // id = '#'+server.key+'_quickbarContent'; 
+      // slect the div of class content inside of the div with custom attr divType='quickbar"
+      $(`#${server.key}_quickbar>div.content`).append(commands);
     });
 }
 

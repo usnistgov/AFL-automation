@@ -20,7 +20,7 @@ class PiPlatesRelay(MultiChannelRelay):
 
 		#Sanitize labels:
 
-		for port_id in range(0,6):
+		for port_id in range(1,7):
 			if port_id not in relaylabels.keys():
 				relaylabels[port_id] = f'UNUSED{port_id}'
 

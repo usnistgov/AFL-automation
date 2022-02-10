@@ -178,7 +178,7 @@ class Client:
             raise RuntimeError(f'API call to halt command failed with status_code {response.status_code}\n{response.content}')
 
     def queue_state(self):
-        response = requests.post(self.url+'/queue_state',headers=self.headers,json={})
+        response = requests.get(self.url+'/queue_state',headers=self.headers,json={})
         if response.status_code != 200:
             raise RuntimeError(f'API call to queue_state command failed with status_code {response.status_code}\n{response.content}')
         return response

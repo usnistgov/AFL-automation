@@ -1,9 +1,9 @@
-import piplates.RELAYplate
+import piplates.RELAYplate as RELAYplate
 from NistoRoboto.loading.MultiChannelRelay import MultiChannelRelay
 
 class PiPlatesRelay(MultiChannelRelay):
 
-	def init(self,relaylabels,board_id=0):
+	def __init__(self,relaylabels,board_id=0):
 		'''
 		Init connection to a labeled Pi-Plates Relay module.
 
@@ -15,7 +15,7 @@ class PiPlatesRelay(MultiChannelRelay):
 		'''
 		conn = RELAYplate.getID(board_id)
 		print(f'Got connection response from board: {conn}')
-		RELAYplate.reset(board_id)
+		RELAYplate.RESET(board_id)
 		self.board_id = board_id
 
 		#Sanitize labels:

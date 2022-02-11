@@ -112,6 +112,7 @@ class PneumaticSampleCell(Driver,SampleCell):
     def status(self):
         status = []
         status.append(f'State: {self.state}')
+        status.append(f'Arm State: {self.arm_state}')
         status.append(f'Rinse 1 tank: {self.rinse1_tank_level} mL')
         status.append(f'Rinse 2 tank: {self.rinse2_tank_level} mL')
         status.append(f'Waste tank: {self.waste_tank_level} mL')

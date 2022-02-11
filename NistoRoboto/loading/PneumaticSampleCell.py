@@ -34,6 +34,7 @@ class PneumaticSampleCell(Driver,SampleCell):
 
     def __init__(self,pump,
                       relayboard,
+                      digitalin=None,
                       rinse1_tank_level=950,
                       rinse2_tank_level=950,
                       waste_tank_level=0,
@@ -54,6 +55,7 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.pump = pump
         self.relayboard = relayboard
         self.cell_state = defaultdict(lambda: 'clean')
+        self.digitalin = digitalin
 
         self.rinse1_tank_level = rinse1_tank_level
         self.waste_tank_level = waste_tank_level
@@ -63,6 +65,16 @@ class PneumaticSampleCell(Driver,SampleCell):
 
         if 'enable' in self.relayboard.labels.keys():
             self.relayboard.setChannels({'enable':True})
+        
+        self._USE_ARM_LIMITS = False
+        self._USE_DOOR_INTERLOCK = False
+        if self.digitalin is not None:
+            if 'ARM_UP' in self.digitalin.state.keys() and 'ARM_DOWN' in self.digitalin.state.keys():
+                self._USE_ARM_LIMITS = True
+            if 'DOOR' in self.digitalin.state.keys():
+                self._USE_DOOR_INTERLOCK = True
+
+
 
         self.relayboard.setChannels({'piston-vent':True})
         self._arm_up()
@@ -105,18 +117,34 @@ class PneumaticSampleCell(Driver,SampleCell):
         status.append(f'Waste tank: {self.waste_tank_level} mL')
         status.append(f'Relay status: {self.relayboard.getChannels()}')
         return status
-    
+ 
+    def _arm_interlock_check(self):
+        if self._USE_DOOR_INTERLOCK:
+            while not self.digitalin.state['DOOR']:
+                time.sleep(0.2)
+                oldstate = self.state
+                self.state = 'AWAITING DOOR CLOSED BEFORE MOVING ARM'
+            self.state = oldstate
+
     def _arm_up(self):
+        self._arm_interlock_check()
         self.relayboard.setChannels({'piston-vent':True,'arm-up':True,'arm-down':False})
-        time.sleep(self.config['arm_move_delay'])
-        #when equipped with limit switch, add limit switch logic here
+        if self._USE_ARM_LIMITS:
+            while not self.digitalin.state['ARM_UP']:
+                time.sleep(0.1)
+        else:
+            time.sleep(self.config['arm_move_delay'])
         self.arm_state = 'UP'
 
     def _arm_down(self):
+        self._arm_interlock_check()
         self.relayboard.setChannels({'piston-vent':True,'arm-up':False,'arm-down':True})
         time.sleep(self.config['arm_move_delay'])
-        #when equipped with limit switch, add limit switch logic here
-        self.arm_state = 'DOWN'
+        if self._USE_ARM_LIMITS:
+            while not self.digitalin.state['ARM_DOWN']:
+                time.sleep(0.1)
+        else:
+            time.sleep(self.config['arm_move_delay'])self.arm_state = 'DOWN'
 
     @Driver.quickbar(qb={'button_text':'Load Sample',
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})

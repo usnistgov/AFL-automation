@@ -16,6 +16,7 @@ from NistoRoboto.loading.DummyPump import DummyPump
 from NistoRoboto.loading.NE1kSyringePump import NE1kSyringePump
 from NistoRoboto.loading.PiPlatesRelay import PiPlatesRelay
 from NistoRoboto.loading.SainSmartRelay import SainSmartRelay
+from NistoRoboto.loading.PiGPIO import PiGPIO
 from NistoRoboto.loading.Tubing import Tubing
 
 relayboard = PiPlatesRelay(
@@ -26,7 +27,9 @@ relayboard = PiPlatesRelay(
         } )
 #DummyPump() # ID for 10mL = 14.859, for 50 mL 26.43
 pump = NE1kSyringePump('/dev/ttyUSB0',14.86,10,baud=19200,pumpid=11,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
-driver = PneumaticSampleCell(pump,relayboard)
+gpio = PiGPIO({23:'ARM_UP',24:'ARM_DOWN'},pull_dir='DOWN')
+
+driver = PneumaticSampleCell(pump,relayboard,digitalin=gpio)
 server = APIServer('CellServer')
 server.add_standard_routes()
 server.create_queue(driver)

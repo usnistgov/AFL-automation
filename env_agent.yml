@@ -1,0 +1,35 @@
+name: afl_agent
+channels:
+  - rpi
+  - conda-forge 
+  - defaults
+dependencies:
+  - python <3.10
+  - setuptools
+  - pip
+  - numpy
+  - pandas 
+  - scipy
+  - jupyterlab
+  - ipywidgets
+  - ipympl
+  - nodejs
+  - matplotlib
+  - seaborn
+  - pint
+  - periodictable
+  - flask
+  - flask-jwt-extended >=4.0
+  - bokeh
+  - pillow
+  - scikit-image
+  - pyserial
+  - requests
+  - flask_cors
+  - scikit-learn
+  - tqdm
+  - pip:
+      - gpflow
+      - tensorflow>2.7
+
+

@@ -28,6 +28,9 @@ class StockBuilderWidget:
         stocks = self.data_view.stocks
         for i,(stock_name,stock) in enumerate(self.data_view.stocks.items()):
             stock_values[stock_name] = {}
+            stock_values[stock_name]['location'] = {
+                'value':stock['location']['value'].value
+            }
             stock_values[stock_name]['total'] = {
                 'value':stock['total']['value'].value,
                 'units':stock['total']['units'].value
@@ -63,6 +66,7 @@ class StockBuilderWidget:
         for i,(stock_name,stock) in enumerate(save_dict.items()):
             components = list(stock['components'].keys())
             self.data_view.make_stock_tab(stock_name,components)
+            stocks[stock_name]['location']['value'].value = stock['location']['value']
             stocks[stock_name]['total']['value'].value = stock['total']['value']
             stocks[stock_name]['total']['units'].value = stock['total']['units']
             stocks[stock_name]['remove_button'].on_click(self.remove_stock_cb)
@@ -169,7 +173,7 @@ class StockBuilderWidget_View:
         n_components = len(components)
         self.stocks[stock_name] = {}
         
-        gs = ipywidgets.GridspecLayout(n_components+5,3)
+        gs = ipywidgets.GridspecLayout(n_components+6,3)
         
         i=0
         gs[i,0] = ipywidgets.Button(description="Remove Stock")
@@ -212,6 +216,14 @@ class StockBuilderWidget_View:
         self.stocks[stock_name]['mass%_button'] = gs2[0,0]
         self.stocks[stock_name]['vol%_button'] = gs2[0,1]
         gs[i,2] = gs2
+        i+=1
+        
+        gs[i,0] = ipywidgets.Label(value=f"Deck Location")
+        gs[i,1] = ipywidgets.Text()
+        self.stocks[stock_name]['location'] = {
+            'value':gs[i,1]
+        }
+        i+=1
         
             
         self.tabs.children = list(self.tabs.children) + [gs]
@@ -224,17 +236,21 @@ class StockBuilderWidget_View:
         self.make_stock_name = ipywidgets.Text(value='Stock1')
         make_stock_components_label = ipywidgets.Label(value="Components")
         self.make_stock_components = ipywidgets.Text(value='F127,hexanes,water')
+        #make_stock_location_label = ipywidgets.Label(value="Deck Location")
+        #self.make_stock_location = ipywidgets.Text(value='1A1')
         self.make_stock_button = ipywidgets.Button(description='Create')
         self.save_stock_button = ipywidgets.Button(description='Save')
         self.load_stock_button = ipywidgets.Button(description='Load')
         saveload_name_label = ipywidgets.Label(value='Path')
         self.saveload_name = ipywidgets.Text(value='./expt.pkl')
         
-        gs1 = ipywidgets.GridspecLayout(3,2)
+        gs1 = ipywidgets.GridspecLayout(4,2)
         gs1[0,0] = make_stock_name_label
         gs1[0,1] = self.make_stock_name
         gs1[1,0] = make_stock_components_label
         gs1[1,1] = self.make_stock_components
+        # gs1[2,0] = make_stock_location_label
+        # gs1[2,1] = self.make_stock_location
         gs1[2,0] = self.make_stock_button
         
         gs2 = ipywidgets.GridspecLayout(2,2)
@@ -245,7 +261,7 @@ class StockBuilderWidget_View:
         
         self.make_stock_accordion = ipywidgets.Accordion([gs1,gs2])
         self.make_stock_accordion.set_title(0,'Create')
-        self.make_stock_accordion.set_title(1,'Load')
+        self.make_stock_accordion.set_title(1,'Save & Load')
         
         
         self.progress = ipywidgets.IntProgress(min=0,max=100,value=100)

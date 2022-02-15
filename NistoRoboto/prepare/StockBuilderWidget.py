@@ -14,29 +14,36 @@ class StockBuilderWidget:
         self.data_model = StockBuilderWidget_Model()
         self.data_view = StockBuilderWidget_View()
         
-    def save_cb(self,click,pkl=True):
+    def get_stock_values(self):
         self.data_view.progress.value = 0
-        save_dict = {}
+        progress_steps = len(self.data_view.stocks)
+        stock_values = {}
         stocks = self.data_view.stocks
-        for stock_name,stock in self.data_view.stocks.items():
-            save_dict[stock_name] = {}
-            save_dict[stock_name]['total'] = {
+        for i,(stock_name,stock) in enumerate(self.data_view.stocks.items()):
+            stock_values[stock_name] = {}
+            stock_values[stock_name]['total'] = {
                 'text':stock['total']['text'].value,
                 'units':stock['total']['units'].value
             }
-            save_dict[stock_name]['components'] = {}
+            stock_values[stock_name]['components'] = {}
             for name,component in stock['components'].items():
-                save_dict[stock_name]['components'][name] = {
+                stock_values[stock_name]['components'][name] = {
                     'text':component['text'].value,
                     'units':component['units'].value
                 }
+            self.data_view.progress.value = ((i+1)/progress_steps)*100
+        self.data_view.progress.value = 100
+        return stock_values
+            
+    def save_cb(self,click,pkl=True):
+        stock_values = self.get_stock_values()
         
         filename = self.data_view.saveload_name.value
         if pkl:
             with open(filename,'wb') as f:
-                pickle.dump(save_dict,f)
+                pickle.dump(stock_values,f)
+                
         self.data_view.progress.value = 100
-        return save_dict
     
     def load_cb(self,click):
         self.data_view.progress.value = 0
@@ -44,24 +51,35 @@ class StockBuilderWidget:
         with open(filename,'rb') as f: 
             save_dict = pickle.load(f)
         stocks = self.data_view.stocks
+        progress_steps = len(save_dict)
         
-        for stock_name,stock in save_dict.items():
+        for i,(stock_name,stock) in enumerate(save_dict.items()):
             components = list(stock['components'].keys())
-            self.data_view.make_stock(stock_name,components)
+            self.data_view.make_stock_tab(stock_name,components)
             stocks[stock_name]['total']['text'].value = stock['total']['text']
             stocks[stock_name]['total']['units'].value = stock['total']['units']
+            stocks[stock_name]['remove_button'].on_click(self.remove_stock_cb)
+            stocks[stock_name]['mg_button'].on_click(lambda X:self.set_units_cb(X,'mg'))
+            stocks[stock_name]['ul_button'].on_click(lambda X:self.set_units_cb(X,'ul'))
+            stocks[stock_name]['mass%_button'].on_click(lambda X:self.set_units_cb(X,'mass%'))
+            stocks[stock_name]['vol%_button'].on_click(lambda X:self.set_units_cb(X,'vol%'))
             
             for name,component in stock['components'].items():
                 stocks[stock_name]['components'][name]['text'].value = component['text']
                 stocks[stock_name]['components'][name]['units'].value = component['units']
+            self.data_view.progress.value = ((i+1)/progress_steps)*100
         self.data_view.progress.value = 100
                 
     def make_stock_cb(self,click):
         self.data_view.progress.value = 0
         stock_name = self.data_view.make_stock_name.value
         components = self.data_view.make_stock_components.value.split(',')
-        self.data_view.make_stock(stock_name,components)
+        self.data_view.make_stock_tab(stock_name,components)
         self.data_view.stocks[stock_name]['remove_button'].on_click(self.remove_stock_cb)
+        self.data_view.stocks[stock_name]['mg_button'].on_click(lambda X:self.set_units_cb(X,'mg'))
+        self.data_view.stocks[stock_name]['ul_button'].on_click(lambda X:self.set_units_cb(X,'ul'))
+        self.data_view.stocks[stock_name]['mass%_button'].on_click(lambda X:self.set_units_cb(X,'mass%'))
+        self.data_view.stocks[stock_name]['vol%_button'].on_click(lambda X:self.set_units_cb(X,'vol%'))
         self.data_view.progress.value = 100
         
     def remove_stock_cb(self,click):
@@ -75,7 +93,14 @@ class StockBuilderWidget:
         
         self.data_view.tabs.children = children
         for i,title in enumerate(titles):
-            titles.append(self.data_view.tabs.set_title(i,title))
+            self.data_view.tabs.set_title(i,title)
+    
+    def set_units_cb(self,click,units):
+        index =  self.data_view.tabs.selected_index
+        stock_name = self.data_view.tabs.get_title(index)
+        self.data_view.stocks[stock_name]['total']['units'].value =  units
+        for name,component in self.data_view.stocks[stock_name]['components'].items():
+            component['units'].value = units
         
     def start(self):
         widget = self.data_view.start()
@@ -93,19 +118,21 @@ class StockBuilderWidget_View:
     def __init__(self):
         self.stocks = {}
         
-        
-    def make_stock(self,stock_name,components):
+    def make_stock_tab(self,stock_name,components):
         n_components = len(components)
         self.stocks[stock_name] = {}
         
-        gs = ipywidgets.GridspecLayout(n_components+3,3)
+        gs = ipywidgets.GridspecLayout(n_components+5,3)
         
         i=0
+        gs[i,0] = ipywidgets.Button(description="Remove Stock")
+        self.stocks[stock_name]['remove_button'] = gs[i,0]
+        i+=1
+        
         gs[i,1] = ipywidgets.Label(value='Amount')
         gs[i,2] = ipywidgets.Label(value='Units')
         i+=1
             
-        i=1
         gs[i,0] = ipywidgets.Label(value="Total")
         gs[i,1] = ipywidgets.Text()
         gs[i,2] = ipywidgets.Text(placeholder='mg')
@@ -123,15 +150,30 @@ class StockBuilderWidget_View:
             }
             i+=1
             
-        gs[i,:] = ipywidgets.Button(description="Remove Stock")
-        self.stocks[stock_name]['remove_button'] = gs[i,:]
+            
+        gs2 = ipywidgets.GridspecLayout(1,2)
+        gs2[0,0] = ipywidgets.Button(description="All mg")
+        gs2[0,1] = ipywidgets.Button(description="All ul")
+        self.stocks[stock_name]['mg_button'] = gs2[0,0]
+        self.stocks[stock_name]['ul_button'] = gs2[0,1]
+        gs[i,2] = gs2
+        i+=1
+        
+        gs2 = ipywidgets.GridspecLayout(1,2)
+        gs2[0,0] = ipywidgets.Button(description="All mass%")
+        gs2[0,1] = ipywidgets.Button(description="All vol%")
+        self.stocks[stock_name]['mass%_button'] = gs2[0,0]
+        self.stocks[stock_name]['vol%_button'] = gs2[0,1]
+        gs[i,2] = gs2
+        
             
         self.tabs.children = list(self.tabs.children) + [gs]
         self.tabs.set_title(len(self.tabs.children)-1,stock_name)
         
         
     def start(self):
-        make_stock_name_label = ipywidgets.Label(value="Stock Name:")
+        # self.label_layout = ipywidgets.Layout()
+        make_stock_name_label = ipywidgets.Label(value="Stock Name")
         self.make_stock_name = ipywidgets.Text(value='Stock1')
         make_stock_components_label = ipywidgets.Label(value="Components")
         self.make_stock_components = ipywidgets.Text(value='F127,hexanes,water')

@@ -9,11 +9,18 @@ import plotly.express as px
 import ipywidgets
 import pickle
 
+import NistoRoboto.prepare 
+from NistoRoboto.shared.units import units
+
 class StockBuilderWidget:
     def __init__(self):
         self.data_model = StockBuilderWidget_Model()
         self.data_view = StockBuilderWidget_View()
         
+    def get_stock_objects(self):
+        stock_values = self.get_stock_values()
+        stock_objects = self.data_model.to_stock_objects(stock_values)
+        return stock_objects
     def get_stock_values(self):
         self.data_view.progress.value = 0
         progress_steps = len(self.data_view.stocks)
@@ -112,8 +119,47 @@ class StockBuilderWidget:
 
 
 class StockBuilderWidget_Model:
-    def to_afl(self,all_stocks):
-        for stock_name,stock_dict in all_stocks.items():
+    def to_stock_objects(self,all_stocks_dict):
+        afl_stocks = {}
+        for stock_name,stock in all_stocks_dict.items():
+            components = list(stock['components'].keys())
+            afl_stocks[stock_name] = NistoRoboto.prepare.Solution(stock_name,components)
+            
+            mass_fraction = {}
+            volume_fraction = {}
+            for component_name,component in stock['components'].items():
+                value = component['value']
+                unit_str = component['units']
+                if (not value) or (not unit_str):
+                    pass#empty cell, don't specify
+                elif unit_str.lower() in ['mg','ug']:
+                    afl_stocks[stock_name][component_name].mass = float(value)*units(unit_str)
+                elif unit_str.lower() in ['ul','ml','l']:
+                    afl_stocks[stock_name][component_name].volume = float(value)*units(unit_str)
+                elif unit_str.lower() in ['m%','mass%']:
+                    mass_fraction[component_name] = float(value)
+                elif unit_str.lower() in ['v%','vol%']:
+                    volume_fraction[component_name] = float(value)
+                else:
+                    raise ValueError(f'Units not recogized: {unit_str}')
+                
+            if mass_fraction:
+                afl_stocks[stock_name].mass_fraction = mass_fraction
+                
+            if volume_fraction:
+                afl_stocks[stock_name].volume_fraction = volume_fraction
+                
+            value = stock['total']['value']
+            unit_str = stock['total']['units']
+            if (not value) or (not unit_str):
+                pass#empty cell, don't specify
+            elif unit_str.lower() in ['mg','ug']:
+                afl_stocks[stock_name].mass = float(value)*units(unit_str)
+            elif unit_str.lower() in ['ul','ml','l']:
+                afl_stocks[stock_name].volume = float(value)*units(unit_str)
+            else:
+                raise ValueError(f'Units not recogized: {unit_str}')
+        return afl_stocks
 
 class StockBuilderWidget_View:
     def __init__(self):

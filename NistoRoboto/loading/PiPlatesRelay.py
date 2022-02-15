@@ -1,5 +1,6 @@
 import piplates.RELAYplate as RELAYplate
 from NistoRoboto.loading.MultiChannelRelay import MultiChannelRelay
+import atexit
 
 class PiPlatesRelay(MultiChannelRelay):
 
@@ -28,7 +29,13 @@ class PiPlatesRelay(MultiChannelRelay):
 
 		self.ids = {val:key for key,val in self.labels.items()}
 
-	def setChannels(self,channels):
+		atexit.register(self.setAllChannelsOff)
+
+	
+	def setAllChannelsOff(self):
+	    RELAYplate.RELAYall(self.board_id,0)	
+            
+        def setChannels(self,channels):
 		'''
 		Write a value (True, False) to the channels specified in channels
 

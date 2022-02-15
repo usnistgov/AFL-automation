@@ -22,13 +22,13 @@ class StockBuilderWidget:
         for i,(stock_name,stock) in enumerate(self.data_view.stocks.items()):
             stock_values[stock_name] = {}
             stock_values[stock_name]['total'] = {
-                'text':stock['total']['text'].value,
+                'value':stock['total']['value'].value,
                 'units':stock['total']['units'].value
             }
             stock_values[stock_name]['components'] = {}
             for name,component in stock['components'].items():
                 stock_values[stock_name]['components'][name] = {
-                    'text':component['text'].value,
+                    'value':component['value'].value,
                     'units':component['units'].value
                 }
             self.data_view.progress.value = ((i+1)/progress_steps)*100
@@ -56,7 +56,7 @@ class StockBuilderWidget:
         for i,(stock_name,stock) in enumerate(save_dict.items()):
             components = list(stock['components'].keys())
             self.data_view.make_stock_tab(stock_name,components)
-            stocks[stock_name]['total']['text'].value = stock['total']['text']
+            stocks[stock_name]['total']['value'].value = stock['total']['value']
             stocks[stock_name]['total']['units'].value = stock['total']['units']
             stocks[stock_name]['remove_button'].on_click(self.remove_stock_cb)
             stocks[stock_name]['mg_button'].on_click(lambda X:self.set_units_cb(X,'mg'))
@@ -65,7 +65,7 @@ class StockBuilderWidget:
             stocks[stock_name]['vol%_button'].on_click(lambda X:self.set_units_cb(X,'vol%'))
             
             for name,component in stock['components'].items():
-                stocks[stock_name]['components'][name]['text'].value = component['text']
+                stocks[stock_name]['components'][name]['value'].value = component['value']
                 stocks[stock_name]['components'][name]['units'].value = component['units']
             self.data_view.progress.value = ((i+1)/progress_steps)*100
         self.data_view.progress.value = 100
@@ -112,7 +112,8 @@ class StockBuilderWidget:
 
 
 class StockBuilderWidget_Model:
-    pass
+    def to_afl(self,all_stocks):
+        for stock_name,stock_dict in all_stocks.items():
 
 class StockBuilderWidget_View:
     def __init__(self):
@@ -136,7 +137,7 @@ class StockBuilderWidget_View:
         gs[i,0] = ipywidgets.Label(value="Total")
         gs[i,1] = ipywidgets.Text()
         gs[i,2] = ipywidgets.Text(placeholder='mg')
-        self.stocks[stock_name]['total'] = {'text':gs[i,1],'units':gs[i,2]}
+        self.stocks[stock_name]['total'] = {'value':gs[i,1],'units':gs[i,2]}
         i+=1
         
         self.stocks[stock_name]['components'] = {}
@@ -145,7 +146,7 @@ class StockBuilderWidget_View:
             gs[i,1] = ipywidgets.Text()
             gs[i,2] = ipywidgets.Text(placeholder=f'mg')
             self.stocks[stock_name]['components'][name] = {
-                'text':gs[i,1],
+                'value':gs[i,1],
                 'units':gs[i,2]
             }
             i+=1

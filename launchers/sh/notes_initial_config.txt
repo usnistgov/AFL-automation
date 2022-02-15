@@ -11,3 +11,19 @@ Assign serial devices:
 Rotate display using GUI display manager:
 
 
+
+Pull github repo:
+
+create a private key in the GitHub service account for the instrument
+
+cd
+
+git config credential.helper store
+git clone (repo)
+
+Setup ------not conda!  no conda on RasPi!
+
+Just install Python.
+
+pip3 install pkgs.txt in the repo
+

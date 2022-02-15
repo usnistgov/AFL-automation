@@ -3,7 +3,7 @@ import RPi.GPIO
 
 class PiGPIO():
 
-	def init(self,channels,mode='BCM',pull_dir='UP'):
+	def __init__(self,channels,mode='BCM',pull_dir='UP'):
 		'''
 		Initializes GPIO pins in channels and maps their values to a local dict.
 
@@ -20,6 +20,7 @@ class PiGPIO():
 		'''
 		self.channels = channels
 
+		self.state = {}
 		if mode == 'BCM':
 			RPi.GPIO.setmode(RPi.GPIO.BCM)
 		elif mode == 'BOARD':
@@ -43,14 +44,13 @@ class PiGPIO():
 				RPi.GPIO.setup(key,RPi.GPIO.IN,pull_up_down=RPi.GPIO.PUD_DOWN)
 			else:
 				raise ValueError('invalid pull_dir in GPIORelay')
-			RPi.GPIO.add_event_detect(key,RPi.GPIO.BOTH,callback=self.eventcb,bouncetime=200)
+			RPi.GPIO.add_event_detect(key,RPi.GPIO.BOTH,callback=self.eventcb)#,bouncetime=200)
 
 
 
 		self.ids = {val:key for key,val in self.channels.items()}
 
 		#do an initial read of all the pin state and create self.state which maps name to val
-		self.state = {}
 		for key,val in self.channels.items():
 			self.state[val] = RPi.GPIO.input(key)
 	def eventcb(self,channel):

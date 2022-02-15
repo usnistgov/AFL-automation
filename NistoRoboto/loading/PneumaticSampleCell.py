@@ -145,7 +145,8 @@ class PneumaticSampleCell(Driver,SampleCell):
             while not self.digitalin.state['ARM_DOWN']:
                 time.sleep(0.1)
         else:
-            time.sleep(self.config['arm_move_delay'])self.arm_state = 'DOWN'
+            time.sleep(self.config['arm_move_delay'])
+        self.arm_state = 'DOWN'
 
     @Driver.quickbar(qb={'button_text':'Load Sample',
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})

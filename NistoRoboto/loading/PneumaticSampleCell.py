@@ -121,7 +121,7 @@ class PneumaticSampleCell(Driver,SampleCell):
  
     def _arm_interlock_check(self):
         if self._USE_DOOR_INTERLOCK:
-            while not self.digitalin.state['DOOR']:
+            while self.digitalin.state['DOOR']:
                 time.sleep(0.2)
                 oldstate = self.state
                 self.state = 'AWAITING DOOR CLOSED BEFORE MOVING ARM'
@@ -131,7 +131,7 @@ class PneumaticSampleCell(Driver,SampleCell):
         self._arm_interlock_check()
         self.relayboard.setChannels({'piston-vent':True,'arm-up':True,'arm-down':False})
         if self._USE_ARM_LIMITS:
-            while not self.digitalin.state['ARM_UP']:
+            while self.digitalin.state['ARM_UP']:
                 time.sleep(0.1)
         else:
             time.sleep(self.config['arm_move_delay'])
@@ -142,7 +142,7 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'piston-vent':True,'arm-up':False,'arm-down':True})
         time.sleep(self.config['arm_move_delay'])
         if self._USE_ARM_LIMITS:
-            while not self.digitalin.state['ARM_DOWN']:
+            while self.digitalin.state['ARM_DOWN']:
                 time.sleep(0.1)
         else:
             time.sleep(self.config['arm_move_delay'])

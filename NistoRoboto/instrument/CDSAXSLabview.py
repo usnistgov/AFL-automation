@@ -12,6 +12,7 @@ from NistoRoboto.instrument.ScatteringInstrument import ScatteringInstrument
 import numpy as np # for return types in get data
 import h5py #for Nexus file writing
 import os
+import scipy.ndimage as ndi
 
 
 class CDSAXSLabview(ScatteringInstrument,Driver):
@@ -22,12 +23,19 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     defaults['sample axis'] = 'Z-stage'
     defaults['sample in'] = 26.5
     defaults['sample out'] = 25.0
+    defaults['use_new_motion_conventions'] = False
+    defaults['nmc_beamstop_in'] = {'Beamstop-z':12.5}
+    defaults['nmc_beamstop_out'] = {'Beamstop-z':3}
+    defaults['nmc_sample_out'] = {'Z-stage':20.0,'X-stage':18.0}
+    defaults['nmc_sample_in'] = {'Z-stage':26.5,'X-stage':0}
     defaults['empty transmission'] = None
     defaults['transmission strategy'] = 'sum'
     defaults['vi'] = 'C:\saxs_control\GIXD controls.vi'
     defaults['reduced_data_dir'] = r'Y:\\CDSAXS data\\autoreduce\\'
     defaults['absolute_pressure_limit']=1
     defaults['relative_pressure_ratio_limit']=10
+    defaults['sample_thickness']=0.18 #cm
+    defaults['absolute_calibration_factor']=1.0
     
     axis_name_to_id_lut = {
         'X-stage' : 0,
@@ -41,7 +49,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         'Beamstop-y': 8,
         'Tungsten-y': 9 ,
         'Detector-z': 10,
-        'None': 11
+        'Temperature': 11,
+        'None': 12
     }
     
     axis_id_to_name_lut = {value:key for key, value in axis_name_to_id_lut.items()}
@@ -83,18 +92,38 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         self.config['reduced_data_dir'] = path
         os.chdir(path)
 
-    def measureTransmission(self,exp=5,fn='trans',set_empty_transmission=False,return_full=False,lv=None):
-        with (LabviewConnection() if lv is None else lv) as lv:
+    def measureTransmission(self,exp=5,fn='trans',set_empty_transmission=False,return_full=False,update_beam_center=True,lv=None):
+        '''
+            Perform a transmission measurement on the currently loaded sample.
+
+            Parameters
+            -------------
+            exp: float, default=5
+                exposure time
+            fn: string, default='trans'
+                file name to save the measurement in
+            set_empty_transmission: bool, default=False
+                set the currently-held empty transmission to the outcome of this measurement
+            return_full: bool, default=False
+                return more data.  breaks some old API parts.
+            update_beam_center: bool, default=True
+                fit and update the beam center based on this measurement
+            lv: LabViewConnection, default=None
+                use this labview connection rather than making a new one if given
+ 
+
+
+        '''with (LabviewConnection() if lv is None else lv) as lv:
             self.status_txt = 'Moving beamstop out for transmission...'
-            self.moveAxis(self.config['beamstop axis'],self.config['beamstop out'],block=True,lv=lv)
-            self.moveAxis(self.config['sample axis'],self.config['sample out'],block=True,lv=lv)
+            self.moveAxis(self.config['nmc_beamstop_out'],block=True,lv=lv)
+            self.moveAxis(self.config['nmc_sample_out'],block=True,lv=lv)
             self.status_txt = 'Measuring open beam intensity...'
             open_beam = self._simple_expose(exposure=exp,filename = 't-open-beam-'+fn,block=True,lv=lv)
             self.status_txt = 'Measuring sample direct beam intensity...'
-            self.moveAxis(self.config['sample axis'],self.config['sample in'],block=True)
+            self.moveAxis(self.config['nmc_sample_in'],block=True)
             sample_transmission = self._simple_expose(exposure=exp,filename = 't-'+fn,block=True,lv=lv)
             self.status_txt = 'Moving beamstop back in...'
-            self.moveAxis(self.config['beamstop axis'],self.config['beamstop in'],lv=lv,block=True)
+            self.moveAxis(self.config['nmc_beamstop_in'],lv=lv,block=True)
             self.status_txt = 'Processing transmission measurement...'
             trans = np.nan_to_num(sample_transmission).sum() / np.nan_to_num(open_beam).sum()
             self.app.logger.info(f'Measured raw transmission of {trans*100}%, with {np.nan_to_num(sample_transmission).sum()} counts on samp and {np.nan_to_num(open_beam).sum()} in open beam.')
@@ -105,6 +134,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 retval = (trans,np.nan_to_num(open_beam).sum(),np.nan_to_num(sample_transmission).sum(),self.config['empty transmission'])
             elif self.config['empty transmission'] is not None:
                 if return_full:
+                    # sample transmission, open flux, sample flux, empty transmission      
                     retval = (trans / self.config['empty transmission'],np.nan_to_num(open_beam).sum(),np.nan_to_num(sample_transmission).sum(),self.config['empty transmission'])
                 else:
                     retval = trans / self.config['empty transmission']
@@ -114,6 +144,14 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                     retval=(trans,np.nan_to_num(open_beam).sum(),np.nan_to_num(sample_transmission).sum())
                 else:
                     retval = trans
+            
+            com = ndi.center_of_mass(np.nan_to_num(open_beam))
+            print(f'Fit center of mass {com} in open beam')
+            print(f'That converts to poni1 = {1.72e-4*com[0]} and poni2 = {1.72e-4*com[1]}')
+            print(f'poni1 should be {self.config["poni1"]} and poni2 {self.config["poni2"]}')
+            if update_beam_center:
+                self.config['poni1'] = 1.72e-4*com[0]
+                self.config['poni2'] = 1.72e-4*com[1]
             self.last_measured_transmission = retval
             self.status_txt = 'Idle'
             return retval
@@ -121,23 +159,24 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     def measureTransmissionQuick(self,exp=1,fn='trans',setup=False,restore=False,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:
             if setup:
-                self.moveAxis(self.config['beamstop axis'],self.config['beamstop out'],block=True,lv=lv)
-                self.moveAxis(self.config['sample axis'],self.config['sample out'],block=True,lv=lv)
+                self.moveAxis(self.config['nmc_beamstop_out'],block=True,lv=lv)
+                self.moveAxis(self.config['nmc_sample_out'],block=True,lv=lv)
                 open_beam = self._simple_expose(exposure=exp,filename = 't-open-beam-'+fn,block=True,lv=lv)
                 self.config['open beam intensity'] = np.nan_to_num(open_beam).sum()
                 #self.config['open beam intensity updated'] = datetime.datetime.now()
                 
-                self.moveAxis(self.config['sample axis'],self.config['sample in'],block=True,lv=lv)
+                self.moveAxis(self.config['nmc_sample_in'],block=True,lv=lv)
                 self.status_txt = 'Staged for rapid transmission measurement'
             sample_transmission = self._simple_expose(exposure=exp,filename = 't-'+fn,block=True,lv=lv)
             retval = np.nan_to_num(sample_transmission).sum()
             if self.config['open beam intensity'] is not None:
                 retval = retval / self.config['open beam intensity']
             if restore:
-                self.moveAxis(self.config['beamstop axis'],self.config['beamstop in'],lv=lv,block=True)
+                self.moveAxis(self.config['nmc_beamstop_in'],lv=lv,block=True)
                 self.status_txt = 'Idle'
             return retval          
 
+    
 
     @Driver.unqueued()        
     def getExposure(self,lv=None):
@@ -236,14 +275,14 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
 #                    time.sleep(0.1)
 #            if return_data:
 #                return self.getData(lv=lv)
-    def moveAxis(self,axis,value,block=True,lv=None):
-        ‘’’
+    def __moveAxis(self,axis,value,block=True,lv=None):
+        '''
         Moves a single axis using a connection to a labview vi.
         @param axis: the axis id or name of the motor to move
         @param value: the position of the motor to move to
         @param block: if True, this function will not return until the move is complete.
         @param lv: a LabviewConnection object for use in integration with broader functions.  If None (default) will make a new connection.
-        ‘’’
+        '''
         with LabviewConnection(vi=r'C:\saxs_control\Move for Peter.vi') as lvm:
             if type(axis) is str:
                 axis = self.axis_name_to_id_lut[axis]#this converts the axis name to an ID number used by labview
@@ -257,8 +296,17 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                         time.sleep(0.1) #this just keeps the traffic down on the labview interface by only checking every 100 ms
                     while(self.getStatus(lv=lv) != 'Finished'): # wait for the instrument status to change to ‘finished’
                         time.sleep(0.1)
-
-
+    def moveAxis(*args,block=True,lv=None):
+        self=args[0]
+        if len(args)==2:
+            self.nmcMoveAxis(args[1],block=block,lv=lv)
+        else:
+            self.__moveAxis(args[1],args[2],block=block,lv=lv)
+            
+    def nmcMoveAxis(self,dest,block=True,lv=None):
+        for motor,pos in dest.items():
+            self.__moveAxis(motor,pos,block=block,lv=None)
+            
     def setSweepStart(self,start,lv=None):
         self._setLabviewValue('Start Value',start,lv=lv)
         
@@ -273,6 +321,9 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     def getSweepStep(self,lv=None):
         return self._getLabviewValue('Step',lv=lv)
 
+    @Driver.unqueued()  
+    def getElapsedTime(self,lv=None):
+        return self._getLabviewValue('Elapsed Time',lv=lv)
 
     def _getLabviewValue(self,val_name,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:
@@ -314,13 +365,21 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 self.status_txt = 'Accessing Image'
                 return self.getData(lv=lv)
 
-    def expose(self,name=None,exposure=None,block=True,reduce_data=True,measure_transmission=True,save_nexus=True,lv=None):
+    def expose(self,name=None,exposure=None,block=True,reduce_data=True,measure_transmission=True,save_nexus=True,sample_position=None,sample_thickness=None,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:
             if name is None:
                 name=self.getFilename(lv=lv)
 
             if exposure is None:
                 exposure=self.getExposure(lv=lv)
+            
+            if sample_position is not None:
+                cached_pos = self.config['nmc_sample_in']
+                self.config['nmc_sample_in'] = sample_position
+
+            if sample_thickness is not None:
+                cached_thickness = self.config['sample_thickness']
+                self.config['sample_thickness'] = sample_thickness
             
             self.status_txt = f'Starting {exposure} s count named {name}'
             
@@ -359,6 +418,11 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                     #if save_nexus:
                         #self._appendReducedToNexus(reduced,name,name)
             self.status_txt = 'Instrument Idle'
+            if sample_position is not None:
+                self.config['nmc_sample_in'] = cached_pos
+            if sample_thickness is not None:
+                self.config['sample_thickness'] = cached_thickness
+            
     def scan(self,axis,npts,start,step,name=None,exposure=None,block=False):
         if name is not None:
             self.setFilename(name)

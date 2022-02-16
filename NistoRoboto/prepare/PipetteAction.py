@@ -8,6 +8,7 @@ class PipetteAction:
             aspirate_rate=None,
             dispense_rate=None,
             mix_before = None,
+            mix_after = None,
             blow_out = False,
             post_aspirate_delay=0.0,
             post_dispense_delay=0.0,
@@ -18,6 +19,7 @@ class PipetteAction:
         self.source_loc   = source_loc
         self.dest_loc     = dest_loc
         self.mix_before   = mix_before
+        self.mix_after    = mix_after
         self.aspirate_rate = aspirate_rate
         self.dispense_rate = dispense_rate
         self.blow_out = blow_out
@@ -39,6 +41,7 @@ class PipetteAction:
         kwargs['dest'] = self.dest
         kwargs['volume'] = self.volume
         kwargs['mix_before'] = self.mix_before
+        kwargs['mix_after'] = self.mix_after
         kwargs['blow_out'] = self.blow_out
         if self.source_loc is not None:
             kwargs['source_loc'] = self.source_loc

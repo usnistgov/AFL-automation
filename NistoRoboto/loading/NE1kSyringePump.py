@@ -114,6 +114,8 @@ class NE1kSyringePump(SyringePump):
             rate = float(output[4:-3])/60
         elif units=='UH':
             rate = float(output[4:-3])/60/1000
+        else:
+            raise ValueError(f'Rate units not supported in getRate: {units}')
         return rate
 
     def emptySyringe(self):
@@ -138,8 +140,6 @@ class NE1kSyringePump(SyringePump):
         withdrawnvol = float(dispensed[11:16])
 
         return(statuschar,infusedvol,withdrawnvol)
-
-
 
 
 

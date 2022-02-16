@@ -20,6 +20,8 @@ class OT2Client(Client):
             post_aspirate_delay=0.0,
             post_dispense_delay=0.0,
             blow_out=False,
+            interactive=None,
+            
             ):
         '''Transfer fluid from one location to another
 
@@ -54,7 +56,7 @@ class OT2Client(Client):
         json['post_aspirate_delay']=post_aspirate_delay
         json['post_dispense_delay']=post_dispense_delay
 
-        UUID = self.enqueue(**json)
+        UUID = self.enqueue(interactive=interactive,**json)
         return UUID
     
     def reset_tipracks(self,mount='both'):

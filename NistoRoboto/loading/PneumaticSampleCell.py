@@ -20,6 +20,7 @@ class PneumaticSampleCell(Driver,SampleCell):
     defaults['large_dispense_vol'] = 5
 
     defaults['arm_move_delay'] = 0.2
+    defaults['vent_delay'] = 0.5
     defaults['rinse_program'] = [
                                 ('rinse1',5),
                                 (None,2),
@@ -62,7 +63,7 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.rinse2_tank_level = rinse2_tank_level
 
         self.loadStoppedExternally = False
-
+        self.state = 'FRESH'
         if 'enable' in self.relayboard.labels.keys():
             self.relayboard.setChannels({'enable':True})
         
@@ -70,9 +71,9 @@ class PneumaticSampleCell(Driver,SampleCell):
         self._USE_DOOR_INTERLOCK = False
         if self.digitalin is not None:
             if 'ARM_UP' in self.digitalin.state.keys() and 'ARM_DOWN' in self.digitalin.state.keys():
-                self._USE_ARM_LIMITS = True
+                self._USE_ARM_LIMITS = False
             if 'DOOR' in self.digitalin.state.keys():
-                self._USE_DOOR_INTERLOCK = True
+                self._USE_DOOR_INTERLOCK = False
 
 
 
@@ -117,6 +118,9 @@ class PneumaticSampleCell(Driver,SampleCell):
         status.append(f'Rinse 2 tank: {self.rinse2_tank_level} mL')
         status.append(f'Waste tank: {self.waste_tank_level} mL')
         status.append(f'Relay status: {self.relayboard.getChannels()}')
+        if self.digitalin is not None:
+            status.append(f'DIO state: {self.digitalin.state}')
+        
         return status
  
     def _arm_interlock_check(self):
@@ -124,6 +128,7 @@ class PneumaticSampleCell(Driver,SampleCell):
             while not self.digitalin.state['DOOR']:
                 time.sleep(0.2)
                 oldstate = self.state
+                print(self.digitalin.state)
                 self.state = 'AWAITING DOOR CLOSED BEFORE MOVING ARM'
             self.state = oldstate
 
@@ -154,7 +159,9 @@ class PneumaticSampleCell(Driver,SampleCell):
         if self.state != 'READY':
             raise Exception('Tried to load sample but cell not READY.')
         self.state = 'PREPARING TO LOAD'
+        self.relayboard.setChannels({'piston-vent':True,'postsample':False})
         self._arm_down()
+        time.sleep(self.config['vent_delay'])
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
         self.pump.setRate(self.config['load_speed'])
         self.state = 'LOAD IN PROGRESS'
@@ -194,6 +201,8 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
 
 
+        self.pump.setRate(self.config['air_speed'])
+        self.pump.dispense(self.config['large_dispense_vol'],block=False)
 
         for step,waittime in self.config['rinse_program']:
             if step is not None:
@@ -203,9 +212,7 @@ class PneumaticSampleCell(Driver,SampleCell):
                 self.relayboard.setChannels({step:False})
         self.relayboard.setChannels({'postsample':False})
         self._arm_up()
-        self.pump.setRate(self.config['air_speed'])
-        self.pump.dispense(self.config['large_dispense_vol'])
-        self.pump.withdraw(self.config['withdraw_vol'])
+        self.pump.withdraw(self.config['withdraw_vol'],block=False)
 
         self.state = 'READY'
     

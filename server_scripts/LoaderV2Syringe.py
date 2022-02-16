@@ -28,9 +28,9 @@ relayboard = PiPlatesRelay(
 #DummyPump() # ID for 10mL = 14.859, for 50 mL 26.43
 pump = NE1kSyringePump('/dev/ttyUSB0',14.86,10,baud=19200,pumpid=11,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
 #gpio = PiGPIO({23:'ARM_UP',24:'ARM_DOWN'},pull_dir='DOWN')
+#16,19 also shot
 
-
-gpio = PiGPIO({16:'DOOR',19:'ARM_UP',6:'ARM_DOWN'},pull_dir='UP') #: p21-blue, p20-purple: 1, p26-grey: 1}
+gpio = PiGPIO({12:'DOOR',13:'ARM_UP',6:'ARM_DOWN'},pull_dir='UP') #: p21-blue, p20-purple: 1, p26-grey: 1}
 
 driver = PneumaticSampleCell(pump,relayboard,digitalin=gpio)
 server = APIServer('CellServer')

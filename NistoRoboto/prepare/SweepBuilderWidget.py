@@ -17,42 +17,67 @@ class SweepBuilderWidget:
     def __init__(self,stock_dict):
         self.data_model = SweepBuilderWidget_Model(stock_dict)
         self.data_view = SweepBuilderWidget_View()
+    
+    def plot_binary_cb(self,click):
+        if not self.data_model.sweep:
+            return
+        
+        component_A = self.data_view.binary_component_A_select.value
+        component_B = self.data_view.binary_component_B_select.value
+        x = []
+        y = []
+        for solution in self.data_model.sweep:
+            mass_A = solution[component_A].mass
+            mass_B = solution[component_B].mass
+            x.append(mass_A.magnitude)
+            y.append(mass_B.magnitude)
+        self.data_view.binary.data[0].update(x=x,y=y)
+        self.data_view.binary.layout.update({
+            'xaxis.title':component_A + f' ({mass_A.units})',
+            'yaxis.title':component_B + f' ({mass_B.units})'
+        })
+        
+    def plot_ternary_cb(self,click):
+        if not self.data_model.sweep:
+            return
+        
+        component_A = self.data_view.ternary_component_A_select.value
+        component_B = self.data_view.ternary_component_B_select.value
+        component_C = self.data_view.ternary_component_C_select.value
+        a = []
+        b = []
+        c = []
+        for solution in self.data_model.sweep:
+            mass_A = solution[component_A].mass
+            mass_B = solution[component_B].mass
+            mass_C = solution[component_C].mass
+            a.append(mass_A.magnitude)
+            b.append(mass_B.magnitude)
+            c.append(mass_C.magnitude)
+        self.data_view.ternary.data[0].update(a=a,b=b,c=c)
+        self.data_view.ternary.layout.update({
+            'ternary.aaxis.title':component_A + f' ({mass_A.units})',
+            'ternary.baxis.title':component_B + f' ({mass_B.units})',
+            'ternary.caxis.title':component_C + f' ({mass_C.units})'
+        })
        
     def calc_sweep_cb(self,click):
-        sweep = self.data_model.calc_sweep()
+        sweep_data = self.get_sweep_data()
+        sweep = self.data_model.calc_sweep(sweep_data,self.data_view.sweep_progress)
         return sweep
-    def calc_sweep(self):
-        spec = {}
-        components = []
-        vary = []
-        lo = []
-        hi = []
-        num = []
-        unit_list = []
-        for component_name,items in self.data_view.sweep_spec.items():
+    
+    def get_sweep_data(self):
+        sweep = {}
+        for component_name,widgets in self.data_view.sweep_spec.items():
+            sweep[component_name] = {}
             if component_name == 'total':
-                continue
-            components.append(component_name)
-            if ('vary' in items) and (items['vary'].value==True):
-                unit = items['units'].value
-                if '%' in unit:
-                    unit = units('')
-                else:
-                    unit = units(unit)
-                vary.append(component_name)
-                lo.append(items['lower'].value*unit)
-                hi.append(items['upper'].value*unit)
-                num.append(items['steps'].value)
-        result = NistoRoboto.prepare.compositionSweepFactory(
-            name='SweepBuilder',
-            components = components,
-            vary_components = vary,
-            lo=lo,
-            hi=hi,
-            num=num,
-            progress = self.data_view.sweep_progress
-        )
-        return result
+                sweep[component_name]['amount'] = widgets['amount'].value
+                sweep[component_name]['units'] = widgets['units'].value
+            else:
+                for name,item in widgets.items():
+                    sweep[component_name][name] = item.value
+        return sweep
+    
     def update_component_row_cb(self,event): 
         component_name = event['owner'].component_name
         if event['new']==True:
@@ -75,6 +100,8 @@ class SweepBuilderWidget:
                 #this is gross but my normal lambda wrapping doesn't work because Python is Python
                 items['vary'].component_name = component_name
                 items['vary'].observe(self.update_component_row_cb,names=['value'])
+        self.data_view.binary_plot_button.on_click(self.plot_binary_cb)
+        self.data_view.ternary_plot_button.on_click(self.plot_ternary_cb)
             
         return widget
     
@@ -82,11 +109,47 @@ class SweepBuilderWidget_Model:
     def __init__(self,stock_dict):
         self.stocks = stock_dict
         self.stock_names = list(stock_dict.keys())
+        self.sweep = []
         
         self.component_names = set()
         for stock_name,stock in stock_dict.items():
             for component_name in stock['components'].keys():
                 self.component_names.add(component_name)
+                
+    def calc_sweep(self,sweep_dict,progress):
+        components = []
+        vary = []
+        lo = []
+        hi = []
+        num = []
+        unit_list = []
+        properties = None
+        for component_name,items in sweep_dict.items():
+            if (component_name == 'total') and (items['amount']>0):
+                properties = {'volume':items['amount']*units(items['units'])}
+            else:
+                components.append(component_name)
+                if ('vary' in items) and (items['vary']==True):
+                    unit = items['units']
+                    if '%' in unit:
+                        unit = units('')
+                    else:
+                        unit = units(unit)
+                    vary.append(component_name)
+                    lo.append(items['lower']*unit)
+                    hi.append(items['upper']*unit)
+                    num.append(items['steps'])
+        self.sweep = NistoRoboto.prepare.compositionSweepFactory(
+            name='SweepBuilder',
+            components = components,
+            vary_components = vary,
+            lo=lo,
+            hi=hi,
+            num=num,
+            progress=progress,
+            properties=properties,
+        )
+        return self.sweep
 
 class SweepBuilderWidget_View:
     def __init__(self):
@@ -100,6 +163,7 @@ class SweepBuilderWidget_View:
             #grid_template_columns='10px '+(text_width+' ')*(self.stock_grid_ncols-1),
             #grid_template_rows='20px'*self.stock_grid_nrows,
             grid_gap='0px',
+            max_width='700px',
         )
         stock_grid = ipywidgets.GridspecLayout( 
             n_rows=self.stock_grid_nrows+2, 
@@ -121,10 +185,10 @@ class SweepBuilderWidget_View:
             stock_grid[i,0] = ipywidgets.Checkbox(layout=Layout(width='35px'),indent=False)
             stock_grid[i,1] = ipywidgets.Text(value=component_name,disabled=True,layout=Layout(width=text_width))
             stock_grid[i,2] = ipywidgets.FloatText(value=0.1,layout=Layout(width=text_width))
-            stock_grid[i,3] = ipywidgets.IntText(value=2,layout=Layout(width=text_width,visibility='hidden'))
+            stock_grid[i,3] = ipywidgets.IntText(value=10,layout=Layout(width=text_width,visibility='hidden'))
             stock_grid[i,4] = ipywidgets.FloatText(value=0.0,layout=Layout(width=text_width,visibility='hidden'))
             stock_grid[i,5] = ipywidgets.FloatText(value=1.0,layout=Layout(width=text_width,visibility='hidden'))
-            stock_grid[i,6] = ipywidgets.Text(value='mass%',layout=Layout(width=text_width))
+            stock_grid[i,6] = ipywidgets.Text(value='mg/ml',layout=Layout(width=text_width))
             
             self.sweep_spec[component_name] = {}
             self.sweep_spec[component_name]['vary']  = stock_grid[i,0]
@@ -133,16 +197,14 @@ class SweepBuilderWidget_View:
             self.sweep_spec[component_name]['lower'] = stock_grid[i,4]
             self.sweep_spec[component_name]['upper'] = stock_grid[i,5]
             self.sweep_spec[component_name]['units'] = stock_grid[i,6]
-            self.sweep_spec[component_name]['row'] = i
             i+=1
             
         stock_grid[i,1] = ipywidgets.Text(value='Total',disabled=True,layout=Layout(width=text_width))
-        stock_grid[i,2] = ipywidgets.FloatText(value=0.0,layout=Layout(width=text_width))
-        stock_grid[i,6] = ipywidgets.Text(value='mass%',layout=Layout(width=text_width))
+        stock_grid[i,2] = ipywidgets.FloatText(value=300.0,layout=Layout(width=text_width))
+        stock_grid[i,6] = ipywidgets.Text(value='ul',layout=Layout(width=text_width))
         self.sweep_spec['total'] = {}
         self.sweep_spec['total']['amount'] = stock_grid[i,2]
         self.sweep_spec['total']['units'] = stock_grid[i,6]
-        self.sweep_spec['total']['row'] = i
         i+=1
            
         
@@ -232,10 +294,10 @@ class SweepBuilderWidget_View:
         
         
         self.tabs = ipywidgets.Tab()
-        self.tabs.children = [stock_grid,ternary,binary]
+        self.tabs.children = [stock_grid,binary,ternary]
         self.tabs.set_title(0,'Calculate')
-        self.tabs.set_title(1,'Plot Ternary')
-        self.tabs.set_title(2,'Plot Binary')
+        self.tabs.set_title(1,'Plot Binary')
+        self.tabs.set_title(2,'Plot Ternary')
         
         return self.tabs
         

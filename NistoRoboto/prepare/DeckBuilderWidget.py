@@ -18,6 +18,10 @@ class DeckBuilderWidget:
         self.data_model = DeckBuilderWidget_Model()
         self.data_view = DeckBuilderWidget_View()
         
+    def build_deck_object(self):
+        config = self.get_deck_config()
+        deck = self.data_model.build_deck_object(config)
+        return deck 
     def get_deck_config(self):
         containers = {}
         catches = {}
@@ -145,7 +149,11 @@ class DeckBuilderWidget_View:
             'nist_2_100ml_poly_bottle',
             'nest_96_wellplate_1600ul'
         ]
-        self.catch_list = ['nist_1_10ml_syringeloader']
+        self.catch_list = [
+            'nist_pneumatic_loader', 
+            'nist_stirred_catch',
+            'nist_1_10ml_syringeloader',
+        ]
         self.tipracks_list = ['opentrons_96_tiprack_300ul','opentrons_96_tiprack_1000ul']
         self.deckware_types = ['container','tips','catch']
         self.deckware_list = ['empty']+self.container_list+self.tipracks_list+self.catch_list
@@ -214,15 +222,15 @@ class DeckBuilderWidget_View:
             self.load_deck_button
         ])
         
-        self.sync_deck_label = Label(value="OT2 IP:")
-        self.sync_deck_input = Text(value="piot2")
-        self.sync_deck_button = Button(description="Sync Deck")
-        hbox_sync = HBox([
-            self.sync_deck_label,
-            self.sync_deck_input,
-            self.sync_deck_button,
+        self.send_deck_label = Label(value="OT2 IP:")
+        self.send_deck_input = Text(value="piot2")
+        self.send_deck_button = Button(description="Send Deck")
+        hbox_send = HBox([
+            self.send_deck_label,
+            self.send_deck_input,
+            self.send_deck_button,
         ])
-        vbox = VBox([hbox_deck,hbox_saveload,hbox_sync])
+        vbox = VBox([hbox_deck,hbox_saveload,hbox_send])
         
         return vbox
     

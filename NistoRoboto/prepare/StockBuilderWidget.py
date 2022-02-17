@@ -159,9 +159,9 @@ class StockBuilderWidget_Model:
         
     def add_stocks_to_deck(self,all_stocks_dict):
         stocks,locs = self.to_stock_objects(all_stocks_dict)
-        deck.reset_stocks()
+        self.deck.reset_stocks()
         for stock_name,stock_obj in stocks.items():
-            deck.add_stock(stock_obj,locs[stock_name])
+            self.deck.add_stock(stock_obj,locs[stock_name])
             
     def to_stock_objects(self,all_stocks_dict):
         afl_stocks = {}

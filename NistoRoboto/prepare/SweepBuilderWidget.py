@@ -14,8 +14,8 @@ import NistoRoboto.prepare
 from NistoRoboto.shared.units import units
 
 class SweepBuilderWidget:
-    def __init__(self,stock_dict):
-        self.data_model = SweepBuilderWidget_Model(stock_dict)
+    def __init__(self,deck):
+        self.data_model = SweepBuilderWidget_Model(deck)
         self.data_view = SweepBuilderWidget_View()
     
     def plot_binary_cb(self,click):
@@ -27,8 +27,11 @@ class SweepBuilderWidget:
         x = []
         y = []
         for solution in self.data_model.sweep:
-            mass_A = solution[component_A].mass
-            mass_B = solution[component_B].mass
+            mass_A = solution[component_A].mass.to('mg')
+            mass_B = solution[component_B].mass.to('mg')
+            if (abs(mass_A.magnitude)>1e4) or (abs(mass_B.magnitude)>1e4):
+                #need to weed out erroneous calculations...
+                continue
             x.append(mass_A.magnitude)
             y.append(mass_B.magnitude)
         self.data_view.binary.data[0].update(x=x,y=y)
@@ -63,7 +66,9 @@ class SweepBuilderWidget:
        
     def calc_sweep_cb(self,click):
         sweep_data = self.get_sweep_data()
+        self.data_view.sweep_progress_label.value = 'Calculating sweep compositions...'
         sweep = self.data_model.calc_sweep(sweep_data,self.data_view.sweep_progress)
+        self.data_view.sweep_progress_label.value = 'Done!'
         return sweep
     
     def get_sweep_data(self):
@@ -106,14 +111,12 @@ class SweepBuilderWidget:
         return widget
     
 class SweepBuilderWidget_Model:
-    def __init__(self,stock_dict):
-        self.stocks = stock_dict
-        self.stock_names = list(stock_dict.keys())
+    def __init__(self,deck):
         self.sweep = []
-        
+        self.deck = deck
         self.component_names = set()
-        for stock_name,stock in stock_dict.items():
-            for component_name in stock['components'].keys():
+        for stock in deck.stocks:
+            for component_name in stock.components.keys():
                 self.component_names.add(component_name)
                 
     def calc_sweep(self,sweep_dict,progress):
@@ -211,8 +214,10 @@ class SweepBuilderWidget_View:
         self.sweep_button = ipywidgets.Button(description="Calculate Sweep")
         self.validate_sweep = ipywidgets.Checkbox(description="Validate Sweep",indent=False)
         self.sweep_progress = ipywidgets.IntProgress(min=0,max=100,value=100)
+        self.sweep_progress_label = ipywidgets.Label('')
+        progress_hbox = HBox([self.sweep_progress,self.sweep_progress_label])
         button_hbox = HBox([self.sweep_button,self.validate_sweep])
-        vbox = VBox([stock_grid,button_hbox,self.sweep_progress])
+        vbox = VBox([stock_grid,button_hbox,progress_hbox])
         return vbox
     
     def make_ternary_plot(self,component_names):  
@@ -227,34 +232,31 @@ class SweepBuilderWidget_View:
             ) ],
             layout=dict(width=600),
         )
+        starting_components = []
+        for i in range(3):
+            try:
+                starting_components.append(component_names[i])
+            except IndexError:
+                starting_components.append('')
+                
         label_A = Label('Component A')
-        try:
-            component = component_names[0]
-        except IndexError:
-            component = ''
         self.ternary_component_A_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component,
+            value=starting_components[0],
             layout=Layout(width='100px'),
         )
+        
         label_B = Label('Component B')
-        try:
-            component = component_names[1]
-        except IndexError:
-            component = ''
         self.ternary_component_B_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component,
+            value=starting_components[1],
             layout=Layout(width='100px'),
         )
+        
         label_C = Label('Component C')
-        try:
-            component = component_names[2]
-        except IndexError:
-            component = ''
         self.ternary_component_C_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component,
+            value=starting_components[2],
             layout=Layout(width='100px'),
         )
         
@@ -280,23 +282,22 @@ class SweepBuilderWidget_View:
             layout=dict(width=600),
         )
         label_A = Label('Component A')
-        try:
-            component = component_names[0]
-        except IndexError:
-            component = ''
+        starting_components = []
+        for i in range(2):
+            try:
+                starting_components.append(component_names[i])
+            except IndexError:
+                starting_components.append('')
+            
         self.binary_component_A_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component,
+            value=starting_components[0],
             layout=Layout(width='100px'),
         )
         label_B = Label('Component B')
-        try:
-            component = component_names[1]
-        except IndexError:
-            component = ''
         self.binary_component_B_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component,
+            value=starting_components[1],
             layout=Layout(width='100px'),
         )
         self.binary_plot_button = Button(description='Update Plot')

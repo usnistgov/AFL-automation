@@ -49,7 +49,9 @@ class Deck:
         self.containers    = {}
         self.pipettes      = {}
         self.catches = {}
+        self.all_deckware = {}
 
+        
         self.balancer = MassBalance()
 
         self.client = None
@@ -129,15 +131,18 @@ class Deck:
         tiprack_list = []
         for slot,rack_name in tipracks:
             self.tip_racks[slot] = rack_name
+            self.all_deckware[slot] = rack_name
             tiprack_list.append(slot)
 
         self.pipettes[mount] = name,tiprack_list
 
     def add_catch(self,name,slot):
         self.catches[slot] = name
+        self.all_deckware[slot] = name
 
     def add_container(self,name,slot):
         self.containers[slot] = name
+        self.all_deckware[slot] = name
 
     def add_stock(self,stock,location):
         stock = stock.copy()

@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from math import sqrt
+import re
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -13,14 +14,20 @@ import NistoRoboto.prepare
 from NistoRoboto.shared.units import units
 
 class StockBuilderWidget:
-    def __init__(self):
-        self.data_model = StockBuilderWidget_Model()
+    def __init__(self,deck):
+        self.data_model = StockBuilderWidget_Model(deck)
         self.data_view = StockBuilderWidget_View()
         
     def get_stock_objects(self):
         stock_values = self.get_stock_values()
         stock_objects = self.data_model.to_stock_objects(stock_values)
         return stock_objects
+    
+    def add_stocks_to_deck(self):
+        stock_values = self.get_stock_values()
+        stock_objects = self.data_model.add_stocks_to_deck(stock_values)
+        return self.data_model.deck
+    
     def get_stock_values(self):
         self.data_view.progress.value = 0
         progress_steps = len(self.data_view.stocks)
@@ -45,7 +52,7 @@ class StockBuilderWidget:
         self.data_view.progress.value = 100
         return stock_values
             
-    def save_cb(self,click,pkl=True):
+    def save_cb(self,event,pkl=True):
         stock_values = self.get_stock_values()
         
         filename = self.data_view.saveload_name.value
@@ -55,7 +62,7 @@ class StockBuilderWidget:
                 
         self.data_view.progress.value = 100
     
-    def load_cb(self,click):
+    def load_cb(self,event):
         self.data_view.progress.value = 0
         filename = self.data_view.saveload_name.value
         with open(filename,'rb') as f: 
@@ -67,13 +74,17 @@ class StockBuilderWidget:
             components = list(stock['components'].keys())
             self.data_view.make_stock_tab(stock_name,components)
             stocks[stock_name]['location']['value'].value = stock['location']['value']
-            stocks[stock_name]['total']['value'].value = stock['total']['value']
-            stocks[stock_name]['total']['units'].value = stock['total']['units']
+            stocks[stock_name]['total']['value'].value    = stock['total']['value']
+            stocks[stock_name]['total']['units'].value    = stock['total']['units']
             stocks[stock_name]['remove_button'].on_click(self.remove_stock_cb)
             stocks[stock_name]['mg_button'].on_click(lambda X:self.set_units_cb(X,'mg'))
             stocks[stock_name]['ul_button'].on_click(lambda X:self.set_units_cb(X,'ul'))
             stocks[stock_name]['mass%_button'].on_click(lambda X:self.set_units_cb(X,'mass%'))
             stocks[stock_name]['vol%_button'].on_click(lambda X:self.set_units_cb(X,'vol%'))
+            stocks[stock_name]['location']['value'].observe(self.update_location_check_cb,names=['value'])
+            
+            self.data_view.tabs.selected_index= (len(self.data_view.tabs.children)-1)
+            self.update_location_check_cb(None)#trigger location_check
             
             for name,component in stock['components'].items():
                 stocks[stock_name]['components'][name]['value'].value = component['value']
@@ -81,7 +92,24 @@ class StockBuilderWidget:
             self.data_view.progress.value = ((i+1)/progress_steps)*100
         self.data_view.progress.value = 100
                 
-    def make_stock_cb(self,click):
+    def update_location_check_cb(self,event):
+        index =  self.data_view.tabs.selected_index
+        stock_name = self.data_view.tabs.get_title(index)
+        location = self.data_view.stocks[stock_name]['location']['value'].value
+        
+        split = re.split('[a-zA-z]',location)
+        if not len(split)==2:
+            return
+        
+        try:
+            loc = int(split[0])
+        except ValueError:
+            return
+            
+        deckware = self.data_model.deck.all_deckware[loc]
+        self.data_view.stocks[stock_name]['location']['check_text'].value = f'Slot contains: {deckware}'
+        
+    def make_stock_cb(self,event):
         self.data_view.progress.value = 0
         stock_name = self.data_view.make_stock_name.value
         components = self.data_view.make_stock_components.value.split(',')
@@ -91,9 +119,10 @@ class StockBuilderWidget:
         self.data_view.stocks[stock_name]['ul_button'].on_click(lambda X:self.set_units_cb(X,'ul'))
         self.data_view.stocks[stock_name]['mass%_button'].on_click(lambda X:self.set_units_cb(X,'mass%'))
         self.data_view.stocks[stock_name]['vol%_button'].on_click(lambda X:self.set_units_cb(X,'vol%'))
+        self.data_view.stocks[stock_name]['location']['value'].observe(self.update_location_check_cb,names=['value'])
         self.data_view.progress.value = 100
         
-    def remove_stock_cb(self,click):
+    def remove_stock_cb(self,event):
         children = list(self.data_view.tabs.children)
         titles = []
         for i in range(len(self.data_view.tabs.children)):
@@ -108,7 +137,7 @@ class StockBuilderWidget:
         for i,title in enumerate(titles):
             self.data_view.tabs.set_title(i,title)
     
-    def set_units_cb(self,click,units):
+    def set_units_cb(self,event,units):
         index =  self.data_view.tabs.selected_index
         stock_name = self.data_view.tabs.get_title(index)
         self.data_view.stocks[stock_name]['total']['units'].value =  units
@@ -125,11 +154,22 @@ class StockBuilderWidget:
 
 
 class StockBuilderWidget_Model:
+    def __init__(self,deck):
+        self.deck = deck
+        
+    def add_stocks_to_deck(self,all_stocks_dict):
+        stocks,locs = self.to_stock_objects(all_stocks_dict)
+        deck.reset_stocks()
+        for stock_name,stock_obj in stocks.items():
+            deck.add_stock(stock_obj,locs[stock_name])
+            
     def to_stock_objects(self,all_stocks_dict):
         afl_stocks = {}
+        afl_stock_locs = {}
         for stock_name,stock in all_stocks_dict.items():
             components = list(stock['components'].keys())
             afl_stocks[stock_name] = NistoRoboto.prepare.Solution(stock_name,components)
+            afl_stock_locs[stock_name] = stock['location']['value']
             
             mass_fraction = {}
             volume_fraction = {}
@@ -165,7 +205,7 @@ class StockBuilderWidget_Model:
                 afl_stocks[stock_name].volume = float(value)*units(unit_str)
             else:
                 raise ValueError(f'Units not recogized: {unit_str}')
-        return afl_stocks
+        return afl_stocks,afl_stock_locs
 
 class StockBuilderWidget_View:
     def __init__(self):
@@ -222,8 +262,10 @@ class StockBuilderWidget_View:
         
         gs[i,0] = ipywidgets.Label(value=f"Deck Location")
         gs[i,1] = ipywidgets.Text()
+        gs[i,2] = ipywidgets.Label(value="",style={'font_style':'italic'})
         self.stocks[stock_name]['location'] = {
-            'value':gs[i,1]
+            'value':gs[i,1],
+            'check_text':gs[i,2],
         }
         i+=1
         

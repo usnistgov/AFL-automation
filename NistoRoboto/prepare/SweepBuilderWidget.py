@@ -56,9 +56,9 @@ class SweepBuilderWidget:
             c.append(mass_C.magnitude)
         self.data_view.ternary.data[0].update(a=a,b=b,c=c)
         self.data_view.ternary.layout.update({
-            'ternary.aaxis.title':component_A + f' ({mass_A.units})',
-            'ternary.baxis.title':component_B + f' ({mass_B.units})',
-            'ternary.caxis.title':component_C + f' ({mass_C.units})'
+            'ternary.aaxis.title':component_A ,
+            'ternary.baxis.title':component_B ,
+            'ternary.caxis.title':component_C 
         })
        
     def calc_sweep_cb(self,click):
@@ -209,8 +209,10 @@ class SweepBuilderWidget_View:
            
         
         self.sweep_button = ipywidgets.Button(description="Calculate Sweep")
+        self.validate_sweep = ipywidgets.Checkbox(description="Validate Sweep",indent=False)
         self.sweep_progress = ipywidgets.IntProgress(min=0,max=100,value=100)
-        vbox = VBox([stock_grid,self.sweep_button,self.sweep_progress])
+        button_hbox = HBox([self.sweep_button,self.validate_sweep])
+        vbox = VBox([stock_grid,button_hbox,self.sweep_progress])
         return vbox
     
     def make_ternary_plot(self,component_names):  

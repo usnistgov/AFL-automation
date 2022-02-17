@@ -228,21 +228,33 @@ class SweepBuilderWidget_View:
             layout=dict(width=600),
         )
         label_A = Label('Component A')
+        try:
+            component = component_names[0]
+        except IndexError:
+            component = ''
         self.ternary_component_A_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component_names[0],
+            value=component,
             layout=Layout(width='100px'),
         )
         label_B = Label('Component B')
+        try:
+            component = component_names[1]
+        except IndexError:
+            component = ''
         self.ternary_component_B_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component_names[1],
+            value=component,
             layout=Layout(width='100px'),
         )
         label_C = Label('Component C')
+        try:
+            component = component_names[2]
+        except IndexError:
+            component = ''
         self.ternary_component_C_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component_names[2],
+            value=component,
             layout=Layout(width='100px'),
         )
         
@@ -268,15 +280,23 @@ class SweepBuilderWidget_View:
             layout=dict(width=600),
         )
         label_A = Label('Component A')
+        try:
+            component = component_names[0]
+        except IndexError:
+            component = ''
         self.binary_component_A_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component_names[0],
+            value=component,
             layout=Layout(width='100px'),
         )
         label_B = Label('Component B')
+        try:
+            component = component_names[1]
+        except IndexError:
+            component = ''
         self.binary_component_B_select = ipywidgets.Dropdown(
             options=component_names,
-            value=component_names[1],
+            value=component,
             layout=Layout(width='100px'),
         )
         self.binary_plot_button = Button(description='Update Plot')

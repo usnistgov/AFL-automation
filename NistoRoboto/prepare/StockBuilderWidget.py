@@ -100,6 +100,8 @@ class StockBuilderWidget:
             titles.append(self.data_view.tabs.get_title(i))
         
         del children[self.data_view.tabs.selected_index]
+        stock_name = titles[self.data_view.tabs.selected_index]
+        del self.data_view.stocks[stock_name]
         del titles[self.data_view.tabs.selected_index]
         
         self.data_view.tabs.children = children

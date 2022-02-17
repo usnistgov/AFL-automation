@@ -85,6 +85,7 @@ def compositionSweepFactory(name,components,vary_components,lo,hi,num,logspace=F
                 if solution.size>2:
                     raise ValueError('Variation by mass fraction only works for two component solutions')
                 solution.mass_fraction = {component:value}
+        solution.set_properties_from_dict(properties,inplace=True)
         sweep.append(solution)
     return sweep
                 

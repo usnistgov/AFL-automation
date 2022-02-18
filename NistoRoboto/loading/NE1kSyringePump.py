@@ -38,7 +38,7 @@ class NE1kSyringePump(SyringePump):
         if daisy_chain is not None:
             self.serial_device = daisy_chain.serial_device
         else:
-            self.serial_device = SerialDevice(port,baudrate=baud,timeout=0.5)
+            self.serial_device = SerialDevice(port,baudrate=baud,timeout=0.5,debug=True)
 
         # try to connect
 

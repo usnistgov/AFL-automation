@@ -11,6 +11,8 @@ class OT2_Driver(Driver):
         self.app = None
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.max_transfer = 300
+        self.min_transfer = 30
         self.prep_targets = []
         self.modules = {}
 

@@ -18,6 +18,24 @@ class StockBuilderWidget:
         self.data_model = StockBuilderWidget_Model(deck)
         self.data_view = StockBuilderWidget_View()
         
+    def analyze_stocks_cb(self,event):
+        stocks,locs = self.get_stock_objects()
+        text = ''
+            
+        components = set()
+        for stock_name,stock in stocks.items():
+            for component in stock.components.keys():
+                components.add(component)
+            
+        text+='{:25s} | {:26s} | {}\n'.format('component','stock_name','concentration')
+        text+='{:25s} | {:26s} | {}\n'.format('-'*25,'-'*25,'-'*25)
+        for component in components:
+            for stock_name,stock in stocks.items():
+                if component in stock.components:
+                    text+=f'{component:25s} |  {stock_name:25s} | {stock.concentration[component].to("mg/ml")}\n'
+            text+='-'*100 + '\n'
+        self.data_view.analyze_stocks_text.value = text
+            
     def get_stock_objects(self):
         stock_values = self.get_stock_values()
         stock_objects = self.data_model.to_stock_objects(stock_values)
@@ -149,6 +167,7 @@ class StockBuilderWidget:
         self.data_view.save_stock_button.on_click(self.save_cb)
         self.data_view.load_stock_button.on_click(self.load_cb)
         self.data_view.make_stock_button.on_click(self.make_stock_cb)
+        self.data_view.analyze_stocks_button.on_click(self.analyze_stocks_cb)
         
         return widget
 
@@ -273,7 +292,6 @@ class StockBuilderWidget_View:
         self.tabs.children = list(self.tabs.children) + [gs]
         self.tabs.set_title(len(self.tabs.children)-1,stock_name)
         
-        
     def start(self):
         # self.label_layout = ipywidgets.Layout()
         make_stock_name_label = ipywidgets.Label(value="Stock Name")
@@ -307,13 +325,17 @@ class StockBuilderWidget_View:
         self.make_stock_accordion.set_title(0,'Create')
         self.make_stock_accordion.set_title(1,'Save & Load')
         
-        
         self.progress = ipywidgets.IntProgress(min=0,max=100,value=100)
         self.outputs = ipywidgets.Output()
-        vbox = ipywidgets.VBox([self.make_stock_accordion,self.progress,self.outputs])
+        vbox1 = ipywidgets.VBox([self.make_stock_accordion,self.progress,self.outputs])
+        
+        self.analyze_stocks_button = ipywidgets.Button(description='Analyze')
+        self.analyze_stocks_text = ipywidgets.Textarea(layout=ipywidgets.Layout(width='800px',height='600px'))
+        self.analyze_container = ipywidgets.VBox([self.analyze_stocks_button,self.analyze_stocks_text])
         
         self.tabs = ipywidgets.Tab()
-        self.tabs.children = [vbox]
+        self.tabs.children = [vbox1,self.analyze_container]
         self.tabs.set_title(0,'Setup')
+        self.tabs.set_title(1,'Analyze')
         return self.tabs
         

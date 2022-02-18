@@ -178,7 +178,7 @@ class StockBuilderWidget_Model:
                 unit_str = component['units']
                 if (not value) or (not unit_str):
                     pass#empty cell, don't specify
-                elif unit_str.lower() in ['mg','ug']:
+                elif unit_str.lower() in ['mg','ug','g']:
                     afl_stocks[stock_name][component_name].mass = float(value)*units(unit_str)
                 elif unit_str.lower() in ['ul','ml','l']:
                     afl_stocks[stock_name][component_name].volume = float(value)*units(unit_str)

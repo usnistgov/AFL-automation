@@ -19,26 +19,34 @@ class SweepBuilderWidget:
         self.data_view = SweepBuilderWidget_View()
     
     def plot_binary_cb(self,click):
-        if not self.data_model.sweep:
+        if self.data_model.sample_series is None:
             return
         
         component_A = self.data_view.binary_component_A_select.value
         component_B = self.data_view.binary_component_B_select.value
         x = []
         y = []
-        for solution in self.data_model.sweep:
-            mass_A = solution[component_A].mass.to('mg')
-            mass_B = solution[component_B].mass.to('mg')
+        x_validated = []
+        y_validated = []
+        for sample,validated in self.data_model.sample_series:
+            mass_A = sample.target_check[component_A].mass.to('mg')
+            mass_B = sample.target_check[component_B].mass.to('mg')
             if (abs(mass_A.magnitude)>1e4) or (abs(mass_B.magnitude)>1e4):
                 #need to weed out erroneous calculations...
                 continue
             x.append(mass_A.magnitude)
             y.append(mass_B.magnitude)
+            if validated:
+                x_validated.append(mass_A.magnitude)
+                y_validated.append(mass_B.magnitude)
+            
         self.data_view.binary.data[0].update(x=x,y=y)
         self.data_view.binary.layout.update({
             'xaxis.title':component_A + f' ({mass_A.units})',
             'yaxis.title':component_B + f' ({mass_B.units})'
         })
+        if x_validated:
+            self.data_view.binary.data[1].update(x=x_validated,y=y_validated)
         
     def plot_ternary_cb(self,click):
         if not self.data_model.sweep:
@@ -50,25 +58,45 @@ class SweepBuilderWidget:
         a = []
         b = []
         c = []
-        for solution in self.data_model.sweep:
-            mass_A = solution[component_A].mass
-            mass_B = solution[component_B].mass
-            mass_C = solution[component_C].mass
+        a_validated = []
+        b_validated = []
+        c_validated = []
+        for sample,validated in self.data_model.sample_series:
+            mass_A = sample.target_check[component_A].mass.to('mg')
+            mass_B = sample.target_check[component_B].mass.to('mg')
+            mass_C = sample.target_check[component_C].mass.to('mg')
+            if (abs(mass_A.magnitude)>1e4) or (abs(mass_B.magnitude)>1e4) or (abs(mass_C.magnitude)>1e4):
+                #need to weed out erroneous calculations...
+                continue
             a.append(mass_A.magnitude)
             b.append(mass_B.magnitude)
             c.append(mass_C.magnitude)
+            if validated:
+                a_validated.append(mass_A.magnitude)
+                b_validated.append(mass_B.magnitude)
+                c_validated.append(mass_C.magnitude)
+                
         self.data_view.ternary.data[0].update(a=a,b=b,c=c)
         self.data_view.ternary.layout.update({
-            'ternary.aaxis.title':component_A ,
-            'ternary.baxis.title':component_B ,
+            'ternary.aaxis.title':component_A,
+            'ternary.baxis.title':component_B,
             'ternary.caxis.title':component_C 
         })
+        if a_validated:
+            self.data_view.ternary.data[1].update(a=a_validated,b=b_validated,c=c_validated)
        
     def calc_sweep_cb(self,click):
         sweep_data = self.get_sweep_data()
         self.data_view.sweep_progress_label.value = 'Calculating sweep compositions...'
         sweep = self.data_model.calc_sweep(sweep_data,self.data_view.sweep_progress)
-        self.data_view.sweep_progress_label.value = 'Done!'
+        ntotal = len(self.data_model.sample_series.samples)
+        self.data_view.sweep_progress_label.value = f'Done! Made {ntotal} samples.'
+        
+        if self.data_view.validate_sweep.value:
+            self.data_view.sweep_progress_label.value = 'Validating sweep compositions...'
+            sweep = self.data_model.validate_sweep(self.data_view.sweep_progress)
+            nvalidated = sum(self.data_model.sample_series.validated)
+            self.data_view.sweep_progress_label.value = f'Done! Validated {nvalidated}/{ntotal} samples.'
         return sweep
     
     def get_sweep_data(self):
@@ -113,12 +141,17 @@ class SweepBuilderWidget:
 class SweepBuilderWidget_Model:
     def __init__(self,deck):
         self.sweep = []
+        self.sample_series = None
         self.deck = deck
         self.component_names = set()
         for stock in deck.stocks:
             for component_name in stock.components.keys():
                 self.component_names.add(component_name)
                 
+    def validate_sweep(self,progress=None):
+        self.deck.validate_sample_series(progress=progress)
+        return self.sample_series
+        
     def calc_sweep(self,sweep_dict,progress):
         components = []
         vary = []
@@ -152,6 +185,11 @@ class SweepBuilderWidget_Model:
             progress=progress,
             properties=properties,
         )
+        
+        self.deck.reset_targets()
+        for target in self.sweep:
+            self.deck.add_target(target,name='auto')
+        self.sample_series = self.deck.make_sample_series(reset_sample_series=True)
         return self.sweep
 
 class SweepBuilderWidget_View:
@@ -229,7 +267,16 @@ class SweepBuilderWidget_View:
                 mode = 'markers', 
                 opacity=1.0,
                 showlegend=False,
-            ) ],
+            ) ,
+            go.Scatterternary( 
+                a = [], 
+                b = [], 
+                c = [], 
+                mode = 'markers', 
+                opacity=1.0,
+                showlegend=False,
+            ) ,
+        ],
             layout=dict(width=600),
         )
         starting_components = []
@@ -278,7 +325,15 @@ class SweepBuilderWidget_View:
                 mode = 'markers', 
                 opacity=1.0,
                 showlegend=False,
-            ) ],
+            ),
+            go.Scatter( 
+                x = [], 
+                y = [], 
+                mode = 'markers', 
+                opacity=1.0,
+                showlegend=False,
+            ) 
+        ],
             layout=dict(width=600),
         )
         label_A = Label('Component A')

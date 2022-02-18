@@ -1,6 +1,7 @@
 from itertools import product
 import numpy as np
 import periodictable
+import functools, operator
 
 from NistoRoboto.prepare.Solution import Solution
 from NistoRoboto.shared.units import units,has_units,is_mass,is_volume,is_molarity,is_concentration
@@ -36,7 +37,7 @@ def HD2OFactory(name,phi_D2O=None,sld=None,properties=None):
 
 
 
-def compositionSweepFactory(name,components,vary_components,lo,hi,num,logspace=False,properties=None):
+def compositionSweepFactory(name,components,vary_components,lo,hi,num,logspace=False,properties=None,progress=None):
     solution_base = Solution(name,components)
     solution_base.set_properties_from_dict(properties,inplace=True)
     
@@ -59,9 +60,15 @@ def compositionSweepFactory(name,components,vary_components,lo,hi,num,logspace=F
             params.append(np.geomspace(l,h,n))
         else:
             params.append(np.linspace(l,h,n))
+            
+    if progress is not None:
+        progress.value = 0
+        progress.max = functools.reduce(operator.mul, map(len, params), 1)-1
     
     sweep = []
-    for param in product(*params):
+    for j,param in enumerate(product(*params)):
+        if progress is not None:
+            progress.value = j
         solution = solution_base.copy()
         for i,value in enumerate(param):
             component = vary_components[i]
@@ -78,6 +85,7 @@ def compositionSweepFactory(name,components,vary_components,lo,hi,num,logspace=F
                 if solution.size>2:
                     raise ValueError('Variation by mass fraction only works for two component solutions')
                 solution.mass_fraction = {component:value}
+        solution.set_properties_from_dict(properties,inplace=True)
         sweep.append(solution)
     return sweep
                 

@@ -49,7 +49,9 @@ class Deck:
         self.containers    = {}
         self.pipettes      = {}
         self.catches = {}
+        self.all_deckware = {}
 
+        
         self.balancer = MassBalance()
 
         self.client = None
@@ -129,15 +131,18 @@ class Deck:
         tiprack_list = []
         for slot,rack_name in tipracks:
             self.tip_racks[slot] = rack_name
+            self.all_deckware[slot] = rack_name
             tiprack_list.append(slot)
 
         self.pipettes[mount] = name,tiprack_list
 
     def add_catch(self,name,slot):
         self.catches[slot] = name
+        self.all_deckware[slot] = name
 
     def add_container(self,name,slot):
         self.containers[slot] = name
+        self.all_deckware[slot] = name
 
     def add_stock(self,stock,location):
         stock = stock.copy()
@@ -231,10 +236,16 @@ class Deck:
         return self.sample_series
 
                     
-    def validate_sample_series(self,tolerance=0.0,print_report=True):
+    def validate_sample_series(self,tolerance=0.0,print_report=True,progress=None):
+        if progress is not None:
+            progress.value = 0
+            progress.max = len(self.sample_series.samples)-1
+                
         validated = []
         self.validation_report = []
-        for sample,_ in self.sample_series:
+        for i,(sample,_) in enumerate(self.sample_series):
+            if progress is not None:
+                progress.value=i
             report = f'==> Attempting to make {sample.target.volume.to("ml")} with mass fraction {sample.target.mass_fraction}\n'
             for stock,(stock_loc,mass) in sample.balancer.mass_transfers.items():
                 if (mass>0) and (mass<self.mass_cutoff):

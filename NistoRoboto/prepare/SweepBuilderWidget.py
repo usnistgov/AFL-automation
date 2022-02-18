@@ -92,12 +92,15 @@ class SweepBuilderWidget:
         ntotal = len(self.data_model.sample_series.samples)
         self.data_view.sweep_progress_label.value = f'Done! Made {ntotal} samples.'
         
-        if self.data_view.validate_sweep.value:
-            self.data_view.sweep_progress_label.value = 'Validating sweep compositions...'
-            sweep = self.data_model.validate_sweep(self.data_view.sweep_progress)
-            nvalidated = sum(self.data_model.sample_series.validated)
-            self.data_view.sweep_progress_label.value = f'Done! Validated {nvalidated}/{ntotal} samples.'
-        return sweep
+    def validate_sweep_cb(self,click):
+        self.data_view.sweep_progress_label.value = 'Validating sweep compositions...'
+        sweep = self.data_model.validate_sweep(
+            self.data_view.validate_tol.value, 
+            self.data_view.sweep_progress
+        )
+        ntotal = len(self.data_model.sample_series.samples)
+        nvalidated = sum(self.data_model.sample_series.validated)
+        self.data_view.sweep_progress_label.value = f'Done! Validated {nvalidated}/{ntotal} samples.'
     
     def get_sweep_data(self):
         sweep = {}
@@ -128,6 +131,7 @@ class SweepBuilderWidget:
         widget = self.data_view.start(self.data_model.component_names)
         
         self.data_view.sweep_button.on_click(self.calc_sweep_cb)
+        self.data_view.validate_button.on_click(self.validate_sweep_cb)
         for component_name,items in self.data_view.sweep_spec.items():
             if 'vary' in items:
                 #this is gross but my normal lambda wrapping doesn't work because Python is Python
@@ -148,8 +152,8 @@ class SweepBuilderWidget_Model:
             for component_name in stock.components.keys():
                 self.component_names.add(component_name)
                 
-    def validate_sweep(self,progress=None):
-        self.deck.validate_sample_series(progress=progress)
+    def validate_sweep(self,tolerance,progress=None):
+        self.deck.validate_sample_series(tolerance,progress=progress)
         return self.sample_series
         
     def calc_sweep(self,sweep_dict,progress):
@@ -225,10 +229,10 @@ class SweepBuilderWidget_View:
         for component_name in component_names: 
             stock_grid[i,0] = ipywidgets.Checkbox(layout=Layout(width='35px'),indent=False)
             stock_grid[i,1] = ipywidgets.Text(value=component_name,disabled=True,layout=Layout(width=text_width))
-            stock_grid[i,2] = ipywidgets.FloatText(value=0.1,layout=Layout(width=text_width))
-            stock_grid[i,3] = ipywidgets.IntText(value=10,layout=Layout(width=text_width,visibility='hidden'))
-            stock_grid[i,4] = ipywidgets.FloatText(value=0.0,layout=Layout(width=text_width,visibility='hidden'))
-            stock_grid[i,5] = ipywidgets.FloatText(value=1.0,layout=Layout(width=text_width,visibility='hidden'))
+            stock_grid[i,2] = ipywidgets.FloatText(value=0.0,layout=Layout(width=text_width))
+            stock_grid[i,3] = ipywidgets.IntText(value=5,layout=Layout(width=text_width,visibility='hidden'))
+            stock_grid[i,4] = ipywidgets.FloatText(value=50.0,layout=Layout(width=text_width,visibility='hidden'))
+            stock_grid[i,5] = ipywidgets.FloatText(value=200.0,layout=Layout(width=text_width,visibility='hidden'))
             stock_grid[i,6] = ipywidgets.Text(value='mg/ml',layout=Layout(width=text_width))
             
             self.sweep_spec[component_name] = {}
@@ -250,11 +254,13 @@ class SweepBuilderWidget_View:
            
         
         self.sweep_button = ipywidgets.Button(description="Calculate Sweep")
-        self.validate_sweep = ipywidgets.Checkbox(description="Validate Sweep",indent=False)
+        #self.validate_sweep = ipywidgets.Checkbox(description="Validate Sweep",indent=False)
+        self.validate_button = ipywidgets.Button(description="Validate Sweep")
+        self.validate_tol = ipywidgets.FloatText(value=0.15,description="Tolerance")
         self.sweep_progress = ipywidgets.IntProgress(min=0,max=100,value=100)
         self.sweep_progress_label = ipywidgets.Label('')
         progress_hbox = HBox([self.sweep_progress,self.sweep_progress_label])
-        button_hbox = HBox([self.sweep_button,self.validate_sweep])
+        button_hbox = HBox([self.sweep_button,self.validate_button,self.validate_tol])
         vbox = VBox([stock_grid,button_hbox,progress_hbox])
         return vbox
     
@@ -277,8 +283,9 @@ class SweepBuilderWidget_View:
                 showlegend=False,
             ) ,
         ],
-            layout=dict(width=600),
+            layout=dict(width=600,margin=dict(t=10,b=10,l=10,r=5)),
         )
+        
         starting_components = []
         for i in range(3):
             try:
@@ -334,7 +341,7 @@ class SweepBuilderWidget_View:
                 showlegend=False,
             ) 
         ],
-            layout=dict(width=600),
+            layout=dict(width=600,margin=dict(t=5,b=5,l=5,r=5)),
         )
         label_A = Label('Component A')
         starting_components = []

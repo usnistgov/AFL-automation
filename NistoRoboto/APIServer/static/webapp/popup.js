@@ -93,6 +93,7 @@ class Popup {
         var keys, root, child, html, text;
         html = '<div id="'+id+'" class="jsTree"><ul>';
         text = JSON.stringify(data.task);
+        meta = JSON.stringify(data.meta);
 
         // TODO solve the issue with generating 3+ levels in jsTree
         // html = '';
@@ -106,7 +107,9 @@ class Popup {
             child = data.task[keys[i]];
             html += '<li>'+root+'<ul><li>'+child+'</li></ul></li>';
         }
-        html += '</ul></div><p>'+text+'</p>';
+        html += '</ul></div>';
+        html += '<p>'+text+'</p>';
+        html += '<p>'+meta+'</p>';
 
         this.html += html;
         this.hasTaskData = true;

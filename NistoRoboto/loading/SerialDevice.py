@@ -13,12 +13,14 @@ class SerialDevice():
                 print('awaiting port not busy...')
             time.sleep(0.1)
         self.busy=True
+        print('passed busy check, performing write')
+        print(self.serialport)
         if self.raw_writes:
             self.serialport.write(cmd)
         else:
             self.serialport.write(bytes(cmd,'utf8'))
         if debug:
-            print(f'wrote {CMD} to port...')
+            print(f'wrote {cmd} to port...')
         if response:
             if debug:
                 print(f'awaiting response...')

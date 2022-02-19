@@ -71,9 +71,9 @@ class PneumaticSampleCell(Driver,SampleCell):
         self._USE_DOOR_INTERLOCK = False
         if self.digitalin is not None:
             if 'ARM_UP' in self.digitalin.state.keys() and 'ARM_DOWN' in self.digitalin.state.keys():
-                self._USE_ARM_LIMITS = False
+                self._USE_ARM_LIMITS =False
             if 'DOOR' in self.digitalin.state.keys():
-                self._USE_DOOR_INTERLOCK = False
+                self._USE_DOOR_INTERLOCK = True
 
 
 
@@ -125,10 +125,9 @@ class PneumaticSampleCell(Driver,SampleCell):
  
     def _arm_interlock_check(self):
         if self._USE_DOOR_INTERLOCK:
+            oldstate = self.state
             while self.digitalin.state['DOOR']:
                 time.sleep(0.2)
-                oldstate = self.state
-                print(self.digitalin.state)
                 self.state = 'AWAITING DOOR CLOSED BEFORE MOVING ARM'
             self.state = oldstate
 
@@ -163,10 +162,15 @@ class PneumaticSampleCell(Driver,SampleCell):
         self._arm_down()
         time.sleep(self.config['vent_delay'])
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
+        print('setting pump rate...')
         self.pump.setRate(self.config['load_speed'])
+        print('setting state...')
         self.state = 'LOAD IN PROGRESS'
+        print('sending dispense command')
         self.pump.dispense(self.config['catch_to_cell_vol']+sampleVolume/2,block=False)
+        
         while(self.pump.getStatus()[0] != 'S' and self.loadStoppedExternally == False):
+            print(f'awaiting pump complete, [self.pump.getStatus()]')
             time.sleep(0.1)
 
         self.loadStoppedExternally = False

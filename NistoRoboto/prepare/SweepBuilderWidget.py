@@ -285,7 +285,7 @@ class SweepBuilderWidget_View:
                 showlegend=False,
             ) ,
         ],
-            layout=dict(width=600,margin=dict(t=10,b=10,l=10,r=5)),
+            layout=dict(width=600,margin=dict(t=20,b=20,l=10,r=10)),
         )
         
         starting_components = []

@@ -76,18 +76,29 @@ class DeckBuilderWidget:
         right_value = config['pipettes']['right']
         self.data_view.pipette_left_dropdown.value = left_value
         self.data_view.pipette_right_dropdown.value = right_value
+        
+    def send_deck_cb(self,event):
+        deck = self.build_deck_object()
+        ip = self.data_view.send_deck_input.value
+        home = self.data_view.send_deck_home.value
+        deck.init_remote_connection(ip,home=home)
+        deck.send_deck_config()
     
     def save_cb(self,event):
+        self.data_view.progress.value = 0
         config = self.get_deck_config()
         filename = self.data_view.saveload_deck_input.value
         with open(filename,'wb') as f:
             pickle.dump(config,f)
+        self.data_view.progress.value = 1
             
     def load_cb(self,event):
+        self.data_view.progress.value = 0
         filename = self.data_view.saveload_deck_input.value
         with open(filename,'rb') as f:
             config = pickle.load(f)
         self.set_deck_config(config)
+        self.data_view.progress.value = 1
         
     def update_deck_graphic_cb(self,event):
         for slot,dropdown in self.data_view.deckware_dropdowns.items():
@@ -109,6 +120,7 @@ class DeckBuilderWidget:
         
         self.data_view.save_deck_button.on_click(self.save_cb)
         self.data_view.load_deck_button.on_click(self.load_cb)
+        self.data_view.send_deck_button.on_click(self.send_deck_cb)
         return widget
         
 class DeckBuilderWidget_Model:
@@ -225,12 +237,15 @@ class DeckBuilderWidget_View:
         self.send_deck_label = Label(value="OT2 IP:")
         self.send_deck_input = Text(value="piot2")
         self.send_deck_button = Button(description="Send Deck")
+        self.send_deck_home = Checkbox(description="Home on Send",value=True)
         hbox_send = HBox([
             self.send_deck_label,
             self.send_deck_input,
             self.send_deck_button,
+            self.send_deck_home,
         ])
-        vbox = VBox([hbox_deck,hbox_saveload,hbox_send])
+        self.progress = ipywidgets.IntProgress(min=0,max=1,value=1)
+        vbox = VBox([hbox_deck,hbox_saveload,hbox_send,self.progress])
         
         return vbox
     

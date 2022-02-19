@@ -113,6 +113,9 @@ class SweepBuilderWidget:
                     sweep[component_name][name] = item.value
         return sweep
     
+    def get_deck(self):
+        return self.data_model.deck
+    
     def update_component_row_cb(self,event): 
         component_name = event['owner'].component_name
         if event['new']==True:
@@ -146,10 +149,11 @@ class SweepBuilderWidget_Model:
         self.sweep = []
         self.sample_series = None
         self.deck = deck
-        self.component_names = set()
-        for stock in deck.stocks:
-            for component_name in stock.components.keys():
-                self.component_names.add(component_name)
+        self.component_names,_,_ = deck.get_components()
+        #self.component_names = set()
+        # for stock in deck.stocks:
+        #     for component_name in stock.components.keys():
+        #         self.component_names.add(component_name)
                 
     def validate_sweep(self,tolerance,progress=None):
         self.deck.validate_sample_series(tolerance,progress=progress)

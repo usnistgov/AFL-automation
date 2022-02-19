@@ -38,7 +38,7 @@ class NE1kSyringePump(SyringePump):
         if daisy_chain is not None:
             self.serial_device = daisy_chain.serial_device
         else:
-            self.serial_device = SerialDevice(port,baudrate=baud,timeout=0.5,debug=True)
+            self.serial_device = SerialDevice(port,baudrate=baud,timeout=0.5)
 
         # try to connect
 
@@ -99,7 +99,7 @@ class NE1kSyringePump(SyringePump):
     def setRate(self,rate):
         if self.app is not None:
             self.app.logger.debug(f'Setting pump rate to {rate} mL/min')
-        self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate))
+        self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate),debug=True)
         if self.getRate()!=rate:
             raise ValueError('Pump rate change failed')
 

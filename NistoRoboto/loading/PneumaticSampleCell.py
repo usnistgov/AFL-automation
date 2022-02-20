@@ -71,7 +71,7 @@ class PneumaticSampleCell(Driver,SampleCell):
         self._USE_DOOR_INTERLOCK = False
         if self.digitalin is not None:
             if 'ARM_UP' in self.digitalin.state.keys() and 'ARM_DOWN' in self.digitalin.state.keys():
-                self._USE_ARM_LIMITS =False
+                self._USE_ARM_LIMITS =True
             if 'DOOR' in self.digitalin.state.keys():
                 self._USE_DOOR_INTERLOCK = True
 
@@ -216,9 +216,9 @@ class PneumaticSampleCell(Driver,SampleCell):
                 self.relayboard.setChannels({step:False})
         self.relayboard.setChannels({'postsample':False})
         self._arm_up()
-        self.pump.withdraw(self.config['withdraw_vol'],block=False)
-
         self.state = 'READY'
+        self.pump.withdraw(self.config['withdraw_vol'],block=True)
+
     
     def rinseAll(self):
         self.rinseCell()

@@ -72,6 +72,13 @@ class SampleSeriesWidget:
             self.data_view.sample_label.value = label
             
     def make_all_labels_cb(self,event):
+        labels = self.make_all_labels()
+        minlen = min(labels,key=len)
+        maxlen = max(labels,key=len)
+        self.data_view.all_labels.options = labels
+        self.data_view.make_label_result_text.value = f'Labeled {len(labels)} samples. | Min len: {minlen} | Max len: {maxlen}'
+        
+    def make_all_labels(self):
         labels = []
         only_validated = self.data_view.only_validated.value
         minlen = 1e6
@@ -82,8 +89,11 @@ class SampleSeriesWidget:
             labels.append(self.build_label(i)) 
             minlen = min(len(labels[-1]),minlen)
             maxlen = max(len(labels[-1]),maxlen)
-        self.data_view.all_labels.options = labels
-        self.data_view.make_label_result_text.value = f'Labeled {len(labels)} samples. | Min len: {minlen} | Max len: {maxlen}'
+        return labels
+    
+    def sync_to_prepare_cb(self,event):
+        for key,value in self.data_view.pipette_params['prepare'].items():
+            self.data_view.pipette_params['load'][key].value = value.value
         
     def start(self):
         components = self.data_model.components
@@ -102,6 +112,7 @@ class SampleSeriesWidget:
         self.example_label_cb(None)
         
         self.data_view.label_button.on_click(self.make_all_labels_cb)
+        self.data_view.pipette_load_sync.on_click(self.sync_to_prepare_cb)
         return widget
     
     
@@ -168,12 +179,22 @@ class SampleSeriesWidget_View:
         self.only_validated = Checkbox(indent=False,value=True)
         box = VBox([
             HBox([self.label_button,label,self.only_validated]),
+        ])
+        
+        label_hbox = HBox([
+            self.sample_index,
+            sample_label_label,
+            self.sample_label
+        ])
+        prefix_hbox = HBox([prefix_check,prefix_text])
+        vbox = VBox([
+            component_grid,
+            prefix_hbox,
+            label_hbox,box,
+            self.all_labels,
             self.make_label_result_text
         ])
         
-        label_hbox = HBox([self.sample_index,sample_label_label,self.sample_label])
-        prefix_hbox = HBox([prefix_check,prefix_text])
-        vbox = VBox([component_grid,prefix_hbox,label_hbox,box,self.all_labels])
         return vbox
     
     def make_pipette_params(self,name):
@@ -230,16 +251,24 @@ class SampleSeriesWidget_View:
         
         pipette_prepare_params = self.make_pipette_params('prepare')
         pipette_load_params = self.make_pipette_params('load')
-        
-        
-        self.tabs = ipywidgets.Tab([component_grid,pipette_prepare_params,pipette_load_params])
-        self.tabs.set_title(0,'Label')
-        self.tabs.set_title(1,'Prepare Params')
-        self.tabs.set_title(2,'Load Params')
+        self.pipette_load_sync = Button(description="Sync to Prepare")
+        pipette_load_vbox = VBox([self.pipette_load_sync,pipette_load_params])
         
         self.ip = Text(value='localhost:5000')
         self.submit = Button(description='Submit')
-        hbox = HBox([self.ip,self.submit])
-        vbox = VBox([self.tabs,hbox])
-        return vbox
+        submit_box = VBox([self.ip,self.submit])
+        
+        
+        self.tabs = ipywidgets.Tab([
+            component_grid,
+            pipette_prepare_params,
+            pipette_load_vbox,
+            submit_box
+        ])
+        self.tabs.set_title(0,'Label Maker')
+        self.tabs.set_title(1,'Prepare Params')
+        self.tabs.set_title(2,'Load Params')
+        self.tabs.set_title(3,'Submit')
+        
+        return self.tabs
     

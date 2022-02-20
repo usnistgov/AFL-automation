@@ -167,11 +167,15 @@ class SampleSeriesWidget:
     def reset_uuid_cb(self,event):
         self.data_model.uuids = []
         self.data_view.uuid_list = []
+    
+    def update_sort_order_cb(self,event,direction):
+        pass
         
     def start(self):
         components = self.data_model.components
         nsamples = self.data_model.nsamples
-        widget = self.data_view.start(components,nsamples)
+        stock_names = [stock.name for stock in self.data_model.deck.stocks]
+        widget = self.data_view.start(components,nsamples,stock_names)
         
         for component_name,spec in self.data_view.label_spec.items():
             spec['include'].observe(self.example_label_cb,names=['value'])
@@ -188,6 +192,9 @@ class SampleSeriesWidget:
         
         self.data_view.sample_index.observe(self.example_label_cb,names=['value'])
         self.example_label_cb(None)
+        
+        self.data_view.up_button.on_click(lambda x: self.update_sort_order(X,+1))
+        self.data_view.up_button.on_click(lambda x: self.update_sort_order(X,-1))
         
         self.data_view.label_button.on_click(self.make_all_labels_cb)
         self.data_view.pipette_load_sync.on_click(self.sync_to_prepare_cb)
@@ -351,13 +358,26 @@ class SampleSeriesWidget_View:
         ])
         return vbox
             
-    def start(self,components,nsamples):
+    def start(self,components,nsamples,stock_names):
         component_grid = self.make_component_grid(components,nsamples)
         
         pipette_prepare_params = self.make_pipette_params('prepare')
         pipette_load_params = self.make_pipette_params('load')
         self.pipette_load_sync = Button(description="Sync to Prepare")
         pipette_load_vbox = VBox([self.pipette_load_sync,pipette_load_params])
+        
+        self.protocol_order = ipywidgets.SelectMultiple(
+            options=stock_names,
+            layout={'width':'400px'},
+        )
+        self.up_button = ipywidgets.Button(
+            description='ꜛ',
+            style={'font_size':10,'font_weight':'bold'}
+        )
+        self.down_button = ipywidgets.Button(description='ꜜ')
+        vbox1 = VBox([self.up_button,self.down_button])
+        hbox = HBox([self.protocol_order,vbox1])
+        order_box = VBox([hbox])
         
         self.ip = Text(value='localhost:5000')
         self.submit = Button(description='Submit')
@@ -371,17 +391,18 @@ class SampleSeriesWidget_View:
             self.reset_uuid_button
         ])
         
-        
         self.tabs = ipywidgets.Tab([
             component_grid,
             pipette_prepare_params,
             pipette_load_vbox,
+            order_box,
             submit_box
         ])
         self.tabs.set_title(0,'Label Maker')
         self.tabs.set_title(1,'Prepare Params')
         self.tabs.set_title(2,'Load Params')
-        self.tabs.set_title(3,'Submit')
+        self.tabs.set_title(3,'Protocol Order')
+        self.tabs.set_title(4,'Submit')
         
         return self.tabs
     

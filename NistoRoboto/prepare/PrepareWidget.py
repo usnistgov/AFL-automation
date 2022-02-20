@@ -50,10 +50,10 @@ class PrepareWidget:
         
     def SampleSeriesTool_reset_cb(self,event):
         deck = self.sweep_builder.get_deck()
-        self.sample_series_tool = SampleSeriesTool(deck)
+        self.sample_series_tool = SampleSeriesWidget(deck)
         widget = self.sample_series_tool.start()
         
-        self.data_view.StockBuilder_Container.children = [
+        self.data_view.SampleSeriesTool_Container.children = [
             self.data_view.reset_SampleSeriesTool_button,
             widget
         ]
@@ -63,6 +63,7 @@ class PrepareWidget:
         
         self.data_view.reset_StockBuilder_button.on_click(self.StockBuilder_reset_cb)
         self.data_view.reset_SweepBuilder_button.on_click(self.SweepBuilder_reset_cb)
+        self.data_view.reset_SampleSeriesTool_button.on_click(self.SampleSeriesTool_reset_cb)
         return widget
         
     
@@ -74,9 +75,9 @@ class PrepareWidget_View:
         
         self.tabs = ipywidgets.Tab()
         
-        self.reset_StockBuilder_button = Button(description='Reset StockBuilder')
-        self.reset_SweepBuilder_button = Button(description='Reset SweepBuilder')
-        self.reset_SampleSeriesTool_button = Button(description='Reset SampleSeriesTool')
+        self.reset_StockBuilder_button = Button(description='Reset Tool')
+        self.reset_SweepBuilder_button = Button(description='Reset Tool')
+        self.reset_SampleSeriesTool_button = Button(description='Reset Tool')
         self.StockBuilder_Container = VBox([self.reset_StockBuilder_button])
         self.SweepBuilder_Container = VBox([self.reset_SweepBuilder_button])
         self.SampleSeriesTool_Container = VBox([self.reset_SampleSeriesTool_button])
@@ -89,5 +90,5 @@ class PrepareWidget_View:
         self.tabs.set_title(0,'Deck Setup')
         self.tabs.set_title(1,'Stock Setup')
         self.tabs.set_title(2,'Sweep Setup')
-        self.tabs.set_title(3,'Submit')
+        self.tabs.set_title(3,'Sweep Submit')
         return self.tabs

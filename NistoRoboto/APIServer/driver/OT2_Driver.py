@@ -11,6 +11,8 @@ class OT2_Driver(Driver):
         self.app = None
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.max_transfer = 300
+        self.min_transfer = 30
         self.prep_targets = []
         self.modules = {}
 
@@ -182,8 +184,8 @@ class OT2_Driver(Driver):
     @Driver.quickbar(qb={'button_text':'Transfer',
         'params':{
         'source':{'label':'Source Well','type':'text','default':'1A1'},
-        'rinse2':{'label':'Dest Well','type':'text','default':'1A1'},
-        'waste':{'label':'Volume (uL)','type':'float','default':300}
+        'dest':{'label':'Dest Well','type':'text','default':'1A1'},
+        'volume':{'label':'Volume (uL)','type':'float','default':300}
         }})
     def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
         '''Transfer fluid from one location to another

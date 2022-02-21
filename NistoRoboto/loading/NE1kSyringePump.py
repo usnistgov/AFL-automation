@@ -99,7 +99,7 @@ class NE1kSyringePump(SyringePump):
     def setRate(self,rate):
         if self.app is not None:
             self.app.logger.debug(f'Setting pump rate to {rate} mL/min')
-        self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate))
+        self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate),debug=True)
         if self.getRate()!=rate:
             raise ValueError('Pump rate change failed')
 

@@ -12,7 +12,8 @@ else
 fi
 
 # add NistoRoboto to PYTHONPATH
-export PYTHONPATH=/root/user_storage/:${PYTHONPATH}
+# export PYTHONPATH=/root/user_storage/:${PYTHONPATH}
+export PYTHONPATH=/root/user_storage/NistoRoboto:${PYTHONPATH}
 
 # add user packages
 export PATH=/data/packages/usr/local/bin:${PATH}
@@ -24,5 +25,6 @@ export NISTOROBOTO_CUSTOM_LABWARE=/root/custom_beta/
 export OT_SMOOTHIE_ID=AMA 
 export RUNNING_ON_PI=true
 
-cd /root/user_storage/
+# cd /root/user_storage/
+cd /root/user_storage/NistoRoboto
 python server_scripts/OT2.py

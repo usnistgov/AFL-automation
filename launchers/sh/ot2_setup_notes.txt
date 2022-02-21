@@ -1,0 +1,11 @@
+All files/folders should go in /data/user_storage. It's unclear if this still happens, but the ot2 used to clear the home directory on updates. 
+
+1. Set up symlinks to home directory
+ln -s /data/user_storage ~/
+ln -s /data/labware/v2/custom_definitions ~/
+
+2. pip install the necessary libraries
+pip install --user flask flask_jwt_extended pint flask_cors requests
+
+
+

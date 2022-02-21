@@ -37,8 +37,8 @@ driver = PushPullSelectorSampleCell(pump,
                                       syringe_to_sel_vol    = Tubing(1530,49.27+10.4).volume() ,
                                       selector_internal_vol = None,
                                       calibrated_catch_to_syringe_vol = 3.4,
-                                      calibrated_syringe_to_cell_vol = 3.2,
-                                      load_speed=5.0,
+                                      calibrated_syringe_to_cell_vol = 3.4,
+                                      load_speed=2.5,
                                      )
 server = APIServer('CellServer')
 server.add_standard_routes()

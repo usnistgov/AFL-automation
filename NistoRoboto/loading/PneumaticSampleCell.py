@@ -166,7 +166,7 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.pump.setRate(self.config['load_speed'])
         self.state = 'LOAD IN PROGRESS'
         self.pump.dispense(self.config['catch_to_cell_vol']+sampleVolume/2,block=False)
-        while(self.pump.getStatus()[0] != 'S' and self.loadStoppedExternally == False):
+        while(self.pump.getStatus()[0] != 'S' and not self.loadStoppedExternally):
             time.sleep(0.1)
 
         self.loadStoppedExternally = False

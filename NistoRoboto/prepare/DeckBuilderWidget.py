@@ -11,6 +11,7 @@ import pickle
 
 import NistoRoboto.prepare 
 from NistoRoboto.shared.units import units
+from NistoRoboto.APIServer.client.Client import Client
 
 class DeckBuilderWidget:
     def __init__(self):
@@ -46,7 +47,7 @@ class DeckBuilderWidget:
                 tipracks['all'][slot] = value
                 if value == self.data_view.pipette_left_tips_dropdown.value:
                     tipracks['left_list'].append((slot,value))
-                elif value == self.data_view.pipette_right_tips_dropdown.value:
+                if value == self.data_view.pipette_right_tips_dropdown.value:
                     tipracks['right_list'].append((slot,value))
             elif value in self.data_view.catch_list:
                 catches[slot]  = value
@@ -64,6 +65,9 @@ class DeckBuilderWidget:
             self.data_view.deckware_dropdowns[slot].value = value
             
         for slot,value in config['tipracks']['right_list']:
+            self.data_view.deckware_dropdowns[slot].value = value
+        
+        for slot,value in config['tipracks']['left_list']:
             self.data_view.deckware_dropdowns[slot].value = value
             
         left_value = config['tipracks']['left']
@@ -142,19 +146,21 @@ class DeckBuilderWidget_Model:
         for slot,value in config['catches'].items():
             self.deck.add_catch(value,slot)
             
-        tipracks = config['tipracks']['left_list']
         pipette_left = config['pipettes']['left']
-        self.deck.add_pipette(pipette_left,'left',tipracks=tipracks)
+        if not (pipette_left=='None'):
+            tipracks = config['tipracks']['left_list']
+            self.deck.add_pipette(pipette_left,'left',tipracks=tipracks)
         
         tipracks = config['tipracks']['right_list']
         pipette_right = config['pipettes']['right']
-        self.deck.add_pipette(pipette_right,'right',tipracks=tipracks)
+        if not (pipette_right=='None'):
+            self.deck.add_pipette(pipette_right,'right',tipracks=tipracks)
         return self.deck
             
 
 class DeckBuilderWidget_View:
     def __init__(self):
-        self.pipette_list = ['p300_single','p1000_single_gen2']
+        self.pipette_list = ['None','p300_single','p50_single','p1000_single_gen2']
         self.container_list = [
             'nist_6_20ml_vials',
             'nist_2_100ml_poly_bottle',
@@ -165,7 +171,7 @@ class DeckBuilderWidget_View:
             'nist_stirred_catch',
             'nist_1_10ml_syringeloader',
         ]
-        self.tipracks_list = ['opentrons_96_tiprack_300ul','opentrons_96_tiprack_1000ul']
+        self.tipracks_list = ['opentrons_96_tiprack_300ul','opentrons_96_tiprack_1000ul','opentrons_96_tiprack_50ul']
         self.deckware_types = ['container','tips','catch']
         self.deckware_list = ['empty']+self.container_list+self.tipracks_list+self.catch_list
         

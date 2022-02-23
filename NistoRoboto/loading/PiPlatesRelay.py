@@ -1,6 +1,7 @@
 import piplates.RELAYplate as RELAYplate
 from NistoRoboto.loading.MultiChannelRelay import MultiChannelRelay
 import atexit
+import warnings
 
 class PiPlatesRelay(MultiChannelRelay):
 

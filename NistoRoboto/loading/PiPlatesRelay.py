@@ -17,6 +17,7 @@ class PiPlatesRelay(MultiChannelRelay):
         conn = RELAYplate.getID(board_id)
         print(f'Got connection response from board: {conn}')
         RELAYplate.RESET(board_id)
+        self.state = [False]*7
         self.board_id = board_id
 
         #Sanitize labels:
@@ -32,7 +33,7 @@ class PiPlatesRelay(MultiChannelRelay):
         
     def setAllChannelsOff(self):
         RELAYplate.relayALL(self.board_id,0)
-        
+        self.state = [False]*7
         
     def setChannels(self,channels,verify=True):
         '''
@@ -44,7 +45,7 @@ class PiPlatesRelay(MultiChannelRelay):
 
 
         '''
-        print(f'RUNNING SET CHANNELS WITH INPUT {channels}, verify = {verify}')
+        print(f'RUNNING SET CHANNELS WITH INPUT {channels}')
 
         channels_to_set = {}
         for key,val in channels.items():
@@ -56,6 +57,11 @@ class PiPlatesRelay(MultiChannelRelay):
         
         print(f'AFTER NUMERIC CONVERSION, CHANNELS TO SET = {channels_to_set} and CHANNELS = {channels}')
         for key,val in channels_to_set.items():
+            self.state[key-1]=val
+
+        self._refresh_board_state()
+
+        '''
             if val==True:
                 RELAYplate.relayON(self.board_id,key)
                 print(f'SET RELAY # {key} ON')
@@ -64,6 +70,9 @@ class PiPlatesRelay(MultiChannelRelay):
                 print(f'SET RELAY # {key} OFF')
             else:
                 raise KeyError('Improper value for relay set.')
+        
+        verify version
+        
         if verify:
             for entry,state in channels.items():
                 trycounter = 0
@@ -73,7 +82,6 @@ class PiPlatesRelay(MultiChannelRelay):
                 if trycounter >= 6:
                     raise Exception(f'Relay ERROR while attempting to set the state of {entry} to {state}')
 
-        '''
 
         relayALL(addr,value) – 
         used to control the state of all relays with a single command. 
@@ -85,7 +93,16 @@ class PiPlatesRelay(MultiChannelRelay):
         Bit 0 is relay 1, bit 1 is relay 2, and so on. 
         A “1” in a bit position means that the relay is on and zero means that it’s off.
         '''
+    def _refresh_board_state(self):
+        val_to_send = 0
+        for pos,val in enumerate(self.state):
+            if val:
+                val_to_send = val_to_send | 2**(pos)
+        RELAYplate.relayALL(self.board_id,val_to_send)
 
+        readback =  RELAYplate.relaySTATE(self.board_id)
+        if readback != val_to_send:
+            warnings.warn(f'ERROR: attempted relay set to {val_to_send} but readback was {readback}.')
     def getChannels(self,asid=False):
         '''
         Read the current state of all channels

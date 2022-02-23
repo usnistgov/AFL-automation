@@ -44,13 +44,15 @@ class PiPlatesRelay(MultiChannelRelay):
 
 
         '''
-
+        channels_to_set = {}
         for key,val in channels.items():
             if type(key)==str:
-                channels[self.ids[key]]=val
-                del channels[key]
+                channels_to_set[self.ids[key]]=val
+                #del channels[key]
+            else:
+                channels_to_set[key] = val
 
-        for key,val in channels.items():
+        for key,val in channels_to_set.items():
             if val==True:
                 RELAYplate.relayON(self.board_id,key)
             elif val==False:
@@ -88,9 +90,9 @@ class PiPlatesRelay(MultiChannelRelay):
         retval = {}
         for portid,name in self.labels.items():
             if asid:
-                retval[portid] = bool(allchannels & 2**portid)
+                retval[portid] = bool(allchannels & 2**(portid-1))
             else:
-                retval[name] = bool(allchannels & 2**portid)
+                retval[name] = bool(allchannels & 2**(portid-1))
         return retval
 
 

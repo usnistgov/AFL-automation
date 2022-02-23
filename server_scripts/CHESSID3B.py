@@ -17,7 +17,7 @@ server.add_standard_routes()
 
 server.create_queue(driver)
 #server.add_unqueued_routes()
-server.init_logging()#to_addrs=['tbm@nist.gov'])
+server.init_logging(toaddrs=['tbm@nist.gov','pab@nist.gov'])
 
 #process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
 

@@ -57,6 +57,10 @@ class CHESSID3B(ScatteringInstrument,Driver):
         self.config['reduced_data_dir'] = path
         os.chdir(path)
 
+    @Driver.quickbar(qb={'button_text':'Measure Transmission',
+        'params':{
+        'set_empty_transmission':{'label':'Set Empty Trans?','type':'boolean','default':False}
+        }})
     def measureTransmission(self,set_empty_transmission=False,return_full=False):
         warnings.warn('measureTransmission is ill-defined on instruments with beamstop diodes.  Returning the last measured transmission.  To avoid this warning, call lastTransmission directly.',stacklevel=2)
         
@@ -176,6 +180,13 @@ class CHESSID3B(ScatteringInstrument,Driver):
             self.status_txt = 'Accessing Image'
             return self.getData(lv=lv)
 
+    @Driver.quickbar(qb={'button_text':'Expose',
+        'params':{
+        'name':{'label':'Name','type':'text','default':'test_exposure'},
+        'exposure':{'label':'Exposure (s)','type':'float','default':5},
+        'reduce_data':{'label':'Reduce?','type':'bool','default':True},
+        'measure_transmission':{'label':'Measure Trans?','type':'bool','default':True}
+        }})
     def expose(self,name=None,exposure=None,nexp=1,block=True,reduce_data=True,measure_transmission=True,save_nexus=True):
         if filename is None:
             filename=self.getFilename()

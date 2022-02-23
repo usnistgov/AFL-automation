@@ -33,6 +33,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
     defaults['to_waste_vol'] = 1
     defaults['rinse_prime_vol'] = 3
     defaults['rinse_vol_ml'] = 3
+    defaults['rinse_vol_catch_ml'] = 2
     defaults['dry_vol_ml'] = 5
     defaults['blow_out_vol'] = 6
     defaults['nrinses_cell_flood'] = 2
@@ -75,6 +76,12 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.waste_tank_level = waste_tank_level
         self.cell_waste_tank_level = cell_waste_tank_level
 
+    @Driver.quickbar(qb={'button_text':'Reset Tank Levels',
+        'params':{
+        'rinse':{'label':'Rinse (mL)','type':'float','default':950},
+        'waste':{'label':'Waste (mL)','type':'float','default':950},
+        'cell_waste':{'label':'Cell Waste (mL)','type':'float','default':0}
+        }})
     def reset_tank_levels(self,rinse=950,waste=0,cell_waste=0):
         self.rinse_tank_level = rinse
         self.waste_tank_level = waste
@@ -147,6 +154,10 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.selector.selectPort('catch')
         self.pump.withdraw(vol_source)
 
+    @Driver.quickbar(qb={'button_text':'Load Sample',
+        'params':{
+        'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}
+        }})
     def loadSample(self,cellname='cell',sampleVolume=0):
 
         if self.syringe_dirty:
@@ -215,6 +226,8 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
             self.transfer(cellname,'waste',self.config['cell_to_selector_vol'] + self.config['syringe_to_selector_vol'],vol_dest = self.config['syringe_to_selector_vol'] + self.config['to_waste_vol'])
             self.syringe_dirty = True
 
+    @Driver.quickbar(qb={'button_text':'Rinse Syringe',
+        })
     def rinseSyringe(self):
         self.pump.setRate(self.config['rinse_speed'])
         self.pump.flow_delay = self.config['rinse_flow_delay']
@@ -237,7 +250,9 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
             self.blowselector.selectPort('blow')
             time.sleep(waittime)
             self.blowselector.selectPort('pump')
-        
+    
+    @Driver.quickbar(qb={'button_text':'Rinse Cell',
+        })        
     def rinseCell(self,cellname='cell'):
         self.pump.setRate(self.config['rinse_speed'])
         self.pump.flow_delay = self.config['rinse_flow_delay']
@@ -263,7 +278,7 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.pump.flow_delay = self.config['rinse_flow_delay']
         if self.syringe_dirty:
             self.rinseSyringe()
-        self.blowOutCell(cellname)
+        # self.blowOutCell(cellname)
         for i in range(self.config['nrinses_cell_flood']):
             self.transfer('rinse',cellname,self.config['rinse_vol_ml'])
         self.blowOutCell(cellname)
@@ -284,40 +299,47 @@ class TwoSelectorBlowoutSampleCell(Driver,SampleCell):
         self.selector.selectPort(cellname)
         self.pump.dispense(self.config['blow_out_vol'])
 
+    @Driver.quickbar(qb={'button_text':'Blowout Cell',
+    })
     def blowOutCell(self,cellname='cell',waittime=20):
         self.selector.selectPort('cell')
         self.blowselector.selectPort('blow')
         time.sleep(waittime)
         self.blowselector.selectPort('pump')
 
+    @Driver.quickbar(qb={'button_text':'Rinse Catch',
+        })
     def rinseCatch(self):
         self.pump.setRate(self.config['rinse_speed'])
         self.pump.flow_delay = self.config['rinse_flow_delay']
 
 
         for i in range(self.config['nrinses_catch']):
-            from_vol = self.config['rinse_vol_ml'] + self.config['syringe_to_selector_vol']
+            from_vol = self.config['rinse_vol_catch_ml'] + self.config['syringe_to_selector_vol']
             if (self.config['calibrated_catch_to_syringe_vol'] is None) or (self.config['calibrated_catch_to_syringe_vol']=='None'):
-                to_vol   = self.config['rinse_vol_ml'] + self.config['catch_to_selector_vol']
+                to_vol   = self.config['rinse_vol_catch_ml'] + self.config['catch_to_selector_vol']
             else:
-                to_vol   = self.config['calibrated_catch_to_syringe_vol'] + self.config['rinse_vol_ml']
+                to_vol   = self.config['calibrated_catch_to_syringe_vol'] + self.config['rinse_vol_catch_ml']
             self.transfer('rinse','catch',from_vol,to_vol)
 
             for i in range(1):
                 self.selector.selectPort('catch')
-                self.swish(self.config['rinse_vol_ml'])
+                self.swish(self.config['rinse_vol_catch_ml'])
 
             if (self.config['calibrated_catch_to_syringe_vol'] is None) or (self.config['calibrated_catch_to_syringe_vol']=='None'):
-                from_vol = self.config['rinse_vol_ml'] + self.config['catch_to_selector_vol'] + self.config['catch_empty_ffvol']
+                from_vol = self.config['rinse_vol_catch_ml'] + self.config['catch_to_selector_vol'] + self.config['catch_empty_ffvol']
             else:
-                from_vol   = self.config['calibrated_catch_to_syringe_vol'] + self.config['catch_empty_ffvol'] + self.config['rinse_vol_ml']
-            to_vol   = self.config['rinse_vol_ml'] + self.config['syringe_to_selector_vol']
+                from_vol   = self.config['calibrated_catch_to_syringe_vol'] + self.config['catch_empty_ffvol'] + self.config['rinse_vol_catch_ml']
+            to_vol   = self.config['rinse_vol_catch_ml'] + self.config['syringe_to_selector_vol']
             self.transfer('catch','waste',from_vol,to_vol)
 
         #clear out any remaining volume in the syringe
         self.selector.selectPort('waste')
         self.pump.emptySyringe()
 
+        
+    @Driver.quickbar(qb={'button_text':'Rinse All',
+        })
     def rinseAll(self,cellname='cell'):
         # if self.state is 'loaded':
         #     self.cellToWaste()

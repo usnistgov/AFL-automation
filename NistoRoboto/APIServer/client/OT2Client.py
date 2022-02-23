@@ -14,12 +14,15 @@ class OT2Client(Client):
             source_loc=None,
             dest_loc=None,
             mix_before=None,
+            mix_after=None,
             air_gap=0,
             aspirate_rate=None,
             dispense_rate=None,
             post_aspirate_delay=0.0,
             post_dispense_delay=0.0,
             blow_out=False,
+            interactive=None,
+            
             ):
         '''Transfer fluid from one location to another
 
@@ -43,6 +46,7 @@ class OT2Client(Client):
         json['dest']   = dest
         json['volume'] = volume
         json['mix_before'] = mix_before
+        json['mix_after'] = mix_after
         json['air_gap'] = air_gap
         json['blow_out'] = blow_out
         if source_loc is not None:
@@ -54,7 +58,7 @@ class OT2Client(Client):
         json['post_aspirate_delay']=post_aspirate_delay
         json['post_dispense_delay']=post_dispense_delay
 
-        UUID = self.enqueue(**json)
+        UUID = self.enqueue(interactive=interactive,**json)
         return UUID
     
     def reset_tipracks(self,mount='both'):

@@ -39,7 +39,7 @@ try:
     import numpy as np
     from distutils.util import strtobool
 except ImportError:
-    warnings.warn('Plotting imports failed! Live data plottting will no work on this server.')
+    warnings.warn('Plotting imports failed! Live data plotting will not work on this server.')
 
 class APIServer:
     def __init__(self,name,experiment='Development',contact='tbm@nist.gov',index_template='index.html',plot_template='simple-bokeh.html'):
@@ -98,6 +98,8 @@ class APIServer:
 
     def add_standard_routes(self):
         self.app.add_url_rule('/','index',self.index)
+        self.app.add_url_rule('/app','app',self.webapp)
+        self.app.add_url_rule('/webapp','webapp',self.webapp)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
         self.app.add_url_rule('/query_driver','query_driver',self.query_driver,methods=['GET'])
         self.app.add_url_rule('/clear_queue','clear_queue',self.clear_queue,methods=['POST'])
@@ -120,6 +122,7 @@ class APIServer:
         self.app.add_url_rule('/get_info','get_info',self.get_info,methods=['GET'])
         self.app.add_url_rule('/reorder_queue','reorder_queue',self.reorder_queue,methods=['POST'])
         self.app.add_url_rule('/remove_items','remove_items',self.remove_items,methods=['POST'])
+        self.app.add_url_rule('/get_quickbar','get_quickbar',self.get_quickbar,methods=['POST','GET'])
         self.app.before_first_request(self.init)
 
     def get_info(self):
@@ -133,6 +136,12 @@ class APIServer:
         kw['name']        = self.name
         kw['driver']    = self.queue_daemon.driver.name
         return jsonify(kw),200
+
+    def get_quickbar(self):
+        '''
+        Return the functions, params, and defaults to be shown in this server's quickbar
+        '''
+        return jsonify(self.driver.quickbar.function_info),200
 
     def is_server_live(self):
         self.app.logger.debug("Server is live.")
@@ -209,6 +218,12 @@ class APIServer:
         kw['name']        = self.name
         kw['driver']    = self.queue_daemon.driver.name
         return render_template(self.index_template,**kw),200
+
+    def webapp(self):
+        '''Live, status page of the robot'''
+        self.app.logger.info('Serving WebApp')
+
+        return render_template('webapp.html'),200
 
     def render_unqueued(self,func,kwargs_add,**kwargs):
         '''Convert an unqueued return item into web-suitable output'''

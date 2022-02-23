@@ -99,7 +99,7 @@ class NE1kSyringePump(SyringePump):
     def setRate(self,rate):
         if self.app is not None:
             self.app.logger.debug(f'Setting pump rate to {rate} mL/min')
-        self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate))
+        self.serial_device.sendCommand('%iRAT%.02fMM\x0D'%(self.pumpid,rate),debug=True)
         if self.getRate()!=rate:
             raise ValueError('Pump rate change failed')
 
@@ -114,6 +114,8 @@ class NE1kSyringePump(SyringePump):
             rate = float(output[4:-3])/60
         elif units=='UH':
             rate = float(output[4:-3])/60/1000
+        else:
+            raise ValueError(f'Rate units not supported in getRate: {units}')
         return rate
 
     def emptySyringe(self):
@@ -138,8 +140,6 @@ class NE1kSyringePump(SyringePump):
         withdrawnvol = float(dispensed[11:16])
 
         return(statuschar,infusedvol,withdrawnvol)
-
-
 
 
 

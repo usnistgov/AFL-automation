@@ -49,7 +49,9 @@ class Deck:
         self.containers    = {}
         self.pipettes      = {}
         self.catches = {}
+        self.all_deckware = {}
 
+        
         self.balancer = MassBalance()
 
         self.client = None
@@ -129,20 +131,30 @@ class Deck:
         tiprack_list = []
         for slot,rack_name in tipracks:
             self.tip_racks[slot] = rack_name
+            self.all_deckware[slot] = rack_name
             tiprack_list.append(slot)
 
         self.pipettes[mount] = name,tiprack_list
 
     def add_catch(self,name,slot):
         self.catches[slot] = name
+        self.all_deckware[slot] = name
 
     def add_container(self,name,slot):
         self.containers[slot] = name
+        self.all_deckware[slot] = name
 
     def add_stock(self,stock,location):
         stock = stock.copy()
         self.stocks.append(stock)
         self.stock_location[stock] = location
+    
+    def get_stock(self,name):
+        for stock in self.stocks:
+            if stock.name==name:
+                return stock,self.stock_location[stock]
+            
+        raise ValueError(f'Stock with name={name} not found! Available stocks: {self.stocks}')
             
     def add_target(self,target,location='target',name=None):
         target = target.copy()
@@ -224,10 +236,16 @@ class Deck:
         return self.sample_series
 
                     
-    def validate_sample_series(self,tolerance=0.0,print_report=True):
+    def validate_sample_series(self,tolerance=0.0,print_report=True,progress=None):
+        if progress is not None:
+            progress.value = 0
+            progress.max = len(self.sample_series.samples)-1
+                
         validated = []
         self.validation_report = []
-        for sample,_ in self.sample_series:
+        for i,(sample,_) in enumerate(self.sample_series):
+            if progress is not None:
+                progress.value=i
             report = f'==> Attempting to make {sample.target.volume.to("ml")} with mass fraction {sample.target.mass_fraction}\n'
             for stock,(stock_loc,mass) in sample.balancer.mass_transfers.items():
                 if (mass>0) and (mass<self.mass_cutoff):
@@ -247,7 +265,12 @@ class Deck:
                 for name in sample.target.components.keys():
                     phi_tc = sample.target_check.mass_fraction[name]
                     phi_t = sample.target.mass_fraction[name]
-                    diff = (phi_tc - phi_t)/(phi_tc)
+                    if (phi_tc<1e-6) and (phi_t<1e-6):
+                        diff = 0.0
+                    elif (phi_tc<1e-6):
+                        diff = phi_t #just take mass fraction as frac_difference
+                    else: 
+                        diff = (phi_tc - phi_t)/(phi_tc)
                     diffs.append(diff)
                     report += f'\t\t~~> {name} frac difference: {diff}\n'
 
@@ -271,11 +294,14 @@ class Deck:
                 print(report)
         return self.sample_series
 
-    def make_protocol(self,only_validated=False,flatten=False):
+    def make_protocol(self,only_validated=False,flatten=False,pipette_kw=None):
+        if pipette_kw is None:
+            pipette_kw = {}
         self.protocol = []
+        skip_count = 0
         for sample,validated in self.sample_series:
             if only_validated and (not validated):
-                print(f'Skipping non-validated sample: {sample.name}')
+                skip_count+=1
                 self.protocol.append([])
             else:
                 sample_protocol = []
@@ -292,11 +318,13 @@ class Deck:
                                     source = stock_loc,
                                     dest = sample.balancer.target_location,
                                     volume = removed.volume.to('ul').magnitude, #convet from ml for to ul
+                                    **pipette_kw,
                         )
                         sample_protocol.append(action)
                 self.protocol.append(sample_protocol)
                 sample.protocol = sample_protocol
 
+        print(f'Skipped {skip_count}/{len(self.sample_series.samples)} non-validated samples')
         if flatten:
             return [action for action_group in self.protocol for action in action_group]
         else:

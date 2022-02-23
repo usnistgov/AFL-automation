@@ -11,6 +11,8 @@ class OT2_Driver(Driver):
         self.app = None
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.max_transfer = 300
+        self.min_transfer = 30
         self.prep_targets = []
         self.modules = {}
 
@@ -41,7 +43,10 @@ class OT2_Driver(Driver):
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
-    
+    @Driver.quickbar(qb={'button_text':'Refill Tipracks',
+        'params':{
+        'mount':{'label':'Which Pipet left/right/both','type':'text','default':'both'},
+        }})
     def reset_tipracks(self,mount='both'):
         for k,pipette in self.protocol.loaded_instruments.items():
             if (mount.lower()=='both') or (k==mount.lower()):
@@ -62,7 +67,8 @@ class OT2_Driver(Driver):
         # self.app.logger.debug(opentrons.execute._HWCONTROL)
 
         # self.protocol = opentrons.execute.get_protocol_api('2.0')
-
+    @Driver.quickbar(qb={'button_text':'Home',
+        })
     def home(self,**kwargs):
         self.app.logger.info('Homing the robot\'s axes')
         self.protocol.home()
@@ -174,8 +180,14 @@ class OT2_Driver(Driver):
         location_well = self.get_wells(location)[0]
 
         pipette.mix(repetitions,volume,location_well)
-
-    def transfer(self,source,dest,volume,mix_before=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
+    
+    @Driver.quickbar(qb={'button_text':'Transfer',
+        'params':{
+        'source':{'label':'Source Well','type':'text','default':'1A1'},
+        'dest':{'label':'Dest Well','type':'text','default':'1A1'},
+        'volume':{'label':'Volume (uL)','type':'float','default':300}
+        }})
+    def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -217,17 +229,38 @@ class OT2_Driver(Driver):
             raise ValueError('Transfer only accepts one dest well at a time!')
         else:
             dest_well = dest_wells[0]
-
-        self._transfer(
-                pipette, 
-                volume, 
-                source_well, 
-                dest_well, 
-                mix_before=mix_before, 
-                air_gap=air_gap, 
-                blow_out=blow_out, 
-                post_aspirate_delay=post_aspirate_delay, 
-                post_dispense_delay=post_dispense_delay)
+        
+        transfers = self.split_up_transfers(volume)
+        for sub_volume in transfers:
+            #get pipette based on volume
+            pipette = self.get_pipette(sub_volume)
+    
+            self._transfer(
+                    pipette, 
+                    sub_volume, 
+                    source_well, 
+                    dest_well, 
+                    mix_before=mix_before, 
+                    mix_after=mix_after, 
+                    air_gap=air_gap, 
+                    blow_out=blow_out, 
+                    post_aspirate_delay=post_aspirate_delay, 
+                    post_dispense_delay=post_dispense_delay)
+        
+    def split_up_transfers(self,vol):
+        transfers = []
+        while True:
+            if sum(transfers)<vol:
+                transfer = min(self.max_transfer,vol-sum(transfers))
+                if transfer<self.min_transfer and (len(transfers)>0) and (transfers[-1]>=(2*(self.min_transfer))):
+                    transfers[-1]-=(self.min_transfer-transfer)
+                    transfer = self.min_transfer
+                
+                transfers.append(transfer)
+            else:
+                break
+        return transfers
+        
     def _transfer( 
             self,
             pipette,

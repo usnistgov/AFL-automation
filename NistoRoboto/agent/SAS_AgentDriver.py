@@ -14,6 +14,7 @@ import pickle,base64
 
 import pandas as pd
 import numpy as np
+import pathlib
 
 from NistoRoboto.agent import AcquisitionFunction 
 from NistoRoboto.agent import GaussianProcess 
@@ -21,6 +22,7 @@ from NistoRoboto.agent import PhaseMap
 from NistoRoboto.agent import Similarity 
 from NistoRoboto.agent import PhaseLabeler 
 from NistoRoboto.agent.Serialize import serialize,deserialize
+from NistoRoboto.agent.WatchDog import WatchDog
 
 import tensorflow as tf
 import gpflow
@@ -28,11 +30,15 @@ import gpflow
 class SAS_AgentDriver(Driver):
     defaults={}
     defaults['compute_device'] = '/device:CPU:0'
+    defaults['watch_dir'] = '/Users/tbm/watchdog_testing/'
+    defaults['manifest_file'] = 'manifest.csv'
     def __init__(self,overrides=None):
 
         Driver.__init__(self,name='SAS_AgentDriver',defaults=self.gather_defaults(),overrides=overrides)
 
-        self.app = None
+        self.watchdog = None 
+        self.manifest = None
+        self._app = None
         self.name = 'SAS_AgentDriver'
 
         self.status_str = 'Fresh Server!'
@@ -41,11 +47,64 @@ class SAS_AgentDriver(Driver):
         self.phasemap_labelled = None
         self.n_cluster = None
         self.similarity = None
+        
+    @property
+    def app(self):
+        return self._app
+    
+    @app.setter
+    def app(self,value):
+        self._app = value
+        if value is not None:
+            self.reset_watchdog()
+    
+    def reset_watchdog(self):
+        if not (self.watchdog is None):
+            self.watchdog.stop()
+            
+        if self.app is not None:
+            logger = self.app.logger
+        else:
+            logger = None
+        
+        self.watchdog = WatchDog(
+            path=self.config['watch_dir'],
+            fname=self.config['manifest_file'],
+            callback=self.update_phasemap,
+            cooldown=5,
+        )
+        self.watchdog.start()
+        
+    def update_phasemap(self,predict=True):
+        self.app.logger.info(f'Updating phasemap with latest data in {self.config["watch_dir"]}')
+        path = pathlib.Path(self.config['watch_dir'])
+        
+        self.manifest = pd.read_csv(path/self.config['manifest_file'])
+        
+        compositions = self.manifest.drop(['label','fname'],errors='ignore',axis=1)
+        labels = pd.Series(np.ones(compositions.shape[0]))
+        measurements = []
+        for i,row in self.manifest.iterrows():
+            measurement = pd.read_csv(path/row['fname']).set_index('q').squeeze()
+            measurement.name = row['fname']
+            measurements.append(measurement)
+        measurements = pd.concat(measurements,axis=1).T #may need to reset_index...
+        
+        self.set_components(list(compositions.columns.values))
+        self.phasemap.append(
+                compositions=compositions,
+                measurements=measurements,
+                labels=labels,
+                )
+        if predict:
+            self.predict()
+          
 
     def status(self):
         status = []
         status.append(self.status_str)
-        status.append(self.config['compute_device'])
+        status.append(f'Using {self.config["compute_device"]}')
+        status.append(f'Watching {self.config["manifest_file"]} in {self.config["watch_dir"]}')
         return status
 
     def update_status(self,value):
@@ -88,7 +147,10 @@ class SAS_AgentDriver(Driver):
                 )
 
     def predict(self):
-        self.similarity.calculate(self.phasemap.measurements.copy())
+        data = self.phasemap.measurements.copy()
+        data[data<=0] = 1e-12
+        data = np.log10(data)
+        self.similarity.calculate(data)
 
         self.n_cluster,labels,silh = PhaseLabeler.silhouette(self.similarity.W,self.labeler)
 

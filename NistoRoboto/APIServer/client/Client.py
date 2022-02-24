@@ -87,7 +87,34 @@ class Client:
 
     def enqueued_base(self,**kwargs):
         return self.enqueue(**kwargs)
+    
+    def unqueued_base(self,**kwargs):
+        response = requests.get(self.url+'/'+kwargs['endpoint'],headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
+        return response.json()
 
+    def get_unqueued_commmands(self,inherit_commands=True):
+        response = requests.get(self.url+'/get_unqueued_commands',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to get_queued_commands command failed with status_code {response.status_code}\n{response.text}')
+            
+        if inherit_commands:
+            #XXX Need to find a cleaner way to do this. It works reasonbly
+            #XXX well, but it doesn't support tab completions
+            for function_name,info in response.json().items():
+                parameters = []
+                for parameter_name,default in info['kwargs']:
+                    p = inspect.Parameter(parameter_name,inspect.Parameter.KEYWORD_ONLY,default=default)
+                    parameters.append(p)
+                function = lambda **kwargs: self.unqueued_base(endpoint=function_name,**kwargs)
+                function.__name__ = function_name
+                function.__doc__ = info['doc']
+                function.__signature__ = inspect.signature(self.enqueued_base).replace(parameters=parameters)
+                setattr(self,function_name,function)
+                
+        return response.json()
+        
     def get_queued_commmands(self,inherit_commands=True):
         response = requests.get(self.url+'/get_queued_commands',headers=self.headers)
         if response.status_code != 200:
@@ -142,7 +169,7 @@ class Client:
         json=kwargs
         response = requests.get(self.url+'/query_driver',headers=self.headers,json=json)
         if response.status_code != 200:
-            raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
+            raise RuntimeError(f'API call to query_driver command failed with status_code {response.status_code}\n{response.text}')
         return response.text
 
     def reset_queue_daemon(self):

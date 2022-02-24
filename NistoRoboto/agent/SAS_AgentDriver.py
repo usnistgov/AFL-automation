@@ -47,6 +47,8 @@ class SAS_AgentDriver(Driver):
         self.phasemap_labelled = None
         self.n_cluster = None
         self.similarity = None
+        self.stale = True #flag to determine if new point if available
+        self.next_sample = None
         
     @property
     def app(self):
@@ -105,6 +107,7 @@ class SAS_AgentDriver(Driver):
         status.append(self.status_str)
         status.append(f'Using {self.config["compute_device"]}')
         status.append(f'Watching {self.config["manifest_file"]} in {self.config["watch_dir"]}')
+        status.append(f'Next sample prediction is stale: {self.stale}')
         return status
 
     def update_status(self,value):
@@ -131,7 +134,7 @@ class SAS_AgentDriver(Driver):
             
     def set_acquisition(self,name):
         if name=='variance':
-            self.acquisition = AcquisitionFunction.Variance(self.phasemap.components)
+            self.acquisition = AcquisitionFunction.Variance()
         else:
             raise ValueError(f'Acquisition type not recognized:{name}')
         
@@ -165,7 +168,16 @@ class SAS_AgentDriver(Driver):
             GP.reset_GP()
             GP.optimize(1000)
         
-        self.next = self.acquisition.next(GP)
+        self.acquisition.reset_phasemap(self.phasemap.components)
+        self.next_sample = self.acquisition.next_sample(GP)
+        self.stale = False
+        self.app.logger.info('Done predicting next sample!')
+    
+    @Driver.unqueued()
+    def get_next_sample(self):
+        obj = serialize((self.next_sample,self.stale))
+        self.stale = True
+        return obj
         
     
 

@@ -3,6 +3,7 @@ import base64
 import pickle
 from NistoRoboto.APIServer.client.Client import Client
 from NistoRoboto.agent.Serialize import deserialize,serialize
+import time
 
 class AgentClient(Client):
     '''Communicate with NistoRoboto Agent server 
@@ -33,6 +34,28 @@ class AgentClient(Client):
         retval = self.enqueue(**json)
         obj = deserialize(retval['return_val'])
         return obj
+    
+    def _get_next_sample(self):
+        response = requests.get(self.url+'/get_next_sample',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to _get_next_sample command failed with status_code {response.status_code}\n{response.text}')
+        return deserialize(response.json())
+    
+    def get_next_sample(self,wait_on_stale=True):
+        json = {}
+        json['task_name']  = 'get_next'
+        json['interactive']  = True
+        while True:
+            next_sample,stale = self._get_next_sample()
+            if (not wait_on_stale) or (not stale):
+                break
+            else:
+                time.sleep(2)
+            
+        return next_sample
+    
+
+#check if validated, if not error
     
     def predict(self):
         kw = {}

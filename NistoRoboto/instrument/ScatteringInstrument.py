@@ -18,7 +18,7 @@ class ScatteringInstrument():
     defaults['dist'] = 3.4925
     defaults['npts'] = 500
     defaults['detector_name'] = 'pilatus300kw'
-    defaults['mask_path'] = r'Y:\Peter automation software\CDSAXS_mask_20210306.edf'
+    defaults['mask_path'] = ''
 
     def __init__(self):
         self.generateIntegrator()
@@ -88,7 +88,7 @@ class ScatteringInstrument():
 
         if write_data:
             if filename is None:
-                filename = self.getFilename(**filename_kwargs)
+                filename = self.getLastFilePath(**filename_kwargs).parts[-1]
             filename1d = filename+'_r1d.csv'
             filename2d = filename+'_r2d.edf'
         else:

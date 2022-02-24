@@ -35,7 +35,7 @@ class PiPlatesRelay(MultiChannelRelay):
         RELAYplate.relayALL(self.board_id,0)
         self.state = [False]*7
         
-    def setChannels(self,channels):
+    def setChannels(self,channels,verify=True):
         '''
         Write a value (True, False) to the channels specified in channels
 
@@ -45,6 +45,8 @@ class PiPlatesRelay(MultiChannelRelay):
 
 
         '''
+        print(f'RUNNING SET CHANNELS WITH INPUT {channels}')
+
         channels_to_set = {}
         for key,val in channels.items():
             if type(key)==str:
@@ -52,7 +54,8 @@ class PiPlatesRelay(MultiChannelRelay):
                 #del channels[key]
             else:
                 channels_to_set[key] = val
-
+        
+        print(f'AFTER NUMERIC CONVERSION, CHANNELS TO SET = {channels_to_set} and CHANNELS = {channels}')
         for key,val in channels_to_set.items():
             self.state[key-1]=val
 
@@ -61,10 +64,24 @@ class PiPlatesRelay(MultiChannelRelay):
         '''
             if val==True:
                 RELAYplate.relayON(self.board_id,key)
+                print(f'SET RELAY # {key} ON')
             elif val==False:
                 RELAYplate.relayOFF(self.board_id,key)
+                print(f'SET RELAY # {key} OFF')
             else:
                 raise KeyError('Improper value for relay set.')
+        
+        verify version
+        
+        if verify:
+            for entry,state in channels.items():
+                trycounter = 0
+                while self.getChannels()[entry] != state and trycounter < 6:
+                    self.setChannels({entry:state},verify=False)
+                    trycounter = trycounter + 1
+                if trycounter >= 6:
+                    raise Exception(f'Relay ERROR while attempting to set the state of {entry} to {state}')
+
 
         relayALL(addr,value) – 
         used to control the state of all relays with a single command. 

@@ -98,7 +98,7 @@ class MassBalance:
         self.target_component_masses = self.make_target_component_masses()
 
         #solve mass balance 
-        # mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
+        #mass_transfers,residuals,rank,singularity = np.linalg.lstsq(self.mass_fraction_matrix,self.target_component_masses,rcond=-1)
         mass_transfers,residuals = scipy.optimize.nnls(self.mass_fraction_matrix,self.target_component_masses)
         self.mass_transfers = {stock:(self.stock_location[stock],mass*units('g')) for stock,mass in zip(self.stocks,mass_transfers)}
         self.residuals = residuals
@@ -123,11 +123,14 @@ class MassBalance:
         masses = np.array(masses)
         
         stock_samples = []#list of possible stock combinations
+        stock_fractions = []
         for fractions in product(*fraction_grid):
+            stock_fractions.append(fractions)
             mass = (masses.T*fractions).sum(1)
             mass = 100.0*mass/mass.sum()
             stock_samples.append(mass)
         self.stock_samples = pd.DataFrame(stock_samples,columns=self.components)
+        self.stock_samples_fractions = stock_fractions
         return self.stock_samples
     
     def calculate_bounds(self,components=None,exclude_comps_below=None):
@@ -147,13 +150,14 @@ class MassBalance:
             xy = ternary2cart(comps)
         elif len(components)==2:
             xy = self.stock_samples[list(components)]
+            mask = slice(None)
         else:
             raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
         
         self.stock_samples_xy = xy
-        
+        self.stock_samples_mask = mask
         self.stock_samples_phasemap = PhaseMap(components)
-        self.stock_samples_phasemap.append(compositions = self.stock_samples[list(components)])
+        self.stock_samples_phasemap.append(compositions = self.stock_samples[list(components)].iloc[mask])
         self.stock_samples_hull = scipy.spatial.ConvexHull(xy)
         self.stock_samples_delaunay = scipy.spatial.Delaunay(xy)
     

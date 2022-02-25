@@ -161,6 +161,13 @@ class Deck:
         self.targets.append(target)
         self.target_location[target] = location
         self.target_names.append(name)
+    
+    def make_mass_balance(self):
+        components,_,_ = self.get_components()
+        balance = MassBalance()
+        for stock in self.stocks:
+            balance.add_stock(stock,self.stock_location[stock])
+        return balance
         
     def reset_targets(self):
         self.targets = []

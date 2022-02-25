@@ -87,7 +87,7 @@ class SAS_AgentDriver(Driver):
         labels = pd.Series(np.ones(compositions.shape[0]))
         measurements = []
         for i,row in self.manifest.iterrows():
-            measurement = pd.read_csv(path/row['fname']).set_index('q').squeeze()
+            measurement = pd.read_csv(path/row['fname'],comment='#').set_index('q').squeeze()
             measurement.name = row['fname']
             measurements.append(measurement)
         measurements = pd.concat(measurements,axis=1).T #may need to reset_index...
@@ -161,15 +161,15 @@ class SAS_AgentDriver(Driver):
         
         # Predict phase behavior at each point in the phase diagram
         with tf.device(self.config['compute_device']):
-            GP = GaussianProcess.GP(
+            self.GP = GaussianProcess.GP(
                 self.phasemap_labelled,
                 num_classes=self.n_cluster
             )
-            GP.reset_GP()
-            GP.optimize(1000)
+            self.GP.reset_GP()
+            self.GP.optimize(1000)
         
         self.acquisition.reset_phasemap(self.phasemap.components)
-        self.next_sample = self.acquisition.next_sample(GP)
+        self.next_sample = self.acquisition.next_sample(self.GP)
         self.stale = False
         self.app.logger.info('Done predicting next sample!')
     

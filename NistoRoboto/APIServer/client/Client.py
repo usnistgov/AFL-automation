@@ -1,4 +1,5 @@
 import requests,uuid,time,copy,inspect
+from NistoRoboto.agent.Serialize import deserialize,serialize
 
 
 class Client:
@@ -223,3 +224,23 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to move_item command failed with status_code {response.status_code}\n{response.content}')
         return response
+    
+    def set_object(self,name,obj,serialize=True):
+        json = {}
+        json['task_name'] = f'set_object'
+        json['name'] = name 
+        if serialize:
+            json['value'] = serialize(obj)
+            json['serialized'] = True
+        else:
+            json['value'] = obj
+            json['serialized'] = False
+        self.enqueue(**json)
+        
+    def set_object(self,name,obj):
+        json = {}
+        json['task_name'] = f'set_object'
+        json['name'] = name 
+        json['value'] = serialize(obj)
+        json['serialized'] = True 
+        self.enqueue(**json)

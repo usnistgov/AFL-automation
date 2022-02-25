@@ -3,6 +3,9 @@ import copy
 import scipy.spatial
 
 from NistoRoboto.agent.PhaseMap import phasemap_grid_factory
+#move dense_pm definition outside of this class
+#move to driver,make settable here and in driver
+#pass make to driver
 
 class Acquisition:
     def __init__(self,pts_per_row=50):
@@ -10,8 +13,8 @@ class Acquisition:
         self.pm = None
     
     
-    def reset_phasemap(self,components):
-        self.pm = phasemap_grid_factory(components,pts_per_row=self.pts_per_row)
+    def reset_phasemap(self,pm):
+        self.pm = pm.copy()
         
     def copy(self):
         return copy.deepcopy(self)

@@ -9,6 +9,14 @@ class AgentClient(Client):
     '''Communicate with NistoRoboto Agent server 
 
     '''
+    
+    def set_mask(self,mask):
+        json = {}
+        json['task_name'] = 'set_mask'
+        json['mask'] = serialize(mask)
+        json['serialized'] = True 
+        self.enqueue(**json)
+        
     def append_data(self,compositions,measurements,labels):
         json = {}
         json['task_name'] = 'append_data'

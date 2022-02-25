@@ -136,7 +136,7 @@ class PhaseMap:
         return pm
             
     
-    def append(self,compositions,measurements,labels):
+    def append(self,compositions,measurements=None,labels=None):
         self.model.append(
                 compositions=compositions,
                 measurements=measurements,
@@ -144,7 +144,7 @@ class PhaseMap:
                 )
     
         
-    def plot(self,components=None,compositions=None,labels=None,**mpl_kw):
+    def plot(self,components=None,compositions=None,labels=None,rescale=True,**mpl_kw):
         if (components is None) and (compositions is None) and (labels is None):
             components = self.components.copy()
             labels = self.labels.copy()
@@ -157,6 +157,9 @@ class PhaseMap:
         if labels is None:
             components = compositions.columns.values.copy()
             labels = np.ones_like(compositions.shape[0])
+        
+        if rescale:
+            compositions = compositions.apply(lambda x: 100.0*x/x.sum(),axis=1)
             
         ax = None
         if len(components)==2:
@@ -164,7 +167,7 @@ class PhaseMap:
         elif len(components)==3:
             ax=self.view.scatter_ternary(compositions,labels=labels,**mpl_kw)
         else:
-            raise ValueError('Unable to plot {len(components)} dimensions.')
+            raise ValueError(f'Unable to plot {len(components)} dimensions.')
         return ax
     
 class PhaseMapModel:
@@ -177,8 +180,15 @@ class PhaseMapModel:
         
     def append(self,compositions,labels,measurements):
         self.compositions = pd.concat([self.compositions,compositions],ignore_index=True)
-        self.measurements = pd.concat([self.measurements,measurements])
-        self.labels = pd.concat([self.labels,labels],ignore_index=True)
+        if measurements is not None:
+            self.measurements = pd.concat([self.measurements,measurements])
+        else:
+            self.measurements = None
+            
+        if labels is not None:
+            self.labels = pd.concat([self.labels,labels],ignore_index=True)
+        else:
+            self.labels = pd.Series(np.ones(compositions.shape[0]))
         
     
 class PhaseMapView_MPL:
@@ -269,6 +279,31 @@ def composition_grid(pts_per_row=50,basis=100,dim=3,eps=1e-9):
         pt = [k*basis for k in [*i,j]]
         pts.append(pt)
     return np.array(pts)
+
+def cart2ternary(compositions):
+    '''Ternary composition to Cartesian cooridate'''
+    if compositions is None:
+        compositions = self.model.compositions
+        
+    try:
+        #Assume pandas
+        xy = compositions.values.copy()
+    except AttributeError:
+        # Assume numpy
+        xy = compositions.copy()
+    
+    if xy.ndim==1:
+        xy = np.array([xy])
+
+    if xy.shape[1]!=2:
+        raise ValueError('This class only works with ternary (3-component) data!')
+        
+    # Convert ternary data to cartesian coordinates.
+    t = np.zeros((xy.shape[0],3))
+    t[:,1] = 100.*xy[:,1]/np.sin(60*np.pi/180.)
+    t[:,0] = 100.0*(xy[:,0] - xy[:,1]*np.sin(30.*np.pi/180.)/np.sin(60*np.pi/180))
+    t[:,2] = 100.0 - t[:,0] - t[:,1]
+    return t
 
 def ternary2cart(compositions):
     '''Ternary composition to Cartesian cooridate'''

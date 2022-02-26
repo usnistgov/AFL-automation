@@ -48,6 +48,13 @@ class AgentClient(Client):
         if response.status_code != 200:
             raise RuntimeError(f'API call to _get_next_sample command failed with status_code {response.status_code}\n{response.text}')
         return deserialize(response.json())
+
+    def get_next_sample_queued(self):
+        json = {}
+        json['task_name'] = 'get_next_sample'
+        retval = self.enqueue(**json)
+        obj = deserialize(retval['return_val'])
+        return obj
     
     def get_next_sample(self,wait_on_stale=True):
         json = {}

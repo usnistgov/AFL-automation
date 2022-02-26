@@ -43,6 +43,12 @@ class PhaseMap:
     @property
     def measurements(self):
         return self.model.measurements
+
+    @measurements.setter
+    def measurements(self,measurements):
+        if not isinstance(measurements,pd.DataFrame):
+            measurements = pd.DataFrame(measurements.copy())
+        self.model.measurements = measurements
     
     @property
     def labels(self):

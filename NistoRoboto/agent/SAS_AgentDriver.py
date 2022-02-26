@@ -27,18 +27,20 @@ from NistoRoboto.agent.WatchDog import WatchDog
 import tensorflow as tf
 import gpflow
 
+import uuid
+
 class SAS_AgentDriver(Driver):
     defaults={}
     defaults['compute_device'] = '/device:CPU:0'
     defaults['data_path'] = '/Users/tbm/watchdog_testing/'
-    defaults['manifest_file'] = 'manifest.csv'
+    defaults['data_manifest_file'] = 'manifest.csv'
     defaults['save_path'] = '/home/nistoroboto/'
     defaults['data_tag'] = 'default'
     def __init__(self,overrides=None):
         Driver.__init__(self,name='SAS_AgentDriver',defaults=self.gather_defaults(),overrides=overrides)
 
         self.watchdog = None 
-        self.manifest = None
+        self.data_manifest = None
         self._app = None
         self.name = 'SAS_AgentDriver'
 
@@ -62,6 +64,15 @@ class SAS_AgentDriver(Driver):
         self._app = value
         # if value is not None:
         #     self.reset_watchdog()
+        
+    def status(self):
+        status = []
+        status.append(self.status_str)
+        status.append(f'Using {self.config["compute_device"]}')
+        status.append(f'Data Manifest:{self.config["data_manifest_file"]}')
+        status.append(f'Next sample prediction is stale: {self.stale}')
+        status.append(f'Iteration {self.iteration}')
+        return status
     
     def reset_watchdog(self):
         if not (self.watchdog is None):
@@ -72,7 +83,7 @@ class SAS_AgentDriver(Driver):
         else:
             logger = None
         
-        path = pathlib.Path(self.config['manifest_file'])
+        path = pathlib.Path(self.config['data_manifest_file'])
         self.watchdog = WatchDog(
             path=path.parent,
             fname=path.name,
@@ -82,15 +93,15 @@ class SAS_AgentDriver(Driver):
         self.watchdog.start()
         
     def update_phasemap(self,predict=True):
-        self.app.logger.info(f'Updating phasemap with latest data in {self.config["manifest_file"]}')
+        self.app.logger.info(f'Updating phasemap with latest data in {self.config["data_manifest_file"]}')
         path = pathlib.Path(self.config['data_path'])
         
-        self.manifest = pd.read_csv(path/self.config['manifest_file'])
+        self.data_manifest = pd.read_csv(path/self.config['data_manifest_file'])
         
-        compositions = self.manifest.drop(['label','fname'],errors='ignore',axis=1)
+        compositions = self.data_manifest.drop(['label','fname'],errors='ignore',axis=1)
         labels = pd.Series(np.ones(compositions.shape[0]))
         measurements = []
-        for i,row in self.manifest.iterrows():
+        for i,row in self.data_manifest.iterrows():
             #measurement = pd.read_csv(path/row['fname'],comment='#').set_index('q').squeeze()
             measurement = pd.read_csv(path/row['fname'],sep=',',comment='#',header=None,names=['q','I']).set_index('q').squeeze()
             measurement.name = row['fname']
@@ -106,14 +117,6 @@ class SAS_AgentDriver(Driver):
         if predict:
             self.predict()
           
-    def status(self):
-        status = []
-        status.append(self.status_str)
-        status.append(f'Using {self.config["compute_device"]}')
-        status.append(f'Manifest:{self.config["manifest_file"]}')
-        status.append(f'Next sample prediction is stale: {self.stale}')
-        status.append(f'Iteration {self.iteration}')
-        return status
 
     def update_status(self,value):
         self.status_str = value
@@ -146,9 +149,20 @@ class SAS_AgentDriver(Driver):
         else:
             raise ValueError(f'Similarity type not recognized:{name}')
             
-    def set_acquisition(self,name):
-        if name=='variance':
+    def set_acquisition(self,acq_spec):
+        if acq_spec['name']=='variance':
             self.acquisition = AcquisitionFunction.Variance()
+        elif acq_spec['name']=='random':
+            self.acquisition = AcquisitionFunction.Random()
+        elif acq_spec['name']=='combined':
+            function1 = acq_spec['function1_name']
+            function2 = acq_spec['function2_name']
+            function2_frequency= acq_spec['function2_frequency']
+            self.acquisition = AcquisitionFunction.IterationCombined(
+                function1=function1,
+                function2=function2,
+                function2_frequency=function2_frequency,
+            )
         else:
             raise ValueError(f'Acquisition type not recognized:{name}')
         
@@ -162,12 +176,30 @@ class SAS_AgentDriver(Driver):
                 labels=labels,
                 )
 
+    def get_measurements(self,process=True,pedestal=1e-12):
+        data = self.phasemap.measurements.copy()
+        
+        #q-range masking
+        q = data.columns.values
+        mask = (q>0.007)&(q<0.11)
+        data = data.loc[:,mask]
+        
+        #pedestal + log10 normalization
+        data += pedestal 
+        data = np.log10(data)
+        
+        #fixing Nan to pedestal values
+        data[np.isnan(data)] = pedestal
+        
+        #invariant scaling 
+        norm = np.trapz(data.values,x=data.columns.values,axis=1)
+        data = data.mul(1/norm,axis=0)
+        
+        return self.data
+    
     def predict(self):
         self.app.logger.info('Starting next sample prediction...')
-        data = self.phasemap.measurements.copy()
-        data[data<=0] = 1e-12
-        data = np.log10(data)
-        data[np.isnan(data)] = 1e-12
+        data = self.get_measurements()
         self.similarity.calculate(data)
 
         self.n_cluster,labels,silh = PhaseLabeler.silhouette(self.similarity.W,self.labeler)
@@ -186,15 +218,16 @@ class SAS_AgentDriver(Driver):
             self.GP.optimize(3000)
         self.app.logger.info(f'Gaussian process fit to data')
         
-        check = self.manifest[self.phasemap.components].values
-        print(check)
+        check = self.data_manifest[self.phasemap.components].values
         self.acquisition.reset_phasemap(self.phasemap_dense)
         self.acquisition.reset_mask(self.mask)
-        self.next_sample = self.acquisition.next_sample(self.GP,composition_check=check)
+        self.acquisition.calculate_metric(GP)
+        self.next_sample = self.acquisition.get_next_sample(composition_check=check)
         self.stale = False
         self.app.logger.info(f'Next sample is found to be {self.next_sample.squeeze().to_dict()} by acquisition function {self.acquisition.name}')
                              
         ## SAVE DATA ##
+        iteration_uuid = uuid.uuid4()
         save_path = pathlib.Path(self.config['save_path'])
         params = {}
         params['n_cluster'] = self.n_cluster
@@ -204,11 +237,31 @@ class SAS_AgentDriver(Driver):
         params['silh'] = silh
         params['mask'] = self.mask
         params['next_sample'] = self.next_sample
-        with open(save_path/f'parameters_{self.config["data_tag"]}_{self.iteration:04d}.pkl','wb') as f:
+        params['iteration'] = self.iteration
+        params['data_tag'] = self.data_tag
+        params['acquisition_object'] = self.acquisition
+        params['acquisition_name'] = self.acquisition.name
+        with open(save_path/f'parameters_{self.config["data_tag"]}_{uuid}.pkl','wb') as f:
             pickle.dump(params,f,-1)
-        self.phasemap.save(save_path/f'phasemap_input_{self.config["data_tag"]}_{self.iteration:04d}.pkl')
-        self.phasemap_labelled.save(save_path/f'phasemap_labelled_{self.config["data_tag"]}_{self.iteration:04d}.pkl')
-        self.acquisition.pm.save(save_path/f'phasemap_acquisition_{self.config["data_tag"]}_{self.iteration:04d}.pkl')
+        self.phasemap.save(save_path/f'phasemap_input_{self.config["data_tag"]}_{uuid}.pkl')
+        self.phasemap_labelled.save(save_path/f'phasemap_labelled_{self.config["data_tag"]}_{uuid}.pkl')
+        self.acquisition.pm.save(save_path/f'phasemap_acquisition_{self.config["data_tag"]}_{uuid}.pkl')
+        
+        AL_manifest_path = save_path/'manifest.csv'
+        if manifest_path.exists():
+            self.AL_manifest = pd.read_csv(AL_manifest_path)
+        else:
+            self.AL_manifest = pd.DataFrame(columns=['uuid','date','data_tag','iteration'])
+        
+        row = {}
+        row['uuid'] = uuid
+        row['date'] =  datetime.datetime.now().strftime('%y%m%d - %H:%M:%S')
+        row['data_tag'] = self.data_tag
+        row['iteration'] = self.iteration
+        self.AL_manifest = self.AL_manifest.append(row,ignore_index=True)
+        self.AL_manifest.to_csv(AL_manifest_path,index=False)
+            
+        
         self.iteration+=1
         self.app.logger.info(f'Finished AL iteration {self.iteration}')
     

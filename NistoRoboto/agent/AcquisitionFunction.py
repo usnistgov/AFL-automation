@@ -98,7 +98,7 @@ class Random(Acquisition):
             
         indices = np.arange(self.pm.compositions.shape[0])
         random.shuffle(indices)
-        self.pm.labels = pm.Series(indices)
+        self.pm.labels = pd.Series(indices)
         return self.pm
     
 class IterationCombined(Acquisition):

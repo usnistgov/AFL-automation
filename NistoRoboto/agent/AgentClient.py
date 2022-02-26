@@ -52,9 +52,10 @@ class AgentClient(Client):
     def get_next_sample_queued(self):
         json = {}
         json['task_name'] = 'get_next_sample'
+        json['interactive'] = True
         retval = self.enqueue(**json)
         obj = deserialize(retval['return_val'])
-        return obj
+        return obj[0]
     
     def get_next_sample(self,wait_on_stale=True):
         json = {}

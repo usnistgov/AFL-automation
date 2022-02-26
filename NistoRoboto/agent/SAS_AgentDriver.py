@@ -92,7 +92,7 @@ class SAS_AgentDriver(Driver):
         measurements = []
         for i,row in self.manifest.iterrows():
             #measurement = pd.read_csv(path/row['fname'],comment='#').set_index('q').squeeze()
-            measurement = pd.read_csv(path/row['fname'],delim_whitespace=True,comment='#',header=None,names=['q','I']).set_index('q').squeeze()
+            measurement = pd.read_csv(path/row['fname'],sep=',',comment='#',header=None,names=['q','I']).set_index('q').squeeze()
             measurement.name = row['fname']
             measurements.append(measurement)
         measurements = pd.concat(measurements,axis=1).T #may need to reset_index...
@@ -167,6 +167,7 @@ class SAS_AgentDriver(Driver):
         data = self.phasemap.measurements.copy()
         data[data<=0] = 1e-12
         data = np.log10(data)
+        data[np.isnan(data)] = 1e-12
         self.similarity.calculate(data)
 
         self.n_cluster,labels,silh = PhaseLabeler.silhouette(self.similarity.W,self.labeler)

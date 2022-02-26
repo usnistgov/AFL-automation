@@ -28,6 +28,7 @@ dependencies:
   - flask_cors
   - scikit-learn
   - tqdm
+  - watchdog
   - pip:
       - gpflow
       - tensorflow>2.7

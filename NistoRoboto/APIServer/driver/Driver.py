@@ -1,5 +1,6 @@
 from NistoRoboto.shared.utilities import listify
 from NistoRoboto.shared.PersistentConfig import PersistentConfig
+from NistoRoboto.agent.Serialize import deserialize,serialize
 from math import ceil,sqrt
 import inspect 
 import pathlib
@@ -120,6 +121,17 @@ class Driver:
         else:
             return_val = getattr(self,task_name)(**kwargs)
         return return_val
+    
+    def set_object(self,name,value,serialized=True):
+        if serialized:
+            value = deserialize(value)
+        setattr(self,name,value)
+    
+    def get_object(self,name,serialize=True):
+        value = getattr(self,name)
+        if serialize:
+            value = serialize(value)
+        return value
 
 
    

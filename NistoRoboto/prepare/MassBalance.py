@@ -1,7 +1,16 @@
 import numpy as np
 import scipy.optimize
+import scipy.spatial
+import pandas as pd
 import copy
 from NistoRoboto.shared.units import units
+from NistoRoboto.agent.PhaseMap import ternary2cart
+from NistoRoboto.agent.PhaseMap import PhaseMap
+
+try:
+    from tqdm.contrib.itertools import product
+except ImportError:
+    from itertools import product
 
 class MassBalance:
     def __init__(self):
@@ -89,11 +98,89 @@ class MassBalance:
         self.target_component_masses = self.make_target_component_masses()
 
         #solve mass balance 
-        # mass_transfers,residuals,rank,singularity = np.linalg.lstsq(mass_fraction_matrix,target_component_masses,rcond=-1)
+        #mass_transfers,residuals,rank,singularity = np.linalg.lstsq(self.mass_fraction_matrix,self.target_component_masses,rcond=-1)
         mass_transfers,residuals = scipy.optimize.nnls(self.mass_fraction_matrix,self.target_component_masses)
         self.mass_transfers = {stock:(self.stock_location[stock],mass*units('g')) for stock,mass in zip(self.stocks,mass_transfers)}
         self.residuals = residuals
 
-
+    def sample_composition_space(self,pipette_min=5*units('ul'),grid_density=5):
+        '''Combine stock solutions to generate samples of possible target compositions'''
+        if self.components is None:
+            self.process_components()
             
-
+        masses = []
+        fraction_grid=[]
+        for stock in self.stocks:
+            row = []
+            ratio = (pipette_min/stock.volume).to_base_units().magnitude
+            fraction_grid.append(list(np.linspace(ratio,1.0,grid_density)))
+            for component in self.components:
+                if component in stock.components:
+                    row.append(stock[component].mass.to('mg').magnitude)
+                else:
+                    row.append(0)
+            masses.append(row)
+        masses = np.array(masses)
+        
+        stock_samples = []#list of possible stock combinations
+        stock_fractions = []
+        for fractions in product(*fraction_grid):
+            stock_fractions.append(fractions)
+            mass = (masses.T*fractions).sum(1)
+            mass = 100.0*mass/mass.sum()
+            stock_samples.append(mass)
+        self.stock_samples = pd.DataFrame(stock_samples,columns=self.components)
+        self.stock_samples_fractions = stock_fractions
+        return self.stock_samples
+    
+    def calculate_bounds(self,components=None,exclude_comps_below=None):
+        
+        if self.stock_samples is None:
+            raise ValueError('Must call .sample_composition_space before calculating bounds')
+        
+        if components is None:
+            components= self.components
+            
+        if len(components)==3:
+            comps = self.stock_samples[list(components)].values
+            comps = 100.0*comps/comps.sum(1)[:,np.newaxis]#normalize to 100.0 basis
+            if exclude_comps_below is not None:
+                mask = ~((comps<exclude_comps_below).any(1))
+                comps = comps[mask]
+            xy = ternary2cart(comps)
+        elif len(components)==2:
+            xy = self.stock_samples[list(components)]
+            mask = slice(None)
+        else:
+            raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
+        
+        self.stock_samples_xy = xy
+        self.stock_samples_mask = mask
+        self.stock_samples_phasemap = PhaseMap(components)
+        self.stock_samples_phasemap.append(compositions = self.stock_samples[list(components)].iloc[mask])
+        self.stock_samples_hull = scipy.spatial.ConvexHull(xy)
+        self.stock_samples_delaunay = scipy.spatial.Delaunay(xy)
+    
+    def in_bounds(self,points):
+        
+        if self.stock_samples_delaunay is None:
+            raise ValueError('Must call sample_composition_space and calculate_bounds before calling in_bounds')
+        
+        if points.shape[1]==3:
+            p = ternary2cart(points)
+        elif points.shape[1]==2:
+            p = points
+        else:
+            raise ValueError('Can only pass two or three dimensional data to in_bounds')
+                             
+        return self.stock_samples_delaunay.find_simplex(p)>=0
+    
+    def plot_bounds(self,include_points):
+        import matplotlib.pyplot as plt
+        if include_points:
+            ax = self.stock_samples_phasemap.plot()
+        else:
+            fig,ax = plt.subplots(1,1)
+        
+        for simplex in self.stock_samples_hull.simplices:
+            ax.plot(self.stock_samples_xy[simplex, 0], self.stock_samples_xy[simplex, 1], 'g:')

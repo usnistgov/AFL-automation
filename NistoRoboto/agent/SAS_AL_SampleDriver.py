@@ -27,7 +27,7 @@ class SAS_AL_SampleDriver(Driver):
     defaults={}
     defaults['snapshot_directory'] = '/home/nistoroboto'
     defaults['data_path'] = '/nfs/aux/chess/reduced_data/cycles/2022-1/id3b/beaucage-2324-D/analysis/'
-    defaults['manifest_file'] = '/nfs/aux/chess/reduced_data/cycles/2022-1/id3b/beaucage-2324-D/analysis/AL_manifest.csv'
+    defaults['data_manifest_file'] = '/nfs/aux/chess/reduced_data/cycles/2022-1/id3b/beaucage-2324-D/analysis/data_manifest.csv'
     defaults['data_tag'] = 'default'
     def __init__(self,
             load_url,
@@ -98,7 +98,7 @@ class SAS_AL_SampleDriver(Driver):
         
         self.catch_protocol=None
         self.AL_status_str = ''
-        self.AL_manifest  = None
+        self.data_manifest  = None
         self.AL_components = None
         
         self.reset_deck()
@@ -276,7 +276,7 @@ class SAS_AL_SampleDriver(Driver):
         exposure = kwargs['exposure']
         mix_order = kwargs['mix_order']
         custom_stock_settings = kwargs['custom_stock_settings']
-        manifest_path = pathlib.Path(self.config['manifest_file'])
+        data_manifest_path = pathlib.Path(self.config['data_manifest_file'])
         data_path = pathlib.Path(self.config['data_path'])
         
         if self.dummy_mode:
@@ -352,10 +352,10 @@ class SAS_AL_SampleDriver(Driver):
                 )
             
             # update manifest
-            if manifest_path.exists():
-                self.AL_manifest = pd.read_csv(manifest_path)
+            if data_manifest_path.exists():
+                self.data_manifest = pd.read_csv(data_manifest_path)
             else:
-                self.AL_manifest = pd.DataFrame(columns=['fname','label',*self.AL_components])
+                self.data_manifest = pd.DataFrame(columns=['fname','label',*self.AL_components])
             
             row = {}
             row['fname'] = data_path/(sample_name+'_chosen_r1d.csv')
@@ -368,8 +368,8 @@ class SAS_AL_SampleDriver(Driver):
             for component in self.AL_components:
                 row[component] = 100.0*(row[component]/total)
             
-            self.AL_manifest = self.AL_manifest.append(row,ignore_index=True)
-            self.AL_manifest.to_csv(manifest_path,index=False)
+            self.data_manifest = self.data_manifest.append(row,ignore_index=True)
+            self.data_manifest.to_csv(manifest_path,index=False)
             
             # trigger AL
             self.agent_uuid = self.agent_client.enqueue(task_name='update_phasemap',predict=True)
@@ -380,22 +380,22 @@ class SAS_AL_SampleDriver(Driver):
             
             
     def fix_protocol_order(self,mix_order,custom_stock_settings):
-      mix_order = [self.deck.get_stock(i) for i in mix_order]
-      mix_order_map = {loc:new_index for new_index,(stock,loc) in enumerate(mix_order)}
-      for sample,validated in self.deck.sample_series:
-          # if not validated:
-          #     continue
-          old_protocol = sample.protocol
-          ordered_indices = list(map(lambda x: mix_order_map.get(x.source),sample.protocol))
-          argsort = np.argsort(ordered_indices)
-          new_protocol = list(map(sample.protocol.__getitem__,argsort))
-          time_patched_protocol = []
-          for entry in new_protocol:
-              if entry.source in custom_stock_settings:
-                  for setting,value in custom_stock_settings[entry.source].items():
-                      entry.__setattr__(setting,value)
-              time_patched_protocol.append(entry)
-          sample.protocol = time_patched_protocol
+        mix_order = [self.deck.get_stock(i) for i in mix_order]
+        mix_order_map = {loc:new_index for new_index,(stock,loc) in enumerate(mix_order)}
+        for sample,validated in self.deck.sample_series:
+            # if not validated:
+            #     continue
+            old_protocol = sample.protocol
+            ordered_indices = list(map(lambda x: mix_order_map.get(x.source),sample.protocol))
+            argsort = np.argsort(ordered_indices)
+            new_protocol = list(map(sample.protocol.__getitem__,argsort))
+            time_patched_protocol = []
+            for entry in new_protocol:
+                if entry.source in custom_stock_settings:
+                    for setting,value in custom_stock_settings[entry.source].items():
+                        entry.__setattr__(setting,value)
+                time_patched_protocol.append(entry)
+            sample.protocol = time_patched_protocol
       
    
 

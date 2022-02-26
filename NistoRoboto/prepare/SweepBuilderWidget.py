@@ -171,8 +171,8 @@ class SweepBuilderWidget_Model:
             if (component_name == 'total') and (items['amount']>0):
                 properties = {'volume':items['amount']*units(items['units'])}
             else:
-                components.append(component_name)
                 if ('vary' in items) and (items['vary']==True):
+                    components.append(component_name)
                     unit = items['units']
                     if '%' in unit:
                         unit = units('')
@@ -182,6 +182,10 @@ class SweepBuilderWidget_Model:
                     lo.append(items['lower']*unit)
                     hi.append(items['upper']*unit)
                     num.append(items['steps'])
+                elif ('vary' in items) and (items['vary']==False):
+                    components.append(component_name)
+
+                    dasfasdf
         self.sweep = NistoRoboto.prepare.compositionSweepFactory(
             name='SweepBuilder',
             components = components,
@@ -312,10 +316,11 @@ class SweepBuilderWidget_View:
             layout=Layout(width='100px'),
         )
         
+        
         label_C = Label('Component C')
         self.ternary_component_C_select = ipywidgets.Dropdown(
             options=component_names,
-            value=starting_components[2],
+            value=starting_components[-1],
             layout=Layout(width='100px'),
         )
         

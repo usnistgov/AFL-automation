@@ -44,6 +44,11 @@ class Client:
         self.headers = {'Authorization':'Bearer {}'.format(self.token)}
 
 
+    def driver_status(self):
+        response = requests.get(self.url+'/driver_status',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to driver_status command failed with status_code {response.status_code}\n{response.text}')
+        return response.json()
     def get_queue(self):
         response = requests.get(self.url+'/get_queue',headers=self.headers)
         if response.status_code != 200:
@@ -137,6 +142,13 @@ class Client:
             return self.enqueue(interactive=interactive,task_name='get_configs',print_console=print_console)
         else:
             return self.enqueue(interactive=interactive,task_name='get_config',name=name,print_console=print_console)
+   
+
+    def get_server_time(self):
+        response = requests.get(self.url+'/get_server_time',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
+        return response.text
    
     def query_driver(self,**kwargs):
         json=kwargs

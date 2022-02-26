@@ -307,10 +307,12 @@ class SAS_AL_SampleDriver(Driver):
                 print('\n\n\n')
                 
             #make target object
-            target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['NaCl'])
+            # target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['NaCl'])
+            target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['F127'])
             target.mass_fraction = next_sample_dict
             target.volume = sample_volume*units('ul')
-            target.concentration = {'NaCl':100*units('mg/ml')}
+            # target.concentration = {'NaCl':100*units('mg/ml')}
+            target.concentration = {'F127':100*units('mg/ml')}
                 
             self.deck.reset_targets()
             self.deck.add_target(target,name='target')
@@ -369,7 +371,7 @@ class SAS_AL_SampleDriver(Driver):
                 row[component] = 100.0*(row[component]/total)
             
             self.data_manifest = self.data_manifest.append(row,ignore_index=True)
-            self.data_manifest.to_csv(manifest_path,index=False)
+            self.data_manifest.to_csv(data_manifest_path,index=False)
             
             # trigger AL
             self.agent_uuid = self.agent_client.enqueue(task_name='update_phasemap',predict=True)

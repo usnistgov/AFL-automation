@@ -34,7 +34,7 @@ class Acquisition:
         ax = pm.plot()
         
         if self.next_sample is not None:
-            pm.plot(compositions=self.next_sample,marker='x',color='k')
+            pm.plot(compositions=self.next_sample,marker='x',color='k',ax=ax)
         return ax
         
     def copy(self):
@@ -97,7 +97,7 @@ class Random(Acquisition):
         self.y_mean,self.y_var = GP.predict(self.pm.compositions)
             
         indices = np.arange(self.pm.compositions.shape[0])
-        shuffle(indices)
+        random.shuffle(indices)
         self.pm.labels = pm.Series(indices)
         return self.pm
     
@@ -109,22 +109,24 @@ class IterationCombined(Acquisition):
         self.name = 'IterationCombined'  
         self.name += '-'+function1.name
         self.name += '-'+function2.name
-        self.iteration = 0
+        self.iteration = 1
         self.function2_frequency=function2_frequency
         
     def reset_phasemap(self,pm):
         self.function1.reset_phasemap(pm)
         self.function2.reset_phasemap(pm)
+        self.pm = pm
         
     def reset_mask(self,mask):
         self.function1.reset_mask(mask)
         self.function2.reset_mask(mask)
+        self.mask = mask
         
     def calculate_metric(self,GP):
-        if self.pm is None:
+        if self.function1.pm is None:
             raise ValueError('No phase map set for acquisition! Call reset_phasemap!')
         
-        if ((i%self.function2_frequency)==0):
+        if ((self.iteration%self.function2_frequency)==0):
             self.logger.info(f'Using acquisition function {self.function2.name} of iteration {self.iteration}')
             self.pm = self.function2.calculate_metric(GP)
         else:

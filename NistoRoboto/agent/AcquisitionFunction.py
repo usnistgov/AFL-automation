@@ -50,8 +50,9 @@ class Acquisition:
             mask = slice(None)
         else:
             mask = self.mask
+
         while True:
-            index = metric.labels.iloc[mask].argsort()[::-1].iloc[nth]
+            index = metric.labels.iloc[mask].argsort()[::-1].index[nth]
             composition = metric.compositions.loc[index]
             # print('ALREADY MEASURED')
             # print(composition_check)
@@ -60,7 +61,7 @@ class Acquisition:
             # print('DIFF')
             # check = abs(composition_check-composition.values)
             # print(check)
-            check = (abs(composition_check-composition.values)<1)
+            # check = (abs(composition_check-composition.values)<1)
             if composition_check is None:
                 break #all done
             elif (abs(composition_check-composition.values)<1).all(1).any():

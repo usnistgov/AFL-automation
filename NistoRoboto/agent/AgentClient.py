@@ -33,7 +33,7 @@ class AgentClient(Client):
         retval = self.enqueue(**json)
         phasemap= deserialize(retval['return_val'])
         return phasemap
-    
+
     def get(self,name):
         json = {}
         json['task_name']  = 'get_object'

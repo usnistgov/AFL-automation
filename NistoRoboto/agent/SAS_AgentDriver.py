@@ -46,8 +46,10 @@ class SAS_AgentDriver(Driver):
 
         self.status_str = 'Fresh Server!'
 
+        self.phasemap_raw = None
         self.phasemap = None
         self.phasemap_labelled = None
+        self.dense_pts_per_row = 100
         self.n_cluster = None
         self.similarity = None
         self.stale = True #flag to determine if new point if available
@@ -109,7 +111,7 @@ class SAS_AgentDriver(Driver):
         measurements = pd.concat(measurements,axis=1).T #may need to reset_index...
         
         self.set_components(list(compositions.columns.values))
-        self.phasemap.append(
+        self.phasemap_raw.append(
                 compositions=compositions,
                 measurements=measurements,
                 labels=labels,
@@ -130,12 +132,16 @@ class SAS_AgentDriver(Driver):
             mask = deserialize(mask)
         self.mask = np.array(mask)
         if mask.shape[0]!=self.phasemap_dense.compositions.shape[0]:
-            raise ValueError(f'Mask shape {mask.shape} doesn\'t match phasemap')
+            raise ValueError(f'Mask shape {mask.shape} doesn\'t match phasemap: {mask.shape[0]} vs {self.phasemap_dense.compositions.shape[0]}')
     
-    def set_components(self,components,pts_per_row=50):
-        self.phasemap = PhaseMap.PhaseMap(components)
-        self.phasemap_dense = PhaseMap.phasemap_grid_factory(components,pts_per_row=50)
-        self.dense_pts_per_row = pts_per_row
+    def set_components(self,components,pts_per_row=None):
+        if pts_per_row is None:
+            pts_per_row = self.dense_pts_per_row
+        else:
+            self.dense_pts_per_row = pts_per_row
+        self.app.logger.info(f'Setting components to {components} with dense pts_per_row={pts_per_row}')
+        self.phasemap_raw = PhaseMap.PhaseMap(components)
+        self.phasemap_dense = PhaseMap.phasemap_grid_factory(components,pts_per_row=pts_per_row)
 
     def set_similarity(self,name,similarity_params):
         if name=='pairwise':
@@ -149,15 +155,17 @@ class SAS_AgentDriver(Driver):
         else:
             raise ValueError(f'Similarity type not recognized:{name}')
             
-    def set_acquisition(self,acq_spec):
-        if acq_spec['name']=='variance':
+    def set_acquisition(self,spec):
+        if spec['name']=='variance':
             self.acquisition = AcquisitionFunction.Variance()
-        elif acq_spec['name']=='random':
+        elif spec['name']=='random':
             self.acquisition = AcquisitionFunction.Random()
-        elif acq_spec['name']=='combined':
-            function1 = acq_spec['function1_name']
-            function2 = acq_spec['function2_name']
-            function2_frequency= acq_spec['function2_frequency']
+        elif spec['name']=='combined':
+            function1 = spec['function1_name']
+            function2 = spec['function2_name']
+            function2_frequency= spec['function2_frequency']
+            function1 = AcquisitionFunction.Variance()
+            function2 = AcquisitionFunction.Random()
             self.acquisition = AcquisitionFunction.IterationCombined(
                 function1=function1,
                 function2=function2,
@@ -170,37 +178,41 @@ class SAS_AgentDriver(Driver):
         compositions = deserialize(compositions)
         measurements = deserialize(measurements)
         labels = deserialize(labels)
-        self.phasemap.append(
+        self.phasemap_raw.append(
                 compositions=compositions,
                 measurements=measurements,
                 labels=labels,
                 )
 
-    def get_measurements(self,process=True,pedestal=1e-12):
-        data = self.phasemap.measurements.copy()
+    def get_measurements(self,process=True,pedestal=1e-12,serialize=False):
+        measurements = self.phasemap_raw.measurements.copy()
         
         #q-range masking
-        q = data.columns.values
+        q = measurements.columns.values
         mask = (q>0.007)&(q<0.11)
-        data = data.loc[:,mask]
+        measurements = measurements.loc[:,mask]
         
         #pedestal + log10 normalization
-        data += pedestal 
-        data = np.log10(data)
+        measurements += pedestal 
+        measurements = np.log10(measurements)
         
         #fixing Nan to pedestal values
-        data[np.isnan(data)] = pedestal
+        measurements[np.isnan(measurements)] = pedestal
         
         #invariant scaling 
-        norm = np.trapz(data.values,x=data.columns.values,axis=1)
-        data = data.mul(1/norm,axis=0)
+        norm = np.trapz(measurements.values,x=measurements.columns.values,axis=1)
+        norm = abs(norm)
+        measurements = measurements.mul(1/norm,axis=0)
+
+        self.phasemap = self.phasemap_raw.copy()
+        self.phasemap.measurements = measurements
         
-        return self.data
+        return measurements
     
     def predict(self):
         self.app.logger.info('Starting next sample prediction...')
-        data = self.get_measurements()
-        self.similarity.calculate(data)
+        measurements = self.get_measurements()
+        self.similarity.calculate(measurements)
 
         self.n_cluster,labels,silh = PhaseLabeler.silhouette(self.similarity.W,self.labeler)
         self.app.logger.info(f'Silhouette analysis found {self.n_cluster} clusters')
@@ -221,13 +233,13 @@ class SAS_AgentDriver(Driver):
         check = self.data_manifest[self.phasemap.components].values
         self.acquisition.reset_phasemap(self.phasemap_dense)
         self.acquisition.reset_mask(self.mask)
-        self.acquisition.calculate_metric(GP)
+        self.acquisition.calculate_metric(self.GP)
         self.next_sample = self.acquisition.get_next_sample(composition_check=check)
         self.stale = False
         self.app.logger.info(f'Next sample is found to be {self.next_sample.squeeze().to_dict()} by acquisition function {self.acquisition.name}')
                              
         ## SAVE DATA ##
-        iteration_uuid = uuid.uuid4()
+        uuid_str = str(uuid.uuid4())
         save_path = pathlib.Path(self.config['save_path'])
         params = {}
         params['n_cluster'] = self.n_cluster
@@ -238,25 +250,27 @@ class SAS_AgentDriver(Driver):
         params['mask'] = self.mask
         params['next_sample'] = self.next_sample
         params['iteration'] = self.iteration
-        params['data_tag'] = self.data_tag
+        params['data_tag'] = self.config["data_tag"]
         params['acquisition_object'] = self.acquisition
         params['acquisition_name'] = self.acquisition.name
-        with open(save_path/f'parameters_{self.config["data_tag"]}_{uuid}.pkl','wb') as f:
+        params['uuid'] = uuid_str
+        with open(save_path/f'parameters_{self.config["data_tag"]}_{uuid_str}.pkl','wb') as f:
             pickle.dump(params,f,-1)
-        self.phasemap.save(save_path/f'phasemap_input_{self.config["data_tag"]}_{uuid}.pkl')
-        self.phasemap_labelled.save(save_path/f'phasemap_labelled_{self.config["data_tag"]}_{uuid}.pkl')
-        self.acquisition.pm.save(save_path/f'phasemap_acquisition_{self.config["data_tag"]}_{uuid}.pkl')
+        self.phasemap.save(save_path/f'phasemap_input_{self.config["data_tag"]}_{uuid_str}.pkl')
+        self.phasemap_labelled.save(save_path/f'phasemap_labelled_{self.config["data_tag"]}_{uuid_str}.pkl')
+        self.acquisition.pm.save(save_path/f'phasemap_acquisition_{self.config["data_tag"]}_{uuid_str}.pkl')
         
         AL_manifest_path = save_path/'manifest.csv'
-        if manifest_path.exists():
+        if AL_manifest_path.exists():
             self.AL_manifest = pd.read_csv(AL_manifest_path)
         else:
-            self.AL_manifest = pd.DataFrame(columns=['uuid','date','data_tag','iteration'])
+            self.AL_manifest = pd.DataFrame(columns=['uuid','date','time','data_tag','iteration'])
         
         row = {}
-        row['uuid'] = uuid
-        row['date'] =  datetime.datetime.now().strftime('%y%m%d - %H:%M:%S')
-        row['data_tag'] = self.data_tag
+        row['uuid'] = uuid_str
+        row['date'] =  datetime.datetime.now().strftime('%y%m%d')
+        row['time'] =  datetime.datetime.now().strftime('%H:%M:%S')
+        row['data_tag'] = self.config['data_tag']
         row['iteration'] = self.iteration
         self.AL_manifest = self.AL_manifest.append(row,ignore_index=True)
         self.AL_manifest.to_csv(AL_manifest_path,index=False)

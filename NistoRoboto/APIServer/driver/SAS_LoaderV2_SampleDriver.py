@@ -183,7 +183,7 @@ class SAS_LoaderV2_SampleDriver(Driver):
         self.take_snapshot(prefix = f'05-after-load-{name}')
         
         self.update_status(f'Sample is loaded, asking the instrument for exposure...')
-        self.sas_uuid = self.measure(sample)
+        self.sas_uuid = self.measure(sample)#self.measure blocks...
 
         self.update_status(f'Cleaning up sample {name}...')
         self.rinse_uuid = self.load_client.enqueue(task_name='rinseCell')

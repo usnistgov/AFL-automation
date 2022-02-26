@@ -177,7 +177,7 @@ class CHESSID3B(ScatteringInstrument,Driver):
             return self.getData(lv=lv)
 
     def expose(self,name=None,exposure=None,nexp=1,block=True,reduce_data=True,measure_transmission=True,save_nexus=True):
-        if filename is None:
+        if name is None:
             filename=self.getFilename()
         else:
             self.setFilename(filename)

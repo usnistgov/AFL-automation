@@ -17,6 +17,7 @@ import shutil
 import datetime
 import traceback
 import pathlib
+import uuid
 
 import NistoRoboto.prepare
 import shutil
@@ -273,7 +274,10 @@ class SAS_AL_SampleDriver(Driver):
         self.AL_components = kwargs['AL_components']
         sample_volume = kwargs['sample_volume']
         exposure = kwargs['exposure']
+        mix_order = kwargs['mix_order']
+        custom_stock_settings = kwargs['custom_stock_settings']
         manifest_path = pathlib.Path(self.config['manifest_file'])
+        data_path = pathlib.Path(self.config['data_path'])
         
         if self.dummy_mode:
             from NistoRoboto.agent import PhaseMap
@@ -284,7 +288,7 @@ class SAS_AL_SampleDriver(Driver):
             self.app.logger.info(f'Starting new AL loop')
             
             #get prediction of next step
-            next_sample = self.agent_client.get_next_sample(wait_on_stale=False)
+            next_sample = self.agent_client.get_next_sample_queued()
             next_sample_dict = next_sample.T.squeeze().to_dict()
             self.app.logger.info(f'Preparing to make next sample: {next_sample_dict}')
             
@@ -302,17 +306,18 @@ class SAS_AL_SampleDriver(Driver):
                 print(df_measurements)
                 print('\n\n\n')
                 
-
             #make target object
-            target = NistoRoboto.prepare.Solution('target',next_sample.columns.values)
+            target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['NaCl'])
             target.mass_fraction = next_sample_dict
             target.volume = sample_volume*units('ul')
+            target.concentration = {'NaCl':100*units('mg/ml')}
                 
             self.deck.reset_targets()
             self.deck.add_target(target,name='target')
             self.deck.make_sample_series(reset_sample_series=True)
             self.deck.validate_sample_series(tolerance=0.15)
             self.deck.make_protocol(only_validated=False)
+            self.fix_protocol_order(mix_order,custom_stock_settings)
             sample,validated = self.deck.sample_series[0]
             self.app.logger.info(self.deck.validation_report)
             
@@ -337,10 +342,13 @@ class SAS_AL_SampleDriver(Driver):
                 sample_uuid = str(uuid.uuid4())
                 sample_name = f'AL_{self.config["data_tag"]}_{sample_uuid}'
                 self.process_sample(
-                    name=sample_name,
-                    prep_protocol = sample.emit_protocol(),
-                    catch_protocol =[self.catch_protocol.emit_protocol()],
-                    volume = self.catch_protocol.volume/1000.0,
+                        dict(
+                            name=sample_name,
+                            prep_protocol = sample.emit_protocol(),
+                            catch_protocol =[self.catch_protocol.emit_protocol()],
+                            volume = self.catch_protocol.volume/1000.0,
+                            exposure = exposure
+                    )
                 )
             
             # update manifest
@@ -350,7 +358,7 @@ class SAS_AL_SampleDriver(Driver):
                 self.AL_manifest = pd.DataFrame(columns=['fname','label',*self.AL_components])
             
             row = {}
-            row['fname'] = sample_name+'_r1d.csv'
+            row['fname'] = data_path/(sample_name+'_chosen_r1d.csv')
             row['label'] = -1
             total = 0
             for component in self.AL_components:
@@ -371,7 +379,24 @@ class SAS_AL_SampleDriver(Driver):
             self.agent_client.wait(self.agent_uuid)
             
             
-        
+    def fix_protocol_order(self,mix_order,custom_stock_settings):
+      mix_order = [self.deck.get_stock(i) for i in mix_order]
+      mix_order_map = {loc:new_index for new_index,(stock,loc) in enumerate(mix_order)}
+      for sample,validated in self.deck.sample_series:
+          # if not validated:
+          #     continue
+          old_protocol = sample.protocol
+          ordered_indices = list(map(lambda x: mix_order_map.get(x.source),sample.protocol))
+          argsort = np.argsort(ordered_indices)
+          new_protocol = list(map(sample.protocol.__getitem__,argsort))
+          time_patched_protocol = []
+          for entry in new_protocol:
+              if entry.source in custom_stock_settings:
+                  for setting,value in custom_stock_settings[entry.source].items():
+                      entry.__setattr__(setting,value)
+              time_patched_protocol.append(entry)
+          sample.protocol = time_patched_protocol
+      
    
 
 

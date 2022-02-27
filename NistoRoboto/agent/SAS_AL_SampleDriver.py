@@ -221,6 +221,14 @@ class SAS_AL_SampleDriver(Driver):
             self.update_status(f'Waiting for rinse...')
             self.load_client.wait(self.rinse_uuid)
             self.update_status(f'Rinse done!')
+
+        self.update_status(f'Cell is clean, measuring empty cell scattering...')
+        empty = {}
+        empty['name'] = 'MT-'+sample['name']
+        empty['exposure'] = sample['exposure']
+        empty['wiggle'] = False
+        self.sas_uuid = self.measure(empty)
+        self.sas_client.wait(self.sas_uuid)
             
         if self.prep_uuid is not None: 
             self.prep_client.wait(self.prep_uuid)
@@ -238,13 +246,6 @@ class SAS_AL_SampleDriver(Driver):
             self.prep_client.wait(self.catch_uuid)
             self.take_snapshot(prefix = f'03-after-catch-{name}')
         
-        self.update_status(f'Cell is clean, measuring empty cell scattering...')
-        empty = {}
-        empty['name'] = 'MT-'+sample['name']
-        empty['exposure'] = sample['exposure']
-        empty['wiggle'] = False
-        self.sas_uuid = self.measure(empty)
-        self.sas_client.wait(self.sas_uuid)
         
         self.load_uuid = self.load_client.enqueue(task_name='loadSample',sampleVolume=sample['volume'])
         self.update_status(f'Loading sample into cell: {self.load_uuid}')

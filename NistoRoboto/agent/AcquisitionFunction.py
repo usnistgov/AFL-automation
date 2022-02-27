@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 import copy
 import scipy.spatial
@@ -52,8 +53,14 @@ class Acquisition:
             mask = self.mask
 
         while True:
-            index = metric.labels.iloc[mask].argsort()[::-1].index[nth]
-            composition = metric.compositions.loc[index]
+            # self.index = metric.labels.iloc[mask].argsort()[::-1].index[nth]
+
+            self.argsort = metric.labels.iloc[mask].argsort()[::-1]
+            self.index = metric.labels.iloc[mask].iloc[self.argsort].index[0]
+            composition = metric.compositions.loc[self.index]
+
+            # composition = metric.compositions.loc[index]
+
             # print('ALREADY MEASURED')
             # print(composition_check)
             # print('TO MEASURE')

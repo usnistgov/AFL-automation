@@ -32,6 +32,15 @@ metadata = {
 }
 '''
 
+PIPETTE_MINIMA = {}
+PIPETTE_MINIMA['p1000_single_gen2'] = 100*units('ul')
+PIPETTE_MINIMA['p300_single_gen2'] = 20*units('ul')
+PIPETTE_MINIMA['p20_single_gen2'] = 1*units('ul')
+PIPETTE_MINIMA['p1000_single'] = 100*units('ul')
+PIPETTE_MINIMA['p300_single'] = 30*units('ul')
+PIPETTE_MINIMA['p50_single'] = 20*units('ul')
+PIPETTE_MINIMA['p10_single'] = 1*units('ul')
+
 
 class Deck:
     def __init__(self):
@@ -39,7 +48,7 @@ class Deck:
         self.reset_stocks()
 
         self.mass_cutoff = 1.0*units('ug')
-        self.volume_cutoff = 30*units('ul')
+        self.volume_cutoff = 100*units('ul')
         
         self.protocol = []
         self.protocol_checks = []
@@ -127,6 +136,12 @@ class Deck:
     def add_pipette(self,name,mount,tipracks):
         if not (mount in ['left','right']):
             raise ValueError('Pipette mount point can only be "left" or "right"')
+        
+        if name not in PIPETTE_MINIMA:
+            raise ValueError('Pipette minima not set for {name}')
+        
+        if self.volume_cutoff>PIPETTE_MINIMA[name]:
+            self.volume_cutoff = PIPETTE_MINIMA[name]
 
         tiprack_list = []
         for slot,rack_name in tipracks:

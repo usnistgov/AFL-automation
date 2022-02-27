@@ -25,14 +25,14 @@ class Acquisition:
     def reset_mask(self,mask):
         self.mask = mask
     
-    def plot(self):
+    def plot(self,**kwargs):
         labels = self.pm.labels.copy()
         if self.mask is not None:
             labels[~self.mask] = np.nan
             mask = self.mask
             
         pm = self.pm.copy(labels=labels)
-        ax = pm.plot()
+        ax = pm.plot(**kwargs)
         
         if self.next_sample is not None:
             pm.plot(compositions=self.next_sample,marker='x',color='k',ax=ax)

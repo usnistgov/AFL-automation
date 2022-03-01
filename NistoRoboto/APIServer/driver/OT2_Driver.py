@@ -5,6 +5,12 @@ from NistoRoboto.APIServer.driver.Driver import Driver
 from NistoRoboto.shared.utilities import listify
 from math import ceil,sqrt
 import os,json,pathlib
+'''
+Things we want to fix:
+    - pipette mixing should have separate aspirate/dispense settings
+    - tip saving e.g., the last transfer before a load should re-use a tip
+    - 
+'''
 
 class OT2_Driver(Driver):
     def __init__(self):

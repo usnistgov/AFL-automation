@@ -21,6 +21,7 @@ import uuid
 
 import NistoRoboto.prepare
 import shutil
+import h5py
 
 
 class SAS_AL_SampleDriver(Driver):
@@ -308,12 +309,14 @@ class SAS_AL_SampleDriver(Driver):
                 print('\n\n\n')
                 
             #make target object
-            # target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['NaCl'])
             target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['F127'])
+            # target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values))
+            # target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['NaCl'])
             target.mass_fraction = next_sample_dict
             target.volume = sample_volume*units('ul')
-            # target.concentration = {'NaCl':100*units('mg/ml')}
+            # target.concentration = {'NaCl':110*units('mg/ml')}
             target.concentration = {'F127':100*units('mg/ml')}
+            self.app.logger.info('Setting fixed F127 concentration of 100 mg/ml')
                 
             self.deck.reset_targets()
             self.deck.add_target(target,name='target')
@@ -353,6 +356,19 @@ class SAS_AL_SampleDriver(Driver):
                             exposure = exposure
                     )
                 )
+        
+
+            # CHECK TRANMISSION OF LAST SAMPLE
+            h5_path = data_path / (sample_name+'.h5')
+            with h5py.File(h5_path,'r') as h5:
+                transmission = h5['entry/sample/transmission'][()]
+
+            if transmission>0.9:
+                self.update_status(f'Last sample missed! (Transmission={transmission})')
+                self.app.logger.info('Dropping this sample from AL and hoping the next one hits...')
+                continue
+            else:
+                self.update_status(f'Last Sample success! (Transmission={transmission})')
             
             # update manifest
             if data_manifest_path.exists():

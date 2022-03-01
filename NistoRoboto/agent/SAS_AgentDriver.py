@@ -226,17 +226,21 @@ class SAS_AgentDriver(Driver):
                 self.phasemap_labelled,
                 num_classes=self.n_cluster
             )
-            self.GP.reset_GP()
-            self.GP.optimize(3000)
-        self.app.logger.info(f'Gaussian process fit to data')
+            kernel = gpflow.kernels.Matern32(variance=0.5,lengthscales=1.0) 
+            self.GP.reset_GP(kernel = kernel)          
+            self.GP.optimize(1500,progress_bar=True)
         
+        self.app.logger.info(f'Calculating acquisition function...')
         check = self.data_manifest[self.phasemap.components].values
         self.acquisition.reset_phasemap(self.phasemap_dense)
         self.acquisition.reset_mask(self.mask)
         self.acquisition.calculate_metric(self.GP)
+
+        self.app.logger.info(f'Finding next sample composition based on acquisition function')
+        check = self.data_manifest[self.phasemap.components].values
         self.next_sample = self.acquisition.get_next_sample(composition_check=check)
-        self.stale = False
         self.app.logger.info(f'Next sample is found to be {self.next_sample.squeeze().to_dict()} by acquisition function {self.acquisition.name}')
+        self.stale = False
                              
         ## SAVE DATA ##
         uuid_str = str(uuid.uuid4())
@@ -281,6 +285,16 @@ class SAS_AgentDriver(Driver):
     
     @Driver.unqueued()
     def get_next_sample(self):
+        self.app.logger.info(f'Calculating acquisition function...')
+        check = self.data_manifest[self.phasemap.components].values
+        self.acquisition.reset_phasemap(self.phasemap_dense)
+        self.acquisition.reset_mask(self.mask)
+        self.acquisition.calculate_metric(self.GP)
+
+        self.app.logger.info(f'Finding next sample composition based on acquisition function')
+        check = self.data_manifest[self.phasemap.components].values
+        self.next_sample = self.acquisition.get_next_sample(composition_check=check)
+        self.app.logger.info(f'Next sample is found to be {self.next_sample.squeeze().to_dict()} by acquisition function {self.acquisition.name}')
         obj = serialize((self.next_sample,self.stale))
         self.stale = True
         return obj

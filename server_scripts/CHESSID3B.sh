@@ -3,11 +3,9 @@
 #git config --global credential.helper store
 
 source /nfs/chess/sw/miniconda3_nist/bin/activate
-conda activate 2110_nistoroboto
+conda activate 2202_nistoroboto
 
 #cd ~/NistoRoboto/
 #git pull
 
-# python ~/beaucage/211012/NistoRoboto/server_scripts/CHESSID3B.py
-# python ~/beaucage/211012/NistoRoboto/server_scripts/CHESSID3B.py
-python /home/chess_id3b/currentaux/beaucage-2924-C/software/NistoRoboto/server_scripts/CHESSID3B.py
+python ~/beaucage/beaucage-2924-D/NistoRoboto/server_scripts/CHESSID3B.py

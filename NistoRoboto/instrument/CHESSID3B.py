@@ -23,6 +23,10 @@ class CHESSID3B(ScatteringInstrument,Driver):
     defaults['i0_counter'] = 'ic3'
     defaults['diode_counter'] = 'diode'
     defaults['preferred_det'] = 'PIL5'    
+    defaults['sample_thickness'] = 1.58
+    defaults['absolute_calibration_factor'] = 1
+    defaults['measurement_positions'] = [-91.47,-101.47,-126.47]
+    
     def __init__(self,overrides=None):
         '''
         connect to spec
@@ -52,6 +56,10 @@ class CHESSID3B(ScatteringInstrument,Driver):
         self.config['reduced_data_dir'] = path
         os.chdir(path)
 
+    @Driver.quickbar(qb={'button_text':'Measure Transmission',
+        'params':{
+        'set_empty_transmission':{'label':'Set Empty Trans?','type':'boolean','default':False}
+        }})
     def measureTransmission(self,set_empty_transmission=False,return_full=False):
         warnings.warn('measureTransmission is ill-defined on instruments with beamstop diodes.  Returning the last measured transmission.  To avoid this warning, call lastTransmission directly.',stacklevel=2)
         return self.lastTransmission(set_empty_transmission=set_empty_transmission,return_full=return_full)        
@@ -61,8 +69,10 @@ class CHESSID3B(ScatteringInstrument,Driver):
         print(f"lastTransmission: open_beam={open_beam}")
         print(f"lastTransmission: trans_beam={trans_beam}")
         
-        trans = trans_beam / open_beam
-        
+        try:
+            trans = trans_beam / open_beam
+        except ZeroDivisionError:
+            trans=0
  
         
         if set_empty_transmission:
@@ -91,8 +101,26 @@ class CHESSID3B(ScatteringInstrument,Driver):
             if self.config['open beam intensity'] is not None:
                 retval = retval / self.config['open beam intensity']
             return retval          
+    
+    def interactiveLoad(self,name='lineup',cutoff_trans = 0.8,timeout=120)):
+        self.client.run_cmd('pil_off')
+        self.client.run_cmd('opens')
+        self.client.run_cmd(f'newfile {name}')
+        start = datetime.datetime.now()
+        timeout=datetime.timedelta(seconds=timeout)
+        self.client.run_cmd('ct 0.1')
+        baseline_trans = self.lastTransmission()
+        
+        while(datetime.datetime.now() - start)<timeout:
+            self.client.run_cmd('ct 0.1')
+            trans_ratio = self.lastTransmission()/baseline_trans
 
-
+            if trans_ratio < cutoff_trans_ratio:
+                self.app.logger.debug(f'Stopping load at transmission ratio = {trans_ratio}')
+                break
+        self.client.run_cmd('closes')        
+        self.client.run_cmd('pil_on')
+        
     @Driver.unqueued()        
     def getExposure(self):
         '''
@@ -135,7 +163,7 @@ class CHESSID3B(ScatteringInstrument,Driver):
     def setExposure(self,exposure):
         if self.app is not None:
             self.app.logger.debug(f'Setting exposure time to {exposure}')
-        self.config['exposure'] = exposure
+        selfself.app.logg.config['exposure'] = exposure
 
     def setFilename(self,name):
         if self.app is not None:
@@ -218,6 +246,13 @@ class CHESSID3B(ScatteringInstrument,Driver):
             self.status_txt = 'Accessing Image'
             return self.getData(lv=lv)
 
+    @Driver.quickbar(qb={'button_text':'Expose',
+        'params':{
+        'name':{'label':'Name','type':'text','default':'test_exposure'},
+        'exposure':{'label':'Exposure (s)','type':'float','default':5},
+        'reduce_data':{'label':'Reduce?','type':'bool','default':True},
+        'measure_transmission':{'label':'Measure Trans?','type':'bool','default':True}
+        }})
     def expose(self,name=None,exposure=None,nexp=1,block=True,reduce_data=True,measure_transmission=True,save_nexus=True):
         if name is None:
             name=self.getFilename()
@@ -232,27 +267,45 @@ class CHESSID3B(ScatteringInstrument,Driver):
         self.status_txt = f'Starting {exposure} s count named {name}'
         if self.app is not None:
             self.app.logger.debug(f'Starting exposure with name {name} for {exposure} s')
+        
+        pos_trans = []
+        pos_raw_data = []
+        pos_simple_trans = []
+        pos_reduced_data = []
 
-        self.client.run_cmd(f'opens')
-        self.client.run_cmd(f'tseries {nexp} {exposure/10}')
-        self.client.run_cmd(f'tseries {nexp} {exposure}')
-        self.client.run_cmd(f'closes')
-
+        for idx,pos in enumerate(self.config['measurement_positions']):
+            self.client.run_cmd(f'umv samx {pos}')
+            self.client.run_cmd(f'opens')
+            self.client.run_cmd(f'tseries {nexp} {exposure/10}')
+            self.client.run_cmd(f'tseries {nexp} {exposure}',block=True)
+            self.client.run_cmd(f'closes')
+            
+            pos_raw_data.append(self.getData())
+            pos_reduced_data.append(self.getReducedData(write_data=True,filename=f'{name}_{idx}'))
+            pos_trans.append(self.lastTransmission(return_full=True))
+            pos_simple_trans.append(pos_trans[-1][0])
+                
         #time.sleep(0.5)
         if block or reduce_data or save_nexus:
             self.client.block_for_ready()
             self.status_txt = 'Accessing Image'
-            data = self.getData()
-            transmission = self.lastTransmission(return_full=True)
+            self.app.logger.debug(f'Min transmission was {np.min(pos_simple_trans)} at index {np.argmin(pos_simple_trans)}; returning that data.  Other transmissions were {pos_simple_trans}')
+            data = pos_raw_data[np.argmin(pos_simple_trans)]
+            transmission = pos_trans[np.argmin(pos_simple_trans)]
+            #transmission = self.lastTransmission(return_full=True)
             if save_nexus:
                 self.status_txt = 'Writing Nexus'
                 self._writeNexus(data,name,name,transmission)
             if reduce_data:
                 self.status_txt = 'Reducing Data'
-                reduced = self.getReducedData(write_data=True,filename=name)
+                reduced = pos_reduced_data[np.argmin(pos_simple_trans)]
+                print(np.shape(reduced))
+                np.savetxt(f'{name}_chosen_r1d.csv',np.transpose(reduced),delimiter=',')
+                #self.getReducedData(write_data=True,filename=name)
                 #if save_nexus:
                     #self._appendReducedToNexus(reduced,name,name)
             self.status_txt = 'Instrument Idle'
+            return transmission
     def scan(self,axis,npts,start,step,name=None,exposure=None,block=False):
         if name is not None:
             self.setFilename(name)

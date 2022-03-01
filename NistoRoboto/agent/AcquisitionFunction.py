@@ -18,6 +18,7 @@ class Acquisition:
         self.y_var = None
         self.next_sample = None
         self.logger = logging.getLogger()
+        self.composition_tol = 0.1
     
     def reset_phasemap(self,pm):
         self.pm = pm.copy()
@@ -35,7 +36,7 @@ class Acquisition:
         ax = pm.plot(**kwargs)
         
         if self.next_sample is not None:
-            pm.plot(compositions=self.next_sample,marker='x',color='k',ax=ax)
+            pm.plot(compositions=self.next_sample,marker='x',color='white',ax=ax)
         return ax
         
     def copy(self):
@@ -47,34 +48,39 @@ class Acquisition:
     def get_next_sample(self,nth=0,composition_check=None):
         metric = self.pm
         
+        if np.all(np.isnan(metric.labels.unique())):
+            sample_randomly = True
+        else:
+            sample_randomly = False
+
+
+                  
         if self.mask is None:
             mask = slice(None)
         else:
             mask = self.mask
 
         while True:
-            # self.index = metric.labels.iloc[mask].argsort()[::-1].index[nth]
-
-            self.argsort = metric.labels.iloc[mask].argsort()[::-1]
-            self.index = metric.labels.iloc[mask].iloc[self.argsort].index[0]
-            composition = metric.compositions.loc[self.index]
-
-            # composition = metric.compositions.loc[index]
-
-            # print('ALREADY MEASURED')
-            # print(composition_check)
-            # print('TO MEASURE')
-            # print(composition.values)
-            # print('DIFF')
-            # check = abs(composition_check-composition.values)
-            # print(check)
-            # check = (abs(composition_check-composition.values)<1)
+            if nth>=metric.labels.iloc[mask].shape[0]:
+                raise ValueError(f'No next sample found! Searched {nth} iterations from {metric.labels.iloc[mask].shape[0]} labels!')
+            
+            if sample_randomly:
+                self.index=metric.labels.iloc[mask].sample(frac=1).index[0]
+                composition = metric.compositions.loc[self.index]
+            else:
+                self.argsort = metric.labels.iloc[mask].argsort()[::-1]
+                self.index = metric.labels.iloc[mask].iloc[self.argsort].index[0]
+                composition = metric.compositions.loc[self.index]
+                
             if composition_check is None:
                 break #all done
-            elif (abs(composition_check-composition.values)<1).all(1).any():
+            elif (abs(composition_check-composition.values)<self.composition_tol).all(1).any():
                 nth+=1
             else:
                 break
+
+            if nth>1000:
+                raise ValueError('Next sample finding failed to converge!')
             
         self.next_sample = composition.to_frame().T
         return self.next_sample
@@ -133,12 +139,14 @@ class IterationCombined(Acquisition):
     def calculate_metric(self,GP):
         if self.function1.pm is None:
             raise ValueError('No phase map set for acquisition! Call reset_phasemap!')
+
+        self.y_mean,self.y_var = GP.predict(self.pm.compositions)
         
         if ((self.iteration%self.function2_frequency)==0):
-            self.logger.info(f'Using acquisition function {self.function2.name} of iteration {self.iteration}')
+            print(f'Using acquisition function {self.function2.name} of iteration {self.iteration}')
             self.pm = self.function2.calculate_metric(GP)
         else:
-            self.logger.info(f'Using acquisition function {self.function1.name} of iteration {self.iteration}')
+            print(f'Using acquisition function {self.function1.name} of iteration {self.iteration}')
             self.pm = self.function1.calculate_metric(GP)
         self.iteration+=1
             

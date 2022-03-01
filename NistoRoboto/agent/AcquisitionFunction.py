@@ -36,7 +36,7 @@ class Acquisition:
         ax = pm.plot(**kwargs)
         
         if self.next_sample is not None:
-            pm.plot(compositions=self.next_sample,marker='x',color='k',ax=ax)
+            pm.plot(compositions=self.next_sample,marker='x',color='white',ax=ax)
         return ax
         
     def copy(self):
@@ -48,21 +48,30 @@ class Acquisition:
     def get_next_sample(self,nth=0,composition_check=None):
         metric = self.pm
         
+        if np.all(np.isnan(metric.labels.unique())):
+            sample_randomly = True
+        else:
+            sample_randomly = False
+
+
+                  
         if self.mask is None:
             mask = slice(None)
         else:
             mask = self.mask
 
         while True:
-
             if nth>=metric.labels.iloc[mask].shape[0]:
                 raise ValueError(f'No next sample found! Searched {nth} iterations from {metric.labels.icloc[mask].shape[0]} labels!')
-
-
-            self.argsort = metric.labels.iloc[mask].argsort()[::-1]
-            self.index = metric.labels.iloc[mask].iloc[self.argsort].index[nth]
-            composition = metric.compositions.loc[self.index]
-
+            
+            if sample_randomly:
+                self.index=metric.labels.sample(frac=1).index[0]
+                composition = metric.compositions.loc[self.index]
+            else:
+                self.argsort = metric.labels.iloc[mask].argsort()[::-1]
+                self.index = metric.labels.iloc[mask].iloc[self.argsort].index[0]
+                composition = metric.compositions.loc[self.index]
+                
             if composition_check is None:
                 break #all done
             elif (abs(composition_check-composition.values)<self.composition_tol).all(1).any():
@@ -85,7 +94,7 @@ class Variance(Acquisition):
         if self.pm is None:
             raise ValueError('No phase map set for acquisition! Call reset_phasemap!')
             
-        self.y_mean,self.y_var = GP.predict(self.pm.compositions)
+        self.y_mean,self.y_var = GP.predict(self.pm.compositions.astype(float))
         self.pm.labels = self.y_var.sum(1)
 
         return self.pm
@@ -99,7 +108,7 @@ class Random(Acquisition):
         if self.pm is None:
             raise ValueError('No phase map set for acquisition! Call reset_phasemap!')
             
-        self.y_mean,self.y_var = GP.predict(self.pm.compositions)
+        self.y_mean,self.y_var = GP.predict(self.pm.compositions.astype(float))
             
         indices = np.arange(self.pm.compositions.shape[0])
         random.shuffle(indices)

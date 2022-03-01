@@ -62,7 +62,7 @@ class Acquisition:
 
         while True:
             if nth>=metric.labels.iloc[mask].shape[0]:
-                raise ValueError(f'No next sample found! Searched {nth} iterations from {metric.labels.icloc[mask].shape[0]} labels!')
+                raise ValueError(f'No next sample found! Searched {nth} iterations from {metric.labels.iloc[mask].shape[0]} labels!')
             
             if sample_randomly:
                 self.index=metric.labels.iloc[mask].sample(frac=1).index[0]

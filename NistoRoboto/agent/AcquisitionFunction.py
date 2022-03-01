@@ -18,6 +18,7 @@ class Acquisition:
         self.y_var = None
         self.next_sample = None
         self.logger = logging.getLogger()
+        self.composition_tol = 0.1
     
     def reset_phasemap(self,pm):
         self.pm = pm.copy()
@@ -53,28 +54,24 @@ class Acquisition:
             mask = self.mask
 
         while True:
-            # self.index = metric.labels.iloc[mask].argsort()[::-1].index[nth]
+
+            if nth>=metric.labels.iloc[mask].shape[0]:
+                raise ValueError(f'No next sample found! Searched {nth} iterations from {metric.labels.icloc[mask].shape[0]} labels!')
+
 
             self.argsort = metric.labels.iloc[mask].argsort()[::-1]
-            self.index = metric.labels.iloc[mask].iloc[self.argsort].index[0]
+            self.index = metric.labels.iloc[mask].iloc[self.argsort].index[nth]
             composition = metric.compositions.loc[self.index]
 
-            # composition = metric.compositions.loc[index]
-
-            # print('ALREADY MEASURED')
-            # print(composition_check)
-            # print('TO MEASURE')
-            # print(composition.values)
-            # print('DIFF')
-            # check = abs(composition_check-composition.values)
-            # print(check)
-            # check = (abs(composition_check-composition.values)<1)
             if composition_check is None:
                 break #all done
-            elif (abs(composition_check-composition.values)<1).all(1).any():
+            elif (abs(composition_check-composition.values)<self.composition_tol).all(1).any():
                 nth+=1
             else:
                 break
+
+            if nth>1000:
+                raise ValueError('Next sample finding failed to converge!')
             
         self.next_sample = composition.to_frame().T
         return self.next_sample
@@ -133,12 +130,14 @@ class IterationCombined(Acquisition):
     def calculate_metric(self,GP):
         if self.function1.pm is None:
             raise ValueError('No phase map set for acquisition! Call reset_phasemap!')
+
+        self.y_mean,self.y_var = GP.predict(self.pm.compositions)
         
         if ((self.iteration%self.function2_frequency)==0):
-            self.logger.info(f'Using acquisition function {self.function2.name} of iteration {self.iteration}')
+            print(f'Using acquisition function {self.function2.name} of iteration {self.iteration}')
             self.pm = self.function2.calculate_metric(GP)
         else:
-            self.logger.info(f'Using acquisition function {self.function1.name} of iteration {self.iteration}')
+            print(f'Using acquisition function {self.function1.name} of iteration {self.iteration}')
             self.pm = self.function1.calculate_metric(GP)
         self.iteration+=1
             

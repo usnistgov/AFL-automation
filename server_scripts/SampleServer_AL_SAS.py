@@ -8,9 +8,19 @@ except:
 
 from NistoRoboto.APIServer.APIServer import APIServer
 from NistoRoboto.agent.SAS_AgentDriver import SAS_AgentDriver
+from NistoRoboto.agent.SAS_AL_SampleDriver import SAS_AL_SampleDriver
 
-server = APIServer('SAS_Agent',index_template="index.html")
+driver =SAS_AL_SampleDriver(
+        load_url='piloader:5000',
+        prep_url='piot2:5000',
+        sas_url='id3b.classe.cornell.edu:5000',
+        agent_url='bignisto:5000',
+        camera_urls = [],
+        dummy_mode=False,
+        )
+
+server = APIServer('SAS_AL_SampleDriver',index_template="index.html")
 server.add_standard_routes()
-server.create_queue(SAS_AgentDriver())
+server.create_queue(driver)
 server.init_logging()
-server.run(host='0.0.0.0', port=5000)#, debug=True)
+server.run(host='0.0.0.0', port=5050)#, debug=True)

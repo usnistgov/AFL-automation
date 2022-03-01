@@ -43,6 +43,12 @@ class PhaseMap:
     @property
     def measurements(self):
         return self.model.measurements
+
+    @measurements.setter
+    def measurements(self,measurements):
+        if not isinstance(measurements,pd.DataFrame):
+            measurements = pd.DataFrame(measurements.copy())
+        self.model.measurements = measurements
     
     @property
     def labels(self):
@@ -113,6 +119,7 @@ class PhaseMap:
         out_dict['measurements'] = self.model.measurements
         out_dict['labels'] = self.model.labels
         
+        fname = str(fname)#handle pathlib objects
         if not (fname[-4:]=='.pkl'):
             fname+='.pkl'
         
@@ -121,6 +128,7 @@ class PhaseMap:
             
     @classmethod
     def load(cls,fname):
+        fname = str(fname)#handle pathlib objects
         if not (fname[-4:]=='.pkl'):
             fname+='.pkl'
             
@@ -142,7 +150,6 @@ class PhaseMap:
                 measurements=measurements,
                 labels=labels
                 )
-    
         
     def plot(self,components=None,compositions=None,labels=None,rescale=True,**mpl_kw):
         if (components is None) and (compositions is None) and (labels is None):
@@ -153,13 +160,16 @@ class PhaseMap:
         if components is not None:
             compositions = self.compositions[components].copy()
             labels = self.labels.copy()
+        else:
+            components = self.components.copy()
             
         if labels is None:
-            components = compositions.columns.values.copy()
-            labels = np.ones_like(compositions.shape[0])
+            labels = pd.Series(np.ones_like(compositions.shape[0]))
         
         if rescale:
             compositions = compositions.apply(lambda x: 100.0*x/x.sum(),axis=1)
+        
+        compositions = compositions[components]#ensure ordering
             
         ax = None
         if len(components)==2:
@@ -337,8 +347,8 @@ def format_plot_ternary(ax,label_a=None,label_b=None,label_c=None):
     )
     ax.plot([0,1,0.5,0],[0,0,np.sqrt(3)/2,0],ls='-',color='k')
     if label_a is not None:
-        ax.text(0,0,label_a,ha='right')
-    if label_a is not None:
-        ax.text(1,0,label_b,ha='left')
-    if label_a is not None:
-        ax.text(0.5,np.sqrt(3)/2,label_c,ha='center',va='bottom')
+        ax.text(1,0,label_a,ha='left')
+    if label_b is not None:
+        ax.text(0.5,np.sqrt(3)/2,label_b,ha='center',va='bottom')
+    if label_c is not None:
+        ax.text(0,0,label_c,ha='right')

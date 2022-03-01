@@ -9,18 +9,14 @@ except:
 
 from NistoRoboto.APIServer.APIServer import APIServer
 from NistoRoboto.APIServer.driver.SAS_SampleDriver import SAS_SampleDriver
+from NistoRoboto.APIServer.driver.SAS_LoaderV2_SampleDriver import SAS_LoaderV2_SampleDriver
 
 
-driver =SAS_SampleDriver(
+driver =SAS_LoaderV2_SampleDriver(
         load_url='piloader:5000',
         prep_url='piot2:5000',
-        sas_url='lnx-id3b-1.classe.cornell.edu:5000',
-        camera_urls = [
-            'http://robocam:8081/3/current',
-            'http://robocam:8081/5/current',
-            'http://robocam:8081/6/current',
-            'http://robocam:8081/8/current',
-            ]
+        sas_url='id3b.classe.cornell.edu:5000',
+        camera_urls = [],
         )
 server = APIServer('SAS_SampleServer')
 server.add_standard_routes()

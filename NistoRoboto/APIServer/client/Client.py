@@ -1,4 +1,5 @@
 import requests,uuid,time,copy,inspect
+from NistoRoboto.agent.Serialize import deserialize,serialize
 
 
 class Client:
@@ -44,6 +45,11 @@ class Client:
         self.headers = {'Authorization':'Bearer {}'.format(self.token)}
 
 
+    def driver_status(self):
+        response = requests.get(self.url+'/driver_status',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to driver_status command failed with status_code {response.status_code}\n{response.text}')
+        return response.json()
     def get_queue(self):
         response = requests.get(self.url+'/get_queue',headers=self.headers)
         if response.status_code != 200:
@@ -165,6 +171,13 @@ class Client:
         else:
             return self.enqueue(interactive=interactive,task_name='get_config',name=name,print_console=print_console)
    
+
+    def get_server_time(self):
+        response = requests.get(self.url+'/get_server_time',headers=self.headers)
+        if response.status_code != 200:
+            raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
+        return response.text
+   
     def query_driver(self,**kwargs):
         json=kwargs
         response = requests.get(self.url+'/query_driver',headers=self.headers,json=json)
@@ -223,3 +236,23 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to move_item command failed with status_code {response.status_code}\n{response.content}')
         return response
+    
+    def set_object(self,name,obj,serialize=True):
+        json = {}
+        json['task_name'] = f'set_object'
+        json['name'] = name 
+        if serialize:
+            json['value'] = serialize(obj)
+            json['serialized'] = True
+        else:
+            json['value'] = obj
+            json['serialized'] = False
+        self.enqueue(**json)
+        
+    def set_object(self,name,obj):
+        json = {}
+        json['task_name'] = f'set_object'
+        json['name'] = name 
+        json['value'] = serialize(obj)
+        json['serialized'] = True 
+        self.enqueue(**json)

@@ -7,4 +7,4 @@ conda activate nistoroboto
 cd ~/nistoroboto/
 git pull
 
-python ~/nistoroboto/server_scripts/SampleServer.py
+python ~/nistoroboto/server_scripts/SampleServer_SAS.py

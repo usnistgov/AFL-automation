@@ -59,6 +59,7 @@ class SAS_LoaderV2_SampleDriver(Driver):
         self.rinse_uuid = None
         self.prep_uuid = None
         self.catch_uuid = None
+        self.load_uuid = None
 
         self.status_str = 'Fresh Server!'
         self.wait_time = 30.0 #seconds
@@ -109,7 +110,7 @@ class SAS_LoaderV2_SampleDriver(Driver):
             self.app.logger.debug(f'Executing task {kwargs}')
 
         if kwargs['task_name']=='sample':
-            self.process_sample(kwargs)
+            self.process_sample_outoforder(kwargs)
         elif kwargs['task_name']=='measure':
             self.measure(kwargs)
         elif kwargs['task_name']=='take_snapshot':
@@ -153,6 +154,14 @@ class SAS_LoaderV2_SampleDriver(Driver):
             self.load_client.wait(self.rinse_uuid)
             self.update_status(f'Rinse done!')
             
+        self.update_status(f'Cell is clean, measuring empty cell scattering...')
+        empty = {}
+        empty['name'] = 'MT-'+sample['name']
+        empty['exposure'] = sample['exposure']
+        empty['wiggle'] = False
+        self.sas_uuid = self.measure(empty)
+        self.sas_client.wait(self.sas_uuid)
+        
         if self.prep_uuid is not None: 
             self.prep_client.wait(self.prep_uuid)
             self.take_snapshot(prefix = f'02-after-prep-{name}')
@@ -169,13 +178,6 @@ class SAS_LoaderV2_SampleDriver(Driver):
             self.prep_client.wait(self.catch_uuid)
             self.take_snapshot(prefix = f'03-after-catch-{name}')
         
-        self.update_status(f'Cell is clean, measuring empty cell scattering...')
-        empty = {}
-        empty['name'] = 'MT-'+sample['name']
-        empty['exposure'] = sample['exposure']
-        empty['wiggle'] = False
-        self.sas_uuid = self.measure(empty)
-        self.sas_client.wait(self.sas_uuid)
         
         self.load_uuid = self.load_client.enqueue(task_name='loadSample',sampleVolume=sample['volume'])
         self.update_status(f'Loading sample into cell: {self.load_uuid}')
@@ -183,7 +185,7 @@ class SAS_LoaderV2_SampleDriver(Driver):
         self.take_snapshot(prefix = f'05-after-load-{name}')
         
         self.update_status(f'Sample is loaded, asking the instrument for exposure...')
-        self.sas_uuid = self.measure(sample)
+        self.sas_uuid = self.measure(sample)#self.measure blocks...
 
         self.update_status(f'Cleaning up sample {name}...')
         self.rinse_uuid = self.load_client.enqueue(task_name='rinseCell')
@@ -196,7 +198,104 @@ class SAS_LoaderV2_SampleDriver(Driver):
    
 
 
+    def process_sample_outoforder(self,sample):
+        name = sample['name']
 
+        targets = set()
+        for task in sample['prep_protocol']:
+            if 'target' in task['source'].lower():
+                targets.add(task['source'])
+            if 'target' in task['dest'].lower():
+                targets.add(task['dest'])
+
+        for task in sample['catch_protocol']:
+            if 'target' in task['source'].lower():
+                targets.add(task['source'])
+            if 'target' in task['dest'].lower():
+                targets.add(task['dest'])
+
+        target_map = {}
+        for t in targets:
+            prep_target = self.prep_client.enqueue(task_name='get_prep_target',interactive=True)['return_val']
+            target_map[t] = prep_target
+
+        for task in sample['prep_protocol']:
+            #if the well isn't in the map, just use the well
+            task['source'] = target_map.get(task['source'],task['source'])
+            task['dest'] = target_map.get(task['dest'],task['dest'])
+            self.prep_uuid = self.prep_client.transfer(**task)
+        
+        if self.load_uuid is not None:
+            self.load_client.wait(self.load_uuid)
+            last_name = self.last_sample['name']
+            self.take_snapshot(prefix = f'05-after-load-{last_name}')
+
+            self.update_status(f'Sample is loaded, asking the instrument for exposure...')
+            self.sas_uuid = self.measure(self.last_sample)#self.measure blocks...
+            self.take_snapshot(prefix = f'06-after-measure-{last_name}')
+            
+            self.update_status(f'Cleaning up sample {last_name}...')
+            self.rinse_uuid = self.load_client.enqueue(task_name='rinseCell')
+            self.load_client.wait(self.rinse_uuid)
+
+            self.update_status(f'Waiting for rinse...')
+            self.load_client.wait(self.rinse_uuid)
+            self.update_status(f'Rinse done!')
+            
+        self.update_status(f'Queueing sample {name} load into syringe loader')
+        for task in sample['catch_protocol']:
+            #if the well isn't in the map, just use the well
+            task['source'] = target_map.get(task['source'],task['source'])
+            task['dest'] = target_map.get(task['dest'],task['dest'])
+            self.catch_uuid = self.prep_client.transfer(**task)
+        
+        empty = {}
+        empty['name'] = 'MT-'+sample['name']
+        empty['exposure'] = sample['exposure']
+        empty['wiggle'] = False
+        self.sas_uuid = self.measure(empty)
+        self.sas_client.wait(self.sas_uuid)
+        
+        if self.prep_uuid is not None: 
+            self.prep_client.wait(self.prep_uuid)
+            self.take_snapshot(prefix = f'02-after-prep-{name}')
+        
+        if self.catch_uuid is not None:
+            self.update_status(f'Waiting for sample prep/catch of {name} to finish: {self.catch_uuid}')
+            self.prep_client.wait(self.catch_uuid)
+            self.take_snapshot(prefix = f'03-after-catch-{name}')
+        
+        
+        self.load_uuid = self.load_client.enqueue(task_name='loadSample',sampleVolume=sample['volume'])
+        self.update_status(f'Loading sample into cell: {self.load_uuid}')
+        
+        self.last_sample = sample
+
+        # xxx hack!! xxx
+        queue_remaining = len(list(self._queue.queue))
+
+        if queue_remaining <= 0:
+            # then -- SIGH -- we actually need to clean up after ourselves.  Major bummer.  
+            # The users are bad for not giving us more samples, really this is their fault.
+            last_name = self.last_sample['name']
+        
+            self.update_status(f'No items in queue, performing cleanup on sample {last_name}')
+            
+            self.load_client.wait(self.load_uuid)
+            self.take_snapshot(prefix = f'05-after-load-{last_name}')
+
+            self.update_status(f'Sample is loaded, asking the instrument for exposure...')
+            self.sas_uuid = self.measure(self.last_sample)#self.measure blocks...
+            self.take_snapshot(prefix = f'06-after-measure-{last_name}')
+            
+            self.update_status(f'Cleaning up sample {last_name}...')
+            self.rinse_uuid = self.load_client.enqueue(task_name='rinseCell')
+            self.load_client.wait(self.rinse_uuid)
+
+            self.update_status(f'Waiting for rinse...')
+            self.load_client.wait(self.rinse_uuid)
+            self.update_status(f'Rinse done!')
+            self.load_uuid = None 
 
 
 

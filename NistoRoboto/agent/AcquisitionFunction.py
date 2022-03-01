@@ -65,7 +65,7 @@ class Acquisition:
                 raise ValueError(f'No next sample found! Searched {nth} iterations from {metric.labels.icloc[mask].shape[0]} labels!')
             
             if sample_randomly:
-                self.index=metric.labels.sample(frac=1).index[0]
+                self.index=metric.labels.iloc[mask].sample(frac=1).index[0]
                 composition = metric.compositions.loc[self.index]
             else:
                 self.argsort = metric.labels.iloc[mask].argsort()[::-1]

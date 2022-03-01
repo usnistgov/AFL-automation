@@ -35,7 +35,7 @@ class Acquisition:
         ax = pm.plot(**kwargs)
         
         if self.next_sample is not None:
-            pm.plot(compositions=self.next_sample,marker='x',color='k',ax=ax)
+            pm.plot(compositions=self.next_sample,marker='x',color='white',ax=ax)
         return ax
         
     def copy(self):
@@ -47,6 +47,13 @@ class Acquisition:
     def get_next_sample(self,nth=0,composition_check=None):
         metric = self.pm
         
+        if np.all(np.isnan(metric.labels.unique())):
+            sample_randomly = True
+        else:
+            sample_randomly = False
+
+
+                  
         if self.mask is None:
             mask = slice(None)
         else:
@@ -54,24 +61,18 @@ class Acquisition:
 
         while True:
             # self.index = metric.labels.iloc[mask].argsort()[::-1].index[nth]
-
-            self.argsort = metric.labels.iloc[mask].argsort()[::-1]
-            self.index = metric.labels.iloc[mask].iloc[self.argsort].index[0]
-            composition = metric.compositions.loc[self.index]
-
-            # composition = metric.compositions.loc[index]
-
-            # print('ALREADY MEASURED')
-            # print(composition_check)
-            # print('TO MEASURE')
-            # print(composition.values)
-            # print('DIFF')
-            # check = abs(composition_check-composition.values)
-            # print(check)
-            # check = (abs(composition_check-composition.values)<1)
+            
+            if sample_randomly:
+                self.index=metric.labels.sample(frac=1).index[0]
+                composition = metric.compositions.loc[self.index]
+            else:
+                self.argsort = metric.labels.iloc[mask].argsort()[::-1]
+                self.index = metric.labels.iloc[mask].iloc[self.argsort].index[0]
+                composition = metric.compositions.loc[self.index]
+                
             if composition_check is None:
                 break #all done
-            elif (abs(composition_check-composition.values)<1).all(1).any():
+            elif (abs(composition_check-composition.values)<0.1).all(1).any():
                 nth+=1
             else:
                 break

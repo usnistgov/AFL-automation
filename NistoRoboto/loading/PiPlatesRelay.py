@@ -1,6 +1,8 @@
 import piplates.RELAYplate as RELAYplate
 from NistoRoboto.loading.MultiChannelRelay import MultiChannelRelay
 import atexit
+import warnings
+import time
 
 class PiPlatesRelay(MultiChannelRelay):
 
@@ -102,7 +104,19 @@ class PiPlatesRelay(MultiChannelRelay):
 
         readback =  RELAYplate.relaySTATE(self.board_id)
         if readback != val_to_send:
+            retries = 0
             warnings.warn(f'ERROR: attempted relay set to {val_to_send} but readback was {readback}.')
+            while retries<6:
+                RELAYplate.relayALL(self.board_id,val_to_send)
+                time.sleep(0.01)
+                readback = RELAYplate.relaySTATE(self.board_id)
+                if readback == val_to_send:
+                    print(f'Success after {retries} tries.')
+                    break
+                else:
+                    retries = retries + 1
+            if readback != val_to_send:
+                raise Exception(f'Relay failed on cmd {self.state}, after {retries} attempts to correct') 
     def getChannels(self,asid=False):
         '''
         Read the current state of all channels

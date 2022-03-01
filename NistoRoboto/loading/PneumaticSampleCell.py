@@ -118,9 +118,13 @@ class PneumaticSampleCell(Driver,SampleCell):
         status.append(f'Rinse 2 tank: {self.rinse2_tank_level} mL')
         status.append(f'Waste tank: {self.waste_tank_level} mL')
         status.append(f'Relay status: {self.relayboard.getChannels()}')
+        if self._USE_ARM_LIMITS:
+            status.append(f"Arm Up Limit: {not self.digitalin.state['ARM_UP']} / Arm Down Limit{not self.digitalin.state['ARM_DOWN']}")
+        if self._USE_DOOR_INTERLOCK:
+            status.append(f"Door closed: {not self.digitalin.state['DOOR']}")
         if self.digitalin is not None:
-            status.append(f'DIO state: {self.digitalin.state}')
-        
+            status.append(f'DIO state: {self.digitalin.state}') 
+            
         return status
  
     def _arm_interlock_check(self):

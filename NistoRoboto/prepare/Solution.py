@@ -45,6 +45,22 @@ class Solution:
         '''Needed so Solutions can be dictionary keys'''
         return id(self)
     
+    def to_dict(self):
+        out_dict = {}
+        out_dict['name'] = self.name
+        out_dict['components'] = list(self.components.keys())
+        out_dict['mg_masses'] = {}
+        for k,v in self:
+            out_dict['mg_masses'][k] = v.mass.to('mg').magnitude
+        return out_dict
+    
+    @classmethod
+    def from_dict(cls,in_dict):
+        soln = cls(name=in_dict['name'],components=in_dict["components"])
+        for k,v in in_dict['mg_masses'].items():
+            soln[k].mass = v*units('mg')
+        return soln
+    
     def add_component_from_name(self,name,properties=None,inplace=False):
         if properties is None:
             properties = {}

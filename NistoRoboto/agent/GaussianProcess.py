@@ -37,7 +37,7 @@ class GP:
         if self.xy is not None:
             data = (self.xy, self.pm.labels_ordinal) 
         else:
-            data = (self.pm.compositions.values[:,[0,1]]/100.0, self.pm.labels_ordinal) 
+            data = (self.pm.compositions.astype(float).values[:,:-1]/100.0, self.pm.labels_ordinal) 
             
         if kernel is None:
             kernel = gpflow.kernels.Matern32(variance=0.1,lengthscales=0.1) 

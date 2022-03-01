@@ -48,7 +48,7 @@ if not args.noclients:
         warnings.warn('Failed to connect to OT2 server.')
     
     try:
-        inst = Client(ip='lnx-id3b-1.classe.cornell.edu',port='5000',interactive=True)
+        inst = Client(ip='id3b.classe.cornell.edu',port='5000',interactive=True)
         inst.login('RobotoStation')
         inst.debug(False)
     except requests.ConnectionError as e:

@@ -110,7 +110,7 @@ class SAS_LoaderV2_SampleDriver(Driver):
             self.app.logger.debug(f'Executing task {kwargs}')
 
         if kwargs['task_name']=='sample':
-            self.process_sample(kwargs)
+            self.process_sample_outoforder(kwargs)
         elif kwargs['task_name']=='measure':
             self.measure(kwargs)
         elif kwargs['task_name']=='take_snapshot':
@@ -201,8 +201,6 @@ class SAS_LoaderV2_SampleDriver(Driver):
     def process_sample_outoforder(self,sample):
         name = sample['name']
 
-        last_name = self.last_sample['name']
-        
         targets = set()
         for task in sample['prep_protocol']:
             if 'target' in task['source'].lower():
@@ -229,6 +227,7 @@ class SAS_LoaderV2_SampleDriver(Driver):
         
         if self.load_uuid is not None:
             self.load_client.wait(self.load_uuid)
+            last_name = self.last_sample['name']
             self.take_snapshot(prefix = f'05-after-load-{last_name}')
 
             self.update_status(f'Sample is loaded, asking the instrument for exposure...')
@@ -273,7 +272,7 @@ class SAS_LoaderV2_SampleDriver(Driver):
         self.last_sample = sample
 
         # xxx hack!! xxx
-        queue_remaining = len(list(self.app.task_queue.queue))
+        queue_remaining = len(list(self._queue.queue))
 
         if queue_remaining <= 0:
             # then -- SIGH -- we actually need to clean up after ourselves.  Major bummer.  
@@ -296,7 +295,7 @@ class SAS_LoaderV2_SampleDriver(Driver):
             self.update_status(f'Waiting for rinse...')
             self.load_client.wait(self.rinse_uuid)
             self.update_status(f'Rinse done!')
-            
+            self.load_uuid = None 
 
 
 

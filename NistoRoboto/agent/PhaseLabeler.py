@@ -74,11 +74,14 @@ def silhouette(X,labeler):
             labeler.label(X,n_cluster=n_cluster)
         labeler.remap_labels_by_count()
         
-        silh_scores = silhouette_samples(
-            1.0-X,
-            labeler,
-            metric='precomputed'
-        )
+        if len(np.unique(labeler.labels))==1:
+            silh_scores = np.zeros(len(X))
+        else:
+            silh_scores = silhouette_samples(
+                1.0-X,
+                labeler,
+                metric='precomputed'
+            )
         silh_dict['all_scores'].append(silh_scores)
         silh_dict['avg_scores'].append(silh_scores.mean())
         silh_dict['n_cluster'].append(n_cluster)

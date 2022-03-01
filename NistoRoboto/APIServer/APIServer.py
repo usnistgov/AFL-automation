@@ -69,6 +69,7 @@ class APIServer:
         self.task_queue = MutableQueue()
         self.driver     = driver
         self.driver.app = self.app
+        self.driver._queue = self.task_queue
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history)
 
         self.add_unqueued_routes()

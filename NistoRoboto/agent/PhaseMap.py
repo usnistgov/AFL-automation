@@ -27,28 +27,7 @@ class PhaseMap:
         measurement = self.model.measurements.iloc[index]
         label = self.model.labels.iloc[index]
         return (composition,measurement,label)
-    
-    def project(self,components):
-        compositions = self.compositions[components].copy()
-        compositions = compositions.apply(lambda x: 100.0*x/x.sum(),axis=1)
-        if self.measurements is None:
-            measurements = None
-        else:
-            measurements = self.measurements.copy()
-        
-        if self.labels is None:
-            labels = None
-        else:
-            labels = self.labels.copy()
-            
-        pm = PhaseMap(components)
-        pm.append(
-            compositions = compositions,
-            measurements = measurements,
-            labels = labels,
-        )
-        return pm
-        
+
     @property
     def components(self):
         return self.model.components
@@ -60,10 +39,6 @@ class PhaseMap:
     @property
     def compositions(self):
         return self.model.compositions
-    
-    @compositions.setter
-    def compositions(self,value):
-        self.model.compositions = value
     
     @property
     def measurements(self):
@@ -189,18 +164,12 @@ class PhaseMap:
             components = self.components.copy()
             
         if labels is None:
-            labels = np.ones(len(compositions))
-        
-        compositions = compositions[components]#ensure ordering
+            labels = pd.Series(np.ones_like(compositions.shape[0]))
         
         if rescale:
-            #need to drop columns with all zeros
-            mask = ~(compositions.sum(1)==0.0)
-            #do the calculation in numpy as pandas is slooow
-            compositions = compositions.loc[mask].values
-            compositions = 100.0*compositions/compositions.sum(1)[:,np.newaxis]
-            compositions = pd.DataFrame(compositions,columns=components)
-            labels = labels.loc[mask]
+            compositions = compositions.apply(lambda x: 100.0*x/x.sum(),axis=1)
+        
+        compositions = compositions[components]#ensure ordering
             
         ax = None
         if len(components)==2:
@@ -296,8 +265,6 @@ def phasemap_grid_factory(components,pts_per_row=50,basis=100):
     I = np.random.random(25)
     measurements = pd.concat([pd.Series(index=q,data=I) for _ in range(N)],axis=1).T
     labels = pd.Series(np.ones(N))
-    
-    compositions = compositions.astype(float)
      
     pm = PhaseMap(components)
     pm.append(

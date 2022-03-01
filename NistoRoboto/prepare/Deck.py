@@ -38,7 +38,7 @@ PIPETTE_MINIMA['p300_single_gen2'] = 20*units('ul')
 PIPETTE_MINIMA['p20_single_gen2'] = 1*units('ul')
 PIPETTE_MINIMA['p1000_single'] = 100*units('ul')
 PIPETTE_MINIMA['p300_single'] = 30*units('ul')
-PIPETTE_MINIMA['p50_single'] = 20*units('ul')
+PIPETTE_MINIMA['p50_single'] = 5*units('ul')
 PIPETTE_MINIMA['p10_single'] = 1*units('ul')
 
 

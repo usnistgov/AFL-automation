@@ -89,7 +89,7 @@ class Variance(Acquisition):
         if self.pm is None:
             raise ValueError('No phase map set for acquisition! Call reset_phasemap!')
             
-        self.y_mean,self.y_var = GP.predict(self.pm.compositions)
+        self.y_mean,self.y_var = GP.predict(self.pm.compositions.astype(float))
         self.pm.labels = self.y_var.sum(1)
 
         return self.pm
@@ -103,7 +103,7 @@ class Random(Acquisition):
         if self.pm is None:
             raise ValueError('No phase map set for acquisition! Call reset_phasemap!')
             
-        self.y_mean,self.y_var = GP.predict(self.pm.compositions)
+        self.y_mean,self.y_var = GP.predict(self.pm.compositions.astype(float))
             
         indices = np.arange(self.pm.compositions.shape[0])
         random.shuffle(indices)

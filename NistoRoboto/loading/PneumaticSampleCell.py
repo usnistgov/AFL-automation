@@ -231,3 +231,17 @@ class PneumaticSampleCell(Driver,SampleCell):
 
     def setWasteLevel(self,vol):
         self.waste_tank_level = vol
+
+    @Driver.quickbar(qb={'button_text':'Prime Rinse'})
+    def primeRinse(self,waittime=10):
+        if self.state != 'READY':
+            raise Exception(f'Cell in inconsistent state: {self.state}')
+
+        self._arm_up()
+
+        self.relayboard.setChannels({'rinse1':True,'rinse2':False})
+        time.sleep(waittime)
+        self.relayboard.setChannels({'rinse1':False,'rinse2':True})
+        time.sleep(waittime)
+        self.relayboard.setChannels({'rinse1':False,'rinse2':False})
+

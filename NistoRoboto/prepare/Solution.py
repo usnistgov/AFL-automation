@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+import warnings
 
 from NistoRoboto.prepare.Component import Component
 from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
@@ -218,8 +219,15 @@ class Solution:
     @property
     def solvent_sld(self):
         sld = []
+        vfracs = []
         for name,vfrac in self.volume_fraction.items():
-            sld.append(vfrac*self.components[name].sld)
+            component_sld = self.components[name].sld
+            if component_sld is None:
+                warnings.warn(f"SLD for solvent {name} is None. Check db",stacklevel=2)
+                continue
+            sld.append(component_sld)
+            vfracs.append(vfrac)
+        sld = [v*s/sum(vfracs) for v,s in zip(vfracs,sld)]
         return sum(sld)
                 
     @property

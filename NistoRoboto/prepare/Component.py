@@ -108,10 +108,13 @@ class Component(object):
     
     @formula.setter
     def formula(self,value):
-        try:
-            self._formula = periodictable.formula(value)
-        except (ValueError,ParseException):
+        if value is None:
             self._formula = None
+        else:
+            try:
+                self._formula = periodictable.formula(value)
+            except (ValueError,ParseException):
+                self._formula = None
             
     @property
     def moles(self):

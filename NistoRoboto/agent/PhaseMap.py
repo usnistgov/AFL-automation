@@ -279,7 +279,8 @@ class PhaseMapView_MPL:
             mpl_kw['marker'] = '.'
         if ('cmap' not in mpl_kw) and ('color' not in mpl_kw):
             mpl_kw['cmap'] = self.cmap
-        mpl_kw['c'] = labels
+        if 'color' not in mpl_kw:
+            mpl_kw['c'] = labels
         ax.scatter(*xy.T,**mpl_kw)
         return ax
     

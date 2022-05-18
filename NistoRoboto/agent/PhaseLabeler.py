@@ -2,8 +2,8 @@ import numpy as np
 import copy
 import scipy.spatial
 
-import sklearn.mixture 
-import sklearn.cluster 
+import sklearn.mixture
+import sklearn.cluster
 from sklearn.metrics import pairwise
 
 from scipy.spatial.distance import pdist, squareform

@@ -185,6 +185,7 @@ class SAS_AgentDriver(Driver):
                 )
 
     def get_measurements(self,process=True,pedestal=1e-12,serialize=False):
+        # should this put the q on logscale? Should we resample data to the sample q-values? geomspaced?
         measurements = self.phasemap_raw.measurements.copy()
         
         #q-range masking

@@ -1,7 +1,6 @@
 import pickle
 import warnings
 from copy import deepcopy
-from itertools import product
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,6 +26,34 @@ class PhaseMap:
         measurement = self.model.measurements.iloc[index]
         label = self.model.labels.iloc[index]
         return (composition,measurement,label)
+    
+    def slice(self,indices):
+        compositions = self.model.compositions.iloc[indices]
+        measurements = self.model.measurements.iloc[indices]
+        labels = self.model.labels.iloc[indices]
+        pm = PhaseMap(self.components)
+        pm.append(
+            compositions=compositions,
+            measurements=measurements,
+            labels=labels,
+        )
+        return pm
+    
+    def project(self,components):
+        compositions = self.compositions[components].copy()
+        compositions,mask = rescale_compositions(compositions)
+        
+        labels = self.labels.loc[mask].copy()
+        measurements = self.measurements.reset_index(drop=True).loc[mask].copy()
+        
+        pm = PhaseMap(components)
+        pm.append(
+            compositions=compositions,
+            measurements=measurements,
+            labels=labels,
+        )
+        return pm
+        
 
     @property
     def components(self):
@@ -39,6 +66,10 @@ class PhaseMap:
     @property
     def compositions(self):
         return self.model.compositions
+    
+    @compositions.setter
+    def compositions(self,value):
+        self.model.compositions = value
     
     @property
     def measurements(self):
@@ -167,7 +198,13 @@ class PhaseMap:
             labels = pd.Series(np.ones_like(compositions.shape[0]))
         
         if rescale:
-            compositions = compositions.apply(lambda x: 100.0*x/x.sum(),axis=1)
+            # compositions = compositions.apply(lambda x: 100.0*x/x.sum(),axis=1)
+            comps = compositions.copy()
+            mask = (comps[components].sum(1)>0.0)
+            comps = comps[components].loc[mask].values
+            comps = 100.0*comps/comps.sum(1)[:,np.newaxis]
+            compositions = pd.DataFrame(comps,columns=components)
+            labels = labels.loc[mask]
         
         compositions = compositions[components]#ensure ordering
             
@@ -228,7 +265,7 @@ class PhaseMapView_MPL:
             mpl_kw['marker'] = '.'
         if ('cmap' not in mpl_kw) and ('color' not in mpl_kw):
             mpl_kw['cmap'] = self.cmap
-            mpl_kw['c'] = labels
+        mpl_kw['c'] = labels
         ax.scatter(*xy.T,**mpl_kw)
         return ax
     
@@ -242,7 +279,7 @@ class PhaseMapView_MPL:
             mpl_kw['marker'] = '.'
         if ('cmap' not in mpl_kw) and ('color' not in mpl_kw):
             mpl_kw['cmap'] = self.cmap
-            mpl_kw['c'] = labels
+        mpl_kw['c'] = labels
         ax.scatter(*xy.T,**mpl_kw)
         return ax
     
@@ -252,6 +289,18 @@ class PhaseMapView_MPL:
             
         ax.plot(*xy.T,marker='None',ls=':',label=label)
         return ax
+
+def rescale_compositions(compositions,basis=100.0,remove_zeros=True):
+    comps = compositions.copy()
+    if remove_zeros:
+        mask = (comps.sum(1)>0.0)
+    else:
+        mask = np.ones(comps.shape[0],dtype=bool)
+        
+    comps = comps.loc[mask].values
+    comps = basis*comps/comps.sum(1)[:,np.newaxis]
+    compositions = pd.DataFrame(comps,columns=compositions.columns)
+    return compositions,mask
 
 def phasemap_grid_factory(components,pts_per_row=50,basis=100):
     compositions = composition_grid(
@@ -277,6 +326,10 @@ def phasemap_grid_factory(components,pts_per_row=50,basis=100):
 
 
 def composition_grid(pts_per_row=50,basis=100,dim=3,eps=1e-9):
+    try:
+        from tqdm.contrib.itertools import product
+    except ImportError:
+        from itertools import product
     pts = []
     for i in product(*[np.linspace(0,1.0,pts_per_row)]*(dim-1)):
         if sum(i)>(1.0+eps):

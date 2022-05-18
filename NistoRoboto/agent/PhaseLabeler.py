@@ -2,8 +2,8 @@ import numpy as np
 import copy
 import scipy.spatial
 
-from sklearn.mixture import GaussianMixture
-from sklearn.cluster import SpectralClustering
+import sklearn.mixture 
+import sklearn.cluster 
 from sklearn.metrics import pairwise
 
 from scipy.spatial.distance import pdist, squareform
@@ -45,7 +45,7 @@ class GaussianMixtureModel(PhaseLabeler):
     def label(self,X,**params):
         if params:
             self.params.update(params)
-        self.clf = GaussianMixture(self.params['n_cluster'])
+        self.clf = sklearn.mixture.GaussianMixture(self.params['n_cluster'])
         self.clf.fit(X)
         self.labels = self.clf.predict(X)
         
@@ -54,7 +54,7 @@ class SpectralClustering(PhaseLabeler):
         if params:
             self.params.update(params)
             
-        self.clf = SpectralClustering(
+        self.clf = sklearn.cluster.SpectralClustering(
             self.params['n_cluster'],
             affinity = 'precomputed',  
             assign_labels="discretize",  

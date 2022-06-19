@@ -6,6 +6,7 @@ import copy
 from NistoRoboto.shared.units import units
 from NistoRoboto.agent.PhaseMap import ternary2cart
 from NistoRoboto.agent.PhaseMap import PhaseMap
+from NistoRoboto.prepare import Solution
 
 try:
     from tqdm.contrib.itertools import product
@@ -133,7 +134,7 @@ class MassBalance:
         self.stock_samples_fractions = stock_fractions
         return self.stock_samples
     
-    def calculate_bounds(self,components=None,exclude_comps_below=None):
+    def calculate_bounds(self,components=None,exclude_comps_below=None,fixed_comps=None):
         
         if self.stock_samples is None:
             raise ValueError('Must call .sample_composition_space before calculating bounds')

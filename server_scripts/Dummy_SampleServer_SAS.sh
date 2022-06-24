@@ -2,9 +2,9 @@
 
 git config --global credential.helper store
 
-source activate nistoroboto
+conda activate nistoroboto
 
 cd ~/NistoRoboto/
 git pull
 
-python ~/NistoRoboto/server_scripts/LoaderV2Syringe.py
+python ~/NistoRoboto/server_scripts/Dummy_SampleServer_SAS.py

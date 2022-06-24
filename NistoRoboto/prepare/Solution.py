@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+import warnings
 
 from NistoRoboto.prepare.Component import Component
 from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
@@ -44,6 +45,22 @@ class Solution:
     def __hash__(self):
         '''Needed so Solutions can be dictionary keys'''
         return id(self)
+    
+    def to_dict(self):
+        out_dict = {}
+        out_dict['name'] = self.name
+        out_dict['components'] = list(self.components.keys())
+        out_dict['mg_masses'] = {}
+        for k,v in self:
+            out_dict['mg_masses'][k] = v.mass.to('mg').magnitude
+        return out_dict
+    
+    @classmethod
+    def from_dict(cls,in_dict):
+        soln = cls(name=in_dict['name'],components=in_dict["components"])
+        for k,v in in_dict['mg_masses'].items():
+            soln[k].mass = v*units('mg')
+        return soln
     
     def add_component_from_name(self,name,properties=None,inplace=False):
         if properties is None:
@@ -202,8 +219,15 @@ class Solution:
     @property
     def solvent_sld(self):
         sld = []
+        vfracs = []
         for name,vfrac in self.volume_fraction.items():
-            sld.append(vfrac*self.components[name].sld)
+            component_sld = self.components[name].sld
+            if component_sld is None:
+                warnings.warn(f"SLD for solvent {name} is None. Check db",stacklevel=2)
+                continue
+            sld.append(component_sld)
+            vfracs.append(vfrac)
+        sld = [v*s/sum(vfracs) for v,s in zip(vfracs,sld)]
         return sum(sld)
                 
     @property

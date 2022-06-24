@@ -11,6 +11,8 @@ DEFAULT_UNITS['concentration'] = 'g/ml'
 DEFAULT_UNITS['density'] = 'g/ml'
 DEFAULT_UNITS['molarity'] = 'millimolar'
 
+SUPPORTED_TYPES = ['volume', 'mass', 'density', 'molarity', 'concentration']
+
 
 def has_units(value):
     return hasattr(value, 'units')
@@ -39,7 +41,19 @@ def is_concentration(value):
             value.dimensionality['[length]'] == -3))
 
 
-supported_types = ['volume', 'mass', 'density', 'molarity', 'concentration']
+def get_unit_type(value):
+    if is_volume(value):
+        return 'volume'
+    elif is_molarity(value):
+        return 'molarity'
+    elif is_mass(value):
+        return 'mass'
+    elif is_density(value):
+        return 'density'
+    elif is_concentration(value):
+        return 'concentration'
+    else:
+        raise ValueError(f'Unit system ({value}) not recognized as one of: {SUPPORTED_TYPES}')
 
 
 def enforce_units(value, unit_type):
@@ -48,7 +62,7 @@ def enforce_units(value, unit_type):
     if value is None:
         return
 
-    if unit_type.lower() not in supported_types:
+    if unit_type.lower() not in SUPPORTED_TYPES:
         raise ValueError(f'Not configured to enforce unit_type: {unit_type}')
 
     if not has_units(value):

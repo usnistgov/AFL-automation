@@ -30,6 +30,9 @@ try:
 #this import block is all for the web-ui unqueued rendering code
     import bokeh
     import bokeh.plotting
+    from bokeh.resources import INLINE
+    from bokeh.core.templates import JS_RESOURCES
+    from bokeh.core.templates import CSS_RESOURCES
     from PIL import Image
     from matplotlib import cm
     import io
@@ -66,6 +69,7 @@ class APIServer:
         self.task_queue = MutableQueue()
         self.driver     = driver
         self.driver.app = self.app
+        self.driver._queue = self.task_queue
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history)
 
         self.add_unqueued_routes()
@@ -295,8 +299,18 @@ class APIServer:
                 errors = bokeh.models.Band(base=result[1],upper=result[1]+result[2],lower=result[1]-result[2], level='underlay',
                 fill_alpha=1.0, line_width=1, line_color='black')
                 p.add_layout(band)
+
+        bokeh_js = JS_RESOURCES.render(
+                js_raw = INLINE.js_raw,
+                js_files = INLINE.js_files,
+        )
+        bokeh_css = CSS_RESOURCES.render(
+                css_raw = INLINE.css_raw,
+                css_files = INLINE.css_files,
+        )
         script,div = bokeh.embed.components(p)
-        return render_template(self.plot_template,script=script,div=div,title=title)
+        # return render_template(self.plot_template,script=script,div=div,title=title,plot_resources=plot_resources)
+        return render_template(self.plot_template,script=script,div=div,title=title,bokeh_css=bokeh_css,bokeh_js=bokeh_js)
 
     def send_array_as_jpg(self,array,log_image=False,max_val=None,fillna=0.0,**kwargs):
         #img = Image.fromarray(array.astype('uint8'))
@@ -306,8 +320,7 @@ class APIServer:
         if type(log_image) is str:
             log_image = strtobool(log_image)
         if log_image:
-
-            array = np.log(array)
+            array = np.ma.log(array).filled(0)
         if max_val is None:
             self.app.logger.info(f'Serving image, max val = {np.amax(array)}, min val = {np.amin(array)}, total cts = {np.sum(array)}')
             max_val = np.amax(array)

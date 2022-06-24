@@ -2,8 +2,8 @@ import numpy as np
 import copy
 import scipy.spatial
 
-from sklearn.mixture import GaussianMixture
-from sklearn.cluster import SpectralClustering
+import sklearn.mixture
+import sklearn.cluster
 from sklearn.metrics import pairwise
 
 from scipy.spatial.distance import pdist, squareform
@@ -45,7 +45,7 @@ class GaussianMixtureModel(PhaseLabeler):
     def label(self,X,**params):
         if params:
             self.params.update(params)
-        self.clf = GaussianMixture(self.params['n_cluster'])
+        self.clf = sklearn.mixture.GaussianMixture(self.params['n_cluster'])
         self.clf.fit(X)
         self.labels = self.clf.predict(X)
         
@@ -54,7 +54,7 @@ class SpectralClustering(PhaseLabeler):
         if params:
             self.params.update(params)
             
-        self.clf = SpectralClustering(
+        self.clf = sklearn.cluster.SpectralClustering(
             self.params['n_cluster'],
             affinity = 'precomputed',  
             assign_labels="discretize",  
@@ -74,11 +74,14 @@ def silhouette(X,labeler):
             labeler.label(X,n_cluster=n_cluster)
         labeler.remap_labels_by_count()
         
-        silh_scores = silhouette_samples(
-            1.0-X,
-            labeler,
-            metric='precomputed'
-        )
+        if len(np.unique(labeler.labels))==1:
+            silh_scores = np.zeros(len(X))
+        else:
+            silh_scores = silhouette_samples(
+                1.0-X,
+                labeler,
+                metric='precomputed'
+            )
         silh_dict['all_scores'].append(silh_scores)
         silh_dict['avg_scores'].append(silh_scores.mean())
         silh_dict['n_cluster'].append(n_cluster)

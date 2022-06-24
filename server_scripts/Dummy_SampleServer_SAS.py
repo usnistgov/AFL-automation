@@ -19,7 +19,7 @@ server.run_threaded(host='0.0.0.0',port=5001, debug=False)
 
 
 driver =SAS_LoaderV2_SampleDriver(
-        load_url='10.42.0.37:5000',
+        load_url='piloader:5000',
         prep_url='piot2:5000',
         sas_url='localhost:5001',
         camera_urls = [ ]

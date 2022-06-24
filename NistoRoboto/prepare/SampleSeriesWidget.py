@@ -12,6 +12,8 @@ import pickle
 
 import NistoRoboto.prepare 
 from NistoRoboto.shared.units import units
+from NistoRoboto.APIServer.client.Client import Client
+
 
 class SampleSeriesWidget:
     def __init__(self,deck):
@@ -68,8 +70,14 @@ class SampleSeriesWidget:
                     action.mix_after = None
     def make_catch_protocol(self):
         
+        catch_locs = list(self.data_model.deck.catches.keys())
+        if len(catch_locs)>1:
+            raise ValueError("Not set up for multiple catches: {catch_locs}")
+        else:
+            catch_loc = f'{catch_locs[0]}A1'
+        
         params = self.data_view.pipette_params['load']
-        catch_protocol = Nistoroboto.prepare.PipetteAction(
+        catch_protocol = NistoRoboto.prepare.PipetteAction(
             source='target',
             dest=catch_loc,
             volume = self.data_view.load_volume.value,
@@ -91,22 +99,31 @@ class SampleSeriesWidget:
         return catch_protocol
 
     
-    def submit(self):
+    def submit_cb(self,event):
+
         self.apply_protocol_order()#will also make protocol and apply setpoints
+        if self.data_view.shuffle_jobs.value:
+            self.data_model.deck.sample_series.shuffle()
         catch_protocol = self.make_catch_protocol()
+        ip,port = self.data_view.sample_server_ip.value.split(':')
+        client = Client(ip,port=port)
+        client.login('WidgetGUI')
+        client.debug(False)
+        
         for i,(sample,validated) in enumerate(self.data_model.deck.sample_series):
             if not validated:
                 continue
             
             catch_protocol.source = sample.target_loc
             
-            uuid = sample_client.enqueue(
+            uuid = client.enqueue(
                 task_name='sample',
                 name = sample.name,
                 prep_protocol = sample.emit_protocol(),
                 catch_protocol =[catch_protocol.emit_protocol()],
                 volume = catch_protocol.volume/1000.0,
                 exposure=self.data_view.exposure_time.value,
+                interactive=False
             )
             
             self.data_model.uuids.append(uuid)
@@ -212,7 +229,7 @@ class SampleSeriesWidget:
     
     def reset_uuid_cb(self,event):
         self.data_model.uuids = []
-        self.data_view.uuid_list = []
+        self.data_view.uuid_list.options = []
     
     def update_sort_order_cb(self,event,direction):
         #selected = self.data_view.protocol_order.get_interact_value()
@@ -254,7 +271,6 @@ class SampleSeriesWidget:
         
     def update_mixing_well_preview_cb(self,event):
         all_locs = self.make_mixing_wells()
-        print(all_locs)
         for locs,wellspec in zip(all_locs,self.data_view.mixing_wells):
             if not locs:
                 continue
@@ -262,13 +278,13 @@ class SampleSeriesWidget:
         
     def submit_mixing_wells_cb(self,event):
         all_locs = self.make_mixing_wells()
-        all_locs = itertools.chain.from_iterable(all_locs)
+        all_locs = list(itertools.chain.from_iterable(all_locs))
         ip,port = self.data_view.robot_server_ip.value.split(':')
         client = Client(ip,port=port)
         client.login('WidgetGUI')
         client.debug(False)
         client.enqueue(task_name='add_prep_targets',
-             targets=sum(all_locs),
+             targets=all_locs,
              reset=True,
             )
         
@@ -311,7 +327,7 @@ class SampleSeriesWidget:
         self.data_view.protocol_index.observe(self.update_protocol_order_preview_cb,names=['value'])
         
         self.data_view.mixing_wells_submit_button.on_click(self.submit_mixing_wells_cb)
-        self.data_view.submit_jobs.on_click(self.submit)
+        self.data_view.submit_jobs.on_click(self.submit_cb)
         return widget
     
     
@@ -522,7 +538,7 @@ class SampleSeriesWidget_View:
             VBox([label5]+deck_preview_vbox),
         ])
         
-        self.robot_server_ip = Text(value='localhost:5000')
+        self.robot_server_ip = Text(value='piot2:5000')
         self.mixing_wells_submit_button = Button(description='Add Wells')
         #self.mixing_wells_reset_button = Button(description='Reset Wells')
         #button_hbox = HBox([ self.mixing_wells_submit_button, self.mixing_wells_reset_button])
@@ -570,6 +586,7 @@ class SampleSeriesWidget_View:
         
         exposure_time_label = Label("Exposure Time (s)")
         self.exposure_time = FloatText(value=10)
+        self.shuffle_jobs = Checkbox(description='Shuffle',indent=False,value=True)
         self.sample_server_ip = Text(value='localhost:5000')
         self.submit_jobs = Button(description='Submit')
         self.submit_progress = ipywidgets.IntProgress(min=0,max=1,value=1)
@@ -577,6 +594,7 @@ class SampleSeriesWidget_View:
         self.uuid_list = ipywidgets.SelectMultiple(layout={'width':'400px'})
         submit_box = VBox([
             HBox([exposure_time_label,self.exposure_time]),
+            self.shuffle_jobs,
             self.sample_server_ip,
             HBox([self.submit_jobs,self.submit_progress]),
             self.uuid_list,

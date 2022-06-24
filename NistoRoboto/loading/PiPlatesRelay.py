@@ -1,6 +1,8 @@
 import piplates.RELAYplate as RELAYplate
 from NistoRoboto.loading.MultiChannelRelay import MultiChannelRelay
 import atexit
+import warnings
+import time
 
 class PiPlatesRelay(MultiChannelRelay):
 
@@ -17,6 +19,7 @@ class PiPlatesRelay(MultiChannelRelay):
         conn = RELAYplate.getID(board_id)
         print(f'Got connection response from board: {conn}')
         RELAYplate.RESET(board_id)
+        self.state = [False]*7
         self.board_id = board_id
 
         #Sanitize labels:
@@ -32,9 +35,9 @@ class PiPlatesRelay(MultiChannelRelay):
         
     def setAllChannelsOff(self):
         RELAYplate.relayALL(self.board_id,0)
+        self.state = [False]*7
         
-        
-    def setChannels(self,channels):
+    def setChannels(self,channels,verify=True):
         '''
         Write a value (True, False) to the channels specified in channels
 
@@ -44,6 +47,8 @@ class PiPlatesRelay(MultiChannelRelay):
 
 
         '''
+        print(f'RUNNING SET CHANNELS WITH INPUT {channels}')
+
         channels_to_set = {}
         for key,val in channels.items():
             if type(key)==str:
@@ -51,17 +56,34 @@ class PiPlatesRelay(MultiChannelRelay):
                 #del channels[key]
             else:
                 channels_to_set[key] = val
-
+        
+        print(f'AFTER NUMERIC CONVERSION, CHANNELS TO SET = {channels_to_set} and CHANNELS = {channels}')
         for key,val in channels_to_set.items():
-            if val==True:
-                RELAYplate.relayON(self.board_id,key)
-            elif val==False:
-                RELAYplate.relayOFF(self.board_id,key)
-            else:
-                raise KeyError('Improper value for relay set.')
+            self.state[key-1]=val
 
+        self._refresh_board_state()
 
         '''
+            if val==True:
+                RELAYplate.relayON(self.board_id,key)
+                print(f'SET RELAY # {key} ON')
+            elif val==False:
+                RELAYplate.relayOFF(self.board_id,key)
+                print(f'SET RELAY # {key} OFF')
+            else:
+                raise KeyError('Improper value for relay set.')
+        
+        verify version
+        
+        if verify:
+            for entry,state in channels.items():
+                trycounter = 0
+                while self.getChannels()[entry] != state and trycounter < 6:
+                    self.setChannels({entry:state},verify=False)
+                    trycounter = trycounter + 1
+                if trycounter >= 6:
+                    raise Exception(f'Relay ERROR while attempting to set the state of {entry} to {state}')
+
 
         relayALL(addr,value) – 
         used to control the state of all relays with a single command. 
@@ -73,7 +95,28 @@ class PiPlatesRelay(MultiChannelRelay):
         Bit 0 is relay 1, bit 1 is relay 2, and so on. 
         A “1” in a bit position means that the relay is on and zero means that it’s off.
         '''
+    def _refresh_board_state(self):
+        val_to_send = 0
+        for pos,val in enumerate(self.state):
+            if val:
+                val_to_send = val_to_send | 2**(pos)
+        RELAYplate.relayALL(self.board_id,val_to_send)
 
+        readback =  RELAYplate.relaySTATE(self.board_id)
+        if readback != val_to_send:
+            retries = 0
+            warnings.warn(f'ERROR: attempted relay set to {val_to_send} but readback was {readback}.')
+            while retries<6:
+                RELAYplate.relayALL(self.board_id,val_to_send)
+                time.sleep(0.01)
+                readback = RELAYplate.relaySTATE(self.board_id)
+                if readback == val_to_send:
+                    print(f'Success after {retries} tries.')
+                    break
+                else:
+                    retries = retries + 1
+            if readback != val_to_send:
+                raise Exception(f'Relay failed on cmd {self.state}, after {retries} attempts to correct') 
     def getChannels(self,asid=False):
         '''
         Read the current state of all channels

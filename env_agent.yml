@@ -4,7 +4,7 @@ channels:
   - conda-forge 
   - defaults
 dependencies:
-  - python <3.10
+  - python <3.9
   - setuptools
   - pip
   - numpy
@@ -28,6 +28,8 @@ dependencies:
   - flask_cors
   - scikit-learn
   - tqdm
+  - watchdog
+  - markupsafe<2.1.0
   - pip:
       - gpflow
       - tensorflow>2.7

@@ -122,14 +122,18 @@ class StockBuilderWidget:
             loc = int(split[0])
         except ValueError:
             return
-            
-        deckware = self.data_model.deck.all_deckware[loc]
-        self.data_view.stocks[stock_name]['location']['check_text'].value = f'Slot contains: {deckware}'
+        
+        try:
+            deckware = self.data_model.deck.all_deckware[loc]
+            self.data_view.stocks[stock_name]['location']['check_text'].value = f'Slot contains: {deckware}'
+        except KeyError:
+            pass
+        
         
     def make_stock_cb(self,event):
         self.data_view.progress.value = 0
         stock_name = self.data_view.make_stock_name.value
-        components = self.data_view.make_stock_components.value.split(',')
+        components = [i.strip() for i in self.data_view.make_stock_components.value.split(',')]
         self.data_view.make_stock_tab(stock_name,components)
         self.data_view.stocks[stock_name]['remove_button'].on_click(self.remove_stock_cb)
         self.data_view.stocks[stock_name]['mg_button'].on_click(lambda X:self.set_units_cb(X,'mg'))

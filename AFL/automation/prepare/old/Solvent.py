@@ -4,9 +4,9 @@ import copy
 import numbers
 from pyparsing import ParseException
 
-from NistoRoboto.shared.units import units
-from NistoRoboto.prep.Component import Component
-from NistoRoboto.prep.types import types
+from AFL.automation.shared.units import units
+from AFL.automation.prep.Component import Component
+from AFL.automation.prep.types import types
 
 class Solvent(Component):
     '''Component Specialization for Solvents'''

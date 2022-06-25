@@ -1,5 +1,5 @@
-from NistoRoboto.loading.SampleCell import SampleCell
-from NistoRoboto.APIServer.driver.Driver import Driver
+from AFL.automation.loading.SampleCell import SampleCell
+from AFL.automation.APIServer.driver.Driver import Driver
 from collections import defaultdict
 import warnings
 import time

@@ -1,9 +1,9 @@
 import pathlib
 import json
-from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
-from NistoRoboto.shared.units import units,AVOGADROS_NUMBER
+from AFL.automation.prepare.PrepType import PrepType,prepRegistrar
+from AFL.automation.shared.units import units,AVOGADROS_NUMBER
 
-from NistoRoboto.shared.exceptions import NotFoundError
+from AFL.automation.shared.exceptions import NotFoundError
 
 def _process_NoneType_string(value,mapping=lambda x: x):
     return  (None if value.lower()=='none' else mapping(value))

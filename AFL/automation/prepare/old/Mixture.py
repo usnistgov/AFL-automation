@@ -1,10 +1,10 @@
-from NistoRoboto.prep.Component import Component
-from NistoRoboto.shared.exceptions import EmptyException
+from AFL.automation.prep.Component import Component
+from AFL.automation.shared.exceptions import EmptyException
 import numpy as np
 import copy
 
-from NistoRoboto.shared.units import units,AVOGADROS
-from NistoRoboto.prep.types import types
+from AFL.automation.shared.units import units,AVOGADROS
+from AFL.automation.prep.types import types
 
 
 class Mixture:

@@ -1,5 +1,5 @@
 from enum import Enum,auto
-from NistoRoboto.shared.utilities import makeRegistar
+from AFL.automation.shared.utilities import makeRegistar
 
 class PrepType(Enum):
     BaseComponent=auto()

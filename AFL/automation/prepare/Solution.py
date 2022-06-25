@@ -2,14 +2,14 @@ import numpy as np
 import copy
 import warnings
 
-from NistoRoboto.prepare.Component import Component
-from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
-from NistoRoboto.prepare.ComponentDB import componentFactory
-from NistoRoboto.shared.utilities import listify
-from NistoRoboto.shared.exceptions import EmptyException,NotFoundError
-from NistoRoboto.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER
+from AFL.automation.prepare.Component import Component
+from AFL.automation.prepare.PrepType import PrepType,prepRegistrar
+from AFL.automation.prepare.ComponentDB import componentFactory
+from AFL.automation.shared.utilities import listify
+from AFL.automation.shared.exceptions import EmptyException,NotFoundError
+from AFL.automation.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER
 
-from NistoRoboto.prepare import db
+from AFL.automation.prepare import db
 
 @prepRegistrar(PrepType.Solution)
 class Solution:

@@ -1,7 +1,7 @@
-from NistoRoboto.APIServer.client.Client import Client
-from NistoRoboto.APIServer.client.OT2Client import OT2Client
-from NistoRoboto.shared.utilities import listify
-from NistoRoboto.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.client.Client import Client
+from AFL.automation.APIServer.client.OT2Client import OT2Client
+from AFL.automation.shared.utilities import listify
+from AFL.automation.APIServer.driver.Driver import Driver
 
 from math import ceil,sqrt
 import json

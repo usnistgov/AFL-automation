@@ -1,11 +1,11 @@
 import requests
-from NistoRoboto.APIServer.client.Client import Client
+from AFL.automation.APIServer.client.Client import Client
 
 class OT2Client(Client):
-    '''Communicate with NistoRoboto server on OT-2
+    '''Communicate with AFL-automation server on OT-2
 
     This class maps pipettor functions to HTTP REST requests that are sent to
-    the NistoRoboto server
+    the AFL-automation server
     '''
     def transfer(self,
             source,

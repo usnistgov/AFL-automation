@@ -1,7 +1,7 @@
-from NistoRoboto.APIServer.client.Client import Client
-from NistoRoboto.APIServer.client.OT2Client import OT2Client
-from NistoRoboto.APIServer.driver.Driver import Driver
-from NistoRoboto.shared.utilities import listify
+from AFL.automation.APIServer.client.Client import Client
+from AFL.automation.APIServer.client.OT2Client import OT2Client
+from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.shared.utilities import listify
 
 from math import ceil,sqrt
 import json
@@ -69,7 +69,7 @@ class NICE_SampleDriver(Driver):
             self.nice_client = nice.connect(host=nice_url)
 
             #this MUST be imported after the nice_client connects
-            from NistoRoboto.instrument.NICEDevice import NICEDevice
+            from AFL.automation.instrument.NICEDevice import NICEDevice
             self.nice_device = NICEDevice()
             self.nice_client.subscribe('devices',self.nice_device)
         else:

@@ -1,4 +1,4 @@
-from NistoRoboto.loading.FlowSelector import FlowSelector
+from AFL.automation.loading.FlowSelector import FlowSelector
 
 class CetoniMultiPosValve(FlowSelector):
     def __init__(self,parentpump,portlabels={}):

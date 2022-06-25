@@ -1,13 +1,13 @@
 import os,sys,subprocess
 from pathlib import Path
 try:
-        import NistoRoboto
+        import AFL.automation
 except:
         sys.path.append(os.path.abspath(Path(__file__).parent.parent))
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
-from NistoRoboto.APIServer.APIServer import APIServer
-from NistoRoboto.APIServer.SpecScreen_Driver import SpecScreen_Driver
+from AFL.automation.APIServer.APIServer import APIServer
+from AFL.automation.APIServer.SpecScreen_Driver import SpecScreen_Driver
 
 server_port=5000
 

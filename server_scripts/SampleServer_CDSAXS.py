@@ -2,13 +2,13 @@ import os,sys,subprocess
 from pathlib import Path
 
 try:
-        import NistoRoboto
+        import AFL.automation
 except:
         sys.path.append(os.path.abspath(Path(__file__).parent.parent))
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
-from NistoRoboto.APIServer.APIServer import APIServer
-from NistoRoboto.APIServer.driver.CDSAXS_SampleDriver import CDSAXS_SampleDriver
+from AFL.automation.APIServer.APIServer import APIServer
+from AFL.automation.APIServer.driver.CDSAXS_SampleDriver import CDSAXS_SampleDriver
 
 
 driver =CDSAXS_SampleDriver(

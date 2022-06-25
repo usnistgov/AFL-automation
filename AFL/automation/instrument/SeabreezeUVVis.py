@@ -1,5 +1,5 @@
-from NistoRoboto.APIServer.driver.Driver import Driver
-#from NistoRoboto.instrument.Instrument import Instrument
+from AFL.automation.APIServer.driver.Driver import Driver
+#from AFL.automation.instrument.Instrument import Instrument
 import numpy as np # for return types in get data
 import seabreeze
 import time

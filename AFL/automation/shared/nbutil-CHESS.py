@@ -1,5 +1,5 @@
 '''
-helpful imports, object setup, etc. for working with NistoRoboto from a Jupyter notebook or other interactive environment.
+helpful imports, object setup, etc. for working with AFL-automation from a Jupyter notebook or other interactive environment.
 '''
 
 import sys
@@ -14,14 +14,14 @@ import copy
 import random
 import warnings
 
-import NistoRoboto
-import NistoRoboto.prepare
-from NistoRoboto import prepare
-from NistoRoboto.APIServer.client.Client import Client
-from NistoRoboto.APIServer.client.OT2Client import OT2Client
-from NistoRoboto.shared.utilities import tprint
-from NistoRoboto.shared.exceptions import MixingException
-from NistoRoboto.shared.units import units
+import AFL.automation
+import AFL.automation.prepare
+from AFL.automation import prepare
+from AFL.automation.APIServer.client.Client import Client
+from AFL.automation.APIServer.client.OT2Client import OT2Client
+from AFL.automation.shared.utilities import tprint
+from AFL.automation.shared.exceptions import MixingException
+from AFL.automation.shared.units import units
 from collections import defaultdict
 from itertools import cycle
 
@@ -283,7 +283,7 @@ NRUI.tab.set_title(2, 'CDSAXS')
     
 print('''
 
-Welcome to NistoRoboto's notebook interface!!
+Welcome to AFL-automation's notebook interface!!
 
 --> Server clients are set up in interactive mode and named prep, inst, load, and sample.
 
@@ -291,7 +291,7 @@ Welcome to NistoRoboto's notebook interface!!
 
 --> Normal scientific python tools are imported (np, plt, etc.).
 
---> NistoRoboto utility functions such as measureEmptyTransmission and calibrateLoadertoCell are created.
+--> AFL utility functions such as measureEmptyTransmission and calibrateLoadertoCell are created.
 
 --> Finally, if you are connected to the system, you get a GUI!
 

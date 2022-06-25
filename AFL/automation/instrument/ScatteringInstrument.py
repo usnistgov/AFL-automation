@@ -1,4 +1,4 @@
-from NistoRoboto.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.driver.Driver import Driver
 import pyFAI, pyFAI.azimuthalIntegrator
 import numpy as np
 from PIL import Image
@@ -150,7 +150,7 @@ class ScatteringInstrument():
             f.attrs[u'file_name'] = filename
             f.attrs[u'file_time'] = timestamp
             f.attrs[u'instrument'] = self.__instrument_name__
-            f.attrs[u'creator'] = u'NistoRoboto ScatteringInstrument driver'
+            f.attrs[u'creator'] = u'AFL ScatteringInstrument driver'
             f.attrs[u'NeXus_version'] = u'4.3.0'
             f.attrs[u'HDF5_version'] = six.u(h5py.version.hdf5_version)
             f.attrs[u'h5py_version'] = six.u(h5py.version.version)

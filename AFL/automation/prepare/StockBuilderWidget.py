@@ -9,8 +9,8 @@ import plotly.express as px
 import ipywidgets
 import pickle
 
-import NistoRoboto.prepare 
-from NistoRoboto.shared.units import units
+import AFL.automation.prepare 
+from AFL.automation.shared.units import units
 
 class StockBuilderWidget:
     def __init__(self,deck):
@@ -190,7 +190,7 @@ class StockBuilderWidget_Model:
         afl_stock_locs = {}
         for stock_name,stock in all_stocks_dict.items():
             components = list(stock['components'].keys())
-            afl_stocks[stock_name] = NistoRoboto.prepare.Solution(stock_name,components)
+            afl_stocks[stock_name] = AFL.automation.prepare.Solution(stock_name,components)
             afl_stock_locs[stock_name] = stock['location']['value']
             
             mass_fraction = {}

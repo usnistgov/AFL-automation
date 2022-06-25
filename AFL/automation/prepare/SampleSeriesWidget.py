@@ -10,9 +10,9 @@ import ipywidgets
 from ipywidgets import Layout,Label,Button,Checkbox,VBox,HBox,Text,FloatText,IntText
 import pickle
 
-import NistoRoboto.prepare 
-from NistoRoboto.shared.units import units
-from NistoRoboto.APIServer.client.Client import Client
+import AFL.automation.prepare 
+from AFL.automation.shared.units import units
+from AFL.automation.APIServer.client.Client import Client
 
 
 class SampleSeriesWidget:
@@ -77,7 +77,7 @@ class SampleSeriesWidget:
             catch_loc = f'{catch_locs[0]}A1'
         
         params = self.data_view.pipette_params['load']
-        catch_protocol = NistoRoboto.prepare.PipetteAction(
+        catch_protocol = AFL.automation.prepare.PipetteAction(
             source='target',
             dest=catch_loc,
             volume = self.data_view.load_volume.value,
@@ -265,7 +265,7 @@ class SampleSeriesWidget:
             nrows = wellspec['nrows'].value
             ncols = wellspec['ncols'].value
             start = wellspec['start'].value
-            locs = NistoRoboto.prepare.make_locs(slot,nrows,ncols)[start:]
+            locs = AFL.automation.prepare.make_locs(slot,nrows,ncols)[start:]
             all_locs.append(locs)
         return all_locs
         

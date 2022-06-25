@@ -1,5 +1,5 @@
-from NistoRoboto.loading.FlowSelector import FlowSelector
-from NistoRoboto.loading.SerialDevice import SerialDevice
+from AFL.automation.loading.FlowSelector import FlowSelector
+from AFL.automation.loading.SerialDevice import SerialDevice
 import serial
 import time
 

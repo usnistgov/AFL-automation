@@ -9,9 +9,9 @@ import ipywidgets
 from ipywidgets import Dropdown,Layout,Label,Button,Checkbox,VBox,HBox,Text
 import pickle
 
-import NistoRoboto.prepare 
-from NistoRoboto.shared.units import units
-from NistoRoboto.APIServer.client.Client import Client
+import AFL.automation.prepare 
+from AFL.automation.shared.units import units
+from AFL.automation.APIServer.client.Client import Client
 
 class DeckBuilderWidget:
     def __init__(self):
@@ -139,7 +139,7 @@ class DeckBuilderWidget_Model:
         self.deck.send_deck_config()
     
     def build_deck_object(self,config):
-        self.deck = NistoRoboto.prepare.Deck()
+        self.deck = AFL.automation.prepare.Deck()
         for slot,value in config['containers'].items():
             self.deck.add_container(value,slot)
             

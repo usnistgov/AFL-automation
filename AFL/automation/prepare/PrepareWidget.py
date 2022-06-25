@@ -9,13 +9,13 @@ import ipywidgets
 from ipywidgets import Dropdown,Layout,Label,Button,Checkbox,VBox,HBox,Text
 import pickle
 
-import NistoRoboto.prepare 
-from NistoRoboto.shared.units import units
+import AFL.automation.prepare 
+from AFL.automation.shared.units import units
 
-from NistoRoboto.prepare.StockBuilderWidget import StockBuilderWidget
-from NistoRoboto.prepare.SweepBuilderWidget import SweepBuilderWidget
-from NistoRoboto.prepare.DeckBuilderWidget import DeckBuilderWidget
-from NistoRoboto.prepare.SampleSeriesWidget import SampleSeriesWidget
+from AFL.automation.prepare.StockBuilderWidget import StockBuilderWidget
+from AFL.automation.prepare.SweepBuilderWidget import SweepBuilderWidget
+from AFL.automation.prepare.DeckBuilderWidget import DeckBuilderWidget
+from AFL.automation.prepare.SampleSeriesWidget import SampleSeriesWidget
 
 
 class PrepareWidget:

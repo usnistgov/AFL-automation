@@ -5,7 +5,7 @@ import scipy.spatial
 import random
 import logging
 
-from NistoRoboto.agent.PhaseMap import phasemap_grid_factory
+from AFL.automation.agent.PhaseMap import phasemap_grid_factory
 #move dense_pm definition outside of this class
 #move to driver,make settable here and in driver
 #pass make to driver

@@ -1,6 +1,6 @@
 import types
 import datetime
-from NistoRoboto.shared.units import has_units
+from AFL.automation.shared.units import has_units
 
 
 def listify(obj):

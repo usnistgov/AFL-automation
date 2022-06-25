@@ -1,8 +1,8 @@
 import requests
 import base64
 import pickle
-from NistoRoboto.APIServer.client.Client import Client
-from NistoRoboto.agent.Serialize import deserialize,serialize
+from AFL.automation.APIServer.client.Client import Client
+from AFL.automation.agent.Serialize import deserialize,serialize
 import time
 
 class AgentClient(Client):

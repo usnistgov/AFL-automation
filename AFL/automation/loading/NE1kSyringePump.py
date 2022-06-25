@@ -1,5 +1,5 @@
-from NistoRoboto.loading.SyringePump import SyringePump
-from NistoRoboto.loading.SerialDevice import SerialDevice
+from AFL.automation.loading.SyringePump import SyringePump
+from AFL.automation.loading.SerialDevice import SerialDevice
 import time
 
 class NE1kSyringePump(SyringePump):

@@ -1,5 +1,5 @@
-from NistoRoboto.APIServer.driver.Driver import Driver
-from NistoRoboto.loading.TwoSelectorBlowoutSampleCell import TwoSelectorBlowoutSampleCell
+from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.loading.TwoSelectorBlowoutSampleCell import TwoSelectorBlowoutSampleCell
 from collections import defaultdict
 
 class OneSelectorBlowoutSampleCell(TwoSelectorBlowoutSampleCell):

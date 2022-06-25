@@ -1,5 +1,5 @@
 import piplates.RELAYplate as RELAYplate
-from NistoRoboto.loading.MultiChannelRelay import MultiChannelRelay
+from AFL.automation.loading.MultiChannelRelay import MultiChannelRelay
 import atexit
 import warnings
 import time

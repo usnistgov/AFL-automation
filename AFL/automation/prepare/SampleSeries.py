@@ -1,5 +1,5 @@
 from collections import defaultdict
-from NistoRoboto.prepare.Solution import Solution
+from AFL.automation.prepare.Solution import Solution
 import random
 
 class SampleSeries:

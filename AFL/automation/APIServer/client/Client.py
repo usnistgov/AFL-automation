@@ -1,5 +1,5 @@
 import requests,uuid,time,copy,inspect
-from NistoRoboto.agent.Serialize import deserialize,serialize
+from AFL.automation.agent.Serialize import deserialize,serialize
 
 
 class Client:
@@ -17,13 +17,13 @@ class Client:
         self.url = f'http://{ip}:{port}'
         self.interactive=interactive
         try:
-            import NistoRoboto.shared.widgetui
+            import AFL.automation.shared.widgetui
             import IPython
         except ImportError:
             pass
         else:
-            #Client.ui = NistoRoboto.shared.widgetui.client_construct_ui
-            setattr(Client,'ui',NistoRoboto.shared.widgetui.client_construct_ui)
+            #Client.ui = AFL.automation.shared.widgetui.client_construct_ui
+            setattr(Client,'ui',AFL.automation.shared.widgetui.client_construct_ui)
 
     def logged_in(self):
         url = self.url + '/login_test'

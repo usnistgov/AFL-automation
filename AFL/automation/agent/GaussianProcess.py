@@ -13,7 +13,7 @@ from scipy.stats import entropy
 from sklearn.neighbors import KernelDensity
 import tqdm
 
-from NistoRoboto.agent.PhaseMap import ternary2cart
+from AFL.automation.agent.PhaseMap import ternary2cart
 
     
 class GP:

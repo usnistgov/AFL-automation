@@ -5,7 +5,7 @@ Their package is a GUI and direct import of the module would be problematic.
 
 '''
 
-from NistoRoboto.loading.SyringePump import SyringePump
+from AFL.automation.loading.SyringePump import SyringePump
 
 import sys
 

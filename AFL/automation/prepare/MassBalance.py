@@ -3,10 +3,10 @@ import scipy.optimize
 import scipy.spatial
 import pandas as pd
 import copy
-from NistoRoboto.shared.units import units
-from NistoRoboto.agent.PhaseMap import ternary2cart
-from NistoRoboto.agent.PhaseMap import PhaseMap
-from NistoRoboto.prepare import Solution
+from AFL.automation.shared.units import units
+from AFL.automation.agent.PhaseMap import ternary2cart
+from AFL.automation.agent.PhaseMap import PhaseMap
+from AFL.automation.prepare import Solution
 
 try:
     from tqdm.contrib.itertools import product

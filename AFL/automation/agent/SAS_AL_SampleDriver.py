@@ -1,10 +1,10 @@
-from NistoRoboto.APIServer.client.Client import Client
-from NistoRoboto.APIServer.client.OT2Client import OT2Client
-from NistoRoboto.shared.utilities import listify
-from NistoRoboto.APIServer.driver.Driver import Driver
-from NistoRoboto.agent.Serialize import serialize,deserialize
-from NistoRoboto.agent.AgentClient import AgentClient
-from NistoRoboto.shared.units import units
+from AFL.automation.APIServer.client.Client import Client
+from AFL.automation.APIServer.client.OT2Client import OT2Client
+from AFL.automation.shared.utilities import listify
+from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.agent.Serialize import serialize,deserialize
+from AFL.automation.agent.AgentClient import AgentClient
+from AFL.automation.shared.units import units
 
 import pandas as pd
 import numpy as np
@@ -19,7 +19,7 @@ import traceback
 import pathlib
 import uuid
 
-import NistoRoboto.prepare
+import AFL.automation.prepare
 import shutil
 import h5py
 
@@ -105,7 +105,7 @@ class SAS_AL_SampleDriver(Driver):
         self.reset_deck()
        
     def reset_deck(self):
-        self.deck = NistoRoboto.prepare.Deck()
+        self.deck = AFL.automation.prepare.Deck()
         
     def add_container(self,name,slot):
         self.deck.add_container(name,slot)
@@ -125,7 +125,7 @@ class SAS_AL_SampleDriver(Driver):
         self.deck.send_deck_config()
         
     def add_stock(self,stock_dict,loc):
-        soln = NistoRoboto.prepare.Solution.from_dict(stock_dict)
+        soln = AFL.automation.prepare.Solution.from_dict(stock_dict)
         self.deck.add_stock(soln,loc)
        
     def status(self):
@@ -270,7 +270,7 @@ class SAS_AL_SampleDriver(Driver):
         self.stop_AL = True
         
     def set_catch_protocol(self,**kwargs): 
-        self.catch_protocol = NistoRoboto.prepare.PipetteAction(**kwargs)
+        self.catch_protocol = AFL.automation.prepare.PipetteAction(**kwargs)
     
     def active_learning_loop(self,**kwargs):
         self.AL_components = kwargs['AL_components']
@@ -282,7 +282,7 @@ class SAS_AL_SampleDriver(Driver):
         data_path = pathlib.Path(self.config['data_path'])
         
         if self.dummy_mode:
-            from NistoRoboto.agent import PhaseMap
+            from AFL.automation.agent import PhaseMap
             df_measurements = pd.read_csv('/Users/tbm/projects/2001-NistoRoboto/2022-02-13-CodeDev/measurements.csv')
             
         self.stop_AL = False
@@ -309,9 +309,9 @@ class SAS_AL_SampleDriver(Driver):
                 print('\n\n\n')
                 
             #make target object
-            target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['F127'])
-            # target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values))
-            # target = NistoRoboto.prepare.Solution('target',list(next_sample.columns.values) + ['NaCl'])
+            target = AFL.automation.prepare.Solution('target',list(next_sample.columns.values) + ['F127'])
+            # target = AFL.automation.prepare.Solution('target',list(next_sample.columns.values))
+            # target = AFL.automation.prepare.Solution('target',list(next_sample.columns.values) + ['NaCl'])
             target.mass_fraction = next_sample_dict
             target.volume = sample_volume*units('ul')
             # target.concentration = {'NaCl':110*units('mg/ml')}

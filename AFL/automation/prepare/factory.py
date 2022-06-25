@@ -3,9 +3,9 @@ import numpy as np
 import periodictable
 import functools, operator
 
-from NistoRoboto.prepare.Solution import Solution
-from NistoRoboto.shared.units import units,has_units,is_mass,is_volume,is_molarity,is_concentration
-from NistoRoboto.shared.utilities import listify
+from AFL.automation.prepare.Solution import Solution
+from AFL.automation.shared.units import units,has_units,is_mass,is_volume,is_molarity,is_concentration
+from AFL.automation.shared.utilities import listify
 
 
 def HD2OFactory(name,phi_D2O=None,sld=None,properties=None):

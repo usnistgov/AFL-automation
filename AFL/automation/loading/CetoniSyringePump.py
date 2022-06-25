@@ -16,7 +16,7 @@ Some notes on how to get this talking:
 
 
 
-from NistoRoboto.loading.SyringePump import SyringePump
+from AFL.automation.loading.SyringePump import SyringePump
 
 import sys
 

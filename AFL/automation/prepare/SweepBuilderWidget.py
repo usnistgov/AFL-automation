@@ -9,8 +9,8 @@ import ipywidgets
 from ipywidgets import Layout,Label,Button,Checkbox,VBox,HBox,Text
 import pickle
 
-import NistoRoboto.prepare 
-from NistoRoboto.shared.units import units
+import AFL.automation.prepare 
+from AFL.automation.shared.units import units
 
 class SweepBuilderWidget:
     def __init__(self,deck):
@@ -186,7 +186,7 @@ class SweepBuilderWidget_Model:
                     components.append(component_name)
 
                     dasfasdf
-        self.sweep = NistoRoboto.prepare.compositionSweepFactory(
+        self.sweep = AFL.automation.prepare.compositionSweepFactory(
             name='SweepBuilder',
             components = components,
             vary_components = vary,

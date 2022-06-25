@@ -1,7 +1,7 @@
-from NistoRoboto.APIServer.client.Client import Client
-from NistoRoboto.APIServer.client.OT2Client import OT2Client
-from NistoRoboto.shared.utilities import listify
-from NistoRoboto.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.client.Client import Client
+from AFL.automation.APIServer.client.OT2Client import OT2Client
+from AFL.automation.shared.utilities import listify
+from AFL.automation.APIServer.driver.Driver import Driver
 
 from math import ceil,sqrt
 import json
@@ -16,13 +16,13 @@ import pandas as pd
 import numpy as np
 import pathlib
 
-from NistoRoboto.agent import AcquisitionFunction 
-from NistoRoboto.agent import GaussianProcess 
-from NistoRoboto.agent import PhaseMap
-from NistoRoboto.agent import Similarity 
-from NistoRoboto.agent import PhaseLabeler
-from NistoRoboto.agent.Serialize import serialize,deserialize
-from NistoRoboto.agent.WatchDog import WatchDog
+from AFL.automation.agent import AcquisitionFunction 
+from AFL.automation.agent import GaussianProcess 
+from AFL.automation.agent import PhaseMap
+from AFL.automation.agent import Similarity 
+from AFL.automation.agent import PhaseLabeler
+from AFL.automation.agent.Serialize import serialize,deserialize
+from AFL.automation.agent.WatchDog import WatchDog
 
 import tensorflow as tf
 import gpflow

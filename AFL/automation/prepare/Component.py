@@ -4,8 +4,8 @@ import copy
 import numbers
 from pyparsing import ParseException
 
-from NistoRoboto.shared.units import units, AVOGADROS_NUMBER, enforce_units
-from NistoRoboto.prepare.PrepType import PrepType
+from AFL.automation.shared.units import units, AVOGADROS_NUMBER, enforce_units
+from AFL.automation.prepare.PrepType import PrepType
 
 
 class Component(object):

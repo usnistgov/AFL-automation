@@ -1,17 +1,17 @@
-from NistoRoboto.prepare.ComponentDB import ComponentDB
+from AFL.automation.prepare.ComponentDB import ComponentDB
 db = ComponentDB()
 
-from NistoRoboto.prepare.Solute import Solute
-from NistoRoboto.prepare.Solution import Solution
-from NistoRoboto.prepare.Solvent import Solvent
+from AFL.automation.prepare.Solute import Solute
+from AFL.automation.prepare.Solution import Solution
+from AFL.automation.prepare.Solvent import Solvent
 
-from NistoRoboto.prepare.Sample import Sample
-from NistoRoboto.prepare.SampleSeries import SampleSeries
-from NistoRoboto.prepare.Deck import Deck
-from NistoRoboto.prepare.utilities import make_locs,make_wellplate_locs
+from AFL.automation.prepare.Sample import Sample
+from AFL.automation.prepare.SampleSeries import SampleSeries
+from AFL.automation.prepare.Deck import Deck
+from AFL.automation.prepare.utilities import make_locs,make_wellplate_locs
 
-from NistoRoboto.prepare.MassBalance import MassBalance
-from NistoRoboto.prepare.PipetteAction import PipetteAction
+from AFL.automation.prepare.MassBalance import MassBalance
+from AFL.automation.prepare.PipetteAction import PipetteAction
 
-from NistoRoboto.prepare.factory import compositionSweepFactory,HD2OFactory
+from AFL.automation.prepare.factory import compositionSweepFactory,HD2OFactory
 

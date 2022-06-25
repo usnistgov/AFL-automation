@@ -1,6 +1,6 @@
-from NistoRoboto.loading.FlowSelector import FlowSelector
-from NistoRoboto.loading.SerialDevice import SerialDevice
-from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
+from AFL.automation.loading.FlowSelector import FlowSelector
+from AFL.automation.loading.SerialDevice import SerialDevice
+from AFL.automation.loading.ViciMultiposSelector import ViciMultiposSelector
 import serial
 
 class DoubleViciMultiposSelector(FlowSelector):

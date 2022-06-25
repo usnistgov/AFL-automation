@@ -1,5 +1,5 @@
-from NistoRoboto.shared.utilities import listify
-from NistoRoboto.APIServer.Driver import Driver
+from AFL.automation.shared.utilities import listify
+from AFL.automation.APIServer.Driver import Driver
 from math import ceil,sqrt
 import subprocess,shlex
 

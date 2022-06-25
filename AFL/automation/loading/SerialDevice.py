@@ -1,6 +1,6 @@
 import serial
 import time
-from NistoRoboto.shared.exceptions import SerialCommsException
+from AFL.automation.shared.exceptions import SerialCommsException
 
 class SerialDevice():
     def __init__(self,port,baudrate=19200,timeout=0.5,raw_writes=False):

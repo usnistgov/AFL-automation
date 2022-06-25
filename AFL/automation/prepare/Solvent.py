@@ -1,6 +1,6 @@
-from NistoRoboto.prepare.Component import Component
-from NistoRoboto.prepare.PrepType import PrepType,prepRegistrar
-from NistoRoboto.shared.units import enforce_units
+from AFL.automation.prepare.Component import Component
+from AFL.automation.prepare.PrepType import PrepType,prepRegistrar
+from AFL.automation.shared.units import enforce_units
 
 
 @prepRegistrar(PrepType.Solvent)

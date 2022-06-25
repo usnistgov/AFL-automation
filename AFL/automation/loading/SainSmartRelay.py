@@ -1,5 +1,5 @@
-from NistoRoboto.loading.MultiChannelRelay import MultiChannelRelay
-from NistoRoboto.loading.SerialDevice import SerialDevice
+from AFL.automation.loading.MultiChannelRelay import MultiChannelRelay
+from AFL.automation.loading.SerialDevice import SerialDevice
 import atexit
 
 class SainSmartRelay(MultiChannelRelay,SerialDevice):

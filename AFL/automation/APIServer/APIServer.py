@@ -18,11 +18,11 @@ import threading,queue,logging,json,pathlib,uuid
 from logging.handlers import SMTPHandler
 from logging import FileHandler
 
-from NistoRoboto.APIServer.QueueDaemon import QueueDaemon
-from NistoRoboto.APIServer.LoggerFilter import LoggerFilter
+from AFL.automation.APIServer.QueueDaemon import QueueDaemon
+from AFL.automation.APIServer.LoggerFilter import LoggerFilter
 
-from NistoRoboto.shared.MutableQueue import MutableQueue
-from NistoRoboto.shared.utilities import listify
+from AFL.automation.shared.MutableQueue import MutableQueue
+from AFL.automation.shared.utilities import listify
 
 import warnings
 
@@ -526,7 +526,7 @@ class APIServer:
 
 if __name__ =='__main__':
 
-    from NistoRoboto.APIServer.DummyDriver import DummyDriver
+    from AFL.automation.APIServer.DummyDriver import DummyDriver
     server = APIServer('TestServer')
     server.add_standard_routes()
     server.create_queue(DummyDriver())

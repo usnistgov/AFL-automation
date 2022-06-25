@@ -1,11 +1,11 @@
 import numpy as np
-from NistoRoboto.prepare.Sample import Sample
-from NistoRoboto.prepare.SampleSeries import SampleSeries
-from NistoRoboto.prepare.Solution import Solution
-from NistoRoboto.prepare.MassBalance import MassBalance
-from NistoRoboto.prepare.PipetteAction import PipetteAction
-from NistoRoboto.shared.exceptions import MixingException
-from NistoRoboto.shared.units import units
+from AFL.automation.prepare.Sample import Sample
+from AFL.automation.prepare.SampleSeries import SampleSeries
+from AFL.automation.prepare.Solution import Solution
+from AFL.automation.prepare.MassBalance import MassBalance
+from AFL.automation.prepare.PipetteAction import PipetteAction
+from AFL.automation.shared.exceptions import MixingException
+from AFL.automation.shared.units import units
 import scipy.optimize
 
 get_pipette='''
@@ -26,7 +26,7 @@ def get_pipette(volume,loaded_pipettes):
 metadata = '''
 metadata = {
     'protocolName': 'Alignment',
-    'author': 'NistoRoboto',
+    'author': 'NIST AFL',
     'description': 'Script for aligning and testing',
     'apiLevel': '2.0'
 }
@@ -66,9 +66,9 @@ class Deck:
         self.client = None
 
     def init_remote_connection(self,url,home=False):
-        from NistoRoboto.APIServer.client.OT2Client import OT2Client
+        from AFL.automation.APIServer.client.OT2Client import OT2Client
         self.client = OT2Client(url)
-        self.client.login('NistoRobotoDeck')
+        self.client.login('AFLDeck')
         if home:
             self.client.debug(state=False)
             self.client.home()# must home robot before sending commands
@@ -79,7 +79,7 @@ class Deck:
 
         if not self.client.logged_in():
             # just re-login
-            self.client.login('NistoRobotoDeck')
+            self.client.login('AFLDeck')
 
         self.client.debug(state=False)#unlock the queue
 
@@ -98,7 +98,7 @@ class Deck:
 
         if not self.client.logged_in():
             # just re-login
-            self.client.login('NistoRobotoDeck')
+            self.client.login('AFLDeck')
 
         self.client.debug(state=False)#unlock the queue
 

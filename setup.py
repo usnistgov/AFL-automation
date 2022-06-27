@@ -3,8 +3,7 @@ import numpy as np
 
 setup(
     name='AFL-automation',
-	ext_modules= cythonize(ext_modules),
-    description='A python library for automated sample creation using the OT-2 robot',
+    description='Hardware interfacing code for the Autonomous Formulation Lab',
     author='Tyler B. Martin and Peter A. Beaucage',
     author_email = 'tyler.martin@nist.gov',
     version='0.0.1',

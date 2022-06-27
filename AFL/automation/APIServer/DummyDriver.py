@@ -1,5 +1,5 @@
 from AFL.automation.shared.utilities import listify
-from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.Driver import Driver
 from math import ceil,sqrt
 import numpy as np
 import pathlib

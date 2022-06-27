@@ -17,8 +17,8 @@ import warnings
 import AFL.automation
 import AFL.automation.prepare
 from AFL.automation import prepare
-from AFL.automation.APIServer.client.Client import Client
-from AFL.automation.APIServer.client.OT2Client import OT2Client
+from AFL.automation.APIServer.Client import Client
+from AFL.automation.prepare.OT2Client import OT2Client
 from AFL.automation.shared.utilities import tprint
 from AFL.automation.shared.exceptions import MixingException
 from AFL.automation.shared.units import units

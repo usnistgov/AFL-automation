@@ -11,7 +11,7 @@ import pickle
 
 import AFL.automation.prepare 
 from AFL.automation.shared.units import units
-from AFL.automation.APIServer.client.Client import Client
+from AFL.automation.APIServer.Client import Client
 
 class DeckBuilderWidget:
     def __init__(self):

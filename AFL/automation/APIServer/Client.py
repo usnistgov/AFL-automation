@@ -1,5 +1,5 @@
 import requests,uuid,time,copy,inspect
-from AFL.automation.agent.Serialize import deserialize,serialize
+from AFL.automation.shared.Serialize import deserialize,serialize
 
 
 class Client:

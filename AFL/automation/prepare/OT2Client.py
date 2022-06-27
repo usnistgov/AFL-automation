@@ -1,5 +1,5 @@
 import requests
-from AFL.automation.APIServer.client.Client import Client
+from AFL.automation.APIServer.Client import Client
 
 class OT2Client(Client):
     '''Communicate with AFL-automation server on OT-2

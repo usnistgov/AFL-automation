@@ -1,6 +1,6 @@
 from AFL.automation.loading.SampleCell import SampleCell
 from AFL.automation.loading.Tubing import Tubing
-from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.Driver import Driver
 from collections import defaultdict
 import time
 

@@ -66,7 +66,7 @@ class Deck:
         self.client = None
 
     def init_remote_connection(self,url,home=False):
-        from AFL.automation.APIServer.client.OT2Client import OT2Client
+        from AFL.automation.prepare.OT2Client import OT2Client
         self.client = OT2Client(url)
         self.client.login('AFLDeck')
         if home:

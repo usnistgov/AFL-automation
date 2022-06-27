@@ -1,6 +1,6 @@
-from AFL.automation.APIServer.client.Client import Client
-from AFL.automation.APIServer.client.OT2Client import OT2Client
-from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.Client import Client
+from AFL.automation.prepare.OT2Client import OT2Client
+from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 
 from math import ceil,sqrt

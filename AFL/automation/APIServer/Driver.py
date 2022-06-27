@@ -1,6 +1,6 @@
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.PersistentConfig import PersistentConfig
-from AFL.automation.agent.Serialize import deserialize,serialize
+from AFL.automation.shared.Serialize import deserialize,serialize
 from math import ceil,sqrt
 import inspect 
 import pathlib

@@ -1,4 +1,4 @@
-from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.loading.TwoSelectorBlowoutSampleCell import TwoSelectorBlowoutSampleCell
 from collections import defaultdict
 

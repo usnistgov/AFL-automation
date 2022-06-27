@@ -1,7 +1,7 @@
 import opentrons.execute
 import opentrons
 from opentrons.protocol_api.labware import Labware
-from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 from math import ceil,sqrt
 import os,json,pathlib

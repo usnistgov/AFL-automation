@@ -7,7 +7,7 @@ import gc
 import pythoncom
 import time
 import datetime
-from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
 import numpy as np # for return types in get data
 import h5py #for Nexus file writing

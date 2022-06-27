@@ -1,4 +1,4 @@
-from AFL.automation.APIServer.driver.Driver import Driver
+from AFL.automation.APIServer.Driver import Driver
 import pyFAI, pyFAI.azimuthalIntegrator
 import numpy as np
 from PIL import Image

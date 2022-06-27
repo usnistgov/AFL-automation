@@ -8,4 +8,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.0/lib64/
 cd ~/NistoRoboto/
 git pull
 
-python ~/NistoRoboto/server_scripts/SAS_Agent.py
+python ~/AFL-automation/server_scripts/SAS_Agent.py

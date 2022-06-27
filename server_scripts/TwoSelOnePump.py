@@ -2,19 +2,19 @@ import os,sys,subprocess
 from pathlib import Path
 
 try:
-        import NistoRoboto
+        import AFL.automation
 except:
         sys.path.append(os.path.abspath(Path(__file__).parent.parent))
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 server_port=5000
 
-from NistoRoboto.APIServer.APIServer import APIServer
+from AFL.automation.APIServer.APIServer import APIServer
 
-from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
-from NistoRoboto.loading.NE1kSyringePump import NE1kSyringePump
-from NistoRoboto.loading.DoubleViciMultiposSelector import DoubleViciMultiposSelector
-from NistoRoboto.loading.Tubing import Tubing
+from AFL.automation.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
+from AFL.automation.loading.NE1kSyringePump import NE1kSyringePump
+from AFL.automation.loading.DoubleViciMultiposSelector import DoubleViciMultiposSelector
+from AFL.automation.loading.Tubing import Tubing
 
 selector = DoubleViciMultiposSelector(
         '/dev/ttyFlowSel1', #connected to rinse/waste/cell/catch/etc

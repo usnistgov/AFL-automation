@@ -12,6 +12,8 @@ class PipetteAction:
             blow_out = False,
             post_aspirate_delay=0.0,
             post_dispense_delay=0.0,
+            drop_tip=True,
+            force_new_tip=False,
             ):
         self.source       = source
         self.dest         = dest
@@ -25,6 +27,8 @@ class PipetteAction:
         self.blow_out = blow_out
         self.post_aspirate_delay = post_aspirate_delay
         self.post_dispense_delay = post_dispense_delay
+        self.drop_tip = drop_tip
+        self.force_new_tip = force_new_tip
     
     def __str__(self):
         return f'<PipetteAction Vol:{self.volume:4.3f} {self.source}-->{self.dest}>'
@@ -53,5 +57,7 @@ class PipetteAction:
         kwargs['dispense_rate']=self.dispense_rate
         kwargs['post_aspirate_delay']=self.post_aspirate_delay
         kwargs['post_dispense_delay']=self.post_dispense_delay
+        kwargs['drop_tip']=self.drop_tip
+        kwargs['force_new_tip']=self.force_new_tip
 
         return kwargs

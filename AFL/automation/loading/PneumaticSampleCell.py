@@ -81,10 +81,22 @@ class PneumaticSampleCell(Driver,SampleCell):
         self._arm_up()
         time.sleep(0.2)
         self.pump.setRate(self.config['air_speed'])
-        self.pump.dispense(self.config['large_dispense_vol'])
-        self.pump.withdraw(self.config['withdraw_vol'])
+        # self.pump.dispense(self.config['large_dispense_vol'])
+        # self.pump.withdraw(self.config['withdraw_vol'])
+        self.reset_pump(dispense=False)
         self.state = 'READY'
-        
+        self.rinse_status = 'Not Rinsing'
+
+    @Driver.quickbar(qb={'button_text':'Reset Pump',
+        'params':{
+            'dispense':{'label':'dispense','type':'bool','default':False}
+        }})
+    def reset_pump(self,dispense=False):
+        self.pump.setRate(self.config['air_speed'])
+        if dispense and (self.pump_level>0):
+            self.pump.dispense(self.pump_level)
+        self.pump.withdraw(self.config['withdraw_vol'])
+        self.pump_level = self.config['withdraw_vol']
 
     @Driver.quickbar(qb={'button_text':'Reset Tank Levels',
         'params':{
@@ -124,6 +136,8 @@ class PneumaticSampleCell(Driver,SampleCell):
             status.append(f"Door closed: {not self.digitalin.state['DOOR']}")
         if self.digitalin is not None:
             status.append(f'DIO state: {self.digitalin.state}') 
+        status.append(f'Pump Level: {self.pump_level} mL')
+        status.append(self.rinse_status)
             
         return status
  
@@ -176,12 +190,18 @@ class PneumaticSampleCell(Driver,SampleCell):
             print(f'awaiting pump complete, {self.pump.getStatus()}')
             time.sleep(0.1)
 
+        infusion_vol = self.pump.getStatus()[1]
+        self.pump_level -= infusion_vol
+        if self.pump_level<0:
+            raise Exception(f'Pump level found to be less than zero: {self.pump_level}')
+
         self.loadStoppedExternally = False
         self.relayboard.setChannels({'postsample':False})
         self.state = 'LOADED'
 
     @Driver.unqueued(render_hint='raw')
     def stopLoad(self,**kwargs):
+        print(kwargs)
         try:
             if kwargs['secret'] == 'xrays>neutrons':
                 if self.state!= 'LOAD IN PROGRESS':
@@ -208,10 +228,17 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
 
 
-        self.pump.setRate(self.config['air_speed'])
-        self.pump.dispense(self.config['large_dispense_vol'],block=False)
+        # self.pump.setRate(self.config['air_speed'])
+        # self.pump.dispense(self.config['large_dispense_vol'],block=False) # removed for OEM pump w/o force limiter
 
-        for step,waittime in self.config['rinse_program']:
+        self.rinse_status = 'Pushing with syringe...'
+        #need to dispense with piston down, and then withdraw with piston up
+        self.pump.setRate(self.config['air_speed'])
+        if self.pump_level>0:
+            self.pump.dispense(self.pump_level)
+
+        for i,(step,waittime) in enumerate(self.config['rinse_program']):
+            self.rinse_status = f'Rinse Program Step {i}/{len(self.config["rinse_program"])}: {step} for {waittime}s'
             if step is not None:
                 self.relayboard.setChannels({step:True})
             time.sleep(waittime)
@@ -220,7 +247,9 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'postsample':False})
         self._arm_up()
         self.state = 'READY'
-        self.pump.withdraw(self.config['withdraw_vol'],block=True)
+        self.rinse_status = 'Not Rinsing'
+        # self.pump.withdraw(self.config['withdraw_vol'],block=True)
+        self.reset_pump(dispense=False)
 
     
     def rinseAll(self):
@@ -231,3 +260,17 @@ class PneumaticSampleCell(Driver,SampleCell):
 
     def setWasteLevel(self,vol):
         self.waste_tank_level = vol
+
+    @Driver.quickbar(qb={'button_text':'Prime Rinse'})
+    def primeRinse(self,waittime=10):
+        if self.state != 'READY':
+            raise Exception(f'Cell in inconsistent state: {self.state}')
+
+        self._arm_up()
+
+        self.relayboard.setChannels({'rinse1':True,'rinse2':False})
+        time.sleep(waittime)
+        self.relayboard.setChannels({'rinse1':False,'rinse2':True})
+        time.sleep(waittime)
+        self.relayboard.setChannels({'rinse1':False,'rinse2':False})
+

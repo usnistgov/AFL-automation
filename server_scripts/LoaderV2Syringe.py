@@ -21,12 +21,14 @@ from AFL.automation.loading.Tubing import Tubing
 
 relayboard = PiPlatesRelay(
         {
-        2:'arm-up',1:'arm-down',
-        3:'rinse1',4:'rinse2',5:'blow',6:'piston-vent',7:'postsample'
+        6:'arm-up',7:'arm-down',
+        5:'rinse1',4:'rinse2',3:'blow',2:'piston-vent',1:'postsample'
 
         } )
 #DummyPump() # ID for 10mL = 14.859, for 50 mL 26.43
-pump = NE1kSyringePump('/dev/ttyUSB0',14.86,10,baud=19200,pumpid=11,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
+# pump = NE1kSyringePump('/dev/ttyUSB0',14.86,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
+pump = NE1kSyringePump('/dev/ttyUSB0',14.0,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
+# pump = NE1kSyringePump('/dev/ttyUSB0',11.4,5,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
 #gpio = PiGPIO({23:'ARM_UP',24:'ARM_DOWN'},pull_dir='DOWN')
 #16,19 also shot
 

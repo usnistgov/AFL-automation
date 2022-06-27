@@ -20,6 +20,7 @@ class OT2_Driver(Driver):
         self.max_transfer = 300
         self.min_transfer = 30
         self.prep_targets = []
+        self.has_tip = False #replace with pipette object check
         self.modules = {}
 
     def reset_prep_targets(self):
@@ -193,7 +194,7 @@ class OT2_Driver(Driver):
         'dest':{'label':'Dest Well','type':'text','default':'1A1'},
         'volume':{'label':'Volume (uL)','type':'float','default':300}
         }})
-    def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,**kwargs):
+    def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,drop_tip=True,force_new_tip=False,**kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -251,7 +252,9 @@ class OT2_Driver(Driver):
                     air_gap=air_gap, 
                     blow_out=blow_out, 
                     post_aspirate_delay=post_aspirate_delay, 
-                    post_dispense_delay=post_dispense_delay)
+                    post_dispense_delay=post_dispense_delay,
+                    drop_tip=drop_tip,
+                    force_new_tip=force_new_tip)
         
     def split_up_transfers(self,vol):
         transfers = []
@@ -278,12 +281,20 @@ class OT2_Driver(Driver):
             air_gap=0, 
             blow_out=False,
             post_aspirate_delay=0.0,
-            post_dispense_delay=0.0):
+            post_dispense_delay=0.0,
+            drop_tip=True,
+            force_new_tip=False):
                       
         if blow_out:
             raise NotImplemented()        
     
-        pipette.pick_up_tip()
+        if force_new_tip and self.has_tip:
+            pipette.drop_tip(self.protocol.deck[12]['A1'])
+            self.has_tip = False
+
+        if not self.has_tip:
+            pipette.pick_up_tip()
+            self.has_tip = True
         
         #need to mix before final aspirate
         if mix_before is not None:
@@ -309,7 +320,9 @@ class OT2_Driver(Driver):
             pipette.move_to(dest_well.top())
             self.protocol.delay(seconds=post_dispense_delay)
     
-        pipette.drop_tip(self.protocol.deck[12]['A1'])
+        if self.has_tip and drop_tip:
+            pipette.drop_tip(self.protocol.deck[12]['A1'])
+            self.has_tip=False
         
     
     def set_aspirate_rate(self,rate=150):

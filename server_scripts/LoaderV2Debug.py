@@ -2,19 +2,19 @@ import os,sys,subprocess
 from pathlib import Path
 
 try:
-        import NistoRoboto
+        import AFL.automation
 except:
         sys.path.append(os.path.abspath(Path(__file__).parent.parent))
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 server_port=5000
 
-from NistoRoboto.APIServer.APIServer import APIServer
+from AFL.automation.APIServer.APIServer import APIServer
 
-from NistoRoboto.loading.PneumaticSampleCell import PneumaticSampleCell
-from NistoRoboto.loading.DummyPump import DummyPump
-from NistoRoboto.loading.SainSmartRelay import SainSmartRelay
-from NistoRoboto.loading.Tubing import Tubing
+from AFL.automation.loading.PneumaticSampleCell import PneumaticSampleCell
+from AFL.automation.loading.DummyPump import DummyPump
+from AFL.automation.loading.SainSmartRelay import SainSmartRelay
+from AFL.automation.loading.Tubing import Tubing
 
 relayboard = SainSmartRelay(
         {

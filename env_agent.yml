@@ -1,6 +1,5 @@
 name: afl_agent
 channels:
-  - rpi
   - conda-forge 
   - defaults
 dependencies:

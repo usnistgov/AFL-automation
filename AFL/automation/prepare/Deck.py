@@ -6,7 +6,11 @@ from AFL.automation.prepare.MassBalance import MassBalance
 from AFL.automation.prepare.PipetteAction import PipetteAction
 from AFL.automation.shared.exceptions import MixingException
 from AFL.automation.shared.units import units
-import scipy.optimize
+import warnings
+try:
+    import scipy.optimize
+except ModuleNotFoundError:
+    warnings.warn('Import of SciPy failed; this is expected on OT-2, worrying on other platforms.  Mass balance solves will not work.  Please, install scipy if able.',stacklevel=2)
 
 get_pipette='''
 def get_pipette(volume,loaded_pipettes):

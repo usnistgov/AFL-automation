@@ -39,7 +39,7 @@ try:
     import numpy as np
     from distutils.util import strtobool
 except ImportError:
-    warnings.warn('Plotting imports failed! Live data plotting will not work on this server.')
+    warnings.warn('Plotting imports failed! Live data plotting will not work on this server.',stacklevel=2)
 
 class APIServer:
     def __init__(self,name,experiment='Development',contact='tbm@nist.gov',index_template='index.html',plot_template='simple-bokeh.html'):

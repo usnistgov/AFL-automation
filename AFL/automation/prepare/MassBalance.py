@@ -1,6 +1,10 @@
 import numpy as np
-import scipy.optimize
-import scipy.spatial
+import warnings
+try:
+    import scipy.optimize
+    import scipy.spatial
+except ModuleNotFoundError:
+    warnings.warn('Import of SciPy failed; this is expected on OT-2, worrying on other platforms.  Mass balance solves will not work.  Please, install scipy if able.',stacklevel=2)
 import pandas as pd
 import copy
 from AFL.automation.shared.units import units

@@ -6,11 +6,16 @@ try:
 except ModuleNotFoundError:
     warnings.warn('Import of SciPy failed; this is expected on OT-2, worrying on other platforms.  Mass balance solves will not work.  Please, install scipy if able.',stacklevel=2)
 import pandas as pd
+import xarray as xr
 import copy
 from AFL.automation.shared.units import units
-#from AFL.automation.agent.PhaseMap import ternary2cart
-#from AFL.automation.agent.PhaseMap import PhaseMap
 from AFL.automation.prepare import Solution
+
+try:
+    import AFL.agent.PhaseMap
+    from AFL.agent.PhaseMap import to_xy
+except ImportError:
+    warnings.warn('Cannot import AFL agent tools. Some features of Massbalance will not work correctly')
 
 try:
     from tqdm.contrib.itertools import product
@@ -138,33 +143,36 @@ class MassBalance:
         self.stock_samples_fractions = stock_fractions
         return self.stock_samples
     
-    # def calculate_bounds(self,components=None,exclude_comps_below=None,fixed_comps=None):
-    #     
-    #     if self.stock_samples is None:
-    #         raise ValueError('Must call .sample_composition_space before calculating bounds')
-    #     
-    #     if components is None:
-    #         components= self.components
-    #         
-    #     if len(components)==3:
-    #         comps = self.stock_samples[list(components)].values
-    #         comps = 100.0*comps/comps.sum(1)[:,np.newaxis]#normalize to 100.0 basis
-    #         if exclude_comps_below is not None:
-    #             mask = ~((comps<exclude_comps_below).any(1))
-    #             comps = comps[mask]
-    #         xy = ternary2cart(comps)
-    #     elif len(components)==2:
-    #         xy = self.stock_samples[list(components)]
-    #         mask = slice(None)
-    #     else:
-    #         raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
-    #     
-    #     self.stock_samples_xy = xy
-    #     self.stock_samples_mask = mask
-    #     self.stock_samples_phasemap = PhaseMap(components)
-    #     self.stock_samples_phasemap.append(compositions = self.stock_samples[list(components)].iloc[mask])
-    #     self.stock_samples_hull = scipy.spatial.ConvexHull(xy)
-    #     self.stock_samples_delaunay = scipy.spatial.Delaunay(xy)
+    def calculate_bounds(self,components=None,exclude_comps_below=None,fixed_comps=None,make_phasemap=True):
+        
+        if self.stock_samples is None:
+            raise ValueError('Must call .sample_composition_space before calculating bounds')
+        
+        if components is None:
+            components= self.components
+            
+        if len(components)==3:
+            comps = self.stock_samples[list(components)].values
+            comps = 100.0*comps/comps.sum(1)[:,np.newaxis]#normalize to 100.0 basis
+            if exclude_comps_below is not None:
+                mask = ~((comps<exclude_comps_below).any(1))
+                comps = comps[mask]
+            xy = to_xy(comps)
+        elif len(components)==2:
+            xy = self.stock_samples[list(components)]
+            mask = slice(None)
+        else:
+            raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
+        
+        self.stock_samples_xy = xy
+        self.stock_samples_mask = mask
+        if make_phasemap:
+            phasemap = xr.Dataset()
+            for component in list(components):
+                phasemap[component]=self.stock_samples[component].iloc[mask]
+            self.stock_samples_phasemap = phasemap
+        self.stock_samples_hull = scipy.spatial.ConvexHull(xy)
+        self.stock_samples_delaunay = scipy.spatial.Delaunay(xy)
     
     def in_bounds(self,points):
         
@@ -172,7 +180,7 @@ class MassBalance:
             raise ValueError('Must call sample_composition_space and calculate_bounds before calling in_bounds')
         
         if points.shape[1]==3:
-            p = ternary2cart(points)
+            p = to_xy(points)
         elif points.shape[1]==2:
             p = points
         else:

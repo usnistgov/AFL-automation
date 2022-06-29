@@ -137,7 +137,7 @@ class MassBalance:
         for fractions in product(*fraction_grid):
             stock_fractions.append(fractions)
             mass = (masses.T*fractions).sum(1)
-            mass = 100.0*mass/mass.sum()
+            mass = mass/mass.sum()
             stock_samples.append(mass)
         self.stock_samples = pd.DataFrame(stock_samples,columns=self.components)
         self.stock_samples_fractions = stock_fractions
@@ -153,7 +153,7 @@ class MassBalance:
             
         if len(components)==3:
             comps = self.stock_samples[list(components)].values
-            comps = 100.0*comps/comps.sum(1)[:,np.newaxis]#normalize to 100.0 basis
+            comps = comps/comps.sum(1)[:,np.newaxis]#normalize to 1.0 basis
             if exclude_comps_below is not None:
                 mask = ~((comps<exclude_comps_below).any(1))
                 comps = comps[mask]
@@ -191,7 +191,7 @@ class MassBalance:
     def plot_bounds(self,include_points):
         import matplotlib.pyplot as plt
         if include_points:
-            ax = self.stock_samples_phasemap.plot()
+            ax = self.stock_samples_phasemap.afl.comp.plot_discrete()
         else:
             fig,ax = plt.subplots(1,1)
         

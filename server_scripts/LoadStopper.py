@@ -2,6 +2,7 @@ from AFL.automation.loading.SensorPollingThread import SensorPollingThread
 from AFL.automation.loading.SensorCallbackThread import StopLoadCBv1
 from AFL.automation.loading.LabJackSensor import LabJackSensor
 from AFL.automation.APIServer.Client import Client
+import pathlib
 
 
 if __name__=='__main__':
@@ -23,7 +24,8 @@ if __name__=='__main__':
             loadstop_cooldown = 2,
             post_detection_sleep = 1 ,
             baseline_duration = 10,
-            daemon=False
+            daemon=False,
+            filepath=pathlib.Path.home()'/.afl/loadstopper_data/'
     )
 
     poll.start()

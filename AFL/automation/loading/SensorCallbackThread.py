@@ -3,16 +3,8 @@ import threading
 import time
 import datetime
 
-        
-
-def SimpleThresholdCB(data,window=5,threshold=1):
-    mean = np.mean(data[-window:])
-    if mean>threshold:
-        print('Above threshold!')
-    else:
-        print(f'mean={mean}')
             
-class CallbackThread(threading.Thread):
+class SensorCallbackThread(threading.Thread):
     def __init__(self,poll,period=0.1):
         threading.Thread.__init__(self, name='CallbackThread', daemon=True)
         
@@ -35,8 +27,8 @@ class CallbackThread(threading.Thread):
         while not self._stop:
             self.process_signal()
             time.sleep(self.period)
-            
-class StopLoadV1_CB(CallbackThread):
+
+class StopLoadCBv1(SensorCallbackThread):
     def __init__(
         self, 
         poll,
@@ -86,6 +78,20 @@ class StopLoadV1_CB(CallbackThread):
                     self.load_client.server_cmd(cmd='stopLoad',secret='xrays>neutrons')
                     time.sleep(self.loadstop_cooldown)
                     break
+
+class SimpleThreshholdCB(SensorCallbackThread):
+    def __init__(self,poll,period,window=5,threshold=1):
+        super().__init__(poll=poll,period=period)
+        self.window = window
+        self.threshold = threshold
+    def process_signal(self):
+        signal = self.poll.read()
+        mean = np.mean(signal[-window:])
+        if mean>threshold:
+            print('Above threshold!')
+        else:
+            print(f'mean={mean}')
+            
 
             
 def getServerState(client):

@@ -4,15 +4,14 @@ import time
 import datetime
 
 class SensorPollingThread(threading.Thread):
-    def __init__(self,sensor,period=0.1,callback=None,hv_pipe=None,window=None,noisy=True):
-        threading.Thread.__init__(self, name='SignalPollingThread', daemon=True)
+    def __init__(self,sensor,period=0.1,callback=None,hv_pipe=None,window=None,filename=None,daemon=True):
+        threading.Thread.__init__(self, name='SignalPollingThread', daemon=daemon)
         
         self.sensor = sensor
         self.callback = callback
         self.window = window
         self.hv_pipe = hv_pipe
         self.period = period
-        self.noisy = noisy
         
         self._stop = False
         self._lock = threading.Lock()
@@ -25,14 +24,17 @@ class SensorPollingThread(threading.Thread):
         
     def terminate(self):
         self._stop = True
+
+    def alive(self):
+        return self._stop
         
     def run(self):
-        print('Starting runloop for PollingThread')
         i=0
+        print(f'Starting runloop for PollingThread:')
         while not self._stop:
             value = self.sensor.read()
+
             
-                
             with self._lock:
                 self._signal.append(value)
                 if self.window is not None:
@@ -41,6 +43,11 @@ class SensorPollingThread(threading.Thread):
                 
             if self.hv_pipe is not None:
                 self.hv_pipe.send(np.array([[i,value]]))
+
+            if filename is not None:
+                datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y/%m/%d-%H:%M:%S-%fus')
+                with open(filename,'a') as f:
+                    f.write(f'{datestr},{i},{value}\n')
             
             if self.callback is not None:
                 self.callback(self._signal)

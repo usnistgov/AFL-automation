@@ -1,5 +1,6 @@
 import requests
 from AFL.automation.APIServer.Client import Client
+from AFL.automation.prepare.PipetteAction import PipetteAction
 
 class OT2Client(Client):
     '''Communicate with AFL-automation server on OT-2
@@ -11,18 +12,8 @@ class OT2Client(Client):
             source,
             dest,
             volume,
-            source_loc=None,
-            dest_loc=None,
-            mix_before=None,
-            mix_after=None,
-            air_gap=0,
-            aspirate_rate=None,
-            dispense_rate=None,
-            post_aspirate_delay=0.0,
-            post_dispense_delay=0.0,
-            blow_out=False,
             interactive=None,
-            
+            **kwargs
             ):
         '''Transfer fluid from one location to another
 
@@ -40,23 +31,8 @@ class OT2Client(Client):
             volume of fluid to transfer in microliters
 
         '''
-        json = {}
-        json['task_name']  = 'transfer'
-        json['source'] = source
-        json['dest']   = dest
-        json['volume'] = volume
-        json['mix_before'] = mix_before
-        json['mix_after'] = mix_after
-        json['air_gap'] = air_gap
-        json['blow_out'] = blow_out
-        if source_loc is not None:
-            json['source_loc'] = source_loc
-        if dest_loc is not None:
-            json['dest_loc'] = dest_loc
-        json['aspirate_rate']=aspirate_rate
-        json['dispense_rate']=dispense_rate
-        json['post_aspirate_delay']=post_aspirate_delay
-        json['post_dispense_delay']=post_dispense_delay
+        json = {'task_name':'transfer'}
+        json.update(PipetteAction(source=source,dest=dest,volume=volume,**kwargs).get_kwargs())
 
         UUID = self.enqueue(interactive=interactive,**json)
         return UUID

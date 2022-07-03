@@ -7,6 +7,8 @@ class PipetteAction:
             dest_loc=None,
             aspirate_rate=None,
             dispense_rate=None,
+            mix_aspirate_rate=None,
+            mix_dispense_rate=None,
             mix_before = None,
             mix_after = None,
             blow_out = False,
@@ -25,6 +27,8 @@ class PipetteAction:
         self.kwargs['mix_after']    = mix_after
         self.kwargs['aspirate_rate'] = aspirate_rate
         self.kwargs['dispense_rate'] = dispense_rate
+        self.kwargs['mix_aspirate_rate'] = mix_aspirate_rate
+        self.kwargs['mix_dispense_rate'] = mix_dispense_rate
         self.kwargs['blow_out'] = blow_out
         self.kwargs['post_aspirate_delay'] = post_aspirate_delay
         self.kwargs['post_dispense_delay'] = post_dispense_delay

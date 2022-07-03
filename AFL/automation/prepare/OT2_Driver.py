@@ -194,7 +194,24 @@ class OT2_Driver(Driver):
         'dest':{'label':'Dest Well','type':'text','default':'1A1'},
         'volume':{'label':'Volume (uL)','type':'float','default':300}
         }})
-    def transfer(self,source,dest,volume,mix_before=None,mix_after=None,air_gap=0,aspirate_rate=None,dispense_rate=None,blow_out=False,post_aspirate_delay=0.0,post_dispense_delay=0.0,drop_tip=True,force_new_tip=False,**kwargs):
+    def transfer(
+            self,
+            source,dest,
+            volume,
+            mix_before=None,
+            mix_after=None,
+            air_gap=0,
+            aspirate_rate=None,
+            dispense_rate=None,
+            mix_aspirate_rate=None,
+            mix_dispense_rate=None,
+            blow_out=False,
+            post_aspirate_delay=0.0,
+            aspirate_equilibration_delay=0.0,
+            post_dispense_delay=0.0,
+            drop_tip=True,
+            force_new_tip=False,
+            **kwargs):
         '''Transfer fluid from one location to another
 
         Arguments
@@ -252,9 +269,12 @@ class OT2_Driver(Driver):
                     air_gap=air_gap, 
                     blow_out=blow_out, 
                     post_aspirate_delay=post_aspirate_delay, 
+                    aspirate_equilibration_delay=aspirate_equilibration_delay,
                     post_dispense_delay=post_dispense_delay,
                     drop_tip=drop_tip,
-                    force_new_tip=force_new_tip)
+                    force_new_tip=force_new_tip,
+                    mix_aspirate_rate=mix_aspirate_rate,
+                    mix_dispense_rate=mix_dispense_rate)
         
     def split_up_transfers(self,vol):
         transfers = []
@@ -281,9 +301,12 @@ class OT2_Driver(Driver):
             air_gap=0, 
             blow_out=False,
             post_aspirate_delay=0.0,
+            aspirate_equilibration_delay=0.0,
             post_dispense_delay=0.0,
             drop_tip=True,
-            force_new_tip=False):
+            force_new_tip=False,
+            mix_aspirate_rate=None,
+            mix_dispense_rate=None):
                       
         if blow_out:
             raise NotImplemented()        
@@ -298,11 +321,25 @@ class OT2_Driver(Driver):
         
         #need to mix before final aspirate
         if mix_before is not None:
+            if mix_aspirate_rate is not None:
+                aspirate_rate = pipette.flow_rate.aspirate# store current rates
+                pipette.flow_rate.aspirate = mix_aspirate_rate
+            if mix_dispense_rate is not None:
+                dispense_rate = pipette.flow_rate.dispense# store current rates
+                pipette.flow_rate.dispense = mix_dispense_rate
+
             nmixes,mix_volume = mix_before
             for _ in range(nmixes):
                 pipette.aspirate(mix_volume,location=source_well)
                 pipette.dispense(mix_volume,location=source_well)        
+
+            if mix_aspirate_rate is not None:
+                pipette.flow_rate.aspirate = aspirate_rate
+            if mix_dispense_rate is not None:
+                pipette.flow_rate.dispense = dispense_rate
+
         pipette.aspirate(volume+air_gap,location=source_well)
+        self.protocol.delay(seconds=aspirate_equilibration_delay)
         
         if post_aspirate_delay>0.0:
             pipette.move_to(source_well.top())
@@ -310,11 +347,25 @@ class OT2_Driver(Driver):
         
         # need to dispense before  mixing
         pipette.dispense(volume+air_gap,location=dest_well)
+
+
+        # mix sample after dispensing
         if mix_after is not None:
+            if mix_aspirate_rate is not None:
+                aspirate_rate = pipette.flow_rate.aspirate# store current rates
+                pipette.flow_rate.aspirate = mix_aspirate_rate
+            if mix_dispense_rate is not None:
+                dispense_rate = pipette.flow_rate.dispense# store current rates
+                pipette.flow_rate.dispense = mix_dispense_rate
+
             nmixes,mix_volume = mix_after
             for _ in range(nmixes):
                 pipette.aspirate(mix_volume,location=dest_well)
                 pipette.dispense(mix_volume,location=dest_well)  
+            if mix_aspirate_rate is not None:
+                pipette.flow_rate.aspirate = aspirate_rate
+            if mix_dispense_rate is not None:
+                pipette.flow_rate.dispense = dispense_rate
                 
         if post_dispense_delay>0.0:
             pipette.move_to(dest_well.top())
@@ -334,6 +385,7 @@ class OT2_Driver(Driver):
         '''Set dispense rate of both pipettes in uL/s. Default is 300 uL/s'''
         for mount,pipette in self.protocol.loaded_instruments.items():
             pipette.flow_rate.dispense = rate
+
 
     def set_gantry_speed(self,speed=400):
         '''Set movement speed of gantry. Default is 400 mm/s'''

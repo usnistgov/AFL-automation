@@ -3,6 +3,7 @@ import opentrons
 from opentrons.protocol_api.labware import Labware
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
+import warnings
 from math import ceil,sqrt
 import os,json,pathlib
 '''
@@ -329,6 +330,12 @@ class OT2_Driver(Driver):
                 pipette.flow_rate.dispense = mix_dispense_rate
 
             nmixes,mix_volume = mix_before
+
+            pipette_max_volume = pipette['object'].max_volume
+            if(mix_volume>pipette_max_volume):
+                warnings.warn(f'Requested mix volume {mix_volume} > pipette max volume {pipette_max_volume}.  Using the max volume.  This may result in unexpected behavior.',stacklevel=2)
+            mix_volume = min(mix_volume,pipette_max_volume)
+            if(mix_volume>pipette_max_volume)
             for _ in range(nmixes):
                 pipette.aspirate(mix_volume,location=source_well)
                 pipette.dispense(mix_volume,location=source_well)        
@@ -359,6 +366,10 @@ class OT2_Driver(Driver):
                 pipette.flow_rate.dispense = mix_dispense_rate
 
             nmixes,mix_volume = mix_after
+            pipette_max_volume = pipette['object'].max_volume
+            if(mix_volume>pipette_max_volume):
+                warnings.warn(f'Requested mix volume {mix_volume} > pipette max volume {pipette_max_volume}.  Using the max volume.  This may result in unexpected behavior.',stacklevel=2)
+            mix_volume = min(mix_volume,pipette_max_volume)
             for _ in range(nmixes):
                 pipette.aspirate(mix_volume,location=dest_well)
                 pipette.dispense(mix_volume,location=dest_well)  

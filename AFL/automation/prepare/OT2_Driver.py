@@ -335,7 +335,6 @@ class OT2_Driver(Driver):
             if(mix_volume>pipette_max_volume):
                 warnings.warn(f'Requested mix volume {mix_volume} > pipette max volume {pipette_max_volume}.  Using the max volume.  This may result in unexpected behavior.',stacklevel=2)
             mix_volume = min(mix_volume,pipette_max_volume)
-            if(mix_volume>pipette_max_volume)
             for _ in range(nmixes):
                 pipette.aspirate(mix_volume,location=source_well)
                 pipette.dispense(mix_volume,location=source_well)        

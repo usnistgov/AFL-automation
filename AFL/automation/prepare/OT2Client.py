@@ -21,8 +21,9 @@ class OT2Client(Client):
             post_aspirate_delay=0.0,
             post_dispense_delay=0.0,
             blow_out=False,
+            drop_tip=True,
+            force_new_tip=False,
             interactive=None,
-            
             ):
         '''Transfer fluid from one location to another
 
@@ -49,6 +50,8 @@ class OT2Client(Client):
         json['mix_after'] = mix_after
         json['air_gap'] = air_gap
         json['blow_out'] = blow_out
+        json['drop_tip']=drop_tip
+        json['force_new_tip']=force_new_tip
         if source_loc is not None:
             json['source_loc'] = source_loc
         if dest_loc is not None:

@@ -139,46 +139,44 @@ class MassBalance:
             mass = (masses.T*fractions).sum(1)
             mass = mass/mass.sum()
             stock_samples.append(mass)
-        self.stock_samples = pd.DataFrame(stock_samples,columns=self.components)
-        self.stock_samples_fractions = stock_fractions
+        self.stock_samples = xr.Dataset()
+        self.stock_samples['samples'] = xr.DataArray(stock_samples,dims=['sample','component'],coords={'component':self.components})
+        self.stock_samples['stock_fractions'] = (('sample','stock'),stock_fractions)
+        self.stock_samples['stock'] = list([i.name for i in self.stocks])
         return self.stock_samples
     
-    def calculate_bounds(self,components=None,exclude_comps_below=None,fixed_comps=None,make_phasemap=True):
+    def calculate_bounds(self,components=None,exclude_comps_below=None,fixed_comps=None):
         
         if self.stock_samples is None:
             raise ValueError('Must call .sample_composition_space before calculating bounds')
         
         if components is None:
             components= self.components
+
+        self.stock_samples.attrs['components'] = components
             
         if len(components)==3:
-            comps = self.stock_samples[list(components)].values
-            comps = comps/comps.sum(1)[:,np.newaxis]#normalize to 1.0 basis
+            comps = self.stock_samples['samples'].sel(component=components)
+            comps = comps/comps.sum('component')#[:,np.newaxis]#normalize to 1.0 basis
             if exclude_comps_below is not None:
-                mask = ~((comps<exclude_comps_below).any(1))
+                mask = ~((comps<exclude_comps_below).any('component'))
                 comps = comps[mask]
-            xy = to_xy(comps)
+            xy = to_xy(comps.values)
         elif len(components)==2:
-            xy = self.stock_samples[list(components)]
+            xy = self.stock_samples['samples'].sel(component=components)
             mask = slice(None)
         else:
             raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
         
-        self.stock_samples_xy = xy
-        self.stock_samples_mask = mask
-        if make_phasemap:
-            phasemap = xr.Dataset()
-            for component in list(components):
-                phasemap[component]=self.stock_samples[component].iloc[mask]
-            self.stock_samples_phasemap = phasemap
-        self.stock_samples_hull = scipy.spatial.ConvexHull(xy)
-        self.stock_samples_delaunay = scipy.spatial.Delaunay(xy)
+        self.stock_samples['xy'] = (('sample_valid','coord'),xy)
+        self.stock_samples['samples_valid']  = (('sample_valid','component'),self.stock_samples['samples'].where(mask,drop=True).data)
+        self.stock_samples.attrs['hull']= scipy.spatial.ConvexHull(xy)
+        self.stock_samples.attrs['delaunay'] = scipy.spatial.Delaunay(xy)
     
     def in_bounds(self,points):
-        
-        if self.stock_samples_delaunay is None:
-            raise ValueError('Must call sample_composition_space and calculate_bounds before calling in_bounds')
-        
+        if not hasattr(self,'stock_samples'):
+            raise ValueError('You must call .sample_composition_space and .calculate_bounds with before calling this method')
+     
         if points.shape[1]==3:
             p = to_xy(points)
         elif points.shape[1]==2:
@@ -186,14 +184,34 @@ class MassBalance:
         else:
             raise ValueError('Can only pass two or three dimensional data to in_bounds')
                              
-        return self.stock_samples_delaunay.find_simplex(p)>=0
-    
-    def plot_bounds(self,include_points):
-        import matplotlib.pyplot as plt
-        if include_points:
-            ax = self.stock_samples_phasemap.afl.comp.plot_discrete()
-        else:
-            fig,ax = plt.subplots(1,1)
+        return self.stock_samples.attrs['delaunay'].find_simplex(p)>=0
+
+
+    def make_grid_mask(self,pts_per_row=100):
+        if not hasattr(self,'stock_samples'):
+            raise ValueError('You must call .sample_composition_space and .calculate_bounds with before calling this method')
+
+        self.stock_samples.afl.comp.add_grid(self.stock_samples.attrs['components'],pts_per_row=pts_per_row)
         
-        for simplex in self.stock_samples_hull.simplices:
-            ax.plot(self.stock_samples_xy[simplex, 0], self.stock_samples_xy[simplex, 1], 'g:')
+        mask = self.in_bounds(self.stock_samples.afl.comp.get_grid().values)
+        self.stock_samples['grid_mask'] = ('grid',mask)
+        self.stock_samples = self.stock_samples.set_index(grid=self.stock_samples.attrs['components_grid'])
+        return self.stock_samples
+
+    def plot_grid_mask(self):
+        if not hasattr(self,'stock_samples'):
+            raise ValueError('You must call .make_grid_mask before calling this method')
+        self.stock_samples.afl.comp.plot_discrete(self.stock_samples.attrs['components_grid'],labels='grid_mask',marker='.',s=1)
+        self.stock_samples.where(self.stock_samples.mask,drop=True).afl.comp.plot_discrete(self.stock_samples.attrs['components_grid'],labels='mask',marker='.',s=1)
+    
+    def plot_bounds(self,include_points=True):
+        import matplotlib.pyplot as plt
+
+        fig,ax = plt.subplots(1,1)
+
+        if include_points:
+            plt.scatter(*self.stock_samples.xy.values.T,s=1)
+        
+        for simplex in self.stock_samples.attrs['hull'].simplices:
+            ax.plot(self.stock_samples.xy[simplex, 0], self.stock_samples.xy[simplex, 1], 'g:')
+        AFL.agent.PhaseMap.format_ternary(ax,*self.stock_samples.attrs['components'])

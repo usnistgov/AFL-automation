@@ -6,10 +6,14 @@ try:
 except ModuleNotFoundError:
     warnings.warn('Import of SciPy failed; this is expected on OT-2, worrying on other platforms.  Mass balance solves will not work.  Please, install scipy if able.',stacklevel=2)
 import pandas as pd
-import xarray as xr
 import copy
 from AFL.automation.shared.units import units
 from AFL.automation.prepare import Solution
+
+try:
+    import xarray as xr
+except ImportError:
+    warnings.warn('Cannot import xarray...some features will not work correctly.')
 
 try:
     import AFL.agent.PhaseMap

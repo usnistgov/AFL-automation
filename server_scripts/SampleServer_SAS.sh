@@ -2,9 +2,9 @@
 
 git config --global credential.helper store
 
-conda activate nistoroboto
+conda activate afl_agent
 
-cd ~/NistoRoboto/
+cd ~/AFL-automation
 git pull
 
-python ~/NistoRoboto/server_scripts/SampleServer_SAS.py
+python ~/AFL-automation/server_scripts/SampleServer_SAS.py

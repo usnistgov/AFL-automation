@@ -230,8 +230,8 @@ class APIServer:
         '''Convert an unqueued return item into web-suitable output'''
         self.app.logger.info(f'Serving unqueued function: {func.__name__} received with decorator kwargs {kwargs_add}')
         kwargs.update(kwargs_add)
-        if request.json:
-            kwargs.update(request.json)
+        # if request.json:
+        #     kwargs.update(request.json)
         kwargs.update(request.args)
         render_hint = kwargs['render_hint'] if 'render_hint' in kwargs else None
         result = func(**kwargs)

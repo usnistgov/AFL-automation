@@ -206,7 +206,7 @@ class MassBalance:
         if not hasattr(self,'stock_samples'):
             raise ValueError('You must call .make_grid_mask before calling this method')
         self.stock_samples.afl.comp.plot_discrete(self.stock_samples.attrs['components_grid'],labels='grid_mask',marker='.',s=1)
-        self.stock_samples.where(self.stock_samples.mask,drop=True).afl.comp.plot_discrete(self.stock_samples.attrs['components_grid'],labels='mask',marker='.',s=1)
+        self.stock_samples.where(self.stock_samples.grid_mask,drop=True).afl.comp.plot_discrete(self.stock_samples.attrs['components_grid'],labels='mask',marker='.',s=1)
     
     def plot_bounds(self,include_points=True):
         import matplotlib.pyplot as plt

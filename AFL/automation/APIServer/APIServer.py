@@ -258,6 +258,9 @@ class APIServer:
             if type(result) is np.ndarray:
                 result = result.tolist()
             return jsonify(result)
+        elif render_hint == 'img':
+            self.app.logger.info('Sending output directly to browser as-is')
+            return result
         else:
             return "Error while rendering output",500
 

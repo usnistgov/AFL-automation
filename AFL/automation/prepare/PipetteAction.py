@@ -1,3 +1,5 @@
+import copy
+
 class PipetteAction:
     def __init__(self,
             source,
@@ -14,6 +16,7 @@ class PipetteAction:
             blow_out = False,
             post_aspirate_delay=0.0,
             post_dispense_delay=0.0,
+            aspirate_equilibration_delay=0.0,
             drop_tip=True,
             force_new_tip=False,
             ):
@@ -32,6 +35,7 @@ class PipetteAction:
         self.kwargs['blow_out'] = blow_out
         self.kwargs['post_aspirate_delay'] = post_aspirate_delay
         self.kwargs['post_dispense_delay'] = post_dispense_delay
+        self.kwargs['aspirate_equilibration_delay'] = aspirate_equilibration_delay
         self.kwargs['drop_tip'] = drop_tip
         self.kwargs['force_new_tip'] = force_new_tip
     
@@ -41,12 +45,19 @@ class PipetteAction:
     def __repr__(self):
         return self.__str__()
 
+    def __getattr__(self,name):
+        if name in self.kwargs:
+            return self.kwargs[name]
+        else:
+            return getattr(self,name)
+
     def emit_protocol(self):
         return self.get_kwargs()
     
     def get_kwargs(self):
-        if self.kwargs['source_loc'] is None:
-            del self.kwargs['source_loc']
-        if self.kwargs['dest_loc'] is None:
-            del self.kwargs['dest_loc']
-        return self.kwargs
+        kw = copy.deepcopy(self.kwargs)
+        if kw['source_loc'] is None:
+            del kw['source_loc']
+        if kw['dest_loc'] is None:
+            del kw['dest_loc']
+        return kw

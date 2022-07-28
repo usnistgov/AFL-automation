@@ -331,7 +331,7 @@ class OT2_Driver(Driver):
 
             nmixes,mix_volume = mix_before
 
-            pipette_max_volume = pipette['object'].max_volume
+            pipette_max_volume = pipette.max_volume
             if(mix_volume>pipette_max_volume):
                 warnings.warn(f'Requested mix volume {mix_volume} > pipette max volume {pipette_max_volume}.  Using the max volume.  This may result in unexpected behavior.',stacklevel=2)
             mix_volume = min(mix_volume,pipette_max_volume)
@@ -365,7 +365,7 @@ class OT2_Driver(Driver):
                 pipette.flow_rate.dispense = mix_dispense_rate
 
             nmixes,mix_volume = mix_after
-            pipette_max_volume = pipette['object'].max_volume
+            pipette_max_volume = pipette.max_volume
             if(mix_volume>pipette_max_volume):
                 warnings.warn(f'Requested mix volume {mix_volume} > pipette max volume {pipette_max_volume}.  Using the max volume.  This may result in unexpected behavior.',stacklevel=2)
             mix_volume = min(mix_volume,pipette_max_volume)

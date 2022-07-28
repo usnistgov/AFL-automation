@@ -258,9 +258,15 @@ class APIServer:
             if type(result) is np.ndarray:
                 result = result.tolist()
             return jsonify(result)
-        elif render_hint == 'img':
-            self.app.logger.info('Sending output directly to browser as-is')
-            return result
+        elif render_hint == 'precomposed_svg':
+            self.app.logger.info('Sending svg to browser')
+            return send_file(result,mimetype='image/svg+xml')
+        elif render_hint == 'precomposed_png':
+            self.app.logger.info('Sending png to browser')
+            return send_file(result,mimetype='image/png')
+        elif render_hint == 'precomposed_jpeg':
+            self.app.logger.info('Sending png to browser')
+            return send_file(result,mimetype='image/jpeg')
         else:
             return "Error while rendering output",500
 

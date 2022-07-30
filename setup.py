@@ -10,4 +10,5 @@ setup(
     packages=find_packages(where='.'),
     license='LICENSE',
     long_description=open('README.md').read(),
+    scripts=['launchers/roboctl']
 )

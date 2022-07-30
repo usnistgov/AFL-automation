@@ -230,8 +230,8 @@ class APIServer:
         '''Convert an unqueued return item into web-suitable output'''
         self.app.logger.info(f'Serving unqueued function: {func.__name__} received with decorator kwargs {kwargs_add}')
         kwargs.update(kwargs_add)
-        if request.json:
-            kwargs.update(request.json)
+        # if request.json:
+        #     kwargs.update(request.json)
         kwargs.update(request.args)
         render_hint = kwargs['render_hint'] if 'render_hint' in kwargs else None
         result = func(**kwargs)
@@ -258,6 +258,15 @@ class APIServer:
             if type(result) is np.ndarray:
                 result = result.tolist()
             return jsonify(result)
+        elif render_hint == 'precomposed_svg':
+            self.app.logger.info('Sending svg to browser')
+            return send_file(result,mimetype='image/svg+xml')
+        elif render_hint == 'precomposed_png':
+            self.app.logger.info('Sending png to browser')
+            return send_file(result,mimetype='image/png')
+        elif render_hint == 'precomposed_jpeg':
+            self.app.logger.info('Sending png to browser')
+            return send_file(result,mimetype='image/jpeg')
         else:
             return "Error while rendering output",500
 

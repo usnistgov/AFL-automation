@@ -2,6 +2,9 @@ import types
 import datetime
 from AFL.automation.shared.units import has_units
 
+import matplotlib.pyplot as plt
+import io
+
 
 def listify(obj):
     if isinstance(obj, str) or not hasattr(obj, "__iter__"):
@@ -28,4 +31,12 @@ def makeRegistar():
         return registrar
     registrarDecorator.registry = registry
     return registrarDecorator
+
+def mpl_plot_to_bytes(fig=None,format='svg'):
+    if fig is None:
+        fig = plt.gcf()
+    byte_str  = io.BytesIO()
+    fig.savefig(byte_str,format=format)
+    byte_str.seek(0) # need to rewind
+    return byte_str
 

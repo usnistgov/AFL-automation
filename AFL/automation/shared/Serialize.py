@@ -9,6 +9,9 @@ def serialize(obj):
 
 def deserialize(pickled_str):
     pickled_b64 = pickled_str.encode()
-    pickled = base64.b64decode(pickled_b64)
+    
+    # the b'==' ensures the string is always correctly padeded
+    # see https://stackoverflow.com/a/49459036
+    pickled = base64.b64decode(pickled_b64 + b'==')
     obj = pickle.loads(pickled)
     return obj

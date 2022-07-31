@@ -1,6 +1,6 @@
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.PersistentConfig import PersistentConfig
-from AFL.automation.shared.Serialize import deserialize,serialize
+from AFL.automation.shared import serialization
 from math import ceil,sqrt
 import inspect 
 import pathlib
@@ -122,15 +122,18 @@ class Driver:
             return_val = getattr(self,task_name)(**kwargs)
         return return_val
     
-    def set_object(self,name,value,serialized=True):
-        if serialized:
-            value = deserialize(value)
-        setattr(self,name,value)
+    def set_object(self,serialized=True,**kw):
+        for name,value in kw.items():
+            self.app.logger.info(f'Sending object \'{name}\'')
+            if serialized:
+                value = serialization.deserialize(value)
+            setattr(self,name,value)
     
     def get_object(self,name,serialize=True):
         value = getattr(self,name)
+        self.app.logger.info(f'Getting object \'{name}\'')
         if serialize:
-            value = serialize(value)
+            value = serialization.serialize(value)
         return value
 
 

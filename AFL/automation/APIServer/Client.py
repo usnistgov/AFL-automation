@@ -1,5 +1,5 @@
 import requests,uuid,time,copy,inspect
-from AFL.automation.shared.Serialize import deserialize,serialize
+from AFL.automation.shared import serialization
 
 
 class Client:
@@ -237,22 +237,27 @@ class Client:
             raise RuntimeError(f'API call to move_item command failed with status_code {response.status_code}\n{response.content}')
         return response
     
-    def set_object(self,name,obj,serialize=True):
+    def set_object(self,serialize=True,**kw):
         json = {}
-        json['task_name'] = f'set_object'
-        json['name'] = name 
+        json['task_name'] = 'set_object'
         if serialize:
-            json['value'] = serialize(obj)
             json['serialized'] = True
-        else:
-            json['value'] = obj
-            json['serialized'] = False
+            
+        for name,value in kw.items():
+            if serialize:
+                value = serialization.serialize(value)
+            json[name] = value
         self.enqueue(**json)
         
-    def set_object(self,name,obj):
+    def get_object(self,name,serialize=True):
         json = {}
-        json['task_name'] = f'set_object'
-        json['name'] = name 
-        json['value'] = serialize(obj)
-        json['serialized'] = True 
-        self.enqueue(**json)
+        json['task_name']  = 'get_object'
+        json['name']  = name
+        json['interactive']  = True
+        json['serialize']  = serialize
+        retval = self.enqueue(**json)
+        if serialize:
+            obj = serialization.deserialize(retval['return_val'])
+        else:
+            obj = retval['return_val']
+        return obj

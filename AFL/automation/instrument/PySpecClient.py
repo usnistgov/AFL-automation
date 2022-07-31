@@ -118,7 +118,11 @@ class PySpecClient():
         return channel.read()
 
 
-        
+if __name__=="__main__":        
+    #from AFL.automation.instrument.PySpecClient import PySpecClient
+    client = PySpecClient("localhost","spec")
+
+
 
 
 

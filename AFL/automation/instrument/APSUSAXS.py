@@ -18,6 +18,7 @@ class APSUSAXS(Driver):
     defaults['script_name_pv'] = '9idcLAX:AutoCollectionStrInput'
     defaults['instrument_status_pv'] = '9idcLAX:state'
     defaults['script_path'] = '/mnt/share1/USAXS_data/2022-06/'
+    defaults['instrument_running_pv'] = '9idcLAX:dataColInProgress'
     defaults['script_template_file'] = 'AFL-template.mac'
     defaults['script_file'] = 'AFL.mac'
     defaults['magic_project_key'] = '!!AFL-SETNAME!!'
@@ -89,9 +90,12 @@ class APSUSAXS(Driver):
             for line in f:
                 s = line.replace(self.config['magic_project_key'],self.project)
                 s = s.replace(self.config['magic_filename_key'],self.filename)
+                s = s.replace('\r','')
+                s = s.replace('\n','')
                 lines.append(s)
         with open(pathlib.Path(self.config['script_path'])/self.config['script_file'],'w') as f:
-            f.writelines(lines)
+            for line in lines:
+                f.write(line+'\r\n')
 
     @Driver.quickbar(qb={'button_text':'Expose',
         'params':{
@@ -119,16 +123,20 @@ class APSUSAXS(Driver):
 
         time.sleep(0.5)
         if block:
+            time.sleep(20)
             self.block_for_run_finish()
             self.status_txt = 'Instrument Idle'
     
     def block_for_run_finish(self):
-        while 'omplete' not in self.getRunStatus():
-            time.sleep(1)
+        while self.getRunInProgress():
+            time.sleep(5)
         
     def getRunStatus(self):
         return epics.caget(self.config['instrument_status_pv'],as_string=True)
- 
+
+    def getRunInProgress(self):
+        return epics.caget(self.config['instrument_running_pv']) 
+    
     @Driver.unqueued(render_hint='2d_image',log_image=True)
     def getData(self,**kwargs):
         try:

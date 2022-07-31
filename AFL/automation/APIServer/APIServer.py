@@ -196,7 +196,7 @@ class APIServer:
 
 
 
-        path = pathlib.Path.home() / '.nistoroboto'
+        path = pathlib.Path.home() / '.afl'
         path.mkdir(exist_ok=True,parents=True)
         filepath = path / f'{self.name}.log'
         file_handler = FileHandler(filepath)

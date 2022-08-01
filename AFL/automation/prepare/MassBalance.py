@@ -264,7 +264,7 @@ class MassBalance:
         
         #need to remove anything associated with sample_valid coordinate
         try:
-            self.stock_samples.drop_dim('sample_valid')
+            self.stock_samples.drop_dims('sample_valid')
         except ValueError:
             pass
         

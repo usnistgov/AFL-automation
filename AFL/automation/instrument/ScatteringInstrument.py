@@ -17,8 +17,14 @@ class ScatteringInstrument():
     defaults['wavelength'] = 1.3421e-10
     defaults['dist'] = 3.4925
     defaults['npts'] = 500
-    defaults['detector_name'] = 'pilatus300kw'
+    defaults['detector_name'] = 'pilatus300kw'#set to empty for custom detector
     defaults['mask_path'] = ''
+
+    #only used if detector_name='' (empty string)
+    defaults['pixel1'] = 0.075 #pixel y size in m
+    defaults['pixel2'] = 0.075 #pixel x size in m
+    defaults['num_pixel1'] = 128
+    defaults['num_pixel2'] = 128
 
     def __init__(self):
         self.generateIntegrator()
@@ -32,7 +38,15 @@ class ScatteringInstrument():
         raise NotImplementedError
 
     def generateIntegrator(self):
-        self.detector = pyFAI.detector_factory(name=self.config['detector_name'])
+        if self.config['detector_name']:#if there isn't an empty string
+            self.detector = pyFAI.detector_factory(name=self.config['detector_name'])
+        else:
+            self.detector = pyFAI.detectors.Detector(
+                pixel1=self.config['pixel1'],
+                pixel2=self.config['pixel2'],
+                max_shape=(self.config['num_pixel1'],self.config['num_pixel2'])
+            )
+
         if(self.config['mask_path'] is None):
             self.mask=None
         else:

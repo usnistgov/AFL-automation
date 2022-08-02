@@ -180,7 +180,7 @@ class StopLoadCBv2(SensorCallbackThread):
                     else:
                         self.update_status(f'[{datestr}] Load timed out')
                     time.sleep(self.post_detection_sleep)
-                    self.load_client.server_cmd(cmd='stopLoad',secret='xrays>neutrons')
+                    self.load_client.server_cmd(cmd='stopLoad?secret=xrays>neutrons')
 
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
                     # self.update_status(f'Saving signal data to {filename}')

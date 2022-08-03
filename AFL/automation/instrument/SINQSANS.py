@@ -62,15 +62,14 @@ class SINQSANS(ScatteringInstrument,Driver):
         'set_empty_transmission':{'label':'Set Empty Trans?','type':'boolean','default':False}
         }})
     def measureTransmission(self,set_empty_transmission=False,return_full=False):
-        self.transmissionMode()
-        self._simple_expose(exposure=2,block=True)
+        self._simple_expose(exposure=2,block=True,mode='trans')
+        
         try:
             cts = int(self.client.ask_param('banana sum 40 80 40 80'))
         except ValueError:
             cts = int(self.client.ask_param('banana sum 40 80 40 80'))
-        monitor_cts = 20000
-        self.scatteringMode()
-        
+
+        monitor_cts = 10 
         trans = cts/monitor_cts
         
         if set_empty_transmission:
@@ -107,8 +106,24 @@ class SINQSANS(ScatteringInstrument,Driver):
             get the currently set file name
 
         '''
-        sicsdatanumber = self.client.ask_param('sicsdatanumber')
+        count = 0
+        while True:
+            sicsdatanumber = self.client.ask_param('sicsdatanumber')
+            try:
+                int(sicsdatanumber)
+            except ValueError: 
+                if count>10:
+                    raise ValueError('Could not read sicsdatanumber!')
+                time.sleep(0.5)
+            else:
+                break
+            count+=1
+
         filepath = pathlib.Path(self.config['data_path'])/f'sans2022n0{sicsdatanumber}.hdf'
+        if self.app is not None:
+            self.app.logger.debug(f'Last file found to be {filepath}')
+        else:
+            print(f'Last file found to be {filepath}')
         return filepath
 
    
@@ -129,21 +144,21 @@ class SINQSANS(ScatteringInstrument,Driver):
 
     def readH5(self,filepath,update_config=False,**kwargs):
         out_dict = {}
-        with open(filepath,'r') as h5:
-            out_dict['counts']     = h5['entry1/data1/counts'][()]
-            out_dict['name']       = h5['entry1/sample/name'][()]
-            out_dict['dist']       = h5['entry1/SANS/detector/x_position'][()]/1000
-            out_dict['wavelength'] = h5['entry1/data1/lambda'][()]*1e-9,
-            out_dict['beam_center_x']  = h5['entry1/SANS/detector/beam_center_x'][()]
-            out_dict['beam_center_y']  = h5['entry1/SANS/detector/beam_center_y'][()]
-            out_dict['poni2']      = h5['entry1/SANS/detector/beam_center_x'][()]*self.config['pixel1']
-            out_dict['poni1 ']     = h5['entry1/SANS/detector/beam_center_y'][()]*self.config['pixel2']
+        with h5py.File(filepath,'r') as h5:
+            out_dict['counts']         = h5['entry1/data1/counts'][()]
+            # out_dict['name']           = h5['entry1/sample/name'][()]
+            # out_dict['dist']           = h5['entry1/SANS/detector/x_position'][()]/1000
+            # out_dict['wavelength']     = h5['entry1/data1/lambda'][()]*1e-9,
+            # out_dict['beam_center_x']  = h5['entry1/SANS/detector/beam_center_x'][()]
+            # out_dict['beam_center_y']  = h5['entry1/SANS/detector/beam_center_y'][()]
+            # out_dict['poni2']          = h5['entry1/SANS/detector/beam_center_x'][()]*self.config['pixel1']
+            # out_dict['poni1 ']         = h5['entry1/SANS/detector/beam_center_y'][()]*self.config['pixel2']
 
-        if update_config:
-            self.config['wavelength'] = out_dict['wavelength']
-            self.config['dist'] = out_dict['dist']
-            self.config['poni1'] = out_dict['poni1']
-            self.config['poni2'] = out_dict['poni2']
+        # if update_config:
+        #     self.config['wavelength'] = out_dict['wavelength']
+        #     self.config['dist']       = out_dict['dist']
+        #     self.config['poni1']      = out_dict['poni1']
+        #     self.config['poni2']      = out_dict['poni2']
 
         return out_dict
 
@@ -152,16 +167,16 @@ class SINQSANS(ScatteringInstrument,Driver):
         try:
             filepath = self.getLastFilePath()
             data = self.readH5(filepath)['counts']
-        except FileNotFoundError:
+        except (FileNotFoundError,OSError,KeyError):
             nattempts = 1
-            while nattempts<11:
+            while nattempts<31:
                 nattempts = nattempts +1
-                time.sleep(0.2)
+                time.sleep(1.0)
                 try:
                     filepath = self.getLastFilePath()
                     data = self.readH5(filepath)['counts']
-                except FileNotFoundError:
-                    if nattempts == 10:
+                except (FileNotFoundError,OSError,KeyError):
+                    if nattempts == 30:
                         raise FileNotFoundError(f'could not locate file after {nattempts} tries')
                     else:
                         warnings.warn(f'failed to load file, trying again, this is try {nattempts}')
@@ -171,7 +186,7 @@ class SINQSANS(ScatteringInstrument,Driver):
         return np.nan_to_num(data)
 
 
-    def _simple_expose(self,name=None,exposure=None,aects=1e6,block=False):
+    def _simple_expose(self,name=None,exposure=None,mode='scatt',aects=1e6,block=False):
         if name is None:
             name=self.getFilename()
         else:
@@ -180,49 +195,43 @@ class SINQSANS(ScatteringInstrument,Driver):
         if exposure is None:
             exposure=self.getAutoExposure(desired_counts = aects)
         
-        self.setExposure(exposure)
+        #self.setExposure(exposure)
         
         self.status_txt = f'Starting {exposure} moni count named {name}'
         if self.app is not None:
             self.app.logger.debug(f'Starting exposure with name {name} for {exposure} moni cts')
 
-        self.client.send_cmd(f'count moni {self.config["exposure"]}')
+        if mode == 'scatt':
+            self.client.send_cmd(f'MLscatt {self.config["exposure"]}')
+        else:
+            self.client.send_cmd(f'MLtrans {self.config["exposure"]}')
         if block:
             time.sleep(2)
-            self.blockForIdle()
+            self.blockForCompleted()
             time.sleep(0.5)
-            while self.client.conn.read_lazy() != b'':
-                pass
-
-    def transmissionMode(self):
-        self.client.send_cmd(f'att 1')
-        time.sleep(0.5)
-        self.blockForIdle()
-        self.client.send_cmd(f'bsout')
-        time.sleep(0.5)
-        self.blockForIdle()
-
-    def scatteringMode(self):
-        self.client.send_cmd(f'bsin')
-        time.sleep(0.5)
-        self.blockForIdle()
-        self.client.send_cmd(f'att 0')
-        time.sleep(0.5)
-        self.blockForIdle()
-
-
+            self.client.flush_buffer()
     
     def getAutoExposure(self,short_count_dur=2,desired_counts = 1000000):
         self.client.send_cmd(f'count moni {short_count_dur} n')
         time.sleep(1)
         self.blockForIdle()
         self.client.conn.read_lazy()
+        time.sleep(1)
         try:
             counts = int(self.client.ask_param('banana sum 0 127 0 127'))
         except ValueError:
             counts = int(self.status_monitor_client.ask_param('banana sum 0 127 0 127'))
         count_rate = counts / short_count_dur
-        return (desired_counts / count_rate)
+        proposed_time = (desired_counts / count_rate)
+        if proposed_time>500:
+            print(f'with {counts} in a {short_count_dur} exposure, I would like to measure {proposed_time}, but that seems too high.')
+            print(f'setting to 500 instead.')
+            proposed_time = 500
+        if proposed_time < 5:
+            print(f'with {counts} in a {short_count_dur} exposure, I would like to measure {proposed_time}, but that seems too low.')
+            print(f'setting to 5 instead.')
+            proposed_time = 5
+        return proposed_time
 
     @Driver.quickbar(qb={'button_text':'Expose',
         'params':{
@@ -239,30 +248,44 @@ class SINQSANS(ScatteringInstrument,Driver):
       
         if measure_transmission:
             self.measureTransmission() 
+       
+        if exposure is not None:
+            #time.sleep(5)
+            #print('finding auto exposure counts..:')
+            #exposure=self.getAutoExposure()
+            self.setExposure(exposure)
         
-        if exposure is None:
-            exposure=self.getAutoExposure()
-        self.setExposure(exposure)
         
-        self.scatteringMode()
-
+        pre_sicsdatanumber = self.client.ask_param('sicsdatanumber')
         self.status_txt = f'Starting {exposure} moni count named {name}'
         if self.app is not None:
             self.app.logger.debug(f'Starting exposure with name {name} for {exposure} moni cts')
-
-        self.client.send_cmd(f'count moni {self.config["exposure"]}')
+        
+        self.client.send_cmd(f'MLscatt {self.config["exposure"]}')
         if block or reduce_data or save_nexus:
-            time.sleep(2)
-            self.blockForIdle()
+            self.blockForCompleted()
+            self.client.flush_buffer()
+            
+            try:
+                 trash = int(self.client.ask_param('banana sum 40 80 40 80'))
+            except ValueError:
+                 trash = int(self.client.ask_param('banana sum 40 80 40 80'))
             if reduce_data:
                 self.status_txt = 'Reducing Data'
                 reduced = self.getReducedData(write_data=True,filename=name)
                 np.savetxt(f'{name}_chosen_r1d.csv',np.transpose(reduced),delimiter=',')
             self.status_txt = 'Instrument Idle'
-            return transmission
-    
+         
     def blockForIdle(self):
         self.status_monitor_client.success()
+
+    def blockForCompleted(self):
+        flag = True
+        while flag:
+            resp = self.client.conn.read_until(b'\r\n').decode()
+            print(resp)
+            flag = ('ML completed' not in resp)
+            time.sleep(0.1)
 
     def getStatus(self):
         status = self.status_monitor_client.ask_param('el737 RS')
@@ -303,6 +326,7 @@ class SICSTelnetClient():
     def ask_param(self,param,second_try = False):
         cmd = f'{param}\r\n'.encode('utf-8')
         self.conn.write(cmd)
+        print(f'sending {cmd} to server')
         time.sleep(1)
         response = self.conn.read_very_eager().decode()
         if 'ERROR: Busy' in response:
@@ -323,19 +347,34 @@ class SICSTelnetClient():
 
     def set_param(self,param,val):
         cmd = f'{param} {val}\r\n'.encode('utf-8')
+        print(f'sending {cmd} to server')
         self.conn.write(cmd)
         response = self.conn.read_very_eager()
         return response.decode().replace(r'\r\n','')
 
     def send_cmd(self,cmd):
         cmd = f'{cmd}\r\n'.encode('utf-8')
+        print(f'sending {cmd} to server')
         self.conn.write(cmd)
         response = self.conn.read_very_eager().decode()
+        print(f'head back: {response}')
         return response
     def success(self):
         cmd = f'success\r\n'.encode('utf-8')
+        print(f'sending {cmd} to server')
         self.conn.write(cmd)
         response = self.conn.read_until(b'\r\n').decode()
         return response
     def __del__(self):
         self.conn.close()
+    def flush_buffer(self):
+        flag = True
+        while flag:
+            resp = self.conn.read_lazy() 
+            print(resp)
+            flag = (resp != b'')
+            time.sleep(0.2)
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    sans = SINQSANS()
+

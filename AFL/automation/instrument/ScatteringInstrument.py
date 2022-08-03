@@ -109,22 +109,23 @@ class ScatteringInstrument():
             filename1d = None
             filename2d = None
 
-        normalized_sample_transmission  = self.last_measured_transmission[0]
-        open_flux = self.last_measured_transmission[1]
-        sample_flux = self.last_measured_transmission[2]
-        empty_cell_transmission = self.last_measured_transmission[3]
-        sample_transmission = normalized_sample_transmission*empty_cell_transmission
-        measurement_time  = self.getElapsedTime()
-        sample_thickness = self.config['sample_thickness']
-        calibration_factor = self.config['absolute_calibration_factor']
-        normalization_factor = (open_flux*sample_transmission*measurement_time*sample_thickness)/calibration_factor #pyFAI divides this value
-        print('getReducedData normalization calculation:')
-        print(f'sample_transmission={sample_transmission}')
-        print(f'open_flux (I0)={open_flux}')
-        print(f'measurement_time={measurement_time}')
-        print(f'sample_thickness={sample_thickness}')
-        print(f'calibration_factor={calibration_factor}')
-        print(f'normalization_factor={normalization_factor}')
+        normalization_factor=1
+        # normalized_sample_transmission  = self.last_measured_transmission[0]
+        # open_flux = self.last_measured_transmission[1]
+        # sample_flux = self.last_measured_transmission[2]
+        # empty_cell_transmission = self.last_measured_transmission[3]
+        # sample_transmission = normalized_sample_transmission*empty_cell_transmission
+        # measurement_time  = self.getElapsedTime()
+        # sample_thickness = self.config['sample_thickness']
+        # calibration_factor = self.config['absolute_calibration_factor']
+        # normalization_factor = (open_flux*sample_transmission*measurement_time*sample_thickness)/calibration_factor #pyFAI divides this value
+        # print('getReducedData normalization calculation:')
+        # print(f'sample_transmission={sample_transmission}')
+        # print(f'open_flux (I0)={open_flux}')
+        # print(f'measurement_time={measurement_time}')
+        # print(f'sample_thickness={sample_thickness}')
+        # print(f'calibration_factor={calibration_factor}')
+        # print(f'normalization_factor={normalization_factor}')
 
         if reduce_type == '1d' or write_data:
             res = self.integrator.integrate1d(img,

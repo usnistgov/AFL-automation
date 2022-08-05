@@ -163,7 +163,7 @@ class CHESSID3B(ScatteringInstrument,Driver):
     def setExposure(self,exposure):
         if self.app is not None:
             self.app.logger.debug(f'Setting exposure time to {exposure}')
-        selfself.app.logg.config['exposure'] = exposure
+        self.config['exposure'] = exposure
 
     def setFilename(self,name):
         if self.app is not None:

@@ -10,6 +10,7 @@ import pathlib
 import PIL
 import warnings
 import re,telnetlib #for sics telnet comms
+import json
 
 
 class SINQSANS(ScatteringInstrument,Driver):
@@ -274,6 +275,22 @@ class SINQSANS(ScatteringInstrument,Driver):
                 self.status_txt = 'Reducing Data'
                 reduced = self.getReducedData(write_data=True,filename=name)
                 np.savetxt(f'{name}_chosen_r1d.csv',np.transpose(reduced),delimiter=',')
+
+                normalized_sample_transmission  = self.last_measured_transmission[0]
+                open_flux = self.last_measured_transmission[1]
+                sample_flux = self.last_measured_transmission[2]
+                empty_cell_transmission = self.last_measured_transmission[3]
+                sample_transmission = normalized_sample_transmission*empty_cell_transmission
+
+                out = {}
+                out['normalized_sample_transmission'] = normalized_sample_transmission
+                out['open_flux'] = open_flux
+                out['sample_flux'] = sample_flux
+                out['empty_cell_transmission'] = empty_cell_transmission
+                out['sample_transmission'] = sample_transmission
+                with open(f'{name}_trans.json','w') as f:
+                    json.dump(out,f)
+
             self.status_txt = 'Instrument Idle'
          
     def blockForIdle(self):

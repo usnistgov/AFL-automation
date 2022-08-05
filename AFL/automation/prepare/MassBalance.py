@@ -130,7 +130,10 @@ class MassBalance:
         for stock in self.stocks:
             row = []
             ratio = (pipette_min/stock.volume).to_base_units().magnitude
-            fraction_grid.append(list(np.linspace(ratio,1.0,grid_density)))
+            l1 = list(np.linspace(ratio,1.0,grid_density))
+            l2 = list(np.geomspace(ratio,1.0,grid_density))
+            l = list(np.unique(l1+l2))
+            fraction_grid.append(l)
             for component in self.components:
                 if component in stock.components:
                     row.append(stock[component].mass.to('mg').magnitude)
@@ -148,6 +151,8 @@ class MassBalance:
             mass_frac = mass/mass.sum()
             stock_samples_mass.append(mass)
             stock_samples_frac.append(mass_frac)
+        self.fraction_grid = fraction_grid
+        self.masses = masses
         self.stock_samples = xr.Dataset()
         self.stock_samples['samples_frac'] = xr.DataArray(stock_samples_frac,dims=['sample','component'],coords={'component':self.components})
         self.stock_samples['samples_mass'] = xr.DataArray(stock_samples_mass,dims=['sample','component'],coords={'component':self.components})

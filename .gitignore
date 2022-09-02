@@ -4,6 +4,7 @@ dev/.ipynb_checkpoints/*
 *egg-info*
 *log
 *tif
+*sqlite
 *tiff
 data/*
 *poni

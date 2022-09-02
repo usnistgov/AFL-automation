@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% block title %}Sample Detail{% endblock %}
+    <br>
+    <a class="action" href="{{ back }}">Back</a>
+    <a class="action" href="{{ url_for('sample_stock.create') }}">New Single Entry</a>
+{% endblock %}
+
+{% block content %}
+
+<article class="post">
+  <header>
+    <div>
+      <h1>{{ post['name'] }} | ID:{{ post['id'] }}</h1>
+      <div class="about">created on {{ post['created'] }}</div>
+    </div>
+
+  </header>
+
+      <table class="table_detail" style="width:100%">
+
+          <tr>
+            <th>Stock ID</th>
+            <th>Stock Name</th>
+            <th>Amount</th>
+            <th>Units</th>
+            <th>Volmass</th>
+            <th></th>
+          </tr>
+
+        {% for post in stocks %}
+
+        <tr>
+        <td>{{ post['stock_id'] }}</td>
+        <td>{{ names[loop.index0] }}</td>
+        <td>{{ post['amount'] }}</td>
+        <td>{{ post['units'] }}</td>
+        <td>{{ post['volmass'] }}</td>
+        <td><a class="action" href="{{ url_for('sample_stock.update', id=post['id']) }}">Edit</a></td>
+        </tr>
+
+        {% endfor %}
+
+      </table>
+
+        <br><i>Numbers displayed in chart are in g or ml.</i>
+
+        <br> <br> <a class="action" href="{{ url_for('sample.export', id=post['id']) }}">Export Individual Sample</a>
+        <br> <br> <a class="action" href="{{ url_for('sample.generate_json_id', id=post['id']) }}">Individual JSON</a>
+
+        <canvas id="myChart" width="900" height="600"></canvas>
+        <script>
+
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ names | safe }},
+                    datasets: [{
+                        label: 'Data Points',
+                        data: {{ amounts }},
+                        backgroundColor: {{ colors | safe }},
+                        borderColor: 'rgba(255,255,255,0.7)',
+                        borderWidth: 2,
+                        hoverBorderColor: '#222636',
+                        hoverBorderWidth: 6
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    legend: {
+                               labels: {
+                                   fontColor: 'white',
+                                   fontSize: 15
+                               }
+                            }
+
+
+                }
+
+            });
+
+        </script>
+
+
+</article>
+
+{% endblock %}
+

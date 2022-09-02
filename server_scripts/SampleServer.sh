@@ -2,9 +2,9 @@
 
 git config --global credential.helper store
 
-conda activate nistoroboto
+conda activate afl_agent
 
-cd ~/nistoroboto/
+cd ~/AFL-automation/
 git pull
 
-python ~/nistoroboto/server_scripts/SampleServer.py
+python ~/AFL-automation/server_scripts/SampleServer_USAXS.py

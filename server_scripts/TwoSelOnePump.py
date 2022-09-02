@@ -2,19 +2,19 @@ import os,sys,subprocess
 from pathlib import Path
 
 try:
-        import NistoRoboto
+        import AFL.automation
 except:
         sys.path.append(os.path.abspath(Path(__file__).parent.parent))
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 server_port=5000
 
-from NistoRoboto.APIServer.APIServer import APIServer
+from AFL.automation.APIServer.APIServer import APIServer
 
-from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
-from NistoRoboto.loading.NE1kSyringePump import NE1kSyringePump
-from NistoRoboto.loading.DoubleViciMultiposSelector import DoubleViciMultiposSelector
-from NistoRoboto.loading.Tubing import Tubing
+from AFL.automation.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
+from AFL.automation.loading.NE1kSyringePump import NE1kSyringePump
+from AFL.automation.loading.DoubleViciMultiposSelector import DoubleViciMultiposSelector
+from AFL.automation.loading.Tubing import Tubing
 
 selector = DoubleViciMultiposSelector(
         '/dev/ttyFlowSel1', #connected to rinse/waste/cell/catch/etc
@@ -37,8 +37,8 @@ driver = PushPullSelectorSampleCell(pump,
                                       syringe_to_sel_vol    = Tubing(1530,49.27+10.4).volume() ,
                                       selector_internal_vol = None,
                                       calibrated_catch_to_syringe_vol = 3.4,
-                                      calibrated_syringe_to_cell_vol = 3.2,
-                                      load_speed=5.0,
+                                      calibrated_syringe_to_cell_vol = 3.4,
+                                      load_speed=2.5,
                                      )
 server = APIServer('CellServer')
 server.add_standard_routes()

@@ -14,7 +14,7 @@ if __name__=="__main__":
     parser.add_argument('server_names',nargs='*')
     parser.add_argument('-v',action='store_true')
     parser.add_argument('--config_file',default='launchers.json')
-    parser.add_argument('--storage_path',default='.nistoroboto')
+    parser.add_argument('--storage_path',default='.afl')
     args = parser.parse_args()
 
     #make directory if it doesn't exist

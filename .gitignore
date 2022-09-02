@@ -1,8 +1,10 @@
 .ipynb_checkpoints
 .ipynb_checkpoints/*
 dev/.ipynb_checkpoints/*
+*egg-info*
 *log
 *tif
+*sqlite
 *tiff
 data/*
 *poni
@@ -11,9 +13,8 @@ data/*
 *.DS_Store
 dev/*
 .idea/*
-hardware-designs/capillary-holder-CHESS/OldVersions/*
-NistoRoboto/EpicsADLiveProcess/templates/static/.gitkeep
-NistoRoboto/EpicsADLiveProcess/templates/static/deck.jpeg
-NistoRoboto/EpicsADLiveProcess/templates/static/jquery-3.4.1.min.js
-NistoRoboto/EpicsADLiveProcess/templates/static/logo.svg
-NistoRoboto/EpicsADLiveProcess/templates/static/ncnr.png
+AFL/automation/EpicsADLiveProcess/templates/static/.gitkeep
+AFL/automation/EpicsADLiveProcess/templates/static/deck.jpeg
+AFL/automation/EpicsADLiveProcess/templates/static/jquery-3.4.1.min.js
+AFL/automation/EpicsADLiveProcess/templates/static/logo.svg
+AFL/automation/EpicsADLiveProcess/templates/static/ncnr.png

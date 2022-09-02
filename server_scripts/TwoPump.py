@@ -1,17 +1,17 @@
 import os,sys,subprocess
 
 try:
-  import NistoRoboto
+  import AFL.automation
 except:
   sys.path.append('../')
 
 server_port=5000
 
-from NistoRoboto.APIServer.APIServer import APIServer
-from NistoRoboto.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
-from NistoRoboto.loading.NE1kSyringePump import NE1kSyringePump
-from NistoRoboto.loading.ViciMultiposSelector import ViciMultiposSelector
-from NistoRoboto.loading.Tubing import Tubing
+from AFL.automation.APIServer.APIServer import APIServer
+from AFL.automation.loading.PushPullSelectorSampleCell import PushPullSelectorSampleCell
+from AFL.automation.loading.NE1kSyringePump import NE1kSyringePump
+from AFL.automation.loading.ViciMultiposSelector import ViciMultiposSelector
+from AFL.automation.loading.Tubing import Tubing
 
 selector1 = ViciMultiposSelector('/dev/ttyFlwSel0',
                                  baudrate=19200,

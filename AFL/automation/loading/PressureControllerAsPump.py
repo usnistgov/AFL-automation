@@ -2,10 +2,10 @@ from AFL.automation.loading.SyringePump import SyringePump
 from AFL.automation.loading.SerialDevice import SerialDevice
 import time
 import threading
-
+import warnings
 class PressureControllerAsPump(SyringePump):
 
-    def __init__(self,pressure_controller,dispense_pressure=10,implied_flow_rate = 5):
+    def __init__(self,pressure_controller,dispense_pressure=3.5,implied_flow_rate = 50):
         '''
             Initialize a pressure controller as a syringe pump.
 
@@ -26,7 +26,8 @@ class PressureControllerAsPump(SyringePump):
         self.controller.set_P(0) 
         self.active_callback.cancel()
     def withdraw(self,volume,block=True,delay=True):
-        raise NotImplementedError('dispense only for Pressure controllers at this time') 
+        warnings.warn('dispense only for Pressure controllers at this time')
+        #raise NotImplementedError('dispense only for Pressure controllers at this time') 
     def dispense(self,volume,block=True,delay=True):
         if self.app is not None:
             rate = self.getRate()
@@ -70,7 +71,7 @@ class PressureControllerAsPump(SyringePump):
         '''
 
 
-        return 'pressure controller pretending to be a pump, EVERYTHING IS FINE'
+        return ('pressure controller pretending to be a pump, EVERYTHING IS FINE',0,0)
 
 
 

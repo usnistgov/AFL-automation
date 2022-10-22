@@ -23,7 +23,7 @@ class LabJackDigitalOut():# xxx todo: generic digitalout class?Sensor):
                 self.device_handle = ljm.openS(devicetype, connection, deviceident)
         self.devicetype = devicetype
         self.connection = connection
-        self.deviceident = self.deviceident
+        self.deviceident = deviceident
         self.intermittent_device_handle = intermittent_device_handle
         self.shared_device = shared_device
         self.port_to_write = port_to_write
@@ -43,7 +43,7 @@ class LabJackDigitalOut():# xxx todo: generic digitalout class?Sensor):
             else:
                 self.device_handle = ljm.openS(self.devicetype, self.connection, self.deviceident)
         result = ljm.eWriteName(self.device_handle, self.port_to_write,val)
-        if intermittent_device_handle:
+        if self.intermittent_device_handle:
             ljm.close(self.device_handle)
         return result
     def __str__(self):
@@ -53,7 +53,7 @@ class LabJackDigitalOut():# xxx todo: generic digitalout class?Sensor):
             else:
                 self.device_handle = ljm.openS(self.devicetype, self.connection, self.deviceident)
         info = ljm.getHandleInfo(self.device_handle)
-        if intermittent_device_handle:
+        if self.intermittent_device_handle:
             ljm.close(self.device_handle)
         return f"LabJack with Device type: %{info[0]}, Connection type: {info[1]}, Serial number: {info[2]}, IP address: {ljm.numberToIP(info[3])}, Port: {info[4]}, Max bytes per MB: {info[5]}"
         

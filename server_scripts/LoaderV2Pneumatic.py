@@ -30,7 +30,7 @@ relayboard = PiPlatesRelay(
 
         } )
 
-digout = LabJackDigitalOut()
+digout = LabJackDigitalOut(intermittent_device_handle=True)
 p_ctrl = DigitalOutPressureController(digout,3)
 pump = PressureControllerAsPump(p_ctrl)
 #DummyPump() # ID for 10mL = 14.859, for 50 mL 26.43

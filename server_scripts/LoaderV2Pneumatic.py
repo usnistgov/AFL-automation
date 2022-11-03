@@ -21,6 +21,8 @@ from AFL.automation.loading.Tubing import Tubing
 from AFL.automation.loading.PressureControllerAsPump import PressureControllerAsPump
 from AFL.automation.loading.DigitalOutPressureController import DigitalOutPressureController
 from AFL.automation.loading.LabJackDigitalOut import LabJackDigitalOut
+from AFL.automation.loading.LabJackSensor import LabJackSensor
+from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
 
 
 relayboard = PiPlatesRelay(
@@ -43,7 +45,11 @@ pump = PressureControllerAsPump(p_ctrl)
 
 gpio = PiGPIO({4:'DOOR',14:'ARM_UP',15:'ARM_DOWN'},pull_dir='UP') #: p21-blue, p20-purple: 1, p26-grey: 1}
 
-driver = PneumaticSampleCell(pump,relayboard,digitalin=gpio)
+#load stopper stuff
+sensor = LabJackSensor()
+load_stopper = LoadStopperDriver(sensor,auto_initialize=False)
+
+driver = PneumaticSampleCell(pump,relayboard,digitalin=gpio,load_stopper=load_stopper)
 server = APIServer('CellServer')
 server.add_standard_routes()
 server.create_queue(driver)

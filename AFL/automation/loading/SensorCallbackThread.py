@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 import threading
 import time
 import datetime
@@ -118,7 +119,8 @@ class StopLoadCBv2(SensorCallbackThread):
         self, 
         poll,
         period,
-        load_client,
+        load_client=None,
+        load_object=None,
         threshold_npts = 20,
         threshold_v_step = 1,
         threshold_std = 2.5,
@@ -131,7 +133,7 @@ class StopLoadCBv2(SensorCallbackThread):
         filepath=None,
     ):
         super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
-        self.load_client = load_client
+        self.loader_comm = LoaderCommunication(load_client,load_object)
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
         self.threshold_std =  threshold_std 
@@ -143,7 +145,7 @@ class StopLoadCBv2(SensorCallbackThread):
 
         
     def process_signal(self):
-        if 'PROGRESS' in getServerState(self.load_client):
+        if 'PROGRESS' in self.loader_comm.getServerState()
             datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
             self.update_status(f'[{datestr}] Detected a load...')
             start = datetime.datetime.now()
@@ -180,7 +182,7 @@ class StopLoadCBv2(SensorCallbackThread):
                     else:
                         self.update_status(f'[{datestr}] Load timed out')
                     time.sleep(self.post_detection_sleep)
-                    self.load_client.server_cmd(cmd='stopLoad?secret=xrays>neutrons')
+                    self.loader_comm.stopLoad()
 
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
                     # self.update_status(f'Saving signal data to {filename}')
@@ -202,11 +204,33 @@ class SimpleThreshholdCB(SensorCallbackThread):
         else:
             print(f'mean={mean}')
             
-def getServerState(client):
-    for entry in client.driver_status():
-        if 'State: ' in entry:
-            return entry.replace('State: ','')
+def LoaderCommunication:
+    def __init__(self,load_client=None,load_object=None):
+        if (load_client is None) and (load_object is None):
+            raise ValueError('Need to specify load_client or load_object!!')
+        elif (load_client is not None) and (load_object is not None):
+            warnings.warn('Both load_client and load_object were specified! Using load_object...')
+            self.load_object = load_object
+            self.load_client = None
+        else:
+            self.load_object = None
+            self.load_client = load_client
+            
+    def getServerState(self):
+        if self.load_client is None:
+            status = self.load_object.status()
+        else:
+            status = self.load_client.driver_status()
+                
+        for entry in status:
+            if 'State: ' in entry:
+                return entry.replace('State: ','')
         
+    def stopLoad(self):
+        if self.load_client is None:
+            self.load_object.stopLoad(secret='xrays>neutrons')
+        else:
+            self.load_client.server_cmd(cmd='stopLoad?secret=xrays>neutrons')
 
         
     

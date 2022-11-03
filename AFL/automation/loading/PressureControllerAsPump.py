@@ -23,8 +23,12 @@ class PressureControllerAsPump(SyringePump):
         '''
         Abort the current dispense/withdraw action. Equivalent to pressing stop button on panel.
         '''
+        print(f'Pump stop was called, callback status {self.active_callback.is_alive()}')
         self.controller.set_P(0) 
         self.active_callback.cancel()
+    def __del__(self):
+        self.stop()
+
     def withdraw(self,volume,block=True,delay=True):
         warnings.warn('dispense only for Pressure controllers at this time')
         #raise NotImplementedError('dispense only for Pressure controllers at this time') 
@@ -35,6 +39,7 @@ class PressureControllerAsPump(SyringePump):
         
         dispense_time = volume / self.implied_flow_rate 
         dispense_time = dispense_time * 60 # convert from min to s as flow rate is in mL/min
+        
         
         self.active_callback = threading.Timer(dispense_time,self.stop)
         self.controller.set_P(self.dispense_pressure)
@@ -70,8 +75,10 @@ class PressureControllerAsPump(SyringePump):
         infused volume, and withdrawn volume)
         '''
 
-
-        return ('pressure controller pretending to be a pump, EVERYTHING IS FINE',0,0)
+        if self.active_callback.is_alive():
+            return ('disp',0,0)
+        else:
+            return ('S',0,0)
 
 
 

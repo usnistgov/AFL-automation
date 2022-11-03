@@ -61,7 +61,7 @@ class StopLoadCBv1(SensorCallbackThread):
         timeout = 120,
         loadstop_cooldown = 2,
         post_detection_sleep = 0.2 ,
-        baseline_duration = 10,
+        baseline_duration = 2,
         daemon=True,
         filepath=None,
     ):
@@ -128,12 +128,12 @@ class StopLoadCBv2(SensorCallbackThread):
         min_load_time=30,
         loadstop_cooldown = 2,
         post_detection_sleep = 0.2 ,
-        baseline_duration = 10,
+        baseline_duration = 2,
         daemon=True,
         filepath=None,
     ):
         super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
-        self.loader_comm = LoaderCommunication(load_client,load_object)
+        self.loader_comm = LoaderCommunication(load_client=load_client,load_object=load_object)
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
         self.threshold_std =  threshold_std 
@@ -145,7 +145,7 @@ class StopLoadCBv2(SensorCallbackThread):
 
         
     def process_signal(self):
-        if 'PROGRESS' in self.loader_comm.getServerState()
+        if 'PROGRESS' in self.loader_comm.getServerState():
             datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
             self.update_status(f'[{datestr}] Detected a load...')
             start = datetime.datetime.now()
@@ -191,7 +191,7 @@ class StopLoadCBv2(SensorCallbackThread):
                     time.sleep(self.loadstop_cooldown)
                     break
 
-class SimpleThreshholdCB(SensorCallbackThread):
+class SimpleThresholdCB(SensorCallbackThread):
     def __init__(self,poll,period,window=5,threshold=1):
         super().__init__(poll=poll,period=period)
         self.window = window
@@ -204,12 +204,16 @@ class SimpleThreshholdCB(SensorCallbackThread):
         else:
             print(f'mean={mean}')
             
-def LoaderCommunication:
+class LoaderCommunication():
+
     def __init__(self,load_client=None,load_object=None):
         if (load_client is None) and (load_object is None):
             raise ValueError('Need to specify load_client or load_object!!')
         elif (load_client is not None) and (load_object is not None):
             warnings.warn('Both load_client and load_object were specified! Using load_object...')
+            self.load_object = load_object
+            self.load_client = None
+        elif load_client is None:
             self.load_object = load_object
             self.load_client = None
         else:

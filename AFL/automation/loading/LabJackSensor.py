@@ -31,8 +31,6 @@ class LabJackSensor(Sensor):
     	ljm.close(self.device_handle)
     	
     def calibrate(self):
-        if self.intermittent_device_handle:
-            self.device_handle = ljm.openS(self.devicetype,self.connection,self.deviceident)
         ljm.eWriteName(self.device_handle,"DIO6",0)
         time.sleep(0.2)
         ljm.eWriteName(self.device_handle,"DIO6",1)
@@ -40,17 +38,11 @@ class LabJackSensor(Sensor):
             ljm.close(self.device_handle)
         
     def read(self):
-        if self.intermittent_device_handle:
-            self.device_handle = ljm.openS(self.devicetype,self.connection,self.deviceident)
         numSkippedIntervals = ljm.waitForNextInterval(self.intervalHandle)
         result = ljm.eReadName(self.device_handle, self.port_to_read)
         if self.intermittent_device_handle:
             ljm.close(self.device_handle)
         return result 
     def __str__(self):
-        if self.intermittent_device_handle:
-            self.device_handle = ljm.openS(self.devicetype,self.connection,self.deviceident)
         info = ljm.getHandleInfo(self.device_handle)
-        if self.intermittent_device_handle:
-            ljm.close(self.device_handle)
         return f"LabJack with Device type: %{info[0]}, Connection type: {info[1]}, Serial number: {info[2]}, IP address: {ljm.numberToIP(info[3])}, Port: {info[4]}, Max bytes per MB: {info[5]}"

@@ -256,10 +256,20 @@ class OT2_Driver(Driver):
             dest_well = dest_wells[0]
         
         transfers = self.split_up_transfers(volume)
-        for sub_volume in transfers:
+        user_drop_tip = drop_tip #store user set value for last transfer
+        for i,sub_volume in enumerate(transfers):
             #get pipette based on volume
             pipette = self.get_pipette(sub_volume)
-    
+            
+            # ensure that intermediate transfers don't drop tip
+            # during sub-volume transfers.
+            # Note that this will be overriden in _transfer if
+            # force_new_tip is set
+            if i==(len(transfers)-1):#last sub-volume transfer
+                drop_tip = user_drop_tip
+            else:
+                drop_tip = False
+            
             self._transfer(
                     pipette, 
                     sub_volume, 

@@ -284,6 +284,8 @@ class OT2_Driver(Driver):
                 drop_tip = user_drop_tip
                 mix_before = user_mix_before
                 mix_after = user_mix_after
+                if last_dest_well is not None:
+                    dest_well = last_dest_well
             elif i==0:  # first transfer
                 if (not to_top) or ((mix_after is not None) and (not fast_mixing)):
                     drop_tip = True

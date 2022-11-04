@@ -19,6 +19,9 @@ class PipetteAction:
             aspirate_equilibration_delay=0.0,
             drop_tip=True,
             force_new_tip=False,
+            to_top=True,
+            fast_mixing=False
+            
             ):
         self.kwargs ={}
         self.kwargs['source']       = source
@@ -38,6 +41,8 @@ class PipetteAction:
         self.kwargs['aspirate_equilibration_delay'] = aspirate_equilibration_delay
         self.kwargs['drop_tip'] = drop_tip
         self.kwargs['force_new_tip'] = force_new_tip
+        self.kwargs['to_top'] = to_top
+        self.kwargs['fast_mixing'] = fast_mixing
     
     def __str__(self):
         return f'<PipetteAction Vol:{self.volume:4.3f} {self.source}-->{self.dest}>'

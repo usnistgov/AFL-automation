@@ -22,6 +22,7 @@ class OT2_Driver(Driver):
         self.min_transfer = 30
         self.prep_targets = []
         self.has_tip = False #replace with pipette object check
+        self.last_pipette = None
         self.modules = {}
 
     def reset_prep_targets(self):
@@ -274,6 +275,11 @@ class OT2_Driver(Driver):
         for i,sub_volume in enumerate(transfers):
             #get pipette based on volume
             pipette = self.get_pipette(sub_volume)
+            if (self.last_pipette is not pipette) and self.has_tip:
+                # need to drop tip on last pipette
+                self.last_pipette.drop_tip(self.protocol.deck[12]['A1'])
+                self.has_tip = False
+   
             
             # ensure that intermediate transfers don't drop tip
             # during sub-volume transfers.
@@ -327,6 +333,9 @@ class OT2_Driver(Driver):
                     force_new_tip=force_new_tip,
                     mix_aspirate_rate=mix_aspirate_rate,
                     mix_dispense_rate=mix_dispense_rate)
+
+            self.last_pipette = pipette
+
         
     def split_up_transfers(self,vol):
         transfers = []

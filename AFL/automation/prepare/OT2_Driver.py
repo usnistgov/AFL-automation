@@ -299,7 +299,7 @@ class OT2_Driver(Driver):
                 if fast_mixing:
                     mix_after = user_mix_after
                     mix_before = None
-                    drop_tip = True
+                    drop_tip = user_drop_tip
                 if last_dest_well is not None:
                     dest_well = last_dest_well
             else:  # intermediate transfers

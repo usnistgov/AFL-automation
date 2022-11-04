@@ -165,11 +165,11 @@ class Client:
     def set_config(self,interactive=None,**kwargs):
         return self.enqueue(interactive=interactive,task_name='set_config',**kwargs)
 
-    def get_config(self,name,driver=None,print_console=True,interactive=None):
+    def get_config(self,name,print_console=True,interactive=None):
         if name == 'all':
-            return self.enqueue(interactive=interactive,task_name='get_configs',driver=driver,print_console=print_console)
+            return self.enqueue(interactive=interactive,task_name='get_configs',print_console=print_console)
         else:
-            return self.enqueue(interactive=interactive,task_name='get_config',driver=driver,name=name,print_console=print_console)
+            return self.enqueue(interactive=interactive,task_name='get_config',name=name,print_console=print_console)
    
 
     def get_server_time(self):

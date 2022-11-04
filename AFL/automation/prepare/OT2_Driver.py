@@ -278,19 +278,28 @@ class OT2_Driver(Driver):
             # Note that this will be overriden in _transfer if
             # force_new_tip is set
             
-            if i==0:  # first transfer
+            if len(transfers) == 1:
+                drop_tip = user_drop_tip
+                mix_before = mix_before
+                mix_after = mix_after
+            elif i==0:  # first transfer
+                if (not to_top) or ((mix_after is not None) and (not fast_mixing)):
+                    drop_tip = True
+                else:
+                    drop_tip = False
                 if fast_mixing:
                     mix_before = mix_before
                     mix_after = None
-            if i==(len(transfers)-1):  # last sub-volume transfer
+            elif i==(len(transfers)-1):  # last sub-volume transfer
                 drop_tip = user_drop_tip
                 if fast_mixing:
                     mix_after = mix_after
                     mix_before = None
+                    drop_tip = True
                 if last_dest_well is not None:
                     dest_well = last_dest_well
             else:  # intermediate transfers
-                if (not to_top) or (mix_after is not None):
+                if (not to_top) or ((mix_after is not None) and (not fast_mixing)):
                     drop_tip = True
                 else:
                     drop_tip = False

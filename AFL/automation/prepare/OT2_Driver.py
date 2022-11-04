@@ -212,6 +212,8 @@ class OT2_Driver(Driver):
             post_dispense_delay=0.0,
             drop_tip=True,
             force_new_tip=False,
+            to_top=True,
+            fast_mixing=False,
             **kwargs):
         '''Transfer fluid from one location to another
 
@@ -255,8 +257,18 @@ class OT2_Driver(Driver):
         else:
             dest_well = dest_wells[0]
         
+        last_dest_well = None
+
+        if (to_top) and (mix_after is None):
+            dest_well = dest_well.top()
+        elif to_top and (mix_after is not None) and (not fast_mixing):
+            raise ValueError('Cannot mix_after if dispensing to top unless using fast mixing.')
+        elif to_top and (mix_after is not None) and fast_mixing:  # a very special case - dispense to top on first and intermediate transfers, then on final transfer dispense to bottom and mix_after
+            last_dest_well = dest_well  
+            dest_well = dest_well.top()
         transfers = self.split_up_transfers(volume)
         user_drop_tip = drop_tip #store user set value for last transfer
+        
         for i,sub_volume in enumerate(transfers):
             #get pipette based on volume
             pipette = self.get_pipette(sub_volume)
@@ -265,11 +277,27 @@ class OT2_Driver(Driver):
             # during sub-volume transfers.
             # Note that this will be overriden in _transfer if
             # force_new_tip is set
-            if i==(len(transfers)-1):#last sub-volume transfer
-                drop_tip = user_drop_tip
-            else:
-                drop_tip = False
             
+            if i==0:  # first transfer
+                if fast_mixing:
+                    mix_before = mix_before
+                    mix_after = None
+            if i==(len(transfers)-1):  # last sub-volume transfer
+                drop_tip = user_drop_tip
+                if fast_mixing:
+                    mix_after = mix_after
+                    mix_before = None
+                if last_dest_well is not None:
+                    dest_well = last_dest_well
+            else:  # intermediate transfers
+                if (not to_top) or (mix_after is not None):
+                    drop_tip = True
+                else:
+                    drop_tip = False
+                if fast_mixing:
+                    mix_before = None
+                    mix_after = None
+
             self._transfer(
                     pipette, 
                     sub_volume, 

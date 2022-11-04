@@ -399,7 +399,11 @@ class OT2_Driver(Driver):
         self.protocol.delay(seconds=aspirate_equilibration_delay)
         
         if post_aspirate_delay>0.0:
-            pipette.move_to(source_well.top())
+            try:
+                pipette.move_to(source_well.top())
+            except AttributeError:
+                # if location is already specified
+                pipette.move_to(source_well)
             self.protocol.delay(seconds=post_aspirate_delay)
         
         # need to dispense before  mixing
@@ -429,7 +433,12 @@ class OT2_Driver(Driver):
                 pipette.flow_rate.dispense = dispense_rate
                 
         if post_dispense_delay>0.0:
-            pipette.move_to(dest_well.top())
+            try:
+                pipette.move_to(dest_well.top())
+            except AttributeError:
+                # if location is already specified
+                pipette.move_to(dest_well)
+             
             self.protocol.delay(seconds=post_dispense_delay)
     
         if self.has_tip and drop_tip:

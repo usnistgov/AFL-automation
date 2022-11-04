@@ -2,7 +2,10 @@ import types
 import datetime
 from AFL.automation.shared.units import has_units
 
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ModuleNotFoundError:
+    print('importing Matplotlib failed, do you want plotting to work?')
 import io
 
 

@@ -4,6 +4,8 @@ from collections import defaultdict
 import warnings
 import time
 
+import numpy as np
+
 import math
 
 class PneumaticSampleCell(Driver,SampleCell):
@@ -146,10 +148,11 @@ class PneumaticSampleCell(Driver,SampleCell):
             status.append(f"Door closed: {not self.digitalin.state['DOOR']}")
         if self.digitalin is not None:
             status.append(f'DIO state: {self.digitalin.state}') 
-        if self.load_stopper is not None:
-            status.extend(self.load_stopper.status())
         status.append(f'Pump Level: {self.pump_level} mL')
         status.append(self.rinse_status)
+
+        if self.load_stopper is not None:
+            status.extend(self.load_stopper.status())
             
         return status
  
@@ -298,16 +301,22 @@ class PneumaticSampleCell(Driver,SampleCell):
             return self.load_stopper.sensor.read()
 
     @Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
-    def read_sensor_poll(self):
+    def read_sensor_poll(self,**kwargs):
         if self.load_stopper is not None:
             output = np.transpose(self.load_stopper.poll.read())
+            print('Serving sensor poll:',len(output),len(output[0]),len(output[1]))
             return list(output)
 
     @Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
-    def read_sensor_poll_load(self):
+    def read_sensor_poll_load(self,**kwargs):
         if self.load_stopper is not None:
             output = np.transpose(self.load_stopper.poll.read_load_buffer())
         return list(output)
+    
+    def set_sensor_config(self,**kwargs):
+        if self.load_stopper is not None:
+            self.load_stopper.config.update(kwargs)
+            self.load_stopper.reset()
 
     @Driver.unqueued()
     @Driver.quickbar(qb={'button_text':'reset', 'params':{}})

@@ -68,19 +68,52 @@ class Driver:
         return defaults
     
     def set_config(self,**kwargs):
-        self.config.update(kwargs)
+        if ('driver' in kwargs) and (kwargs['driver'] is not None):
+            driver_name = kwargs['driver']
+            del kwargs['driver']
+
+            try:
+                driver_obj = getattr(self,driver_name)
+            except AttributeError:
+                raise ValueError(f'Driver \'{driver_name}\' not found in protocol \'{self.name}\'')
+
+            driver_obj.config.update(kwargs)
+        else:
+            self.config.update(kwargs)
 
     def get_config(self,name,print_console=False):
-        value = self.config[name]
+        if ('driver' in kwargs) and (kwargs['driver'] is not None):
+            driver_name = kwargs['driver']
+            del kwargs['driver']
+
+            try:
+                driver_obj = getattr(self,driver_name)
+            except AttributeError:
+                raise ValueError(f'Driver \'{driver_name}\' not found in protocol \'{self.name}\'')
+
+            value = driver_obj.config[name]
+        else:
+            value = self.config[name]
+
         if print_console:
             print(f'{name:30s} = {value}')
+
         return value
 
-    def get_configs(self,print_console=False):
+    def get_configs(self,driver=None,print_console=False):
+        if driver is not None:
+            try:
+                driver_obj = getattr(self,driver_name)
+            except AttributeError:
+                raise ValueError(f'Driver \'{driver_name}\' not found in protocol \'{self.name}\'')
+            config=driver_obj.config
+        else:
+            config = self.config
+
         if print_console:
-            for name,value in self.config:
+            for name,value in config:
                 print(f'{name:30s} = {value}')
-        return self.config.config
+        return config.config
         
     def status(self):
         status = []

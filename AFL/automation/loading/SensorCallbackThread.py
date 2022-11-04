@@ -104,7 +104,12 @@ class StopLoadCBv1(SensorCallbackThread):
                     else:
                         self.update_status(f'[{datestr}] Load timed out')
                     self.update_status(f'Elapsed time: {datetime.datetime.now()-start}')
-                    time.sleep(self.post_detection_sleep)
+                    elapsed_time = datetime.datetime.now()-start
+                    time_to_sleep = (self.post_detection_sleep)*elapsed_time
+                    
+                    time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
+                    
+                    print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep*100} %')
                     self.load_client.server_cmd(cmd='stopLoad',secret='xrays>neutrons')
 
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
@@ -181,8 +186,15 @@ class StopLoadCBv2(SensorCallbackThread):
                         self.update_status(f'[{datestr}] Load stopped at voltage mean = {np.mean(signal[-self.threshold_npts:,1])} and stdev = {np.std(signal[-self.threshold_npts:,1])}')
                     else:
                         self.update_status(f'[{datestr}] Load timed out')
-                    time.sleep(self.post_detection_sleep)
+                    
+                    
+                    elapsed_time = datetime.datetime.now()-start
+                    time_to_sleep = (self.post_detection_sleep)*elapsed_time
+                    
+                    time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
                     self.loader_comm.stopLoad()
+
+                    print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
 
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
                     # self.update_status(f'Saving signal data to {filename}')

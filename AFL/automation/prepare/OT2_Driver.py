@@ -268,7 +268,9 @@ class OT2_Driver(Driver):
             dest_well = dest_well.top()
         transfers = self.split_up_transfers(volume)
         user_drop_tip = drop_tip #store user set value for last transfer
-        
+        user_mix_before = mix_before
+        user_mix_after = mix_after
+
         for i,sub_volume in enumerate(transfers):
             #get pipette based on volume
             pipette = self.get_pipette(sub_volume)
@@ -280,20 +282,20 @@ class OT2_Driver(Driver):
             
             if len(transfers) == 1:
                 drop_tip = user_drop_tip
-                mix_before = mix_before
-                mix_after = mix_after
+                mix_before = user_mix_before
+                mix_after = user_mix_after
             elif i==0:  # first transfer
                 if (not to_top) or ((mix_after is not None) and (not fast_mixing)):
                     drop_tip = True
                 else:
                     drop_tip = False
                 if fast_mixing:
-                    mix_before = mix_before
+                    mix_before = user_mix_before
                     mix_after = None
             elif i==(len(transfers)-1):  # last sub-volume transfer
                 drop_tip = user_drop_tip
                 if fast_mixing:
-                    mix_after = mix_after
+                    mix_after = user_mix_after
                     mix_before = None
                     drop_tip = True
                 if last_dest_well is not None:

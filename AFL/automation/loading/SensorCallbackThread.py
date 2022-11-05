@@ -45,7 +45,7 @@ class SensorCallbackThread(threading.Thread):
         print('Starting runloop for CallbackThread:')
         while not self._stop:
             dt = datetime.datetime.now()-self.thread_start
-            print(f'Running for {dt.seconds:010d} seconds',end='\r')
+            # print(f'Running for {dt.seconds:010d} seconds',end='\r')
             self.process_signal()
             time.sleep(self.period)
 
@@ -134,6 +134,7 @@ class StopLoadCBv2(SensorCallbackThread):
         loadstop_cooldown = 2,
         post_detection_sleep = 0.2 ,
         baseline_duration = 2,
+        trigger_on_end = True,
         daemon=True,
         filepath=None,
     ):
@@ -189,13 +190,30 @@ class StopLoadCBv2(SensorCallbackThread):
                     
                     
                     elapsed_time = datetime.datetime.now()-start
-                    time_to_sleep = (self.post_detection_sleep)*elapsed_time
+                    if trigger_on_end:
+                        self.update_status(f'[{datestr}] Awaiting stabilized return to within {threshold_v_step} V of baseline voltage of {baseline_value} V')
+                        second_trigger_start = datetime.datetime.now()
+                        while not self._stop:
+                            time_since_second_trigger = datetime.datetime.now() - second_trigger_start
+                            timed_out = time_since_second_trigger > self.timeout
+
+                            mean_not_normal = np.abs(np.mean(signal[-self.threshold_npts:,1])-baseline_val) > self.threshold_v_step 
+                            large_std = np.std(signal[-self.threshold_npts:,1]) > self.threshold_std
+                            
+                            if (mean_not_normal or large_std) and (not timed_out):
+                                time.sleep(self.period/10)
+                            else:
+                                datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
+                                self.update_status(f'[{datestr}] End of plug triggered at voltage mean {np.mean(signal[-self.threshold_npts:,1])} and stdev = {np.std(signal[-self.threshold_npts:,1])}')
+                                break
+                    else:    
+                        time_to_sleep = (self.post_detection_sleep)*elapsed_time
                     
-                    time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
+                        time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
+
+                        print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
+
                     self.loader_comm.stopLoad()
-
-                    print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
-
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
                     # self.update_status(f'Saving signal data to {filename}')
                     np.savetxt(filename,signal)

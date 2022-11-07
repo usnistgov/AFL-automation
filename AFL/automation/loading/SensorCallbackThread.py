@@ -134,7 +134,8 @@ class StopLoadCBv2(SensorCallbackThread):
         loadstop_cooldown = 2,
         post_detection_sleep = 0.2 ,
         baseline_duration = 2,
-        trigger_on_end = True,
+        trigger_on_end = False,
+        instatrigger = True,
         daemon=True,
         filepath=None,
     ):
@@ -148,8 +149,9 @@ class StopLoadCBv2(SensorCallbackThread):
         self.min_load_time = datetime.timedelta(seconds=min_load_time)
         self.timeout = datetime.timedelta(seconds=timeout)
         self.baseline_duration = baseline_duration
+        self.trigger_on_end = trigger_on_end
+        self.instatrigger = instatrigger
 
-        
     def process_signal(self):
         if 'PROGRESS' in self.loader_comm.getServerState():
             datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
@@ -190,15 +192,15 @@ class StopLoadCBv2(SensorCallbackThread):
                     
                     
                     elapsed_time = datetime.datetime.now()-start
-                    if trigger_on_end:
-                        self.update_status(f'[{datestr}] Awaiting stabilized return to within {threshold_v_step} V of baseline voltage of {baseline_value} V')
+                    if self.trigger_on_end:
+                        self.update_status(f'[{datestr}] Awaiting stabilized return to within {self.threshold_v_step} V of baseline voltage of {baseline_val} V')
                         second_trigger_start = datetime.datetime.now()
                         while not self._stop:
                             time_since_second_trigger = datetime.datetime.now() - second_trigger_start
                             timed_out = time_since_second_trigger > self.timeout
 
-                            mean_not_normal = np.abs(np.mean(signal[-self.threshold_npts:,1])-baseline_val) > self.threshold_v_step 
-                            large_std = np.std(signal[-self.threshold_npts:,1]) > self.threshold_std
+                            mean_not_normal = np.abs(np.mean(signal[-self.threshold_npts:,1])-baseline_val) > 3*self.threshold_v_step 
+                            large_std = False #np.std(signal[-self.threshold_npts:,1]) > self.threshold_std
                             
                             if (mean_not_normal or large_std) and (not timed_out):
                                 time.sleep(self.period/10)
@@ -206,6 +208,8 @@ class StopLoadCBv2(SensorCallbackThread):
                                 datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
                                 self.update_status(f'[{datestr}] End of plug triggered at voltage mean {np.mean(signal[-self.threshold_npts:,1])} and stdev = {np.std(signal[-self.threshold_npts:,1])}')
                                 break
+                    elif self.instatrigger:
+                        pass
                     else:    
                         time_to_sleep = (self.post_detection_sleep)*elapsed_time
                     

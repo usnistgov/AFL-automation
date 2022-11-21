@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 import threading
 import time
 import datetime
@@ -44,7 +45,7 @@ class SensorCallbackThread(threading.Thread):
         print('Starting runloop for CallbackThread:')
         while not self._stop:
             dt = datetime.datetime.now()-self.thread_start
-            print(f'Running for {dt.seconds:010d} seconds',end='\r')
+            # print(f'Running for {dt.seconds:010d} seconds',end='\r')
             self.process_signal()
             time.sleep(self.period)
 
@@ -60,7 +61,7 @@ class StopLoadCBv1(SensorCallbackThread):
         timeout = 120,
         loadstop_cooldown = 2,
         post_detection_sleep = 0.2 ,
-        baseline_duration = 10,
+        baseline_duration = 2,
         daemon=True,
         filepath=None,
     ):
@@ -103,7 +104,12 @@ class StopLoadCBv1(SensorCallbackThread):
                     else:
                         self.update_status(f'[{datestr}] Load timed out')
                     self.update_status(f'Elapsed time: {datetime.datetime.now()-start}')
-                    time.sleep(self.post_detection_sleep)
+                    elapsed_time = datetime.datetime.now()-start
+                    time_to_sleep = (self.post_detection_sleep)*elapsed_time
+                    
+                    time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
+                    
+                    print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep*100} %')
                     self.load_client.server_cmd(cmd='stopLoad',secret='xrays>neutrons')
 
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
@@ -118,7 +124,8 @@ class StopLoadCBv2(SensorCallbackThread):
         self, 
         poll,
         period,
-        load_client,
+        load_client=None,
+        load_object=None,
         threshold_npts = 20,
         threshold_v_step = 1,
         threshold_std = 2.5,
@@ -126,12 +133,14 @@ class StopLoadCBv2(SensorCallbackThread):
         min_load_time=30,
         loadstop_cooldown = 2,
         post_detection_sleep = 0.2 ,
-        baseline_duration = 10,
+        baseline_duration = 2,
+        trigger_on_end = False,
+        instatrigger = True,
         daemon=True,
         filepath=None,
     ):
         super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
-        self.load_client = load_client
+        self.loader_comm = LoaderCommunication(load_client=load_client,load_object=load_object)
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
         self.threshold_std =  threshold_std 
@@ -140,10 +149,11 @@ class StopLoadCBv2(SensorCallbackThread):
         self.min_load_time = datetime.timedelta(seconds=min_load_time)
         self.timeout = datetime.timedelta(seconds=timeout)
         self.baseline_duration = baseline_duration
+        self.trigger_on_end = trigger_on_end
+        self.instatrigger = instatrigger
 
-        
     def process_signal(self):
-        if 'PROGRESS' in getServerState(self.load_client):
+        if 'PROGRESS' in self.loader_comm.getServerState():
             datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
             self.update_status(f'[{datestr}] Detected a load...')
             start = datetime.datetime.now()
@@ -179,9 +189,35 @@ class StopLoadCBv2(SensorCallbackThread):
                         self.update_status(f'[{datestr}] Load stopped at voltage mean = {np.mean(signal[-self.threshold_npts:,1])} and stdev = {np.std(signal[-self.threshold_npts:,1])}')
                     else:
                         self.update_status(f'[{datestr}] Load timed out')
-                    time.sleep(self.post_detection_sleep)
-                    self.load_client.server_cmd(cmd='stopLoad?secret=xrays>neutrons')
+                    
+                    
+                    elapsed_time = datetime.datetime.now()-start
+                    if self.trigger_on_end:
+                        self.update_status(f'[{datestr}] Awaiting stabilized return to within {self.threshold_v_step} V of baseline voltage of {baseline_val} V')
+                        second_trigger_start = datetime.datetime.now()
+                        while not self._stop:
+                            time_since_second_trigger = datetime.datetime.now() - second_trigger_start
+                            timed_out = time_since_second_trigger > self.timeout
 
+                            mean_not_normal = np.abs(np.mean(signal[-self.threshold_npts:,1])-baseline_val) > 3*self.threshold_v_step 
+                            large_std = False #np.std(signal[-self.threshold_npts:,1]) > self.threshold_std
+                            
+                            if (mean_not_normal or large_std) and (not timed_out):
+                                time.sleep(self.period/10)
+                            else:
+                                datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
+                                self.update_status(f'[{datestr}] End of plug triggered at voltage mean {np.mean(signal[-self.threshold_npts:,1])} and stdev = {np.std(signal[-self.threshold_npts:,1])}')
+                                break
+                    elif self.instatrigger:
+                        pass
+                    else:    
+                        time_to_sleep = (self.post_detection_sleep)*elapsed_time
+                    
+                        time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
+
+                        print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
+
+                    self.loader_comm.stopLoad()
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
                     # self.update_status(f'Saving signal data to {filename}')
                     np.savetxt(filename,signal)
@@ -189,7 +225,7 @@ class StopLoadCBv2(SensorCallbackThread):
                     time.sleep(self.loadstop_cooldown)
                     break
 
-class SimpleThreshholdCB(SensorCallbackThread):
+class SimpleThresholdCB(SensorCallbackThread):
     def __init__(self,poll,period,window=5,threshold=1):
         super().__init__(poll=poll,period=period)
         self.window = window
@@ -202,11 +238,37 @@ class SimpleThreshholdCB(SensorCallbackThread):
         else:
             print(f'mean={mean}')
             
-def getServerState(client):
-    for entry in client.driver_status():
-        if 'State: ' in entry:
-            return entry.replace('State: ','')
+class LoaderCommunication():
+
+    def __init__(self,load_client=None,load_object=None):
+        if (load_client is None) and (load_object is None):
+            raise ValueError('Need to specify load_client or load_object!!')
+        elif (load_client is not None) and (load_object is not None):
+            warnings.warn('Both load_client and load_object were specified! Using load_object...')
+            self.load_object = load_object
+            self.load_client = None
+        elif load_client is None:
+            self.load_object = load_object
+            self.load_client = None
+        else:
+            self.load_object = None
+            self.load_client = load_client
+            
+    def getServerState(self):
+        if self.load_client is None:
+            status = self.load_object.status()
+        else:
+            status = self.load_client.driver_status()
+                
+        for entry in status:
+            if 'State: ' in entry:
+                return entry.replace('State: ','')
         
+    def stopLoad(self):
+        if self.load_client is None:
+            self.load_object.stopLoad(secret='xrays>neutrons')
+        else:
+            self.load_client.server_cmd(cmd='stopLoad?secret=xrays>neutrons')
 
         
     

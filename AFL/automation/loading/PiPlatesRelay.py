@@ -106,7 +106,7 @@ class PiPlatesRelay(MultiChannelRelay):
         if readback != val_to_send:
             retries = 0
             warnings.warn(f'ERROR: attempted relay set to {val_to_send} but readback was {readback}.')
-            while retries<6:
+            while retries<60:
                 RELAYplate.relayALL(self.board_id,val_to_send)
                 time.sleep(0.01)
                 readback = RELAYplate.relaySTATE(self.board_id)

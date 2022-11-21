@@ -22,6 +22,7 @@ class OT2_Driver(Driver):
         self.min_transfer = 30
         self.prep_targets = []
         self.has_tip = False #replace with pipette object check
+        self.last_pipette = None
         self.modules = {}
 
     def reset_prep_targets(self):
@@ -212,6 +213,8 @@ class OT2_Driver(Driver):
             post_dispense_delay=0.0,
             drop_tip=True,
             force_new_tip=False,
+            to_top=True,
+            fast_mixing=False,
             **kwargs):
         '''Transfer fluid from one location to another
 
@@ -255,11 +258,65 @@ class OT2_Driver(Driver):
         else:
             dest_well = dest_wells[0]
         
+        last_dest_well = None
+
+        if (to_top) and (mix_after is None):
+            dest_well = dest_well.top()
+        elif to_top and (mix_after is not None) and (not fast_mixing):
+            raise ValueError('Cannot mix_after if dispensing to top unless using fast mixing.')
+        elif to_top and (mix_after is not None) and fast_mixing:  # a very special case - dispense to top on first and intermediate transfers, then on final transfer dispense to bottom and mix_after
+            last_dest_well = dest_well  
+            dest_well = dest_well.top()
         transfers = self.split_up_transfers(volume)
-        for sub_volume in transfers:
+        user_drop_tip = drop_tip #store user set value for last transfer
+        user_mix_before = mix_before
+        user_mix_after = mix_after
+
+        for i,sub_volume in enumerate(transfers):
             #get pipette based on volume
             pipette = self.get_pipette(sub_volume)
-    
+            if (self.last_pipette is not pipette) and self.has_tip:
+                # need to drop tip on last pipette
+                self.last_pipette.drop_tip(self.protocol.deck[12]['A1'])
+                self.has_tip = False
+   
+            
+            # ensure that intermediate transfers don't drop tip
+            # during sub-volume transfers.
+            # Note that this will be overriden in _transfer if
+            # force_new_tip is set
+            
+            if len(transfers) == 1:
+                drop_tip = user_drop_tip
+                mix_before = user_mix_before
+                mix_after = user_mix_after
+                if last_dest_well is not None:
+                    dest_well = last_dest_well
+            elif i==0:  # first transfer
+                if (not to_top) or ((mix_after is not None) and (not fast_mixing)):
+                    drop_tip = True
+                else:
+                    drop_tip = False
+                if fast_mixing:
+                    mix_before = user_mix_before
+                    mix_after = None
+            elif i==(len(transfers)-1):  # last sub-volume transfer
+                drop_tip = user_drop_tip
+                if fast_mixing:
+                    mix_after = user_mix_after
+                    mix_before = None
+                    drop_tip = user_drop_tip
+                if last_dest_well is not None:
+                    dest_well = last_dest_well
+            else:  # intermediate transfers
+                if (not to_top) or ((mix_after is not None) and (not fast_mixing)):
+                    drop_tip = True
+                else:
+                    drop_tip = False
+                if fast_mixing:
+                    mix_before = None
+                    mix_after = None
+
             self._transfer(
                     pipette, 
                     sub_volume, 
@@ -276,6 +333,9 @@ class OT2_Driver(Driver):
                     force_new_tip=force_new_tip,
                     mix_aspirate_rate=mix_aspirate_rate,
                     mix_dispense_rate=mix_dispense_rate)
+
+            self.last_pipette = pipette
+
         
     def split_up_transfers(self,vol):
         transfers = []
@@ -348,7 +408,11 @@ class OT2_Driver(Driver):
         self.protocol.delay(seconds=aspirate_equilibration_delay)
         
         if post_aspirate_delay>0.0:
-            pipette.move_to(source_well.top())
+            try:
+                pipette.move_to(source_well.top())
+            except AttributeError:
+                # if location is already specified
+                pipette.move_to(source_well)
             self.protocol.delay(seconds=post_aspirate_delay)
         
         # need to dispense before  mixing
@@ -378,7 +442,12 @@ class OT2_Driver(Driver):
                 pipette.flow_rate.dispense = dispense_rate
                 
         if post_dispense_delay>0.0:
-            pipette.move_to(dest_well.top())
+            try:
+                pipette.move_to(dest_well.top())
+            except AttributeError:
+                # if location is already specified
+                pipette.move_to(dest_well)
+             
             self.protocol.delay(seconds=post_dispense_delay)
     
         if self.has_tip and drop_tip:

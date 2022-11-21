@@ -29,19 +29,19 @@ class LoadStopperDriver(Driver):
     defaults['stopper_baseline_duration'] = 10
     defaults['stopper_filepath'] = str(pathlib.Path.home()/'.afl/loadstopper_data/')
 
-    def __init__(self,sensor,overrides=None):
+    def __init__(self,sensor,load_client=None,load_object=None,auto_initialize=True,overrides=None):
         self._app = None
         Driver.__init__(self,name='LoadStopperDriver',defaults=self.gather_defaults(),overrides=overrides)
 
-        self.load_client = Client('piloader',port=5000)
-        self.load_client.login('LoadStopper')
-        self.load_client.pause(False)
+        self.load_object = load_object
+        self.load_client = load_client
 
         self.sensor = sensor
         self.poll = None
         self.stopper = None
 
-        self.reset()
+        if auto_initialize:
+            self.reset()
 
 
     def status(self):
@@ -65,27 +65,27 @@ class LoadStopperDriver(Driver):
             if self.stopper is not None:
                 self.stopper.app = value
 
-    @Driver.unqueued()
-    @Driver.quickbar(qb={'button_text':'calibrate', 'params':{}})
+    #@Driver.unqueued()
+    #@Driver.quickbar(qb={'button_text':'calibrate', 'params':{}})
     def calibrate_sensor(self):
         return self.sensor.calibrate()
 
-    @Driver.unqueued()
+    #@Driver.unqueued()
     def read_sensor(self):
         return self.sensor.read()
 
-    @Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
+    #@Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
     def read_poll(self):
         output = np.transpose(self.poll.read())
         return list(output)
 
-    @Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
+    #@Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
     def read_poll_load(self):
         output = np.transpose(self.poll.read_load_buffer())
         return list(output)
 
-    @Driver.unqueued()
-    @Driver.quickbar(qb={'button_text':'reset', 'params':{}})
+    #@Driver.unqueued()
+    #@Driver.quickbar(qb={'button_text':'reset', 'params':{}})
     def reset(self):
         self.reset_poll()
         self.reset_stopper()
@@ -126,6 +126,7 @@ class LoadStopperDriver(Driver):
             self.poll,
             period=self.config['period'],
             load_client=self.load_client,
+            load_object=self.load_object,
             threshold_npts = self.config['stopper_threshold_npts'],
             threshold_v_step = self.config['stopper_threshold_v_step'],
             threshold_std = self.config['stopper_threshold_std'],

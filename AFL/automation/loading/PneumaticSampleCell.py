@@ -4,6 +4,8 @@ from collections import defaultdict
 import warnings
 import time
 
+import numpy as np
+
 import math
 
 class PneumaticSampleCell(Driver,SampleCell):
@@ -39,6 +41,7 @@ class PneumaticSampleCell(Driver,SampleCell):
                       rinse1_tank_level=950,
                       rinse2_tank_level=950,
                       waste_tank_level=0,
+                      load_stopper=None,
                       overrides=None, 
                       ):
         '''
@@ -86,6 +89,15 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.reset_pump(dispense=False)
         self.state = 'READY'
         self.rinse_status = 'Not Rinsing'
+        
+        if load_stopper is not None:
+            self.load_stopper=load_stopper
+            # remove any load clients and push this object in for direct control
+            self.load_stopper.load_client = None
+            self.load_stopper.load_object = self
+            self.load_stopper.reset()# initialize and start load stopping threads
+        else:
+            self.load_stopper = None
 
     @Driver.quickbar(qb={'button_text':'Reset Pump',
         'params':{
@@ -138,6 +150,9 @@ class PneumaticSampleCell(Driver,SampleCell):
             status.append(f'DIO state: {self.digitalin.state}') 
         status.append(f'Pump Level: {self.pump_level} mL')
         status.append(self.rinse_status)
+
+        if self.load_stopper is not None:
+            status.extend(self.load_stopper.status())
             
         return status
  
@@ -273,4 +288,45 @@ class PneumaticSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'rinse1':False,'rinse2':True})
         time.sleep(waittime)
         self.relayboard.setChannels({'rinse1':False,'rinse2':False})
+        
+    @Driver.unqueued()
+    @Driver.quickbar(qb={'button_text':'calibrate', 'params':{}})
+    def calibrate_sensor(self):
+        if self.load_stopper is not None:
+            return self.load_stopper.sensor.calibrate()
+
+    @Driver.unqueued()
+    def read_sensor(self):
+        if self.load_stopper is not None:
+            return self.load_stopper.sensor.read()
+
+    @Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
+    def read_sensor_poll(self,**kwargs):
+        if self.load_stopper is not None:
+            output = np.transpose(self.load_stopper.poll.read())
+            print('Serving sensor poll:',len(output),len(output[0]),len(output[1]))
+            return list(output)
+
+    @Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
+    def read_sensor_poll_load(self,**kwargs):
+        if self.load_stopper is not None:
+            output = np.transpose(self.load_stopper.poll.read_load_buffer())
+        return list(output)
+    
+    def set_sensor_config(self,**kwargs):
+        if self.load_stopper is not None:
+            self.load_stopper.config.update(kwargs)
+            self.load_stopper.reset()
+
+    @Driver.unqueued()
+    @Driver.quickbar(qb={'button_text':'reset', 'params':{}})
+    def sensor_reset(self):
+        if self.load_stopper is not None:
+            self.load_stopper.reset_poll()
+            self.load_stopper.reset_stopper()
+            if self.load_stopper._app is not None:
+                self.load_stopper.poll.app = self._app
+                self.load_stopper.stopper.app = self._app
+            self.load_stopper.poll.start()
+            self.load_stopper.stopper.start()
 

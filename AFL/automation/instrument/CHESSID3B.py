@@ -10,6 +10,7 @@ import os
 import pathlib
 import PIL
 import warnings
+import json
 
 class CHESSID3B(ScatteringInstrument,Driver):
     defaults = {}
@@ -287,20 +288,29 @@ class CHESSID3B(ScatteringInstrument,Driver):
                 
         #time.sleep(0.5)
         if block or reduce_data or save_nexus:
+            chosen_id = np.argmin(pos_simple_trans)
+
             self.client.block_for_ready()
             self.status_txt = 'Accessing Image'
             self.app.logger.debug(f'Min transmission was {np.min(pos_simple_trans)} at index {np.argmin(pos_simple_trans)}; returning that data.  Other transmissions were {pos_simple_trans}')
-            data = pos_raw_data[np.argmin(pos_simple_trans)]
-            transmission = pos_trans[np.argmin(pos_simple_trans)]
+            data = pos_raw_data[chosen_id]
+            transmission = pos_trans[chosen_id]
             #transmission = self.lastTransmission(return_full=True)
             if save_nexus:
                 self.status_txt = 'Writing Nexus'
                 self._writeNexus(data,name,name,transmission)
             if reduce_data:
                 self.status_txt = 'Reducing Data'
-                reduced = pos_reduced_data[np.argmin(pos_simple_trans)]
+                reduced = pos_reduced_data[chosen_id]
                 print(np.shape(reduced))
                 np.savetxt(f'{name}_chosen_r1d.csv',np.transpose(reduced),delimiter=',')
+
+                out_dict = {}
+                out_dict['transmissions'] = pos_trans
+                out_dict['chosen'] = chosen_id
+                with open(f'{name}_trans.json','w') as f:
+                    json.dump(out_dict,f)
+
                 #self.getReducedData(write_data=True,filename=name)
                 #if save_nexus:
                     #self._appendReducedToNexus(reduced,name,name)

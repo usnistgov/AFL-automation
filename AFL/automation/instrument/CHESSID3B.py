@@ -103,7 +103,7 @@ class CHESSID3B(ScatteringInstrument,Driver):
                 retval = retval / self.config['open beam intensity']
             return retval          
     
-    def interactiveLoad(self,name='lineup',cutoff_trans = 0.8,timeout=120)):
+    def interactiveLoad(self,name='lineup',cutoff_trans = 0.8,timeout=120):
         self.client.run_cmd('pil_off')
         self.client.run_cmd('opens')
         self.client.run_cmd(f'newfile {name}')

@@ -61,7 +61,7 @@ class Client:
         while True:
             try:
                 response = requests.get(self.url+'/get_queue',headers=self.headers,timeout=15)
-            except TimeoutError,requests.exceptions.ConnectionError:
+            except (TimeoutError,requests.exceptions.ConnectionError) as e:
                 continue
             history,running,queued = response.json()
             if target_uuid is not None:

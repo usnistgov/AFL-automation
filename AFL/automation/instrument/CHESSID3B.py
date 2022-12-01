@@ -307,7 +307,7 @@ class CHESSID3B(ScatteringInstrument,Driver):
 
                 out_dict = {}
                 out_dict['transmissions'] = pos_trans
-                out_dict['chosen'] = chosen_id
+                out_dict['chosen'] = int(chosen_id)
                 with open(f'{name}_trans.json','w') as f:
                     json.dump(out_dict,f)
 

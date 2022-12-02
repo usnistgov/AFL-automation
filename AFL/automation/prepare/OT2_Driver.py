@@ -113,7 +113,6 @@ class OT2_Driver(Driver):
         else:
             raise ValueError('Specified slot ({slot}) is empty of labware')
 
-
     def load_labware(self,name,slot,module=None,**kwargs):
         '''Load labware (containers,tipracks) into the protocol'''
         
@@ -158,6 +157,43 @@ class OT2_Driver(Driver):
         '''Disablea tempdeck in slot slot'''
         return self.modules[slot].deactivate()
 
+    def set_shake(self,rpm):
+	with serial.open(self.config['shaker_port'],115200) as p:
+            p.write(f'M3 S{str(int(rpm))}\r\n')
+
+    def stop_shake(self):
+	with serial.open(self.config['shaker_port'],115200) as p:
+            p.write(f'G28\r\n')
+
+    def set_shaker_temp(self,temp):
+	with serial.open(self.config['shaker_port'],115200) as p:
+            p.write(f'M104 S{str(int(temp))}\r\n')
+
+    def unlatch_shaker(self):
+	with serial.open(self.config['shaker_port'],115200) as p:
+            p.write(f'M242\r\n')
+
+    def latch_shaker(self):
+	with serial.open(self.config['shaker_port'],115200) as p:
+            p.write(f'M243 S{str(int(temp))}\r\n')
+
+    def get_shaker_temp(self):
+	with serial.open(self.config['shaker_port'],115200) as p:
+            p.write(f'M105\r\n')
+	    resp = p.readline()
+	return resp
+
+    def get_shake_rpm(self):
+	with serial.open(self.config['shaker_port'],115200) as p:
+            p.write(f'M123\r\n')
+	    resp = p.readline()
+	return resp
+
+    def get_shake_latch_status(self):
+	with serial.open(self.config['shaker_port'],115200) as p:
+            p.write(f'M241 S{str(int(rpm))}\r\n')
+	    resp = p.readline()
+	return resp
 
     def load_instrument(self,name,mount,tip_rack_slots,**kwargs):
         '''Load a pipette into the protocol'''

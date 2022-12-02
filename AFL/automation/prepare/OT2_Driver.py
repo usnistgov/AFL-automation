@@ -20,7 +20,7 @@ class OT2_Driver(Driver):
     defaults['shaker_port'] = '/dev/ttyACM0'
     def __init__(self,overrides=None):
         self.app = None
-	Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
+        Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
         self.max_transfer = 300
@@ -163,42 +163,42 @@ class OT2_Driver(Driver):
         return self.modules[slot].deactivate()
 
     def set_shake(self,rpm):
-	with serial.Serial(self.config['shaker_port'],115200) as p:
+        with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M3 S{str(int(rpm))}\r\n'.encode())
 
     def stop_shake(self):
-	with serial.Serial(self.config['shaker_port'],115200) as p:
+        with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'G28\r\n'.encode())
 
     def set_shaker_temp(self,temp):
-	with serial.Serial(self.config['shaker_port'],115200) as p:
+        with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M104 S{str(int(temp))}\r\n'.encode())
 
     def unlatch_shaker(self):
-	with serial.Serial(self.config['shaker_port'],115200) as p:
+        with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M242\r\n'.encode())
 
     def latch_shaker(self):
-	with serial.Serial(self.config['shaker_port'],115200) as p:
+        with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M243 S{str(int(temp))}\r\n'.encode())
 
     def get_shaker_temp(self):
-	with serial.Serial(self.config['shaker_port'],115200) as p:
+        with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M105\r\n'.encode())
-	    resp = p.readline()
-	return resp
+            resp = p.readline()
+        return resp
 
     def get_shake_rpm(self):
-	with serial.Serial(self.config['shaker_port'],115200) as p:
+        with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M123\r\n'.encode())
-	    resp = p.readline()
-	return resp
+            resp = p.readline()
+        return resp
 
     def get_shake_latch_status(self):
-	with serial.Serial(self.config['shaker_port'],115200) as p:
+        with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M241 S{str(int(rpm))}\r\n'.encode())
-	    resp = p.readline()
-	return resp
+            resp = p.readline()
+        return resp
 
     def load_instrument(self,name,mount,tip_rack_slots,**kwargs):
         '''Load a pipette into the protocol'''

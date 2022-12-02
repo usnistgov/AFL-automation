@@ -164,39 +164,39 @@ class OT2_Driver(Driver):
 
     def set_shake(self,rpm):
 	with serial.Serial(self.config['shaker_port'],115200) as p:
-            p.write(f'M3 S{str(int(rpm))}\r\n')
+            p.write(f'M3 S{str(int(rpm))}\r\n'.encode())
 
     def stop_shake(self):
 	with serial.Serial(self.config['shaker_port'],115200) as p:
-            p.write(f'G28\r\n')
+            p.write(f'G28\r\n'.encode())
 
     def set_shaker_temp(self,temp):
 	with serial.Serial(self.config['shaker_port'],115200) as p:
-            p.write(f'M104 S{str(int(temp))}\r\n')
+            p.write(f'M104 S{str(int(temp))}\r\n'.encode())
 
     def unlatch_shaker(self):
 	with serial.Serial(self.config['shaker_port'],115200) as p:
-            p.write(f'M242\r\n')
+            p.write(f'M242\r\n'.encode())
 
     def latch_shaker(self):
 	with serial.Serial(self.config['shaker_port'],115200) as p:
-            p.write(f'M243 S{str(int(temp))}\r\n')
+            p.write(f'M243 S{str(int(temp))}\r\n'.encode())
 
     def get_shaker_temp(self):
 	with serial.Serial(self.config['shaker_port'],115200) as p:
-            p.write(f'M105\r\n')
+            p.write(f'M105\r\n'.encode())
 	    resp = p.readline()
 	return resp
 
     def get_shake_rpm(self):
 	with serial.Serial(self.config['shaker_port'],115200) as p:
-            p.write(f'M123\r\n')
+            p.write(f'M123\r\n'.encode())
 	    resp = p.readline()
 	return resp
 
     def get_shake_latch_status(self):
 	with serial.Serial(self.config['shaker_port'],115200) as p:
-            p.write(f'M241 S{str(int(rpm))}\r\n')
+            p.write(f'M241 S{str(int(rpm))}\r\n'.encode())
 	    resp = p.readline()
 	return resp
 

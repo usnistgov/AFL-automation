@@ -4,6 +4,8 @@ import datetime
 import sys
 import traceback
 import json
+import pathlib
+from AFL.automation.shared.serialization import is_serialized
 
 
 class QueueDaemon(threading.Thread):
@@ -55,6 +57,21 @@ class QueueDaemon(threading.Thread):
                 ))
                 count = 0
 
+    def mask_serialized_objs(self,package):
+        masked_package = {'task':{}}
+        if 'meta' in package:
+            masked_package['meta'] = package['meta']
+        if 'uuid' in package:
+            masked_package['uuid'] = str(package['uuid'])
+
+        for k,v in package['task'].items():
+            if is_serialized(v):
+                masked_package['task'][k] = 'serialized_object'
+            else:
+                masked_package['task'][k] = v
+        return masked_package
+        
+
     def run(self):
         self.app.logger.info('Initializing QueueDaemon run-loop')
         while not self.stop:
@@ -64,8 +81,6 @@ class QueueDaemon(threading.Thread):
             package = self.task_queue.get(block=True, timeout=None)
             self.app.logger.debug('Got item from queue')
             
-            
-
             # If the task object is None, break the queue-loop
             if package is None:  # stop the queue execution
                 self.terminate()
@@ -75,9 +90,10 @@ class QueueDaemon(threading.Thread):
             task = package['task']
             self.app.logger.info(f'Running task {task}')
             start_time = datetime.datetime.now()
-            #package['meta']['started'] = start_time.strftime('%H:%M:%S')
-            package['meta']['started'] = start_time.strftime('%m/%d/%y %H:%M:%S-%f')
-            self.running_task = [package]
+            masked_package = self.mask_serialized_objs(package)
+            #masked_package['meta']['started'] = start_time.strftime('%H:%M:%S')
+            masked_package['meta']['started'] = start_time.strftime('%m/%d/%y %H:%M:%S-%f')
+            self.running_task = [masked_package]
             
             self.check_if_paused()
 
@@ -102,16 +118,17 @@ class QueueDaemon(threading.Thread):
 
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
-            package['meta']['ended'] = end_time.strftime('%m/%d/%y %H:%M:%S-%f')
-            package['meta']['run_time_seconds'] = run_time.seconds
-            package['meta']['run_time_minutes'] = run_time.seconds/60
-            package['meta']['exit_state'] = exit_state
-            package['meta']['return_val'] = return_val
+            masked_package['meta']['ended'] = end_time.strftime('%m/%d/%y %H:%M:%S-%f')
+            masked_package['meta']['run_time_seconds'] = run_time.seconds
+            masked_package['meta']['run_time_minutes'] = run_time.seconds/60
+            masked_package['meta']['exit_state'] = exit_state
+            masked_package['meta']['return_val'] = return_val
+            masked_package['uuid'] = str(masked_package['uuid'])
             self.running_task = []
-            self.history.append(package)#history for this server restart
-            self.history_log.append(package)#hopefull **all** history
+            self.history.append(masked_package)#history for this server restart
+            self.history_log.append(masked_package)#hopefull **all** history
             with open(self.history_log_path,'w') as f:
-                json.dump(self.history_log,f)
+                json.dump(self.history_log,f,indent=4)
 
             self.busy = False
             time.sleep(0.1)

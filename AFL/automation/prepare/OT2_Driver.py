@@ -6,6 +6,8 @@ from AFL.automation.shared.utilities import listify
 import warnings
 from math import ceil,sqrt
 import os,json,pathlib
+import serial
+
 '''
 Things we want to fix:
     - pipette mixing should have separate aspirate/dispense settings
@@ -161,39 +163,39 @@ class OT2_Driver(Driver):
         return self.modules[slot].deactivate()
 
     def set_shake(self,rpm):
-	with serial.open(self.config['shaker_port'],115200) as p:
+	with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M3 S{str(int(rpm))}\r\n')
 
     def stop_shake(self):
-	with serial.open(self.config['shaker_port'],115200) as p:
+	with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'G28\r\n')
 
     def set_shaker_temp(self,temp):
-	with serial.open(self.config['shaker_port'],115200) as p:
+	with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M104 S{str(int(temp))}\r\n')
 
     def unlatch_shaker(self):
-	with serial.open(self.config['shaker_port'],115200) as p:
+	with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M242\r\n')
 
     def latch_shaker(self):
-	with serial.open(self.config['shaker_port'],115200) as p:
+	with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M243 S{str(int(temp))}\r\n')
 
     def get_shaker_temp(self):
-	with serial.open(self.config['shaker_port'],115200) as p:
+	with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M105\r\n')
 	    resp = p.readline()
 	return resp
 
     def get_shake_rpm(self):
-	with serial.open(self.config['shaker_port'],115200) as p:
+	with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M123\r\n')
 	    resp = p.readline()
 	return resp
 
     def get_shake_latch_status(self):
-	with serial.open(self.config['shaker_port'],115200) as p:
+	with serial.Serial(self.config['shaker_port'],115200) as p:
             p.write(f'M241 S{str(int(rpm))}\r\n')
 	    resp = p.readline()
 	return resp

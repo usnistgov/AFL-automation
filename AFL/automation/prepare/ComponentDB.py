@@ -21,7 +21,7 @@ def componentFactory(name,preptype,formula=None,density=None,sld=None,descriptio
     return component
 
 class ComponentDB:
-    def __init__(self,path='.nistoroboto/component.db.json'):
+    def __init__(self,path='.afl/component.db.json'):
         self.path = pathlib.Path.home()/pathlib.Path(path)
         
         if self.path.exists():

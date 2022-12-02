@@ -59,7 +59,10 @@ class Client:
     def wait(self,target_uuid=None,interval=0.1,for_history=True,first_check_delay=5.0):
         time.sleep(first_check_delay)
         while True:
-            response = requests.get(self.url+'/get_queue',headers=self.headers)
+            try:
+                response = requests.get(self.url+'/get_queue',headers=self.headers,timeout=15)
+            except (TimeoutError,requests.exceptions.ConnectionError) as e:
+                continue
             history,running,queued = response.json()
             if target_uuid is not None:
                 if for_history:

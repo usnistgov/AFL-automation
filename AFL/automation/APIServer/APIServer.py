@@ -387,7 +387,7 @@ class APIServer:
         user = get_jwt_identity()
         self.app.logger.info(f'{user} enqueued {request.json}')
         package = {'task':task,'meta':{},'uuid':task_uuid}
-        package['meta']['queued'] = datetime.datetime.now().strftime('%H:%M:%S')
+        package['meta']['queued'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f')
         self.task_queue.put(package,queue_loc)
 
         return str(package['uuid']),200

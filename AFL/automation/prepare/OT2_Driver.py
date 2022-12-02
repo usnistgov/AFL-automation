@@ -14,8 +14,11 @@ Things we want to fix:
 '''
 
 class OT2_Driver(Driver):
-    def __init__(self):
+    defaults = {}
+    defaults['shaker_port'] = '/dev/ttyACM0'
+    def __init__(self,overrides=None):
         self.app = None
+	Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
         self.max_transfer = 300

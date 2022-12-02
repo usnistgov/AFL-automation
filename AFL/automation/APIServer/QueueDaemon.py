@@ -3,6 +3,7 @@ import time
 import datetime
 import sys
 import traceback
+import json
 
 
 class QueueDaemon(threading.Thread):
@@ -18,13 +19,23 @@ class QueueDaemon(threading.Thread):
 
         self.app = app
         self.task_queue = task_queue
-        self.history = history
+        self.history = history #history local to this server restart
         self.running_task = []
 
         self.stop = False
         self.debug = debug
         self.paused = False
         self.busy = False  # flag denotes if a task is being processed
+
+
+        self.history_log_path = pathlib.Path.home() / '.afl' / f'{driver.name}.history'
+        try:
+            # try to load all previous history if available
+            with open(self.history_log_path,'r') as f:
+                self.history_log = json.load(f)
+        except FileNotFoundError:
+            self.history_log = []
+
 
     def terminate(self):
         self.app.logger.info('Terminating QueueDaemon thread')
@@ -63,7 +74,9 @@ class QueueDaemon(threading.Thread):
             self.busy = True
             task = package['task']
             self.app.logger.info(f'Running task {task}')
-            package['meta']['started'] = datetime.datetime.now().strftime('%H:%M:%S')
+            start_time = datetime.datetime.now()
+            #package['meta']['started'] = start_time.strftime('%H:%M:%S')
+            package['meta']['started'] = start_time.strftime('%m/%d/%y %H:%M:%S-%f')
             self.running_task = [package]
             
             self.check_if_paused()
@@ -87,11 +100,19 @@ class QueueDaemon(threading.Thread):
                     self.app.logger.error(return_val)
                     self.paused = True
 
-            package['meta']['ended'] = datetime.datetime.now().strftime('%H:%M:%S')
+            end_time = datetime.datetime.now()
+            run_time = end_time - start_time
+            package['meta']['ended'] = end_time.strftime('%m/%d/%y %H:%M:%S-%f')
+            package['meta']['run_time_seconds'] = run_time.seconds
+            package['meta']['run_time_minutes'] = run_time.seconds/60
             package['meta']['exit_state'] = exit_state
             package['meta']['return_val'] = return_val
             self.running_task = []
-            self.history.append(package)
+            self.history.append(package)#history for this server restart
+            self.history_log.append(package)#hopefull **all** history
+            with open(self.history_log_path,'w') as f:
+                json.dump(self.history_log,f)
+
             self.busy = False
             time.sleep(0.1)
 

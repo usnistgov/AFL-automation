@@ -160,8 +160,9 @@ class MassBalance:
         self.stock_samples['stock'] = list([i.name for i in self.stocks])
         
         #need samples_frac array as individual dataarrays in the dataset
-        for da in self.stock_samples.samples_frac.transpose('component',...):
-            self.stock_samples[da.component.values[()]] = da
+        # # self.stock_samples.update(self.stock_samples.samples_frac.to_dataset('component')#this should replace the loop below but is untested
+        #for da in self.stock_samples.samples_frac.transpose('component',...):
+        #    self.stock_samples[da.component.values[()]] = da
             
         return self.stock_samples
     
@@ -194,6 +195,7 @@ class MassBalance:
         ds1 = ds1.to_array('component').transpose('sample',...)
         ds1.attrs['units']  = default_units
         self.stock_samples['concentrations']  = ds1
+        self.stock_samples['concentrations'].attrs['units'] = default_units
         
         masks = []
         for name,value in processed_constraints.items():
@@ -262,7 +264,9 @@ class MassBalance:
             xy = to_xy(comps.values)
         elif len(components)==2:
             xy = self.stock_samples['samples_frac'].sel(component=components)
-            mask = slice(None)
+            mask = xy
+            mask = xy.isel(component=0).copy(data=np.ones(xy.values.shape[0],dtype=bool))
+            xy = xy.values
         else:
             raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
         

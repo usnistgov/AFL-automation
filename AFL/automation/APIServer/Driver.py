@@ -47,7 +47,7 @@ class Driver:
         else:
             self.name = name
         
-        self.path = pathlib.Path.home() / '.nistoroboto' 
+        self.path = pathlib.Path.home() / '.afl' 
         self.path.mkdir(exist_ok=True,parents=True)
         self.filepath = self.path / (name + '.config.json')
             

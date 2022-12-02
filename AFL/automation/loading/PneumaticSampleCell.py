@@ -318,6 +318,10 @@ class PneumaticSampleCell(Driver,SampleCell):
             self.load_stopper.config.update(kwargs)
             self.load_stopper.reset()
 
+    def get_sensor_config(self,**kwargs):
+        if self.load_stopper is not None:
+            return self.load_stopper.config.config
+
     @Driver.unqueued()
     @Driver.quickbar(qb={'button_text':'Reset Sensor', 'params':{}})
     def sensor_reset(self):

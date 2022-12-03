@@ -221,6 +221,8 @@ class OT2_Driver(Driver):
             self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
 
         #update min/max transfer values
+        self.min_largest_pipette=None
+        self.max_smallest_pipette=None
         for mount,pipette in self.protocol.loaded_instruments.items():
             if (self.min_transfer is None) or (self.min_transfer>pipette.min_volume):
                 self.min_transfer = pipette.min_volume
@@ -229,6 +231,15 @@ class OT2_Driver(Driver):
             if (self.max_transfer is None) or (self.max_transfer<pipette.max_volume):
                 self.max_transfer = pipette.max_volume
                 self.app.logger.info(f'Setting maximum transfer to {self.max_transfer}')
+
+        #update min/max transfer values
+        min_vols = [pipette.min_volume for mount,pipette in self.protocol.loaded_instruments.items()]
+        max_vols = [pipette.max_volume for mount,pipette in self.protocol.loaded_instruments.items()]
+        largest_pipette_index = np.argmax(max_vols)
+        smallest_pipette_index = np.argmin(max_vols)
+        self.min_largest_pipette = min_vols[largest_pipette_index]
+        self.max_smallest_pipette = max_vols[smallest_pipette_index]
+
 
     def mix(self,volume, location, repetitions=1,**kwargs):
         self.app.logger.info(f'Mixing {volume}uL {repetitions} times at {location}')
@@ -396,6 +407,9 @@ class OT2_Driver(Driver):
                 if transfer<self.min_transfer and (len(transfers)>0) and (transfers[-1]>=(2*(self.min_transfer))):
                     transfers[-1]-=(self.min_transfer-transfer)
                     transfer = self.min_transfer
+                if (transfer<self.min_largest_pipette) and (transfer>self.max_smallest_pipette): # Valley of death
+                    #n_transfers = np.ceil(transfer/self.max_smallest_pipette)
+                    transfer = self.max_smallest_pipette #I fear no evil
                 
                 transfers.append(transfer)
             else:

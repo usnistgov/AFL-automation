@@ -23,8 +23,8 @@ class OT2_Driver(Driver):
         Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
-        self.max_transfer = 300
-        self.min_transfer = 30
+        self.max_transfer = None
+        self.min_transfer = None
         self.prep_targets = []
         self.has_tip = False #replace with pipette object check
         self.last_pipette = None
@@ -219,6 +219,16 @@ class OT2_Driver(Driver):
                     raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
                 tip_racks.append(tip_rack)
             self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
+
+        #update min/max transfer values
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            if (self.min_transfer is None) or (self.min_transfer>pipette.min_volume):
+                self.min_transfer = pipette.min_volume
+                self.app.logger.info(f'Setting mininum transfer to {self.min_transfer}')
+
+            if (self.max_transfer is None) or (self.max_transfer<pipette.max_volume):
+                self.max_transfer = pipette.max_volume
+                self.app.logger.info(f'Setting maximum transfer to {self.max_transfer}')
 
     def mix(self,volume, location, repetitions=1,**kwargs):
         self.app.logger.info(f'Mixing {volume}uL {repetitions} times at {location}')

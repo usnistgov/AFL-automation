@@ -7,6 +7,7 @@ import warnings
 from math import ceil,sqrt
 import os,json,pathlib
 import serial
+import numpy 
 
 '''
 Things we want to fix:
@@ -235,10 +236,11 @@ class OT2_Driver(Driver):
         #update min/max transfer values
         min_vols = [pipette.min_volume for mount,pipette in self.protocol.loaded_instruments.items()]
         max_vols = [pipette.max_volume for mount,pipette in self.protocol.loaded_instruments.items()]
-        largest_pipette_index = np.argmax(max_vols)
-        smallest_pipette_index = np.argmin(max_vols)
+        largest_pipette_index = argmax(max_vols)
+        smallest_pipette_index = argmin(max_vols)
         self.min_largest_pipette = min_vols[largest_pipette_index]
         self.max_smallest_pipette = max_vols[smallest_pipette_index]
+
 
 
     def mix(self,volume, location, repetitions=1,**kwargs):
@@ -626,4 +628,10 @@ class OT2_Driver(Driver):
                     return None
 
 
-   
+#argmax because numpy cannot be installed
+def argmax(array):
+    return array.index(max(array)) 
+
+#argmin because numpy cannot be installed
+def argmin(array):
+    return array.index(min(array)) 

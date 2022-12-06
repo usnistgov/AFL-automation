@@ -45,6 +45,10 @@ class PressureControllerAsPump(SyringePump):
         self.controller.set_P(self.dispense_pressure)
         self.active_callback.start()
         
+        # wait for active_callback to actually come alive before returning, to avoid race conditions
+
+        while not self.active_callback.is_alive():
+            time.sleep(0.01)
 
         if block:
             self.blockUntilStatusStopped()

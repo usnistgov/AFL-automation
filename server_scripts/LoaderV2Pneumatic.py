@@ -38,7 +38,7 @@ relayboard = PiPlatesRelay(
 
 digout = LabJackDigitalOut(intermittent_device_handle=False,shared_device = sensor)
 p_ctrl = DigitalOutPressureController(digout,3)
-pump = PressureControllerAsPump(p_ctrl,dispense_pressure = 3,implied_flow_rate = 10)
+pump = PressureControllerAsPump(p_ctrl,dispense_pressure = 5, implied_flow_rate = 5)
 #DummyPump() # ID for 10mL = 14.859, for 50 mL 26.43
 # pump = NE1kSyringePump('/dev/ttyUSB0',14.86,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
 # this is the line used in AFL ops   pump = NE1kSyringePump('/dev/ttyUSB0',14.6,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43 (gastight)

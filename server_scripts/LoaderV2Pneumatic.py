@@ -36,7 +36,7 @@ relayboard = PiPlatesRelay(
 
         } )
 
-digout = LabJackDigitalOut(intermittent_device_handle=False,shared_device = sensor)
+digout = LabJackDigitalOut(intermittent_device_handle=False,port_to_write='TDAC4',shared_device = sensor)
 p_ctrl = DigitalOutPressureController(digout,3)
 pump = PressureControllerAsPump(p_ctrl,dispense_pressure = 5, implied_flow_rate = 5)
 #DummyPump() # ID for 10mL = 14.859, for 50 mL 26.43

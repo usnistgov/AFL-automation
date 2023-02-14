@@ -135,16 +135,21 @@ class CastingServer_SampleDriver(Driver):
             self.update_status(f'Waiting for min_mix_time to be satisfied: {min_mix_time} s')
             while (datetime.datetime.now()-self.last_prep['ended'])<delta:
                 time.sleep(0.05)
+            actual_mix_time = datetime.datetime.now()-self.last_prep['ended']
                 
             task['dest'] = target_map.get(task['dest'],task['dest'])
             self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
             self.last_prep = self.prep_client.transfer(**task,interactive=True)
 
             self.last_prep['sample_name'] = sample_name
+            self.last_prep['min_mix_time'] = min_mix_time
+            self.last_prep['actual_mix_time'] = actual_mix_time
             self.last_prep['plate_name'] = plate_name
             self.last_prep['event_type'] = 'cast'
             self.last_prep.update(**task)
             self.log_event(self.last_prep)
+            self.update_status(f'Cast {self.last_prep["sample_name"]}!')
+            
         
         self.update_status(f'All done for sample {sample_name} on plate {plate_name}!')
    

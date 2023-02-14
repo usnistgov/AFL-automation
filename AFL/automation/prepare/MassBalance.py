@@ -226,10 +226,11 @@ class MassBalance:
             if exclude_comps_below is not None:
                 mask = ~((comps<exclude_comps_below).any('component'))
                 comps = comps[mask]
+            else:
+                mask = xr.ones_like(self.stock_samples['samples_frac'],dtype=bool)
             xy = to_xy(comps.values)
         elif len(components)==2:
             xy = self.stock_samples['samples_frac'].sel(component=components)
-            mask = xy
             mask = xy.isel(component=0).copy(data=np.ones(xy.values.shape[0],dtype=bool))
             xy = xy.values
         else:
@@ -237,10 +238,7 @@ class MassBalance:
         
         
         #need to remove anything associated with sample_valid coordinate
-        try:
-            self.stock_samples.drop_dims('sample_valid')
-        except ValueError:
-            pass
+        self.stock_samples = self.stock_samples.drop_vars(['xy','samples_valid'],errors='ignore')
         
         self.stock_samples['xy'] = (('sample_valid','coord'),xy)
         self.stock_samples['samples_valid']  = (('sample_valid','component'),self.stock_samples['samples_frac'].where(mask,drop=True).data)
@@ -265,7 +263,7 @@ class MassBalance:
         if not hasattr(self,'stock_samples'):
             raise ValueError('You must call .sample_composition_space and .calculate_bounds with before calling this method')
 
-        self.stock_samples.afl.comp.add_grid(self.stock_samples.attrs['components'],pts_per_row=pts_per_row)
+        self.stock_samples.afl.comp.add_grid(self.stock_samples.attrs['components'],pts_per_row=pts_per_row,overwrite=True)
         
         mask = self.in_bounds(self.stock_samples.afl.comp.get_grid().values)
         self.stock_samples['grid_mask'] = ('grid',mask)

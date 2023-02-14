@@ -7,7 +7,7 @@ except:
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 from AFL.automation.APIServer.APIServer import APIServer
-from AFL.automation.agent.SAS_AgentDriver import SAS_AgentDriver
+from AFL.agent.SAS_AgentDriver import SAS_AgentDriver
 
 server = APIServer('SAS_Agent',index_template="index.html")
 server.add_standard_routes()

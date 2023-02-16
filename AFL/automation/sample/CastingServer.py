@@ -14,7 +14,7 @@ import traceback
 import xarray as xr
 
 
-class CastingServer_SampleDriver(Driver):
+class CastingServer(Driver):
     defaults={}
     defaults['manifest'] = '/home/afl642/'
     def __init__(self,
@@ -35,17 +35,31 @@ class CastingServer_SampleDriver(Driver):
         self.prep_client.login('SampleServer_PrepClient')
         self.prep_client.debug(False)
         
+        # sample_name --> location mapping
+        self.prepare_locs = {}
+        self.cast_locs = {}
+        
         self.prep_uuid = None
 
         self.status_str = 'Fresh Server!'
         self.wait_time = 30.0 #seconds
         self.init_casting_manifest()
 
-    def init_casting_manifest(self,overrite=False):
-        try:
-            self.manifest = xr.load_dataset(self.config['manifest'])
-        except FileNotFoundError:
+    def init_casting_manifest(self,attrs=None,overwrite=False):
+        print(f'Trying to load {self.config["manifest"]}')
+        if not overwrite:
+            try:
+                self.manifest = xr.load_dataset(self.config['manifest'])
+                print(f'Loaded!')
+            except (FileNotFoundError,ValueError):
+                self.manifest = xr.Dataset()
+                print(f'Not Found...starting new manifest')
+        else:
             self.manifest = xr.Dataset()
+            print(f'Starting new manifest')
+            
+        if attrs is not None:
+            self.manifest.attrs.update(attrs)
 
     def status(self):
         status = []
@@ -69,40 +83,90 @@ class CastingServer_SampleDriver(Driver):
         if write:
             self.manifest.to_netcdf(self.config['manifest'])
             self.manifest.to_pandas().to_csv(self.config['manifest'].replace('nc','csv'))
+            
+    def assign_targets(protocols,target_map):
+        if target_map is None:
+            self.targets = set()
+            for name,protocol in protocols.items():
+                for task in protocol:
+                    if 'target' in task['source'].lower():
+                        self.targets.add(task['source'])
+                    if 'target' in task['dest'].lower():
+                        self.targets.add(task['dest'])
+    
+            self.target_map = {}
+            for t in self.targets:
+                prep_target = self.prep_client.enqueue(task_name='get_prep_target',interactive=True)['return_val']
+                self.target_map[t] = prep_target
+        else:
+            self.target_map = target_map
 
-    def cast_film(self,**sample):
+        for name,protocol in protocols.items():
+            for task in protocol:
+                task['source'] = self.target_map.get(task['source'],task['source'])
+                task['dest'] = self.target_map.get(task['dest'],task['dest'])
+                
+        return protocols
+    
+    def prepare_casting_stocks(self,**spec):
+        '''Spec should contain sample_name and a protocol'''
+        self.init_casting_manifest()
+        
+        stock_name = spec['stock_name']
+        sample_names = spec['sample_names']
+        protocol = spec['protocol']
+        
+        for sample_name,task in zip(sample_names,protocol):
+            self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
+            self.last_prep = self.prep_client.transfer(interactive=True,**task)
+            self.last_prep_time = self.last_prep['ended'] 
+            
+            self.last_prep['event_type'] = 'prep'
+            self.last_prep['sample_name'] = sample_name
+            self.last_prep['stock_name'] = stock_name
+            self.last_prep['plate_name'] = 'None'
+            self.last_prep.update(**task)
+            self.log_event(self.last_prep)
+            
+    def bulk_cast_films(self,**spec):
+        '''Spec should contain sample_name and a protocol'''
+        self.init_casting_manifest()
+        
+        sample_names = spec['sample_names']
+        plate_names = spec['plate_names']
+        protocol = spec['protocol']
+        if not ( (len(sample_names)==len(plate_names)) and (len(sample_names)==len(protocol))):
+            raise ValueError('Number of plate_names,sample_names, and protocols must be equal')
+        
+        for sample_name,plate_name,task in zip(sample_names,plate_names,protocol):
+            self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
+            self.last_prep = self.prep_client.transfer(interactive=True,**task)
+            self.last_prep_time = self.last_prep['ended'] 
+            
+            self.last_prep['event_type'] = 'cast'
+            self.last_prep['sample_name'] = sample_name
+            self.last_prep['stock_name'] = 'None'
+            self.last_prep['plate_name'] = plate_name
+            self.last_prep.update(**task)
+            self.log_event(self.last_prep)
+
+    def prepare_and_cast(self,**sample):
+        self.init_casting_manifest()
+        
         sample_name = sample['sample_name']
         plate_name = sample['plate_name']
-
-        targets = set()
-        for task in sample['prep_protocol']:
-            if 'target' in task['source'].lower():
-                targets.add(task['source'])
-            if 'target' in task['dest'].lower():
-                targets.add(task['dest'])
-
-        for task in sample['cast_protocol']:
-            if 'target' in task['source'].lower():
-                targets.add(task['source'])
-            if 'target' in task['dest'].lower():
-                targets.add(task['dest'])
-
-        target_map = {}
-        for t in targets:
-            prep_target = self.prep_client.enqueue(task_name='get_prep_target',interactive=True)['return_val']
-            target_map[t] = prep_target
+        protocols = self.assign_targets({k:sample[k] for k in ['prep_protocol','cast_protocol']})
 
         self.update_status(f'Preparing sample: {sample_name}')
-        for task in sample['prep_protocol']:
-            #if the well isn't in the map, just use the well from the user
-            task['source'] = target_map.get(task['source'],task['source'])
-            task['dest'] = target_map.get(task['dest'],task['dest'])
+        for task in protocols['prep_protocol']:
             self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
             self.last_prep = self.prep_client.transfer(interactive=True,**task)
             self.last_prep_time = self.last_prep['ended'] 
             
             self.last_prep['sample_name'] = sample_name
             self.last_prep['plate_name'] = plate_name
+            self.last_prep['min_mix_time'] = datetime.timedelta(seconds=0)
+            self.last_prep['actual_mix_time'] = datetime.timedelta(seconds=0)
             self.last_prep['event_type'] = 'transfer'
             self.last_prep.update(**task)
             self.log_event(self.last_prep)
@@ -111,12 +175,6 @@ class CastingServer_SampleDriver(Driver):
         if self.prep_uuid is not None: 
             self.prep_client.wait(self.prep_uuid)
 
-        # if 'min_mix_time_sec' in sample:
-        #     delta = datetime.timedelta(seconds=sample['min_mix_time_sec'])
-        #     self.update_status(f'Waiting for min_mix_time_sec to be satisfied: {sample["min_mix_time_sec"]}')
-        #     while (datetime.datetime.now()-self.last_prep['ended'])<delta:
-        #         time.sleep(0.05)
-                
         if 'min_mix_time' in sample:
             try:
                 if not (len(sample['min_mix_time'])==len(sample['cast_protocol'])):
@@ -129,7 +187,7 @@ class CastingServer_SampleDriver(Driver):
             
 
         self.update_status(f'Casting sample: {sample_name}')
-        for task,min_mix_time in zip(sample['cast_protocol'],sample['min_mix_time']):
+        for task,min_mix_time in zip(protocols['cast_protocol'],sample['min_mix_time']):
             
             delta = datetime.timedelta(seconds=min_mix_time)
             self.update_status(f'Waiting for min_mix_time to be satisfied: {min_mix_time} s')
@@ -137,7 +195,6 @@ class CastingServer_SampleDriver(Driver):
                 time.sleep(0.05)
             actual_mix_time = datetime.datetime.now()-self.last_prep['ended']
                 
-            task['dest'] = target_map.get(task['dest'],task['dest'])
             self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
             self.last_prep = self.prep_client.transfer(**task,interactive=True)
 

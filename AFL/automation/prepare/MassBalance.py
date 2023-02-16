@@ -9,6 +9,7 @@ import pandas as pd
 import copy
 from AFL.automation.shared.units import units,is_concentration,get_unit_type
 from AFL.automation.prepare import Solution
+from AFL.automation import prepare 
 from collections import defaultdict
 
 try:
@@ -125,10 +126,20 @@ class MassBalance:
         if self.components is None:
             self.process_components()
             
+        density = []
+        for component_name in self.components:
+            component = prepare.db[component_name]
+            if component.is_solute:
+                density.append(0)
+            else:
+                density.append(component.density.to('mg/ml').magnitude)
+        density = np.array(density)
+            
         masses = []#mass matrix of each component in each stock
         fraction_grid=[]
         for stock in self.stocks:
             row = []
+            density_row = []
             ratio = (pipette_min/stock.volume).to_base_units().magnitude
             l1 = list(np.linspace(ratio,1.0,grid_density))
             l2 = list(np.geomspace(ratio,1.0,grid_density))
@@ -142,106 +153,62 @@ class MassBalance:
             masses.append(row)
         masses = np.array(masses)
         
+        stock_samples_conc = []#list of possible stock combinations
         stock_samples_mass = []#list of possible stock combinations
+        stock_samples_volume = []#list of possible stock combinations
         stock_samples_frac = []#list of possible stock combinations
         stock_fractions = []
         for fractions in product(*fraction_grid):
             stock_fractions.append(fractions)
             mass = (masses.T*fractions).sum(1)
             mass_frac = mass/mass.sum()
+            
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                volume = mass/density
+            volume = volume[~np.isinf(volume)].sum()
+            
+            conc = mass/volume
+            
             stock_samples_mass.append(mass)
             stock_samples_frac.append(mass_frac)
+            stock_samples_volume.append(volume)
+            stock_samples_conc.append(conc)
         self.fraction_grid = fraction_grid
         self.masses = masses
         self.stock_samples = xr.Dataset()
         self.stock_samples['samples_frac'] = xr.DataArray(stock_samples_frac,dims=['sample','component'],coords={'component':self.components})
-        self.stock_samples['samples_mass'] = xr.DataArray(stock_samples_mass,dims=['sample','component'],coords={'component':self.components})
+        self.stock_samples['samples_mass'] = xr.DataArray(stock_samples_mass,dims=['sample','component'],coords={'component':self.components},attrs={'units':'mg'})
+        self.stock_samples['samples_conc'] = xr.DataArray(stock_samples_conc,dims=['sample','component'],coords={'component':self.components},attrs={'units':'mg/ml'})
+        self.stock_samples['samples_volume'] = xr.DataArray(stock_samples_volume,dims=['sample'],attrs={'units':'ml'})
         self.stock_samples['stock_fractions'] = (('sample','stock'),stock_fractions)
         self.stock_samples['stock'] = list([i.name for i in self.stocks])
         
         #need samples_frac array as individual dataarrays in the dataset
-        for da in self.stock_samples.samples_frac.transpose('component',...):
-            self.stock_samples[da.component.values[()]] = da
+        self.stock_samples.update(self.stock_samples.samples_frac.to_dataset('component'))#this should replace the loop below but is untested
             
         return self.stock_samples
     
     
-    def constrain_samples_conc(self,constraints,default_units='mg/ml',rtol=0.05):
-        solution = Solution('dummy',self.components,properties={name:{'mass':0.0*units('mg')} for name in self.components})
-        mg = units("mg")
-        
+    def constrain_samples_conc(self,constraints,rtol=0.05):
         processed_constraints = {}
         for name,value in constraints.items():
             if is_concentration(value):
-                processed_constraints[name] = value.to(default_units).magnitude
+                processed_constraints[name] = value.to('mg/ml').magnitude
             else:
                 raise ValueError(f'This method only works with concentration constraints. You passed {get_unit_type(value)}')
     
-        # first we need to add the concentrations into the xarray
-        conc_list = defaultdict(list)
-        for sample in tqdm(self.stock_samples.samples_mass.transpose('sample',...),total=self.stock_samples.samples_mass.sizes['sample']):
-            soln = solution.copy()
-            for j,component in enumerate(self.components):
-                soln[component].mass = float(sample.sel(component=component))*mg
-                
-            for k,v in soln.concentration.items():
-                conc_list[k].append(v.to(default_units).magnitude)
-                
-        # use temporary dataset to construct concentration dataarray
-        ds1 = xr.Dataset()
-        for k,v in conc_list.items():
-            ds1[k] = ('sample',v)
-        ds1 = ds1.to_array('component').transpose('sample',...)
-        ds1.attrs['units']  = default_units
-        self.stock_samples['concentrations']  = ds1
-        
         masks = []
         for name,value in processed_constraints.items():
-            sample_concs = self.stock_samples['concentrations'].sel(component=name)
+            sample_concs = self.stock_samples.samples_conc.sel(component=name)
             mask = np.isclose(sample_concs,value,atol=0.0,rtol=rtol)
             masks.append(mask)
-            #samples2 = self.stock_samples.where(sample_concs.copy(data=mask),drop=True).copy()
             
         self.stock_samples['constraint_mask'] = ('sample',np.all(masks,axis=0))
         self.stock_samples_all = self.stock_samples.copy()
         self.stock_samples = self.stock_samples.where(self.stock_samples['constraint_mask'],drop=True)
         return self.stock_samples
     
-    def constrain_samples_old(self,constraints,rtol=0.05):
-        warnings.warn('This will not work for multiple constraints!',stacklevel=2)
-        mg = units("mg")
-        
-        processed_constraints = {}
-        for name,value in constraints.items():
-            if is_concentration(value):
-                processed_constraints['conc'] = {name:value.to('mg/ml').magnitude}
-        
-        solution = prepare.Solution('test',self.components)
-        # samples_constrained = []
-        # conc_constrained = []
-        # conc_list = []
-        samples_mask =[]
-        for sample in tqdm.tqdm(self.stock_samples.samples_mass.transpose('sample',...),total=samples.sizes['sample']):
-            soln = solution.copy()
-            for j,component in enumerate(self.components):
-                soln[component].mass = float(sample.sel(component=component))*mg
-                
-            for name,value in processed_constraints['conc'].items():
-                conc = soln.concentration[name].to('mg/ml').magnitude
-                #conc_list.append(conc)
-                
-                if np.isclose(conc,value,atol=0,rtol=0.1):
-                    #samples_constrained.append(sample)
-                    #conc_constrained.append(conc)
-                    samples_mask.append(True)
-                else:
-                    samples_mask.append(False)
-                break
-        self.stock_samples['samples_mask'] = ('sample',samples_mask)
-        
-        #finally apply the concentrations
-        mask = np.isclose(samples1.conc.sel(component='P188'),10.0,atol=0.0,rtol=rtol)
-        samples2 = samples1.where(samples1.conc.sel(component='P188').copy(data=mask),drop=True).copy()
     
     def calculate_bounds(self,components=None,exclude_comps_below=None,fixed_comps=None):
         
@@ -259,19 +226,19 @@ class MassBalance:
             if exclude_comps_below is not None:
                 mask = ~((comps<exclude_comps_below).any('component'))
                 comps = comps[mask]
+            else:
+                mask = xr.ones_like(self.stock_samples['samples_frac'],dtype=bool)
             xy = to_xy(comps.values)
         elif len(components)==2:
             xy = self.stock_samples['samples_frac'].sel(component=components)
-            mask = slice(None)
+            mask = xy.isel(component=0).copy(data=np.ones(xy.values.shape[0],dtype=bool))
+            xy = xy.values
         else:
             raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
         
         
         #need to remove anything associated with sample_valid coordinate
-        try:
-            self.stock_samples.drop_dims('sample_valid')
-        except ValueError:
-            pass
+        self.stock_samples = self.stock_samples.drop_vars(['xy','samples_valid'],errors='ignore')
         
         self.stock_samples['xy'] = (('sample_valid','coord'),xy)
         self.stock_samples['samples_valid']  = (('sample_valid','component'),self.stock_samples['samples_frac'].where(mask,drop=True).data)
@@ -296,7 +263,7 @@ class MassBalance:
         if not hasattr(self,'stock_samples'):
             raise ValueError('You must call .sample_composition_space and .calculate_bounds with before calling this method')
 
-        self.stock_samples.afl.comp.add_grid(self.stock_samples.attrs['components'],pts_per_row=pts_per_row)
+        self.stock_samples.afl.comp.add_grid(self.stock_samples.attrs['components'],pts_per_row=pts_per_row,overwrite=True)
         
         mask = self.in_bounds(self.stock_samples.afl.comp.get_grid().values)
         self.stock_samples['grid_mask'] = ('grid',mask)

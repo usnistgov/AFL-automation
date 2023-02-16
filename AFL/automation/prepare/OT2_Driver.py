@@ -6,6 +6,9 @@ from AFL.automation.shared.utilities import listify
 import warnings
 from math import ceil,sqrt
 import os,json,pathlib
+import serial
+import numpy 
+
 '''
 Things we want to fix:
     - pipette mixing should have separate aspirate/dispense settings
@@ -14,12 +17,15 @@ Things we want to fix:
 '''
 
 class OT2_Driver(Driver):
-    def __init__(self):
+    defaults = {}
+    defaults['shaker_port'] = '/dev/ttyACM0'
+    def __init__(self,overrides=None):
         self.app = None
+        Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
         self.name = 'OT2_Driver'
         self.protocol = opentrons.execute.get_protocol_api('2.0')
-        self.max_transfer = 300
-        self.min_transfer = 30
+        self.max_transfer = None
+        self.min_transfer = None
         self.prep_targets = []
         self.has_tip = False #replace with pipette object check
         self.last_pipette = None
@@ -113,7 +119,6 @@ class OT2_Driver(Driver):
         else:
             raise ValueError('Specified slot ({slot}) is empty of labware')
 
-
     def load_labware(self,name,slot,module=None,**kwargs):
         '''Load labware (containers,tipracks) into the protocol'''
         
@@ -158,6 +163,43 @@ class OT2_Driver(Driver):
         '''Disablea tempdeck in slot slot'''
         return self.modules[slot].deactivate()
 
+    def set_shake(self,rpm):
+        with serial.Serial(self.config['shaker_port'],115200) as p:
+            p.write(f'M3 S{str(int(rpm))}\r\n'.encode())
+
+    def stop_shake(self):
+        with serial.Serial(self.config['shaker_port'],115200) as p:
+            p.write(f'G28\r\n'.encode())
+
+    def set_shaker_temp(self,temp):
+        with serial.Serial(self.config['shaker_port'],115200) as p:
+            p.write(f'M104 S{str(int(temp))}\r\n'.encode())
+
+    def unlatch_shaker(self):
+        with serial.Serial(self.config['shaker_port'],115200) as p:
+            p.write(f'M242\r\n'.encode())
+
+    def latch_shaker(self):
+        with serial.Serial(self.config['shaker_port'],115200) as p:
+            p.write(f'M243\r\n'.encode())
+
+    def get_shaker_temp(self):
+        with serial.Serial(self.config['shaker_port'],115200) as p:
+            p.write(f'M105\r\n'.encode())
+            resp = p.readline()
+        return resp
+
+    def get_shake_rpm(self):
+        with serial.Serial(self.config['shaker_port'],115200) as p:
+            p.write(f'M123\r\n'.encode())
+            resp = p.readline()
+        return resp
+
+    def get_shake_latch_status(self):
+        with serial.Serial(self.config['shaker_port'],115200) as p:
+            p.write(f'M241\r\n'.encode())
+            resp = p.readline()
+        return resp
 
     def load_instrument(self,name,mount,tip_rack_slots,**kwargs):
         '''Load a pipette into the protocol'''
@@ -178,6 +220,28 @@ class OT2_Driver(Driver):
                     raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
                 tip_racks.append(tip_rack)
             self.protocol.load_instrument(name,mount,tip_racks=tip_racks)
+
+        #update min/max transfer values
+        self.min_largest_pipette=None
+        self.max_smallest_pipette=None
+        for mount,pipette in self.protocol.loaded_instruments.items():
+            if (self.min_transfer is None) or (self.min_transfer>pipette.min_volume):
+                self.min_transfer = pipette.min_volume
+                self.app.logger.info(f'Setting mininum transfer to {self.min_transfer}')
+
+            if (self.max_transfer is None) or (self.max_transfer<pipette.max_volume):
+                self.max_transfer = pipette.max_volume
+                self.app.logger.info(f'Setting maximum transfer to {self.max_transfer}')
+
+        #update min/max transfer values
+        min_vols = [pipette.min_volume for mount,pipette in self.protocol.loaded_instruments.items()]
+        max_vols = [pipette.max_volume for mount,pipette in self.protocol.loaded_instruments.items()]
+        largest_pipette_index = argmax(max_vols)
+        smallest_pipette_index = argmin(max_vols)
+        self.min_largest_pipette = min_vols[largest_pipette_index]
+        self.max_smallest_pipette = max_vols[smallest_pipette_index]
+
+
 
     def mix(self,volume, location, repetitions=1,**kwargs):
         self.app.logger.info(f'Mixing {volume}uL {repetitions} times at {location}')
@@ -345,6 +409,9 @@ class OT2_Driver(Driver):
                 if transfer<self.min_transfer and (len(transfers)>0) and (transfers[-1]>=(2*(self.min_transfer))):
                     transfers[-1]-=(self.min_transfer-transfer)
                     transfer = self.min_transfer
+                if (transfer<self.min_largest_pipette) and (transfer>self.max_smallest_pipette): # Valley of death
+                    #n_transfers = np.ceil(transfer/self.max_smallest_pipette)
+                    transfer = self.max_smallest_pipette #I fear no evil
                 
                 transfers.append(transfer)
             else:
@@ -561,4 +628,10 @@ class OT2_Driver(Driver):
                     return None
 
 
-   
+#argmax because numpy cannot be installed
+def argmax(array):
+    return array.index(max(array)) 
+
+#argmin because numpy cannot be installed
+def argmin(array):
+    return array.index(min(array)) 

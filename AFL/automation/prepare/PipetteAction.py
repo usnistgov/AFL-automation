@@ -20,8 +20,8 @@ class PipetteAction:
             drop_tip=True,
             force_new_tip=False,
             to_top=True,
-            to_center=True,
-            to_tc_z_offset=0,
+            to_center=False,
+            to_top_z_offset=0,
             fast_mixing=False
             
             ):
@@ -45,7 +45,7 @@ class PipetteAction:
         self.kwargs['force_new_tip'] = force_new_tip
         self.kwargs['to_top'] = to_top
         self.kwargs['to_center'] = to_center
-        self.kwargs['to_tc_z_offset'] = to_tc_z_offset #mm!
+        self.kwargs['to_top_z_offset'] = to_top_z_offset #mm!
         self.kwargs['fast_mixing'] = fast_mixing
     
     def __str__(self):

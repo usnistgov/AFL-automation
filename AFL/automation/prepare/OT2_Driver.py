@@ -278,6 +278,7 @@ class OT2_Driver(Driver):
             drop_tip=True,
             force_new_tip=False,
             to_top=True,
+            to_center=False,
             fast_mixing=False,
             **kwargs):
         '''Transfer fluid from one location to another
@@ -323,14 +324,22 @@ class OT2_Driver(Driver):
             dest_well = dest_wells[0]
         
         last_dest_well = None
-
+        
+        if to_top and to_center:
+            raise ValueError("Cannot dispense to_top and to_center simulaneously')
+                             
         if (to_top) and (mix_after is None):
             dest_well = dest_well.top()
-        elif to_top and (mix_after is not None) and (not fast_mixing):
-            raise ValueError('Cannot mix_after if dispensing to top unless using fast mixing.')
-        elif to_top and (mix_after is not None) and fast_mixing:  # a very special case - dispense to top on first and intermediate transfers, then on final transfer dispense to bottom and mix_after
-            last_dest_well = dest_well  
-            dest_well = dest_well.top()
+        elif (to_center) and (mix_after is None):
+            dest_well = dest_well.center()
+        elif (to_top or to_center) and (mix_after is not None) and (not fast_mixing):
+            raise ValueError('Cannot mix_after if dispensing to_top or to_center unless using fast mixing.')
+        elif (to_top or to_center) and (mix_after is not None) and fast_mixing:  # a very special case - dispense to top on first and intermediate transfers, then on final transfer dispense to bottom and mix_after
+            last_dest_well = dest_well
+            if to_top:
+                dest_well = dest_well.top()
+            elif to_center:
+                dest_well = dest_well.center()
         transfers = self.split_up_transfers(volume)
         user_drop_tip = drop_tip #store user set value for last transfer
         user_mix_before = mix_before

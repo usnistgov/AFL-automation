@@ -446,8 +446,6 @@ class OT2_Driver(Driver):
             mix_aspirate_rate=None,
             mix_dispense_rate=None):
                       
-        if blow_out:
-            raise NotImplemented()        
     
         if force_new_tip and self.has_tip:
             pipette.drop_tip(self.protocol.deck[12]['A1'])
@@ -517,6 +515,9 @@ class OT2_Driver(Driver):
                 pipette.flow_rate.aspirate = aspirate_rate
             if mix_dispense_rate is not None:
                 pipette.flow_rate.dispense = dispense_rate
+                
+        if blow_out:
+            pipette.blow_out()
                 
         if post_dispense_delay>0.0:
             try:

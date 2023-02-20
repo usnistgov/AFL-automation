@@ -92,7 +92,7 @@ class QueueDaemon(threading.Thread):
             start_time = datetime.datetime.now()
             masked_package = self.mask_serialized_objs(package)
             #masked_package['meta']['started'] = start_time.strftime('%H:%M:%S')
-            masked_package['meta']['started'] = start_time.strftime('%m/%d/%y %H:%M:%S-%f')
+            masked_package['meta']['started'] = start_time.strftime('%m/%d/%y %H:%M:%S-%f %Z%z')
             self.running_task = [masked_package]
             
             self.check_if_paused()
@@ -118,7 +118,7 @@ class QueueDaemon(threading.Thread):
 
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
-            masked_package['meta']['ended'] = end_time.strftime('%m/%d/%y %H:%M:%S-%f')
+            masked_package['meta']['ended'] = end_time.strftime('%m/%d/%y %H:%M:%S-%f %Z%z')
             masked_package['meta']['run_time_seconds'] = run_time.seconds
             masked_package['meta']['run_time_minutes'] = run_time.seconds/60
             masked_package['meta']['exit_state'] = exit_state

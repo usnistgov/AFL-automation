@@ -23,8 +23,44 @@ class APSUSAXS(Driver):
     defaults['script_file'] = 'AFL.mac'
     defaults['magic_project_key'] = '!!AFL-SETNAME!!'
     defaults['magic_filename_key'] = '!!AFLREPLACEME!!'
+    defaults['magic_xpos_key'] = '!!AFLXPOS!!'
+    defaults['magic_ypos_key'] = '!!AFLYPOS!!'
+    defaults['active_holder'] = '6A'
     defaults['reduced_data_key'] = 'flyScan_reduced_250'
     defaults['script_write_cooldown'] = 1 
+    defaults['platemap'] = {
+                         '6A':{
+                     'SlotA':
+                        {
+                          'x0': 0,
+                          'y0': 0,
+                          'x_step': 9,
+                          'y_step': 9,
+                          'x_per_y_skew': .5,
+                          'y_per_x_skew': -(8/12)*.5,
+                        },
+                        'SlotB':
+                        {
+                          'x0': -150,
+                          'y0': -150,
+                          'x_step': 9,
+                          'y_step': 9,
+                          'x_per_y_skew': 1,
+                          'y_per_x_skew': -(8/12)*1,
+                        },
+                        'SlotC':
+                        {
+                          'x0': 150,
+                          'y0': 150,
+                          'x_step': 9,
+                          'y_step': 9,
+                          'x_per_y_skew': -8,
+                          'y_per_x_skew': -(8/12)*-8,
+                        },
+
+                    }
+                    }
+    defaults['move_mode'] = 'MOVE_SAMPLE'
 
     def __init__(self,overrides=None):
         '''
@@ -45,6 +81,8 @@ class APSUSAXS(Driver):
         self.status_txt = 'Just started...'
         self.filename = 'default'
         self.project = 'AFL'
+        self.xpos = 0
+        self.ypos = 0
 
     def pre_execute(self,**kwargs):
         pass
@@ -73,7 +111,16 @@ class APSUSAXS(Driver):
         '''
         return self.project
 
+    def _coords_from_tuple(slot,row,col):
+        if len(row)>1:
+            raise ValueError('row must be a single letter')
+        row = ord(row) & 31
 
+        geom = self.config['platemap'][self.config['active_holder']][slot]
+
+        return (geom['x0'] + (row-1)*geom['x_step'] + geom['x_per_y_skew']*(col-1),
+                geom['y0'] + (col-1)*geom['y_step'] + geom['y_per_x_skew']*(row-1))
+    
     def setProject(self,name):
         if self.app is not None:
             self.app.logger.debug(f'Setting filename to {name}')
@@ -90,6 +137,8 @@ class APSUSAXS(Driver):
             for line in f:
                 s = line.replace(self.config['magic_project_key'],self.project)
                 s = s.replace(self.config['magic_filename_key'],self.filename)
+                s = s.replace(self.config['magic_xpos_key'],self.xpos)
+                s = s.replace(self.config['magic_ypos_key'],self.ypos)
                 s = s.replace('\r','')
                 s = s.replace('\n','')
                 lines.append(s)
@@ -133,7 +182,10 @@ class APSUSAXS(Driver):
         
     def getRunStatus(self):
         return epics.caget(self.config['instrument_status_pv'],as_string=True)
-
+    
+    def setPosition(self,plate,row,col):
+        (self.xpos,self.ypos) = _coords_from_tuple(plate,row,col)
+        
     def getRunInProgress(self):
         return epics.caget(self.config['instrument_running_pv']) 
     

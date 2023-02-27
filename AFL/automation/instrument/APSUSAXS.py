@@ -137,8 +137,8 @@ class APSUSAXS(Driver):
             for line in f:
                 s = line.replace(self.config['magic_project_key'],self.project)
                 s = s.replace(self.config['magic_filename_key'],self.filename)
-                s = s.replace(self.config['magic_xpos_key'],self.xpos)
-                s = s.replace(self.config['magic_ypos_key'],self.ypos)
+                s = s.replace(self.config['magic_xpos_key'],str(self.xpos))
+                s = s.replace(self.config['magic_ypos_key'],str(self.ypos))
                 s = s.replace('\r','')
                 s = s.replace('\n','')
                 lines.append(s)

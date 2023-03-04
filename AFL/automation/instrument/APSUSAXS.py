@@ -111,7 +111,7 @@ class APSUSAXS(Driver):
         '''
         return self.project
 
-    def _coords_from_tuple(slot,row,col):
+    def _coords_from_tuple(self,slot,row,col):
         if len(row)>1:
             raise ValueError('row must be a single letter')
         row = ord(row) & 31
@@ -183,8 +183,10 @@ class APSUSAXS(Driver):
     def getRunStatus(self):
         return epics.caget(self.config['instrument_status_pv'],as_string=True)
     
-    def setPosition(self,plate,row,col):
-        (self.xpos,self.ypos) = _coords_from_tuple(plate,row,col)
+    def setPosition(self,plate,row,col,x_offset=0,y_offset=0):
+        (self.xpos,self.ypos) = self._coords_from_tuple(plate,row,col)
+        self.xpos+=x_offset
+        self.ypos+=y_offset
         
     def getRunInProgress(self):
         return epics.caget(self.config['instrument_running_pv']) 
@@ -233,4 +235,8 @@ class APSUSAXS(Driver):
         status = []
         status.append(f'Status: {self.status_txt}')
         status.append(f'EPICS status: {self.getRunStatus()}')
+        status.append(f'Next X: {self.xpos}')
+        status.append(f'Next Y: {self.ypos}')
+        status.append(f'Next filename: {self.filename}')
+        status.append(f'Next project: {self.project}')
         return status

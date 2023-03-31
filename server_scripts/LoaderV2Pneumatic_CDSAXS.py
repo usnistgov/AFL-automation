@@ -22,19 +22,22 @@ from AFL.automation.loading.PressureControllerAsPump import PressureControllerAs
 from AFL.automation.loading.UltimusVPressureController import UltimusVPressureController
 #from AFL.automation.loading.DigitalOutPressureController import DigitalOutPressureController
 #from AFL.automation.loading.LabJackDigitalOut import LabJackDigitalOut
-from AFL.automation.loading.LabJackSensor import LabJackSensor
-from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
+#from AFL.automation.loading.LabJackSensor import LabJackSensor
+#from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
 
 
 #load stopper stuff
-sensor = LabJackSensor()
-load_stopper = LoadStopperDriver(sensor,auto_initialize=False)
+#sensor = LabJackSensor()
+#load_stopper = LoadStopperDriver(sensor,auto_initialize=False)
+load_stopper = None
+sensor = None
 
 relayboard = PiPlatesRelay(
         {
-        6:'arm-up',7:'arm-down',
-        5:'rinse1',4:'rinse2',3:'blow',2:'piston-vent',1:'postsample'
-
+#        6:'arm-up',7:'arm-down',
+#        5:'rinse1',4:'rinse2',3:'blow',2:'piston-vent',1:'postsample'
+        2:'arm-up',1:'arm-down',
+        3:'rinse1',4:'rinse2',5:'blow',6:'piston-vent',7:'postsample'
         } )
 
 #digout = LabJackDigitalOut(intermittent_device_handle=False,port_to_write='TDAC4',shared_device = sensor)

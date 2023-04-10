@@ -45,10 +45,10 @@ class UltimusVPressureController():
 
             return response
     def set_P(self,pressure):
-        '''
+    '''
            pressure: pressure to set in psi
     '''
-        if self.dispensing:
+        if self.dispensing and pressure < 0.1:
              r = self.send_command(b'DI  ')
              if r:
                  self.dispensing = False
@@ -58,6 +58,8 @@ class UltimusVPressureController():
             r = self.send_command(b'PS  ' + p_set_str)
             if not r:
                 raise ValueError('Pressure set failed')
+        if not self.dispensing:
             r = self.send_command(b'DI  ')
-            if r:    
+            if r:
+            self.dispensing = True
                 self.dispensing = True 

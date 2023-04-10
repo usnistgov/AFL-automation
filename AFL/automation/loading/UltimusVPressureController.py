@@ -61,5 +61,4 @@ class UltimusVPressureController():
         if not self.dispensing:
             r = self.send_command(b'DI  ')
             if r:
-            self.dispensing = True
                 self.dispensing = True 

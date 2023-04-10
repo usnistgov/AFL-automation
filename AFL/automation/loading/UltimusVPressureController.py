@@ -58,7 +58,7 @@ class UltimusVPressureController():
             r = self.send_command(b'PS  ' + p_set_str)
             if not r:
                 raise ValueError('Pressure set failed')
-        if not self.dispensing:
-            r = self.send_command(b'DI  ')
-            if r:
-                self.dispensing = True 
+            if not self.dispensing:
+                r = self.send_command(b'DI  ')
+                if r:
+                    self.dispensing = True 

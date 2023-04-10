@@ -45,9 +45,9 @@ class UltimusVPressureController():
 
             return response
     def set_P(self,pressure):
-    '''
-           pressure: pressure to set in psi
-    '''
+        '''
+               pressure: pressure to set in psi
+        '''
         if self.dispensing and pressure < 0.1:
              r = self.send_command(b'DI  ')
              if r:

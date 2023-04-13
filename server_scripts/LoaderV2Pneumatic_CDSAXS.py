@@ -21,7 +21,7 @@ from AFL.automation.loading.Tubing import Tubing
 from AFL.automation.loading.PressureControllerAsPump import PressureControllerAsPump
 from AFL.automation.loading.UltimusVPressureController import UltimusVPressureController
 #from AFL.automation.loading.DigitalOutPressureController import DigitalOutPressureController
-#from AFL.automation.loading.LabJackDigitalOut import LabJackDigitalOut
+from AFL.automation.loading.LabJackDigitalOut import LabJackDigitalOut
 from AFL.automation.loading.LabJackSensor import LabJackSensor
 from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
 
@@ -29,18 +29,21 @@ from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
 #load stopper stuff
 sensor = LabJackSensor()
 load_stopper = LoadStopperDriver(sensor,auto_initialize=False)
+#load_stopper = None
+#sensor = None
 
 relayboard = PiPlatesRelay(
         {
-        6:'arm-up',7:'arm-down',
-        5:'rinse1',4:'rinse2',3:'blow',2:'piston-vent',1:'postsample'
-
+#        6:'arm-up',7:'arm-down',
+#        5:'rinse1',4:'rinse2',3:'blow',2:'piston-vent',1:'postsample'
+        2:'arm-up',1:'arm-down',
+        3:'rinse1',4:'rinse2',5:'blow',6:'piston-vent',7:'postsample'
         } )
 
 #digout = LabJackDigitalOut(intermittent_device_handle=False,port_to_write='TDAC4',shared_device = sensor)
 #p_ctrl = DigitalOutPressureController(digout,3)
 p_ctrl = UltimusVPressureController('/dev/ttyUSB0')
-pump = PressureControllerAsPump(p_ctrl,dispense_pressure = 5, implied_flow_rate = 5)
+pump = PressureControllerAsPump(p_ctrl,dispense_pressure = 4, implied_flow_rate = 5)
 #DummyPump() # ID for 10mL = 14.859, for 50 mL 26.43
 # pump = NE1kSyringePump('/dev/ttyUSB0',14.86,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
 # this is the line used in AFL ops   pump = NE1kSyringePump('/dev/ttyUSB0',14.6,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43 (gastight)

@@ -7,4 +7,4 @@ source activate nistoroboto
 cd ~/NistoRoboto/
 git pull
 
-python ~/NistoRoboto/server_scripts/LoaderV2Pneumatic.py
+python ~/NistoRoboto/server_scripts/LoaderV2Pneumatic_CDSAXS.py

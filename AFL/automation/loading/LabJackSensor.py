@@ -3,6 +3,8 @@ from labjack import ljm
 from AFL.automation.loading.Sensor import Sensor
 import time
 
+
+
 class LabJackSensor(Sensor):
     def __init__(self,devicetype="ANY",connection="ANY",deviceident="ANY",port_to_read="AIN0",polling_rate=200,intermittent_device_handle=False):
         '''
@@ -15,6 +17,7 @@ class LabJackSensor(Sensor):
     	deviceident (str): serial number OR IP OR device name OR "ANY"
     	port_to_read (str): LabJack port for device
         '''
+        self.fio = "DIO5"
         self.device_handle = ljm.openS(devicetype, connection, deviceident)
         self.port_to_read = port_to_read
         self.devicetype = devicetype
@@ -23,7 +26,7 @@ class LabJackSensor(Sensor):
         self.intervalHandle = 0
         self.intermittent_device_handle = intermittent_device_handle
         ljm.startInterval(self.intervalHandle, polling_rate)
-        ljm.eWriteName(self.device_handle,"DIO6",1)#set physical FIO6 / logical DIO6 to TTL-hi
+        ljm.eWriteName(self.device_handle,self.fio,1)#set physical FIO6 / logical DIO6 to TTL-hi
         if self.intermittent_device_handle:
             ljm.close(self.device_handle)
 
@@ -31,9 +34,9 @@ class LabJackSensor(Sensor):
     	ljm.close(self.device_handle)
     	
     def calibrate(self):
-        ljm.eWriteName(self.device_handle,"DIO6",0)
+        ljm.eWriteName(self.device_handle,self.fio,0)
         time.sleep(0.2)
-        ljm.eWriteName(self.device_handle,"DIO6",1)
+        ljm.eWriteName(self.device_handle,self.fio,1)
         if self.intermittent_device_handle:
             ljm.close(self.device_handle)
         

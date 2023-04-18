@@ -38,6 +38,15 @@ class DataPacket:
         else:
             self._transient_dict[key] = value
     
+    def _dict(self):
+        ''' 
+        returns a single dictionary that contains all values stored in data.
+        
+        N.B.: this dict is a deepcopy of the internal structures, so it cannot be written to - or at least, if it is, those writes will be lost.
+        
+        '''
+        return copy.deepcopy(self._transient_dict).update(self._sample_dict).update(self._system_dict)
+        
     def resetClass(self):
         self._transient_dict = {}
         
@@ -46,7 +55,8 @@ class DataPacket:
         pass
         
     def finalizeData(self):
-        raise NotImplementedError
+        self.transmitData()
+        self.resetClass()
         
     def transmitData(self):
         raise NotImplementedError

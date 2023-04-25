@@ -1,3 +1,4 @@
+import functools
 import threading
 import time
 import datetime
@@ -6,13 +7,13 @@ import traceback
 import json
 import pathlib
 from AFL.automation.shared.serialization import is_serialized
-
+from AFL.automation.APIServer.data.DataTrashcan import DataTrashcan
 
 class QueueDaemon(threading.Thread):
     '''
     '''
 
-    def __init__(self, app, driver, task_queue, history, debug=False):
+    def __init__(self, app, driver, task_queue, history, debug=False, data = None):
         app.logger.info('Creating QueueDaemon thread')
 
         threading.Thread.__init__(self, name='QueueDaemon', daemon=True)
@@ -28,7 +29,11 @@ class QueueDaemon(threading.Thread):
         self.debug = debug
         self.paused = False
         self.busy = False  # flag denotes if a task is being processed
-
+	
+	if data is not None:
+            self.data = DataTrashcan()
+	else:
+            self.data = data
 
         self.history_log_path = pathlib.Path.home() / '.afl' / f'{driver.name}.history'
         try:
@@ -106,6 +111,8 @@ class QueueDaemon(threading.Thread):
 
                 try:
                     self.driver.pre_execute(**task)
+                    self.data.update(task)
+                    #ops_thread = threading.Thread(target=self.driver.execute,kwargs=task)
                     return_val = self.driver.execute(**task)
                     self.driver.post_execute(**task)
                     exit_state = 'Success!'
@@ -125,6 +132,9 @@ class QueueDaemon(threading.Thread):
             masked_package['meta']['return_val'] = return_val
             masked_package['uuid'] = str(masked_package['uuid'])
             self.running_task = []
+            
+            self.data.update(masked_package)
+            self.data.finalize()
             self.history.append(masked_package)#history for this server restart
             self.history_log.append(masked_package)#hopefull **all** history
             with open(self.history_log_path,'w') as f:

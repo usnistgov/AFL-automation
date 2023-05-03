@@ -13,7 +13,6 @@ class DataJSON(DataPacket):
         super().__init__()
     def transmitData(self):
         filename = str(datetime.datetime.now()).replace(' ','-')
-        os.chdir(self.path)
-        with open(f'{filename}.json','w') as f:
+        with open(f'{self.path}/{filename}.json','w') as f:
             json.dump(self._dict(),f)
 

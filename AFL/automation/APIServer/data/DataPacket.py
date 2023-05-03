@@ -2,6 +2,17 @@ import copy
 from collections.abc import MutableMapping
 
 class DataPacket(MutableMapping):
+    '''
+    A DataPacket is a container for data that is to be transmitted to a data store.
+
+    It is a dictionary-like object that stores data in three different ways:
+    - transient data, which is cleared on resets
+    - system data, which is never cleared
+    - sample data, which is cleared only on specific resets of the sample
+
+    The data is transmitted to the data store on finalization, which is called at the end of each method.
+    '''
+
     
     PROTECTED_SYSTEM_KEYS = [
         'driver_name',
@@ -66,6 +77,9 @@ class DataPacket(MutableMapping):
         retval.update(self._system_dict)
         return retval
     def reset(self):
+        '''
+        Clears all transient data.
+        '''
         self._transient_dict = {}
     
     def keys(self):

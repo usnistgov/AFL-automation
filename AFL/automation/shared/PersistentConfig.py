@@ -3,8 +3,9 @@ import datetime
 import pathlib
 import copy
 import warnings
+from collections.abc import MutableMapping
 
-class PersistentConfig:
+class PersistentConfig(MutableMapping):
     ''' A dictionary-like class that serializes changes to disk
     
     This class provides dictionary-like setters and getters (e.g., [] and 
@@ -124,7 +125,12 @@ class PersistentConfig:
     def __iter__(self):
         for key,value in self.config.items():
             yield key,value
-    
+    def __len__(self):
+        return len(self.config)
+    def __delitem__(self,key):
+        del self.config[key]
+        self._update_history()
+        
     def update(self,update_dict): 
         '''Update several values in config at once
         

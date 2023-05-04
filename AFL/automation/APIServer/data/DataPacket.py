@@ -1,5 +1,7 @@
 import copy
 from collections.abc import MutableMapping
+import numpy as np
+import pandas as pd
 
 class DataPacket(MutableMapping):
     '''
@@ -76,6 +78,49 @@ class DataPacket(MutableMapping):
         retval.update(self._sample_dict)
         retval.update(self._system_dict)
         return retval
+    def _core_sanitize(self,to_sanitize):
+        '''
+        Inner worker function to make sure that all values in a dictionary are JSON-serializable.
+        '''
+        output_dict = copy.deepcopy(to_sanitize)
+
+        for key in to_sanitize.keys():
+            if isinstance(to_sanitize[key],(list,tuple)):
+                #print(f'Sanitized list/tuple {key}')
+                output_dict[key] = list(to_sanitize[key])
+            elif isinstance(to_sanitize[key],(int,float,str,bool)):
+                #print(f'No need to sanitize primitive {key}')
+                pass
+            elif isinstance(to_sanitize[key],np.ndarray):
+                #print(f'Sanitized ndarray {key}')
+                output_dict[key] = to_sanitize[key].tolist()
+            elif isinstance(to_sanitize[key],pd.DataFrame):
+                #print(f'Sanitized dataframe {key}')
+                output_dict[key] = to_sanitize[key].tojson()
+            elif isinstance(to_sanitize[key],dict):
+                #print(f'Sanitized dict {key}')
+                output_dict[key] = self._core_sanitize(to_sanitize[key])
+            else:
+                #print(f'Sanitized fallback to string {key}')
+                output_dict[key] = str(to_sanitize[key])
+
+        return output_dict
+    def _print_dict_member_types(self,input,prefix=''):
+        for key in input.keys():
+            print(f'{prefix} {key} is of type {type(input[key])}')
+            if type(input[key]) is dict:
+                self._print_dict_member_types(input[key], prefix = f'{prefix} -->')
+
+    def _sanitize(self):
+        '''
+        Sanitize the contents of the packet to be JSON-serializable.
+
+        '''
+
+        self._transient_dict = self._core_sanitize(self._transient_dict)
+        self._sample_dict = self._core_sanitize(self._sample_dict)
+        self._system_dict = self._core_sanitize(self._system_dict)
+
     def reset(self):
         '''
         Clears all transient data.
@@ -91,6 +136,10 @@ class DataPacket(MutableMapping):
     def finalize(self):
         self.transmit()
         self.reset()
+
+    def reset_sample(self):
+        self._sample_dict = {}
+        
         
     def transmit(self):
         raise NotImplementedError

@@ -115,6 +115,12 @@ class PersistentConfig:
         self.config[key] = value
         self._update_history()
 
+    def toJSON(self):
+        '''
+        Serialize the config to json
+        '''
+        return json.dumps(self.config)
+        
     def __iter__(self):
         for key,value in self.config.items():
             yield key,value

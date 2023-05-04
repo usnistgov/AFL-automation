@@ -12,6 +12,7 @@ class DataJSON(DataPacket):
         self.path = path
         super().__init__()
     def transmit(self):
+        self._sanitize()
         filename = str(datetime.datetime.now()).replace(' ','-')
         with open(f'{self.path}/{filename}.json','w') as f:
             json.dump(self._dict(),f)

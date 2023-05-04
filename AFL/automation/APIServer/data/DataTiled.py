@@ -36,7 +36,7 @@ class DataTiled(DataPacket):
                 main_data = self._dict()['main_dataframe']
                 fxn = self.tiled_client.write_dataframe
             else:
-                main_data = [self._dict()['meta']['return_val']]
+                main_data = [np.nan]
                 fxn = self.tiled_client.write_array
             #self._print_dict_member_types(self._dict())
             self._sanitize()

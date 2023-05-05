@@ -2,7 +2,7 @@
 
 git config --global credential.helper store
 
-source activate nistoroboto
+#source activate nistoroboto
 
 cd ~/NistoRoboto/
 git pull

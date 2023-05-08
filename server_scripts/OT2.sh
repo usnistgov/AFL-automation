@@ -17,6 +17,12 @@ else
   export TILED_API_KEY="${TILED_API_KEY}"
 fi
 
+if [[ -z "${AFL_SYSTEM_SERIAL}" ]]; then
+  export AFL_SYSTEM_SERIAL=$(cat ~/.afl/system_serial)
+else
+  export AFL_SYSTEM_SERIAL="${AFL_SYSTEM_SERIAL}"
+fi
+
 # add NistoRoboto to PYTHONPATH
 # export PYTHONPATH=/root/user_storage/:${PYTHONPATH}
 export PYTHONPATH=/root/user_storage/NistoRoboto:${PYTHONPATH}

@@ -43,6 +43,7 @@ class PneumaticSampleCell(Driver,SampleCell):
                       waste_tank_level=0,
                       load_stopper=None,
                       overrides=None, 
+                      data=None,
                       ):
         '''
             pump: a pump object supporting withdraw() and dispense() methods
@@ -55,7 +56,7 @@ class PneumaticSampleCell(Driver,SampleCell):
 
         '''
         self._app = None
-        Driver.__init__(self,name='PneumaticSampleCell',defaults=self.gather_defaults(),overrides=overrides)
+        Driver.__init__(self,name='PneumaticSampleCell',defaults=self.gather_defaults(),overrides=overrides,data=data)
         self.pump = pump
         self.relayboard = relayboard
         self.cell_state = defaultdict(lambda: 'clean')
@@ -226,6 +227,8 @@ class PneumaticSampleCell(Driver,SampleCell):
                     self.pump.stop()
                     self.relayboard.setChannels({'postsample':False})
                     self.loadStoppedExternally=True
+                    if self.data is not None:
+                        self.data['load_stop_source'] = 'external'
                     return 'Load stopped successfully.'
             else:
                 return 'Wrong secret.'

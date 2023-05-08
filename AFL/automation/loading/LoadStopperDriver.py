@@ -31,6 +31,7 @@ class LoadStopperDriver(Driver):
 
     def __init__(self,sensor,load_client=None,load_object=None,auto_initialize=True,overrides=None,data=None):
         self._app = None
+        self.data = data
         Driver.__init__(self,name='LoadStopperDriver',defaults=self.gather_defaults(),overrides=overrides,data=data)
 
         self.load_object = load_object

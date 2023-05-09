@@ -593,7 +593,7 @@ class OT2_Driver(Driver):
         
         if self.data is not None:
             self.data['transfer_method'] = method
-            self.data['pipette_options'] = pipettes
+            self.data['pipette_options'] = str(pipettes)
 
         if(method == 'uncertainty'):
             pipette = min(pipettes,key=lambda x: x['uncertainty'])
@@ -605,7 +605,7 @@ class OT2_Driver(Driver):
             raise ValueError(f'Pipette selection method {method} was not recognized.')
         self.app.logger.debug(f'Chosen pipette: {pipette}')
         if self.data is not None:
-            self.data['chosen_pipette'] = pipette
+            self.data['chosen_pipette'] = str(pipette)
         return pipette['object']
 
     def _pipette_uncertainty(self,maxvolume,volume,errortype):

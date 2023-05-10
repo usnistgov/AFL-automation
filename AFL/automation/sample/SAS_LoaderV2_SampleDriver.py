@@ -22,11 +22,10 @@ class SAS_LoaderV2_SampleDriver(Driver):
             camera_urls = None,
             snapshot_directory =None,
             overrides=None, 
-            data=None,
 
             ):
 
-        Driver.__init__(self,name='SAS_SampleDriver',defaults=self.gather_defaults(),overrides=overrides,data=data)
+        Driver.__init__(self,name='SAS_SampleDriver',defaults=self.gather_defaults(),overrides=overrides)
 
         if not (len(load_url.split(':'))==2):
             raise ArgumentError('Need to specify both ip and port on load_url')

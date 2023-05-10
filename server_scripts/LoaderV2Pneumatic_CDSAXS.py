@@ -31,7 +31,7 @@ data = DataTiled('http://afl-inst-lab.campus.nist.gov:8000',api_key = os.environ
 
 #load stopper stuff
 sensor = LabJackSensor()
-load_stopper = LoadStopperDriver(sensor, data = data,auto_initialize=False)
+load_stopper = LoadStopperDriver(sensor,auto_initialize=False)
 #load_stopper = None
 #sensor = None
 

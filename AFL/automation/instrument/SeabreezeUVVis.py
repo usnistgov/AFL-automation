@@ -87,6 +87,10 @@ class SeabreezeUVVis(Driver):
                     correct_nonlinearity=self.config['correctNonlinearity'])])
             time.sleep(self.config['exposure_delay'])
 
+        if self.data is not None:
+            self.data['mode'] = 'continuous'
+            self.data['spectrum'] = data
+        else:
         self._writedata(data)
 
         if not ret:
@@ -103,6 +107,10 @@ class SeabreezeUVVis(Driver):
         if self.config['saveSingleScan']:
             self._writedata(data)
 
+        if self.data is not None:
+            self.data['mode'] = 'single'
+            self.data['spectrum'] = data
+            
         return data
 
     def _writedata(self,data):

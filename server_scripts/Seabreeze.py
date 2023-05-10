@@ -11,7 +11,7 @@ from AFL.automation.instrument.SeabreezeUVVis import SeabreezeUVVis
 
 server_port=5050
 
-driver = SeabreezeUVVis()
+driver = SeabreezeUVVis(backend='pyseabreeze')
 server = APIServer('Ocean Optics',contact='pab2@nist.gov')
 server.add_standard_routes()
 

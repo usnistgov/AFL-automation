@@ -7,7 +7,7 @@ import pathlib
 
             
 class SensorCallbackThread(threading.Thread):
-    def __init__(self,poll,period=0.1,daemon=True,filepath=None):
+    def __init__(self,poll,period=0.1,daemon=True,filepath=None,data=None):
         threading.Thread.__init__(self, name='CallbackThread', daemon=daemon)
 
         self.app = None

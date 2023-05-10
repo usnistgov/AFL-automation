@@ -65,9 +65,8 @@ class StopLoadCBv1(SensorCallbackThread):
         baseline_duration = 2,
         daemon=True,
         filepath=None,
-        data=None,
     ):
-        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath,data=data)
+        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
         self.load_client = load_client
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
@@ -144,9 +143,8 @@ class StopLoadCBv2(SensorCallbackThread):
         instatrigger = True,
         daemon=True,
         filepath=None,
-        data=None,
     ):
-        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath,data=data)
+        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
         self.loader_comm = LoaderCommunication(load_client=load_client,load_object=load_object)
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 

@@ -46,7 +46,7 @@ class SampleSeries:
             for stock,(loc,mass) in sample.balancer.mass_transfers.items():
                 mass_totals[loc] += mass
         return mass_totals
-
+    
     def mass_totals_component(self,only_validated=True):
         mass_totals = defaultdict(float)
         solution = Solution('dummy',[])

@@ -10,12 +10,19 @@ import uuid
 
 
 class SeabreezeUVVis(Driver):
-
-    def __init__(self,backend='cseabreeze',device_serial=None):
+    defaults = {}
+    defaults['correctDarkCounts'] = False
+    defaults['correctNonlinearity'] = False
+    defaults['exposure'] = 0.010
+    defaults['exposure_delay'] = 0
+    defaults['saveSingleScan'] = False
+    defaults['filename'] = 'test.h5'
+    defaults['filepath'] = '.'
+    
+    def __init__(self,backend='cseabreeze',device_serial=None,overrides=None):
         self.app = None
         self.name = 'SeabreezeUVVis'
-        
-        self.config = {}
+        Driver.__init__(self,name='SeabreezeUVVis',defaults = self.gather_defaults(),overrides=overrides)
         print(f'configuring Seabreeze using backend {backend}')
         seabreeze.use(backend)
         from seabreeze.spectrometers import Spectrometer,list_devices
@@ -28,13 +35,6 @@ class SeabreezeUVVis(Driver):
             print(f'Connecting to fixed serial, {device_serial}')
             self.spectrometer = Spectrometer.from_serial_number(device_serial)
         print(f'Connected successfully, to a {self.spectrometer}')
-        self.config['correctDarkCounts'] = False
-        self.config['correctNonlinearity'] = False
-        self.config['exposure'] = 0.010
-        self.config['exposure_delay'] = 0
-        self.config['saveSingleScan'] = False
-        self.config['filename'] = 'test.h5'
-        self.config['filepath'] = Path('.')
 
         self.wl = self.spectrometer.wavelengths()
 
@@ -89,14 +89,14 @@ class SeabreezeUVVis(Driver):
 
         if self.data is not None:
             self.data['mode'] = 'continuous'
-            self.data['spectrum'] = data
-        else:
+            self.data['spectrum'] = [x.tolist() for x in data]
+        
         self._writedata(data)
 
         if not ret:
             data = f'data written to file: {self.filename}'
 
-        return data
+        return [x.tolist() for x in data]
 
     @Driver.unqueued()
     def collectSingleSpectrum(self):
@@ -109,9 +109,8 @@ class SeabreezeUVVis(Driver):
 
         if self.data is not None:
             self.data['mode'] = 'single'
-            self.data['spectrum'] = data
-            
-        return data
+            self.data['spectrum'] = [x.tolist() for x in data]            
+        return [x.tolist() for x in data]
 
     def _writedata(self,data):
         data = np.array(data)

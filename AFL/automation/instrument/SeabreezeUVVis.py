@@ -79,24 +79,29 @@ class SeabreezeUVVis(Driver):
 
         if start is None:
             start = datetime.datetime.now()
+
+        print(start)
+        print(datetime.timedelta(0,duration))
         while datetime.datetime.now() < start:
             pass
-
-        while datetime.datetime.now() < (start + duration):
-            data.append([self.wl,self.spectrometer.intensities(correct_dark_counts=self.config['correctDarkCounts'], 
-                    correct_nonlinearity=self.config['correctNonlinearity'])])
+        
+        data.append(self.wl)
+        while datetime.datetime.now() < (start + datetime.timedelta(0,duration)):
+            data.append(self.spectrometer.intensities(correct_dark_counts=self.config['correctDarkCounts'], 
+                    correct_nonlinearity=self.config['correctNonlinearity']))
             time.sleep(self.config['exposure_delay'])
-
+        
         if self.data is not None:
             self.data['mode'] = 'continuous'
-            self.data['spectrum'] = [x.tolist() for x in data]
-        
+            self.data['wavelength'] = self.wl.tolist()
+            self.data['spectrum'] = [x.tolist() for x in data[1:]]
+       
         self._writedata(data)
 
-        if not ret:
-            data = f'data written to file: {self.filename}'
+        if not return_data:
+            data = f'data written to file: {self.config["filepath"]}{self.config["filename"]}'
 
-        return [x.tolist() for x in data]
+        return data#[x.tolist() for x in data] 
 
     @Driver.unqueued()
     def collectSingleSpectrum(self):
@@ -109,12 +114,13 @@ class SeabreezeUVVis(Driver):
 
         if self.data is not None:
             self.data['mode'] = 'single'
+            self.data['wavelength'] = self.wl.tolist()
             self.data['spectrum'] = [x.tolist() for x in data]            
         return [x.tolist() for x in data]
 
     def _writedata(self,data):
         data = np.array(data)
-        with h5py.File(self.config['filepath']/self.config['filename'], 'w') as f:
+        with h5py.File(Path(self.config['filepath']) / self.config['filename'], 'w') as f:
             dset = f.create_dataset(str(uuid.uuid1()), data=data)
 
 

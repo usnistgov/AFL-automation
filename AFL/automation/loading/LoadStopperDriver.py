@@ -29,11 +29,13 @@ class LoadStopperDriver(Driver):
     defaults['stopper_baseline_duration'] = 10
     defaults['stopper_filepath'] = str(pathlib.Path.home()/'.afl/loadstopper_data/')
 
-    def __init__(self,sensor,load_client=None,load_object=None,auto_initialize=True,overrides=None,data=None)
+    def __init__(self,sensor,load_client=None,load_object=None,auto_initialize=True,overrides=None,data=None):
         self._app = None
         Driver.__init__(self,name='LoadStopperDriver',defaults=self.gather_defaults(),overrides=overrides)
-        if self.data is not None:
+        if self.data is None:
             self.data = data
+        
+        print(f'LoadStopperDriver started with data = {self.data}')
         self.load_object = load_object
         self.load_client = load_client
 

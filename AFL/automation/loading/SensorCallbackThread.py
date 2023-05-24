@@ -11,7 +11,7 @@ class SensorCallbackThread(threading.Thread):
         threading.Thread.__init__(self, name='CallbackThread', daemon=daemon)
 
         self.app = None
-        self.data = None
+        self.data = data
 
         self.poll = poll
         self.period = period
@@ -65,8 +65,9 @@ class StopLoadCBv1(SensorCallbackThread):
         baseline_duration = 2,
         daemon=True,
         filepath=None,
+        data=None,
     ):
-        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
+        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath,data=data)
         self.load_client = load_client
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
@@ -143,8 +144,9 @@ class StopLoadCBv2(SensorCallbackThread):
         instatrigger = True,
         daemon=True,
         filepath=None,
+        data=None,
     ):
-        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
+        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath,data=data)
         self.loader_comm = LoaderCommunication(load_client=load_client,load_object=load_object)
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
@@ -156,6 +158,8 @@ class StopLoadCBv2(SensorCallbackThread):
         self.baseline_duration = baseline_duration
         self.trigger_on_end = trigger_on_end
         self.instatrigger = instatrigger
+
+        print(f'StopLoad thread starting with data = {self.data}')
 
     def process_signal(self):
         if 'PROGRESS' in self.loader_comm.getServerState():
@@ -172,7 +176,8 @@ class StopLoadCBv2(SensorCallbackThread):
             
             baseline_val = np.mean(signal[-self.threshold_npts:,1])#column 0 is microseconds since beginning of load
             self.update_status(f'Found baseline at {baseline_val}')
-            
+            if self.data is not None:
+                self.data['stopper_baseline_voltage'] = baseline_val
             while True and (not self._stop):
                 signal = np.array(self.poll.read_load_buffer())
 

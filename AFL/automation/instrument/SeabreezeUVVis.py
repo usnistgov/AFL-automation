@@ -7,7 +7,7 @@ import datetime
 import h5py
 from pathlib import Path
 import uuid
-
+import pathlib
 
 class SeabreezeUVVis(Driver):
     defaults = {}
@@ -74,8 +74,10 @@ class SeabreezeUVVis(Driver):
         self.config['exposure'] = time
         self.spectrometer.integration_time_micros(1e6*time)
 
-    def collectContinuous(self,duration,start=None,return_data=False):
+    def collectContinuous(self,duration,start=None,return_data=False,**kwargs):
         data = []
+        
+        duration = datetime.timedelta(seconds=duration)
 
         if start is None:
             start = datetime.datetime.now()
@@ -84,11 +86,10 @@ class SeabreezeUVVis(Driver):
         print(datetime.timedelta(0,duration))
         while datetime.datetime.now() < start:
             pass
-        
-        data.append(self.wl)
-        while datetime.datetime.now() < (start + datetime.timedelta(0,duration)):
-            data.append(self.spectrometer.intensities(correct_dark_counts=self.config['correctDarkCounts'], 
-                    correct_nonlinearity=self.config['correctNonlinearity']))
+
+        while datetime.datetime.now() < (start + duration):
+            data.append([list(self.wl),list(self.spectrometer.intensities(correct_dark_counts=self.config['correctDarkCounts'], 
+                    correct_nonlinearity=self.config['correctNonlinearity']))])
             time.sleep(self.config['exposure_delay'])
         
         if self.data is not None:
@@ -99,15 +100,16 @@ class SeabreezeUVVis(Driver):
         self._writedata(data)
 
         if not return_data:
-            data = f'data written to file: {self.config["filepath"]}{self.config["filename"]}'
-
-        return data#[x.tolist() for x in data] 
+            data = f'data written to file: {self.config["filename"]}'
+            return data
+        else:
+            return list(data)
 
     @Driver.unqueued()
-    def collectSingleSpectrum(self):
-        data = [self.wl,self.spectrometer.intensities(
+    def collectSingleSpectrum(self,**kwargs):
+        data = [list(self.wl),list(self.spectrometer.intensities(
             correct_dark_counts=self.config['correctDarkCounts'], 
-                    correct_nonlinearity=self.config['correctNonlinearity'])]
+                    correct_nonlinearity=self.config['correctNonlinearity']))]
 
         if self.config['saveSingleScan']:
             self._writedata(data)
@@ -119,8 +121,10 @@ class SeabreezeUVVis(Driver):
         return [x.tolist() for x in data]
 
     def _writedata(self,data):
+        filepath = pathlib.Path(self.config['filepath'])
+        filename = pathlib.Path(self.config['filename'])
         data = np.array(data)
-        with h5py.File(Path(self.config['filepath']) / self.config['filename'], 'w') as f:
+        with h5py.File(filepath/filename, 'w') as f:
             dset = f.create_dataset(str(uuid.uuid1()), data=data)
 
 

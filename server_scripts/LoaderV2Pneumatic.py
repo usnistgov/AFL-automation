@@ -10,7 +10,7 @@ except:
 server_port=5000
 
 from AFL.automation.APIServer.APIServer import APIServer
-
+from AFL.automation.APIServer.data.DataTiled import DataTiled
 from AFL.automation.loading.PneumaticSampleCell import PneumaticSampleCell
 from AFL.automation.loading.DummyPump import DummyPump
 from AFL.automation.loading.NE1kSyringePump import NE1kSyringePump
@@ -24,10 +24,11 @@ from AFL.automation.loading.LabJackDigitalOut import LabJackDigitalOut
 from AFL.automation.loading.LabJackSensor import LabJackSensor
 from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
 
+data = DataTiled('http://10.42.0.1:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/pi/.afl/json-backup')
 
 #load stopper stuff
 sensor = LabJackSensor()
-load_stopper = LoadStopperDriver(sensor,auto_initialize=False)
+load_stopper = LoadStopperDriver(sensor,data=data,auto_initialize=False)
 
 relayboard = PiPlatesRelay(
         {
@@ -51,7 +52,7 @@ gpio = PiGPIO({4:'DOOR',14:'ARM_UP',15:'ARM_DOWN'},pull_dir='UP') #: p21-blue, p
 
 
 driver = PneumaticSampleCell(pump,relayboard,digitalin=gpio,load_stopper=load_stopper)
-server = APIServer('CellServer')
+server = APIServer('CellServer',data=data)
 server.add_standard_routes()
 server.create_queue(driver)
 server.init_logging(toaddrs=['tbm@nist.gov'])

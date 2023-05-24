@@ -24,6 +24,9 @@ from AFL.automation.loading.UltimusVPressureController import UltimusVPressureCo
 from AFL.automation.loading.LabJackDigitalOut import LabJackDigitalOut
 from AFL.automation.loading.LabJackSensor import LabJackSensor
 from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
+from AFL.automation.APIServer.data.DataTiled import DataTiled
+
+data = DataTiled('http://afl-inst-lab.campus.nist.gov:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/pi/.afl/json-backup')
 
 
 #load stopper stuff
@@ -56,7 +59,7 @@ gpio = PiGPIO({4:'DOOR',14:'ARM_UP',15:'ARM_DOWN'},pull_dir='UP') #: p21-blue, p
 
 
 driver = PneumaticSampleCell(pump,relayboard,digitalin=gpio,load_stopper=load_stopper)
-server = APIServer('CellServer')
+server = APIServer('CellServer',data=data)
 server.add_standard_routes()
 server.create_queue(driver)
 server.init_logging(toaddrs=['tbm@nist.gov'])

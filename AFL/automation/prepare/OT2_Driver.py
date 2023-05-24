@@ -346,6 +346,9 @@ class OT2_Driver(Driver):
         user_mix_before = mix_before
         user_mix_after = mix_after
 
+        if self.data is not None:
+            self.data['transfer_strategy'] = transfers
+
         for i,sub_volume in enumerate(transfers):
             #get pipette based on volume
             pipette = self.get_pipette(sub_volume)
@@ -421,7 +424,7 @@ class OT2_Driver(Driver):
                     transfer = self.min_transfer
                 if (transfer<self.min_largest_pipette) and (transfer>self.max_smallest_pipette): # Valley of death
                     #n_transfers = np.ceil(transfer/self.max_smallest_pipette)
-                    transfer = self.max_smallest_pipette #I fear no evil
+                    transfer = self.max_smallest_pipette # I fear no evil
                 
                 transfers.append(transfer)
             else:
@@ -588,6 +591,10 @@ class OT2_Driver(Driver):
         if not pipettes:
             raise ValueError('No suitable pipettes found!\n')
         
+        if self.data is not None:
+            self.data['transfer_method'] = method
+            self.data['pipette_options'] = str(pipettes)
+
         if(method == 'uncertainty'):
             pipette = min(pipettes,key=lambda x: x['uncertainty'])
         elif(method == 'min_transfers'):
@@ -597,10 +604,12 @@ class OT2_Driver(Driver):
         else:
             raise ValueError(f'Pipette selection method {method} was not recognized.')
         self.app.logger.debug(f'Chosen pipette: {pipette}')
+        if self.data is not None:
+            self.data['chosen_pipette'] = str(pipette)
         return pipette['object']
 
     def _pipette_uncertainty(self,maxvolume,volume,errortype):
-        '''pipet uncertainties from the opentrons gen 1 whitepaper 
+        '''pipette uncertainties from the opentrons gen 1 whitepaper 
         @ https://opentrons.com/publications/OT-2-Pipette-White-Paper-GEN1.pdf
         
         pipette          moving uL      random error uL ±     systematic error uL ±

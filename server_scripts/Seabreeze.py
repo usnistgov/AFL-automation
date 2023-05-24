@@ -8,11 +8,15 @@ except:
 
 from AFL.automation.APIServer.APIServer import APIServer
 from AFL.automation.instrument.SeabreezeUVVis import SeabreezeUVVis
+from AFL.automation.APIServer.data.DataTiled import DataTiled
+
+data = DataTiled('http://afl-inst-lab.campus.nist.gov:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/pi/.afl/json-backup')
 
 server_port=5050
 
 driver = SeabreezeUVVis(backend='pyseabreeze')
-server = APIServer('Ocean Optics',contact='pab2@nist.gov')
+
+server = APIServer('Ocean Optics',contact='pab2@nist.gov',data=data)
 server.add_standard_routes()
 
 server.create_queue(driver)

@@ -42,12 +42,13 @@ except ImportError:
     warnings.warn('Plotting imports failed! Live data plotting will not work on this server.',stacklevel=2)
 
 class APIServer:
-    def __init__(self,name,experiment='Development',contact='tbm@nist.gov',index_template='index.html',plot_template='simple-bokeh.html'):
+    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',plot_template='simple-bokeh.html'):
         self.name = name
         self.experiment = experiment
         self.contact = contact
         self.index_template = index_template
         self.plot_template = plot_template
+        self.data = data
 
         self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status','get_server_time','get_info')
 
@@ -69,8 +70,9 @@ class APIServer:
         self.task_queue = MutableQueue()
         self.driver     = driver
         self.driver.app = self.app
+        self.driver.data = self.data
         self.driver._queue = self.task_queue
-        self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history)
+        self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
 
         self.add_unqueued_routes()
 

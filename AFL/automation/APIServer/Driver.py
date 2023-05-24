@@ -4,6 +4,7 @@ from AFL.automation.shared import serialization
 from math import ceil,sqrt
 import inspect 
 import pathlib
+import uuid
 
 def makeRegistrar():
     functions = []
@@ -42,6 +43,7 @@ class Driver:
     quickbar = makeRegistrar()
     def __init__(self,name,defaults=None,overrides=None):
         self.app = None
+        self.data = None
         if name is None:
             self.name = 'Driver'
         else:
@@ -117,7 +119,22 @@ class Driver:
             for name,value in config:
                 print(f'{name:30s} = {value}')
         return config.config
-        
+    
+    def set_sample(self,sample_name,sample_uuid=None,**kwargs):
+        if sample_uuid is None:
+            sample_uuid = str(uuid.uuid4())
+
+        kwargs.update({'sample_name':sample_name,'sample_uuid':sample_uuid})
+        self.data.update(kwargs)
+
+        return kwargs
+
+    def get_sample(self):
+        return self.data._sample_dict
+
+    def reset_sample(self):
+        self.data.reset_sample()
+
     def status(self):
         status = []
         return status
@@ -172,5 +189,19 @@ class Driver:
             value = serialization.serialize(value)
         return value
 
+    def set_data(self,data: dict):
+        '''Set data in the DataPacket object
 
-   
+        Parameters
+        ----------
+        data : dict
+            Dictionary of data to store in the driver object
+        
+        Note! if the keys in data are not system or sample variables,
+        they will be erased at the end of this function call.
+        
+
+        '''
+        for name,value in data.items():
+            self.app.logger.info(f'Setting data \'{name}\'')
+            self.data.update(data)

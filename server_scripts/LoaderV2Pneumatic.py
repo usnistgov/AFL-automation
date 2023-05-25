@@ -27,7 +27,7 @@ from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
 data = DataTiled('http://10.42.0.1:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/pi/.afl/json-backup')
 
 #load stopper stuff
-sensor = LabJackSensor()
+sensor = LabJackSensor(port_to_read='AIN0',reset_pin='DIO6')
 load_stopper = LoadStopperDriver(sensor,data=data,auto_initialize=False)
 
 relayboard = PiPlatesRelay(

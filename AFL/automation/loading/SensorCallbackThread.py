@@ -7,11 +7,12 @@ import pathlib
 
             
 class SensorCallbackThread(threading.Thread):
-    def __init__(self,poll,period=0.1,daemon=True,filepath=None):
+    def __init__(self,poll,period=0.1,daemon=True,filepath=None,data=None):
         threading.Thread.__init__(self, name='CallbackThread', daemon=daemon)
 
         self.app = None
-        
+        self.data = data
+
         self.poll = poll
         self.period = period
 
@@ -64,8 +65,9 @@ class StopLoadCBv1(SensorCallbackThread):
         baseline_duration = 2,
         daemon=True,
         filepath=None,
+        data=None,
     ):
-        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
+        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath,data=data)
         self.load_client = load_client
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
@@ -91,15 +93,15 @@ class StopLoadCBv1(SensorCallbackThread):
             
             while True and (not self._stop):
                 signal = self.poll.read()
-                condition1 = np.abs(np.mean(signal[-self.threshold_npts:])-baseline_val) < self.threshold_v_step 
-                condition2 = np.std(signal[-self.threshold_npts:]) > self.threshold_std
-                condition3 = datetime.datetime.now()-start < self.timeout
+                voltage_not_changed = np.abs(np.mean(signal[-self.threshold_npts:])-baseline_val) < self.threshold_v_step 
+                signal_unstable = np.std(signal[-self.threshold_npts:]) > self.threshold_std
+                not_timed_out = datetime.datetime.now()-start < self.timeout
                 
-                if (condition1 or condition2) and condition3:
+                if (voltage_not_changed or signal_unstable) and not_timed_out:
                     time.sleep(self.period)
                 else:
                     datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
-                    if condition3:
+                    if not_timed_out:
                         self.update_status(f'[{datestr}] Load stopped at voltage mean = {np.mean(signal[-self.threshold_npts:])} and stdev = {np.std(signal[-self.threshold_npts:])}')
                     else:
                         self.update_status(f'[{datestr}] Load timed out')
@@ -115,6 +117,10 @@ class StopLoadCBv1(SensorCallbackThread):
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
                     self.update_status(f'Saving signal data to {filename}')
                     np.savetxt(filename,signal)
+
+                    if self.data is not None:
+                        self.data['load_stop_trace'] = signal
+                        self.data['final_voltage'] = np.mean(signal[-self.threshold_npts:])
 
                     time.sleep(self.loadstop_cooldown)
                     break
@@ -138,8 +144,9 @@ class StopLoadCBv2(SensorCallbackThread):
         instatrigger = True,
         daemon=True,
         filepath=None,
+        data=None,
     ):
-        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath)
+        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath,data=data)
         self.loader_comm = LoaderCommunication(load_client=load_client,load_object=load_object)
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
@@ -151,6 +158,8 @@ class StopLoadCBv2(SensorCallbackThread):
         self.baseline_duration = baseline_duration
         self.trigger_on_end = trigger_on_end
         self.instatrigger = instatrigger
+
+        print(f'StopLoad thread starting with data = {self.data}')
 
     def process_signal(self):
         if 'PROGRESS' in self.loader_comm.getServerState():
@@ -167,7 +176,8 @@ class StopLoadCBv2(SensorCallbackThread):
             
             baseline_val = np.mean(signal[-self.threshold_npts:,1])#column 0 is microseconds since beginning of load
             self.update_status(f'Found baseline at {baseline_val}')
-            
+            if self.data is not None:
+                self.data['stopper_baseline_voltage'] = baseline_val
             while True and (not self._stop):
                 signal = np.array(self.poll.read_load_buffer())
 
@@ -192,6 +202,11 @@ class StopLoadCBv2(SensorCallbackThread):
                     
                     
                     elapsed_time = datetime.datetime.now()-start
+                    if self.data is not None:
+                        self.data['elapsed_time_at_first_trigger'] = elapsed_time.total_seconds()
+                        self.data['first_trigger_voltage'] = np.mean(signal[-self.threshold_npts:,1])
+                        self.data['first_trigger_std'] = np.std(signal[-self.threshold_npts:,1])
+
                     if self.trigger_on_end:
                         self.update_status(f'[{datestr}] Awaiting stabilized return to within {self.threshold_v_step} V of baseline voltage of {baseline_val} V')
                         second_trigger_start = datetime.datetime.now()
@@ -207,7 +222,12 @@ class StopLoadCBv2(SensorCallbackThread):
                             else:
                                 datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
                                 self.update_status(f'[{datestr}] End of plug triggered at voltage mean {np.mean(signal[-self.threshold_npts:,1])} and stdev = {np.std(signal[-self.threshold_npts:,1])}')
+                                if self.data is not None:
+                                    self.data['elapsed_time_at_second_trigger'] = (datetime.datetime.now()-start).total_seconds()
+                                    self.data['second_trigger_voltage'] = np.mean(signal[-self.threshold_npts:,1])
+                                    self.data['second_trigger_std'] = np.std(signal[-self.threshold_npts:,1])
                                 break
+
                     elif self.instatrigger:
                         pass
                     else:    
@@ -221,6 +241,10 @@ class StopLoadCBv2(SensorCallbackThread):
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
                     # self.update_status(f'Saving signal data to {filename}')
                     np.savetxt(filename,signal)
+                    if self.data is not None:
+                        self.data['load_stop_trace'] = signal
+                        self.data['final_voltage'] = np.mean(signal[-self.threshold_npts:,1])
+                        self.data['final_std'] = np.std(signal[-self.threshold_npts:,1])
 
                     time.sleep(self.loadstop_cooldown)
                     break

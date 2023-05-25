@@ -10,12 +10,19 @@ import uuid
 import pathlib
 
 class SeabreezeUVVis(Driver):
-
-    def __init__(self,backend='cseabreeze',device_serial=None):
+    defaults = {}
+    defaults['correctDarkCounts'] = False
+    defaults['correctNonlinearity'] = False
+    defaults['exposure'] = 0.010
+    defaults['exposure_delay'] = 0
+    defaults['saveSingleScan'] = False
+    defaults['filename'] = 'test.h5'
+    defaults['filepath'] = '.'
+    
+    def __init__(self,backend='cseabreeze',device_serial=None,overrides=None):
         self.app = None
         self.name = 'SeabreezeUVVis'
-        
-        self.config = {}
+        Driver.__init__(self,name='SeabreezeUVVis',defaults = self.gather_defaults(),overrides=overrides)
         print(f'configuring Seabreeze using backend {backend}')
         seabreeze.use(backend)
         from seabreeze.spectrometers import Spectrometer,list_devices
@@ -28,13 +35,6 @@ class SeabreezeUVVis(Driver):
             print(f'Connecting to fixed serial, {device_serial}')
             self.spectrometer = Spectrometer.from_serial_number(device_serial)
         print(f'Connected successfully, to a {self.spectrometer}')
-        self.config['correctDarkCounts'] = False
-        self.config['correctNonlinearity'] = False
-        self.config['exposure'] = 0.010
-        self.config['exposure_delay'] = 0
-        self.config['saveSingleScan'] = False
-        self.config['filename'] = 'test.h5'
-        self.config['filepath'] = Path('.')
 
         self.wl = self.spectrometer.wavelengths()
 
@@ -81,6 +81,9 @@ class SeabreezeUVVis(Driver):
 
         if start is None:
             start = datetime.datetime.now()
+
+        print(start)
+        print(datetime.timedelta(0,duration))
         while datetime.datetime.now() < start:
             pass
 
@@ -88,13 +91,19 @@ class SeabreezeUVVis(Driver):
             data.append([list(self.wl),list(self.spectrometer.intensities(correct_dark_counts=self.config['correctDarkCounts'], 
                     correct_nonlinearity=self.config['correctNonlinearity']))])
             time.sleep(self.config['exposure_delay'])
-
+        
+        if self.data is not None:
+            self.data['mode'] = 'continuous'
+            self.data['wavelength'] = self.wl.tolist()
+            self.data['spectrum'] = [x.tolist() for x in data[1:]]
+       
         self._writedata(data)
 
         if not return_data:
             data = f'data written to file: {self.config["filename"]}'
-
-        return list(data)
+            return data
+        else:
+            return list(data)
 
     @Driver.unqueued()
     def collectSingleSpectrum(self,**kwargs):
@@ -104,8 +113,12 @@ class SeabreezeUVVis(Driver):
 
         if self.config['saveSingleScan']:
             self._writedata(data)
-                
-        return list(data)
+
+        if self.data is not None:
+            self.data['mode'] = 'single'
+            self.data['wavelength'] = self.wl.tolist()
+            self.data['spectrum'] = [x.tolist() for x in data]            
+        return [x.tolist() for x in data]
 
     def _writedata(self,data):
         filepath = pathlib.Path(self.config['filepath'])

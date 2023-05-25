@@ -1,7 +1,11 @@
 from AFL.automation.APIServer.APIServer import APIServer
 from AFL.automation.prepare.OT2_Driver import OT2_Driver
+from AFL.automation.APIServer.data.DataTiled import DataTiled
+
+
 import os
-server = APIServer('OT2Server')
+data = DataTiled('http://afl-inst-lab.campus.nist.gov:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/Users/pab2/.afl/json-backup')
+server = APIServer('OT2Server',data = data)
 driver = OT2_Driver()
 server.add_standard_routes()
 server.create_queue(driver)

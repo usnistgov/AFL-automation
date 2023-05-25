@@ -21,7 +21,7 @@ class DummyDriver(Driver):
         status.append('Selectors: selecting')
         status.append('Neutrons: scattering')
         return status
-
+    '''
     def execute(self,**kwargs):
         if self.app is not None:
             self.app.logger.debug(f'Executing task {kwargs}')
@@ -34,7 +34,7 @@ class DummyDriver(Driver):
                 del kwargs['task_name']
                 return_val = getattr(self,task_name)(**kwargs)
                 return return_val
-
+    '''
     @Driver.queued()
     def test_command1(self,kwarg1=None,kwarg2=True):
         '''A test command with positional and keyword parameters'''
@@ -44,7 +44,14 @@ class DummyDriver(Driver):
     def test_command2(self,kwarg1=False,kwarg2=False,kwarg3=True):
         '''A test command with positional and keyword parameters'''
         pass
-
+    @Driver.queued()
+    def test_command_sets_data(self,kwarg1=False,kwarg2=False,kwarg3=True):
+        '''A test command with positional and keyword parameters'''
+        if self.data is not None:
+            self.data['kwarg1'] = kwarg1
+            self.data['kwarg2'] = kwarg2
+            self.data['kwarg3'] = kwarg3
+        return np.random.randn(10)
     @Driver.unqueued()
     def how_many(self,**kwargs):
         self.app.logger.debug(f'Call to how_many with kwargs: {kwargs}')

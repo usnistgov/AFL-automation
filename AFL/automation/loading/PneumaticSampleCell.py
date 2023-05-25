@@ -226,6 +226,8 @@ class PneumaticSampleCell(Driver,SampleCell):
                     self.pump.stop()
                     self.relayboard.setChannels({'postsample':False})
                     self.loadStoppedExternally=True
+                    if self.data is not None:
+                        self.data['load_stop_source'] = 'external'
                     return 'Load stopped successfully.'
             else:
                 return 'Wrong secret.'

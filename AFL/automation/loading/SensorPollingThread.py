@@ -4,9 +4,12 @@ import time
 import datetime
 
 class SensorPollingThread(threading.Thread):
-    def __init__(self,sensor,period=0.1,callback=None,hv_pipe=None,window=None,filename=None,daemon=True):
+    def __init__(self,sensor,period=0.1,callback=None,hv_pipe=None,window=None,filename=None,daemon=True,data=None):
         threading.Thread.__init__(self, name='SignalPollingThread', daemon=daemon)
         
+        self.app = None
+        self.data = None
+
         self.sensor = sensor
         self.callback = callback
         self.window = window

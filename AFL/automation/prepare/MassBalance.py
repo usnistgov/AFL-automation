@@ -19,7 +19,7 @@ except ImportError:
 
 try:
     import AFL.agent.PhaseMap
-    from AFL.agent.PhaseMap import to_xy
+    from AFL.agent.util import ternary_to_xy
 except ImportError:
     warnings.warn('Cannot import AFL agent tools. Some features of Massbalance will not work correctly')
 
@@ -121,7 +121,7 @@ class MassBalance:
         self.mass_transfers = {stock:(self.stock_location[stock],mass*units('g')) for stock,mass in zip(self.stocks,mass_transfers)}
         self.residuals = residuals
 
-    def sample_composition_space(self,pipette_min=5*units('ul'),grid_density=5):
+    def sample_composition_space(self,pipette_min=5*units('ul'),grid_density=5,composition_data='frac'):
         '''Combine stock solutions to generate samples of possible target compositions'''
         if self.components is None:
             self.process_components()
@@ -184,24 +184,34 @@ class MassBalance:
         self.stock_samples['stock_fractions'] = (('sample','stock'),stock_fractions)
         self.stock_samples['stock'] = list([i.name for i in self.stocks])
         
-        #need samples_frac array as individual dataarrays in the dataset
-        self.stock_samples.update(self.stock_samples.samples_frac.to_dataset('component'))#this should replace the loop below but is untested
+        #need composition arrays as individual dataarrays in the dataset
+        if composition_data=='frac':
+            self.stock_samples.update(self.stock_samples.samples_frac.to_dataset('component'))
+        elif composition_data=='conc':
+            self.stock_samples.update(self.stock_samples.samples_conc.to_dataset('component'))
+        elif composition_data=='mass':
+            self.stock_samples.update(self.stock_samples.samples_mass.to_dataset('component'))
             
         return self.stock_samples
     
     
     def constrain_samples_conc(self,constraints,rtol=0.05):
         processed_constraints = {}
-        for name,value in constraints.items():
-            if is_concentration(value):
-                processed_constraints[name] = value.to('mg/ml').magnitude
+        for name,con in constraints.items():
+            if is_concentration(con['value']):
+                processed_constraints[name] = {'value':con['value'].to('mg/ml').magnitude,'compare':con['compare']}
             else:
-                raise ValueError(f'This method only works with concentration constraints. You passed {get_unit_type(value)}')
+                raise ValueError(f'This method only works with concentration constraints. You passed {get_unit_type(con["value"])}')
     
         masks = []
-        for name,value in processed_constraints.items():
+        for name,con in processed_constraints.items():
             sample_concs = self.stock_samples.samples_conc.sel(component=name)
-            mask = np.isclose(sample_concs,value,atol=0.0,rtol=rtol)
+            if con['compare'] in ('==','eq','equal','equals'):
+                mask = np.isclose(sample_concs,con['value'],atol=0.0,rtol=rtol)
+            elif con['compare'] in ('<','lt','lessthan','less than'):
+                mask = np.less(sample_concs,con['value'])
+            elif con['compare'] in ('>','gt','greaterthan','greater than'):
+                mask = np.greater(sample_concs,con['value'])
             masks.append(mask)
             
         self.stock_samples['constraint_mask'] = ('sample',np.all(masks,axis=0))
@@ -210,7 +220,7 @@ class MassBalance:
         return self.stock_samples
     
     
-    def calculate_bounds(self,components=None,exclude_comps_below=None,fixed_comps=None):
+    def calculate_bounds(self,components=None,exclude_comps_below=None,fixed_comps=None,composition_data='samples_frac',ternary=True):
         
         if self.stock_samples is None:
             raise ValueError('Must call .sample_composition_space before calculating bounds')
@@ -220,19 +230,23 @@ class MassBalance:
 
         self.stock_samples.attrs['components'] = components
             
-        if len(components)==3:
-            comps = self.stock_samples['samples_frac'].sel(component=components)
+        if (len(components)==3) and ternary:
+            comps = self.stock_samples[composition_data].sel(component=components)
             comps = comps/comps.sum('component')#[:,np.newaxis]#normalize to 1.0 basis
             if exclude_comps_below is not None:
                 mask = ~((comps<exclude_comps_below).any('component'))
                 comps = comps[mask]
             else:
-                mask = xr.ones_like(self.stock_samples['samples_frac'],dtype=bool)
-            xy = to_xy(comps.values)
+                mask = xr.ones_like(self.stock_samples[composition_data],dtype=bool)
+            xy = ternary_to_xy(comps.values)
+        elif len(components)==3:
+            comps = self.stock_samples[composition_data].sel(component=components)
+            mask = comps.isel(component=0).copy(data=np.ones(comps.values.shape[0],dtype=bool)).reset_coords(drop=True)
+            xy = comps.values
         elif len(components)==2:
-            xy = self.stock_samples['samples_frac'].sel(component=components)
-            mask = xy.isel(component=0).copy(data=np.ones(xy.values.shape[0],dtype=bool))
-            xy = xy.values
+            comps = self.stock_samples[composition_data].sel(component=components)
+            mask = comps.isel(component=0).copy(data=np.ones(comps.values.shape[0],dtype=bool)).reset_coords(drop=True)
+            xy = comps.values
         else:
             raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
         
@@ -241,31 +255,33 @@ class MassBalance:
         self.stock_samples = self.stock_samples.drop_vars(['xy','samples_valid'],errors='ignore')
         
         self.stock_samples['xy'] = (('sample_valid','coord'),xy)
-        self.stock_samples['samples_valid']  = (('sample_valid','component'),self.stock_samples['samples_frac'].where(mask,drop=True).data)
+        self.stock_samples['samples_valid']  = (('sample_valid','component'),self.stock_samples[composition_data].where(mask,drop=True).data)
         self.stock_samples.attrs['hull']= scipy.spatial.ConvexHull(xy)
         self.stock_samples.attrs['delaunay'] = scipy.spatial.Delaunay(xy)
     
-    def in_bounds(self,points):
+    def in_bounds(self,points,ternary=True):
         if not hasattr(self,'stock_samples'):
             raise ValueError('You must call .sample_composition_space and .calculate_bounds with before calling this method')
      
-        if points.shape[1]==3:
-            p = to_xy(points)
-        elif points.shape[1]==2:
-            p = points
+        if (points.shape[1]==3) and ternary:
+            p = ternary_to_xy(points)
         else:
-            raise ValueError('Can only pass two or three dimensional data to in_bounds')
+            p = points
+        #else:
+            #raise ValueError('Can only pass two or three dimensional data to in_bounds')
                              
         return self.stock_samples.attrs['delaunay'].find_simplex(p)>=0
 
 
-    def make_grid_mask(self,pts_per_row=100):
+    def make_grid_mask(self,pts_per_row=100,ternary=True):
         if not hasattr(self,'stock_samples'):
             raise ValueError('You must call .sample_composition_space and .calculate_bounds with before calling this method')
 
+        if 'grid' in self.stock_samples:
+            self.stock_samples = self.stock_samples.drop_dims('grid')
         self.stock_samples.afl.comp.add_grid(self.stock_samples.attrs['components'],pts_per_row=pts_per_row,overwrite=True)
         
-        mask = self.in_bounds(self.stock_samples.afl.comp.get_grid().values)
+        mask = self.in_bounds(self.stock_samples.afl.comp.get_grid().values,ternary=ternary)
         self.stock_samples['grid_mask'] = ('grid',mask)
         self.stock_samples = self.stock_samples.set_index(grid=self.stock_samples.attrs['components_grid'])
         return self.stock_samples

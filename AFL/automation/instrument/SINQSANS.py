@@ -17,7 +17,7 @@ class SINQSANS(ScatteringInstrument,Driver):
     defaults = {}
     defaults['sics_host'] = 'sans.psi.ch'
     defaults['sics_port'] = 1301
-    defaults['user_login'] = 'User 22lns1' 
+    defaults['user_login'] = 'User 22lns1'  #User  23lns1
     defaults['empty transmission'] = 1
     defaults['transmission strategy'] = 'sum'
     defaults['reduced_data_dir'] = '/mnt/home/chess_id3b/beaucage/211012-data'
@@ -241,7 +241,7 @@ class SINQSANS(ScatteringInstrument,Driver):
         'reduce_data':{'label':'Reduce?','type':'bool','default':True},
         'measure_transmission':{'label':'Measure Trans?','type':'bool','default':True}
         }})
-    def expose(self,name=None,exposure=None,block=True,reduce_data=True,measure_transmission=True):
+    def expose(self,name=None,exposure=None,block=True,reduce_data=True,measure_transmission=True,save_nexus=True):
         if name is None:
             name=self.getFilename()
         else:
@@ -271,6 +271,13 @@ class SINQSANS(ScatteringInstrument,Driver):
                  trash = int(self.client.ask_param('banana sum 40 80 40 80'))
             except ValueError:
                  trash = int(self.client.ask_param('banana sum 40 80 40 80'))
+
+            if save_nexus:
+                data = self.getData()
+                normalized_sample_transmission  = self.last_measured_transmission[0]
+                self.status_txt = 'Writing Nexus'
+                self._writeNexus(data,name,name,normalized_sample_transmission)
+
             if reduce_data:
                 self.status_txt = 'Reducing Data'
                 reduced = self.getReducedData(write_data=True,filename=name)
@@ -281,6 +288,9 @@ class SINQSANS(ScatteringInstrument,Driver):
                 sample_flux = self.last_measured_transmission[2]
                 empty_cell_transmission = self.last_measured_transmission[3]
                 sample_transmission = normalized_sample_transmission*empty_cell_transmission
+
+                if save_nexus:
+                    self._appendReducedToNexus(reduced,name,name)
 
                 out = {}
                 out['normalized_sample_transmission'] = normalized_sample_transmission

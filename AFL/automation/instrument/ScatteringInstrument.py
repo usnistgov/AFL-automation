@@ -221,17 +221,16 @@ class ScatteringInstrument():
             nxdata.attrs[u'NX_class'] = u'NXdata'
             nxdata.attrs[u'canSAS_class'] = u'SASdata'
             nxdata.attrs[u'signal'] = u'I'
-            nxdata.attrs[u'I_axes'] = u'|Q|'
+            nxdata.attrs[u'I_axes'] = u'Q'
             
             Ids = nxdata.create_dataset(u'I',data=data[1])
             Ids.attrs[u'units'] = u'arbitrary'
             Ids.attrs[u'long_name'] = u'Intensity (arbitrary units)'
             Ids.attrs[u'signal'] = 1
             
-            Qds = nxdata.create_dataset(u'I',data=data[0])
-            Qds.attrs[u'units'] = u'arbitrary'
-            Qds.attrs[u'long_name'] = u'Intensity (arbitrary units)'
-            Qds.attrs[u'signal'] = 1
+            Qds = nxdata.create_dataset(u'Q',data=data[0])
+            Qds.attrs[u'units'] = u'inverse angstrom'
+            Qds.attrs[u'long_name'] = u'q'
 
 
 

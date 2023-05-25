@@ -6,7 +6,7 @@ import time
 
 
 class LabJackSensor(Sensor):
-    def __init__(self,devicetype="ANY",connection="ANY",deviceident="ANY",port_to_read="AIN0",polling_rate=200,intermittent_device_handle=False):
+    def __init__(self,devicetype="ANY",connection="ANY",deviceident="ANY",port_to_read="AIN0",reset_port="DIO5",polling_rate=200,intermittent_device_handle=False):
         '''
     	Initialize a LabJack connection
     	
@@ -17,7 +17,7 @@ class LabJackSensor(Sensor):
     	deviceident (str): serial number OR IP OR device name OR "ANY"
     	port_to_read (str): LabJack port for device
         '''
-        self.fio = "DIO5"
+        self.fio = reset_port
         self.device_handle = ljm.openS(devicetype, connection, deviceident)
         self.port_to_read = port_to_read
         self.devicetype = devicetype

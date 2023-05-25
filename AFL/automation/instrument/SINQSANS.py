@@ -258,6 +258,8 @@ class SINQSANS(ScatteringInstrument,Driver):
         
         
         pre_sicsdatanumber = self.client.ask_param('sicsdatanumber')
+        if self.data is not None:
+            self.data['pre_sicsdatanumber'] = pre_sicsdatanumber
         self.status_txt = f'Starting {exposure} moni count named {name}'
         if self.app is not None:
             self.app.logger.debug(f'Starting exposure with name {name} for {exposure} moni cts')
@@ -275,12 +277,17 @@ class SINQSANS(ScatteringInstrument,Driver):
             if save_nexus:
                 data = self.getData()
                 normalized_sample_transmission  = self.last_measured_transmission[0]
+                if self.data is not None:
+                    self.data['raw_data'] = data
+                    self.data['normalized_sample_transmission'] = normalized_sample_transmission
                 self.status_txt = 'Writing Nexus'
                 self._writeNexus(data,name,name,normalized_sample_transmission)
 
             if reduce_data:
                 self.status_txt = 'Reducing Data'
                 reduced = self.getReducedData(write_data=True,filename=name)
+                if self.data is not None:
+                    self.data['reduced_data'] = reduced
                 np.savetxt(f'{name}_chosen_r1d.csv',np.transpose(reduced),delimiter=',')
 
                 normalized_sample_transmission  = self.last_measured_transmission[0]
@@ -288,6 +295,14 @@ class SINQSANS(ScatteringInstrument,Driver):
                 sample_flux = self.last_measured_transmission[2]
                 empty_cell_transmission = self.last_measured_transmission[3]
                 sample_transmission = normalized_sample_transmission*empty_cell_transmission
+                
+                if self.data is not None:
+                    self.data['normalized_sample_transmission'] = normalized_sample_transmission
+                    self.data['open_flux'] = open_flux
+                    self.data['sample_flux'] = sample_flux
+                    self.data['empty_cell_transmission'] = empty_cell_transmission
+                    self.data['sample_transmission'] = sample_transmission
+
 
                 if save_nexus:
                     self._appendReducedToNexus(reduced,name,name)

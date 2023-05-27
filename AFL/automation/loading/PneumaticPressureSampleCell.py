@@ -192,7 +192,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
 
     @Driver.quickbar(qb={'button_text':'Load Sample',
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
-    def loadSample(self,cellname='cell',sampleVolume=None):
+    def loadSample(self,cellname='cell',sampleVolume=None,load_dest_label=''):
         '''
         Load a sample into the cell
         
@@ -207,7 +207,10 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         time.sleep(self.config['vent_delay'])
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
         print('setting state...')
-        self.state = 'LOAD IN PROGRESS'
+        if load_dest_label == '':
+            self.state = 'LOAD IN PROGRESS'
+        else:
+            self.state = 'LOAD IN PROGRESS to {load_dest_label}'
         print('sending dispense command')
         self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         
@@ -221,21 +224,32 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self.state = 'LOADED'
     @Driver.quickbar(qb={'button_text':'Load Sample',
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
-    def advanceSample(self,active_sensor_ids=None):
+    def advanceSample(self,load_dest_label=''):
         '''
         Move a sample from one measurement cell to the next
         
         Params:
-            active_sensor_ids (list or NoneType): if provided, a list of sensor id's to be left enabled for this measurement.
-                all other sensor id's will not be able to stop the load.
+            load_dest_label (str, default ''): a 'destination label' for this load.  
+                labeled sensors will only stop the load if their name is in this destination label.
+                example: 
+                    sensor 1 labeled 'afterSANS'
+                    sensor 2 labeled 'beforeSPEC'
+                    sensor 3 labeled '' (default)
+                    
+                    advanceSample(load_dest_label='afterSANS') --> sensor 1 or sensor 3 can stop it
+                    advanceSample(load_dest_label='beforeSPEC afterSANS') --> sensor 1, sensor 2, or sensor 3 can stop it
+                    advanceSample(load_dest_label='') --> only sensor 3 can stop it
         '''
         
         if self.state != 'LOADED':
             raise Exception('Tried to advance sample but no sample is loaded.')
         self.state = 'PREPARING TO Advance'
         self.relayboard.setChannels({'postsample':True})
-        print('setting state...')
-        self.state = 'LOAD IN PROGRESS'
+        print('setting state...')        
+        if load_dest_label == '':
+            self.state = 'LOAD IN PROGRESS'
+        else:
+            self.state = 'LOAD IN PROGRESS to {load_dest_label}'
         print('sending dispense command')
         self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         

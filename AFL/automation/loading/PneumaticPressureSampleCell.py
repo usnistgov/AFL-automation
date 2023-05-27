@@ -19,6 +19,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     defaults['load_pressure'] = 2
     defaults['blowout_pressure'] = 20
 
+    defaults['load_timeout'] = 60
+    
     defaults['arm_move_delay'] = 0.2
     defaults['vent_delay'] = 0.5
     defaults['rinse_program'] = [

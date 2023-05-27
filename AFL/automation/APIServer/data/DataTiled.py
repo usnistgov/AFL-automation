@@ -4,6 +4,7 @@ import json
 import os
 import tiled.client
 import numpy as np
+import copy
 
 class DataTiled(DataPacket):
     '''
@@ -30,10 +31,12 @@ class DataTiled(DataPacket):
         
         try:
             if 'main_array' in self._dict().keys():
-                main_data = self._dict()['main_array']
+                main_data = copy.deepcopy(self._dict()['main_array'])
+                del(self._dict()['main_array'])
                 fxn = self.tiled_client.write_array
             elif 'main_dataframe' in self._dict().keys():
-                main_data = self._dict()['main_dataframe']
+                main_data = copy.deepcopy(self._dict()['main_dataframe'])
+                del(self._dict()['main_dataframe'])
                 fxn = self.tiled_client.write_dataframe
             else:
                 main_data = [np.nan]

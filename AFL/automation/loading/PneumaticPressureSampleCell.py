@@ -16,8 +16,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
 
     '''
     defaults={}
-    defaults['load_speed'] = 2
-    defaults['air_speed'] = 30
+    defaults['load_pressure'] = 2
+    defaults['blowout_pressure'] = 20
 
     defaults['arm_move_delay'] = 0.2
     defaults['vent_delay'] = 0.5
@@ -29,7 +29,6 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                                 (None,0.5),
                                 ('blow',5)
                                 ] 
-    defaults['catch_to_cell_vol'] = 1.15
     defaults['external_load_complete_trigger'] = False
 
 
@@ -191,7 +190,13 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
 
     @Driver.quickbar(qb={'button_text':'Load Sample',
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
-    def loadSample(self,cellname='cell',sampleVolume=0):
+    def loadSample(self,cellname='cell',sampleVolume=None):
+        '''
+        Load a sample into the cell
+        
+        Params `cellname` and `sampleVolume` are kept for backward compat, but are deprecated and unused.
+        '''
+        
         if self.state != 'READY':
             raise Exception('Tried to load sample but cell not READY.')
         self.state = 'PREPARING TO LOAD'
@@ -202,21 +207,44 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         print('setting state...')
         self.state = 'LOAD IN PROGRESS'
         print('sending dispense command')
-        self.pctrl.set_P(self.config['load_pressure']),block=False)
+        self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         
-        while(self.pump.getStatus()[0] != 'S' and not self.loadStoppedExternally):
+        while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
             print(f'awaiting pump complete, {self.pump.getStatus()}')
-            time.sleep(0.1)
-
-        infusion_vol = self.pump.getStatus()[1]
-        self.pump_level -= infusion_vol
-        if self.pump_level<0:
-            raise Exception(f'Pump level found to be less than zero: {self.pump_level}')
-
+            time.sleep(0.02)
+            
+        
         self.loadStoppedExternally = False
         self.relayboard.setChannels({'postsample':False})
         self.state = 'LOADED'
-
+    @Driver.quickbar(qb={'button_text':'Load Sample',
+        'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
+    def advanceSample(self,active_sensor_ids=None):
+        '''
+        Move a sample from one measurement cell to the next
+        
+        Params:
+            active_sensor_ids (list or NoneType): if provided, a list of sensor id's to be left enabled for this measurement.
+                all other sensor id's will not be able to stop the load.
+        '''
+        
+        if self.state != 'LOADED':
+            raise Exception('Tried to advance sample but no sample is loaded.')
+        self.state = 'PREPARING TO Advance'
+        self.relayboard.setChannels({'postsample':True})
+        print('setting state...')
+        self.state = 'LOAD IN PROGRESS'
+        print('sending dispense command')
+        self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
+        
+        while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
+            print(f'awaiting pump complete, {self.pump.getStatus()}')
+            time.sleep(0.02)
+            
+        
+        self.loadStoppedExternally = False
+        self.relayboard.setChannels({'postsample':False})
+        self.state = 'LOADED'
     @Driver.unqueued(render_hint='raw')
     def stopLoad(self,**kwargs):
         print(kwargs)
@@ -226,7 +254,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                     warnings.warn('Tried to stop load but load is not in progress. Doing nothing.',stacklevel=2)
                     return 'There is no load running.'
                 else:
-                    self.pump.stop()
+                    self.pctrl.stop()
                     self.relayboard.setChannels({'postsample':False})
                     self.loadStoppedExternally=True
                     if self.data is not None:
@@ -247,30 +275,23 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                 raise Exception(f'Cell in inconsistent state: {self.state}')
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
 
-
-        # self.pump.setRate(self.config['air_speed'])
-        # self.pump.dispense(self.config['large_dispense_vol'],block=False) # removed for OEM pump w/o force limiter
-
-        self.rinse_status = 'Pushing with syringe...'
-        #need to dispense with piston down, and then withdraw with piston up
-        self.pump.setRate(self.config['air_speed'])
-        if self.pump_level>0:
-            self.pump.dispense(self.pump_level)
-
         for i,(step,waittime) in enumerate(self.config['rinse_program']):
             self.rinse_status = f'Rinse Program Step {i}/{len(self.config["rinse_program"])}: {step} for {waittime}s'
             if step is not None:
-                self.relayboard.setChannels({step:True})
+                if step is 'blow':
+                    self.pctrl.set_P(self.config['blowout_pressure'])
+                else:
+                    self.relayboard.setChannels({step:True})
             time.sleep(waittime)
             if step is not None:
-                self.relayboard.setChannels({step:False})
+                if step is 'blow':
+                    self.pctrl.set_P(0)
+                else:
+                    self.relayboard.setChannels({step:False})
         self.relayboard.setChannels({'postsample':False})
         self._arm_up()
         self.state = 'READY'
         self.rinse_status = 'Not Rinsing'
-        # self.pump.withdraw(self.config['withdraw_vol'],block=True)
-        self.reset_pump(dispense=False)
-
     
     def rinseAll(self):
         self.rinseCell()
@@ -298,43 +319,78 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     @Driver.quickbar(qb={'button_text':'calibrate', 'params':{}})
     def calibrate_sensor(self):
         if self.load_stopper is not None:
-            return self.load_stopper.sensor.calibrate()
+            out = []
+            for ls in self.load_stopper:
+                out.append(ls.sensor.calibrate())
+            return out
 
     @Driver.unqueued()
     def read_sensor(self):
         if self.load_stopper is not None:
-            return self.load_stopper.sensor.read()
+            out = []
+            for ls in self.load_stopper:
+                out.append(ls.sensor.read())
+            return out
 
     @Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
     def read_sensor_poll(self,**kwargs):
         if self.load_stopper is not None:
-            output = np.transpose(self.load_stopper.poll.read())
-            print('Serving sensor poll:',len(output),len(output[0]),len(output[1]))
-            return list(output)
+            out = []
+            for ls in self.load_stopper:
+                output = np.transpose(ls.poll.read())
+                print('Serving sensor poll:',len(output),len(output[0]),len(output[1]))
+                out.append(list(output))
+            return out
 
     @Driver.unqueued(render_hint='1d_plot',xlin=True,ylin=True,xlabel='time',ylabel='Signal (V)')
     def read_sensor_poll_load(self,**kwargs):
         if self.load_stopper is not None:
-            output = np.transpose(self.load_stopper.poll.read_load_buffer())
-        return list(output)
+            out = []
+            for ls in self.load_stopper:
+                out.append(list(np.transpose(ls.poll.read_load_buffer()))
+        return out
     
     def set_sensor_config(self,**kwargs):
         if self.load_stopper is not None:
-            self.load_stopper.config.update(kwargs)
-            self.load_stopper.reset()
+            if sensor_n in **kwargs:
+                self.load_stopper[kwargs[sensor_n]].update(kwargs)
+                self.load_stopper[kwargs[sensor_n]].reset()                        
+            else: # assume it should apply to all
+                for ls in self.load_stopper:
+                    ls.config.update(kwargs)
+                    ls.reset()
 
     def get_sensor_config(self,**kwargs):
         if self.load_stopper is not None:
-            return self.load_stopper.config.config
+            out = []
+            for ls in self.load_stopper:
+                out.append(ls.config)
+            return out
 
     @Driver.unqueued()
     @Driver.quickbar(qb={'button_text':'Reset Sensor', 'params':{}})
-    def sensor_reset(self):
+    def sensor_reset(self,sensor_n = None):
         if self.load_stopper is not None:
-            self.load_stopper.reset_poll()
-            self.load_stopper.reset_stopper()
-            if self.load_stopper._app is not None:
-                self.load_stopper.poll.app = self._app
-                self.load_stopper.stopper.app = self._app
-            self.load_stopper.poll.start()
-            self.load_stopper.stopper.start()
+            if sensor_n is not None:
+                self.load_stopper[sensor_n].reset_poll()
+                self.load_stopper[sensor_n].reset_stopper()
+                if self.load_stopper[sensor_n]._app is not None:
+                    self.load_stopper[sensor_n].poll.app = self._app
+                    self.load_stopper[sensor_n].stopper.app = self._app
+                if self.load_stopper[sensor_n]._data is not None:
+                    self.load_stopper[sensor_n].poll.data = self._data
+                    self.load_stopper[sensor_n].stopper.data = self._data
+                self.load_stopper[sensor_n].poll.start()
+                self.load_stopper[sensor_n].stopper.start()
+            else:
+                for ls in self.load_stopper:
+                    ls.reset_poll()
+                    ls.reset_stopper()
+                    if ls_app is not None:
+                        ls.poll.app = self._app
+                        ls.stopper.app = self._app
+                    if ls._data is not None:
+                        ls.poll.data = self._data
+                        ls.stopper.data = self._data
+                    ls.poll.start()
+                    ls.stopper.start()

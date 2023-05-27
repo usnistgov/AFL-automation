@@ -31,6 +31,15 @@ class PressureController():
         while status:
             time.sleep(pollingdelay)
             status = self.active_callback.is_alive()
+    def dispenseRunning(self):
+        ''' 
+        Returns true if a timed dispense is running, false otherwise.
+        '''
+        if self.active_callback is not None:
+            return self.active_callback.is_alive()
+        else:
+            return False
+        
     def stop(self):
         '''
         Abort the current timed dispense action.

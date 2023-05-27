@@ -1,6 +1,7 @@
 import serial
+from AFL.automation.loading.PressureController import PressureController
 
-class UltimusVPressureController():
+class UltimusVPressureController(PressureController):
     def __init__(self,port,baud=115200):
         '''
             Initializes a DigitalOutPressureController

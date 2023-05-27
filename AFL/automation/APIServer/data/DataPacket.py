@@ -29,7 +29,7 @@ class DataPacket(MutableMapping):
         'sample_uuid',
         'sample_composition',
         'sample_al_components',
-        
+        'sample_al_campaign_name',        
     
     ]
     

@@ -24,8 +24,7 @@ class PressureControllerAsPump(SyringePump):
         Abort the current dispense/withdraw action. Equivalent to pressing stop button on panel.
         '''
         print(f'Pump stop was called, callback status {self.active_callback.is_alive()}')
-        self.controller.set_P(0) 
-        self.active_callback.cancel()
+        self.controller.stop()
     def __del__(self):
         self.stop()
 
@@ -40,18 +39,7 @@ class PressureControllerAsPump(SyringePump):
         dispense_time = volume / self.implied_flow_rate 
         dispense_time = dispense_time * 60 # convert from min to s as flow rate is in mL/min
         
-        
-        self.active_callback = threading.Timer(dispense_time,self.stop)
-        self.controller.set_P(self.dispense_pressure)
-        self.active_callback.start()
-        
-        # wait for active_callback to actually come alive before returning, to avoid race conditions
-
-        while not self.active_callback.is_alive():
-            time.sleep(0.01)
-
-        if block:
-            self.blockUntilStatusStopped()
+        self.controller.timed_dispense(self.dispense_pressure,dispense_time,block=block)
         
     def setRate(self,rate):
         if self.app is not None:
@@ -67,11 +55,7 @@ class PressureControllerAsPump(SyringePump):
         raise NotImplementedError('this makes no sense for a pressure controller')
     
     def blockUntilStatusStopped(self,pollingdelay=0.2):
-        if self.active_callback is not None:
-            status = self.active_callback.is_alive()
-        while status:
-            time.sleep(pollingdelay)
-            status = self.active_callback.is_alive()
+        self.controller.blockUntilStatusStopped()
 
     def getStatus(self):
         '''
@@ -79,7 +63,7 @@ class PressureControllerAsPump(SyringePump):
         infused volume, and withdrawn volume)
         '''
 
-        if self.active_callback.is_alive():
+        if self.controller.active_callback.is_alive():
             return ('disp',0,0)
         else:
             return ('S',0,0)

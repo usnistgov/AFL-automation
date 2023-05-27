@@ -1,7 +1,8 @@
 #!/bin/bash -i
 
-#git config --global credential.helper store
+git config --global credential.helper store
 
+source activate nistoroboto
 
 if [[ -z "${TILED_API_KEY}" ]]; then
   export TILED_API_KEY=$(cat ~/.afl/tiled_api_key)
@@ -16,9 +17,7 @@ else
 fi
 
 
-conda activate afl_agent
+cd ~/AFL-automation/
+git pull
 
-#cd ~/NistoRoboto/
-#git pull
-
-python ~/AFL-automation/server_scripts/SINQSANS.py
+python ~/AFL-automation/server_scripts/Seabreeze.py

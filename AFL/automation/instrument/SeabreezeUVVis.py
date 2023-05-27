@@ -88,22 +88,23 @@ class SeabreezeUVVis(Driver):
             pass
 
         while datetime.datetime.now() < (start + duration):
-            data.append([list(self.spectrometer.intensities(correct_dark_counts=self.config['correctDarkCounts'], 
-                    correct_nonlinearity=self.config['correctNonlinearity']))])
+            data.append(list(self.spectrometer.intensities(
+                        correct_dark_counts=self.config['correctDarkCounts'], 
+                        correct_nonlinearity=self.config['correctNonlinearity'])))
             time.sleep(self.config['exposure_delay'])
         
         if self.data is not None:
             self.data['mode'] = 'continuous'
             self.data['wavelength'] = self.wl.tolist()
-            self.data['spectrum'] = [self.wl.tolist(),data]
-       
+            self.data['main_array'] = np.array(data)
+           
         self._writedata(data)
 
         if not return_data:
             data = f'data written to file: {self.config["filename"]}'
             return data
         else:
-            return list(data)
+            return data
 
     @Driver.unqueued()
     def collectSingleSpectrum(self,**kwargs):
@@ -117,8 +118,9 @@ class SeabreezeUVVis(Driver):
         if self.data is not None:
             self.data['mode'] = 'single'
             self.data['wavelength'] = self.wl.tolist()
-            self.data['spectrum'] = data            
-        return data
+            self.data['spectrum'] = [x.tolist() for x in data] 
+            self.data['main_array'] = np.array(data)
+        return [x.tolist() for x in data]
 
     def _writedata(self,data):
         filepath = pathlib.Path(self.config['filepath'])

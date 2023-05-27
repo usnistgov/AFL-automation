@@ -7,9 +7,9 @@ import pathlib
 
             
 class SensorCallbackThread(threading.Thread):
-    def __init__(self,poll,period=0.1,daemon=True,filepath=None,data=None):
+    def __init__(self,poll,period=0.1,daemon=True,filepath=None,data=None,sensorlabel=''):
         threading.Thread.__init__(self, name='CallbackThread', daemon=daemon)
-
+,
         self.app = None
         self.data = data
 
@@ -27,6 +27,7 @@ class SensorCallbackThread(threading.Thread):
         if filepath is not None:
             self.filepath = pathlib.Path(filepath)
             self.filepath.mkdir(parents=True, exist_ok=True)
+        self.sensorlabel = sensorlabel
 
     def update_status(self,value):
         self.status_str = value
@@ -145,8 +146,9 @@ class StopLoadCBv2(SensorCallbackThread):
         daemon=True,
         filepath=None,
         data=None,
+        sensorlabel='',
     ):
-        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath,data=data)
+        super().__init__(poll=poll,period=period,daemon=daemon,filepath=filepath,data=data,sensorlabel=sensorlabel)
         self.loader_comm = LoaderCommunication(load_client=load_client,load_object=load_object)
         self.threshold_npts = threshold_npts
         self.threshold_v_step = threshold_v_step 
@@ -162,7 +164,7 @@ class StopLoadCBv2(SensorCallbackThread):
         print(f'StopLoad thread starting with data = {self.data}')
 
     def process_signal(self):
-        if 'PROGRESS' in self.loader_comm.getServerState():
+        if ('PROGRESS' in self.loader_comm.getServerState()) and (self.sensorlabel in self.loader_comm.getServerState()): #make sure this sensor is queued for this load
             datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
             self.update_status(f'[{datestr}] Detected a load...')
             start = datetime.datetime.now()

@@ -28,6 +28,7 @@ class LoadStopperDriver(Driver):
     defaults['stopper_post_detection_sleep'] = 1 
     defaults['stopper_baseline_duration'] = 10
     defaults['stopper_filepath'] = str(pathlib.Path.home()/'.afl/loadstopper_data/')
+    defaults['sensorlabel'] = ''
 
     def __init__(self,sensor,load_client=None,load_object=None,auto_initialize=True,overrides=None,data=None):
         self._app = None
@@ -140,7 +141,8 @@ class LoadStopperDriver(Driver):
             baseline_duration = self.config['stopper_baseline_duration'],
             filepath=self.config['stopper_filepath'],
             daemon=True,
-            data = self.data
+            data = self.data,
+            sensorlabel=self.config['sensorlabel']
         )
 
         

@@ -32,11 +32,11 @@ class DataTiled(DataPacket):
         try:
             if 'main_array' in self._dict().keys():
                 main_data = copy.deepcopy(self._dict()['main_array'])
-                del(self._dict()['main_array'])
+                del(self._transient_dict['main_array'])
                 fxn = self.tiled_client.write_array
             elif 'main_dataframe' in self._dict().keys():
                 main_data = copy.deepcopy(self._dict()['main_dataframe'])
-                del(self._dict()['main_dataframe'])
+                del(self._transient_dict['main_dataframe'])
                 fxn = self.tiled_client.write_dataframe
             else:
                 main_data = [np.nan]

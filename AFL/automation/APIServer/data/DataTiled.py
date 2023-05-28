@@ -48,7 +48,9 @@ class DataTiled(DataPacket):
             fxn(main_data,metadata =self._dict())
         except Exception as e:
             print(f'Exception while transmitting to Tiled! {e}. Saving data in backup store.')
+            self['main_data'] = main_data.tolist()
             self._sanitize()
+            
             filename = str(datetime.datetime.now()).replace(' ','-')
             with open(f'{self.backup_path}/{filename}.json','w') as f:
                 json.dump(self._dict(),f)

@@ -12,7 +12,7 @@ class PressureController():
         '''
         
         self.active_callback = threading.Timer(dispense_time,self.stop)
-        self.set_P(self.dispense_pressure)
+        self.set_P(dispense_pressure)
         self.active_callback.start()
         
         while not self.active_callback.is_alive():

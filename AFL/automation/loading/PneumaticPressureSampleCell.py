@@ -91,9 +91,9 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             self.load_stopper=load_stopper
             # remove any load clients and push this object in for direct control
             for ls in load_stopper:
-                self.load_stopper.load_client = None
-                self.load_stopper.load_object = self
-                self.load_stopper.reset()  # initialize and start load stopping threads
+                ls.load_client = None
+                ls.load_object = self
+                ls.reset()  # initialize and start load stopping threads
         else:
             self.load_stopper = None
 
@@ -127,7 +127,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     def data(self):
         return self._data
 
-    @app.setter
+    @data.setter
     def data(self,data):
         if data is None:
             self._data = data
@@ -152,12 +152,11 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             status.append(f"Door closed: {not self.digitalin.state['DOOR']}")
         if self.digitalin is not None:
             status.append(f'DIO state: {self.digitalin.state}') 
-        status.append(f'Pump Level: {self.pump_level} mL')
         status.append(self.rinse_status)
 
         if self.load_stopper is not None:
             for ls in self.load_stopper:
-                status.extend(self.load_stopper.status())
+                status.extend(ls.status())
             
         return status
  
@@ -207,22 +206,22 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         time.sleep(self.config['vent_delay'])
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
         print('setting state...')
+        self.loadStoppedExternally = False
         if load_dest_label == '':
             self.state = 'LOAD IN PROGRESS'
         else:
-            self.state = 'LOAD IN PROGRESS to {load_dest_label}'
+            self.state = f'LOAD IN PROGRESS to {load_dest_label}'
         print('sending dispense command')
         self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         
         while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
-            print(f'awaiting pump complete, {self.pump.getStatus()}')
             time.sleep(0.02)
             
         
         self.loadStoppedExternally = False
         self.relayboard.setChannels({'postsample':False})
         self.state = 'LOADED'
-    @Driver.quickbar(qb={'button_text':'Load Sample',
+    @Driver.quickbar(qb={'button_text':'Advance Sample',
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
     def advanceSample(self,load_dest_label=''):
         '''
@@ -249,24 +248,24 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         if load_dest_label == '':
             self.state = 'LOAD IN PROGRESS'
         else:
-            self.state = 'LOAD IN PROGRESS to {load_dest_label}'
+            self.state = f'LOAD IN PROGRESS to {load_dest_label}'
         print('sending dispense command')
         self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
-        
+        self.loadStoppedExternally = False 
         while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
-            print(f'awaiting pump complete, {self.pump.getStatus()}')
             time.sleep(0.02)
             
         
         self.loadStoppedExternally = False
         self.relayboard.setChannels({'postsample':False})
         self.state = 'LOADED'
+    
     @Driver.unqueued(render_hint='raw')
     def stopLoad(self,**kwargs):
         print(kwargs)
         try:
             if kwargs['secret'] == 'xrays>neutrons':
-                if self.state!= 'LOAD IN PROGRESS':
+                if 'LOAD IN PROGRESS' not in self.state:
                     warnings.warn('Tried to stop load but load is not in progress. Doing nothing.',stacklevel=2)
                     return 'There is no load running.'
                 else:
@@ -274,7 +273,11 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                     self.relayboard.setChannels({'postsample':False})
                     self.loadStoppedExternally=True
                     if self.data is not None:
-                        self.data['load_stop_source'] = 'external'
+                        print(self.data)
+                        try:
+                            self.data['load_stop_source'] = 'external'
+                        except AttributeError:
+                            pass
                     return 'Load stopped successfully.'
             else:
                 return 'Wrong secret.'
@@ -294,13 +297,13 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         for i,(step,waittime) in enumerate(self.config['rinse_program']):
             self.rinse_status = f'Rinse Program Step {i}/{len(self.config["rinse_program"])}: {step} for {waittime}s'
             if step is not None:
-                if step is 'blow':
+                if step == 'ctrlblow':
                     self.pctrl.set_P(self.config['blowout_pressure'])
                 else:
                     self.relayboard.setChannels({step:True})
             time.sleep(waittime)
             if step is not None:
-                if step is 'blow':
+                if step == 'ctrlblow':
                     self.pctrl.set_P(0)
                 else:
                     self.relayboard.setChannels({step:False})
@@ -363,12 +366,12 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         if self.load_stopper is not None:
             out = []
             for ls in self.load_stopper:
-                out.append(list(np.transpose(ls.poll.read_load_buffer()))
-        return out
+                out.append(list(np.transpose(ls.poll.read_load_buffer())))
+            return out
     
     def set_sensor_config(self,**kwargs):
         if self.load_stopper is not None:
-            if sensor_n in **kwargs:
+            if 'sensor_n' in kwargs:
                 self.load_stopper[kwargs[sensor_n]].update(kwargs)
                 self.load_stopper[kwargs[sensor_n]].reset()                        
             else: # assume it should apply to all

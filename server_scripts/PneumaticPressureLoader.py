@@ -11,11 +11,8 @@ server_port=5000
 
 from AFL.automation.APIServer.APIServer import APIServer
 from AFL.automation.APIServer.data.DataTiled import DataTiled
-from AFL.automation.loading.PneumaticSampleCell import PneumaticSampleCell
-from AFL.automation.loading.DummyPump import DummyPump
-from AFL.automation.loading.NE1kSyringePump import NE1kSyringePump
+# from AFL.automation.loading.PneumaticSampleCell import PneumaticSampleCell
 from AFL.automation.loading.PiPlatesRelay import PiPlatesRelay
-from AFL.automation.loading.SainSmartRelay import SainSmartRelay
 from AFL.automation.loading.PiGPIO import PiGPIO
 from AFL.automation.loading.Tubing import Tubing
 from AFL.automation.loading.PressureControllerAsPump import PressureControllerAsPump
@@ -23,12 +20,19 @@ from AFL.automation.loading.DigitalOutPressureController import DigitalOutPressu
 from AFL.automation.loading.LabJackDigitalOut import LabJackDigitalOut
 from AFL.automation.loading.LabJackSensor import LabJackSensor
 from AFL.automation.loading.LoadStopperDriver import LoadStopperDriver
+from AFL.automation.loading.PneumaticPressureSampleCell import PneumaticPressureSampleCell
+
 
 data = DataTiled('http://10.42.0.1:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/pi/.afl/json-backup')
 
 #load stopper stuff
-sensor = LabJackSensor(port_to_read='AIN0',reset_port='DIO6')
-load_stopper = LoadStopperDriver(sensor,data=data,auto_initialize=False)
+sensor_sans = LabJackSensor(port_to_read='AIN0',reset_port='DIO6')
+load_stopper_sans = LoadStopperDriver(sensor_sans,name='LoadStopperDriver_sans',data=data,auto_initialize=False,sensorlabel='afterSANS')
+
+sensor_spec = LabJackSensor(port_to_read='AIN1',reset_port='DIO7')
+load_stopper_spec = LoadStopperDriver(sensor_spec,name='LoadStopperDriver_spec',data=data,auto_initialize=False,sensorlabel='afterSPEC')
+
+
 
 relayboard = PiPlatesRelay(
         {
@@ -37,21 +41,12 @@ relayboard = PiPlatesRelay(
 
         } )
 
-digout = LabJackDigitalOut(intermittent_device_handle=False,port_to_write='TDAC4',shared_device = sensor)
+digout = LabJackDigitalOut(intermittent_device_handle=False,port_to_write='TDAC4',shared_device = sensor_sans)
 p_ctrl = DigitalOutPressureController(digout,3)
-pump = PressureControllerAsPump(p_ctrl,dispense_pressure = 5, implied_flow_rate = 5)
-#DummyPump() # ID for 10mL = 14.859, for 50 mL 26.43
-# pump = NE1kSyringePump('/dev/ttyUSB0',14.86,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
-# this is the line used in AFL ops   pump = NE1kSyringePump('/dev/ttyUSB0',14.6,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43 (gastight)
-# pump = NE1kSyringePump('/dev/ttyUSB0',14.0,10,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
-# pump = NE1kSyringePump('/dev/ttyUSB0',11.4,5,baud=19200,pumpid=10,flow_delay=0) # ID for 10mL = 14.859, for 50 mL 26.43
-#gpio = PiGPIO({23:'ARM_UP',24:'ARM_DOWN'},pull_dir='DOWN')
-#16,19 also shot
 
 gpio = PiGPIO({4:'DOOR',14:'ARM_UP',15:'ARM_DOWN'},pull_dir='UP') #: p21-blue, p20-purple: 1, p26-grey: 1}
 
-
-driver = PneumaticSampleCell(pump,relayboard,digitalin=gpio,load_stopper=load_stopper)
+driver = PneumaticPressureSampleCell(p_ctrl,relayboard,digitalin=gpio,load_stopper=[load_stopper_sans,load_stopper_spec])
 server = APIServer('CellServer',data=data)
 server.add_standard_routes()
 server.create_queue(driver)

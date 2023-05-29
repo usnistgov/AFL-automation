@@ -1,6 +1,6 @@
+from AFL.automation.loading.PressureController import PressureController
 
-
-class DigitalOutPressureController():
+class DigitalOutPressureController(PressureController):
     def __init__(self,digital_out,pressure_to_v_conv):
         '''
             Initializes a DigitalOutPressureController

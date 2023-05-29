@@ -28,10 +28,11 @@ class LoadStopperDriver(Driver):
     defaults['stopper_post_detection_sleep'] = 1 
     defaults['stopper_baseline_duration'] = 10
     defaults['stopper_filepath'] = str(pathlib.Path.home()/'.afl/loadstopper_data/')
+    defaults['sensorlabel'] = ''
 
-    def __init__(self,sensor,load_client=None,load_object=None,auto_initialize=True,overrides=None,data=None):
+    def __init__(self,sensor,load_client=None,load_object=None,auto_initialize=True,overrides=None,data=None,sensorlabel='',name='LoadStopperDriver'):
         self._app = None
-        Driver.__init__(self,name='LoadStopperDriver',defaults=self.gather_defaults(),overrides=overrides)
+        Driver.__init__(self,name=name,defaults=self.gather_defaults(),overrides=overrides)
         if self.data is None:
             self.data = data
         
@@ -40,6 +41,7 @@ class LoadStopperDriver(Driver):
         self.load_client = load_client
 
         self.sensor = sensor
+        self.sensorlabel = sensorlabel
         self.poll = None
         self.stopper = None
 
@@ -123,6 +125,7 @@ class LoadStopperDriver(Driver):
         #     baseline_duration = self.config['stopper_baseline_duration'],
         #     filepath=self.config['stopper_filepath'],
         #     daemon=True,
+        #     sensorlabel=self.sensorlabel,
         # )
 
         self.stopper = StopLoadCBv2( 
@@ -140,7 +143,8 @@ class LoadStopperDriver(Driver):
             baseline_duration = self.config['stopper_baseline_duration'],
             filepath=self.config['stopper_filepath'],
             daemon=True,
-            data = self.data
+            data = self.data,
+            sensorlabel=self.sensorlabel,
         )
 
         

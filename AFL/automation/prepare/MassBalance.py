@@ -239,16 +239,10 @@ class MassBalance:
             else:
                 mask = xr.ones_like(self.stock_samples[composition_data],dtype=bool)
             xy = ternary_to_xy(comps.values)
-        elif len(components)==3:
-            comps = self.stock_samples[composition_data].sel(component=components)
-            mask = comps.isel(component=0).copy(data=np.ones(comps.values.shape[0],dtype=bool)).reset_coords(drop=True)
-            xy = comps.values
-        elif len(components)==2:
-            comps = self.stock_samples[composition_data].sel(component=components)
-            mask = comps.isel(component=0).copy(data=np.ones(comps.values.shape[0],dtype=bool)).reset_coords(drop=True)
-            xy = comps.values
         else:
-            raise ValueError(f"Bounds can only be calculated in two or three dimensions. You specified: {components}")
+            comps = self.stock_samples[composition_data].sel(component=components)
+            mask = comps.isel(component=0).copy(data=np.ones(comps.values.shape[0],dtype=bool)).reset_coords(drop=True)
+            xy = comps.values
         
         
         #need to remove anything associated with sample_valid coordinate

@@ -1,5 +1,6 @@
-import glob
-import os
+import pathlib,glob,os,datetime
+import matplotlib.pyplot as plt
+import numpy as np
 from PIL import Image
 from skimage import data, color
 from skimage.transform import hough_circle, hough_circle_peaks,hough_ellipse
@@ -22,7 +23,7 @@ class OpticalTurbidity(Driver):
         Initalize OPticalTurbidity calculator driver
         '''
         self.camera = camera
-        self.empty = None
+        self.empty_img = None
         Driver.__init__(self,name='OpticalTurbidity',defaults=self.gather_defaults(),overrides=overrides)
         
         
@@ -40,7 +41,7 @@ class OpticalTurbidity(Driver):
         hough_radii = self.config['hough_radii']
         
         #loaded SANS cell image
-        measurement_img = img_as_ubyte(rgb2gray(self.camera.collect(**kwargs))
+        measurement_img = img_as_ubyte(rgb2gray(self.camera.collect(**kwargs)))
         #measurement_img = img_as_ubyte(rgb2gray(np.array(Image.open(filled_fn))))#[:,:650]
         if set_empty:
             self.empty_img = measurement_img
@@ -48,8 +49,10 @@ class OpticalTurbidity(Driver):
         else:
             measurement_img = measurement_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]
         #empty SANS cell image for masking
-        empty_img = self.empty_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]#[:,:650]
-        
+        if self.empty_img is not None:
+            empty_img = self.empty_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]#[:,:650]
+        else:
+            raise ValueError('need to set empty before measuring')
         
         #Place to fix edge detection
         edges = canny(empty_img, sigma=2, low_threshold=10, high_threshold=50)
@@ -91,6 +94,12 @@ class OpticalTurbidity(Driver):
         #normalize the filled cell intensity by the empty cell intensity
         turbidity_metric = np.average(filled_intensity/empty_intensity)
         
+        if type(turbidity_metric) == np.ndarray:
+            turbidity_metric = turbidity_metric.tolist()
+        if type(cx) == np.ndarray:
+            cx = cx.tolist()
+        if type(cy) == np.ndarray:
+            cy = cy.tolist()
         #plotting
         if plotting:
             # print(idx, measurement_fn, empty_fn)
@@ -100,7 +109,7 @@ class OpticalTurbidity(Driver):
             ax[1].imshow(measurement_img)
             ax[1].imshow(np.where(mask,0.0,np.nan))
             fig.suptitle(f'Turbidity metric {np.round(turbidity_metric,2)}')
-            plt.savefig(pathlib.Path(self.config['save_path'])\f'{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-turbidity0.png')
+            plt.savefig(pathlib.Path(self.config['save_path'])/f'{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-turbidity0.png')
             plt.close(fig)
     
             fig,ax = plt.subplots(1,2)
@@ -109,7 +118,7 @@ class OpticalTurbidity(Driver):
             ax[1].imshow(measurement_img)
             ax[1].imshow(np.where(~mask,0.0,np.nan))
             fig.suptitle(f'Turbidity metric {np.round(turbidity_metric,2)}')
-            plt.savefig(pathlib.Path(self.config['save_path'])\f'{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-turbidity1.png')
+            plt.savefig(pathlib.Path(self.config['save_path'])/f'{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-turbidity1.png')
             plt.close(fig)
             
         #returns the turbidity value in normalized units, the center of the circular mask and the radius as a list

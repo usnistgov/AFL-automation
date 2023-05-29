@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 
 
-def NetworkCamera:
+class NetworkCamera:
     
     def __init__(self,url):
         self.url = url

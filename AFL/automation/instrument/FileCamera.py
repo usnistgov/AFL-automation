@@ -1,9 +1,8 @@
-import requests, io
 import numpy as np
 from PIL import Image
 
 
-def FileCamera:
+class FileCamera:
     
     def __init__(self):
         pass

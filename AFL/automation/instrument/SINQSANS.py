@@ -75,7 +75,7 @@ class SINQSANS(ScatteringInstrument,Driver):
         
         if set_empty_transmission:
             self.config['empty transmission'] = trans
-        self.last_measured_transmission = (trans,monitor_cts,cts,self.config['empty transmission'])
+        self.last_measured_transmission = (trans/self.config['empty transmission'],monitor_cts,cts,self.config['empty transmission'])
         if return_full:
             return self.last_measured_transmission
         else:
@@ -120,7 +120,8 @@ class SINQSANS(ScatteringInstrument,Driver):
                 break
             count+=1
 
-        filepath = pathlib.Path(self.config['data_path'])/f'sans2022n0{sicsdatanumber}.hdf'
+        # filepath = pathlib.Path(self.config['data_path'])/f'sans2023n000{sicsdatanumber}.hdf'
+        filepath = pathlib.Path(self.config['data_path'])/f'sans2023n{int(sicsdatanumber):06d}.hdf'
         if self.app is not None:
             self.app.logger.debug(f'Last file found to be {filepath}')
         else:
@@ -268,20 +269,25 @@ class SINQSANS(ScatteringInstrument,Driver):
         if block or reduce_data or save_nexus:
             self.blockForCompleted()
             self.client.flush_buffer()
+
             
             try:
                  trash = int(self.client.ask_param('banana sum 40 80 40 80'))
             except ValueError:
-                 trash = int(self.client.ask_param('banana sum 40 80 40 80'))
+                try:
+                    self.client.flush_buffer()
+                    trash = int(self.client.ask_param('banana sum 40 80 40 80'))
+                except IndexError:
+                    self.client.flush_buffer()
 
+            data = self.getData()
             if save_nexus:
-                data = self.getData()
+                self.status_txt = 'Writing Nexus'
                 normalized_sample_transmission  = self.last_measured_transmission[0]
                 if self.data is not None:
                     self.data['raw_data'] = data
                     self.data['normalized_sample_transmission'] = normalized_sample_transmission
-                self.status_txt = 'Writing Nexus'
-                self._writeNexus(data,name,name,normalized_sample_transmission)
+                self._writeNexus(data,name,name,self.last_measured_transmission)
 
             if reduce_data:
                 self.status_txt = 'Reducing Data'
@@ -321,10 +327,13 @@ class SINQSANS(ScatteringInstrument,Driver):
     def blockForIdle(self):
         self.status_monitor_client.success()
 
-    def blockForCompleted(self):
+    def blockForCompleted(self,timeout=1800):
         flag = True
-        while flag:
-            resp = self.client.conn.read_until(b'\r\n').decode()
+        start = datetime.datetime.now()
+        delta = datetime.timedelta(seconds=timeout)
+        timedout = start + delta
+        while flag and (datetime.datetime.now()<timedout):
+            resp = self.client.conn.read_until(b'\r\n',timeout=300).decode()
             print(resp)
             flag = ('ML completed' not in resp)
             time.sleep(0.1)
@@ -365,14 +374,14 @@ class SICSTelnetClient():
         if resp[0:2] != 'OK':
             raise Exception(f'received unexpected answer from SICS: {resp}')
 
-    def ask_param(self,param,second_try = False):
+    def ask_param(self,param,tries = 0):
         cmd = f'{param}\r\n'.encode('utf-8')
         self.conn.write(cmd)
         print(f'sending {cmd} to server')
         time.sleep(1)
         response = self.conn.read_very_eager().decode()
         if 'ERROR: Busy' in response:
-            time.sleep(1)
+            time.sleep(5)
             print('rcvd busy response; retrying')
             return self.ask_param(param)
 
@@ -381,10 +390,10 @@ class SICSTelnetClient():
             retval = regexsplit[0][1]
         except IndexError:
             self.conn.read_lazy()
-            if second_try:
-                raise IndexError(f'weird answer from server: {response}, cannot parse after 2 tries.') 
-            time.sleep(1) #cool down incase you were just too fast
-            retval = self.ask_param(param,second_try = True)    
+            if tries>4:
+                raise IndexError(f'weird answer from server: {response}, cannot parse after 4 tries.') 
+            time.sleep(2) #cool down incase you were just too fast
+            retval = self.ask_param(param,tries = tries + 1)    
         return retval
 
     def set_param(self,param,val):

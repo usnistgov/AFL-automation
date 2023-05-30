@@ -221,6 +221,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self.loadStoppedExternally = False
         self.relayboard.setChannels({'postsample':False})
         self.state = 'LOADED'
+        time.sleep(1) # crude hack to allow sensor to push data into packet
     @Driver.quickbar(qb={'button_text':'Advance Sample',
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
     def advanceSample(self,load_dest_label=''):
@@ -259,6 +260,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self.loadStoppedExternally = False
         self.relayboard.setChannels({'postsample':False})
         self.state = 'LOADED'
+        time.sleep(1) # this is a crude hack to give the system time for the sensor data to push into the DataPacket
     
     @Driver.unqueued(render_hint='raw')
     def stopLoad(self,**kwargs):
@@ -383,7 +385,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         if self.load_stopper is not None:
             out = []
             for ls in self.load_stopper:
-                out.append(ls.config)
+                out.append(ls.config.config)
             return out
 
     @Driver.unqueued()

@@ -48,7 +48,8 @@ class DataTiled(DataPacket):
             fxn(main_data,metadata =self._dict())
         except Exception as e:
             print(f'Exception while transmitting to Tiled! {e}. Saving data in backup store.')
-            self['main_data'] = main_data.tolist()
+            if type(main_data) == np.ndarray:
+                self['main_data'] = main_data.tolist()
             self._sanitize()
             
             filename = str(datetime.datetime.now()).replace(' ','-')

@@ -23,6 +23,7 @@ from AFL.automation.APIServer.LoggerFilter import LoggerFilter
 
 from AFL.automation.shared.MutableQueue import MutableQueue
 from AFL.automation.shared.utilities import listify
+from AFL.automation.shared import serialization
 
 import warnings
 
@@ -126,6 +127,8 @@ class APIServer:
         self.app.add_url_rule('/reorder_queue','reorder_queue',self.reorder_queue,methods=['POST'])
         self.app.add_url_rule('/remove_items','remove_items',self.remove_items,methods=['POST'])
         self.app.add_url_rule('/get_quickbar','get_quickbar',self.get_quickbar,methods=['POST','GET'])
+        self.app.add_url_rule('/set_driver_object','set_driver_object',self.set_driver_object,methods=['POST','GET'])
+        self.app.add_url_rule('/get_driver_object','get_driver_object',self.get_driver_object,methods=['POST','GET'])
         self.app.before_first_request(self.init)
 
     def get_info(self):
@@ -369,6 +372,25 @@ class APIServer:
     def get_queue(self):
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         return jsonify(output),200
+
+    @jwt_required()
+    def set_driver_object(self):
+        task = request.json
+        user = get_jwt_identity()
+        for name,obj in task.items():
+            self.app.logger.info(f'{user} is setting an object named {name} in driver')
+            obj = serialization.deserialize(obj)
+            setattr(self.driver,name,obj)
+        return 'Success!',200
+
+    @jwt_required()
+    def get_driver_object(self):
+        task = request.json
+        user = get_jwt_identity()
+        self.app.logger.info(f'{user} is getting an object named {task["name"]} from driver')
+        result = getattr(self.driver,task['name'])
+        result = serialization.serialize(result)
+        return jsonify({'obj':result}),200
 
     @jwt_required()
     def enqueue(self):

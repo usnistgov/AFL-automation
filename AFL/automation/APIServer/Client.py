@@ -239,6 +239,19 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to move_item command failed with status_code {response.status_code}\n{response.content}')
         return response
+
+    def set_driver_object(self,**kw):
+        json = {}
+        for name,value in kw.items():
+            value = serialization.serialize(value)
+            json[name] = value
+        response = requests.post(self.url+'/set_driver_object',headers=self.headers,json=json)
+        return response
+
+    def get_driver_object(self,name):
+        json = {'name':name}
+        response = requests.get(self.url+'/get_driver_object',headers=self.headers,json=json)
+        return serialization.deserialize(response.json()['obj'])
     
     def set_object(self,serialize=True,**kw):
         json = {}

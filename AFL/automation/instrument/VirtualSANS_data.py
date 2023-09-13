@@ -48,10 +48,14 @@ class Virtual_SAS_data(Driver):
         if 'sample_composition' not in self.data:
             return ValueError("'sample_composition' is not in self.data")
         
-        ## subject to change when data structure is finalized
-        if type(self.data['sample_composition']) == dict:
-            X = np.array([self.data[component]['values'] for component in list(self.data)])
-            components = list(self.data)
+        ## subject to change when data structure is finalized. X must have the shape (M, D) where M is the number of evaluation points and D is the number of dimensions
+        ## extra axes are squeezed out here
+        ## look at isinstance
+        if isinstance(self.data['sample_composition']),dict):
+        # if type(self.data['sample_composition']) == dict:
+            X = np.array([self.data['sample_composition'][component]['values'] for component in list(self.data['sample_composition'])])
+            print(X.shape, type(X))
+            components = list(self.data['sample_composition'])
         elif type(self.data['sample_composition']) == list:
             X = np.array(self.data['sample_composition'])
         else:
@@ -68,13 +72,15 @@ class Virtual_SAS_data(Driver):
 
         ### predict from the model and add to the self.data dictionary
         self.data['q'] = self.sg.q
-        mean, var = self.sg.generate_SAS(coords=X.T)
-        self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()
+
+        ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
+        mean, var = self.sg.generate_SAS(coords=X)
+        self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
         self.data['X_*'] = X
         self.data['components'] = components
-
-        data = np.stack((self.sg.q,mean.squeeze(),var.squeeze()),axis=1)
-
+        
+        ### store just the predicted mean for now...
+        data = self.data['scattering_mu'] 
 
         
         ### write out the data to disk as a csv or h5?
@@ -111,7 +117,6 @@ class Virtual_SAS_data(Driver):
         filename = pathlib.Path(self.config['filename'])
         filepath = pathlib.Path(self.config['filepath'])
         print(f'writing data to {filepath/filename}')
-        data = np.array(data)
         with h5py.File(filepath/filename, 'w') as f:
             f.create_dataset(str(uuid.uuid1()), data=data)
         

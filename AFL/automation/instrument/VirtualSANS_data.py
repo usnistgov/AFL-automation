@@ -17,31 +17,36 @@ import pathlib
 import PIL
 import uuid
 
-from scatteringInterpolator import Scattering_generator
+from AFL.automation.instrument.scatteringInterpolator import Scattering_generator
 import gpflow
 import tensorflow as tf
 # class DummySAS(ScatteringInstrument,Driver):
-class Virtual_SAS_data(Driver):
+class VirtualSANS_data(Driver):
     defaults = {}
-    def __init__(self,overrides=None, dataset=None):
+    def __init__(self,overrides=None):
         '''
         Generates smoothly interpolated scattering data via a noiseless GPR from an experiments netcdf file
         '''
 
         self.app = None
-        Driver.__init__(self,name='SAS_Data_generator',defaults=self.gather_defaults(),overrides=overrides)
+        Driver.__init__(self,name='VirtualSANS_data',defaults=self.gather_defaults(),overrides=overrides)
         # ScatteringInstrument.__init__(self)
 
+        self.sg = None 
+        self.kernel = None
+        self.optimizer = None
+        self.dataset = None
+
+    def load_model_dataset(self):
         # this class uses the information in dataset, specifically 'SAS_savgol_xlo' and 'SAS_savgol_xhi' to determine the q range
         # it also points to the 'components' attribute of the dataset to get the composition range and dimensions
         # the dataset is stored in the scattering generator object
+        if self.dataset is None:
+            raise ValueError("must set variable dataset in driver before load_model_dataset")
         self.sg = Scattering_generator(dataset=dataset)
         self.kernel = gpflow.kernels.Matern52(lengthscales=0.1,variance=1.)
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
-#    @Driver.quickbar(qb={'button_text':'Expose',
-#        'params':{
-#        'exposure':{'label':'time (s)','type':'float','default':'5'},
-#        }})
+
     def expose(self,name=None,exposure=None,nexp=1,block=True,write_data=True,return_data=True,measure_transmission=True,save_nexus=True):
         ## sample_data is a protected key in the self.data dictionary from Driver.py
         ## composition, which is required to reproduce scattering data, has to be a parameter in the composition dictionary
@@ -51,7 +56,7 @@ class Virtual_SAS_data(Driver):
         ## subject to change when data structure is finalized. X must have the shape (M, D) where M is the number of evaluation points and D is the number of dimensions
         ## extra axes are squeezed out here
         ## look at isinstance
-        if isinstance(self.data['sample_composition']),dict):
+        if isinstance(self.data['sample_composition'],dict):
         # if type(self.data['sample_composition']) == dict:
             X = np.array([self.data['sample_composition'][component]['values'] for component in list(self.data['sample_composition'])])
             print(X.shape, type(X))

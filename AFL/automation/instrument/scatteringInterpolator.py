@@ -106,7 +106,7 @@ class Scattering_generator():
         if kernel != None:
             self.kernel = kernel
             
-        if (heteroscedastic) & (self.Y_unct.all()!=None):
+        if (heteroscedastic) & (self.Y_unct!=None):
             likelihood = HGP.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
             print(data[0].shape,data[1].shape)
@@ -147,7 +147,7 @@ class Scattering_generator():
         if optimizer != None:
             self.optimizer = optimizer
         
-        if (heteroscedastic) & (self.Y_unct.all()!=None):
+        if (heteroscedastic) & (self.Y_unct!=None):
             likelihood = HGP.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
             #print(data[0].shape,data[1].shape)

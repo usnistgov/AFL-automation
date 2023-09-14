@@ -43,7 +43,7 @@ class VirtualSANS_data(Driver):
         # the dataset is stored in the scattering generator object
         if self.dataset is None:
             raise ValueError("must set variable dataset in driver before load_model_dataset")
-        self.sg = Scattering_generator(dataset=dataset)
+        self.sg = Scattering_generator(dataset=self.dataset)
         self.kernel = gpflow.kernels.Matern52(lengthscales=0.1,variance=1.)
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
 
@@ -51,7 +51,7 @@ class VirtualSANS_data(Driver):
         ## sample_data is a protected key in the self.data dictionary from Driver.py
         ## composition, which is required to reproduce scattering data, has to be a parameter in the composition dictionary
         if 'sample_composition' not in self.data:
-            return ValueError("'sample_composition' is not in self.data")
+            raise ValueError("'sample_composition' is not in self.data")
         
         ## subject to change when data structure is finalized. X must have the shape (M, D) where M is the number of evaluation points and D is the number of dimensions
         ## extra axes are squeezed out here
@@ -68,7 +68,7 @@ class VirtualSANS_data(Driver):
             X = np.array([[1.5,7]])
         ## train the GP model if it has not been already
         if 'model' not in list (self.sg.__dict__):
-            return ValueError("generate a model with the 'train_model' method")
+            raise ValueError("generate a model with the 'train_model' method")
         
 
 
@@ -92,8 +92,6 @@ class VirtualSANS_data(Driver):
         if write_data:
             self._writedata(data)
         
-        if return_data:
-            return self.data
 
 
     def status(self):

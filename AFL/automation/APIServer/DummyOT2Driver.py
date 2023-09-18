@@ -31,7 +31,8 @@ class DummyDriver(Driver):
             time.sleep(0.5)
             return 0
     
-    #add the get_well_plate here
+    def get_prep_target(self, **kwargs):
+        return '1A1'
 
     @Driver.queued()
     def test_command1(self,kwarg1=None,kwarg2=True):

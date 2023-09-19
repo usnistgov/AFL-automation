@@ -3,7 +3,7 @@ from AFL.automation.APIServer.Driver import Driver
 from math import ceil,sqrt
 import numpy as np
 import pathlib
-
+import time
 class DummyDriver(Driver):
     defaults = {}
     defaults['speed of light'] = 3.0e8

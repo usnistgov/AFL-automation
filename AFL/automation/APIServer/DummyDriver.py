@@ -3,6 +3,7 @@ from AFL.automation.APIServer.Driver import Driver
 from math import ceil,sqrt
 import numpy as np
 import pathlib
+import time
 
 class DummyDriver(Driver):
     defaults = {}

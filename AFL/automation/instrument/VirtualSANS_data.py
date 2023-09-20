@@ -76,13 +76,13 @@ class VirtualSANS_data(Driver):
         ### check that the units and the range of requested composition are within the dimensions of the scattering generator object
 
         ### predict from the model and add to the self.data dictionary
-        self.data['q'] = self.sg.q
+        self.data['q'] = self.sg.q.values
 
         ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
         mean, var = self.sg.generate_SAS(coords=X)
-        self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
-        self.data['X_*'] = X
-        self.data['components'] = components
+        # self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
+        # self.data['X_*'] = X
+        # self.data['components'] = components
         
         ### store just the predicted mean for now...
         data = self.data['scattering_mu'] 

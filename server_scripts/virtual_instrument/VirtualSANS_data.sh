@@ -20,4 +20,4 @@ fi
 cd ~/AFL-automation/
 git pull
 
-python ~/AFL-automation/server_scripts/VirtualSANS_data.py
+python ~/AFL-automation/server_scripts/virtual_instrument/VirtualSANS_data.py

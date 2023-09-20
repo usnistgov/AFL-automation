@@ -36,4 +36,4 @@ server.create_queue(VirtualSANS_data())
 server.init_logging()
 
 #does this port need to be soemthing special?
-server.run(host='0.0.0.0', port=5055)#, debug=True)
+server.run(host='0.0.0.0', port=5054)#, debug=True)

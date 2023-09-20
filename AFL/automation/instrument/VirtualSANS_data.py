@@ -1,15 +1,6 @@
-# import win32com
-# import win32com.client
-# from win32process import SetProcessWorkingSetSize
-# from win32api import GetCurrentProcessId,OpenProcess
-# from win32con import PROCESS_ALL_ACCESS
-import gc
-# import pythoncom
 import time
 import datetime
 from AFL.automation.APIServer.Driver import Driver
-# from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
-# from AFL.automation.instrument.PySpecClient import PySpecClient
 import numpy as np # for return types in get data
 import h5py #for Nexus file writing
 import os
@@ -23,6 +14,7 @@ import tensorflow as tf
 # class DummySAS(ScatteringInstrument,Driver):
 class VirtualSANS_data(Driver):
     defaults = {}
+    defaults['save_path'] = '/home/afl642/2305_SINQ_SANS_path'
     def __init__(self,overrides=None):
         '''
         Generates smoothly interpolated scattering data via a noiseless GPR from an experiments netcdf file
@@ -80,9 +72,9 @@ class VirtualSANS_data(Driver):
 
         ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
         mean, var = self.sg.generate_SAS(coords=X)
-        # self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
-        # self.data['X_*'] = X
-        # self.data['components'] = components
+        self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
+        self.data['X_*'] = X
+        self.data['components'] = components
         
         ### store just the predicted mean for now...
         data = self.data['scattering_mu'] 

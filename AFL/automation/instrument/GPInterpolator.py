@@ -6,34 +6,47 @@ from numpy.polynomial import chebyshev, legendre, polynomial
 from gpflow import set_trainable
 from AFL.agent import HscedGaussianProcess as HGP
 from gpflow.optimizers import NaturalGradient
+import itertools
+
+# #tentative
+# import geopandas as gpd
+# from longsgis import voronoiDiagram4plg
 
 
 class Interpolator():
     def __init__(self, dataset):
         self.defaults = {}
         self.defaults['X_data_pointer'] = 'components'
-        self.defaults['X_data_labels']  = 'P188' #typically the solutes components
-        self.defaults['X_data_range']   = [f'{component}_range' for component in dataset.attrs['components']]
+        self.defaults['X_data_exclude']  = 'P188' #typically the solutes components
+        self.defaults['X_data_range']   = [f'{component}_range' for component in dataset.attrs['components'] if component not in self.defaults['X_data_exclude']]
         self.defaults['Y_data_filter']  = ('SAS_savgol_xlo', 'SAS_savgol_xhi')
         self.defaults['Y_data_pointer'] = 'SAS'
         self.defaults['Y_data_coord']  = 'q'
         
-        
         self.dataset = dataset
         
-        #produces an N x M array N is the number of samples, M is the number of dimensions N is the number of input points
-        self.X_raw = xr.DataArray(np.array([self.dataset[i].values for i in self.dataset.attrs[self.defaults['X_data_pointer']]]).T) 
-        self.X_ranges = [dataset.attrs[i] for i in self.defaults['X_data_range']]
-        print(self.X_ranges)
         
-        #produces an N x K array N is the number of training data points, K is the number of scattering values
-        self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])}).T
-        
-        print(self.X_raw.shape, self.Y_raw.shape)
         #construct a kernel for fitting a GP model
         self.optimizer = tf.optimizers.Adam(learning_rate=0.001)
         self.kernel = gpflow.kernels.Matern52(variance=1.0, lengthscales=(1e-1))
         self.opt_HPs = []
+        
+        
+    def load_data(self, dataset=None):
+        if isinstance(self.dataset,xr.core.dataset.Dataset)==False:
+            self.dataset = dataset
+            
+        try: 
+            #produces an N x M array N is the number of samples, M is the number of dimensions N is the number of input points
+            self.X_raw = xr.DataArray(np.array([self.dataset[i].values for i in self.dataset.attrs[self.defaults['X_data_pointer']] if i not in self.defaults['X_data_exclude']]).T) 
+            self.X_ranges = [self.dataset.attrs[i] for i in self.defaults['X_data_range']]
+            print(self.X_ranges)
+
+            #produces an N x K array N is the number of training data points, K is the number of scattering values
+            self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])}).T
+        except:
+            raise ValueError("One or more of the inputs X or Y are not correct. Check the defaluts")
+        print(self.X_raw.shape, self.Y_raw.shape)
         
         
     def standardize_data(self):
@@ -61,7 +74,7 @@ class Interpolator():
             
             self.X_train = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] -  self.X_ranges[idx][0]) for idx, i in enumerate(self.X_raw.T)]).T
             ## the best I can do is subtract the mean of the data. If the training data are scalars, not spectra, then there will be no stdev for one point
-            self.Y_train = (self.Y_raw - np.mean(self.Y_raw))
+            self.Y_train = (self.Y_raw - np.mean(self.Y_raw)).T
             
     def construct_model(self, kernel=None, noiseless=False, heteroscedastic=False):
         
@@ -113,9 +126,12 @@ class Interpolator():
             self.optimizer = optimizer
         
         ## load the model if it is not there already (because it wasn't instantiated on __init__ not sure how to use isinstance() here
-        if 'model' in list(self.__dict__):
-            pass
-        else:
+        
+        if 'X_train' not in list(self.__dict__):#isinstance(self.X_train, type(np.ndarray)) == False:
+            self.standardize_data()
+            self.construct_model(kernel=kernel, noiseless=noiseless, heteroscedastic=heteroscedastic)
+            
+        if 'model' not in list(self.__dict__):
             self.construct_model(kernel=kernel, noiseless=noiseless, heteroscedastic=heteroscedastic)
             
             
@@ -154,6 +170,7 @@ class Interpolator():
         
         #convert the requested X_new into standardized coordinates
         X_new = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(X_new)]).T
+        print(np.any(X_new <0.),np.any(X_new >1.))
         
         #check to see if the input coordinates and dimensions are correct:
         if np.any(X_new< 0.) or np.any(X_new> 1.):
@@ -172,31 +189,116 @@ class Interpolator():
         return spectra, uncertainty_estimates
     
     
+from shapely import geometry, STRtree, unary_union
+import alphashape
 class ClusteredGPs():
     """
-    This is the wrapper class that enables scattering interpolation within the classifier labels. 
+    This is the wrapper class that enables scattering interpolation within the classifier labels. It presupposes that the dataset or manifest contains a datavariable called labels and that it is 
     """
-    def __init__(self, dataset=None, polytype=None):
+    def __init__(self, dataset):
         self.ds_manifest = dataset
+        self.datasets = [dataset.where(dataset.labels == cluster).dropna(dim='sample') for cluster in np.unique(dataset.labels)]
         self.independentGPs = [Interpolator(dataset=dataset.where(dataset.labels == cluster).dropna(dim='sample')) for cluster in np.unique(dataset.labels)]
         
         #####
-        #Note
+        #Note: Edge cases can make this difficult. overlapping clusters are bad (should be merged), and clusters of size N < (D + 1) input dimensions will fault 
+        #    on concave hull concstruction. so the regular point, or line constructions will be used instead. (for two input dimensions)
         #####
+    def get_deaults(self):
+        """
+        returns a list of dictionaries corresponding to the default data pointers for each GP model 
+        """
+        return [gpmodel.defaults for gpmodel in self.independentGPs]
+    
+    def set_defaults(self,default_dict):
+        """
+        check the default params, but these are pointers to the values in the dataset
+        """
+        for idx in range(len(self.independentGPs)):
+            self.independentGPs[idx].defaults = default_dict
         
-        #clusters that contain one data point will not be able to interpolate. returns NaNs. not sure how to handle...
-        #Suggested method is a voronoi hull to extrapolate between clustered points
+    def load_datasets(self,gplist=None):
+        """
+        This function instantiates the X_raw, Y_raw data with the appropriate filtering given the defaults dictionaries
+        """
+        if isinstance(gplist,type(None)):
+            gplist = self.independentGPs
+        for gpmodel in gplist:
+            gpmodel.load_data()
+            
+    def define_domains(self, gplist=None, alpha=0.1):
+        """
+        define domains will generate the shapely geometry objects for the given datasets X_raw data points. This is a precursor to calculating the overlapping domains.
+        """
         
-        self.cluster_boundaries = []
+        ## this isn't written well for arbitrary dimensions...
+        self.domain_geometries = []
+        if gplist == None:
+            gplist = self.independentGPs:
+        
+        for idx, gpmodel in enumerate(gplist):
+            print(len(gpmodel.X_raw))
+            if len(gpmodel.X_raw.values) == 1:
+                domain_polygon = geometry.point.Point(gpmodel.X_raw.values)
+            elif len(gpmodel.X_raw.values) == 2:
+                domain_polygon = geometry.LineString(gpmodel.X_raw.values)
+            else:
+                domain_polygon = alphashape.alphashape(gpmodel.X_raw.values,alpha)
+            self.domain_geometries.append(domain_polygon)
+            
+    def voronoi_fill(self):
+        """
+        This likely needs to use geopandas and some voronoi tesellation for polygon inputs. It should fill the space appropriately once the alphashapes are established
+        """
+        print('to be determined')
+#         #input points to dataframe?
+#         gdp = geopandas.dataframe()
+        
+#         #data frame to polygon clusters (alpha shapes or convex hulls)
+#         self.domain_geometries
+        
+#         #voronoi cellsimport geopandas as gpd≈
+
+#         builtup = gpd.read_file('input.geojson'); builtup.crs = 32650
+#         boundary = gpd.read_file('boundary.geojson'); boundary.crs = 32650
+        
+#         vd = voronoiDiagram4plg(builtup, boundary)
+#         vd.to_file('output.geojson', driver='GeoJSON')
+#         voronoi_cells = 
+            
+    def unionize(self):
+        """
+        determines the union of and indices of potentially conflicting domains. Creates the new indpendent_GPs list that corresponds
+        """
+        union = unary_union(self.domain_geometries)
+        tree = STRtree(list(union.geoms))
+        common_indices = []
+        for gpmodel in self.independentGPs:
+            test_point = gpmodel.X_raw[0]
+            common_indices.append(tree.query(Point(test_point))[0])
+        
+        self.union_datasets = []
+        for i in np.unique(common_indices):
+    
+            store = [ds for j, ds in zip(common_indices,self.datasets) if j==i]
+            if len(store)>1:
+                ds = xr.concat(store,dim='sample')
+            else:
+                ds = store[0]
+            self.union_datasets.append(ds)
+        
+        self.concat_GPs = [Interpolator(dataset=ds) for ds in self.union_datasets]
+        
         
     def train_all(self,kernel=None, optimizer=None, noiseless=True, heteroscedastic=False, niter=21, tol=1e-4):
-        self.sas_models = [sg.train_model(
+        
+        self.all_models = [gpmodel.train_model(
             kernel=kernel,
             optimizer=optimizer,
             noiseless=noiseless,
             heteroscedastic=heteroscedastic,
             niter=niter,
-            tol=tol) for sg in self.sas_generators]
+            tol=tol) for gpmodel in self.independentGPs]
         
     def is_in(self, coord=None):
         """

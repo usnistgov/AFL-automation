@@ -33,6 +33,9 @@ class VirtualSANS_data(Driver):
     def set_params_dict(self,params_dict):
         self.sg.set_defaults(params_dict)
         
+    def get_params_dict(self)
+        return self.sg.get_defaults()
+    
     def generate_model(self,alpha=0.1):
         
         if self.clustered:

@@ -18,7 +18,6 @@ class Interpolator():
         self.defaults = {}
         self.defaults['X_data_pointer'] = 'components'
         self.defaults['X_data_exclude']  = 'P188' #typically the solutes components
-        self.defaults['X_data_range']   = [f'{component}_range' for component in dataset.attrs['components'] if component not in self.defaults['X_data_exclude']]
         self.defaults['Y_data_filter']  = ('SAS_savgol_xlo', 'SAS_savgol_xhi')
         self.defaults['Y_data_pointer'] = 'SAS'
         self.defaults['Y_data_coord']  = 'q'
@@ -35,18 +34,23 @@ class Interpolator():
     def load_data(self, dataset=None):
         if isinstance(self.dataset,xr.core.dataset.Dataset)==False:
             self.dataset = dataset
-            
+        self.defaults['X_data_range']   = [f'{component}_range' for component in self.dataset.attrs[self.defaults['X_data_pointer']] if component not in self.defaults['X_data_exclude']]
+        
         try: 
             #produces an N x M array N is the number of samples, M is the number of dimensions N is the number of input points
             self.X_raw = xr.DataArray(np.array([self.dataset[i].values for i in self.dataset.attrs[self.defaults['X_data_pointer']] if i not in self.defaults['X_data_exclude']]).T) 
             self.X_ranges = [self.dataset.attrs[i] for i in self.defaults['X_data_range']]
-            print(self.X_ranges)
+           # print(self.X_ranges)
 
             #produces an N x K array N is the number of training data points, K is the number of scattering values
-            self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])}).T
+            if None not in self.defaults['Y_data_filter']:
+                self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])}).T
+            else:
+                self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].T
+            #print(self.Y_raw.shape)
         except:
             raise ValueError("One or more of the inputs X or Y are not correct. Check the defaluts")
-        print(self.X_raw.shape, self.Y_raw.shape)
+       # print(self.X_raw.shape, self.Y_raw.shape)
         
         
     def standardize_data(self):
@@ -58,23 +62,25 @@ class Interpolator():
         #the grid of compositions does not always start at 0, this shifts the minimum
         if len(self.X_raw) > 1:
             
-            self.Y_mean = [np.mean(i) for i in self.Y_raw] #this should give a mean and stdev for each q value or coefficient
-            self.Y_std = [np.std(i) for i in self.Y_raw] #this should give a mean and stdev for each q value or coefficient
+            
+            self.Y_mean = self.Y_raw.mean(dim='sample') #this should give a mean and stdev for each q value or coefficient
+            self.Y_std = self.Y_raw.std(dim='sample') #this should give a mean and stdev for each q value or coefficient
 
             #sets X_train to be from 0. to 1. along each dimension
             #should be determined based on the range of the dataset....
             self.X_train = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(self.X_raw.T)]).T                           
-
+            
             #sets Y_train to be within -1. to 1. for every target parameter
-            self.Y_train = np.array([(i - i.mean())/i.std() for i in self.Y_raw], dtype='float64').T
+            self.Y_train = (self.Y_raw - self.Y_mean)/self.Y_std
+            self.Y_train = self.Y_train.values.T
             
         else:
-            self.Y_mean = np.mean(self.Y_raw)
-            self.Y_std = 0.
+            self.Y_mean = self.Y_raw.mean(dim='sample')
+            self.Y_std = self.Y_raw.std(dim='sample')
             
             self.X_train = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] -  self.X_ranges[idx][0]) for idx, i in enumerate(self.X_raw.T)]).T
             ## the best I can do is subtract the mean of the data. If the training data are scalars, not spectra, then there will be no stdev for one point
-            self.Y_train = (self.Y_raw - np.mean(self.Y_raw)).T
+            self.Y_train = self.Y_raw.values.T
             
     def construct_model(self, kernel=None, noiseless=False, heteroscedastic=False):
         
@@ -85,7 +91,7 @@ class Interpolator():
         if (heteroscedastic):# & (self.Y_unct!=None):
             likelihood = HGP.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
-            print(data[0].shape,data[1].shape)
+            # print(data[0].shape,data[1].shape)
             self.model = gpflow.models.VGP(
                 data   = data,
                 kernel = kernel,
@@ -118,7 +124,7 @@ class Interpolator():
         return self.model
     
     def train_model(self,kernel=None, optimizer=None, noiseless=False, heteroscedastic=False, tol=1e-4, niter=21):
-        
+        #print(self.X_train.shape,self.Y_train.shape)
         if kernel != None:
             self.kernel = kernel
             
@@ -135,7 +141,7 @@ class Interpolator():
             self.construct_model(kernel=kernel, noiseless=noiseless, heteroscedastic=heteroscedastic)
             
             
-        
+        #print(self.model.data)
         ## optimize the model        
         # print(self.kernel,self.optimizer)
         i = 0
@@ -170,7 +176,7 @@ class Interpolator():
         
         #convert the requested X_new into standardized coordinates
         X_new = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(X_new)]).T
-        print(np.any(X_new <0.),np.any(X_new >1.))
+       # print(np.any(X_new <0.),np.any(X_new >1.))
         
         #check to see if the input coordinates and dimensions are correct:
         if np.any(X_new< 0.) or np.any(X_new> 1.):
@@ -182,15 +188,17 @@ class Interpolator():
         
         
         #un-standardize
-        spectra = np.array([self.predictive_mean[i] * self.Y_std + self.Y_mean for i in range(len(self.predictive_mean))])
-        uncertainty_estimates = np.array([self.predictive_variance[i] * self.Y_std + self.Y_mean for i in range(len(self.predictive_variance))])
+        mean = np.array([self.predictive_mean[i] * self.Y_std + self.Y_mean for i in range(len(self.predictive_mean))])
+        variance = np.array([self.predictive_variance[i] * self.Y_std + self.Y_mean for i in range(len(self.predictive_variance))])
         
 
-        return spectra, uncertainty_estimates
+        return mean, variance
     
     
-from shapely import geometry, STRtree, unary_union
+from shapely import geometry, STRtree, unary_union, Point, distance, MultiPoint
+from shapely.ops import nearest_points
 import alphashape
+
 class ClusteredGPs():
     """
     This is the wrapper class that enables scattering interpolation within the classifier labels. It presupposes that the dataset or manifest contains a datavariable called labels and that it is 
@@ -225,19 +233,21 @@ class ClusteredGPs():
             gplist = self.independentGPs
         for gpmodel in gplist:
             gpmodel.load_data()
+            gpmodel.standardize_data()
             
     def define_domains(self, gplist=None, alpha=0.1):
         """
-        define domains will generate the shapely geometry objects for the given datasets X_raw data points. This is a precursor to calculating the overlapping domains.
+        define domains will generate the shapely geometry objects for the given datasets X_raw data points.
         """
         
         ## this isn't written well for arbitrary dimensions...
         self.domain_geometries = []
-        if gplist == None:
-            gplist = self.independentGPs:
+        
+        if isinstance(gplist,type(None)):
+            gplist = self.independentGPs
         
         for idx, gpmodel in enumerate(gplist):
-            print(len(gpmodel.X_raw))
+            # print(len(gpmodel.X_raw))
             if len(gpmodel.X_raw.values) == 1:
                 domain_polygon = geometry.point.Point(gpmodel.X_raw.values)
             elif len(gpmodel.X_raw.values) == 2:
@@ -245,64 +255,105 @@ class ClusteredGPs():
             else:
                 domain_polygon = alphashape.alphashape(gpmodel.X_raw.values,alpha)
             self.domain_geometries.append(domain_polygon)
-            
+        return self.domain_geometries
+    
     def voronoi_fill(self):
         """
         This likely needs to use geopandas and some voronoi tesellation for polygon inputs. It should fill the space appropriately once the alphashapes are established
         """
-        print('to be determined')
-#         #input points to dataframe?
-#         gdp = geopandas.dataframe()
+        print('current method is kinda busted')
         
-#         #data frame to polygon clusters (alpha shapes or convex hulls)
-#         self.domain_geometries
+        input_data = gpd.GeoDataFrame(data=[f'cell{i}' for i in range(len(union.geoms))],geometry=[geom for geom in union.geoms])
+        boundary = shapelyPoly([(-0.5,-0.5),(15.5,-0.5),(15.5,15.5),(-0.5, 15.5)])
+        # boundary = shapelyPoly([(0.0, 0.0),(15.0,0.0),(15.0,15.0),(0.0, 15.0)])
+        voro = voronoiDiagram4plg(input_data,boundary)
         
-#         #voronoi cellsimport geopandas as gpd≈
-
-#         builtup = gpd.read_file('input.geojson'); builtup.crs = 32650
-#         boundary = gpd.read_file('boundary.geojson'); boundary.crs = 32650
-        
-#         vd = voronoiDiagram4plg(builtup, boundary)
-#         vd.to_file('output.geojson', driver='GeoJSON')
-#         voronoi_cells = 
+        # fig,ax = plt.subplots()
+        # for idx, geo in enumerate(voro['geometry']):
+        #     points = [csg.concat_GPs[idx].X_raw[:,0],csg.concat_GPs[idx].X_raw[:,1]]
+        #     patch=Polygon(geo.exterior.coords,color=f'C{idx+1}',alpha=0.1)
+        #     ax.add_patch(patch)
+        #     ax.scatter(points[0],points[1],c=f'C{idx}')
+        # ax.set(
+        #     xlim=(-0.5,15.5),
+        #     ylim=(-0.5,15.5)
+        # )
             
-    def unionize(self):
+    def unionize(self,gplist=None, geomlist=None, dslist=None, buffer=0.01):
         """
-        determines the union of and indices of potentially conflicting domains. Creates the new indpendent_GPs list that corresponds
+        determines the union of and indices of potentially conflicting domains. Creates the new indpendent_GPs list that corresponds.
+        
+        Note! buffer is important here! if a cluster contains a single point or a line, there is a bunch of stuff that breaks. 
+        specifying a non-zero buffer will force these lesser dimensional objects to be polygonal and help with all the calculations.
+        a large buffer will potentially merge polygons though. exercise caution
         """
-        union = unary_union(self.domain_geometries)
+        
+        #### this bit of header is for generalizability. probably needs to be corrected
+        if isinstance(gplist,type(None)):
+            gplist = self.independentGPs
+        
+        if isinstance(geomlist,type(None)):
+            geomlist = self.domain_geometries
+        
+        if isinstance(dslist,type(None)):
+            dslist = self.datasets
+        
+        ### this finds the union between the list of shapely geometries and does the apapropriate tree search for all combinations
+        union = unary_union(geomlist).buffer(buffer)
         tree = STRtree(list(union.geoms))
         common_indices = []
-        for gpmodel in self.independentGPs:
+        for gpmodel in gplist:
             test_point = gpmodel.X_raw[0]
-            common_indices.append(tree.query(Point(test_point))[0])
-        
+            common_indices.append(tree.query(Point(test_point), predicate='intersects')[0])
+            
+        ### this is to concatinate ovelapping datasets into one
         self.union_datasets = []
         for i in np.unique(common_indices):
-    
-            store = [ds for j, ds in zip(common_indices,self.datasets) if j==i]
+            #print(i)
+            store = [ds for j, ds in zip(common_indices,dslist) if j==i]
             if len(store)>1:
+                #print(len(store))
                 ds = xr.concat(store,dim='sample')
             else:
                 ds = store[0]
             self.union_datasets.append(ds)
+        self.union_geometries = union
         
         self.concat_GPs = [Interpolator(dataset=ds) for ds in self.union_datasets]
+        return self.concat_GPs, self.union_geometries, common_indices
         
-        
-    def train_all(self,kernel=None, optimizer=None, noiseless=True, heteroscedastic=False, niter=21, tol=1e-4):
-        
+    def train_all(self,kernel=None, optimizer=None, noiseless=True, heteroscedastic=False, niter=21, tol=1e-4, gplist=None):
+        if isinstance(gplist,type(None)):
+            gplist = self.independentGPs
         self.all_models = [gpmodel.train_model(
             kernel=kernel,
             optimizer=optimizer,
             noiseless=noiseless,
             heteroscedastic=heteroscedastic,
             niter=niter,
-            tol=tol) for gpmodel in self.independentGPs]
+            tol=tol) for gpmodel in gplist]
         
-    def is_in(self, coord=None):
+    def predict(self, X_new=None,gplist=None,domainlist=None):
         """
-        Returns the index corresponding to the gp model where suggested coordinates are requested
+        Returns posterior mean and uncertainty of the pattern for the model closest to the input coordinate. Note that the coordinate should be in natural units specified by the Interpolator.predict function
         """
         
-        return idx
+        ### first find the model with boundaries closest to the requested input
+        distances = []
+        
+        if isinstance(domainlist,type(None)):
+            domains = self.domain_geometries
+        
+        for idx, geom in enumerate(list(self.union_geometries.geoms)):
+            dist = geom.exterior.distance(Point(X_new))
+            distances.append(dist)
+        # print(distances)
+        
+        model_idx = np.argmin(distances)
+        if isinstance(gplist,type(None)):
+            gpmodel = self.independentGPs[model_idx]
+        else:
+            gpmodel = gplist[model_idx]
+        mean, variance = gpmodel.predict(X_new=X_new)
+        
+        return mean, variance, model_idx

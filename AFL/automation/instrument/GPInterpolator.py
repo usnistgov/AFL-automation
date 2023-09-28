@@ -12,6 +12,9 @@ import itertools
 # import geopandas as gpd
 # from longsgis import voronoiDiagram4plg
 
+from shapely import geometry, STRtree, unary_union, Point, distance, MultiPoint
+from shapely.ops import nearest_points
+import alphashape
 
 class Interpolator():
     def __init__(self, dataset):
@@ -30,6 +33,11 @@ class Interpolator():
         self.kernel = gpflow.kernels.Matern52(variance=1.0, lengthscales=(1e-1))
         self.opt_HPs = []
         
+    def get_defaults(self):
+        return self.defaults
+    
+    def set_defaults(self,default_dict):
+        self.defaults = default_dict
         
     def load_data(self, dataset=None):
         if isinstance(self.dataset,xr.core.dataset.Dataset)==False:
@@ -194,10 +202,6 @@ class Interpolator():
 
         return mean, variance
     
-    
-from shapely import geometry, STRtree, unary_union, Point, distance, MultiPoint
-from shapely.ops import nearest_points
-import alphashape
 
 class ClusteredGPs():
     """
@@ -212,7 +216,7 @@ class ClusteredGPs():
         #Note: Edge cases can make this difficult. overlapping clusters are bad (should be merged), and clusters of size N < (D + 1) input dimensions will fault 
         #    on concave hull concstruction. so the regular point, or line constructions will be used instead. (for two input dimensions)
         #####
-    def get_deaults(self):
+    def get_defaults(self):
         """
         returns a list of dictionaries corresponding to the default data pointers for each GP model 
         """

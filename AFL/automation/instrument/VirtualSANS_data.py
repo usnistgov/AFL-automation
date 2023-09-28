@@ -8,14 +8,14 @@ import pathlib
 import PIL
 import uuid
 
-from AFL.automation.instrument.scatteringInterpolator import Scattering_generator
+from AFL.automation.instrument.GPInterpolator import Interpolator, ClusteredGPs
 import gpflow
 import tensorflow as tf
 # class DummySAS(ScatteringInstrument,Driver):
 class VirtualSANS_data(Driver):
     defaults = {}
     defaults['save_path'] = '/home/afl642/2305_SINQ_SANS_path'
-    def __init__(self,overrides=None):
+    def __init__(self,overrides=None, clustered=False):
         '''
         Generates smoothly interpolated scattering data via a noiseless GPR from an experiments netcdf file
         '''
@@ -23,19 +23,39 @@ class VirtualSANS_data(Driver):
         self.app = None
         Driver.__init__(self,name='VirtualSANS_data',defaults=self.gather_defaults(),overrides=overrides)
         # ScatteringInstrument.__init__(self)
-
+        if clustered:
+            self.clustered=True
         self.sg = None 
         self.kernel = None
         self.optimizer = None
         self.dataset = None
-
-    def load_model_dataset(self):
+        
+    def set_params_dict(self,params_dict):
+        self.sg.set_defaults(params_dict)
+        
+    def generate_model(self,alpha=0.1):
+        
+        if self.clustered:
+            self.sg.load_datasets()
+            self.sg.define_domains(alpha=alpha)
+            new_gplist,union,common_idx = self.sg.unionize()
+            self.sg.load_datasets(gplist=new_gplist)
+        else:
+            self.sg.load_data()
+        
+    def load_model_dataset(self,params_dict=None):
         # this class uses the information in dataset, specifically 'SAS_savgol_xlo' and 'SAS_savgol_xhi' to determine the q range
         # it also points to the 'components' attribute of the dataset to get the composition range and dimensions
         # the dataset is stored in the scattering generator object
         if self.dataset is None:
             raise ValueError("must set variable dataset in driver before load_model_dataset")
-        self.sg = Scattering_generator(dataset=self.dataset)
+            
+        # instantiate the interpolators
+        if self.clustered:
+            self.sg = GPInterpolator(dataset=self.dataset)
+        else:
+            self.sg = Interpolator(dataset=self.dataset)        
+        
         self.kernel = gpflow.kernels.Matern52(lengthscales=0.1,variance=1.)
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
 
@@ -49,29 +69,18 @@ class VirtualSANS_data(Driver):
         ## extra axes are squeezed out here
         ## look at isinstance
         if isinstance(self.data['sample_composition'],dict):
-        # if type(self.data['sample_composition']) == dict:
             X = np.array([self.data['sample_composition'][component]['values'] for component in list(self.data['sample_composition'])])
-            print(X.shape, type(X))
             components = list(self.data['sample_composition'])
-        elif type(self.data['sample_composition']) == list:
+        elif isinstance(self.data['sample_composition'],list):
             X = np.array(self.data['sample_composition'])
         else:
             print('something went wrong on import')
             X = np.array([[1.5,7]])
-        ## train the GP model if it has not been already
-        if 'model' not in list (self.sg.__dict__):
-            raise ValueError("generate a model with the 'train_model' method")
         
-
-
-
-        ### check that the units and the range of requested composition are within the dimensions of the scattering generator object
-
         ### predict from the model and add to the self.data dictionary
-        self.data['q'] = self.sg.q.values
 
         ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
-        mean, var = self.sg.generate_SAS(coords=X)
+        mean, var = self.sg.predict(X_new=X)
         self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
         self.data['X_*'] = X
         self.data['components'] = components
@@ -98,15 +107,25 @@ class VirtualSANS_data(Driver):
         if optimizer != None:
             self.kernel = optimizer 
         
-        
-        self.sg.train_model(
-            kernel          =  self.kernel,
-            niter           =  niter,
-            optimizer       =  self.optimizer,
-            noiseless       =  noiseless,
-            tol             =  tol,
-            heteroscedastic =  heteroscedastic 
-        )
+        if self.clustered:
+            self.sg.train_model(
+                kernel          =  self.kernel,
+                niter           =  niter,
+                optimizer       =  self.optimizer,
+                noiseless       =  noiseless,
+                tol             =  tol,
+                heteroscedastic =  heteroscedastic,
+                gplist          = self.sg.concat_GPs
+            ) 
+        else:
+            self.sg.train_model(
+                kernel          =  self.kernel,
+                niter           =  niter,
+                optimizer       =  self.optimizer,
+                noiseless       =  noiseless,
+                tol             =  tol,
+                heteroscedastic =  heteroscedastic 
+            )
 
     def _writedata(self,data):
         filename = pathlib.Path(self.config['filename'])

@@ -85,6 +85,8 @@ class VirtualSANS_data(Driver):
         ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
         mean, var = self.sg.predict(X_new=X)
         self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
+        data_pointers = self.sg.get_defaults()
+        self.data[data_pointers['Y_data_pointer']]
         self.data['X_*'] = X
         self.data['components'] = components
         

@@ -186,6 +186,7 @@ class Interpolator():
         X_new = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(X_new)]).T
        # print(np.any(X_new <0.),np.any(X_new >1.))
         
+        
         #check to see if the input coordinates and dimensions are correct:
         if np.any(X_new< 0.) or np.any(X_new> 1.):
             raise ValueError('check requested values for X_new, data not within model range')
@@ -220,7 +221,9 @@ class ClusteredGPs():
         """
         returns a list of dictionaries corresponding to the default data pointers for each GP model 
         """
-        return [gpmodel.defaults for gpmodel in self.independentGPs]
+        try:
+            gpmodel.defaults for gpmodel in self.independentGPs
+        return 
     
     def set_defaults(self,default_dict):
         """
@@ -235,11 +238,12 @@ class ClusteredGPs():
         """
         if isinstance(gplist,type(None)):
             gplist = self.independentGPs
+            
         for gpmodel in gplist:
             gpmodel.load_data()
             gpmodel.standardize_data()
             
-    def define_domains(self, gplist=None, alpha=0.1):
+    def define_domains(self, gplist=None, alpha=0.1, buffer=0.01):
         """
         define domains will generate the shapely geometry objects for the given datasets X_raw data points.
         """
@@ -258,7 +262,7 @@ class ClusteredGPs():
                 domain_polygon = geometry.LineString(gpmodel.X_raw.values)
             else:
                 domain_polygon = alphashape.alphashape(gpmodel.X_raw.values,alpha)
-            self.domain_geometries.append(domain_polygon)
+            self.domain_geometries.append(domain_polygon.buffer(buffer))
         return self.domain_geometries
     
     def voronoi_fill(self):
@@ -294,12 +298,15 @@ class ClusteredGPs():
         
         #### this bit of header is for generalizability. probably needs to be corrected
         if isinstance(gplist,type(None)):
+            print('setting GP list')
             gplist = self.independentGPs
         
         if isinstance(geomlist,type(None)):
+            print('setting geometries')
             geomlist = self.domain_geometries
         
         if isinstance(dslist,type(None)):
+            print('setting dataset list')
             dslist = self.datasets
         
         ### this finds the union between the list of shapely geometries and does the apapropriate tree search for all combinations

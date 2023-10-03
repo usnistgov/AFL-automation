@@ -33,7 +33,7 @@ class VirtualSANS_data(Driver):
     def set_params_dict(self,params_dict):
         self.sg.set_defaults(params_dict)
         
-    def get_params_dict(self)
+    def get_params_dict(self):
         return self.sg.get_defaults()
     
     def generate_model(self,alpha=0.1):
@@ -55,7 +55,7 @@ class VirtualSANS_data(Driver):
             
         # instantiate the interpolators
         if self.clustered:
-            self.sg = GPInterpolator(dataset=self.dataset)
+            self.sg = ClusteredGPs(dataset=self.dataset)
         else:
             self.sg = Interpolator(dataset=self.dataset)        
         
@@ -113,7 +113,10 @@ class VirtualSANS_data(Driver):
             self.kernel = optimizer 
         
         if self.clustered:
-            self.sg.train_model(
+            print('you made it here!!!')
+            for gpmodel in self.sg.concat_GPs:
+                print('attrs: ', list(gpmodel.__dict__))
+            self.sg.train_all(
                 kernel          =  self.kernel,
                 niter           =  niter,
                 optimizer       =  self.optimizer,

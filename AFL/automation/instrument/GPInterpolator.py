@@ -29,7 +29,7 @@ class Interpolator():
         
         
         #construct a kernel for fitting a GP model
-        self.optimizer = tf.optimizers.Adam(learning_rate=0.001)
+        self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
         self.kernel = gpflow.kernels.Matern52(variance=1.0, lengthscales=(1e-1))
         self.opt_HPs = []
         
@@ -142,16 +142,22 @@ class Interpolator():
         ## load the model if it is not there already (because it wasn't instantiated on __init__ not sure how to use isinstance() here
         
         if 'X_train' not in list(self.__dict__):#isinstance(self.X_train, type(np.ndarray)) == False:
+            print('standardizing X_data and constructing model')
             self.standardize_data()
             self.construct_model(kernel=kernel, noiseless=noiseless, heteroscedastic=heteroscedastic)
             
         if 'model' not in list(self.__dict__):
+            print('constructing model')
             self.construct_model(kernel=kernel, noiseless=noiseless, heteroscedastic=heteroscedastic)
             
             
         #print(self.model.data)
         ## optimize the model        
         # print(self.kernel,self.optimizer)
+        print(self.model.parameters)
+        print(self.model)
+        print(self.optimizer)
+        print()
         i = 0
         break_criteria = False
         while (i <= niter) or (break_criteria==True):
@@ -176,8 +182,8 @@ class Interpolator():
         """
         Returns the simulated scattering pattern given the specified coordinates and polynomial type if reduced
         """
-        if np.array(X_new).shape[1] != self.model.data[1].numpy().shape[0]:
-            print("error! the coordinates requested to not match the model dimensions")
+        # if np.array(X_new).shape[1] != self.model.data[1].numpy().shape[0]:
+        #     print("error! the coordinates requested to not match the model dimensions")
 
         #The coordinates being input should be in natural units. They have to be standardized to use the GP model properly
         X_new = np.array(X_new)
@@ -212,7 +218,7 @@ class ClusteredGPs():
         self.ds_manifest = dataset
         self.datasets = [dataset.where(dataset.labels == cluster).dropna(dim='sample') for cluster in np.unique(dataset.labels)]
         self.independentGPs = [Interpolator(dataset=dataset.where(dataset.labels == cluster).dropna(dim='sample')) for cluster in np.unique(dataset.labels)]
-        
+        self.concat_GPs = None
         #####
         #Note: Edge cases can make this difficult. overlapping clusters are bad (should be merged), and clusters of size N < (D + 1) input dimensions will fault 
         #    on concave hull concstruction. so the regular point, or line constructions will be used instead. (for two input dimensions)
@@ -221,9 +227,7 @@ class ClusteredGPs():
         """
         returns a list of dictionaries corresponding to the default data pointers for each GP model 
         """
-        try:
-            gpmodel.defaults for gpmodel in self.independentGPs
-        return 
+        return self.independentGPs[0].defaults 
     
     def set_defaults(self,default_dict):
         """
@@ -242,6 +246,7 @@ class ClusteredGPs():
         for gpmodel in gplist:
             gpmodel.load_data()
             gpmodel.standardize_data()
+            gpmodel.construct_model()
             
     def define_domains(self, gplist=None, alpha=0.1, buffer=0.01):
         """
@@ -334,8 +339,13 @@ class ClusteredGPs():
         return self.concat_GPs, self.union_geometries, common_indices
         
     def train_all(self,kernel=None, optimizer=None, noiseless=True, heteroscedastic=False, niter=21, tol=1e-4, gplist=None):
-        if isinstance(gplist,type(None)):
+        # if isinstance(gplist,type(None)):
+        #     gplist = self.independentGPs
+        if isinstance(self.concat_GPs, type(None)):
             gplist = self.independentGPs
+        else:
+            gplist = self.concat_GPs
+
         self.all_models = [gpmodel.train_model(
             kernel=kernel,
             optimizer=optimizer,

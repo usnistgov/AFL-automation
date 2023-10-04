@@ -148,6 +148,8 @@ class QueueDaemon(threading.Thread):
             masked_package['meta']['exit_state'] = exit_state
             if isinstance(return_val,np.ndarray):
                 masked_package['meta']['return_val'] = return_val.tolist()
+            elif isinstance(return_val,pd.Series):
+                masked_package['meta']['return_val'] = return_val.tolist()
             else:
                 masked_package['meta']['return_val'] = return_val
             masked_package['uuid'] = str(masked_package['uuid'])
@@ -160,8 +162,12 @@ class QueueDaemon(threading.Thread):
 
             if type(return_val) is np.ndarray:
                 self.data['main_array'] = return_val
+            if type(return_val) is np.ndarray:
+                self.data['main_array'] = return_val
             elif type(return_val) is pd.DataFrame:
                 self.data['main_dataframe'] = return_val
+            elif type(return_val) is pd.Series:
+                self.data['main_dataframe'] = return_val.to_frame()
 
             self.data.finalize()
             self.history.append(masked_package)#history for this server restart

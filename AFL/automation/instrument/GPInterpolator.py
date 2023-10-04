@@ -345,14 +345,22 @@ class ClusteredGPs():
             gplist = self.independentGPs
         else:
             gplist = self.concat_GPs
+            
+        if isinstance(optimizer, type(None)) or isinstance(optimizer, type(tf.optimizers.Adam())):
+            optimizerlist = [tf.optimizers.Adam(learning_rate=0.005) for i in range(len(gplist))]
+        else:
+            optimizerlist = optimizer
+        
+        for op in optimizerlist:
+            print(op)
 
         self.all_models = [gpmodel.train_model(
             kernel=kernel,
-            optimizer=optimizer,
+            optimizer=optimizerlist[idx],
             noiseless=noiseless,
             heteroscedastic=heteroscedastic,
             niter=niter,
-            tol=tol) for gpmodel in gplist]
+            tol=tol) for idx, gpmodel in enumerate(gplist)]
         
     def predict(self, X_new=None,gplist=None,domainlist=None):
         """

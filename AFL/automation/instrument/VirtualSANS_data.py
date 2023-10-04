@@ -110,12 +110,12 @@ class VirtualSANS_data(Driver):
             self.kernel = kernel
 
         if optimizer != None:
-            self.kernel = optimizer 
+            self.optimizer = optimizer 
         
         if self.clustered:
-            print('you made it here!!!')
-            for gpmodel in self.sg.concat_GPs:
-                print('attrs: ', list(gpmodel.__dict__))
+            # print('you made it here!!!')
+            # for gpmodel in self.sg.concat_GPs:
+            #     print('attrs: ', list(gpmodel.__dict__))
             self.sg.train_all(
                 kernel          =  self.kernel,
                 niter           =  niter,

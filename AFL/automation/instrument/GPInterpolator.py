@@ -53,8 +53,11 @@ class Interpolator():
             #produces an N x K array N is the number of training data points, K is the number of scattering values
             if None not in self.defaults['Y_data_filter']:
                 self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])}).T
+                
+                self.Y_coord = self.dataset[self.defaults['Y_data_coord']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])})
             else:
                 self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].T
+                self.Y_coord = self.dataset[self.defaults['Y_data_pointer']]
             #print(self.Y_raw.shape)
         except:
             raise ValueError("One or more of the inputs X or Y are not correct. Check the defaluts")
@@ -380,6 +383,7 @@ class ClusteredGPs():
         
         model_idx = np.argmin(distances)
         if isinstance(gplist,type(None)):
+        
             gpmodel = self.independentGPs[model_idx]
         else:
             gpmodel = gplist[model_idx]

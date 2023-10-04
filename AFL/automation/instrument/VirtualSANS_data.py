@@ -83,10 +83,21 @@ class VirtualSANS_data(Driver):
         ### predict from the model and add to the self.data dictionary
 
         ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
-        mean, var = self.sg.predict(X_new=X)
+        if self.clustered:
+            if isinstance(self.sg.concat_GPs, type(None)):
+                gplist = self.sg.independentGPs
+            else:
+                gplist = self.sg.concat_GPs
+            mean, var, idx = self.sg.predict(X_new=X, gplist=gplist)
+        else:
+            mean, var = self.sg.predict(X_new=X)
         self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
         data_pointers = self.sg.get_defaults()
-        self.data[data_pointers['Y_data_pointer']]
+        print(data_pointers['Y_data_coord'])
+        if self.clustered:
+            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord
+        else:
+            self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord
         self.data['X_*'] = X
         self.data['components'] = components
         

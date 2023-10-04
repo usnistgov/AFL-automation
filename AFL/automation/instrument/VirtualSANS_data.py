@@ -104,7 +104,7 @@ class VirtualSANS_data(Driver):
         ### store just the predicted mean for now...
         data = self.data['scattering_mu'] 
         
-        self.data['main_array'] = np.stack([self.data[data_pointers['Y_data_coord']],self.data['scattering_mu']],axis=0)
+        self.data['main_array'] = self.data['scattering_mu']
         print(self.data['main_array'].shape)
 
         

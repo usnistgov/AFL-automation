@@ -34,30 +34,30 @@ fi
 
 if [[ "$1" == "start" ]] || [[ "$1" = "restart" ]] ; then
 	if [[ "$2" == "all" ]] || [[ "$2" == "loader" ]] ; then
-        screen -d -m  -S VirtualLoaderServer ~/AFL-automation/server_scripts/virtual_instrument/DummyLoader.sh
+        screen -d  -S VirtualLoaderServer ~/AFL-automation/server_scripts/virtual_instrument/DummyLoader.sh
 	echo 'Started VirtualLoaderServer...'
 	fi
 
 	if [[ "$2" == "all" ]] || [[ "$2" == "robot" ]] ; then
 		#screen -S VirtualOT2Server ./DummyOT2Server.sh
-        screen -d -m  -S VirtualOT2Server ~/AFL-automation/server_scripts/virtual_instrument/DummyOT2Server.sh 
+        screen -d  -S VirtualOT2Server ~/AFL-automation/server_scripts/virtual_instrument/DummyOT2Server.sh 
 		echo 'Started VirtualOT2Server...'
 	fi
 
 	if [[ "$2" == "all" ]] || [[ "$2" == "sample" ]] ; then
 		#screen -S VirtualSampleServer ./DummySampleServer.sh 
-        screen -d -m  -S VirtualSampleServer ~/AFL-automation/server_scripts/virtual_instrument/DummySampleServer.sh
+        screen -d  -S VirtualSampleServer ~/AFL-automation/server_scripts/virtual_instrument/DummySampleServer.sh
 		echo 'Started VirtualSampleServer...'
 	fi
 	
     if [[ "$2" == "all" ]] || [[ "$2" == "scatter" ]] ; then
-        screen -d -m  -S VirtualSANS ~/AFL-automation/server_scripts/virtual_instrument/VirtualSANS_data.sh
+        screen -d  -S VirtualSANS ~/AFL-automation/server_scripts/virtual_instrument/VirtualSANS_data.sh
 	echo 'Started VirtualSANS_data server...'
 	fi
 
 	if [[ "$2" == "all" ]] || [[ "$2" == "spec" ]] ; then
 		#screen -S VirtualOT2Server ./DummyOT2Server.sh
-        screen -d -m  -S VirtualSpec ~/AFL-automation/server_scripts/virtual_instrument/VirtualSpec_data.sh 
+        screen -d  -S VirtualSpec ~/AFL-automation/server_scripts/virtual_instrument/VirtualSpec_data.sh 
 		echo 'Started VirtualSpec server...'
 	fi
 fi

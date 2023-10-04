@@ -95,14 +95,17 @@ class VirtualSANS_data(Driver):
         data_pointers = self.sg.get_defaults()
         print(data_pointers['Y_data_coord'])
         if self.clustered:
-            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord
+            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord.values
         else:
-            self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord
+            self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord.values
         self.data['X_*'] = X
         self.data['components'] = components
         
         ### store just the predicted mean for now...
         data = self.data['scattering_mu'] 
+        
+        self.data['main_array'] = np.stack([self.data[data_pointers['Y_data_coord']],self.data['scattering_mu']],axis=0)
+        print(self.data['main_array'].shape)
 
         
         ### write out the data to disk as a csv or h5?

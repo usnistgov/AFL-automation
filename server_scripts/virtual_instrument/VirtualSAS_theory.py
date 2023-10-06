@@ -11,7 +11,7 @@ from AFL.automation.instrument.VirtualSAS_theory import VirtualSAS_theory
 from AFL.automation.APIServer.data.DataTiled import DataTiled
 
 ### local tiled server here
-data = DataTiled(server='http://0.0.0.0:8000', api_key = os.environ['TILED_API_KEY'], backup_path='./json-backup')
+data = DataTiled(server='http://localhost:8000', api_key = os.environ['TILED_API_KEY'], backup_path='./json-backup')
 server = APIServer('VirtualSANS_Data_Server',index_template='index.html', data=data)
 
 

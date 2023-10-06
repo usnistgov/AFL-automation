@@ -179,11 +179,8 @@ class VirtualSAS_theory(Driver):
         self.data['dI'] = dI.values
         self.data['components'] = components
         
-        return I
+        return I.values
     
-    def plot_hulls(self):
-        raise NotImplemented
-        
             
     @Driver.unqueued(render_hint='precomposed_svg')
     def plot_hulls(self,**kwargs):
@@ -201,7 +198,7 @@ class VirtualSAS_theory(Driver):
     @Driver.unqueued(render_hint='precomposed_svg')
     def plot_boundary_data(self,**kwargs):
         matplotlib.use('Agg') #very important
-        fig,ax = plt.subplots()
+        fig,ax = plt.subplots(subplot_kw={'projection':'ternary'})
         if self.hulls is None:
             plt.text(1,5,'No hulls calculated. Run .trace_boundaries')
             plt.gca().set(xlim=(0,10),ylim=(0,10))

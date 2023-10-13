@@ -11,4 +11,4 @@ echo `which python`
 #git pull
 
 # python ~/beaucage/beaucage-2924-D/NistoRoboto/server_scripts/CHESSID3B.py
-python ~/beaucage/current/afl-automation/server_scripts/CHESSID3B.py
+python ~/beaucage/current/afl-automation/AFL/automation/instrument/CHESSID3B.py

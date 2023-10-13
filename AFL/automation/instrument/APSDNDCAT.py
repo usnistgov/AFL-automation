@@ -332,3 +332,7 @@ class APSDNDCAT(Driver):
         status.append(f'<a href="getReducedData" target="_blank">Live Data (1D)</a>')
         status.append(f'<a href="getReducedData?render_hint=2d_img&reduce_type=2d">Live Data (2D, reduced)</a>')
         return status
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *
+

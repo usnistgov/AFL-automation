@@ -656,3 +656,5 @@ def argmax(array):
 #argmin because numpy cannot be installed
 def argmin(array):
     return array.index(min(array)) 
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

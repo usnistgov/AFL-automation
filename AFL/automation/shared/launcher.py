@@ -1,4 +1,5 @@
-if __name__ == '__main__':
+print(__name__)
+if True: #__name__ == '__main__':
         import os,sys,subprocess,importlib
         from pathlib import Path
         try:
@@ -8,7 +9,8 @@ if __name__ == '__main__':
                 print(f'Could not find AFL.automation on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
         from AFL.automation.APIServer.APIServer import APIServer
-        
+        from AFL.automation.APIServer.data.DataTiled import DataTiled
+
         from AFL.automation.shared.PersistentConfig import PersistentConfig
 
         AFL_GLOBAL_CONFIG = PersistentConfig(
@@ -20,7 +22,7 @@ if __name__ == '__main__':
                 'tiled_api_key': '',
                 'bind_address': '0.0.0.0',
                 'ports': {},
-                }
+                },
                 max_history=100,
         )
 
@@ -37,15 +39,17 @@ if __name__ == '__main__':
                 os.environ['AFL_SYSTEM_SERIAL'] = AFL_GLOBAL_CONFIG['system_serial']
         
         if main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
-                server_port = AFL_GLOBAL_CONFIG['ports']['main_module_name']
+                server_port = AFL_GLOBAL_CONFIG['ports'][main_module_name]
         else:
                 server_port=5000
 
         driver = driver_cls()
-        data = DataTiled(AFL_GLOBAL_CONFIG['tiled_server'],
-                api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
-                backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
-
+        if len(AFL_GLOBAL_CONFIG['tiled_server'])>0:
+                data = DataTiled(AFL_GLOBAL_CONFIG['tiled_server'],
+                        api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
+                        backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
+        else:
+                data = None
         server = APIServer(main_module_name,data=data,contact=AFL_GLOBAL_CONFIG['owner_email'])
         server.add_standard_routes()
 
@@ -55,7 +59,7 @@ if __name__ == '__main__':
 
         #process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
 
-        server.run(host='0.0.0.0', port=server_port, debug=False)#,threaded=False)
+        server.run(host=AFL_GLOBAL_CONFIG['bind_address'], port=server_port, debug=False)#,threaded=False)
 
         #process.wait()
 

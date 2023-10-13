@@ -98,8 +98,8 @@ class APIServer:
         else:
             port = kwargs['port']
         self.zeroconf_info = ServiceInfo(
-            "_http._tcp.local.",
-            f"AFL-{self.queue_daemon.driver.name}._http._tcp.local.",
+            "_aflhttp._tcp.local.",
+            f"{self.queue_daemon.driver.name}._aflhttp._tcp.local.",
             addresses=[socket.inet_aton("127.0.0.1")],
             port=port,
             properties= {

@@ -91,7 +91,7 @@ class MassBalance:
             row = []
             for stock in self.stocks:
                 if stock.contains(name):
-                    row.append(stock.mass_fraction[name])
+                    row.append(stock.mass_fraction[name].to('').magnitude)
                 else:
                     row.append(0)
             mass_fraction_matrix.append(row)
@@ -121,7 +121,7 @@ class MassBalance:
         self.mass_transfers = {stock:(self.stock_location[stock],mass*units('g')) for stock,mass in zip(self.stocks,mass_transfers)}
         self.residuals = residuals
 
-    def sample_composition_space(self,pipette_min=5*units('ul'),grid_density=5,composition_data='frac'):
+    def sample_composition_space(self,pipette_min=5*units('ul'),stock_transfer_max=3500*units('ul'),grid_density=5,composition_data='frac'):
         '''Combine stock solutions to generate samples of possible target compositions'''
         if self.components is None:
             self.process_components()
@@ -135,32 +135,39 @@ class MassBalance:
                 density.append(component.density.to('mg/ml').magnitude)
         density = np.array(density)
             
-        masses = []#mass matrix of each component in each stock
-        fraction_grid=[]
+        stock_mass_fraction = []#mass matrix of each component in each stock
+        mass_grid=[]
         for stock in self.stocks:
             row = []
             density_row = []
             ratio = (pipette_min/stock.volume).to_base_units().magnitude
-            l1 = list(np.linspace(ratio,1.0,grid_density))
-            l2 = list(np.geomspace(ratio,1.0,grid_density))
-            l = list(np.unique(l1+l2))
-            fraction_grid.append(l)
+            s1 = stock.copy()
+            s1.volume = pipette_min
+            stock_mass_min = s1.mass.to('mg').magnitude
+            s2 = stock.copy()
+            s2.volume = stock_transfer_max
+            stock_mass_max = s2.mass.to('mg').magnitude
+            l1 = list(np.linspace(stock_mass_min,stock_mass_max,grid_density))
+            #l2 = list(np.geomspace(stock_mass_min,stock_mass_max,grid_density))
+            #l = list(np.unique(l1+l2))
+            l = l1
+            mass_grid.append(l)
             for component in self.components:
                 if component in stock.components:
-                    row.append(stock[component].mass.to('mg').magnitude)
+                    row.append(stock.mass_fraction[component].to('').magnitude)
                 else:
                     row.append(0)
-            masses.append(row)
-        masses = np.array(masses)
+            stock_mass_fraction.append(row)
+        stock_mass_fraction = np.array(stock_mass_fraction)
         
         stock_samples_conc = []#list of possible stock combinations
         stock_samples_mass = []#list of possible stock combinations
         stock_samples_volume = []#list of possible stock combinations
         stock_samples_frac = []#list of possible stock combinations
         stock_fractions = []
-        for fractions in product(*fraction_grid):
-            stock_fractions.append(fractions)
-            mass = (masses.T*fractions).sum(1)
+        for masses in product(*mass_grid):
+            stock_fractions.append(masses)
+            mass = (stock_mass_fraction.T*masses).sum(1)
             mass_frac = mass/mass.sum()
             
             with warnings.catch_warnings():
@@ -174,8 +181,8 @@ class MassBalance:
             stock_samples_frac.append(mass_frac)
             stock_samples_volume.append(volume)
             stock_samples_conc.append(conc)
-        self.fraction_grid = fraction_grid
-        self.masses = masses
+        self.mass_grid = mass_grid
+        self.stock_mas = stock_mass_fraction
         self.stock_samples = xr.Dataset()
         self.stock_samples['samples_frac'] = xr.DataArray(stock_samples_frac,dims=['sample','component'],coords={'component':self.components})
         self.stock_samples['samples_mass'] = xr.DataArray(stock_samples_mass,dims=['sample','component'],coords={'component':self.components},attrs={'units':'mg'})

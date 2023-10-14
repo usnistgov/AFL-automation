@@ -135,39 +135,41 @@ class MassBalance:
                 density.append(component.density.to('mg/ml').magnitude)
         density = np.array(density)
             
-        stock_mass_fraction = []#mass matrix of each component in each stock
+        stock_mass_fractions = []#mass matrix of each component in each stock
         mass_grid=[]
         for stock in self.stocks:
             row = []
             density_row = []
             ratio = (pipette_min/stock.volume).to_base_units().magnitude
+            
             s1 = stock.copy()
             s1.volume = pipette_min
             stock_mass_min = s1.mass.to('mg').magnitude
+            
             s2 = stock.copy()
             s2.volume = stock_transfer_max
             stock_mass_max = s2.mass.to('mg').magnitude
+            
             l1 = list(np.linspace(stock_mass_min,stock_mass_max,grid_density))
-            #l2 = list(np.geomspace(stock_mass_min,stock_mass_max,grid_density))
-            #l = list(np.unique(l1+l2))
-            l = l1
+            l2 = list(np.geomspace(stock_mass_min,stock_mass_max,grid_density))
+            l = list(np.unique(l1+l2))
             mass_grid.append(l)
             for component in self.components:
                 if component in stock.components:
                     row.append(stock.mass_fraction[component].to('').magnitude)
                 else:
                     row.append(0)
-            stock_mass_fraction.append(row)
-        stock_mass_fraction = np.array(stock_mass_fraction)
+            stock_mass_fractions.append(row)
+        stock_mass_fractions = np.array(stock_mass_fractions)
         
-        stock_samples_conc = []#list of possible stock combinations
-        stock_samples_mass = []#list of possible stock combinations
-        stock_samples_volume = []#list of possible stock combinations
-        stock_samples_frac = []#list of possible stock combinations
-        stock_fractions = []
+        stock_samples_conc = []
+        stock_samples_mass = []
+        stock_samples_volume = []
+        stock_samples_frac = []
+        stock_mass_transfers = []
         for masses in product(*mass_grid):
-            stock_fractions.append(masses)
-            mass = (stock_mass_fraction.T*masses).sum(1)
+            stock_mass_transfers.append(masses)
+            mass = (stock_mass_fractions.T*masses).sum(1)
             mass_frac = mass/mass.sum()
             
             with warnings.catch_warnings():
@@ -182,13 +184,13 @@ class MassBalance:
             stock_samples_volume.append(volume)
             stock_samples_conc.append(conc)
         self.mass_grid = mass_grid
-        self.stock_mas = stock_mass_fraction
+        self.stock_mass_fractions = stock_mass_fractions
         self.stock_samples = xr.Dataset()
         self.stock_samples['samples_frac'] = xr.DataArray(stock_samples_frac,dims=['sample','component'],coords={'component':self.components})
         self.stock_samples['samples_mass'] = xr.DataArray(stock_samples_mass,dims=['sample','component'],coords={'component':self.components},attrs={'units':'mg'})
         self.stock_samples['samples_conc'] = xr.DataArray(stock_samples_conc,dims=['sample','component'],coords={'component':self.components},attrs={'units':'mg/ml'})
         self.stock_samples['samples_volume'] = xr.DataArray(stock_samples_volume,dims=['sample'],attrs={'units':'ml'})
-        self.stock_samples['stock_fractions'] = (('sample','stock'),stock_fractions)
+        self.stock_samples['stock_mass_transfers'] = (('sample','stock'),stock_mass_transfers)
         self.stock_samples['stock'] = list([i.name for i in self.stocks])
         
         #need composition arrays as individual dataarrays in the dataset

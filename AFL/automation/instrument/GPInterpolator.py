@@ -42,13 +42,15 @@ class Interpolator():
     def load_data(self, dataset=None):
         if isinstance(self.dataset,xr.core.dataset.Dataset)==False:
             self.dataset = dataset
+        for k,v in self.defaults.items():
+            print(k,v)
         self.defaults['X_data_range']   = [f'{component}_range' for component in self.dataset.attrs[self.defaults['X_data_pointer']] if component not in self.defaults['X_data_exclude']]
         
         try: 
             #produces an N x M array N is the number of samples, M is the number of dimensions N is the number of input points
             self.X_raw = xr.DataArray(np.array([self.dataset[i].values for i in self.dataset.attrs[self.defaults['X_data_pointer']] if i not in self.defaults['X_data_exclude']]).T) 
             self.X_ranges = [self.dataset.attrs[i] for i in self.defaults['X_data_range']]
-           # print(self.X_ranges)
+            print(self.X_ranges)
 
             #produces an N x K array N is the number of training data points, K is the number of scattering values
             if None not in self.defaults['Y_data_filter']:
@@ -189,10 +191,13 @@ class Interpolator():
         #     print("error! the coordinates requested to not match the model dimensions")
 
         #The coordinates being input should be in natural units. They have to be standardized to use the GP model properly
-        X_new = np.array(X_new)
-        
+        # X_new = np.array(X_new)
+        print(X_new)
         #convert the requested X_new into standardized coordinates
-        X_new = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(X_new)]).T
+        try:
+            X_new = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(X_new)]).T
+        except:
+            raise ValueError("Check the dimensions of X_new and compare to the input dimensions on X_raw")
        # print(np.any(X_new <0.),np.any(X_new >1.))
         
         
@@ -273,27 +278,6 @@ class ClusteredGPs():
             self.domain_geometries.append(domain_polygon.buffer(buffer))
         return self.domain_geometries
     
-    def voronoi_fill(self):
-        """
-        This likely needs to use geopandas and some voronoi tesellation for polygon inputs. It should fill the space appropriately once the alphashapes are established
-        """
-        print('current method is kinda busted')
-        
-        input_data = gpd.GeoDataFrame(data=[f'cell{i}' for i in range(len(union.geoms))],geometry=[geom for geom in union.geoms])
-        boundary = shapelyPoly([(-0.5,-0.5),(15.5,-0.5),(15.5,15.5),(-0.5, 15.5)])
-        # boundary = shapelyPoly([(0.0, 0.0),(15.0,0.0),(15.0,15.0),(0.0, 15.0)])
-        voro = voronoiDiagram4plg(input_data,boundary)
-        
-        # fig,ax = plt.subplots()
-        # for idx, geo in enumerate(voro['geometry']):
-        #     points = [csg.concat_GPs[idx].X_raw[:,0],csg.concat_GPs[idx].X_raw[:,1]]
-        #     patch=Polygon(geo.exterior.coords,color=f'C{idx+1}',alpha=0.1)
-        #     ax.add_patch(patch)
-        #     ax.scatter(points[0],points[1],c=f'C{idx}')
-        # ax.set(
-        #     xlim=(-0.5,15.5),
-        #     ylim=(-0.5,15.5)
-        # )
             
     def unionize(self,gplist=None, geomlist=None, dslist=None, buffer=0.01):
         """
@@ -365,28 +349,44 @@ class ClusteredGPs():
             niter=niter,
             tol=tol) for idx, gpmodel in enumerate(gplist)]
         
-    def predict(self, X_new=None,gplist=None,domainlist=None):
+    def predict(self, X_new=None,gplist=None,domainlist=None, shapely_domains=False):
         """
         Returns posterior mean and uncertainty of the pattern for the model closest to the input coordinate. Note that the coordinate should be in natural units specified by the Interpolator.predict function
         """
         
+        if isinstance(gplist,type(None)):
+            gplist = self.independentGPs
+        
         ### first find the model with boundaries closest to the requested input
         distances = []
         
-        if isinstance(domainlist,type(None)):
-            domains = self.domain_geometries
+        ### 2D input data will work but not for highter dimensions. this needs to be an option, otherwise it should just call the
+        #   GP model that has a point closest to the X_new
+        if shapely_domains:
+            if isinstance(domainlist,type(None)):
+                domains = self.domain_geometries
+
+            for idx, geom in enumerate(list(self.union_geometries.geoms)):
+                dist = geom.exterior.distance(Point(X_new))
+                distances.append(dist)
+            # print(distances)
+            
+            
+        else:
+            for idx, model in enumerate(gplist):
+                subset_X = (model.X_raw)
+                sub_min = min([np.linalg.norm(X_new - point) for point in model.X_raw.values])
+                print(f'model {idx} min: {sub_min}')
+                distances.append(sub_min)
         
-        for idx, geom in enumerate(list(self.union_geometries.geoms)):
-            dist = geom.exterior.distance(Point(X_new))
-            distances.append(dist)
-        # print(distances)
+                
         
         model_idx = np.argmin(distances)
-        if isinstance(gplist,type(None)):
-        
-            gpmodel = self.independentGPs[model_idx]
-        else:
-            gpmodel = gplist[model_idx]
-        mean, variance = gpmodel.predict(X_new=X_new)
+        gpmodel = gplist[model_idx]
+        if len(X_new.shape) < 2:
+            X_new = np.expand_dims(X_new,axis=1)
+        print(X_new.T.shape, type(X_new))
+        print([r for r in gpmodel.X_ranges])
+        mean, variance = gpmodel.predict(X_new=X_new.T)
         
         return mean, variance, model_idx

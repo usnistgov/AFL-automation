@@ -29,20 +29,28 @@ class VirtualSANS_data(Driver):
         self.kernel = None
         self.optimizer = None
         self.dataset = None
+        self.params_dict = {}
+        self.len_GPs = 0
         
     def set_params_dict(self,params_dict):
         self.sg.set_defaults(params_dict)
+        self.params_dict = params_dict
         
     def get_params_dict(self):
-        return self.sg.get_defaults()
-    
+        self.params_dict = self.sg.get_defaults()
+        print(self.params_dict)
+        # self.params_dict = self.sg.defaults
+        
     def generate_model(self,alpha=0.1):
         
         if self.clustered:
-            self.sg.load_datasets()
-            self.sg.define_domains(alpha=alpha)
-            new_gplist,union,common_idx = self.sg.unionize()
-            self.sg.load_datasets(gplist=new_gplist)
+            try:
+                self.sg.load_datasets()
+                self.sg.define_domains(alpha=alpha)
+                new_gplist,union,common_idx = self.sg.unionize()
+                self.sg.load_datasets(gplist=new_gplist)
+            except:
+                self.sg.load_datasets()
         else:
             self.sg.load_data()
         
@@ -74,14 +82,19 @@ class VirtualSANS_data(Driver):
         if isinstance(self.data['sample_composition'],dict):
             X = np.array([self.data['sample_composition'][component]['values'] for component in list(self.data['sample_composition'])])
             components = list(self.data['sample_composition'])
+
+            if len(X.shape) < 2:
+                X = np.expand_dims(X,axis=1).T
+            print(X)
         elif isinstance(self.data['sample_composition'],list):
             X = np.array(self.data['sample_composition'])
         else:
             print('something went wrong on import')
-            X = np.array([[1.5,7]])
+            X = np.array([[1.5,7]]).T
         
         ### predict from the model and add to the self.data dictionary
-
+        print("X input dimeions should be N points (typically 1) by D columns representing the dimensionality of the space (2-many)")
+        print("X input is the following ",X, X.shape)
         ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
         if self.clustered:
             if isinstance(self.sg.concat_GPs, type(None)):

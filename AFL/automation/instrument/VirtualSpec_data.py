@@ -37,28 +37,28 @@ class VirtualSpec_data(Driver):
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
 
 
-    def generate_synthetic_data(self,inputs=[(0,15,25),(0,15,25)], datafxn,  **kwargs):
+    def generate_synthetic_data(self,inputs=[(0,15,25),(0,15,25)], datafxn=None,  **kwargs):
         '''
         inputs: list of tuples [(x1_lo, x1_hi,n_x1),(x2_lo,x2_hi,n_x2),...,(xi_lo,xi_hi,n_xi)]
         datafx: function that takes in the x data and returns some target to train off of
         '''
- 		components = [np.linspace(lo, hi, n) for lo, hi, n in inputs]
-		norm_components = [(c - min(c))/max(c - min(c)) for c in components]
+        components = [np.linspace(lo, hi, n) for lo, hi, n in inputs]
+        norm_components = [(c - min(c))/max(c - min(c)) for c in components]
 
-		X_train = np.meshgrid(components) #will produce matrices (n_x1 by n_x2 by ... n_xi)
-		self.X_train = np.array([i.ravel() for i in X_train]).T #shapes the input array for the model NxD
+        X_train = np.meshgrid(components) #will produce matrices (n_x1 by n_x2 by ... n_xi)
+        self.X_train = np.array([i.ravel() for i in X_train]).T #shapes the input array for the model NxD
 
-		self.Y_train = datafxn(self.X_train) #should produce an NxM array M >= 1
-		if len(self.Y_train.shape) == 1:
-			self.Y_train = np.expand_dims(self.Y_train, axis=1)
-		
-		#standardize the Y_train data
-		self.Y_train_norm = np.array([(i - np.mean(i))/np.std(i) for i in Y_train.T]).T
+        self.Y_train = datafxn(self.X_train) #should produce an NxM array M >= 1
+        if len(self.Y_train.shape) == 1:
+            self.Y_train = np.expand_dims(self.Y_train, axis=1)
+        
+        #standardize the Y_train data
+        self.Y_train_norm = np.array([(i - np.mean(i))/np.std(i) for i in Y_train.T]).T
 
-		#instantiate the GPR kernel and optimizer 
-		self.kernel = gpflow.kernels.Matern52(lengthscales=0.1,variance=1.)
+        #instantiate the GPR kernel and optimizer 
+        self.kernel = gpflow.kernels.Matern52(lengthscales=0.1,variance=1.)
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
-		
+        
     def measure(self,write_data=False,return_data=False):
         ## sample_data is a protected key in the self.data dictionary from Driver.py
         ## composition, which is required to reproduce scattering data, has to be a parameter in the composition dictionary
@@ -115,17 +115,17 @@ class VirtualSpec_data(Driver):
         
 
         ## instantiate the GPR model
-		self.model = gpflow.models.GPR(
-			data=(self.X_train, self.Y_train),
-			kernel=self.kernel,
-			noise_variance=1.0
-		)
+        self.model = gpflow.models.GPR(
+            data=(self.X_train, self.Y_train),
+            kernel=self.kernel,
+            noise_variance=1.0
+        )
 
 
         ## set the appropriate noiseless parameter
-		if noiseless:
-		    self.model.likelihood.variance = gpflow.lieklihoods.Gaussian(variance=1.0001e-6).parameter[0]
-		    set_trainable(self.model.likelihood.variance, False)
+        if noiseless:
+            self.model.likelihood.variance = gpflow.lieklihoods.Gaussian(variance=1.0001e-6).parameter[0]
+            set_trainable(self.model.likelihood.variance, False)
         
 
         #train the model to a threshold or to a specified number of iterations
@@ -147,7 +147,7 @@ class VirtualSpec_data(Driver):
                 i+=1 
 
 
-		
+        
     def _writedata(self,data):
         filename = pathlib.Path(self.config['filename'])
         filepath = pathlib.Path(self.config['filepath'])

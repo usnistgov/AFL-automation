@@ -12,7 +12,7 @@ import itertools
 # import geopandas as gpd
 # from longsgis import voronoiDiagram4plg
 
-from shapely import geometry, STRtree, unary_union, Point, distance, MultiPoint
+from shapely import geometry, STRtree, unary_union, Point, distance, MultiPoint, Polygon
 from shapely.ops import nearest_points
 import alphashape
 
@@ -200,9 +200,10 @@ class Interpolator():
             raise ValueError("Check the dimensions of X_new and compare to the input dimensions on X_raw")
        # print(np.any(X_new <0.),np.any(X_new >1.))
         
-        
+        for col in X_new.T:
+            print(min(col),max(col))
         #check to see if the input coordinates and dimensions are correct:
-        if np.any(X_new< 0.) or np.any(X_new> 1.):
+        if np.any(X_new< 0.) or np.any(X_new> 1.1):
             raise ValueError('check requested values for X_new, data not within model range')
         
         self.predictive_mean, self.predictive_variance = self.model.predict_f(X_new)
@@ -302,8 +303,8 @@ class ClusteredGPs():
             dslist = self.datasets
         
         ### this finds the union between the list of shapely geometries and does the apapropriate tree search for all combinations
-        union = unary_union(geomlist).buffer(buffer)
-        tree = STRtree(list(union.geoms))
+        self.union = unary_union(geomlist).buffer(buffer)
+        tree = STRtree(list(self.union.geoms))
         common_indices = []
         for gpmodel in gplist:
             test_point = gpmodel.X_raw[0]

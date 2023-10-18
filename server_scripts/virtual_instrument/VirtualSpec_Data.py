@@ -22,7 +22,7 @@ server.add_standard_routes()
 #client.set_object(dataset=model_ds)
 
 
-server.create_queue(VirtualSANS_data())
+server.create_queue(VirtualSpec_data())
 
 server.init_logging()
 

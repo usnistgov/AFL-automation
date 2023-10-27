@@ -12,7 +12,7 @@ from AFL.automation.APIServer.data.DataTiled import DataTiled
 
 ### local tiled server here
 data = DataTiled(server='http://0.0.0.0:8000', api_key = os.environ['TILED_API_KEY'], backup_path='/Users/drs18/.afl/json-backup')
-server = APIServer('VirtualSANS_Data_Server', data=data)
+server = APIServer('VirtualSpec_Data_Server', data=data)
 
 server.add_standard_routes()
 

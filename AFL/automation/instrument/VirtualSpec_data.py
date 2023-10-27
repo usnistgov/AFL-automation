@@ -8,58 +8,69 @@ import pathlib
 import PIL
 import uuid
 
+from AFL.automation.instrument.GPInterpolator import Interpolator, ClusteredGPs
 import gpflow
-from gpflow import set_trainable
 import tensorflow as tf
-
+# class DummySAS(ScatteringInstrument,Driver):
 class VirtualSpec_data(Driver):
     defaults = {}
-    def __init__(self,overrides=None):
+    defaults['save_path'] = '/home/afl642/2305_SINQ_SANS_path'
+    def __init__(self,overrides=None, clustered=False):
         '''
-        Generates smoothly interpolated spectroscopy data via a noiseless GPR from an experiments netcdf file
+        Generates smoothly interpolated scattering data via a noiseless GPR from an experiments netcdf file
         '''
 
         self.app = None
         Driver.__init__(self,name='VirtualSpec_data',defaults=self.gather_defaults(),overrides=overrides)
         # ScatteringInstrument.__init__(self)
-
-        self.dataset = None
+        if clustered:
+            self.clustered=True
+        self.sg = None 
         self.kernel = None
         self.optimizer = None
-        self.camera = None
-        self.turb_model = None
-
+        self.dataset = None
+        self.params_dict = {}
+        self.len_GPs = 0
+        
+    def set_params_dict(self,params_dict):
+        self.sg.set_defaults(params_dict)
+        self.params_dict = params_dict
+        
+    def get_params_dict(self):
+        self.params_dict = self.sg.get_defaults()
+        print(self.params_dict)
+        # self.params_dict = self.sg.defaults
+        
+    def generate_model(self,alpha=0.1):
+        
+        if self.clustered:
+            try:
+                self.sg.load_datasets()
+                self.sg.define_domains(alpha=alpha)
+                new_gplist,union,common_idx = self.sg.unionize()
+                self.sg.load_datasets(gplist=new_gplist)
+            except:
+                self.sg.load_datasets()
+        else:
+            self.sg.load_data()
+        
     def load_model_dataset(self):
+        # this class uses the information in dataset, specifically 'SAS_savgol_xlo' and 'SAS_savgol_xhi' to determine the q range
+        # it also points to the 'components' attribute of the dataset to get the composition range and dimensions
+        # the dataset is stored in the scattering generator object
         if self.dataset is None:
             raise ValueError("must set variable dataset in driver before load_model_dataset")
-
+            
+        # instantiate the interpolators
+        if self.clustered:
+            self.sg = ClusteredGPs(dataset=self.dataset)
+        else:
+            self.sg = Interpolator(dataset=self.dataset)        
+        
         self.kernel = gpflow.kernels.Matern52(lengthscales=0.1,variance=1.)
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
 
-
-    def generate_synthetic_data(self,inputs=[(0,15,25),(0,15,25)], datafxn=None,  **kwargs):
-        '''
-        inputs: list of tuples [(x1_lo, x1_hi,n_x1),(x2_lo,x2_hi,n_x2),...,(xi_lo,xi_hi,n_xi)]
-        datafx: function that takes in the x data and returns some target to train off of
-        '''
-        components = [np.linspace(lo, hi, n) for lo, hi, n in inputs]
-        norm_components = [(c - min(c))/max(c - min(c)) for c in components]
-
-        X_train = np.meshgrid(components) #will produce matrices (n_x1 by n_x2 by ... n_xi)
-        self.X_train = np.array([i.ravel() for i in X_train]).T #shapes the input array for the model NxD
-
-        self.Y_train = datafxn(self.X_train) #should produce an NxM array M >= 1
-        if len(self.Y_train.shape) == 1:
-            self.Y_train = np.expand_dims(self.Y_train, axis=1)
-        
-        #standardize the Y_train data
-        self.Y_train_norm = np.array([(i - np.mean(i))/np.std(i) for i in Y_train.T]).T
-
-        #instantiate the GPR kernel and optimizer 
-        self.kernel = gpflow.kernels.Matern52(lengthscales=0.1,variance=1.)
-        self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
-        
-    def measure(self,write_data=False,return_data=False):
+    def measure(self,name=None,exposure=None,nexp=1,block=True,write_data=False,return_data=True,save_nexus=True):
         ## sample_data is a protected key in the self.data dictionary from Driver.py
         ## composition, which is required to reproduce scattering data, has to be a parameter in the composition dictionary
         if 'sample_composition' not in self.data:
@@ -69,90 +80,97 @@ class VirtualSpec_data(Driver):
         ## extra axes are squeezed out here
         ## look at isinstance
         if isinstance(self.data['sample_composition'],dict):
-        # if type(self.data['sample_composition']) == dict:
             X = np.array([self.data['sample_composition'][component]['values'] for component in list(self.data['sample_composition'])])
-            print(X.shape, type(X))
             components = list(self.data['sample_composition'])
-        elif type(self.data['sample_composition']) == list:
+
+            if len(X.shape) < 2:
+                X = np.expand_dims(X,axis=1)
+                print('correcting array dims')
+                
+            print('New Data point requested')
+            print(X, X.shape)
+        elif isinstance(self.data['sample_composition'],list):
             X = np.array(self.data['sample_composition'])
         else:
             print('something went wrong on import')
-            X = np.array([[1.5,7]])
-        ## train the GP model if it has not been already
-        if self.model is not None:
-            raise ValueError("generate a model with the 'train_model' method")
+            X = np.array([[1.5,7]]).T
         
-
-
-
         ### predict from the model and add to the self.data dictionary
-        mean, var = self.model.predictf(X)
-        self.data['spec_mu'], self.data['spec_var'] = mean.squeeze(), var.squeeze()
+        print("X input dimeions should be D points representing the dimensionality of the space (2-many) by N columns (typically 1 point being predicted)")
+        print("X input is the following ",X, X.shape,type(X))
+        ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
+        if self.clustered:
+            if isinstance(self.sg.concat_GPs, type(None)):
+                gplist = self.sg.independentGPs
+            else:
+                gplist = self.sg.concat_GPs
+            mean, var, idx = self.sg.predict(X_new=X, gplist=gplist)
+        else:
+            mean, var = self.sg.predict(X_new=X)
+        self.data['model_mu'], self.data['model_var'] = mean.squeeze(), var.squeeze()  
+        data_pointers = self.sg.get_defaults()
+        print(data_pointers['Y_data_coord'])
+        if self.clustered:
+            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord.values
+        else:
+            try:
+                self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord.values
+            except:
+                pass
         self.data['X_*'] = X
         self.data['components'] = components
         
-        data = self.data['spec_mu']
+        ### store just the predicted mean for now...
+        data = self.data['model_mu'] 
+        
+        self.data['main_array'] = self.data['model_mu']
+        print(self.data['main_array'].shape)
 
+        
         ### write out the data to disk as a csv or h5?
         if write_data:
             self._writedata(data)
-        
-        if return_data:
-            return turbidity_metric, [0.,0.]
+
 
     def status(self):
-        status = ['Dummy SAS data']
+        status = ['Dummy SPECTROSCOPY data']
         return status
 
     def train_model(self, kernel=None, niter=1000, optimizer=None, noiseless=True, tol=1e-6, heteroscedastic=False):
-        ### Hyperparameter evaluation and model "training"
-        #specify the kernel and optimizer if not already
+        ### Hyperparameter evaluation and model "training". Can consider augmenting these in a separate call.
         if kernel != None:
             self.kernel = kernel
 
         if optimizer != None:
-            self.kernel = optimizer 
+            self.optimizer = optimizer 
         
+        if self.clustered:
+            # print('you made it here!!!')
+            # for gpmodel in self.sg.concat_GPs:
+            #     print('attrs: ', list(gpmodel.__dict__))
+            self.sg.train_all(
+                kernel          =  self.kernel,
+                niter           =  niter,
+                optimizer       =  self.optimizer,
+                noiseless       =  noiseless,
+                tol             =  tol,
+                heteroscedastic =  heteroscedastic,
+                gplist          = self.sg.concat_GPs
+            ) 
+        else:
+            print('not clustered')
+            self.sg.train_model(
+                kernel          =  self.kernel,
+                niter           =  niter,
+                optimizer       =  self.optimizer,
+                noiseless       =  noiseless,
+                tol             =  tol,
+                heteroscedastic =  heteroscedastic 
+            )
 
-        ## instantiate the GPR model
-        self.model = gpflow.models.GPR(
-            data=(self.X_train, self.Y_train),
-            kernel=self.kernel,
-            noise_variance=1.0
-        )
-
-
-        ## set the appropriate noiseless parameter
-        if noiseless:
-            self.model.likelihood.variance = gpflow.lieklihoods.Gaussian(variance=1.0001e-6).parameter[0]
-            set_trainable(self.model.likelihood.variance, False)
-        
-
-        #train the model to a threshold or to a specified number of iterations
-        i = 0
-        break_criteria = False
-        while (i <= niter) or (break_criteria==True):
-            if heteroscedastic == False:
-                pre_step_HPs = np.array([i.numpy() for i in self.model.parameters])
-                self.optimizer.minimize(self.model.training_loss, self.model.trainable_variables)
-                self.opt_HPs.append([i.numpy() for i in self.model.parameters])
-                post_step_HPs = np.array([i.numpy() for i in self.model.parameters])
-                i+=1
-                if all(abs(pre_step_HPs-post_step_HPs) <= tol):
-                    break_criteria=True
-                    break
-            else:
-                self.natgrad.minimize(self.model.training_loss, [(self.model.q_mu, self.model.q_sqrt)])
-                self.adam.minimize(self.model.training_loss, self.model.trainable_variables)
-                i+=1 
-
-
-        
     def _writedata(self,data):
         filename = pathlib.Path(self.config['filename'])
         filepath = pathlib.Path(self.config['filepath'])
         print(f'writing data to {filepath/filename}')
         with h5py.File(filepath/filename, 'w') as f:
             f.create_dataset(str(uuid.uuid1()), data=data)
-        
-        

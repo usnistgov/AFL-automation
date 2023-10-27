@@ -84,8 +84,12 @@ class VirtualSANS_data(Driver):
             components = list(self.data['sample_composition'])
 
             if len(X.shape) < 2:
-                X = np.expand_dims(X,axis=1).T
-            print(X)
+                X = np.expand_dims(X,axis=1)
+                print('correcting array dims')
+                
+            print('New Data point requested')
+            print(X, X.shape)
+            # print(X)
         elif isinstance(self.data['sample_composition'],list):
             X = np.array(self.data['sample_composition'])
         else:
@@ -93,7 +97,7 @@ class VirtualSANS_data(Driver):
             X = np.array([[1.5,7]]).T
         
         ### predict from the model and add to the self.data dictionary
-        print("X input dimeions should be N points (typically 1) by D columns representing the dimensionality of the space (2-many)")
+        print("X input dimeions should be D points representing the dimensionality of the space (2-many) by N columns (typically 1 point being predicted)")
         print("X input is the following ",X, X.shape)
         ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
         if self.clustered:
@@ -101,16 +105,21 @@ class VirtualSANS_data(Driver):
                 gplist = self.sg.independentGPs
             else:
                 gplist = self.sg.concat_GPs
+            print('clustered prediction')
             mean, var, idx = self.sg.predict(X_new=X, gplist=gplist)
         else:
             mean, var = self.sg.predict(X_new=X)
         self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
         data_pointers = self.sg.get_defaults()
-        print(data_pointers['Y_data_coord'])
+        qmin = self.dataset.attrs[data_pointers['Y_data_filter'][0]]
+        qmax = self.dataset.attrs[data_pointers['Y_data_filter'][1]]
+        print(qmin,qmax)
         if self.clustered:
-            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord.values
+            print(len(self.sg.independentGPs[0].Y_coord.sel({'q':slice(qmin,qmax)}).values))
+            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord.sel({'q':slice(qmin,qmax)}).values
         else:
-            self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord.values
+            print(len(self.sg.Y_coord.sel({'q':slice(qmin,qmax)}).values))
+            self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord.sel({'q':slice(qmin, qmax)}).values
         self.data['X_*'] = X
         self.data['components'] = components
         
@@ -118,6 +127,7 @@ class VirtualSANS_data(Driver):
         data = self.data['scattering_mu'] 
         
         self.data['main_array'] = self.data['scattering_mu']
+        self.data['q']
         print(self.data['main_array'].shape)
 
         
@@ -140,9 +150,10 @@ class VirtualSANS_data(Driver):
             self.optimizer = optimizer 
         
         if self.clustered:
-            # print('you made it here!!!')
-            # for gpmodel in self.sg.concat_GPs:
-            #     print('attrs: ', list(gpmodel.__dict__))
+            print('you made it here!!!')
+#             for gpmodel in self.sg.concat_GPs:
+#                 print('attrs: ', list(gpmodel.__dict__))
+                
             self.sg.train_all(
                 kernel          =  self.kernel,
                 niter           =  niter,

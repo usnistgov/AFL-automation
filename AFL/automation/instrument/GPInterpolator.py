@@ -42,25 +42,39 @@ class Interpolator():
     def load_data(self, dataset=None):
         if isinstance(self.dataset,xr.core.dataset.Dataset)==False:
             self.dataset = dataset
+            
+        print('default params')
         for k,v in self.defaults.items():
             print(k,v)
         self.defaults['X_data_range']   = [f'{component}_range' for component in self.dataset.attrs[self.defaults['X_data_pointer']] if component not in self.defaults['X_data_exclude']]
+        
         
         try: 
             #produces an N x M array N is the number of samples, M is the number of dimensions N is the number of input points
             self.X_raw = xr.DataArray(np.array([self.dataset[i].values for i in self.dataset.attrs[self.defaults['X_data_pointer']] if i not in self.defaults['X_data_exclude']]).T) 
             self.X_ranges = [self.dataset.attrs[i] for i in self.defaults['X_data_range']]
-            print(self.X_ranges)
-
+            
             #produces an N x K array N is the number of training data points, K is the number of scattering values
             if None not in self.defaults['Y_data_filter']:
+                print('-----------------------')
+                print("nones in Y_data_filter")
                 self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])}).T
                 
-                self.Y_coord = self.dataset[self.defaults['Y_data_coord']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])})
+                if self.defaults['Y_data_coord'] == []:
+                    self.Y_coord = []
+                else:
+                    self.Y_coord = self.dataset[self.defaults['Y_data_coord']]
             else:
                 self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].T
-                self.Y_coord = self.dataset[self.defaults['Y_data_pointer']]
-            #print(self.Y_raw.shape)
+                if self.defaults['Y_data_coord'] == []:
+                    self.Y_coord = []
+                else:
+                    try:
+                        self.Y_coord = self.dataset[self.defaults['Y_data_coord']]
+                    except:
+                        raise ValueError('check the Y_data_coord it can be none or linked to another coordinate/dimension')
+            # print('The set Y_coords')
+            # print(self.Y_coord)
         except:
             raise ValueError("One or more of the inputs X or Y are not correct. Check the defaluts")
        # print(self.X_raw.shape, self.Y_raw.shape)
@@ -85,7 +99,17 @@ class Interpolator():
             
             #sets Y_train to be within -1. to 1. for every target parameter
             self.Y_train = (self.Y_raw - self.Y_mean)/self.Y_std
-            self.Y_train = self.Y_train.values.T
+            print(self.Y_train.shape)
+            if len(self.Y_train.shape) == 1:
+                self.Y_train = np.expand_dims(self.Y_train.values,axis=1).T
+            self.Y_train = self.Y_train.T
+            
+            print('data standardized')
+            print('Y_train shape',self.Y_train.shape)
+            print('X_train shape',self.X_train.shape)
+            print('Y_coord',self.Y_coord)
+            
+            
             
         else:
             self.Y_mean = self.Y_raw.mean(dim='sample')
@@ -94,6 +118,8 @@ class Interpolator():
             self.X_train = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] -  self.X_ranges[idx][0]) for idx, i in enumerate(self.X_raw.T)]).T
             ## the best I can do is subtract the mean of the data. If the training data are scalars, not spectra, then there will be no stdev for one point
             self.Y_train = self.Y_raw.values.T
+            print('X_train shape', self.X_train.shape)
+            print('Y_train shape', self.Y_train.shape)
             
     def construct_model(self, kernel=None, noiseless=False, heteroscedastic=False):
         
@@ -155,8 +181,8 @@ class Interpolator():
             print('constructing model')
             self.construct_model(kernel=kernel, noiseless=noiseless, heteroscedastic=heteroscedastic)
             
-            
-        #print(self.model.data)
+        print('training data shapes')
+        print(self.model.data[0].shape,self.model.data[1].shape)
         ## optimize the model        
         # print(self.kernel,self.optimizer)
         print(self.model.parameters)
@@ -181,42 +207,54 @@ class Interpolator():
                 self.adam.minimize(self.model.training_loss, self.model.trainable_variables)
                 i+=1 
         
+        # print('test_prediction')
+        # mean,var = self.model.predict_f(np.array([[1.,0.5,0.5]]))
+        # print('mean shape', mean.shape)
         return self.model
     
     def predict(self, X_new=[[0,0,0],[1,2,3]]):
         """
         Returns the simulated scattering pattern given the specified coordinates and polynomial type if reduced
         """
-        # if np.array(X_new).shape[1] != self.model.data[1].numpy().shape[0]:
-        #     print("error! the coordinates requested to not match the model dimensions")
 
-        #The coordinates being input should be in natural units. They have to be standardized to use the GP model properly
-        # X_new = np.array(X_new)
-        print(X_new)
         #convert the requested X_new into standardized coordinates
-        try:
-            X_new = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(X_new)]).T
+        print('X_new non-standardized should be DxM', np.array(X_new), np.array(X_new).shape)
+        print('X_ranges should be length D', self.X_ranges)
+        try:        
+            X_new = np.array([(i - min(self.X_ranges[idx]))/(max(self.X_ranges[idx]) - min(self.X_ranges[idx])) for idx, i in enumerate(np.array(X_new))]).T
         except:
             raise ValueError("Check the dimensions of X_new and compare to the input dimensions on X_raw")
-       # print(np.any(X_new <0.),np.any(X_new >1.))
-        
-        for col in X_new.T:
-            print(min(col),max(col))
+
+        print('X_new standardized', X_new)
+        # for col in X_new.T:
+        #     print(min(col),max(col))
         #check to see if the input coordinates and dimensions are correct:
-        if np.any(X_new< 0.) or np.any(X_new> 1.1):
+        if np.any(np.round(X_new,5)< 0.) or np.any(np.round(X_new,5)> 1.00001):
             raise ValueError('check requested values for X_new, data not within model range')
         
+        print('requested point ', X_new, X_new.shape)
+        
         self.predictive_mean, self.predictive_variance = self.model.predict_f(X_new)
-        self.predictive_mean = self.predictive_mean.numpy()
-        self.predictive_variance = self.predictive_variance.numpy()
+        self.predictive_mean = self.predictive_mean.numpy()[0]
+        self.predictive_variance = self.predictive_variance.numpy()[0]
         
         
         #un-standardize
-        mean = np.array([self.predictive_mean[i] * self.Y_std + self.Y_mean for i in range(len(self.predictive_mean))])
-        variance = np.array([self.predictive_variance[i] * self.Y_std + self.Y_mean for i in range(len(self.predictive_variance))])
-        
+        # print(self.predictive_mean,self.predictive_variance)
+        # print(range(len(self.predictive_mean)), range(len(self.predictive_variance)))
+        mean = np.array(self.predictive_mean*self.Y_std.values + self.Y_mean.values)
+        variance = np.array(self.predictive_variance*self.Y_std.values + self.Y_mean.values)
+        # mean = np.array([self.predictive_mean[i] * self.Y_std + self.Y_mean for i in range(len(self.predictive_mean))])
+        # variance = np.array([self.predictive_variance[i] * self.Y_std + self.Y_mean for i in range(len(self.predictive_variance))])
+        # print(mean, variance)
 
         return mean, variance
+    
+    def print_diagnostics(self):
+        for item in self.__dict__:
+            print(item, self.__dict__[item])
+            print('')
+        return
     
 
 class ClusteredGPs():
@@ -321,7 +359,7 @@ class ClusteredGPs():
             else:
                 ds = store[0]
             self.union_datasets.append(ds)
-        self.union_geometries = union
+        self.union_geometries = self.union
         
         self.concat_GPs = [Interpolator(dataset=ds) for ds in self.union_datasets]
         return self.concat_GPs, self.union_geometries, common_indices
@@ -339,8 +377,7 @@ class ClusteredGPs():
         else:
             optimizerlist = optimizer
         
-        for op in optimizerlist:
-            print(op)
+        # for op in optimizerlist
 
         self.all_models = [gpmodel.train_model(
             kernel=kernel,
@@ -374,20 +411,28 @@ class ClusteredGPs():
             
             
         else:
+            # print("not using shapely shapes")
+            # print('X_new = ', X_new.T)
             for idx, model in enumerate(gplist):
-                subset_X = (model.X_raw)
-                sub_min = min([np.linalg.norm(X_new - point) for point in model.X_raw.values])
+                # print(X_new.shape, model.X_raw.values[0].shape)
+                subset_X = model.X_raw
+                sub_min = min([np.linalg.norm(X_new.T[0] - point) for point in model.X_raw.values])
                 print(f'model {idx} min: {sub_min}')
                 distances.append(sub_min)
         
                 
         
         model_idx = np.argmin(distances)
+        print(f"found model index = {model_idx}")
         gpmodel = gplist[model_idx]
+        print(gplist[model_idx])
         if len(X_new.shape) < 2:
             X_new = np.expand_dims(X_new,axis=1)
         print(X_new.T.shape, type(X_new))
-        print([r for r in gpmodel.X_ranges])
-        mean, variance = gpmodel.predict(X_new=X_new.T)
-        
+        mean, variance = gpmodel.predict(X_new=X_new)
+        print('mean shape',mean.shape)
         return mean, variance, model_idx
+    
+    def print_diagnostics(self):
+        for item in self.__dict__:
+            print(self.dict[item])

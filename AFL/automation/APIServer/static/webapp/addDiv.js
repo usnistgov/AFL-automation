@@ -278,23 +278,33 @@ class Div {
         var key = this.serverKey;
 
         server.getQueue(function(result) {
-            $(completedID).empty();
-            for(let i in result[0]) {
-                var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+i+')">'+result[0][i].task.task_name+'</li>';
-                $(completedID).append(task);
-            }
+            var len_completed = $(completedID).children().length;
+            var len_current = $(currentID).children().length;
+            var len_queue = $(uncompletedID).children().length;
 
-            $(currentID).empty();
-            if(result[1].length > 0) {
-                var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)" class="currentTask">'+result[1][0].task.task_name+'</li>';
-                $(currentID).append(currentTask);
-            }
 
-            $(uncompletedID).empty();
-            for(let i in result[2]) {
-                var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
-                $(uncompletedID).append(task);
-            }
+            if(len_completed != result[0].length || len_current != result[1].length || len_queue != result[2].length) {
+                // console.log('Redrew divs')
+                $(completedID).empty();
+                for(let i in result[0]) {
+                    var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+i+')">'+result[0][i].task.task_name+'</li>';
+                    $(completedID).append(task);
+                }
+
+                $(currentID).empty();
+                if(result[1].length > 0) {
+                    var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)" class="currentTask">'+result[1][0].task.task_name+'</li>';
+                    $(currentID).append(currentTask);
+                }
+
+                $(uncompletedID).empty();
+                for(let i in result[2]) {
+                    var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
+                    $(uncompletedID).append(task);
+                }
+        } else {
+            //console.log('Nothing changed, skip div redraw')
+	}
         });
     }
 }

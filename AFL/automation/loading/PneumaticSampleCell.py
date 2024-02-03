@@ -202,7 +202,7 @@ class PneumaticSampleCell(Driver,SampleCell):
         print('sending dispense command')
         self.pump.dispense(self.config['catch_to_cell_vol']+sampleVolume/2,block=False)
         while(self.pump.getStatus()[0] != 'S' and not self.loadStoppedExternally):
-            print(f'awaiting pump complete, {self.pump.getStatus()}')
+            #print(f'awaiting pump complete, {self.pump.getStatus()}')
             time.sleep(0.1)
 
         infusion_vol = self.pump.getStatus()[1]

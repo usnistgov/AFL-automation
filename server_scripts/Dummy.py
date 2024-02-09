@@ -10,8 +10,8 @@ from AFL.automation.APIServer.APIServer import APIServer
 from AFL.automation.APIServer.DummyDriver import DummyDriver
 from AFL.automation.APIServer.data.DataTiled import DataTiled
 
-data = DataTiled('http://afl-inst-lab.campus.nist.gov:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/Users/pab2/.afl/json-backup')
-server = APIServer('DummyPumpServer',index_template="index_pump.html",data = data)
+#data = DataTiled('http://afl-inst-lab.campus.nist.gov:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/Users/pab2/.afl/json-backup')
+server = APIServer('DummyPumpServer',index_template="index_pump.html")#,data = data)
 server.add_standard_routes()
 server.create_queue(DummyDriver(name='DummyPump'))
 server.init_logging()

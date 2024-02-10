@@ -66,7 +66,7 @@ class APIServer:
         self.cors = CORS(self.app)
 
 
-    def create_queue(self,driver):
+    def create_queue(self,driver,add_unqueued=True):
         self.history = []
         self.task_queue = MutableQueue()
         self.driver     = driver
@@ -77,7 +77,8 @@ class APIServer:
         self.driver._queue = self.task_queue
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
 
-        self.add_unqueued_routes()
+        if add_unqueued:
+            self.add_unqueued_routes()
 
 
     def reset_queue_daemon(self,driver=None):

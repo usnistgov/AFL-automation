@@ -140,6 +140,9 @@ class DataPacket(MutableMapping):
     def reset_sample(self):
         self._sample_dict = {}
         
-        
     def transmit(self):
+        raise NotImplementedError
+    
+    def add_array(self):
+        '''Abstract method adding arrays that need special handling'''
         raise NotImplementedError

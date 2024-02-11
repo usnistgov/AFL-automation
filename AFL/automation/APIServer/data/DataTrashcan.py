@@ -6,3 +6,6 @@ class DataTrashcan(DataPacket):
     '''
     def transmit(self):
         pass
+    
+    def add_array(self,*args,**kwargs):
+        pass

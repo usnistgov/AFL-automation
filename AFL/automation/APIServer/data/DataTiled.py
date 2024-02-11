@@ -16,10 +16,44 @@ class DataTiled(DataPacket):
         self.backup_path = backup_path
         self.tiled_client = tiled.client.from_uri(server,api_key=api_key)
         super().__init__()
+        
+        self.arrays = {}
+        
     def finalize(self):
         self.transmit()
         self.reset()
+        
+    def add_array(self,array_name,array):
+        self.arrays[array_name] = array
+        
+    def subtransmit_array(self,array_name,array):
+        '''
+        Transmits a numpy array along with all data in container and then clears the array from the container. All other data is preserved (no reset). 
+        '''
+        self._transient_dict['main_array'] = array
+        self._transient_dict['array_name'] = array_name
+        
+        self._transmit()
+        
+        for name in ['main_array','array_name']:
+            if name in self._transient_dict:
+                del (self._transient_dict[name])
+        
     def transmit(self):
+        if 'main_array' in self._dict().keys():
+            self.arrays['main_array'] = self._transient_dict['main_array']
+            del(self._transient_dict['main_array'])
+            
+        if self.arrays:
+            for array_name,array in self.arrays.items():
+                # print(f'Attempting to add {array_name} of dtype {array.dtype} and size {array.size}')
+                self.subtransmit_array(array_name,array)
+            self.arrays = {}
+        else:
+            self._transmit()
+        
+            
+    def _transmit(self):
         '''
             Transmits the data inside this container to Tiled.
 
@@ -27,7 +61,6 @@ class DataTiled(DataPacket):
             named according to the current time.
 
         '''
-
         
         try:
             if 'main_array' in self._dict().keys():

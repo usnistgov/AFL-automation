@@ -2,7 +2,7 @@
 
 git config --global credential.helper store
 
-source activate afl
+source activate afl_agent
 
 if [[ -z "${TILED_API_KEY}" ]]; then
   export TILED_API_KEY=$(cat ~/.afl/tiled_api_key)

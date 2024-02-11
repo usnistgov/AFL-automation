@@ -30,7 +30,8 @@ class VirtualSAS_theory(Driver):
     defaults['noise'] = 0.0
     defaults['ternary'] = False
     defaults['fast_locate'] = True
-    
+    defaults['old_components'] = False
+
     def __init__(self,overrides=None):
         '''
         Generates smoothly interpolated scattering data via a noiseless GPR from an experiments netcdf file
@@ -66,8 +67,18 @@ class VirtualSAS_theory(Driver):
         for label,sds in self.boundary_dataset.groupby(label_variable):
             if label in drop_phases:
                 continue
-            comps = sds[sds.attrs['components']].to_array('component').transpose(...,'component')
-            xy = ternary_to_xy(comps.values[:,[2,0,1]]) #shapely uses a different coordinate system than we do
+            if self.config['old_components']:
+                comps = sds[sds.attrs['components']].to_array('component').transpose(...,'component')
+            else:
+                comps = sds[sds.attrs['components']].transpose(..., 'component')
+            if self.config['ternary']:
+                xy = ternary_to_xy(comps.values[:,[2,0,1]]) #shapely uses a different coordinate system than we do
+            else:
+                xy = comps.values[:]
+                assert xy.shape[1]==2, (
+                    f'''Need to be in ternary mode with three components, or non-ternary with two. '''
+                    f'''You  have "xy.shape:{xy.shape}" and ternary={self.config["ternary"]}'''
+                    )
             mp = MultiPoint(xy)
             hull = concave_hull(mp,ratio=hull_tracing_ratio)
             self.hulls[label] = hull
@@ -77,8 +88,11 @@ class VirtualSAS_theory(Driver):
         
         if self.hulls is None:
             raise ValueError('Must call trace_boundaries before locate')
-            
-        point = Point(*ternary_to_xy(composition))
+        if self.config['ternary']:
+            xy = ternary_to_xy(composition)
+        else:
+            xy = composition
+        point = Point(*xy)
         locations = {}
         for phase,hull in self.hulls.items():
             if hull.contains(point):

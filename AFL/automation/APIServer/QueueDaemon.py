@@ -50,14 +50,6 @@ class QueueDaemon(threading.Thread):
         except Exception:
             self.data['afl_automation_version'] = 'could_not_determine'
 
-        self.history_log_path = pathlib.Path.home() / '.afl' / f'{driver.name}.history'
-        try:
-            # try to load all previous history if available
-            with open(self.history_log_path,'r') as f:
-                self.history_log = json.load(f)
-        except FileNotFoundError:
-            self.history_log = []
-
 
     def terminate(self):
         self.app.logger.info('Terminating QueueDaemon thread')
@@ -171,9 +163,6 @@ class QueueDaemon(threading.Thread):
 
             self.data.finalize()
             self.history.append(masked_package)#history for this server restart
-            self.history_log.append(masked_package)#hopefull **all** history
-            with open(self.history_log_path,'w') as f:
-                json.dump(self.history_log,f,indent=4)
 
             self.busy = False
             time.sleep(0.1)

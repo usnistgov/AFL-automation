@@ -72,6 +72,8 @@ class APIServer:
         self.driver     = driver
         self.driver.app = self.app
         self.driver.data = self.data
+        if self.driver.dropbox is None:
+            self.driver.dropbox = {}
         self.driver._queue = self.task_queue
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
 
@@ -130,6 +132,11 @@ class APIServer:
         self.app.add_url_rule('/get_quickbar','get_quickbar',self.get_quickbar,methods=['POST','GET'])
         self.app.add_url_rule('/set_driver_object','set_driver_object',self.set_driver_object,methods=['POST','GET'])
         self.app.add_url_rule('/get_driver_object','get_driver_object',self.get_driver_object,methods=['POST','GET'])
+        self.app.add_url_rule('/deposit_obj', 'deposit_obj', self.deposit_obj,
+                              methods=['POST', 'GET'])
+        self.app.add_url_rule('/retrieve_obj', 'retrieve_obj', self.retrieve_obj,
+                              methods=['POST', 'GET'])
+
         self.app.before_first_request(self.init)
 
     def get_info(self):
@@ -373,6 +380,52 @@ class APIServer:
     def get_queue(self):
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         return jsonify(output),200
+
+    @jwt_required()
+    def deposit_obj(self):
+        '''
+        Store an object named obj in the driver's dropbox
+        If a uuid is provided, the object will be stored with that uuid
+        Otherwise, a new uuid will be generated.
+        In either case, the uuid will be returned to the client.
+        '''
+        task = request.json
+        user = get_jwt_identity()
+        obj = request.json['obj']
+        print(f'')
+        if 'uuid' in request.json.keys():
+            uid = request.json['uuid']
+        else:
+            uid = str(uuid.uuid4())
+        self.app.logger.info(f'{user} is storing an object w uuid {id} in driver dropbox')
+        obj = serialization.deserialize(obj)
+        if self.driver.dropbox is None:
+            self.driver.dropbox = {}
+        self.driver.dropbox[uid] = obj
+        return uid,200
+
+    @jwt_required()
+    def retrieve_obj(self):
+        '''
+        Retrieve an object from the driver's dropbox
+        uuid specifies the object to retrieve
+        delete specifies whether to delete the object after retrieval
+        '''
+        task = request.json
+        user = get_jwt_identity()
+        self.app.logger.info(f'{user} is getting an object with uuid {task["uuid"]} from driver, delete = {task["delete"]} ')
+        if(task['uuid'] not in self.driver.dropbox.keys()):
+            return 'Nothing in dropbox under this uuid',404
+        result = self.driver.dropbox[task['uuid']]
+        if 'delete' not in task.keys():
+            delete = True
+        else:
+            delete = task['delete']
+        if delete:
+            del self.driver.dropbox[task['uuid']]
+        result = serialization.serialize(result)
+        return jsonify({'obj':result}),200
+
 
     @jwt_required()
     def set_driver_object(self):

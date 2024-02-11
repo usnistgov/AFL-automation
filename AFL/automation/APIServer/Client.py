@@ -8,8 +8,10 @@ class Client:
     This class maps pipettor functions to HTTP REST requests that are sent to
     the server
     '''
-    def __init__(self,ip='10.42.0.30',port='5000',interactive=False):
+    def __init__(self,ip=None,port='5000',interactive=False):
         #trim trailing slash if present
+        if ip is None:
+            raise ValueError('ip (server address) must be specified')
         if ip[-1] == '/':
             ip = ip[:-1]
         self.ip = ip
@@ -252,7 +254,40 @@ class Client:
         json = {'name':name}
         response = requests.get(self.url+'/get_driver_object',headers=self.headers,json=json)
         return serialization.deserialize(response.json()['obj'])
-    
+
+    def deposit_obj(self, obj, uid=None):
+        '''
+        Deposit an object in the dropbox
+        obj : object, the object to deposit
+        id : str, the uuid to deposit the object under
+        if not specified, a new uuid will be generated
+
+        '''
+        json = {}
+        if uid is None:
+            uid = str(uuid.uuid4())
+        json['uuid'] = uid
+        json['obj'] = serialization.serialize(obj)
+        print(json)
+        response = requests.post(self.url + '/deposit_obj', headers=self.headers, json=json)
+        return response.content.decode('UTF-8')
+
+    def retrieve_obj(self, uid,delete=True):
+        '''
+        Retrieve an object from the dropbox
+        id : str, the uuid of the object to retrieve
+        delete : bool, if True, delete the object after retrieving
+
+        '''
+        json = {'uuid':uid,'delete':delete}
+        response = requests.get(self.url + '/retrieve_obj', headers=self.headers, json=json)
+        if response.status_code == 404:
+            raise KeyError('invalid uuid')
+        elif response.status_code != 200:
+            raise Exception(f'server-side error: {response.status_code}')
+        else:
+            return serialization.deserialize(response.json()['obj'])
+
     def set_object(self,serialize=True,**kw):
         json = {}
         json['task_name'] = 'set_object'

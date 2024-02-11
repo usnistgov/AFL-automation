@@ -44,6 +44,8 @@ class Driver:
     def __init__(self,name,defaults=None,overrides=None):
         self.app = None
         self.data = None
+        self.dropbox = None
+
         if name is None:
             self.name = 'Driver'
         else:
@@ -205,3 +207,34 @@ class Driver:
         for name,value in data.items():
             self.app.logger.info(f'Setting data \'{name}\'')
             self.data.update(data)
+
+    def retrieve_obj(self,uid,delete=True):
+        '''Retrieve an object from the dropbox
+
+        Parameters
+        ----------
+        uid : str
+            The uuid of the file to retrieve
+        '''
+        self.app.logger.info(f'Retrieving file \'{uid}\' from dropbox')
+        obj = self.dropbox[uid]
+        if delete:
+            del self.dropbox[uid]
+        return obj
+    def deposit_obj(self,obj,uid=None):
+        '''Store an object in the dropbox
+
+        Parameters
+        ----------
+        obj : object
+            The object to store in the dropbox
+        uid : str
+            The uuid to store the object under
+        '''
+        if uid is None:
+            uid = str(uuid.uuid4())
+        if self.dropbox is None:
+            self.dropbox = {}
+        self.app.logger.info(f'Storing object in dropbox as {uuid}')
+        self.dropbox[uid] = obj
+        return uid

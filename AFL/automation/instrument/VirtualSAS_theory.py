@@ -85,7 +85,7 @@ class VirtualSAS_theory(Driver):
     
     def locate(self,composition):
         composition = np.array(composition)
-        
+
         if self.hulls is None:
             raise ValueError('Must call trace_boundaries before locate')
         if self.config['ternary']:
@@ -173,10 +173,13 @@ class VirtualSAS_theory(Driver):
     
     def expose(self,*args,**kwargs):
         '''Mimic the expose command from other instrument servers'''
-        
-        components = self.boundary_dataset.attrs['components']
-        composition = [[self.data['sample_composition'][component]['value'] for component in components]] #from tiled  
-        
+
+        if self.config['old_components']:
+            components = self.boundary_dataset.attrs['components']
+        else:
+            components = self.boundary_dataset[self.boundary_dataset.attrs['components_dim']].values
+        composition = [[self.data['sample_composition'][component]['value'] for component in components]] #from tiled
+
         phases = self.locate(composition)
         if len(phases)==0:
             label = 'D'
@@ -188,11 +191,11 @@ class VirtualSAS_theory(Driver):
         I,I_noiseless,dI = self.generate(label)
         
         self.data['q'] = I.index.values
-        self.data['I'] = I.values
-        self.data['I_noiseless'] = I_noiseless.values
-        self.data['dI'] = dI.values
         self.data['components'] = components
-        
+        self.data.add_array('I',I.values)
+        self.data.add_array('I_noiseless',I_noiseless.values)
+        self.data.add_array('dI',dI.values)
+
         return I.values
     
             

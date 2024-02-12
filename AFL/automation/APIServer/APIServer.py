@@ -396,7 +396,7 @@ class APIServer:
         if 'uuid' in request.json.keys():
             uid = request.json['uuid']
         else:
-            uid = str(uuid.uuid4())
+            uid = 'DB-' + str(uuid.uuid4())
         self.app.logger.info(f'{user} is storing an object w uuid {id} in driver dropbox')
         obj = serialization.deserialize(obj)
         if self.driver.dropbox is None:
@@ -460,7 +460,7 @@ class APIServer:
             task_uuid = task['uuid']
             del task['uuid']
         else:
-            task_uuid = uuid.uuid4()
+            task_uuid = 'QD-' + str(uuid.uuid4())
         
         user = get_jwt_identity()
         self.app.logger.info(f'{user} enqueued {request.json}')

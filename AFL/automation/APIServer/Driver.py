@@ -124,7 +124,7 @@ class Driver:
     
     def set_sample(self,sample_name,sample_uuid=None,**kwargs):
         if sample_uuid is None:
-            sample_uuid = str(uuid.uuid4())
+            sample_uuid = 'SAM-' + str(uuid.uuid4())
 
         kwargs.update({'sample_name':sample_name,'sample_uuid':sample_uuid})
         self.data.update(kwargs)
@@ -232,7 +232,7 @@ class Driver:
             The uuid to store the object under
         '''
         if uid is None:
-            uid = str(uuid.uuid4())
+            uid = 'DB-' + str(uuid.uuid4())
         if self.dropbox is None:
             self.dropbox = {}
         self.app.logger.info(f'Storing object in dropbox as {uuid}')

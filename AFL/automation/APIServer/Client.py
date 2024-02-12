@@ -265,7 +265,7 @@ class Client:
         '''
         json = {}
         if uid is None:
-            uid = str(uuid.uuid4())
+            uid = 'DB-' + str(uuid.uuid4())
         json['uuid'] = uid
         json['obj'] = serialization.serialize(obj)
         print(json)

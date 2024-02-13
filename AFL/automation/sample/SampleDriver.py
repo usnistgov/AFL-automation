@@ -9,10 +9,11 @@ from typing import Optional, Dict, List
 
 import h5py
 import numpy as np
-import pandas as pd
 import requests
 import xarray as xr
+
 from tiled.client import from_uri
+from tiled.queries import Eq
 
 import AFL.automation.prepare
 from AFL.automation.APIServer.Client import Client
@@ -50,6 +51,7 @@ class SampleDriver(Driver):
     defaults['max_sample_transmission'] = 0.6
     defaults['mix_order'] = []
     defaults['custom_stock_settings'] = []
+    defaults['q_dim'] = 'q'
 
     def __init__(
             self,
@@ -81,7 +83,7 @@ class SampleDriver(Driver):
 
 
         # start tiled catalog connection
-        self.tiled_cat = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
+        self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
 
         self.camera_urls = camera_urls
 
@@ -542,25 +544,27 @@ class SampleDriver(Driver):
 
         if wait:
             self.uuid['measure'] = self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+
     def predict_next_sample(self):
         """Construct AL manifest from measurement and call predict"""
         data_path = pathlib.Path(self.config['data_path'])
 
+        tiled_result = (
+            self.tiled_client
+            .search(Eq('sample_uuid',self.uuid['sample']))
+            .search(Eq('array_name', 'I'))
+        )
+        if len(tiled_result)==0:
+            raise ValueError(f"Could not tiled entry for measurement sample_uuid={self.uuid['sample']}")
 
-        data_fname = self.sample_name + '_chosen_r1d.csv'
-        measurement = pd.read_csv(
-            data_path / data_fname,
-            sep=',',
-            comment='#',
-            header=None,
-            names=['q', 'I'],
-            usecols=[0, 1]).set_index('q').squeeze().to_xarray().dropna('q')
+        q = tiled_result.items()[-1][-1].metadata['q']
+        I = tiled_result.items()[-1][-1].values[()]
+        q_dim = self.config['q_dim']
+        measurement = xr.DataArray(I,dims=[q_dim],coords={q_dim:q})
 
         self.new_data = xr.Dataset()
-        self.new_data['fname'] = data_fname
         self.new_data['SAS'] = measurement
         self.new_data['validated'] = self.validated
-        #self.new_data['SAS_transmission'] = SAS_transmission
         self.new_data['sample_uuid'] = self.uuid['sample']
 
         sample_composition = {}

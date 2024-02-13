@@ -62,7 +62,7 @@ class ISISLARMOR(ScatteringInstrument,Driver):
         # if RUNSTATE is in Setup, begin the run
         if rstate == 1:
             pye.caput("IN:LARMOR:DAE:BEGINRUN", 1)
-        # otherwise, 
+        # while runstate is not running, wait
         while rstate != 2:
             rstate=pye.caget("IN:LARMOR:DAE:RUNSTATE")
             time.sleep(2)
@@ -144,13 +144,22 @@ class ISISLARMOR(ScatteringInstrument,Driver):
         }})
     def Expose(self, expose_metric:[str]='frames', expose_dose=50):
         """
-        expose_metric: `frames`, `uamps`, or `time` in sconds; controls wait time
+        Starts a run, waits for a given exosure emtric, and then ends/aborts run
+        expose_metric: `frames`, `uamps`, or `time` in seconds; controls wait time
         expose_dose: exposure metric in frames, uamps, or seconds
         """
+        # start the run
         self.beginrun()
+
+        # wait for the given exposure metric
         if expose_metric == 'frames':
             self.waitforframes(expose_dose)
         if expose_metric == 'uamps':
             self.waitforuah(expose_dose)
         if expose_metric == 'time':
             self.waitfortime(expose_dose)
+        else:
+            raise ExposeError('Unknown exposure metric')
+
+        # abort the run
+        self.abortrun()

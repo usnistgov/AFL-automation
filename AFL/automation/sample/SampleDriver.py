@@ -73,6 +73,7 @@ class SampleDriver(Driver):
 
         Driver.__init__(self, name='SampleDriver', defaults=self.gather_defaults(), overrides=overrides)
 
+        self.AL_campaign_name = None
         self.deck = None
         self.sample_name: Optional[str] = None
         self.app = None
@@ -237,9 +238,12 @@ class SampleDriver(Driver):
             predict_next: bool = False,
             enqueue_next: bool = False,
             name: Optional[str] = None,
-            uid: Optional[str] = None,
+            sample_uuid: Optional[str] = None,
+            AL_campaign_name: Optional[str] = None,
+            AL_uuid: Optional[str] = None,
     ):
-        """
+        """Make protocol for, mix, load, and measure sample. Potentially query Agent for next sample and enqueue
+
         Parameters
         ----------
 
@@ -262,8 +266,14 @@ class SampleDriver(Driver):
             The name of the sample, if not generated, it will be auto generated from the self.config['data_tag'] and
             uuid
 
-        uid: str
+        sample_uuid: str
             uuid of sample, if not specified it will be auto-generated
+
+        AL_uuid: str
+            uuid of AL campaign
+
+        AL_campaign_name: str
+            name of AL campaign
         """
 
         assert len(self.config['instrument'])>0, (
@@ -280,26 +290,43 @@ class SampleDriver(Driver):
                 f"No client url for 'agent'! self.config['client']={self.config['client']}"
             )
 
-        if uid is None:
+        if sample_uuid is None:
             self.uuid['sample'] =  'SAM-' + str(uuid.uuid4())
         else:
-            self.uuid['sample'] = uid
+            self.uuid['sample'] = sample_uuid
 
         if name is None:
-            self.sample_name = f"{self.config['data_tag']}-{self.uuid['sample'][-8:]}"
+            self.sample_name = f"{self.config['data_tag']}_{self.uuid['sample'][-8:]}"
         else:
             self.sample_name = None
+
+        if predict_next and AL_uuid is None:
+            self.uuid['AL'] = 'AL-' + str(uuid.uuid4())
+        else:
+            self.uuid['AL'] = AL_uuid
+
+        if predict_next and AL_campaign_name is None:
+            self.AL_campaign_name = f"{self.config['data_tag']}_{self.uuid['AL'][-8:]}"
+        else:
+            self.AL_campaign_name = AL_campaign_name
+
+
+        # configure all servers to this sample name and uuid
+        sample_data = self.set_sample(
+            sample_name = self.sample_name,
+            sample_uuid = self.uuid['sample'],
+            AL_campaign_name = self.AL_campaign_name,
+            AL_uuid = self.uuid['AL'],
+            AL_components = self.config['AL_components'],
+        )
+        for name, client in self.client.items():
+            client.enqueue(task_name='set_sample', **sample_data)
 
         prep_protocol = self.compute_prep_protocol(
             composition = composition,
             fixed_concs = fixed_concs,
             sample_volume = sample_volume
         )
-
-        # configure all servers to this sample name and uuid
-        sample_data = self.set_sample(sample_name=self.sample_name, sample_uuid=self.uuid['sample'])
-        for name, client in self.client.items():
-            client.enqueue(task_name='set_sample', **sample_data)
 
         self.make_and_measure(name=name, prep_protocol=prep_protocol, catch_protocol=self.catch_protocol)
 
@@ -308,7 +335,7 @@ class SampleDriver(Driver):
 
         # Look away ... here be dragons ...
         if enqueue_next:
-            next_sample = self.get_client('agent').retrieve_obj(uid=self.uuid['AL'])
+            next_sample = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
             next_sample_dict = {
                 k: {'value': v, 'units': next_sample.attrs[k + '_units']} for k, v in next_sample.items()
             }
@@ -320,6 +347,8 @@ class SampleDriver(Driver):
                 'fixed_concs':fixed_concs,
                 'predict_next':predict_next,
                 'enqueue_next':enqueue_next,
+                'AL_campaign_name':self.AL_campaign_name,
+                'AL_uuid': self.uuid['AL'],
             }
 
             package = {
@@ -577,7 +606,14 @@ class SampleDriver(Driver):
             self.data.finalize()
 
 
-        self.uuid['AL'] = self.client['agent'].enqueue(task_name='predict',interactive=True)['return_val']
+        db_uuid = self.client['agent'].enqueue(task_name='deposit_obj',interactive=True)['return_val']
+        self.client['agent'].enqueue(task_name='append_data',db_uuid=db_uuid)
+        self.uuid['agent'] = self.client['agent'].enqueue(
+            task_name='predict',
+            sample_uuid=self.uuid['sample'],
+            AL_campaign_name=self.AL_campaign_name,
+            interactive=True
+        )['return_val']
 
     def validate_measurements(self):
         data_path = self.config['data_path']

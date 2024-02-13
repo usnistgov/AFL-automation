@@ -1,6 +1,7 @@
 import time
 from typing import Optional
 from numbers import Number
+from pathlib import Path
 
 from tiled.client import from_uri
 
@@ -9,8 +10,9 @@ import sans.command_interface.ISISCommandInterface as ici
 # import mantid algorithms, numpy and matplotlib
 from mantid.simpleapi import *
 
+from sasdata.dataloader.loader import Loader
+
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
 
 """
 Known PV names:
@@ -31,7 +33,11 @@ Filename for pre-reduced data should be as nxs file:
  LARMOR[RUN#] where [RUN#] is a (left) zero-padded run number
 """
 
-class ISISLARMOR(ScatteringInstrument,Driver):
+PREFIX = "//isis/inst$"
+DATA_LOCATION = "/NDXLARMOR/Instrument/data/cycle_23_5/"
+
+
+class ISISLARMOR(Driver):
     # self.config dictionary
     # anything you may want to change at run time, pull from defaults.config
     # these defaults will need to be changed
@@ -41,7 +47,7 @@ class ISISLARMOR(ScatteringInstrument,Driver):
     defaults['measurement_positions'] = 0
 
     defaults['reduced_data_dir'] = './'
-    defaults['tiled_uri'] = './'
+    defaults['tiled_uri'] = 'http://130.246.37.131:8000'
 
     defaults['open_beam_trans_rn'] = -1
     defaults['empty_cell_scatt_rn'] = -1
@@ -51,9 +57,17 @@ class ISISLARMOR(ScatteringInstrument,Driver):
         """ """
         self.app = None
         Driver.__init__(self,name=name,defaults=self.gather_defaults(),overrides=overrides)
-        ScatteringInstrument.__init__(self)
-
-        self.tiled_client = from_uri(self.config['tiled_uri'],api_key='NistoRoboto642')
+        self.tiled_client = None
+        self.status_str = "New Server"
+        
+    def status(self):
+        status=[]
+        status.append(self.status_str)
+        return status
+        
+    def _init_tiled_client(self):
+        if tiled_client is None:
+            self.tiled_client = from_uri(self.config['tiled_uri'],api_key='NistoRoboto642')
 
     def getRunNumber(self):
         rn = pye.caget("IN:LARMOR:DAE:IRUNNUMBER")
@@ -61,11 +75,11 @@ class ISISLARMOR(ScatteringInstrument,Driver):
 
     def trans_mode(self):
         pye.caput("IN:LARMOR:MOT:MTR0602.VAL", 0.0)
-        time.sleep(15)
+        time.sleep(10)
 
     def scatt_mode(self):
         pye.caput("IN:LARMOR:MOT:MTR0602.VAL", 200.0)
-        time.sleep(15)
+        time.sleep(10)
 
     def beginrun(self):
         """
@@ -85,6 +99,9 @@ class ISISLARMOR(ScatteringInstrument,Driver):
 
     def abortrun(self):
         pye.caput("IN:LARMOR:DAE:ABORTRUN", 1)
+        
+    def endrun(self):
+        pye.caput("IN:LARMOR:DAE:ENDRUN", 1)
 
     def getRunTitle(self):
         title=pye.caget("IN:LARMOR:DAE:TITLE")
@@ -102,12 +119,14 @@ class ISISLARMOR(ScatteringInstrument,Driver):
         frs=pye.caget("IN:LARMOR:DAE:GOODFRAMES")
         while frs < frames:
             frs=pye.caget("IN:LARMOR:DAE:GOODFRAMES")
+            time.sleep(0.1)
         print(f"{frames} frames counted")
 
     def waitforuah(self,uamps:Number=50):
         print(f"Waiting for {uamps} uamps")
         ua = pye.caget("IN:LARMOR:DAE:GOODUAH")
         while ua < uamps:
+            time.sleep(0.1)
             ua = pye.caget("IN:LARMOR:DAE:GOODUAH")
         print(f"{uamps} amps counted")
 
@@ -115,6 +134,7 @@ class ISISLARMOR(ScatteringInstrument,Driver):
         print(f"Waiting for {sec} seconds")
         t=pye.caget("IN:LARMOR:DAE:GOODFRAMES")/10
         while t < sec:
+            time.sleep(0.1)
             t=pye.caget("IN:LARMOR:DAE:GOODFRAMES")/10
         print(f"{t} sec counted")
 
@@ -128,6 +148,23 @@ class ISISLARMOR(ScatteringInstrument,Driver):
             self.waitfortime(exposure)
         else:
             raise ValueError(f'Invalid exposure metric = {expose_metric}')
+            
+    def waitforfile(self, fpath, max_t=600):
+        # TODO: Check that the file is not changing, not that is just exists
+        self.status_str = f"Waiting for file {fpath} to be written..."
+        start_time = time.time()
+        while not fpath.exists():
+            time.sleep(0.1)
+            now = time.time()
+            if now - start_time >= max_t:
+                raise FileNotFound(f"The file {fpath} was not written within {max_t} seconds.")
+        self.status_str = f"File {fpath} was created successfully."
+                
+    def waitforsetup(self):
+        # if RUNSTATE is in Setup, begin the run
+        self.status_str = "Waiting for the instrument to be in the SETUP state."
+        while pye.caget("IN:LARMOR:DAE:RUNSTATE") != 1:
+            time.sleep(0.5)
 
     def getFilename(self, type:str='raw', prefix:str="LARMOR", ext:str=None, lmin:float=None, lmax:float=None):
         """
@@ -168,30 +205,37 @@ class ISISLARMOR(ScatteringInstrument,Driver):
             self,
             name: str,
             exposure: Number,
-            empty_exposure: Number,
+            exposure_trans: Number,
             expose_metric:str='frames',
             reduce_data: bool=True,
             measure_transmission: bool=True
     ):
         """
-        expose_metric: `frames`, `uamps`, or `time` in sconds; controls wait time
+        expose_metric: `frames`, `uamps`, or `time` in seconds; controls wait time
         expose_dose: exposure metric in frames, uamps, or seconds
         """
+        self.waitforsetup()
+        sampleTRANS_rn = self.getRunNumber()
+        sampleTRANS_fname = self.getFilename()
         self.setRunTitle(name+"_trans")
+        self.status_str = f"Now measuring transmission for run number {sampleTRANS_rn}"
         self.trans_mode()
         self.beginrun()
-        self.waitfor(empty_exposure)
-        self.abortrun()
-        sampleTRANS_rn = self.getRunNumber()
+        self.waitfor(exposure_trans,expose_metric=expose_metric)
+        self.endrun()
 
+        self.waitforsetup()
+        sampleSANS_fname = self.getFilename()
         self.setRunTitle(name+"_sans")
         self.scatt_mode()
-        self.beginrun()
-        self.waitfor(exposure)
-        self.abortrun()
         sampleSANS_rn = self.getRunNumber()
+        self.status_str = f"Now measuring scattering for run number {sampleSANS_rn}"
+        self.beginrun()
+        self.waitfor(exposure,expose_metric=expose_metric)
+        self.endrun()
 
         if reduce_data:
+            self.waitforfile(Path(PREFIX) / DATA_LOCATION / sampleSANS_fname)
             self.reduce(name=name, sampleSANS_rn=sampleSANS_rn, sampleTRANS_rn=sampleTRANS_rn)
     def reduce(self, sampleSANS_rn: int, sampleTRANS_rn: Optional[int]=None, sample_thickness: Number=1, name:str=""):
         prefix = "//isis/inst$"
@@ -200,6 +244,7 @@ class ISISLARMOR(ScatteringInstrument,Driver):
             prefix + "/NDXLARMOR/Instrument/data/cycle_23_5/")
         mask_file = prefix + '/NDXLARMOR/User/Masks/USER_Beaucage_235C_SampleChanger_r80447.TOML'
 
+        self.status_str = f"Reducing run number {sampleSANS_rn}."
         ici.Clean()
         ici.LARMOR()
         ici.Set1D()
@@ -211,7 +256,7 @@ class ISISLARMOR(ScatteringInstrument,Driver):
         canTRANS = self.config['empty_cell_trans_rn']
 
         savedir = self.config['reduced_data_dir']
-
+        
         ici.AssignSample(str(sampleSANS_rn))
         ici.AssignCan(str(canSANS))
         ici.TransmissionSample(str(sampleTRANS_rn), str(DBTRANS))
@@ -223,15 +268,33 @@ class ISISLARMOR(ScatteringInstrument,Driver):
         #              Append=False, Transmission=str(sampleSANS_rn) + '_trans_Sample_0.9_13.5',
         #              TransmissionCan=str(sampleSANS_rn) + '_trans_Can_0.9_13.5')
 
-        filename = savedir + str(sampleSANS_rn) + f"_{name}_" + '_rear_1D_0.9_13.5.h5'
+        filename = Path(savedir) / (str(sampleSANS_rn) + f"_{name}_" + '_rear_1D_0.9_13.5.h5')
+        self.status_str = f"Writing the reduced data for run number {sampleSANS_rn} to {filename}."
         SaveNXcanSAS(
-            str(sampleSANS_rn) + f"_{name}_" + '_rear_1D_0.9_13.5',
-            filename,
+            str(sampleSANS_rn) + '_rear_1D_0.9_13.5',
+            str(filename.absolute()),
             RadiationSource='Spallation Neutron Source',
             Transmission=str(sampleSANS_rn) + '_trans_Sample_0.9_13.5',
-            TransmissionCan=str(sampleSANS_rn) + '_trans_Can_0.9_13.5',
-            SampleThickness=sample_thickness
+            TransmissionCan=str(sampleSANS_rn) + '_trans_Can_0.9_13.5'
         )
+        
+        self.waitforfile(filename)
+        
+        # File writing is not atomic between creation and completion - waitforfile only checks if it exists
+        time.sleep(2)
 
+        # load data from disk and send to tiled
+        loader = Loader()
+        sasdata = loader.load(str(filename.absolute()))
+        if len(sasdata)>1:
+            warnings.warn("Loaded multiple data from file...taking the last one",stacklevel=2)
+            
+        sasdata = sasdata[-1]
+
+        self.data['q'] = sasdata.x
+        self.data['filename'] = filename
+        self.data.add_array('q',sasdata.x)
+        self.data.add_array('I',sasdata.y)
+        self.data.add_array('dI',sasdata.dy)
 
 

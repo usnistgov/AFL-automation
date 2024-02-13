@@ -12,7 +12,7 @@ import json
 
 import paramiko #general ssh connection client
 
-def I22(Driver,Scattri):
+def I22(Driver,ScatteringInstrument):
     def __init__(self,username,address,port=5000):
         self.I22_client = paramiko.SSHClient()
         self.I22_client.load_system_host_keys()
@@ -34,7 +34,7 @@ def I22(Driver,Scattri):
 
         #this needs to be confirmed
         self.filename=filename
-        self.run_commad = f"AFL_Acquisition(filename={filename},nframes={nframes},acq_time={acq_time})"
+        self.run_command = f"AFL_Acquisition(filename={filename},nframes={nframes},acq_time={acq_time})"
         self.raw_written = False
         
         ssh_stdin, ssh_stdout, ssh_stderr = self.I22_client.exec_command(self.run_command)

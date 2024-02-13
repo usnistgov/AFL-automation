@@ -298,7 +298,7 @@ class SampleDriver(Driver):
         if name is None:
             self.sample_name = f"{self.config['data_tag']}_{self.uuid['sample'][-8:]}"
         else:
-            self.sample_name = None
+            self.sample_name = name
 
         if predict_next and AL_uuid is None:
             self.uuid['AL'] = 'AL-' + str(uuid.uuid4())
@@ -320,15 +320,15 @@ class SampleDriver(Driver):
             AL_components = self.config['AL_components'],
         )
         for name, client in self.client.items():
-            client.enqueue(task_name='set_sample', **sample_data)
-
+            client.enqueue(task_name='set_sample', **sample_data) 
+            
         prep_protocol = self.compute_prep_protocol(
             composition = composition,
             fixed_concs = fixed_concs,
             sample_volume = sample_volume
         )
 
-        self.make_and_measure(name=name, prep_protocol=prep_protocol, catch_protocol=self.catch_protocol)
+        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=self.catch_protocol)
 
         if predict_next:
             self.predict_next_sample()
@@ -358,7 +358,7 @@ class SampleDriver(Driver):
             }
             queue_loc = self.app.task_queue.qsize() #append at end of queue
             self.app.task_queue.put(package,queue_loc)
-
+    
     def compute_prep_protocol(self,composition: Dict, sample_volume: Dict, fixed_concs: Dict):
         """
         Parameters

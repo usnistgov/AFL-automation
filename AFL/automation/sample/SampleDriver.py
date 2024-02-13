@@ -46,7 +46,6 @@ class SampleDriver(Driver):
     defaults['data_tag'] = 'default'
     defaults['components'] = []
     defaults['AL_components'] = []
-    defaults['csv_data_path'] = './'
     defaults['snapshot_directory'] = '/home/nistoroboto'
     defaults['max_sample_transmission'] = 0.6
     defaults['mix_order'] = []

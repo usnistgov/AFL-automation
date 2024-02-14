@@ -44,6 +44,7 @@ class SampleDriver(Driver):
     defaults['instrument'] = {}
     defaults['ternary'] = False
     defaults['data_tag'] = 'default'
+    defaults['data_path'] = './'
     defaults['components'] = []
     defaults['AL_components'] = []
     defaults['snapshot_directory'] = '/home/nistoroboto'
@@ -200,7 +201,7 @@ class SampleDriver(Driver):
             for entry in new_protocol:
                 if entry.source in custom_stock_settings:
                     for setting, value in custom_stock_settings[entry.source].items():
-                        entry.__setattr__(setting, value)
+                        entry.kwargs[setting] = value
                 time_patched_protocol.append(entry)
             sample.protocol = time_patched_protocol
 
@@ -319,17 +320,18 @@ class SampleDriver(Driver):
             AL_campaign_name = self.AL_campaign_name,
             AL_uuid = self.uuid['AL'],
             AL_components = self.config['AL_components'],
+            sample_composition = composition,
         )
         for name, client in self.client.items():
             client.enqueue(task_name='set_sample', **sample_data) 
             
-        prep_protocol = self.compute_prep_protocol(
+        prep_protocol, catch_protocol = self.compute_prep_protocol(
             composition = composition,
             fixed_concs = fixed_concs,
             sample_volume = sample_volume
         )
 
-        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=self.catch_protocol)
+        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol)
 
         if predict_next:
             self.predict_next_sample()
@@ -397,6 +399,11 @@ class SampleDriver(Driver):
             mass_dict = {}
             for name, comp in composition.items():
                 mass_dict[name] = (comp['value'] * units(comp['units']) * sample_volume).to('mg')
+            
+            for component in self.config['components']:
+                if component not in mass_dict:
+                    mass_dict[component] = 0.0*units('mg')
+                    
 
         self.target = AFL.automation.prepare.Solution('target', self.config['components'])
         self.target.volume = sample_volume
@@ -425,6 +432,11 @@ class SampleDriver(Driver):
         self.app.logger.info(f'Making next sample with mass fraction: {self.sample.target_check.mass_fraction}')
 
         self.catch_protocol.source = self.sample.target_loc
+        
+        self.protocol = self.sample.emit_protocol()
+        
+        return self.sample.emit_protocol(), [self.catch_protocol.emit_protocol()]
+        
 
 
 
@@ -461,7 +473,7 @@ class SampleDriver(Driver):
                 task['force_new_tip'] = True
             if i == (len(prep_protocol) - 1):  # last prepare
                 task['drop_tip'] = False
-            self.uuid['prep'] = self.get_client('prep').transfer(**task)
+            self.uuid['prep'] = self.get_client('prep').enqueue(task_name='transfer',**task)
 
         if self.uuid['rinse'] is not None:
             self.update_status(f'Waiting for rinse...')
@@ -480,11 +492,11 @@ class SampleDriver(Driver):
             self.take_snapshot(prefix=f'02-after-prep-{name}')
 
         self.update_status(f'Queueing sample {name} load into syringe loader')
-        for task in self.catch_protocol:
+        for task in catch_protocol:
             # if the well isn't in the map, just use the well
             task['source'] = target_map.get(task['source'], task['source'])
             task['dest'] = target_map.get(task['dest'], task['dest'])
-            self.uuid['catch'] = self.get_client('prep').transfer(**task)
+            self.uuid['catch'] = self.get_client('prep').enqueue(task_name='transfer',**task)
 
         if self.uuid['catch'] is not None:
             self.update_status(f"Waiting for sample prep/catch of {name} to finish: {self.uuid['catch'][-8:]}")
@@ -495,6 +507,7 @@ class SampleDriver(Driver):
         self.get_client('prep').enqueue(task_name='home')
 
         # do the sample measurement train
+        self.update_status(f"Measuring sample with all loaded instruments...")
         self.measure(name=name, empty=False, wait=True)
 
         self.update_status(f'Cleaning up sample {name}...')
@@ -535,9 +548,9 @@ class SampleDriver(Driver):
                 self.take_snapshot(prefix=f'05-after-load-{instrument["name"]}-{name}')
 
             if empty:
-                measure_kw = instrument['measure_base_kw']
-            else:
                 measure_kw = instrument['empty_base_kw']
+            else:
+                measure_kw = instrument['measure_base_kw']
             measure_kw['name'] = name
             self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
 
@@ -557,7 +570,7 @@ class SampleDriver(Driver):
             raise ValueError(f"Could not tiled entry for measurement sample_uuid={self.uuid['sample']}")
 
         q = tiled_result.items()[-1][-1].metadata['q']
-        I = tiled_result.items()[-1][-1].values[()]
+        I = tiled_result.items()[-1][-1][()]
         q_dim = self.config['q_dim']
         measurement = xr.DataArray(I,dims=[q_dim],coords={q_dim:q})
 

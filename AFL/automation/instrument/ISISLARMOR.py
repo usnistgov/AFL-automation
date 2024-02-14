@@ -42,9 +42,7 @@ class ISISLARMOR(Driver):
     # anything you may want to change at run time, pull from defaults.config
     # these defaults will need to be changed
     defaults = {}
-    defaults['sample axis'] = 'Z-stage' # not X, do not move in the x-direction   
     defaults['sample_thickness'] = 1
-    defaults['measurement_positions'] = 0
 
     defaults['reduced_data_dir'] = './'
     defaults['tiled_uri'] = 'http://130.246.37.131:8000'
@@ -53,12 +51,17 @@ class ISISLARMOR(Driver):
     defaults['empty_cell_scatt_rn'] = -1
     defaults['empty_cell_trans_rn'] = -1
 
+    defaults['slow_wait_time'] = 2
+    defaults['fast_wait_time'] = 1
+    defaults['file_wait_time'] = 1
+
     def __init__(self,name:str='ISISLARMOR',overrides=None):
         """ """
         self.app = None
         Driver.__init__(self,name=name,defaults=self.gather_defaults(),overrides=overrides)
         self.tiled_client = None
         self.status_str = "New Server"
+
         
     def status(self):
         status=[]
@@ -75,11 +78,11 @@ class ISISLARMOR(Driver):
 
     def trans_mode(self):
         pye.caput("IN:LARMOR:MOT:MTR0602.VAL", 0.0)
-        time.sleep(10)
+        time.sleep(10)# need to wait for motor move
 
     def scatt_mode(self):
         pye.caput("IN:LARMOR:MOT:MTR0602.VAL", 200.0)
-        time.sleep(10)
+        time.sleep(10)# need to wait for motor move
 
     def beginrun(self):
         """
@@ -95,7 +98,7 @@ class ISISLARMOR(Driver):
         # otherwise, 
         while rstate != 2:
             rstate=pye.caget("IN:LARMOR:DAE:RUNSTATE")
-            time.sleep(2)
+            time.sleep(self.config['slow_wait_time'])
 
     def abortrun(self):
         pye.caput("IN:LARMOR:DAE:ABORTRUN", 1)
@@ -119,14 +122,14 @@ class ISISLARMOR(Driver):
         frs=pye.caget("IN:LARMOR:DAE:GOODFRAMES")
         while frs < frames:
             frs=pye.caget("IN:LARMOR:DAE:GOODFRAMES")
-            time.sleep(0.1)
+            time.sleep(self.config['fast_wait_time'])
         print(f"{frames} frames counted")
 
     def waitforuah(self,uamps:Number=50):
         print(f"Waiting for {uamps} uamps")
         ua = pye.caget("IN:LARMOR:DAE:GOODUAH")
         while ua < uamps:
-            time.sleep(0.1)
+            time.sleep(self.config['fast_wait_time'])
             ua = pye.caget("IN:LARMOR:DAE:GOODUAH")
         print(f"{uamps} amps counted")
 
@@ -134,7 +137,7 @@ class ISISLARMOR(Driver):
         print(f"Waiting for {sec} seconds")
         t=pye.caget("IN:LARMOR:DAE:GOODFRAMES")/10
         while t < sec:
-            time.sleep(0.1)
+            time.sleep(self.config['fast_wait_time'])
             t=pye.caget("IN:LARMOR:DAE:GOODFRAMES")/10
         print(f"{t} sec counted")
 
@@ -154,17 +157,33 @@ class ISISLARMOR(Driver):
         self.status_str = f"Waiting for file {fpath} to be written..."
         start_time = time.time()
         while not fpath.exists():
-            time.sleep(0.1)
+            time.sleep(self.config['file_wait_time'])
             now = time.time()
             if now - start_time >= max_t:
                 raise FileNotFound(f"The file {fpath} was not written within {max_t} seconds.")
         self.status_str = f"File {fpath} was created successfully."
+
+    def waitforSASfile(self, fpath, max_t=600):
+        # TODO: Check that the file is not changing, not that is just exists
+        self.status_str = f"Waiting for file {fpath} to be written..."
+        start_time = time.time()
+        while not fpath.exists():
+            try:
+                loader = Loader()
+                sasdata = loader.load(str(filename.absolute()))
+                break
+            except:
+                time.sleep(self.config['file_wait_time'])
+                now = time.time()
+                if now - start_time >= max_t:
+                    raise FileNotFound(f"The file {fpath} was not written within {max_t} seconds.")
+        self.status_str = f"SASFile {fpath} was loaded successfully."
                 
     def waitforsetup(self):
         # if RUNSTATE is in Setup, begin the run
         self.status_str = "Waiting for the instrument to be in the SETUP state."
         while pye.caget("IN:LARMOR:DAE:RUNSTATE") != 1:
-            time.sleep(0.5)
+            time.sleep(self.config['slow_wait_time'])
 
     def getFilename(self, type:str='raw', prefix:str="LARMOR", ext:str=None, lmin:float=None, lmax:float=None):
         """
@@ -278,11 +297,8 @@ class ISISLARMOR(Driver):
             TransmissionCan=str(sampleSANS_rn) + '_trans_Can_0.9_13.5'
         )
         
-        self.waitforfile(filename)
+        self.waitforSASfile(filename)
         
-        # File writing is not atomic between creation and completion - waitforfile only checks if it exists
-        time.sleep(2)
-
         # load data from disk and send to tiled
         loader = Loader()
         sasdata = loader.load(str(filename.absolute()))

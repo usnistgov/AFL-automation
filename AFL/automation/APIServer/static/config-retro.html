@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuration Editor</title>
+<style>
+    body {
+        font-family: "Courier New", Courier, monospace;
+        background-color: #000;
+        color: #0f0;
+        margin: 0;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    .config-item {
+        display: flex;
+        margin-bottom: 10px;
+    }
+    .config-item label {
+        flex: 1;
+        margin-right: 10px;
+    }
+    .config-item input[type="text"] {
+        flex: 2;
+        background-color: #000;
+        color: #0f0;
+        border: 1px solid #0f0;
+        padding: 5px;
+    }
+    .config-item button {
+        flex: 0.5;
+        cursor: pointer;
+        background-color: transparent;
+        color: #0f0;
+        border: 1px solid #0f0;
+        padding: 5px;
+    }
+    .config-item button.clicked {
+        background-color: #0f0;
+    }
+    #priority-checkbox {
+        margin-right: 5px;
+    }
+    label[for="priority-checkbox"] {
+        color: #0f0;
+    }
+    p {
+        font-size: 14px;
+    }
+</style>
+</head>
+<body>
+<h1>Configuration Editor</h1>
+<input type="checkbox" id="priority-checkbox">
+<label for="priority-checkbox">Priority Change - cut to top of queue</label>
+<p>Green checkbox indicates change in progress, white indicates change synced to server.</p>
+<div id="config-items"></div>
+<script>
+    async function login() {
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: 'your_username', password: 'domo_arigato' })
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to login: ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data.token; // Assuming the JWT token is returned as 'access_token'
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function getConfig(jwtToken) {
+        try {
+            const response = await fetch('/enqueue', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken}`
+                },
+                body: JSON.stringify({ task_name: 'get_configs' })
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to enqueue get_configs: ${response.statusText}`);
+            }
+            const taskUUID = await response.text();
+            return taskUUID;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function getTaskResult(jwtToken, taskUUID) {
+        try {
+            const startTime = Date.now();
+            let taskResult;
+            while (true) {
+                if (Date.now() - startTime > 10000) { // Timeout after 10 seconds
+                    throw new Error('Timeout while waiting for task result');
+                }
+                await new Promise(resolve => setTimeout(resolve, 200)); // Wait for 200ms
+                const response = await fetch('/get_queue', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to get task result: ${response.statusText}`);
+                }
+                const queueData = await response.json();
+                // Check if the task UUID matches the one we're waiting for
+                const matchingTask = queueData[0].find(task => task.uuid === taskUUID);
+                if (matchingTask) {
+                    taskResult = matchingTask.meta.return_val;
+                    break;
+                }
+            }
+            return taskResult;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function renderConfigItems() {
+        const jwtToken = await login(); // Get JWT token
+        const taskUUID = await getConfig(jwtToken); // Enqueue get_configs
+        const taskResult = await getTaskResult(jwtToken, taskUUID); // Wait for task completion and get result
+        console.log('Task Result:', taskResult); // Log the task result
+        const configData = taskResult;
+        const configItemsContainer = document.getElementById('config-items');
+        configItemsContainer.innerHTML = '';
+
+        for (const [key, value] of Object.entries(configData)) {
+            const configItem = document.createElement('div');
+            configItem.classList.add('config-item');
+
+            const label = document.createElement('label');
+            label.textContent = key;
+            configItem.appendChild(label);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            configItem.appendChild(input);
+
+            const button = document.createElement('button');
+            button.textContent = '✔';
+            button.onclick = async () => {
+                const newValue = input.value;
+                const priorityChange = document.getElementById('priority-checkbox').checked;
+                const config = { [key]: newValue };
+                if (priorityChange) {
+                    config.queue_loc = 0;
+                }
+                await setConfig(jwtToken, config, button, taskUUID); // Pass the button element and taskUUID to setConfig
+                //await renderConfigItems(); // Re-render config items after setting a new value
+            };
+            configItem.appendChild(button);
+
+            configItemsContainer.appendChild(configItem);
+        }
+    }
+
+    async function setConfig(jwtToken, config, button, taskUUID) {
+        try {
+            button.classList.add('clicked'); // Change button background color to green when clicked
+            const response = await fetch('/enqueue', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken}`
+                },
+                body: JSON.stringify({ task_name: 'set_config', ...config })
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to set config: ${response.statusText}`);
+            }
+            // Check if the task UUID appears in the first section of the queue
+            const taskUUID = await response.text();
+            const isTaskCompleted = await checkTaskCompletion(jwtToken, taskUUID);
+            if (isTaskCompleted) {
+                // Change button background color to white when task is completed
+                button.classList.remove('clicked');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function checkTaskCompletion(jwtToken, taskUUID) {
+        try {
+            const response = await fetch('/get_queue', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to get queue data: ${response.statusText}`);
+            }
+            const queueData = await response.json();
+            // Check if the task UUID appears in the first section of the queue
+            const isTaskCompleted = queueData[0].some(task => task.uuid === taskUUID);
+            return isTaskCompleted;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    renderConfigItems();
+</script>
+</body>
+</html>

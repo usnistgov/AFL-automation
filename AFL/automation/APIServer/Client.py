@@ -268,7 +268,7 @@ class Client:
             uid = 'DB-' + str(uuid.uuid4())
         json['uuid'] = uid
         json['obj'] = serialization.serialize(obj)
-        print(json)
+        # print(json)
         response = requests.post(self.url + '/deposit_obj', headers=self.headers, json=json)
         return response.content.decode('UTF-8')
 

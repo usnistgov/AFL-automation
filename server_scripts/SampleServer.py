@@ -19,7 +19,7 @@ driver =SampleDriver(
         camera_urls = [ ],
         snapshot_directory= '/home/afl642/snaps'
         )
-server = APIServer('SampleServer',data=data)
+server = APIServer('SampleServerTest',data=data)
 server.add_standard_routes()
 server.create_queue(driver)
 server.init_logging(toaddrs=[])

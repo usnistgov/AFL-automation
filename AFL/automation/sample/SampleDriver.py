@@ -6,6 +6,7 @@ import shutil
 import traceback
 import uuid
 from typing import Optional, Dict, List
+import warnings
 
 import h5py
 import numpy as np
@@ -339,10 +340,10 @@ class SampleDriver(Driver):
             AL_campaign_name = self.AL_campaign_name,
             AL_uuid = self.uuid['AL'],
             AL_components = self.config['AL_components'],
-            sample_composition = realized_sample_composition,
+            sample_composition = sample_composition_realized,
         )
-        for name, client in self.client.items():
-            client.enqueue(task_name='set_sample', **sample_data) 
+        for client_name in self.config['client'].keys():
+            self.get_client(client_name).enqueue(task_name='set_sample', **sample_data) 
 
         self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol)
         self.construct_datasets(combine_comps=predict_combine_comps)
@@ -352,29 +353,33 @@ class SampleDriver(Driver):
 
         # Look away ... here be dragons ...
         if enqueue_next:
-            next_sample = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
-            next_sample_dict = {
-                k: {'value': v, 'units': next_sample.attrs[k + '_units']} for k, v in next_sample.items()
-            }
+            ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
+            
+            #this assumes that 'component' is going to be a dim name
+            for AL_sample in ag_result.next_samples.transpose(...,'component'):
+                new_composition = {} #this currently only works on the last sample
+                for sample in AL_sample:
+                    new_composition[sample.component.values[()]] = {'value':sample.values[()],'units':'milligram / milliliter'} 
 
             task = {
                 'task_name':'process_sample',
-                'composition': next_sample_dict,
+                'composition': new_composition,
                 'sample_volume': sample_volume,
                 'fixed_concs':fixed_concs,
+                'prepare_mfrac_split':prepare_mfrac_split,
+                'predict_combine_comps': predict_combine_comps,
                 'predict_next':predict_next,
                 'enqueue_next':enqueue_next,
                 'AL_campaign_name':self.AL_campaign_name,
                 'AL_uuid': self.uuid['AL'],
             }
 
-            package = {
-                'task':task,
-                'meta':datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f'),
-                'uuid': 'QD-' + str(uuid.uuid4())
-            }
-            queue_loc = self.app.task_queue.qsize() #append at end of queue
-            self.app.task_queue.put(package,queue_loc)
+            task_uuid =  'QD-' + str(uuid.uuid4())
+            package = {'task':task,'meta':{},'uuid':task_uuid}
+            package['meta']['queued'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f')
+            
+            queue_loc = self._queue.qsize() #append at end of queue
+            self._queue.put(package,queue_loc)
     
     
     def compute_prep_protocol(self,composition: Dict, sample_volume: Dict, fixed_concs: Dict, mfrac_split:Optional[Dict]=None):
@@ -588,21 +593,23 @@ class SampleDriver(Driver):
         if len(self.config['instrument'])>1:
             raise NotImplemented
         
-        for i,instrument in enumerate(self.config['instrument']):
-            tiled_result = (
-                self.tiled_client
-                .search(Eq('sample_uuid',self.uuid['sample']))
-                .search(Eq('array_name', instrument['tiled_array_name']))
-            )
-            if len(tiled_result)==0:
-                raise ValueError(f"Could not tiled entry for measurement sample_uuid={self.uuid['sample']}")
-    
-            coord = {instrument['data_dim']:tiled_result.items()[-1][-1].metadata[instrument['tiled_metadata_dim']]}
-            data = tiled_result.items()[-1][-1][()]
-            measurement = xr.DataArray(data, dims=instrument['data_dim'],coords=coord)
-
         self.new_data = xr.Dataset()
-        self.new_data[instrument['data_name']] = measurement
+        for i,instrument in enumerate(self.config['instrument']):
+            for instrument_data in instrument['data']:
+                tiled_result = (
+                    self.tiled_client
+                    .search(Eq('sample_uuid',self.uuid['sample']))
+                    .search(Eq('array_name', instrument_data['tiled_array_name']))
+                )
+                if len(tiled_result)==0:
+                    raise ValueError(f"Could not find tiled entry for measurement sample_uuid={self.uuid['sample']}")
+        
+                coord = {instrument_data['data_dim']:tiled_result.items()[-1][-1].metadata[instrument_data['tiled_metadata_dim']]}
+                data = tiled_result.items()[-1][-1][()]
+                measurement = xr.DataArray(data, dims=instrument_data['data_dim'],coords=coord)
+                self.new_data[instrument_data['data_name']] = measurement
+                
+
         self.new_data['validated'] = self.validated
         self.new_data['sample_uuid'] = self.uuid['sample']
 
@@ -667,16 +674,17 @@ class SampleDriver(Driver):
     
     def predict_next_sample(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""
-        data_name = self.config['instrument'][-1]['data_name']
         
-        ds_append = xr.Dataset()
-        ds_append[data_name] = self.new_data[data_name]
-        ds_append[self.config['composition_var_name']] = self.new_data[self.config['AL_components']].to_array('component').transpose(...,'component')
+        self.ds_append = xr.Dataset()
+        self.ds_append[self.config['composition_var_name']] = self.new_data[self.config['AL_components']].to_array('component').transpose(...,'component')
+        
+        for i,instrument in enumerate(self.config['instrument']):
+            for instrument_data in instrument['data']:
+                self.ds_append[instrument_data['data_name']] = self.new_data[instrument_data['data_name']]
 
-
-        db_uuid = self.client['agent'].deposit_obj(obj=self.new_data)
-        self.client['agent'].enqueue(task_name='append_data',db_uuid=db_uuid,concat_dim=self.config['concat_dim'])
-        self.uuid['agent'] = self.client['agent'].enqueue(
+        db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
+        self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=self.config['concat_dim'])
+        self.uuid['agent'] = self.get_client('agent').enqueue(
             task_name='predict',
             sample_uuid=self.uuid['sample'],
             AL_campaign_name=self.AL_campaign_name,

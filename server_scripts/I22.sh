@@ -1,8 +1,6 @@
 #!/bin/bash -i
 
-git config --global credential.helper store
-
-source activate afl
+#git config --global credential.helper store
 
 
 if [[ -z "${TILED_API_KEY}" ]]; then
@@ -17,7 +15,10 @@ else
   export AFL_SYSTEM_SERIAL="${AFL_SYSTEM_SERIAL}"
 fi
 
-cd ~/AFL-automation/
-git pull
 
-python ~/AFL-automation/server_scripts/virtual_instrument/DummyLoader.py
+conda activate afl_agent
+
+#cd ~/NistoRoboto/
+#git pull
+
+python ~/AFL-automation/server_scripts/I22.py

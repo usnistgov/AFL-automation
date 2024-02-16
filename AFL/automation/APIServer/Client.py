@@ -158,7 +158,7 @@ class Client:
         response = requests.post(self.url+'/enqueue',headers=self.headers,json=json)
         if response.status_code != 200:
             raise RuntimeError(f'API call to enqueue command failed with status_code {response.status_code}\n{response.text}')
-        task_uuid = uuid.UUID(response.text)
+        task_uuid = str(response.text)
         if interactive:
             meta = self.wait(target_uuid=task_uuid,first_check_delay=0.5)
             if meta['exit_state']=='Error!':
@@ -268,7 +268,7 @@ class Client:
             uid = 'DB-' + str(uuid.uuid4())
         json['uuid'] = uid
         json['obj'] = serialization.serialize(obj)
-        print(json)
+        # print(json)
         response = requests.post(self.url + '/deposit_obj', headers=self.headers, json=json)
         return response.content.decode('UTF-8')
 

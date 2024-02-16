@@ -11,7 +11,7 @@ from AFL.automation.instrument.I22SAXS import I22SAXS
 from AFL.automation.APIServer.data.DataTiled import DataTiled
 
 data = DataTiled('http://10.42.0.1:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/afl642/.afl/json-backup')
-server_port=5000
+server_port=5001
 
 driver = I22SAXS()
 server = APIServer('I22SAXS',contact='pab2@nist.gov',data=data)

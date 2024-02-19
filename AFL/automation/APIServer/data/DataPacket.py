@@ -87,7 +87,11 @@ class DataPacket(MutableMapping):
         '''
         output_dict = copy.deepcopy(to_sanitize)
 
+        #print("DataPacket._core_sanitize start:")
         for key in to_sanitize.keys():
+            key = str(key)
+            #print("key",key,'type(key)',type(key))
+            
             if isinstance(to_sanitize[key], (list, tuple)):
                 # print(f'Sanitized list/tuple {key}')
                 output_dict[key] = list(to_sanitize[key])

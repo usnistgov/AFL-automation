@@ -7,19 +7,18 @@ except:
         print(f'Could not find AFL.automation on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 from AFL.automation.APIServer.APIServer import APIServer
-from AFL.automation.instrument.APSDNDCAT import APSDNDCAT
+from AFL.automation.instrument.I22SAXS import I22SAXS
+from AFL.automation.APIServer.data.DataTiled import DataTiled
 
-server_port=5000
+data = DataTiled('http://10.42.0.1:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/afl642/.afl/json-backup')
+server_port=5001
 
-driver = APSDNDCAT()
-server = APIServer('APSDNDCAT',contact='pab2@nist.gov')
+driver = I22SAXS()
+server = APIServer('I22SAXS',contact='pab2@nist.gov',data=data)
 server.add_standard_routes()
 
 server.create_queue(driver)
-#server.add_unqueued_routes()
 server.init_logging(toaddrs=['tbm@nist.gov','pab@nist.gov'])
-
-#process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
 
 server.run(host='0.0.0.0', port=server_port, debug=False)#,threaded=False)
 

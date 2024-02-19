@@ -6,6 +6,7 @@ import shutil
 import traceback
 import uuid
 from typing import Optional, Dict, List
+import warnings
 
 import h5py
 import numpy as np
@@ -44,13 +45,15 @@ class SampleDriver(Driver):
     defaults['instrument'] = {}
     defaults['ternary'] = False
     defaults['data_tag'] = 'default'
+    defaults['data_path'] = './'
     defaults['components'] = []
     defaults['AL_components'] = []
     defaults['snapshot_directory'] = '/home/nistoroboto'
     defaults['max_sample_transmission'] = 0.6
     defaults['mix_order'] = []
     defaults['custom_stock_settings'] = []
-    defaults['q_dim'] = 'q'
+    defaults['composition_var_name'] = 'comps'
+    defaults['concat_dim'] = 'sample'
 
     def __init__(
             self,
@@ -200,7 +203,7 @@ class SampleDriver(Driver):
             for entry in new_protocol:
                 if entry.source in custom_stock_settings:
                     for setting, value in custom_stock_settings[entry.source].items():
-                        entry.__setattr__(setting, value)
+                        entry.kwargs[setting] = value
                 time_patched_protocol.append(entry)
             sample.protocol = time_patched_protocol
 
@@ -236,6 +239,8 @@ class SampleDriver(Driver):
             composition: Dict,
             sample_volume: Dict,
             fixed_concs: Dict,
+            prepare_mfrac_split: Optional[Dict]=None,
+            predict_combine_comps: Optional[Dict]=None,
             predict_next: bool = False,
             enqueue_next: bool = False,
             name: Optional[str] = None,
@@ -256,7 +261,10 @@ class SampleDriver(Driver):
 
         fixed_concs: List[Optional[Dict]]
             Dict should be of the form fixed_concs[0] = {"value":value, "units":units}
-
+            
+        mfrac_split: Dict
+            Dict should be of the form mfrac_split = {'component_to_split':{'component_A':'mfrac_A','component_B':'mfrac_B'}}
+            
         predict_next: bool
             If True, will trigger predict call to the agent
 
@@ -312,55 +320,71 @@ class SampleDriver(Driver):
             self.AL_campaign_name = AL_campaign_name
 
 
+            
+        prep_protocol, catch_protocol = self.compute_prep_protocol(
+            composition = composition,
+            fixed_concs = fixed_concs,
+            mfrac_split = prepare_mfrac_split,
+            sample_volume = sample_volume
+        )
+        
         # configure all servers to this sample name and uuid
+        sample_composition_realized = {
+            k:{'value':v.magnitude ,'units':str(v.units)} for k,v in self.sample.target_check.concentration.items()
+        }
+        self.data['sample_composition_target'] = composition
+        self.data['sample_composition_realized'] = sample_composition_realized
         sample_data = self.set_sample(
             sample_name = self.sample_name,
             sample_uuid = self.uuid['sample'],
             AL_campaign_name = self.AL_campaign_name,
             AL_uuid = self.uuid['AL'],
             AL_components = self.config['AL_components'],
+            sample_composition = sample_composition_realized,
         )
-        for name, client in self.client.items():
-            client.enqueue(task_name='set_sample', **sample_data) 
-            
-        prep_protocol = self.compute_prep_protocol(
-            composition = composition,
-            fixed_concs = fixed_concs,
-            sample_volume = sample_volume
-        )
+        for client_name in self.config['client'].keys():
+            self.get_client(client_name).enqueue(task_name='set_sample', **sample_data) 
 
-        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=self.catch_protocol)
+        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol)
+        self.construct_datasets(combine_comps=predict_combine_comps)
 
         if predict_next:
             self.predict_next_sample()
 
         # Look away ... here be dragons ...
         if enqueue_next:
-            next_sample = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
-            next_sample_dict = {
-                k: {'value': v, 'units': next_sample.attrs[k + '_units']} for k, v in next_sample.items()
-            }
+            ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
+            
+            #this assumes that 'component' is going to be a dim name
+            for AL_sample in ag_result.next_samples.transpose(...,'component'):
+                new_composition = {} #this currently only works on the last sample
+                for sample in AL_sample:
+                    new_composition[sample.component.values[()]] = {'value':sample.values[()],'units':'milligram / milliliter'} 
 
             task = {
                 'task_name':'process_sample',
-                'composition': next_sample_dict,
+                'composition': new_composition,
                 'sample_volume': sample_volume,
                 'fixed_concs':fixed_concs,
+                'prepare_mfrac_split':prepare_mfrac_split,
+                'predict_combine_comps': predict_combine_comps,
                 'predict_next':predict_next,
                 'enqueue_next':enqueue_next,
                 'AL_campaign_name':self.AL_campaign_name,
                 'AL_uuid': self.uuid['AL'],
             }
 
-            package = {
-                'task':task,
-                'meta':datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f'),
-                'uuid': 'QD-' + str(uuid.uuid4())
-            }
-            queue_loc = self.app.task_queue.qsize() #append at end of queue
-            self.app.task_queue.put(package,queue_loc)
+            task_uuid =  'QD-' + str(uuid.uuid4())
+            package = {'task':task,'meta':{},'uuid':task_uuid}
+            package['meta']['queued'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f')
+            
+            queue_loc = self._queue.qsize() #append at end of queue
+            self._queue.put(package,queue_loc)
+            
+        
     
-    def compute_prep_protocol(self,composition: Dict, sample_volume: Dict, fixed_concs: Dict):
+    
+    def compute_prep_protocol(self,composition: Dict, sample_volume: Dict, fixed_concs: Dict, mfrac_split:Optional[Dict]=None):
         """
         Parameters
         ----------
@@ -369,6 +393,9 @@ class SampleDriver(Driver):
 
         sample_volume: Dict
             Dict should be of the form sample_volume =  {"value":value, "units":units}
+            
+        mfrac_split: Dict
+            Dict should be of the form mfrac_split = {'component_to_split':{'component_A':'mfrac_A','component_B':'mfrac_B'}}
 
         """
 
@@ -397,16 +424,28 @@ class SampleDriver(Driver):
             mass_dict = {}
             for name, comp in composition.items():
                 mass_dict[name] = (comp['value'] * units(comp['units']) * sample_volume).to('mg')
+            
+            if mfrac_split is not None:
+                for split_component, split_def in mfrac_split.items():
+                    target_mass = mass_dict[split_component]
+                    for component,mfrac in split_def.items():
+                        mass_dict[component] =  target_mass*mfrac
+                    del mass_dict[split_component]
+                
+            
+            # for component in self.config['components']:
+            #     if component not in mass_dict:
+            #         mass_dict[component] = 0.0*units('mg')
+                    
 
         self.target = AFL.automation.prepare.Solution('target', self.config['components'])
+        #self.target = AFL.automation.prepare.Solution('target', list(composition.keys()))
+        
         self.target.volume = sample_volume
         for k, v in mass_dict.items():
             self.target[k].mass = v
         self.target.volume = sample_volume
 
-        ######################
-        ## MAKE NEXT SAMPLE ##
-        ######################
         self.deck.reset_targets()
         self.deck.add_target(self.target, name='target')
         self.deck.make_sample_series(reset_sample_series=True)
@@ -425,7 +464,11 @@ class SampleDriver(Driver):
         self.app.logger.info(f'Making next sample with mass fraction: {self.sample.target_check.mass_fraction}')
 
         self.catch_protocol.source = self.sample.target_loc
-
+        
+        self.protocol = self.sample.emit_protocol()
+        
+        return self.sample.emit_protocol(), [self.catch_protocol.emit_protocol()]
+    
 
 
     def make_and_measure(
@@ -461,11 +504,11 @@ class SampleDriver(Driver):
                 task['force_new_tip'] = True
             if i == (len(prep_protocol) - 1):  # last prepare
                 task['drop_tip'] = False
-            self.uuid['prep'] = self.get_client('prep').transfer(**task)
+            self.uuid['prep'] = self.get_client('prep').enqueue(task_name='transfer',**task)
 
         if self.uuid['rinse'] is not None:
             self.update_status(f'Waiting for rinse...')
-            self.get_client('load').wait(self.uuid['rinse'])
+            self.get_client('load').wait(self.uuid['rinse'],for_history=False)
             self.update_status(f'Rinse done!')
 
         # calibrate sensor to avoid drift
@@ -476,15 +519,15 @@ class SampleDriver(Driver):
         self.measure(name=name, empty=True,wait=True)
 
         if self.uuid['prep'] is not None:
-            self.get_client('prep').wait(self.uuid['prep'])
+            self.get_client('prep').wait(self.uuid['prep'],for_history=False)
             self.take_snapshot(prefix=f'02-after-prep-{name}')
 
         self.update_status(f'Queueing sample {name} load into syringe loader')
-        for task in self.catch_protocol:
+        for task in catch_protocol:
             # if the well isn't in the map, just use the well
             task['source'] = target_map.get(task['source'], task['source'])
             task['dest'] = target_map.get(task['dest'], task['dest'])
-            self.uuid['catch'] = self.get_client('prep').transfer(**task)
+            self.uuid['catch'] = self.get_client('prep').enqueue(task_name='transfer',**task)
 
         if self.uuid['catch'] is not None:
             self.update_status(f"Waiting for sample prep/catch of {name} to finish: {self.uuid['catch'][-8:]}")
@@ -495,6 +538,7 @@ class SampleDriver(Driver):
         self.get_client('prep').enqueue(task_name='home')
 
         # do the sample measurement train
+        self.update_status(f"Measuring sample with all loaded instruments...")
         self.measure(name=name, empty=False, wait=True)
 
         self.update_status(f'Cleaning up sample {name}...')
@@ -535,34 +579,39 @@ class SampleDriver(Driver):
                 self.take_snapshot(prefix=f'05-after-load-{instrument["name"]}-{name}')
 
             if empty:
-                measure_kw = instrument['measure_base_kw']
-            else:
                 measure_kw = instrument['empty_base_kw']
+            else:
+                measure_kw = instrument['measure_base_kw']
             measure_kw['name'] = name
             self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
 
         if wait:
             self.uuid['measure'] = self.get_client(instrument['client_name']).wait(self.uuid['measure'])
-
-    def predict_next_sample(self):
+    
+    def construct_datasets(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""
         data_path = pathlib.Path(self.config['data_path'])
-
-        tiled_result = (
-            self.tiled_client
-            .search(Eq('sample_uuid',self.uuid['sample']))
-            .search(Eq('array_name', 'I'))
-        )
-        if len(tiled_result)==0:
-            raise ValueError(f"Could not tiled entry for measurement sample_uuid={self.uuid['sample']}")
-
-        q = tiled_result.items()[-1][-1].metadata['q']
-        I = tiled_result.items()[-1][-1].values[()]
-        q_dim = self.config['q_dim']
-        measurement = xr.DataArray(I,dims=[q_dim],coords={q_dim:q})
-
+        
+        if len(self.config['instrument'])>1:
+            raise NotImplemented
+        
         self.new_data = xr.Dataset()
-        self.new_data['SAS'] = measurement
+        for i,instrument in enumerate(self.config['instrument']):
+            for instrument_data in instrument['data']:
+                tiled_result = (
+                    self.tiled_client
+                    .search(Eq('sample_uuid',self.uuid['sample']))
+                    .search(Eq('array_name', instrument_data['tiled_array_name']))
+                )
+                if len(tiled_result)==0:
+                    raise ValueError(f"Could not find tiled entry for measurement sample_uuid={self.uuid['sample']}")
+        
+                coord = {instrument_data['data_dim']:tiled_result.items()[-1][-1].metadata[instrument_data['tiled_metadata_dim']]}
+                data = tiled_result.items()[-1][-1][()]
+                measurement = xr.DataArray(data, dims=instrument_data['data_dim'],coords=coord)
+                self.new_data[instrument_data['data_name']] = measurement
+                
+
         self.new_data['validated'] = self.validated
         self.new_data['sample_uuid'] = self.uuid['sample']
 
@@ -581,13 +630,16 @@ class SampleDriver(Driver):
                     component].to("mg/ml").magnitude
         else:
             for component in self.config['AL_components']:
-                self.new_data[component] = self.sample.target_check.concentration[component].to("mg/ml").magnitude
-                self.new_data[component].attrs['units'] = 'mg/ml'
+                try:
+                    self.new_data[component] = self.sample.target_check.concentration[component].to("mg/ml").magnitude
+                    self.new_data[component].attrs['units'] = 'mg/ml'
 
-                # for tiled
-                sample_composition['conc_' + component] = self.sample.target_check.concentration[component].to(
+                    # for tiled
+                    sample_composition['conc_' + component] = self.sample.target_check.concentration[component].to(
                     "mg/ml").magnitude
-
+                except KeyError:
+                    warnings.warn(f"Skipping component {component} in AL_components")
+            
         for component in self.config['components']:
             self.new_data['mfrac_' + component] = self.sample.target_check.mass_fraction[component].magnitude
             self.new_data['mass_' + component] = self.sample.target_check[component].mass.to('mg').magnitude
@@ -596,22 +648,62 @@ class SampleDriver(Driver):
             # for tiled
             sample_composition['mfrac_' + component] = self.sample.target_check.mass_fraction[component].magnitude
             sample_composition['mass_' + component] = self.sample.target_check[component].mass.to('mg').magnitude
+            
+        if combine_comps is not None:
+            for new_component,combine_list in combine_comps.items():
+                conc = 0 * units('mg/ml')
+                mass = 0 * units('mg')
+                volume = 0 * units('ul')
+                for component in combine_list:
+                    conc += self.sample.target_check.concentration[component].to("mg/ml")
+                    mass += self.sample.target_check[component].mass.to("mg")
+                    volume += self.sample.target_check[component].volume.to("ul")
+                    
+                self.new_data[new_component] = conc.to("mg/ml").magnitude #include as main AL variable
+                self.new_data['conc_'+new_component] = conc.to("mg/ml").magnitude
+                self.new_data['mass_'+new_component] = mass.to("mg").magnitude
+                self.new_data['volume_'+new_component] = volume.to("ul").magnitude 
 
         self.new_data.to_netcdf(data_path / (self.sample_name + '.nc'))
-
 
         sample_composition['components'] = self.config['components']
         sample_composition['conc_units'] = 'mg/ml'
         sample_composition['mass_units'] = 'mg'
+        sample_composition = {str(k):v for k,v in sample_composition.items()}
         if self.data is not None:
             self.data['sample_composition'] = sample_composition
             self.data['time'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f %Z%z')
-            self.data.finalize()
-
-
-        db_uuid = self.client['agent'].enqueue(task_name='deposit_obj',interactive=True)['return_val']
-        self.client['agent'].enqueue(task_name='append_data',db_uuid=db_uuid)
-        self.uuid['agent'] = self.client['agent'].enqueue(
+            #self.data.finalize() #I don't think we want this with the new sampel_server style
+    
+    def predict_next_sample(self,combine_comps=None):
+        """Construct AL manifest from measurement and call predict"""
+        
+        result = self.tiled_client.search(Eq('array_name','I')).items()[-1][-1]
+        if 'transmissions' not in result.metadata:
+            do_append = True
+            warnings.warn('No transmissions found in tiled entry! Assuming the sample hit!', stacklevel=2)
+        else:
+            transmissions = result.metadata['transmissions']
+            transmissions = [i for i in transmissions if i>0]
+            if len(transmissions)==0:
+                do_append = False
+            elif min(transmissions) > self.config['max_sample_transmission']:
+                do_append = False
+            else:
+                do_append = True
+        
+        if do_append:
+            self.ds_append = xr.Dataset()
+            self.ds_append[self.config['composition_var_name']] = self.new_data[self.config['AL_components']].to_array('component').transpose(...,'component')
+            
+            for i,instrument in enumerate(self.config['instrument']):
+                for instrument_data in instrument['data']:
+                    self.ds_append[instrument_data['data_name']] = self.new_data[instrument_data['data_name']]
+    
+            db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
+            self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=self.config['concat_dim'])
+        
+        self.uuid['agent'] = self.get_client('agent').enqueue(
             task_name='predict',
             sample_uuid=self.uuid['sample'],
             AL_campaign_name=self.AL_campaign_name,

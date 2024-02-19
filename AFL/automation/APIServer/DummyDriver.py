@@ -23,7 +23,7 @@ class DummyDriver(Driver):
         status.append('Neutrons: scattering')
         return status
     
-    def execute(self,**kwargs):
+    '''def execute(self,**kwargs):
         try:
            Driver.execute(self,**kwargs)
         except AttributeError:
@@ -33,7 +33,7 @@ class DummyDriver(Driver):
             return 0
     
     #add the get_well_plate here
-
+    '''
     @Driver.queued()
     def test_command1(self,kwarg1=None,kwarg2=True):
         '''A test command with positional and keyword parameters'''

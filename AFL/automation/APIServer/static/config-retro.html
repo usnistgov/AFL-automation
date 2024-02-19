@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuration Editor</title>
+<style>
+    body {
+        font-family: 'Courier New', Courier, monospace;
+        background-color: #000000;
+        color: #00FF00;
+        margin: 0;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        color: #00FF00;
+        text-transform: uppercase;
+    }
+    .config-item {
+        display: flex;
+        margin-bottom: 10px;
+    }
+    .config-item label {
+        flex: 1;
+        margin-right: 10px;
+        color: #FFD700; /* Yellow */
+    }
+    .config-item input[type="text"] {
+        flex: 2;
+        background-color: #000000;
+        color: #00FF00;
+        border: 1px solid #00FF00;
+        padding: 5px;
+        font-family: 'Courier New', Courier, monospace;
+    }
+    .config-item button {
+        flex: 0.5;
+        cursor: pointer;
+        background-color: #000000;
+        color: #00FF00;
+        border: 1px solid #00FF00;
+        padding: 5px;
+        font-family: 'Courier New', Courier, monospace;
+    }
+    .config-item button.clicked {
+        background-color: #008000; /* Green */
+    }
+    .loading {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #00FF00;
+    }
+</style>
+</head>
+<body>
+<h1>Configuration Editor</h1>
+<input type="checkbox" id="priority-checkbox">
+<label for="priority-checkbox">Priority Change - cut to top of queue</label>
+<p>Green checkbox indicates change in progress, white indicates change synced to server.</p>
+<div class="loading" id="loading-indicator">Loading...</div>
+<div id="config-items"></div>
+<script>
+    async function login() {
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: 'your_username', password: 'domo_arigato' })
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to login: ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data.token; // Assuming the JWT token is returned as 'access_token'
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function getConfig(jwtToken) {
+        try {
+            const response = await fetch('/enqueue', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken}`
+                },
+                body: JSON.stringify({ task_name: 'get_configs' })
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to enqueue get_configs: ${response.statusText}`);
+            }
+            const taskUUID = await response.text();
+            return taskUUID;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function getTaskResult(jwtToken, taskUUID) {
+        try {
+            const startTime = Date.now();
+            let taskResult;
+            while (true) {
+                if (Date.now() - startTime > 10000) { // Timeout after 10 seconds
+                    throw new Error('Timeout while waiting for task result');
+                }
+                await new Promise(resolve => setTimeout(resolve, 200)); // Wait for 200ms
+                const response = await fetch('/get_queue', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to get task result: ${response.statusText}`);
+                }
+                const queueData = await response.json();
+                // Check if the task UUID matches the one we're waiting for
+                const matchingTask = queueData[0].find(task => task.uuid === taskUUID);
+                if (matchingTask) {
+                    taskResult = matchingTask.meta.return_val;
+                    break;
+                }
+            }
+            return taskResult;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    async function renderConfigItems() {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const configItemsContainer = document.getElementById('config-items');
+
+        try {
+            // Display loading indicator
+            loadingIndicator.style.display = 'block';
+
+            const jwtToken = await login(); // Get JWT token
+            const taskUUID = await getConfig(jwtToken); // Enqueue get_configs
+            const taskResult = await getTaskResult(jwtToken, taskUUID); // Wait for task completion and get result
+            console.log('Task Result:', taskResult); // Log the task result
+
+            // Hide loading indicator
+            loadingIndicator.style.display = 'none';
+
+            const configData = taskResult;
+            configItemsContainer.innerHTML = '';
+
+            // Render config items
+            for (const [key, value] of Object.entries(configData)) {
+                 const configItem = document.createElement('div');
+            configItem.classList.add('config-item');
+
+            const label = document.createElement('label');
+            label.textContent = key;
+            configItem.appendChild(label);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = stringifyValue(value);
+            configItem.appendChild(input);
+
+            const button = document.createElement('button');
+            button.textContent = '✔';
+            button.onclick = async () => {
+                const newValue = parseValue(input.value); // Parse the input value before setting
+                const priorityChange = document.getElementById('priority-checkbox').checked;
+                const config = { [key]: newValue };
+                if (priorityChange) {
+                    config.queue_loc = 0;
+                }
+                await setConfig(jwtToken, config, button); // Pass the button element and taskUUID to setConfig
+
+            }
+                        configItem.appendChild(button);
+
+            configItemsContainer.appendChild(configItem);
+            }
+        } catch (error) {
+            console.error(error);
+            // Hide loading indicator in case of error
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+async function setConfig(jwtToken, config, button) {
+    try {
+        button.classList.add('clicked'); // Change button background color to green when clicked
+        const response = await fetch('/enqueue', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify({ task_name: 'set_config', ...config })
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to set config: ${response.statusText}`);
+        }
+        const taskUUID = await response.text(); // Get the task UUID from the response
+        // Check if the task UUID appears in the first section of the queue
+        const isTaskCompleted = await checkTaskCompletion(jwtToken, taskUUID);
+        if (isTaskCompleted) {
+            // Change button background color to white when task is completed
+            button.classList.remove('clicked');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function checkTaskCompletion(jwtToken, taskUUID) {
+    try {
+        while (true) {
+            const response = await fetch('/get_queue', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to get queue data: ${response.statusText}`);
+            }
+            const queueData = await response.json();
+            // Check if the task UUID appears in the first section of the queue
+            const isTaskCompleted = queueData[0].some(task => task.uuid === taskUUID);
+            if (isTaskCompleted) {
+                return true; // Task completed, exit loop
+            }
+            // Wait for 200ms before checking again
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+    } catch (error) {
+        console.error(error);
+        return false; // Task completion check failed
+    }
+}
+
+function stringifyValue(value) {
+    if (Array.isArray(value)) {
+        // If value is an array, stringify each element recursively
+        return `[${value.map(item => stringifyValue(item)).join(', ')}]`;
+    } else if (typeof value === 'object' && value !== null) {
+        // If value is an object (excluding arrays and null), stringify it
+        return JSON.stringify(value);
+    } else {
+        // Otherwise, return the original value as string
+        return String(value);
+    }
+}
+
+    function parseValue(valueString) {
+        try {
+            // Attempt to parse string value to JSON
+            return JSON.parse(valueString);
+        } catch (error) {
+            // If parsing fails, return the original string value
+            return valueString;
+        }
+    }
+
+    renderConfigItems();
+</script>
+</body>
+</html>

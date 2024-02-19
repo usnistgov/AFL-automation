@@ -1,8 +1,7 @@
 #!/bin/bash -i
 
-git config --global credential.helper store
+#git config --global credential.helper store
 
-conda activate afl_agent
 
 if [[ -z "${TILED_API_KEY}" ]]; then
   export TILED_API_KEY=$(cat ~/.afl/tiled_api_key)
@@ -17,7 +16,9 @@ else
 fi
 
 
-cd ~/AFL-automation/
-git pull
+conda activate afl_agent
 
-python ~/AFL-automation/server_scripts/SampleServer.py
+#cd ~/NistoRoboto/
+#git pull
+
+python ~/AFL-automation/server_scripts/I22.py

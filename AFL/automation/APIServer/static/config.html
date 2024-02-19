@@ -28,8 +28,10 @@
         flex: 0.5;
         cursor: pointer;
     }
-    .config-item button.clicked {
-        background-color: green;
+    .loading {
+        display: none;
+        text-align: center;
+        margin-bottom: 20px;
     }
 </style>
 </head>
@@ -38,6 +40,7 @@
 <input type="checkbox" id="priority-checkbox">
 <label for="priority-checkbox">Priority Change - cut to top of queue</label>
 <p>Green checkbox indicates change in progress, white indicates change synced to server.</p>
+<div class="loading" id="loading-indicator">Loading...</div>
 <div id="config-items"></div>
 <script>
     async function login() {
@@ -111,18 +114,28 @@
             console.error(error);
         }
     }
-
     async function renderConfigItems() {
-        const jwtToken = await login(); // Get JWT token
-        const taskUUID = await getConfig(jwtToken); // Enqueue get_configs
-        const taskResult = await getTaskResult(jwtToken, taskUUID); // Wait for task completion and get result
-        console.log('Task Result:', taskResult); // Log the task result
-        const configData = taskResult;
+        const loadingIndicator = document.getElementById('loading-indicator');
         const configItemsContainer = document.getElementById('config-items');
-        configItemsContainer.innerHTML = '';
 
-        for (const [key, value] of Object.entries(configData)) {
-            const configItem = document.createElement('div');
+        try {
+            // Display loading indicator
+            loadingIndicator.style.display = 'block';
+
+            const jwtToken = await login(); // Get JWT token
+            const taskUUID = await getConfig(jwtToken); // Enqueue get_configs
+            const taskResult = await getTaskResult(jwtToken, taskUUID); // Wait for task completion and get result
+            console.log('Task Result:', taskResult); // Log the task result
+
+            // Hide loading indicator
+            loadingIndicator.style.display = 'none';
+
+            const configData = taskResult;
+            configItemsContainer.innerHTML = '';
+
+            // Render config items
+            for (const [key, value] of Object.entries(configData)) {
+                 const configItem = document.createElement('div');
             configItem.classList.add('config-item');
 
             const label = document.createElement('label');
@@ -131,55 +144,61 @@
 
             const input = document.createElement('input');
             input.type = 'text';
-            input.value = value;
+            input.value = stringifyValue(value);
             configItem.appendChild(input);
 
             const button = document.createElement('button');
             button.textContent = '✔';
             button.onclick = async () => {
-                const newValue = input.value;
+                const newValue = parseValue(input.value); // Parse the input value before setting
                 const priorityChange = document.getElementById('priority-checkbox').checked;
                 const config = { [key]: newValue };
                 if (priorityChange) {
                     config.queue_loc = 0;
                 }
-                await setConfig(jwtToken, config, button, taskUUID); // Pass the button element and taskUUID to setConfig
-                //await renderConfigItems(); // Re-render config items after setting a new value
-            };
-            configItem.appendChild(button);
+                await setConfig(jwtToken, config, button); // Pass the button element and taskUUID to setConfig
+
+            }
+                        configItem.appendChild(button);
 
             configItemsContainer.appendChild(configItem);
-        }
-    }
-
-    async function setConfig(jwtToken, config, button, taskUUID) {
-        try {
-            button.classList.add('clicked'); // Change button background color to green when clicked
-            const response = await fetch('/enqueue', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwtToken}`
-                },
-                body: JSON.stringify({ task_name: 'set_config', ...config })
-            });
-            if (!response.ok) {
-                throw new Error(`Failed to set config: ${response.statusText}`);
-            }
-            // Check if the task UUID appears in the first section of the queue
-            const taskUUID = await response.text();
-            const isTaskCompleted = await checkTaskCompletion(jwtToken, taskUUID);
-            if (isTaskCompleted) {
-                // Change button background color to white when task is completed
-                button.classList.remove('clicked');
             }
         } catch (error) {
             console.error(error);
+            // Hide loading indicator in case of error
+            loadingIndicator.style.display = 'none';
         }
     }
 
-    async function checkTaskCompletion(jwtToken, taskUUID) {
-        try {
+async function setConfig(jwtToken, config, button) {
+    try {
+        button.classList.add('clicked'); // Change button background color to green when clicked
+        const response = await fetch('/enqueue', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify({ task_name: 'set_config', ...config })
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to set config: ${response.statusText}`);
+        }
+        const taskUUID = await response.text(); // Get the task UUID from the response
+        // Check if the task UUID appears in the first section of the queue
+        const isTaskCompleted = await checkTaskCompletion(jwtToken, taskUUID);
+        if (isTaskCompleted) {
+            // Change button background color to white when task is completed
+            button.classList.remove('clicked');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function checkTaskCompletion(jwtToken, taskUUID) {
+    try {
+        while (true) {
             const response = await fetch('/get_queue', {
                 method: 'GET',
                 headers: {
@@ -193,9 +212,38 @@
             const queueData = await response.json();
             // Check if the task UUID appears in the first section of the queue
             const isTaskCompleted = queueData[0].some(task => task.uuid === taskUUID);
-            return isTaskCompleted;
+            if (isTaskCompleted) {
+                return true; // Task completed, exit loop
+            }
+            // Wait for 200ms before checking again
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+    } catch (error) {
+        console.error(error);
+        return false; // Task completion check failed
+    }
+}
+
+function stringifyValue(value) {
+    if (Array.isArray(value)) {
+        // If value is an array, stringify each element recursively
+        return `[${value.map(item => stringifyValue(item)).join(', ')}]`;
+    } else if (typeof value === 'object' && value !== null) {
+        // If value is an object (excluding arrays and null), stringify it
+        return JSON.stringify(value);
+    } else {
+        // Otherwise, return the original value as string
+        return String(value);
+    }
+}
+
+    function parseValue(valueString) {
+        try {
+            // Attempt to parse string value to JSON
+            return JSON.parse(valueString);
         } catch (error) {
-            console.error(error);
+            // If parsing fails, return the original string value
+            return valueString;
         }
     }
 

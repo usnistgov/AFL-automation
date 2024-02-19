@@ -78,11 +78,20 @@ class ISISLARMOR(Driver):
 
     def trans_mode(self):
         pye.caput("IN:LARMOR:MOT:MTR0602.VAL", 0.0)
-        time.sleep(10)# need to wait for motor move
+        time.sleep(self.config['slow_wait_time'])
+        # need to wait for motor move
+        while pye.caget("IN:LARMOR:MOT:MTR0602.DMOV") != 1:
+            time.sleep(self.config['fast_wait_time'])
+        time.sleep(self.config['slow_wait_time'])
+
 
     def scatt_mode(self):
         pye.caput("IN:LARMOR:MOT:MTR0602.VAL", 200.0)
-        time.sleep(10)# need to wait for motor move
+        time.sleep(self.config['slow_wait_time'])
+        # need to wait for motor move
+        while pye.caget("IN:LARMOR:MOT:MTR0602.DMOV") != 1:
+            time.sleep(self.config['fast_wait_time'])
+        time.sleep(self.config['slow_wait_time'])
 
     def beginrun(self):
         """
@@ -184,6 +193,11 @@ class ISISLARMOR(Driver):
         self.status_str = "Waiting for the instrument to be in the SETUP state."
         while pye.caget("IN:LARMOR:DAE:RUNSTATE") != 1:
             time.sleep(self.config['slow_wait_time'])
+            
+    def waitformotormove(self, motor="0602"):
+        """Monitor the motor motion of motors that are nearly instant. Defaults to the monitor motor if no motor number is sent."""
+        while pye.caget(f"IN:LARMOR:MTR{motor}:ISMOVING") != 1:
+            time.sleep(self.config['slow_wait_time'])
 
     def getFilename(self, type:str='raw', prefix:str="LARMOR", ext:str=None, lmin:float=None, lmax:float=None):
         """
@@ -261,8 +275,8 @@ class ISISLARMOR(Driver):
         ConfigService.setDataSearchDirs(
             prefix + "/NDXLARMOR/User/Masks/;" + \
             prefix + "/NDXLARMOR/Instrument/data/cycle_23_5/")
-        mask_file = prefix + '/NDXLARMOR/User/Masks/USER_Beaucage_235C_SampleChanger_r80447.TOML'
-
+        #mask_file = prefix + '/NDXLARMOR/User/Masks/USER_Beaucage_235C_SampleChanger_r80447.TOML'
+        mask_file = prefix + '/NDXLARMOR/User/Masks/USER_Beaucage_235D_AFL_Robot_r80530.TOML'
         self.status_str = f"Reducing run number {sampleSANS_rn}."
         ici.Clean()
         ici.LARMOR()
@@ -296,6 +310,11 @@ class ISISLARMOR(Driver):
             Transmission=str(sampleSANS_rn) + '_trans_Sample_0.9_13.5',
             TransmissionCan=str(sampleSANS_rn) + '_trans_Can_0.9_13.5'
         )
+        
+        DeleteWorkspace(str(sampleSANS_rn)+'_trans_0.9_13.5')
+        DeleteWorkspace('optimization')
+        DeleteWorkspace('sans_interface_raw_data')
+        DeleteWorkspace(str(sampleSANS_rn)+'_rear_1D_0.9_13.5')
         
         self.waitforSASfile(filename)
         

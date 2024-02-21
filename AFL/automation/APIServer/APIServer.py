@@ -43,11 +43,12 @@ except ImportError:
     warnings.warn('Plotting imports failed! Live data plotting will not work on this server.',stacklevel=2)
 
 class APIServer:
-    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',plot_template='simple-bokeh.html'):
+    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',new_index_template='index-new.html',plot_template='simple-bokeh.html'):
         self.name = name
         self.experiment = experiment
         self.contact = contact
         self.index_template = index_template
+        self.new_index_template = new_index_template
         self.plot_template = plot_template
         self.data = data
 
@@ -105,6 +106,7 @@ class APIServer:
 
     def add_standard_routes(self):
         self.app.add_url_rule('/','index',self.index)
+        self.app.add_url_rule('/new','index_new',self.index_new)
         self.app.add_url_rule('/app','app',self.webapp)
         self.app.add_url_rule('/webapp','webapp',self.webapp)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
@@ -232,6 +234,18 @@ class APIServer:
         kw['name']        = self.name
         kw['driver']    = self.queue_daemon.driver.name
         return render_template(self.index_template,**kw),200
+    def index_new(self):
+        '''Live, status page of the robot'''
+        self.app.logger.info('Serving index page')
+
+        kw = {}
+        kw['queue']       = self.get_queue()
+        kw['contact']     = self.contact
+        kw['experiment']  = self.experiment
+        kw['queue_state'] = self.queue_state()
+        kw['name']        = self.name
+        kw['driver']    = self.queue_daemon.driver.name
+        return render_template(self.new_index_template,**kw),200
 
     def webapp(self):
         '''Live, status page of the robot'''

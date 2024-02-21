@@ -16,6 +16,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
 
     '''
     defaults={}
+    defaults['load_mode'] = 'static'
     defaults['load_pressure'] = 2
     defaults['blowout_pressure'] = 20
 
@@ -32,7 +33,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                                 ('blow',5)
                                 ] 
     defaults['external_load_complete_trigger'] = False
-
+    defaults['ramp_load_stop_pressure'] = 7
+    defaults['ramp_load_duration'] = 20
 
     def __init__(self,pctrl,
                       relayboard,
@@ -212,8 +214,12 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         else:
             self.state = f'LOAD IN PROGRESS to {load_dest_label}'
         print('sending dispense command')
-        self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
-        
+        if self.config['load_mode'] == 'static':
+            self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
+        elif self.config['load_mode'] == 'ramp':
+            self.pctrl.ramp_dispense(self.config['load_pressure'],self.config['ramp_load_stop_pressure'],self.config['load_timeout'],const_time = self.config['load_timeout']-self.config['ramp_load_duration'])
+        else:
+            raise ValueError('invalid load_mode in config.  cannot load.  valid values are "static" or "ramp"')
         while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
             time.sleep(0.02)
             

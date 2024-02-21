@@ -380,6 +380,8 @@ class SampleDriver(Driver):
             
             queue_loc = self._queue.qsize() #append at end of queue
             self._queue.put(package,queue_loc)
+            
+        
     
     
     def compute_prep_protocol(self,composition: Dict, sample_volume: Dict, fixed_concs: Dict, mfrac_split:Optional[Dict]=None):
@@ -431,9 +433,9 @@ class SampleDriver(Driver):
                     del mass_dict[split_component]
                 
             
-            for component in self.config['components']:
-                if component not in mass_dict:
-                    mass_dict[component] = 0.0*units('mg')
+            # for component in self.config['components']:
+            #     if component not in mass_dict:
+            #         mass_dict[component] = 0.0*units('mg')
                     
 
         self.target = AFL.automation.prepare.Solution('target', self.config['components'])
@@ -506,7 +508,7 @@ class SampleDriver(Driver):
 
         if self.uuid['rinse'] is not None:
             self.update_status(f'Waiting for rinse...')
-            self.get_client('load').wait(self.uuid['rinse'])
+            self.get_client('load').wait(self.uuid['rinse'],for_history=False)
             self.update_status(f'Rinse done!')
 
         # calibrate sensor to avoid drift
@@ -517,7 +519,7 @@ class SampleDriver(Driver):
         self.measure(name=name, empty=True,wait=True)
 
         if self.uuid['prep'] is not None:
-            self.get_client('prep').wait(self.uuid['prep'])
+            self.get_client('prep').wait(self.uuid['prep'],for_history=False)
             self.take_snapshot(prefix=f'02-after-prep-{name}')
 
         self.update_status(f'Queueing sample {name} load into syringe loader')
@@ -667,6 +669,7 @@ class SampleDriver(Driver):
         sample_composition['components'] = self.config['components']
         sample_composition['conc_units'] = 'mg/ml'
         sample_composition['mass_units'] = 'mg'
+        sample_composition = {str(k):v for k,v in sample_composition.items()}
         if self.data is not None:
             self.data['sample_composition'] = sample_composition
             self.data['time'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f %Z%z')
@@ -675,15 +678,31 @@ class SampleDriver(Driver):
     def predict_next_sample(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""
         
-        self.ds_append = xr.Dataset()
-        self.ds_append[self.config['composition_var_name']] = self.new_data[self.config['AL_components']].to_array('component').transpose(...,'component')
+        result = self.tiled_client.search(Eq('array_name','I')).items()[-1][-1]
+        if 'transmissions' not in result.metadata:
+            do_append = True
+            warnings.warn('No transmissions found in tiled entry! Assuming the sample hit!', stacklevel=2)
+        else:
+            transmissions = result.metadata['transmissions']
+            transmissions = [i for i in transmissions if i>0]
+            if len(transmissions)==0:
+                do_append = False
+            elif min(transmissions) > self.config['max_sample_transmission']:
+                do_append = False
+            else:
+                do_append = True
         
-        for i,instrument in enumerate(self.config['instrument']):
-            for instrument_data in instrument['data']:
-                self.ds_append[instrument_data['data_name']] = self.new_data[instrument_data['data_name']]
-
-        db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
-        self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=self.config['concat_dim'])
+        if do_append:
+            self.ds_append = xr.Dataset()
+            self.ds_append[self.config['composition_var_name']] = self.new_data[self.config['AL_components']].to_array('component').transpose(...,'component')
+            
+            for i,instrument in enumerate(self.config['instrument']):
+                for instrument_data in instrument['data']:
+                    self.ds_append[instrument_data['data_name']] = self.new_data[instrument_data['data_name']]
+    
+            db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
+            self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=self.config['concat_dim'])
+        
         self.uuid['agent'] = self.get_client('agent').enqueue(
             task_name='predict',
             sample_uuid=self.uuid['sample'],

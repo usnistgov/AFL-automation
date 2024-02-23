@@ -1,8 +1,8 @@
 #!python
 from __future__ import division,print_function
-from NistoRoboto.Mixture import Mixture
-from NistoRoboto.Component import Component
-from NistoRoboto.Exceptions import EmptyException
+from AFL.automation.Mixture import Mixture
+from AFL.automation.Component import Component
+from AFL.automation.Exceptions import EmptyException
 import unittest
 import numpy as np
 

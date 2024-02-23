@@ -1,7 +1,7 @@
 #!python
 from __future__ import division,print_function
-from NistoRoboto.Component import Component
-from NistoRoboto.Mixture import Mixture
+from AFL.automation.Component import Component
+from AFL.automation.Mixture import Mixture
 import unittest
 import numpy as np
 

@@ -33,15 +33,11 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
             vi: (str) the path to the LabView virtual instrument file for the main interface
 
         '''
-
+        super().__init__(**kwargs)
         self.app = None
         self.name = 'CDSAXSLabview'
         
-<<<<<<< HEAD
-=======
-        super.__init__(**kwargs)
->>>>>>> 785bfc67271bf833893040fc9192332b9269048b
-        
+
     @Driver.unqueued()        
     def getExposure(self):
         '''
@@ -50,11 +46,9 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
         '''
         with LabviewConnection() as lv:
             return lv.main_vi.getcontrolvalue('Single Pilatus Parameters')[0]
-<<<<<<< HEAD
-    @Driver.unqueued()
-=======
 
->>>>>>> 785bfc67271bf833893040fc9192332b9269048b
+        
+    @Driver.unqueued()
     def getFilename(self):
         '''
             get the currently set file name
@@ -238,14 +232,9 @@ class LabviewConnection():
         self.main_vi = self.labview.getvireference(self.vi)
         self.main_vi.setcontrolvalue('Measurement',3) # 3 should bring the single Pilatus tab to the front
         return self
-<<<<<<< HEAD
-        
+
     def __exit__(self,exittype,value,traceback):
         pythoncom.CoUninitialize()
-=======
 
-    def __exit__(self):
-        pythoncom.CoUnInitialize()
->>>>>>> 785bfc67271bf833893040fc9192332b9269048b
         self.labview=None
         self.main_vi=None

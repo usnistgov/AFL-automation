@@ -149,7 +149,7 @@
         </div>
 
         <div id="driver_status" class="overflow"></div>
-        <div id="unqueued-commands" class="command-container"></div>
+        <div id="quickbar-commands" class="command-container"></div>
 
         <div id="queued-commands" class="command-container"></div>
          <a href="static/config-retro.html" target="_blank">Edit Driver Config >></a>
@@ -298,8 +298,8 @@
             });
 
             // Retrieve unqueued commands
-            $.get("/get_unqueued_commands", function (data) {
-                displayCommands("#unqueued-commands", data);
+            $.get("/get_quickbar", function (data) {
+                displayCommands("#quickbar-commands", data);
             });
 
             // Retrieve queued commands

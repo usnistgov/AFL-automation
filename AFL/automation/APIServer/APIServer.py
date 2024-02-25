@@ -43,11 +43,12 @@ except ImportError:
     warnings.warn('Plotting imports failed! Live data plotting will not work on this server.',stacklevel=2)
 
 class APIServer:
-    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',plot_template='simple-bokeh.html'):
+    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',new_index_template='index-new.html',plot_template='simple-bokeh.html'):
         self.name = name
         self.experiment = experiment
         self.contact = contact
         self.index_template = index_template
+        self.new_index_template = new_index_template
         self.plot_template = plot_template
         self.data = data
 
@@ -66,16 +67,19 @@ class APIServer:
         self.cors = CORS(self.app)
 
 
-    def create_queue(self,driver):
+    def create_queue(self,driver,add_unqueued=True):
         self.history = []
         self.task_queue = MutableQueue()
         self.driver     = driver
         self.driver.app = self.app
         self.driver.data = self.data
+        if self.driver.dropbox is None:
+            self.driver.dropbox = {}
         self.driver._queue = self.task_queue
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
 
-        self.add_unqueued_routes()
+        if add_unqueued:
+            self.add_unqueued_routes()
 
 
     def reset_queue_daemon(self,driver=None):
@@ -102,6 +106,7 @@ class APIServer:
 
     def add_standard_routes(self):
         self.app.add_url_rule('/','index',self.index)
+        self.app.add_url_rule('/new','index_new',self.index_new)
         self.app.add_url_rule('/app','app',self.webapp)
         self.app.add_url_rule('/webapp','webapp',self.webapp)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
@@ -129,6 +134,11 @@ class APIServer:
         self.app.add_url_rule('/get_quickbar','get_quickbar',self.get_quickbar,methods=['POST','GET'])
         self.app.add_url_rule('/set_driver_object','set_driver_object',self.set_driver_object,methods=['POST','GET'])
         self.app.add_url_rule('/get_driver_object','get_driver_object',self.get_driver_object,methods=['POST','GET'])
+        self.app.add_url_rule('/deposit_obj', 'deposit_obj', self.deposit_obj,
+                              methods=['POST', 'GET'])
+        self.app.add_url_rule('/retrieve_obj', 'retrieve_obj', self.retrieve_obj,
+                              methods=['POST', 'GET'])
+
         self.app.before_first_request(self.init)
 
     def get_info(self):
@@ -224,6 +234,18 @@ class APIServer:
         kw['name']        = self.name
         kw['driver']    = self.queue_daemon.driver.name
         return render_template(self.index_template,**kw),200
+    def index_new(self):
+        '''Live, status page of the robot'''
+        self.app.logger.info('Serving index page')
+
+        kw = {}
+        kw['queue']       = self.get_queue()
+        kw['contact']     = self.contact
+        kw['experiment']  = self.experiment
+        kw['queue_state'] = self.queue_state()
+        kw['name']        = self.name
+        kw['driver']    = self.queue_daemon.driver.name
+        return render_template(self.new_index_template,**kw),200
 
     def webapp(self):
         '''Live, status page of the robot'''
@@ -374,6 +396,52 @@ class APIServer:
         return jsonify(output),200
 
     @jwt_required()
+    def deposit_obj(self):
+        '''
+        Store an object named obj in the driver's dropbox
+        If a uuid is provided, the object will be stored with that uuid
+        Otherwise, a new uuid will be generated.
+        In either case, the uuid will be returned to the client.
+        '''
+        task = request.json
+        user = get_jwt_identity()
+        obj = request.json['obj']
+        print(f'')
+        if 'uuid' in request.json.keys():
+            uid = request.json['uuid']
+        else:
+            uid = 'DB-' + str(uuid.uuid4())
+        self.app.logger.info(f'{user} is storing an object w uuid {id} in driver dropbox')
+        obj = serialization.deserialize(obj)
+        if self.driver.dropbox is None:
+            self.driver.dropbox = {}
+        self.driver.dropbox[uid] = obj
+        return uid,200
+
+    @jwt_required()
+    def retrieve_obj(self):
+        '''
+        Retrieve an object from the driver's dropbox
+        uuid specifies the object to retrieve
+        delete specifies whether to delete the object after retrieval
+        '''
+        task = request.json
+        user = get_jwt_identity()
+        self.app.logger.info(f'{user} is getting an object with uuid {task["uuid"]} from driver, delete = {task["delete"]} ')
+        if(task['uuid'] not in self.driver.dropbox.keys()):
+            return 'Nothing in dropbox under this uuid',404
+        result = self.driver.dropbox[task['uuid']]
+        if 'delete' not in task.keys():
+            delete = True
+        else:
+            delete = task['delete']
+        if delete:
+            del self.driver.dropbox[task['uuid']]
+        result = serialization.serialize(result)
+        return jsonify({'obj':result}),200
+
+
+    @jwt_required()
     def set_driver_object(self):
         task = request.json
         user = get_jwt_identity()
@@ -406,7 +474,7 @@ class APIServer:
             task_uuid = task['uuid']
             del task['uuid']
         else:
-            task_uuid = uuid.uuid4()
+            task_uuid = 'QD-' + str(uuid.uuid4())
         
         user = get_jwt_identity()
         self.app.logger.info(f'{user} enqueued {request.json}')

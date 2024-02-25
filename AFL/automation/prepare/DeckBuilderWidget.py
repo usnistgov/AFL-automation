@@ -160,11 +160,13 @@ class DeckBuilderWidget_Model:
 
 class DeckBuilderWidget_View:
     def __init__(self):
-        self.pipette_list = ['None','p300_single','p50_single','p1000_single_gen2']
+        self.pipette_list = ['None','p300_single','p50_single','p1000_single_gen2','p300_single_gen2']
         self.container_list = [
             'nist_6_20ml_vials',
             'nist_2_100ml_poly_bottle',
-            'nest_96_wellplate_1600ul'
+            'nest_96_wellplate_1600ul',
+            'nist_6_20ml_stirred_vials',
+            'shaker_nest_96_wellplate_1600ul'
         ]
         self.catch_list = [
             'nist_pneumatic_loader', 

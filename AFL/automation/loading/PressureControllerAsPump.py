@@ -23,7 +23,7 @@ class PressureControllerAsPump(SyringePump):
         '''
         Abort the current dispense/withdraw action. Equivalent to pressing stop button on panel.
         '''
-        print(f'Pump stop was called, callback status {self.active_callback.is_alive()}')
+        print(f'Pump stop was called, callback status {self.controller.dispenseRunning()}')
         self.controller.stop()
     def __del__(self):
         self.stop()

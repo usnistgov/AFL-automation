@@ -46,8 +46,8 @@ class DataLabelerWidget:
                 .transpose(..., "component")
             )
         else:
-            dataset["composition"] = (
-                input_dataset[composition_variable].transpose( sample_dim, ... )
+            dataset["composition"] = input_dataset[composition_variable].transpose(
+                sample_dim, ...
             )
 
         self.data_view = DataLabelerView()
@@ -131,6 +131,9 @@ class DataLabelerWidget:
     def run(self):
         saxs_data = self.data_model.sas_data[self.data_index]
         composition_data = self.data_model.composition_data[self.data_index]
+        components = self.data_model.composition_data[
+            self.data_model.component_variable
+        ]
         widget = self.data_view.run(
             x=saxs_data[self.data_model.q_variable].values,
             y=saxs_data.values,
@@ -138,6 +141,7 @@ class DataLabelerWidget:
             composition=composition_data,
             models=list(self.data_model.models.keys()),
             ternary=self.data_model.ternary,
+            components=components,
         )
 
         self.data_view.intensity.on_click(self.change_qstar_callback)
@@ -495,9 +499,7 @@ class DataLabelerView:
                 {"a": (composition[0],), "b": (composition[1],), "c": (composition[2],)}
             )
         else:
-            self.composition.update(
-                {"x": (composition[0],), "y": (composition[1],)}
-            )
+            self.composition.update({"x": (composition[0],), "y": (composition[1],)})
 
     def remove_vertical_lines(self):
         self.fig1.layout["shapes"] = []
@@ -520,9 +522,9 @@ class DataLabelerView:
     def update_composition_colors(self, colors):
         self.all_composition.marker["color"] = colors
 
-    def run(self, x, y, all_compositions, composition, models, ternary):
+    def run(self, x, y, all_compositions, composition, models, ternary, components):
         self.ternary = ternary
-        self.fig1 = go.FigureWidget(go.Scatter(x=x, y=y))
+        self.fig1 = go.FigureWidget(go.Scatter(x=x, y=y, mode='markers'))
         self.intensity = self.fig1.data[0]
         self.fig1.update_yaxes(type="log")
         self.fig1.update_xaxes(type="log")
@@ -595,8 +597,13 @@ class DataLabelerView:
             )
         self.all_composition = self.fig2.data[0]
         self.composition = self.fig2.data[1]
-        self.fig2.update_layout(height=300, width=500, margin=dict(t=25, b=35, l=10))
-
+        self.fig2.update_layout(
+            height=300,
+            width=500,
+            margin=dict(t=25, b=35, l=10),
+            xaxis_title=components[0].values[()],
+            yaxis_title=components[1].values[()],
+        )
 
         plot_box = ipywidgets.HBox([self.fig1, self.fig2])
 

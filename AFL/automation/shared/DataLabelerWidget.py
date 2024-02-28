@@ -156,10 +156,11 @@ class DataLabelerWidget:
         self.data_view.all_composition.on_click(self.composition_click_callback)
         self.data_view.n_orders.observe(self.change_norder_callback)
 
-        self.data_view.b0.on_click(lambda click: self.label("C"))
-        self.data_view.b1.on_click(lambda click: self.label("L"))
-        self.data_view.b2.on_click(lambda click: self.label("S"))
+        self.data_view.b0.on_click(lambda click: self.label("A"))
+        self.data_view.b1.on_click(lambda click: self.label("B"))
+        self.data_view.b2.on_click(lambda click: self.label("C"))
         self.data_view.b3.on_click(lambda click: self.label("D"))
+        self.data_view.b4.on_click(lambda click: self.label("E"))
 
         return widget
 
@@ -607,11 +608,11 @@ class DataLabelerView:
 
         plot_box = ipywidgets.HBox([self.fig1, self.fig2])
 
-        self.b0 = ipywidgets.Button(description="Phase1 (yellow)")
-        self.b1 = ipywidgets.Button(description="Phase2 (purple)")
-        self.b2 = ipywidgets.Button(description="Phase3 (red)")
-        self.b3 = ipywidgets.Button(description="Phase4 (blue)")
-        self.br = ipywidgets.Button(description="Reset")
+        self.b0 = ipywidgets.Button(description="PhaseA")
+        self.b1 = ipywidgets.Button(description="PhaseB")
+        self.b2 = ipywidgets.Button(description="PhaseC")
+        self.b3 = ipywidgets.Button(description="PhaseD")
+        self.b4 = ipywidgets.Button(description="PhaseE")
         self.bprev = ipywidgets.Button(description="Prev")
         self.bnext = ipywidgets.Button(description="Next")
         self.bgoto = ipywidgets.Button(description="GoTo")
@@ -633,7 +634,7 @@ class DataLabelerView:
             ]
         )
 
-        buttons_hbox1 = ipywidgets.HBox([self.b0, self.b1, self.b2, self.b3, self.br])
+        buttons_hbox1 = ipywidgets.HBox([self.b0, self.b1, self.b2, self.b3, self.b4])
         buttons_hbox2 = ipywidgets.HBox(
             [
                 self.current_index,

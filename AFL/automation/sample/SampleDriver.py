@@ -593,7 +593,7 @@ class SampleDriver(Driver):
         data_path = pathlib.Path(self.config['data_path'])
 
         if len(self.config['instrument'])>1:
-            raise NotImplemented
+            raise NotImplementedError
 
         self.new_data = xr.Dataset()
         for i,instrument in enumerate(self.config['instrument']):

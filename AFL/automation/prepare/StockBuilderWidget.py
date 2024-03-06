@@ -204,6 +204,8 @@ class StockBuilderWidget_Model:
                     afl_stocks[stock_name][component_name].mass = float(value)*units(unit_str)
                 elif unit_str.lower() in ['ul','ml','l']:
                     afl_stocks[stock_name][component_name].volume = float(value)*units(unit_str)
+                elif unit_str.lower() in ['mg/ml','g/ml','g/l']:
+                    afl_stocks[stock_name][component_name].concentration = {component_name:float(value)*units(unit_str)}
                 elif unit_str.lower() in ['m%','mass%']:
                     mass_fraction[component_name] = float(value)
                 elif unit_str.lower() in ['v%','vol%']:

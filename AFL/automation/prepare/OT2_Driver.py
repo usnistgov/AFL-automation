@@ -8,6 +8,8 @@ from math import ceil,sqrt
 import os,json,pathlib
 import serial
 import numpy 
+import requests
+import time
 
 '''
 Things we want to fix:
@@ -19,6 +21,8 @@ Things we want to fix:
 class OT2_Driver(Driver):
     defaults = {}
     defaults['shaker_port'] = '/dev/ttyACM0'
+    defaults['door_interlock'] = True
+
     def __init__(self,overrides=None):
         self.app = None
         Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
@@ -42,6 +46,15 @@ class OT2_Driver(Driver):
     def get_prep_target(self):
         return self.prep_targets.pop(0)
 
+    def pre_execute(self):
+        if self.config['door_interlock']:
+            starting_lights = self.get_lights_status()
+            while self.get_door_status() != 'closed':
+                self.app.logger.info('Door is open. Waiting for door close to move...')
+                self.set_lights(not self.get_lights_status())
+                time.sleep(1)
+            self.set_lights(starting_lights)
+            self.app.logger.info('Door is closed. Moving on...')
     def status(self):
         status = []
         if len(self.prep_targets)>0:
@@ -49,6 +62,7 @@ class OT2_Driver(Driver):
                 status.append(f'Remaining prep targets: {len(self.prep_targets)}')
         else:
                 status.append('No prep targets loaded')
+        status.append(f'Door: {self.get_door_status()}')
         for k,v in self.protocol.loaded_instruments.items():
             aspirate = v.flow_rate.aspirate
             dispense = v.flow_rate.dispense
@@ -64,6 +78,27 @@ class OT2_Driver(Driver):
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
+
+    def get_door_status(self):
+        try:
+            status = requests.get('http://localhost:31950/robot/door/status',headers={"Opentrons-Version":"2"}).json()['data']['status']
+        except requests.exceptions.ConnectionError:
+            status = 'unknown'
+        return status
+
+    def get_lights_status(self):
+        '''
+        Return light status as a boolean, True if on, False if off
+        '''
+        try:
+            status = requests.get('http://localhost:31950/robot/lights',headers={"Opentrons-Version":"2"}).json()['data']['on']
+    
+    def set_lights(self,state):
+        '''
+        Set light status as a boolean, True if on, False if off
+        '''
+        return requests.put('http://localhost:31950/robot/lights',json={'on':state},headers={"Opentrons-Version":"2"}).json()
+
     @Driver.quickbar(qb={'button_text':'Refill Tipracks',
         'params':{
         'mount':{'label':'Which Pipet left/right/both','type':'text','default':'both'},

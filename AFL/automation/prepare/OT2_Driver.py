@@ -92,6 +92,9 @@ class OT2_Driver(Driver):
         '''
         try:
             status = requests.get('http://localhost:31950/robot/lights',headers={"Opentrons-Version":"2"}).json()['data']['on']
+        except requests.exceptions.ConnectionError:
+            status = True
+        return status
     
     def set_lights(self,state):
         '''

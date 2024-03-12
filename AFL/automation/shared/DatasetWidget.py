@@ -1,11 +1,10 @@
-from typing import List, Optional
+from typing import Optional
 
 import ipywidgets  # type: ignore
 import numpy as np
 import plotly.express as px  # type: ignore
 import plotly.graph_objects as go  # type: ignore
 import xarray as xr
-from math import sqrt
 from sklearn.preprocessing import OrdinalEncoder  # type: ignore
 
 
@@ -65,16 +64,16 @@ class DatasetWidget:
         self.update_plots()
 
     def update_composition_plot(self):
-        x, y = self.get_comps()
+        x, y, xname, yname, = self.get_comps()
         self.data_view.update_selected(x=(x[self.data_index],), y=(y[self.data_index],))
 
     def update_scattering_plot(self):
-        x, y = self.get_scatt(0)
-        self.data_view.plot_sas(x, y, append=False)
+        x, y, name = self.get_scatt(0)
+        self.data_view.plot_sas(x, y, name, append=False)
 
         if self.data_view.scatter2_dropdown.value != "None":
-            x, y = self.get_scatt(1)
-            self.data_view.plot_sas(x, y, append=True)
+            x, y, name = self.get_scatt(1)
+            self.data_view.plot_sas(x, y, name, append=True)
 
     def update_plots(self):
         self.update_scattering_plot()
@@ -82,8 +81,8 @@ class DatasetWidget:
 
     def get_comps(self):
         composition_variable = self.data_view.composition_dropdown.value
-        x, y = self.data_model.get_composition(composition_variable)
-        return x, y
+        x, y, xname, yname = self.data_model.get_composition(composition_variable)
+        return x, y, xname, yname
 
     def get_scatt(self, num=0):
         if num == 0:
@@ -91,13 +90,13 @@ class DatasetWidget:
         else:
             scatt_variable = self.data_view.scatter2_dropdown.value
         x, y = self.data_model.get_scattering(scatt_variable, self.data_index)
-        return x, y
+        return x, y, scatt_variable
 
-    def plot_button_callback(self, *args):
+    def initialize_plots(self, *args):
         self.update_scattering_plot()
 
         # need to plot comps manually so we don't redraw "all comps" every time
-        x, y = self.get_comps()
+        x, y, xname, yname = self.get_comps()
         if self.data_view.composition_color_dropdown.value != "None":
             colors = self.data_model.dataset[
                 self.data_view.composition_color_dropdown.value
@@ -105,15 +104,16 @@ class DatasetWidget:
         else:
             colors = None
 
-        self.data_view.plot_comp(x, y, colors=colors)
+        self.data_view.plot_comp(x, y, xname, yname, colors=colors)
         self.data_view.comp_fig.data[0].on_click(self.composition_click_callback)
 
     def run(self):
         widget = self.data_view.run(self.data_model.dataset)
-        self.data_view.plot_button.on_click(self.plot_button_callback)
+        self.data_view.plot_button.on_click(self.initialize_plots)
         self.data_view.bnext.on_click(self.next_button_callback)
         self.data_view.bprev.on_click(self.prev_button_callback)
         self.data_view.bgoto.on_click(self.goto_callback)
+
         return widget
 
 
@@ -128,7 +128,10 @@ class DatasetWidget_Model:
     def get_composition(self, variable):
         x = self.dataset[variable][:, 0].values
         y = self.dataset[variable][:, 1].values
-        return x, y
+
+        component_dim = self.dataset[variable].transpose('sample',...).dims[1]
+        xname,yname = self.dataset['comps'][component_dim].values
+        return x, y, xname, yname
 
     def get_scattering(self, variable, index):
         sds = self.dataset[variable].isel(**{self.sample_dim: index})
@@ -156,14 +159,14 @@ class DatasetWidget_View:
         self.initial_comps_variable = initial_comps_variable
         self.initial_comps_color_variable = initial_comps_color_variable
 
-    def plot_sas(self, x, y, append=False):
-        scatt1 = go.Scatter(x=x, y=y, mode="markers")
+    def plot_sas(self, x, y, name="SAS", append=False):
+        scatt1 = go.Scatter(x=x, y=y, name=name, mode="markers")
 
         if not append:
             self.scatt_fig.data = []
         self.scatt_fig.add_trace(scatt1)
 
-    def plot_comp(self, x, y, colors=None):
+    def plot_comp(self, x, y, xname='x',yname='y', colors=None):
         if colors is not None:
             color = (["black"] * len(x),)
         else:
@@ -174,7 +177,11 @@ class DatasetWidget_View:
             mode="markers",
             marker={
                 "color": colors,
-                "colorscale": px.colors.qualitative.Prism,
+                "showscale": True,
+                "colorscale": px.colors.get_colorscale(
+                    self.composition_colorscale_dropdown.value
+                ),
+                "colorbar": dict(thickness=15, outlinewidth=0),
             },
             opacity=1.0,
             showlegend=False,
@@ -193,6 +200,7 @@ class DatasetWidget_View:
 
         if hasattr(self.comp_fig, "data"):
             self.comp_fig.data = []
+        self.comp_fig.update_layout(xaxis_title=xname,yaxis_title=yname)
         self.comp_fig.add_trace(scatt1)
         self.comp_fig.add_trace(scatt2)
 
@@ -200,19 +208,28 @@ class DatasetWidget_View:
         self.comp_fig.data[1].update(**kw)
 
     def init_plots(self):
-        self.scatt_fig = go.FigureWidget([])
+        self.scatt_fig = go.FigureWidget(
+            [],
+            layout=dict(
+                xaxis_title="q",
+                yaxis_title="I",
+                height=300,
+                width=400,
+                margin=dict(t=10, b=10, l=10, r=0),
+                legend=dict(yanchor="top", xanchor="right", y=0.99, x=0.99),
+            ),
+        )
         self.scatt_fig.update_yaxes(type="log")
         self.scatt_fig.update_xaxes(type="log")
-        self.scatt_fig.update_xaxes({"range": (np.log10(0.005), np.log10(1.0))})
-        self.scatt_fig.update_layout(
-            height=300, width=400, margin=dict(t=10, b=10, l=10, r=0)
-        )
+        self.scatt_fig.update_xaxes({"range": (np.log10(0.001), np.log10(1.0))})
 
-        self.comp_fig = go.FigureWidget([])
-        self.comp_fig.update_layout(
-            height=300,
-            width=500,
-            margin=dict(t=25, b=35, l=10),
+        self.comp_fig = go.FigureWidget(
+            [],
+            layout=dict(
+                height=300,
+                width=500,
+                margin=dict(t=25, b=35, l=10),
+            ),
         )
 
         self.plot_box = ipywidgets.HBox([self.scatt_fig, self.comp_fig])
@@ -247,7 +264,10 @@ class DatasetWidget_View:
         self.composition_color_dropdown = ipywidgets.Dropdown(
             options=all_vars + ["None"],
             description="Colors",
-            value=self.initial_comps_color_variable
+            value=self.initial_comps_color_variable,
+        )
+        self.composition_colorscale_dropdown = ipywidgets.Dropdown(
+            options=px.colors.named_colorscales(), description="Colors", value="bluered"
         )
 
         self.bprev = ipywidgets.Button(description="Prev")
@@ -270,6 +290,7 @@ class DatasetWidget_View:
                     [
                         self.composition_dropdown,
                         self.composition_color_dropdown,
+                        self.composition_colorscale_dropdown,
                     ]
                 ),
             ]
@@ -283,8 +304,8 @@ class DatasetWidget_View:
         box = ipywidgets.VBox([box, self.plot_button, self.plot_box, button_hbox])
 
         self.dataset_html = ipywidgets.HTML(dataset._repr_html_())
-        self.tabs = ipywidgets.Tab([box,self.dataset_html])
-        self.tabs.titles = ["Plot","Dataset"]
+        self.tabs = ipywidgets.Tab([box, self.dataset_html])
+        self.tabs.titles = ["Plot", "Dataset"]
         self.tabs.selected_index = 0
 
         return self.tabs

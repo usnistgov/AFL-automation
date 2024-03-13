@@ -1,4 +1,5 @@
 from typing import Optional, Dict, Any
+from numbers import Number
 
 import ipywidgets  # type: ignore
 import numpy as np
@@ -17,6 +18,8 @@ class DatasetWidget:
         initial_scatter2_variable: Optional[str] = None,
         initial_comps_variable: Optional[str] = None,
         initial_comps_color_variable: Optional[str] = None,
+        qmin: Number = 0.001,
+        qmax: Number = 1.0,
     ):
         """
 
@@ -41,6 +44,9 @@ class DatasetWidget:
         )
         self.data_model = DatasetWidget_Model(dataset, sample_dim)
         self.data_index = 0
+
+        self.initial_qmin = qmin
+        self.initial_qmax = qmax
 
     def next_button_callback(self, click):
         self.data_index += 1
@@ -118,6 +124,9 @@ class DatasetWidget:
     def run(self):
         widget = self.data_view.run(self.data_model.dataset)
         self.data_view.text_input["sample_dim"].value = self.data_model.sample_dim
+
+        self.data_view.text_input["qmin"].value = self.initial_qmin
+        self.data_view.text_input["qmax"].value = self.initial_qmax
 
         self.data_view.button["update_plot"].on_click(self.initialize_plots)
         self.data_view.button["update_color"].on_click(self.update_colors)
@@ -229,12 +238,14 @@ class DatasetWidget_View:
         self.comp_fig.update_layout(xaxis_title=xname, yaxis_title=yname)
         self.comp_fig.add_trace(scatt1)
         self.comp_fig.add_trace(scatt2)
-        self.scatt_fig.update_xaxes({
-            "range": (
-                np.log10(self.text_input["qmin"].value),
-                np.log10(self.text_input["qmax"].value)
-            )
-        })
+        self.scatt_fig.update_xaxes(
+            {
+                "range": (
+                    np.log10(self.text_input["qmin"].value),
+                    np.log10(self.text_input["qmax"].value),
+                )
+            }
+        )
 
     def update_selected(self, **kw):
         self.comp_fig.data[1].update(**kw)
@@ -253,12 +264,14 @@ class DatasetWidget_View:
         )
         self.scatt_fig.update_yaxes(type="log")
         self.scatt_fig.update_xaxes(type="log")
-        self.scatt_fig.update_xaxes({
-            "range": (
-                np.log10(self.text_input["qmin"].value),
-                np.log10(self.text_input["qmax"].value)
-            )
-        })
+        self.scatt_fig.update_xaxes(
+            {
+                "range": (
+                    np.log10(self.text_input["qmin"].value),
+                    np.log10(self.text_input["qmax"].value),
+                )
+            }
+        )
 
         self.comp_fig = go.FigureWidget(
             [],
@@ -330,10 +343,12 @@ class DatasetWidget_View:
         )
 
         self.text_input["qmin"] = ipywidgets.FloatText(
-            description="qmin", value=0.001,
+            description="qmin",
+            value=0.001,
         )
         self.text_input["qmax"] = ipywidgets.FloatText(
-            description="qmax", value=1.0,
+            description="qmax",
+            value=1.0,
         )
 
     def run(self, dataset):
@@ -371,32 +386,36 @@ class DatasetWidget_View:
         )
 
         plot_box = ipywidgets.HBox([self.scatt_fig, self.comp_fig])
-        plot_bottom_control_box = ipywidgets.HBox([
+        plot_bottom_control_box = ipywidgets.HBox(
+            [
                 self.text_input["index"],
                 self.button["goto"],
                 self.button["next"],
                 self.button["prev"],
-        ])
+            ]
+        )
 
-        plot_box = ipywidgets.VBox([
-            plot_top_control_box, plot_box, plot_bottom_control_box
-        ])
+        plot_box = ipywidgets.VBox(
+            [plot_top_control_box, plot_box, plot_bottom_control_box]
+        )
 
         # Config Tab
-        config_tab = ipywidgets.VBox([
-            self.dropdown["composition_colorscale"],
-            self.text_input["sample_dim"],
-            self.text_input["qmin"],
-            self.text_input["qmax"],
-            self.button["update_plot"],
-        ])
+        config_tab = ipywidgets.VBox(
+            [
+                self.dropdown["composition_colorscale"],
+                self.text_input["sample_dim"],
+                self.text_input["qmin"],
+                self.text_input["qmax"],
+                self.button["update_plot"],
+            ]
+        )
 
         # Dataset HTML Tab
         dataset_tab = ipywidgets.HTML(dataset._repr_html_())
 
         # Build Tabs
         self.tabs = ipywidgets.Tab([plot_box, config_tab, dataset_tab])
-        self.tabs.titles = ["Plot", "Config","Dataset"]
+        self.tabs.titles = ["Plot", "Config", "Dataset"]
         self.tabs.selected_index = 0
 
         return self.tabs

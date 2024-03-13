@@ -40,4 +40,4 @@ export RUNNING_ON_PI=true
 # cd /root/user_storage/
 cd /root/user_storage/NistoRoboto
 git pull
-python server_scripts/OT2.py
+python AFL/automation/prepare/OT2_Driver.py

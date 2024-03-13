@@ -1,8 +1,3 @@
-# import win32com
-# import win32com.client
-# from win32process import SetProcessWorkingSetSize
-# from win32api import GetCurrentProcessId,OpenProcess
-# from win32con import PROCESS_ALL_ACCESS
 import gc
 # import pythoncom
 import time
@@ -41,3 +36,6 @@ class DummySAS(Driver):
     def status(self):
         status = ['Dummy SAS Instrument']
         return status
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

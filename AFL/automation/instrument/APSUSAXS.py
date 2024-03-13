@@ -240,3 +240,7 @@ class APSUSAXS(Driver):
         status.append(f'Next filename: {self.filename}')
         status.append(f'Next project: {self.project}')
         return status
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *
+
+

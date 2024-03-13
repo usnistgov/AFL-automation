@@ -1,5 +1,4 @@
-from typing import Optional, Dict, Any
-from numbers import Number
+from typing import Optional, Dict
 
 import ipywidgets  # type: ignore
 import numpy as np
@@ -14,33 +13,62 @@ class DatasetWidget:
         self,
         dataset: xr.Dataset,
         sample_dim: str = "sample",
-        initial_scatter1_variable: Optional[str] = None,
-        initial_scatter2_variable: Optional[str] = None,
-        initial_comps_variable: Optional[str] = None,
-        initial_comps_color_variable: Optional[str] = None,
-        qmin: Number = 0.001,
-        qmax: Number = 1.0,
+        scatter1_variable: Optional[str] = None,
+        scatter2_variable: Optional[str] = None,
+        comps_variable: Optional[str] = None,
+        comps_color_variable: Optional[str] = None,
+        qmin: float = 0.001,
+        qmax: float = 1.0,
     ):
-        """
+        """Interactive widget for viewing compositionally varying scattering data
 
         Parameters
         ----------
         dataset: xr.Dataset
-            `xarray.Dataset` containing scattering data and compositions to be plotted. The compositions should be
-            grouped into single `xarray.DataArray`s like so:
+            `xarray.Dataset` containing scattering data and compositions to be plotted.
+
+
+        sample_dim: str
+            The name of the `xarray` dimension corresponding to sample variation, typically "sample"
+
+        scatter1_variable, scatter2_variable: Optional[str]
+            The name of the `xarray` variables to plot as scattering data. Optional, if not specified, can be customized
+            in GUI.
+
+        comps_variable: Optional[str]
+            The name of the `xarray` variable to plot as compositional data. Optional, if not specified, can be
+            customized in the GUI.
+
+            Only the first two columns of the data will be used in the plot. If the compositions are in separate
+            `xarray.DataArray`s, they should be grouped into
+            single `xarray.DataArray`s like so:
 
             ```python
             ds['comps'] = ds[['A','B','C']].to_array('component').transpose(...,'component')
             ```
 
+        comps_color_variable: Optional[str]
+            The name of the `xarray` variable to use as the colorscale of the compositional data scatter plot. Optional,
+            if not specified, can be customized in the GUI.
+
+        qmin, qmax: float
+            Set the default q-range of the scattering data. Can be customized in the GUI
+
+        Usage
+        -----
+        ```python
+        widget = DatasetWidget(ds)
+        widget.run()
+        ```
+
         """
 
         # preprocess the dataset before sending to the data model
         self.data_view = DatasetWidget_View(
-            initial_scatter1_variable,
-            initial_scatter2_variable,
-            initial_comps_variable,
-            initial_comps_color_variable,
+            scatter1_variable,
+            scatter2_variable,
+            comps_variable,
+            comps_color_variable,
         )
         self.data_model = DatasetWidget_Model(dataset, sample_dim)
         self.data_index = 0
@@ -48,17 +76,17 @@ class DatasetWidget:
         self.initial_qmin = qmin
         self.initial_qmax = qmax
 
-    def next_button_callback(self, click):
+    def next_button_callback(self, *args):
         self.data_index += 1
         self.data_view.text_input["index"].value = self.data_index
         self.update_plots()
 
-    def prev_button_callback(self, click):
+    def prev_button_callback(self, *args):
         self.data_index -= 1
         self.data_view.text_input["index"].value = self.data_index
         self.update_plots()
 
-    def goto_callback(self, click):
+    def goto_callback(self, *args):
         index = self.data_view.text_input["index"].value
         self.data_index = index
         self.update_plots()
@@ -106,7 +134,7 @@ class DatasetWidget:
     def initialize_plots(self, *args):
         self.update_scattering_plot()
 
-        # need to plot comps manually so we don't redraw "all comps" every time
+        # need to plot comps manually, so we don't redraw "all comps" every time
         x, y, xname, yname = self.get_comps()
         if self.data_view.dropdown["composition_color"].value != "None":
             colors = self.data_model.dataset[
@@ -199,7 +227,7 @@ class DatasetWidget_View:
 
     def plot_comp(self, x, y, xname="x", yname="y", colors=None):
         if colors is None:
-            colors = (["black"] * len(x),)
+            colors = ([0] * len(x),)
         else:
             self.text_input["cmin"].value = min(colors)
             self.text_input["cmax"].value = max(colors)
@@ -220,6 +248,12 @@ class DatasetWidget_View:
             },
             opacity=1.0,
             showlegend=False,
+            customdata=colors,
+            hovertemplate=(
+                f"""{xname}: %{{x:3.2f}} <br>"""
+                f"""{yname}: %{{y:3.2f}} <br>"""
+                """color: %{customdata:3.2f}"""
+            ),
         )
         scatt2 = go.Scatter(
             x=(x[0],),
@@ -293,10 +327,13 @@ class DatasetWidget_View:
 
         if self.initial_scatter1_variable is None:
             self.initial_scatter1_variable = all_vars[0]
+
         if self.initial_scatter2_variable is None:
             self.initial_scatter2_variable = "None"
+
         if self.initial_comps_variable is None:
             self.initial_comps_variable = all_vars[0]
+
         if self.initial_comps_color_variable is None:
             self.initial_comps_color_variable = "None"
 

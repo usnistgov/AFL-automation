@@ -153,22 +153,24 @@ class DatasetWidget:
     def apply_sel(self, *args):
         key = self.data_view.dropdown["sel"].value
         value = ast.literal_eval(self.data_view.text_input["sel"].value)
-        self.data_model.apply_sel({key:value})
+        self.data_model.apply_sel({key: value})
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
     def apply_isel(self, *args):
-        key = self.data_view.dropdown["isel"].value
-        value = ast.literal_eval(self.data_view.text_input["isel"].value)
-        self.data_model.apply_isel({key:value})
+        key = self.data_view.dropdown["sel"].value
+        value = ast.literal_eval(self.data_view.text_input["sel"].value)
+        self.data_model.apply_isel({key: value})
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
-    def reset_dataset(self,*args):
+    def reset_dataset(self, *args):
         self.data_model.reset_dataset()
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
     def run(self):
         sample_vars, comp_vars, scatt_vars = self.data_model.split_vars()
-        widget = self.data_view.run(sample_vars=sample_vars,scatt_vars=scatt_vars,comp_vars=comp_vars)
+        widget = self.data_view.run(
+            sample_vars=sample_vars, scatt_vars=scatt_vars, comp_vars=comp_vars
+        )
 
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
@@ -208,6 +210,7 @@ class DatasetWidget_Model:
 
     def reset_dataset(self):
         self.dataset = self.original_dataset
+
     def split_vars(self):
         """Heuristically try to split vars into categories"""
         vars = self.dataset.keys()
@@ -215,20 +218,24 @@ class DatasetWidget_Model:
         comp_vars = []
         scatt_vars = []
         for var in vars:
-            if len(self.dataset[var].dims)==1 and (self.dataset[var].dims[0]==self.sample_dim):
+            if len(self.dataset[var].dims) == 1 and (
+                self.dataset[var].dims[0] == self.sample_dim
+            ):
                 sample_vars.append(var)
             else:
                 try:
-                    other_dim= self.dataset[var].transpose(self.sample_dim,...).dims[1]
+                    other_dim = (
+                        self.dataset[var].transpose(self.sample_dim, ...).dims[1]
+                    )
                 except ValueError:
                     continue
-                if self.dataset.sizes[other_dim]<10: #stupid guess at compositions, hopefully this is always 2
+                if (
+                    self.dataset.sizes[other_dim] < 10
+                ):  # stupid guess at compositions, hopefully this is always 2
                     comp_vars.append(var)
                 else:
                     scatt_vars.append(var)
         return sample_vars, comp_vars, scatt_vars
-
-
 
     def apply_sel(self, kw):
         temp_dataset = self.original_dataset.copy()
@@ -238,7 +245,7 @@ class DatasetWidget_Model:
             )
         self.dataset = temp_dataset
 
-    def apply_isel(self,kw):
+    def apply_isel(self, kw):
         temp_dataset = self.original_dataset.copy()
         for k, v in kw.items():
             temp_dataset = temp_dataset.set_index({self.sample_dim: k}).isel(
@@ -441,12 +448,6 @@ class DatasetWidget_View:
 
         self.dropdown["sel"] = ipywidgets.Dropdown(
             options=sample_vars,
-            description="Key,Value",
-        )
-
-        self.dropdown["isel"] = ipywidgets.Dropdown(
-            options=sample_vars,
-            description="Key,Value",
         )
 
     def init_inputs(self):
@@ -475,9 +476,6 @@ class DatasetWidget_View:
         )
 
         self.text_input["sel"] = ipywidgets.Text(
-            value="",
-        )
-        self.text_input["isel"] = ipywidgets.Text(
             value="",
         )
 
@@ -540,11 +538,13 @@ class DatasetWidget_View:
         )
 
         # select_tab
+        self.button_box_debug = ipywidgets.HBox(
+            children=[self.button["reset_dataset"], self.button["sel"], self.button["isel"]],
+        )
         select_tab = ipywidgets.VBox(
             [
-                ipywidgets.HBox([self.dropdown["sel"],self.text_input["sel"], self.button["sel"]]),
-                ipywidgets.HBox([self.dropdown["isel"],self.text_input["isel"], self.button["isel"]]),
-                self.button['reset_dataset']
+                ipywidgets.HBox([self.dropdown["sel"], self.text_input["sel"]]),
+                self.button_box_debug
             ]
         )
 
@@ -558,8 +558,8 @@ class DatasetWidget_View:
         )
 
         # Build Tabs
-        self.tabs = ipywidgets.Tab([plot_box, dataset_tab, config_tab])
-        self.tabs.titles = ["Plot", "Select", "Config"]
-        self.tabs.selected_index = 0
+        self.tabs = ipywidgets.Tab([dataset_tab, plot_box, config_tab])
+        self.tabs.titles = ["Select", "Plot", "Config"]
+        self.tabs.selected_index = 1
 
         return self.tabs

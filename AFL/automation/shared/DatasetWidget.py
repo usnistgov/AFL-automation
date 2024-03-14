@@ -1,4 +1,5 @@
 from typing import Optional, Dict
+import ast
 
 import ipywidgets  # type: ignore
 import numpy as np
@@ -149,10 +150,29 @@ class DatasetWidget:
     def update_colors(self, *args):
         self.data_view.update_colorscale()
 
-    def run(self):
-        widget = self.data_view.run(self.data_model.dataset)
-        self.data_view.text_input["sample_dim"].value = self.data_model.sample_dim
+    def apply_sel(self, *args):
+        key = self.data_view.dropdown["sel"].value
+        value = ast.literal_eval(self.data_view.text_input["sel"].value)
+        self.data_model.apply_sel({key:value})
+        self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
+    def apply_isel(self, *args):
+        key = self.data_view.dropdown["isel"].value
+        value = ast.literal_eval(self.data_view.text_input["isel"].value)
+        self.data_model.apply_isel({key:value})
+        self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
+
+    def reset_dataset(self,*args):
+        self.data_model.reset_dataset()
+        self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
+
+    def run(self):
+        sample_vars, comp_vars, scatt_vars = self.data_model.split_vars()
+        widget = self.data_view.run(sample_vars=sample_vars,scatt_vars=scatt_vars,comp_vars=comp_vars)
+
+        self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
+
+        self.data_view.text_input["sample_dim"].value = self.data_model.sample_dim
         self.data_view.text_input["qmin"].value = self.initial_qmin
         self.data_view.text_input["qmax"].value = self.initial_qmax
 
@@ -162,6 +182,10 @@ class DatasetWidget:
         self.data_view.button["prev"].on_click(self.prev_button_callback)
         self.data_view.button["goto"].on_click(self.goto_callback)
 
+        self.data_view.button["sel"].on_click(self.apply_sel)
+        self.data_view.button["isel"].on_click(self.apply_isel)
+        self.data_view.button["reset_dataset"].on_click(self.reset_dataset)
+
         return widget
 
 
@@ -170,8 +194,57 @@ class DatasetWidget:
 ##################
 class DatasetWidget_Model:
     def __init__(self, dataset: xr.Dataset, sample_dim: str):
-        self.dataset = dataset
+        self.original_dataset = dataset
+        self.working_dataset = dataset.copy()
         self.sample_dim = sample_dim
+
+    @property
+    def dataset(self):
+        return self.working_dataset
+
+    @dataset.setter
+    def dataset(self, value):
+        self.working_dataset = value
+
+    def reset_dataset(self):
+        self.dataset = self.original_dataset
+    def split_vars(self):
+        """Heuristically try to split vars into categories"""
+        vars = self.dataset.keys()
+        sample_vars = []
+        comp_vars = []
+        scatt_vars = []
+        for var in vars:
+            if len(self.dataset[var].dims)==1 and (self.dataset[var].dims[0]==self.sample_dim):
+                sample_vars.append(var)
+            else:
+                try:
+                    other_dim= self.dataset[var].transpose(self.sample_dim,...).dims[1]
+                except ValueError:
+                    continue
+                if self.dataset.sizes[other_dim]<10: #stupid guess at compositions, hopefully this is always 2
+                    comp_vars.append(var)
+                else:
+                    scatt_vars.append(var)
+        return sample_vars, comp_vars, scatt_vars
+
+
+
+    def apply_sel(self, kw):
+        temp_dataset = self.original_dataset.copy()
+        for k, v in kw.items():
+            temp_dataset = temp_dataset.set_index({self.sample_dim: k}).sel(
+                {self.sample_dim: v}
+            )
+        self.dataset = temp_dataset
+
+    def apply_isel(self,kw):
+        temp_dataset = self.original_dataset.copy()
+        for k, v in kw.items():
+            temp_dataset = temp_dataset.set_index({self.sample_dim: k}).isel(
+                {self.sample_dim: v}
+            )
+        self.dataset = temp_dataset
 
     def get_composition(self, variable):
         x = self.dataset[variable][:, 0].values
@@ -322,38 +395,41 @@ class DatasetWidget_View:
         self.button["next"] = ipywidgets.Button(description="Next")
         self.button["update_plot"] = ipywidgets.Button(description="Update Plot")
         self.button["update_color"] = ipywidgets.Button(description="Update Colors")
+        self.button["sel"] = ipywidgets.Button(description="Apply sel")
+        self.button["isel"] = ipywidgets.Button(description="Apply isel")
+        self.button["reset_dataset"] = ipywidgets.Button(description="Reset Dataset")
 
-    def init_dropdowns(self, all_vars):
+    def init_dropdowns(self, sample_vars, scatt_vars, comp_vars):
 
         if self.initial_scatter1_variable is None:
-            self.initial_scatter1_variable = all_vars[0]
+            self.initial_scatter1_variable = scatt_vars[0]
 
         if self.initial_scatter2_variable is None:
             self.initial_scatter2_variable = "None"
 
         if self.initial_comps_variable is None:
-            self.initial_comps_variable = all_vars[0]
+            self.initial_comps_variable = scatt_vars[0]
 
         if self.initial_comps_color_variable is None:
             self.initial_comps_color_variable = "None"
 
         self.dropdown["scatter1"] = ipywidgets.Dropdown(
-            options=all_vars,
+            options=scatt_vars,
             description="Scatter1",
             value=self.initial_scatter1_variable,
         )
         self.dropdown["scatter2"] = ipywidgets.Dropdown(
-            options=all_vars + ["None"],
+            options=scatt_vars + ["None"],
             description="Scatter2",
             value=self.initial_scatter2_variable,
         )
         self.dropdown["composition"] = ipywidgets.Dropdown(
-            options=all_vars,
+            options=comp_vars,
             description="Composition",
             value=self.initial_comps_variable,
         )
         self.dropdown["composition_color"] = ipywidgets.Dropdown(
-            options=all_vars + ["None"],
+            options=sample_vars,
             description="Colors",
             value=self.initial_comps_color_variable,
         )
@@ -361,6 +437,16 @@ class DatasetWidget_View:
             options=px.colors.named_colorscales(),
             description="Colorscale",
             value="bluered",
+        )
+
+        self.dropdown["sel"] = ipywidgets.Dropdown(
+            options=sample_vars,
+            description="Key,Value",
+        )
+
+        self.dropdown["isel"] = ipywidgets.Dropdown(
+            options=sample_vars,
+            description="Key,Value",
         )
 
     def init_inputs(self):
@@ -388,10 +474,16 @@ class DatasetWidget_View:
             value=1.0,
         )
 
-    def run(self, dataset):
+        self.text_input["sel"] = ipywidgets.Text(
+            value="",
+        )
+        self.text_input["isel"] = ipywidgets.Text(
+            value="",
+        )
 
-        all_vars = list(dataset.keys())
-        self.init_dropdowns(all_vars)
+    def run(self, sample_vars, scatt_vars, comp_vars):
+
+        self.init_dropdowns(sample_vars, scatt_vars, comp_vars)
         self.init_buttons()
         self.init_inputs()
         self.init_plots()
@@ -447,12 +539,27 @@ class DatasetWidget_View:
             ]
         )
 
+        # select_tab
+        select_tab = ipywidgets.VBox(
+            [
+                ipywidgets.HBox([self.dropdown["sel"],self.text_input["sel"], self.button["sel"]]),
+                ipywidgets.HBox([self.dropdown["isel"],self.text_input["isel"], self.button["isel"]]),
+                self.button['reset_dataset']
+            ]
+        )
+
         # Dataset HTML Tab
-        dataset_tab = ipywidgets.HTML(dataset._repr_html_())
+        self.dataset_html = ipywidgets.HTML()
+        dataset_tab = ipywidgets.VBox(
+            [
+                select_tab,
+                self.dataset_html,
+            ]
+        )
 
         # Build Tabs
-        self.tabs = ipywidgets.Tab([plot_box, config_tab, dataset_tab])
-        self.tabs.titles = ["Plot", "Config", "Dataset"]
+        self.tabs = ipywidgets.Tab([plot_box, dataset_tab, config_tab])
+        self.tabs.titles = ["Plot", "Select", "Config"]
         self.tabs.selected_index = 0
 
         return self.tabs

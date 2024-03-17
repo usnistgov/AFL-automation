@@ -1,5 +1,7 @@
-from typing import Optional, Dict
+from collections import defaultdict
+from typing import Optional, Dict, List
 import ast
+import re
 
 import ipywidgets  # type: ignore
 import numpy as np
@@ -162,19 +164,37 @@ class DatasetWidget:
         self.data_model.apply_isel({key: value})
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
+    def combine_vars(self,*args):
+        combined_var = self.data_view.text_input["combined_var"].value
+        to_combine_vars = ast.literal_eval(self.data_view.text_input["to_combine"].value)
+        self.data_model.combine_vars(combined_var=combined_var,to_combine_vars=to_combine_vars)
+        self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
+        self.update_dropdowns()
+
     def reset_dataset(self, *args):
         self.data_model.reset_dataset()
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
-    def run(self):
+    def update_dropdowns(self, *args):
         sample_vars, comp_vars, scatt_vars = self.data_model.split_vars()
-        widget = self.data_view.run(
-            sample_vars=sample_vars, scatt_vars=scatt_vars, comp_vars=comp_vars
+        self.data_view.update_dropdowns(
+            sample_vars=sample_vars,
+            scatt_vars=scatt_vars,
+            comp_vars=comp_vars,
         )
+
+    def update_sample_dim(self, *args):
+        self.data_model.sample_dim = self.data_view.dropdown["sample_dim"].value
+
+    def run(self):
+        widget = self.data_view.run()
+        self.update_dropdowns()
 
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
         self.data_view.text_input["sample_dim"].value = self.data_model.sample_dim
+        self.data_view.text_input["sample_dim"].observe(self.update_sample_dim)
+
         self.data_view.text_input["xmin"].value = self.initial_xmin
         self.data_view.text_input["xmax"].value = self.initial_xmax
 
@@ -187,6 +207,7 @@ class DatasetWidget:
         self.data_view.button["sel"].on_click(self.apply_sel)
         self.data_view.button["isel"].on_click(self.apply_isel)
         self.data_view.button["reset_dataset"].on_click(self.reset_dataset)
+        self.data_view.button["combine"].on_click(self.combine_vars)
 
         return widget
 
@@ -238,7 +259,7 @@ class DatasetWidget_Model:
         return sample_vars, comp_vars, scatt_vars
 
     def apply_sel(self, kw):
-        temp_dataset = self.original_dataset.copy()
+        temp_dataset = self.dataset.copy()
         for k, v in kw.items():
             temp_dataset = temp_dataset.set_index({self.sample_dim: k}).sel(
                 {self.sample_dim: v}
@@ -246,12 +267,30 @@ class DatasetWidget_Model:
         self.dataset = temp_dataset
 
     def apply_isel(self, kw):
-        temp_dataset = self.original_dataset.copy()
+        temp_dataset = self.dataset.copy()
         for k, v in kw.items():
             temp_dataset = temp_dataset.set_index({self.sample_dim: k}).isel(
                 {self.sample_dim: v}
             )
         self.dataset = temp_dataset
+
+    def combine_vars(self, combined_var: str, to_combine_vars: List[str]):
+        # need to figure out dim name...
+        reg = re.compile("component([0-9]*)")
+        dims = [reg.findall(k) for k in self.dataset.dims]
+        dims = [
+            int(d[0]) for d in dims if len(d) == 1 and d[0]
+        ]  # dim num should be length1 and not empty
+        try:
+            new_dim = f"component{max(dims)+1}"
+        except ValueError:
+            new_dim = f"component1"
+
+        self.dataset[combined_var] = (
+            self.dataset[to_combine_vars]
+            .to_array(new_dim)
+            .transpose(...,new_dim)
+        )
 
     def get_composition(self, variable):
         x = self.dataset[variable][:, 0].values
@@ -295,6 +334,53 @@ class DatasetWidget_View:
             str, ipywidgets.FloatText | ipywidgets.IntText | ipywidgets.Text
         ] = {}
 
+        # keep track of dropdowns in categories in case options need to be updated
+        self.dropdown_categories: Dict[str, List] = defaultdict(list)
+
+    def update_colorscale(self):
+        self.comp_fig.data[0]["marker"]["cmin"] = self.text_input["cmin"].value
+        self.comp_fig.data[0]["marker"]["cmax"] = self.text_input["cmax"].value
+
+    def update_selected(self, **kw):
+        self.comp_fig.data[1].update(**kw)
+
+    def update_dropdowns(self, sample_vars=None, scatt_vars=None, comp_vars=None):
+        if sample_vars is not None:
+            for dropdown in self.dropdown_categories["sample"]:
+                dropdown.options = sample_vars
+
+                # set the default value if possible
+                if "Colors" in dropdown.description:
+                    if self.initial_comps_color_variable is None:
+                        self.initial_comps_color_variable = "None"
+                    dropdown.options = ["None"] + list(dropdown.options)
+                    dropdown.value = self.initial_comps_color_variable
+
+        if scatt_vars is not None:
+            for dropdown in self.dropdown_categories["scatter"]:
+                dropdown.options = scatt_vars
+
+                # set the default value if possible
+                if "Scatter1" in dropdown.description:
+                    if self.initial_scatter1_variable is None:
+                        self.initial_scatter1_variable = scatt_vars[0]
+                    dropdown.value = self.initial_scatter1_variable
+                elif "Scatter2" in dropdown.description:
+                    if self.initial_scatter2_variable is None:
+                        self.initial_scatter2_variable = "None"
+                    dropdown.options = ["None"] + list(dropdown.options)
+                    dropdown.value = self.initial_scatter2_variable
+
+        if comp_vars is not None:
+            for dropdown in self.dropdown_categories["composition"]:
+                dropdown.options = comp_vars
+
+                # set the default value if possible
+                if "Composition" in dropdown.description:
+                    if self.initial_comps_variable is None:
+                        self.initial_comps_variable = comp_vars[0]
+                    dropdown.value = self.initial_comps_variable
+
     def plot_sas(self, x, y, name="SAS", append=False):
         scatt1 = go.Scatter(x=x, y=y, name=name, mode="markers")
 
@@ -322,10 +408,6 @@ class DatasetWidget_View:
             self.scatt_fig.update_yaxes(type="log")
         else:
             self.scatt_fig.update_yaxes(type="linear")
-
-    def update_colorscale(self):
-        self.comp_fig.data[0]["marker"]["cmin"] = self.text_input["cmin"].value
-        self.comp_fig.data[0]["marker"]["cmax"] = self.text_input["cmax"].value
 
     def plot_comp(self, x, y, xname="x", yname="y", colors=None):
         if colors is None:
@@ -375,9 +457,6 @@ class DatasetWidget_View:
         self.comp_fig.add_trace(scatt1)
         self.comp_fig.add_trace(scatt2)
 
-    def update_selected(self, **kw):
-        self.comp_fig.data[1].update(**kw)
-
     def init_plots(self):
         self.scatt_fig = go.FigureWidget(
             [],
@@ -419,54 +498,53 @@ class DatasetWidget_View:
         self.button["sel"] = ipywidgets.Button(description="Apply sel")
         self.button["isel"] = ipywidgets.Button(description="Apply isel")
         self.button["reset_dataset"] = ipywidgets.Button(description="Reset Dataset")
+        self.button["combine"] = ipywidgets.Button(description="Combine Vars")
+        self.button["extract"] = ipywidgets.Button(description="Extract Var")
 
     def init_checkboxes(self):
         self.checkbox["logx"] = ipywidgets.Checkbox(description="log x", value=True)
         self.checkbox["logy"] = ipywidgets.Checkbox(description="log y", value=True)
 
-    def init_dropdowns(self, sample_vars, scatt_vars, comp_vars):
-
-        if self.initial_scatter1_variable is None:
-            self.initial_scatter1_variable = scatt_vars[0]
-
-        if self.initial_scatter2_variable is None:
-            self.initial_scatter2_variable = "None"
-
-        if self.initial_comps_variable is None:
-            self.initial_comps_variable = scatt_vars[0]
-
-        if self.initial_comps_color_variable is None:
-            self.initial_comps_color_variable = "None"
+    # def init_dropdowns(self, sample_vars, scatt_vars, comp_vars):
+    def init_dropdowns(self):
 
         self.dropdown["scatter1"] = ipywidgets.Dropdown(
-            options=scatt_vars,
+            options=[],
             description="Scatter1",
-            value=self.initial_scatter1_variable,
         )
+        self.dropdown_categories["scatter"].append(self.dropdown["scatter1"])
+
         self.dropdown["scatter2"] = ipywidgets.Dropdown(
-            options=scatt_vars + ["None"],
+            options=[],
             description="Scatter2",
-            value=self.initial_scatter2_variable,
         )
+        self.dropdown_categories["scatter"].append(self.dropdown["scatter2"])
+
         self.dropdown["composition"] = ipywidgets.Dropdown(
-            options=comp_vars,
+            options=[],
             description="Composition",
-            value=self.initial_comps_variable,
         )
+        self.dropdown_categories["composition"].append(self.dropdown["composition"])
+
         self.dropdown["composition_color"] = ipywidgets.Dropdown(
-            options=sample_vars,
+            options=[],
             description="Colors",
-            value=self.initial_comps_color_variable,
         )
+        self.dropdown_categories["sample"].append(self.dropdown["composition_color"])
+
         self.dropdown["composition_colorscale"] = ipywidgets.Dropdown(
             options=px.colors.named_colorscales(),
             description="Colorscale",
             value="bluered",
         )
 
-        self.dropdown["sel"] = ipywidgets.Dropdown(
-            options=sample_vars,
-        )
+        self.dropdown["sel"] = ipywidgets.Dropdown(options=[])
+        self.dropdown_categories["sample"].append(self.dropdown["sel"])
+
+        self.dropdown["extract_from"] = ipywidgets.Dropdown(options=[])
+        self.dropdown_categories["composition"].append(
+            self.dropdown["extract_from"]
+        )  # this is a hack...
 
     def init_inputs(self):
         self.text_input["cmin"] = ipywidgets.FloatText(
@@ -481,7 +559,7 @@ class DatasetWidget_View:
             description="Data Index:", value=0, min=0
         )
         self.text_input["sample_dim"] = ipywidgets.Text(
-            description="Sample Dim", value=""
+            description="Sample Dim", value="", continuous_update=False
         )
 
         self.text_input["xmin"] = ipywidgets.FloatText(
@@ -493,13 +571,27 @@ class DatasetWidget_View:
             value=1.0,
         )
 
-        self.text_input["sel"] = ipywidgets.Text(
-            value="",
+        self.text_input["sel"] = ipywidgets.Text(placeholder="e.g, 0, 0.75, or 'T1'")
+
+        self.text_input["combined_var"] = ipywidgets.Text(
+            placeholder="'comps'",
         )
 
-    def run(self, sample_vars, scatt_vars, comp_vars):
+        self.text_input["to_combine"] = ipywidgets.Text(
+            placeholder="e.g. ['conc_A','conc_B']"
+        )
 
-        self.init_dropdowns(sample_vars, scatt_vars, comp_vars)
+        # self.text_input["extracted_var"] = ipywidgets.Text(
+        #     placeholder="'param_A'",
+        # )
+
+        self.text_input["extract_coord_value"] = ipywidgets.Text(
+            placeholder="e.g., power_law"
+        )
+
+    def run(self):
+
+        self.init_dropdowns()
         self.init_checkboxes()
         self.init_buttons()
         self.init_inputs()
@@ -552,24 +644,38 @@ class DatasetWidget_View:
                 self.text_input["sample_dim"],
                 self.text_input["xmin"],
                 self.text_input["xmax"],
-                self.checkbox['logx'],
-                self.checkbox['logy'],
+                self.checkbox["logx"],
+                self.checkbox["logy"],
                 self.button["update_plot"],
             ]
         )
 
         # select_tab
-        self.button_box_debug = ipywidgets.HBox(
-            children=[
-                self.button["reset_dataset"],
-                self.button["sel"],
-                self.button["isel"],
-            ],
-        )
         select_tab = ipywidgets.VBox(
             [
-                ipywidgets.HBox([self.dropdown["sel"], self.text_input["sel"]]),
-                self.button_box_debug,
+                self.button["reset_dataset"],
+                ipywidgets.HBox(
+                    [
+                        self.dropdown["sel"],
+                        self.text_input["sel"],
+                        self.button["sel"],
+                        self.button["isel"],
+                    ]
+                ),
+                ipywidgets.HBox(
+                    [
+                        self.text_input["combined_var"],
+                        self.text_input["to_combine"],
+                        self.button["combine"],
+                    ]
+                ),
+                ipywidgets.HBox(
+                    [
+                        self.dropdown["extract_from"],
+                        self.text_input["extract_coord_value"],
+                        self.button["extract"],
+                    ]
+                ),
             ]
         )
 
@@ -582,9 +688,11 @@ class DatasetWidget_View:
             ]
         )
 
+        # dummy_box = ipywidgets.Box()
+
         # Build Tabs
         self.tabs = ipywidgets.Tab([dataset_tab, plot_box, config_tab])
-        self.tabs.titles = ["Select", "Plot", "Config"]
+        self.tabs.titles = ["Dataset", "Plot", "Config"]
         self.tabs.selected_index = 1
 
         return self.tabs

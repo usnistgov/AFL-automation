@@ -164,10 +164,20 @@ class DatasetWidget:
         self.data_model.apply_isel({key: value})
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
-    def combine_vars(self,*args):
+    def extract_var(self, *args):
+        extract_from_var = self.data_view.dropdown["extract_from_var"].value
+        extract_from_coord = self.data_view.dropdown["extract_from_coord"].value
+        self.data_model.extract_var(extract_from_var,extract_from_coord)
+        self.update_dropdowns()
+
+    def combine_vars(self, *args):
         combined_var = self.data_view.text_input["combined_var"].value
-        to_combine_vars = ast.literal_eval(self.data_view.text_input["to_combine"].value)
-        self.data_model.combine_vars(combined_var=combined_var,to_combine_vars=to_combine_vars)
+        to_combine_vars = ast.literal_eval(
+            self.data_view.text_input["to_combine"].value
+        )
+        self.data_model.combine_vars(
+            combined_var=combined_var, to_combine_vars=to_combine_vars
+        )
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
         self.update_dropdowns()
 
@@ -185,6 +195,14 @@ class DatasetWidget:
 
     def update_sample_dim(self, *args):
         self.data_model.sample_dim = self.data_view.dropdown["sample_dim"].value
+
+    def update_extract_coords(self, change):
+        if change["type"] == "change" and change["name"] == "value":
+            extract_from_var = self.data_view.dropdown["extract_from_var"].value
+            dims = self.data_model.get_non_sample_dims(extract_from_var)
+            self.data_view.dropdown["extract_from_coord"].options = (
+                self.data_model.dataset[dims[0]].values
+            )
 
     def run(self):
         widget = self.data_view.run()
@@ -208,6 +226,9 @@ class DatasetWidget:
         self.data_view.button["isel"].on_click(self.apply_isel)
         self.data_view.button["reset_dataset"].on_click(self.reset_dataset)
         self.data_view.button["combine"].on_click(self.combine_vars)
+        self.data_view.button["extract"].on_click(self.extract_var)
+
+        self.data_view.dropdown["extract_from_var"].observe(self.update_extract_coords)
 
         return widget
 
@@ -258,6 +279,10 @@ class DatasetWidget_Model:
                     scatt_vars.append(var)
         return sample_vars, comp_vars, scatt_vars
 
+    def get_non_sample_dims(self, var: str):
+        dims = self.dataset[var].transpose(self.sample_dim, ...).dims[1:]
+        return dims
+
     def apply_sel(self, kw):
         temp_dataset = self.dataset.copy()
         for k, v in kw.items():
@@ -277,20 +302,23 @@ class DatasetWidget_Model:
     def combine_vars(self, combined_var: str, to_combine_vars: List[str]):
         # need to figure out dim name...
         reg = re.compile("component([0-9]*)")
-        dims = [reg.findall(k) for k in self.dataset.dims]
-        dims = [
+        dims = [reg.findall(str(k)) for k in self.dataset.dims]
+        dim_nums = [
             int(d[0]) for d in dims if len(d) == 1 and d[0]
         ]  # dim num should be length1 and not empty
         try:
-            new_dim = f"component{max(dims)+1}"
+            new_dim = f"component{max(dim_nums)+1}"
         except ValueError:
             new_dim = f"component1"
 
         self.dataset[combined_var] = (
-            self.dataset[to_combine_vars]
-            .to_array(new_dim)
-            .transpose(...,new_dim)
+            self.dataset[to_combine_vars].to_array(new_dim).transpose(..., new_dim)
         )
+
+    def extract_var(self, extract_from_var: str, extract_from_coord: str):
+        var_name = f'{extract_from_var}_{extract_from_coord}'
+        dim = self.get_non_sample_dims(extract_from_var)[0]
+        self.dataset[var_name]  = self.dataset[extract_from_var].sel({dim:extract_from_coord})
 
     def get_composition(self, variable):
         x = self.dataset[variable][:, 0].values
@@ -541,10 +569,12 @@ class DatasetWidget_View:
         self.dropdown["sel"] = ipywidgets.Dropdown(options=[])
         self.dropdown_categories["sample"].append(self.dropdown["sel"])
 
-        self.dropdown["extract_from"] = ipywidgets.Dropdown(options=[])
+        self.dropdown["extract_from_var"] = ipywidgets.Dropdown(options=[])
         self.dropdown_categories["composition"].append(
-            self.dropdown["extract_from"]
+            self.dropdown["extract_from_var"]
         )  # this is a hack...
+
+        self.dropdown["extract_from_coord"] = ipywidgets.Dropdown(options=[])
 
     def init_inputs(self):
         self.text_input["cmin"] = ipywidgets.FloatText(
@@ -585,9 +615,9 @@ class DatasetWidget_View:
         #     placeholder="'param_A'",
         # )
 
-        self.text_input["extract_coord_value"] = ipywidgets.Text(
-            placeholder="e.g., power_law"
-        )
+        # self.text_input["extract_coord_value"] = ipywidgets.Text(
+        #     placeholder="e.g., power_law"
+        # )
 
     def run(self):
 
@@ -671,8 +701,9 @@ class DatasetWidget_View:
                 ),
                 ipywidgets.HBox(
                     [
-                        self.dropdown["extract_from"],
-                        self.text_input["extract_coord_value"],
+                        self.dropdown["extract_from_var"],
+                        self.dropdown["extract_from_coord"],
+                        # self.text_input["extract_coord_value"],
                         self.button["extract"],
                     ]
                 ),

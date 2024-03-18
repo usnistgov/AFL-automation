@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import ipywidgets  # type: ignore
 import numpy as np
@@ -16,6 +16,7 @@ class DataLabelerWidget:
         sas_variable: str,
         composition_variable: str | List[str],
         sample_dim: str = "sample",
+        fit_variable: Optional[str] = None,
     ):
         """
 
@@ -34,6 +35,10 @@ class DataLabelerWidget:
         sample_dim: str
             The name of the `xarray` dimension corresponding to each sample or measurement. This is typically named
             'sample' in much of the AFL agent codebase.
+
+        fit_variable: Optional[str]
+            If not none, this data will be plotted along with the sas_variable data. This data variable should have the
+            same shape as sas_variable.
         """
 
         # preprocess the dataset before sending to the data model
@@ -49,6 +54,9 @@ class DataLabelerWidget:
             dataset["composition"] = input_dataset[composition_variable].transpose(
                 sample_dim, ...
             )
+
+        if fit_variable is not None:
+            dataset['fit'] = input_dataset[fit_variable].transpose(sample_dim,...)
 
         self.data_view = DataLabelerView()
         self.data_model = DataLabelerModel(dataset)
@@ -525,7 +533,7 @@ class DataLabelerView:
 
     def run(self, x, y, all_compositions, composition, models, ternary, components):
         self.ternary = ternary
-        self.fig1 = go.FigureWidget(go.Scatter(x=x, y=y, mode='markers'))
+        self.fig1 = go.FigureWidget(go.Scatter(x=x, y=y, mode="markers"))
         self.intensity = self.fig1.data[0]
         self.fig1.update_yaxes(type="log")
         self.fig1.update_xaxes(type="log")
@@ -616,7 +624,9 @@ class DataLabelerView:
         self.bprev = ipywidgets.Button(description="Prev")
         self.bnext = ipywidgets.Button(description="Next")
         self.bgoto = ipywidgets.Button(description="GoTo")
-        self.current_index = ipywidgets.IntText(description="Data Index:", value=0, min=0)
+        self.current_index = ipywidgets.IntText(
+            description="Data Index:", value=0, min=0
+        )
 
         self.n_orders = ipywidgets.BoundedIntText(
             description="n_orders", min=1, max=8, value=4

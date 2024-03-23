@@ -51,7 +51,9 @@ class TiledWidget:
 
         fields = [colDef["field"] for colDef in self.data_view.columnDefs]
         self.data_view.update_status(f"Looking for these fields in tiled: {fields}")
-        gridData = self.data_model.build_gridData(fields,progress=self.data_view.progress)
+        gridData = self.data_model.build_gridData(
+            fields, progress=self.data_view.progress
+        )
         self.data_view.grid.update_grid_data(gridData)
         self.data_view.update_status("Done building grid")
 
@@ -99,7 +101,11 @@ class DatasetWidget_Model:
         #     # progress.description = 'Success!'
         # except AttributeError:
         #     pass
-        return pd.DataFrame(gridData)
+        df = pd.DataFrame(gridData)
+        for key in ["meta/queued", "meta/started", "meta/ended"]:
+            df[key] = pd.to_datetime(df[key].str.strip(), format="%m/%d/%y %H:%M:%S-%f")
+
+        return df
 
 
 #################
@@ -147,8 +153,8 @@ class DatasetWidget_View:
 
     def init_inputs(self):
         self.text_input["uri"] = ipywidgets.Text(
-            value="http://localhost:8000",
-            # value="http://nistoroboto.campus.nist.gov:8000",
+            # value="http://localhost:8000",
+            value="http://nistoroboto.campus.nist.gov:8000",
         )
 
         self.text_input["api_key"] = ipywidgets.Text(
@@ -164,11 +170,18 @@ class DatasetWidget_View:
             {"field": "task_name"},
             {"field": "array_name"},
             {"field": "driver_name"},
-            {"field": "meta/ended", "headerName": "Ended Time"},
+            {
+                "field": "meta/ended",
+                "headerName": "Ended Time",
+                "filter": "agDateColumnFilter",
+            },
             {"field": "meta/started", "headerName": "Started Time"},
             {"field": "meta/queued", "headerName": "Queued Time"},
         ]
-        [i.update(defaultColDefs) for i in self.columnDefs]# apply defaults because ipyaggrid is broken
+        for columnDef in self.columnDefs:
+            for k in defaultColDefs:
+                if k not in columnDef:
+                    columnDef[k] = defaultColDefs[k]
 
         if self.extra_fields is not None:
             for field in self.extra_fields[::-1]:
@@ -181,9 +194,9 @@ class DatasetWidget_View:
             "enableFilter": True,
             "enableColResize": True,
             "enableRangeSelection": True,
-            'rowSelection':'multiple',
+            "rowSelection": "multiple",
         }
-        self.grid = ipyaggrid.Grid(grid_options=grid_options, quick_filter=True )
+        self.grid = ipyaggrid.Grid(grid_options=grid_options, quick_filter=True)
 
     def init(self):
         self.init_dropdowns()
@@ -202,7 +215,9 @@ class DatasetWidget_View:
         )
         browse_tab = ipywidgets.VBox(
             [
-                ipywidgets.HBox([self.text_input["uri"], self.button["connect"], self.progress]),
+                ipywidgets.HBox(
+                    [self.text_input["uri"], self.button["connect"], self.progress]
+                ),
                 self.grid,
                 output_box,
             ]

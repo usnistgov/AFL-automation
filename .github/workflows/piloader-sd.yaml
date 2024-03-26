@@ -1,4 +1,4 @@
-name: Publish
+name: Build PiLoader SD Card Image
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Publish binaries
+    name: Build PiLoader SD Card Image
     runs-on: ubuntu-latest
 
     steps:

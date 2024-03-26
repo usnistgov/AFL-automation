@@ -23,7 +23,7 @@ jobs:
       run: xz -d raspios.img.xz 
 
     - name: Use SDM to provision image
-      run: sudo sdm --customize --plugin user:"setpassword=afl|password=${{secrets.PI_PASSWORD}}" --plugin L10n:host --plugin disables:piwiz --plugin raspiconfig:"spi=1|serial=1|i2c=1|rgpio=1" --regen-ssh-host-keys --restart 2023-03-15-raspios-bookworm-arm64.img
+      run: sudo sdm --customize --plugin user:"setpassword=afl|password=${{secrets.PI_PASSWORD}}" --plugin L10n:host --plugin disables:piwiz --plugin raspiconfig:"spi=1|serial=1|i2c=1|rgpio=1" --regen-ssh-host-keys --restart raspios.img
 
     - name: Use SDM to "burn" image to file with hostname
       run: sudo sdm --burn piloader.img --hostname:piloader

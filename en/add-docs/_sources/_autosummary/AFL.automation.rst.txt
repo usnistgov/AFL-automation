@@ -1,0 +1,6 @@
+﻿AFL.automation
+==============
+
+.. currentmodule:: AFL.automation
+
+.. automodule:: AFL.automation

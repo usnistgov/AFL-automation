@@ -6,10 +6,15 @@
 Welcome to AFL-automation's documentation!
 ==========================================
 
+AFL-automation is a framework for instrument control.  It powers the NIST AFL, but is more useful than that.  It enables the easy conversion of Python classes - drivers - into robust HTTP microservices with authentication, task queueing, UI generation, data management, and more.
+
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   
+   api
 
 
 Indices and tables

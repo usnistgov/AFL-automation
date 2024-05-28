@@ -14,8 +14,14 @@ AFL-automation is a framework for instrument control.  It powers the NIST AFL, b
    :maxdepth: 2
    :caption: Contents:
    
-   api
 
+
+.. autosummary::
+   :toctree: _autosummary
+   :template: custom-module-template.rst
+   :recursive:
+
+   AFL.automation
 
 Indices and tables
 ==================

@@ -12,5 +12,5 @@ jobs:
           formats: |-
             epub
             pdf
-          pre-build-command: 'cd AFL-automation; pip install -e .'
+          pre-build-command: 'pip install -e .'
           pip-requirements: 'requirements.txt'

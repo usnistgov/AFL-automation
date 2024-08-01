@@ -421,3 +421,52 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                         ls.stopper.data = self._data
                     ls.poll.start()
                     ls.stopper.start()
+
+
+
+_DEFAULT_CUSTOM_CONFIG = {
+        '_classname': 'AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell',
+        '_args': [
+                {'_classname': 'AFL.automation.loading.DigitalOutPressureController.DigitalOutPressureController',
+                 '_args': [
+                        {'_classname': 'AFL.automation.loading.LabJackDigitalOut.LabJackDigitalOut',
+                         'intermittent_device_handle': False,
+                         'port_to_write'='TDAC4',
+                         #'shared_device' = 
+                         },
+                        3
+                 ]}
+                {'_classname': 'AFL.automation.loading.PiPlatesRelay.PiPlatesRelay',
+                '_args': [        
+                        {
+                                6:'arm-up',7:'arm-down',
+                                5:'rinse1',4:'rinse2',3:'blow',2:'piston-vent',1:'postsample'
+                        }]}
+                ],
+        'digitalin': {'_classname': 'AFL.automation.loading.PiGPIO.PiGPIO',
+                        '_args': [{4:'DOOR',14:'ARM_UP',15:'ARM_DOWN'}],
+                        'pull_dir':'UP'
+                        },
+        'load_stopper': [
+                {'_classname': 'AFL.automation.loading.LoadStopperDriver.LoadStopperDriver',
+                '_args': [{'_classname': 'AFL.automation.loading.LabJackSensor.LabJackSensor',
+                           'port_to_read': 'AIN0',
+                           'reset_port': 'DIO6'}],
+                '_add_data': 'data',
+                'name': 'LoadStopperDriver_sans',
+                'auto_initialize'=False,
+                'sensorlabel'='afterSANS'
+                },
+                {'_classname': 'AFL.automation.loading.LoadStopperDriver.LoadStopperDriver',
+                '_args': [{'_classname': 'AFL.automation.loading.LabJackSensor.LabJackSensor',
+                           'port_to_read': 'AIN1',
+                           'reset_port': 'DIO7'}],
+                '_add_data': 'data',
+                'name': 'LoadStopperDriver_spec',
+                'auto_initialize'=False,
+                'sensorlabel'='afterSPEC'
+                }
+        ],
+}
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

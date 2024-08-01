@@ -11,9 +11,8 @@ from AFL.automation.APIServer.data.DataTiled import DataTiled
 
 from AFL.automation.shared.PersistentConfig import PersistentConfig
 
-
 try:
-    main_module_name = _override_main_module_name_
+    main_module_name = _OVERRIDE_MAIN_MODULE_NAME
 except NameError:
     import __main__
     main_module_fullpath = os.path.abspath(__main__.__file__)
@@ -21,6 +20,7 @@ except NameError:
 driver_module = importlib.import_module(main_module_name,'')
 driver_name = driver_module.__name__.split('.')[-1]
 driver_cls = getattr(driver_module,driver_name)
+
 
 AFL_GLOBAL_CONFIG = PersistentConfig(
         os.path.join(os.path.expanduser('~'),'.afl','config.json'),
@@ -36,12 +36,15 @@ AFL_GLOBAL_CONFIG = PersistentConfig(
         max_history=100,
 )
 try:
-        to_maybe_update = _DEFAULT_CUSTOM_CONFIG 
+        _DEFAULT_CUSTOM_CONFIG = driver_module._DEFAULT_CUSTOM_CONFIG
         # if this driver has not provided a default custom config, we simply throw a NameError
         # and move on
         if driver_name not in AFL_GLOBAL_CONFIG['driver_custom_configs'].keys():
                 # if there is already global config for this driver, do nothing, otherwise...
-                AFL_GLOBAL_CONFIG['driver_custom_configs'] = _DEFAULT_CUSTOM_CONFIG
+                dccs = AFL_GLOBAL_CONFIG['driver_custom_configs']
+                dccs[driver_name]  = _DEFAULT_CUSTOM_CONFIG
+                AFL_GLOBAL_CONFIG['driver_custom_configs'] = dccs                
+                print(f'added previously missing custom config for {driver_name} to local file')
 except NameError:
         pass
 if 'AFL_SYSTEM_SERIAL' not in os.environ.keys():
@@ -61,14 +64,16 @@ else:
 
 def _reconstitute_objects(obj_dict,data=None):
         if not isinstance(obj_dict,dict):
+            if isinstance(obj_dict,list):
+                rlist = []
+                for itm in obj_dict:
+                    rlist.append(_reconstitute_objects(itm))
+                return rlist
+            else:
                 return obj_dict
         if '_classname' not in obj_dict.keys():
                 return obj_dict
         class_to_make = obj_dict.pop('_classname')
-        class_module_name = '.'.join(class_to_make.split('.')[:-1])
-        class_module = importlib.import_module(class_module_name,'')
-        cls_name = class_to_make.split('.')[:-1]
-        cls_obj = getattr(class_module, cls_name)
         if '_args' in obj_dict.keys():
                 _args = obj_dict.pop('_args')
         else:
@@ -83,7 +88,10 @@ def _reconstitute_objects(obj_dict,data=None):
                kwargs[data_name] = data
         for k,v in obj_dict.items():
                 kwargs[k] = _reconstitute_objects(v,data=data)
-
+        class_module_name = '.'.join(class_to_make.split('.')[:-1])
+        class_module = importlib.import_module(class_module_name,'')
+        cls_name = class_to_make.split('.')[-1]
+        cls_obj = getattr(class_module, cls_name)
         return cls_obj(*args,**kwargs)
 
 '''
@@ -98,11 +106,14 @@ def _reconstitute_objects(obj_dict,data=None):
 
 
 '''
+
 if main_module_name in AFL_GLOBAL_CONFIG['driver_custom_configs']:
-        driver = _reconstitute_objs(AFL_GLOBAL_CONFIG['driver_custom_configs'][main_module_name],data=data)
+        print(f'launching from custom config for {main_module_name}')
+        driver = _reconstitute_objects(AFL_GLOBAL_CONFIG['driver_custom_configs'][main_module_name],data=data)
 else:
         driver = driver_cls()
-
+print(driver.unqueued.functions)
+print(driver.unqueued.function_info)
 server = APIServer(main_module_name,data=data,contact=AFL_GLOBAL_CONFIG['owner_email'])
 server.add_standard_routes()
 

@@ -1,17 +1,20 @@
 import requests,uuid,time,copy,inspect
 from AFL.automation.shared import serialization
-
+from AFL.automation.shared.ServerDiscovery import ServerDiscovery
 
 class Client:
-    '''Communicate with APIServer 
-
-    This class maps pipettor functions to HTTP REST requests that are sent to
-    the server
     '''
-    def __init__(self,ip=None,port='5000',interactive=False):
-        #trim trailing slash if present
+    Communicate with APIServer 
+
+    This class provides an interface to generate HTTP REST requests that are sent to
+    an APIServer, monitor the status of those requests, and retrieve the results of
+    those requests.  It is intended to be used as a client to the APIServer class.
+    '''
+
+    def __init__(self,ip=None,port='5000',username=None,interactive=False):
         if ip is None:
             raise ValueError('ip (server address) must be specified')
+        #trim trailing slash if present
         if ip[-1] == '/':
             ip = ip[:-1]
         self.ip = ip
@@ -26,6 +29,16 @@ class Client:
         else:
             #Client.ui = AFL.automation.shared.widgetui.client_construct_ui
             setattr(Client,'ui',AFL.automation.shared.widgetui.client_construct_ui)
+        if username is not None:
+            self.login(username)
+
+
+    @classmethod
+    def from_server_name(cls,server_name,**kwargs):
+        sd = ServerDiscovery()
+        address = ServerDiscovery.sa_discover_server_by_name(server_name)[0]
+        (address,port) = address.split(':')
+        return cls(ip=address,port=port,**kwargs)
 
     def logged_in(self):
         url = self.url + '/login_test'
@@ -36,7 +49,7 @@ class Client:
             print(response.content)
             return False
 
-    def login(self,username):
+    def login(self,username,populate_commands=True):
         url = self.url + '/login'
         response = requests.post(url,json={'username':username,'password':'domo_arigato'})
         if not (response.status_code == 200):
@@ -45,7 +58,9 @@ class Client:
         # headers should be included in all HTTP requests 
         self.token  = response.json()['token']
         self.headers = {'Authorization':'Bearer {}'.format(self.token)}
-
+        if populate_commands:
+            self.get_queued_commmands()
+            self.get_unqueued_commmands()
 
     def driver_status(self):
         response = requests.get(self.url+'/driver_status',headers=self.headers)
@@ -312,3 +327,9 @@ class Client:
         else:
             obj = retval['return_val']
         return obj
+
+    def __str__(self):
+        if self.logged_in():
+            return f'APIServer Client(ip={self.ip},port={self.port}), connected'
+        else:
+            return f'APIServer Client(ip={self.ip},port={self.port}), disconnected'

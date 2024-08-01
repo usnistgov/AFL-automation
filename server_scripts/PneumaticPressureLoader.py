@@ -38,8 +38,8 @@ load_stopper_spec = LoadStopperDriver(sensor_spec,name='LoadStopperDriver_spec',
 
 relayboard = PiPlatesRelay(
         {
-        6:'arm-up',7:'arm-down',
-        5:'rinse1',4:'rinse2',3:'blow',2:'piston-vent',1:'postsample'
+        7:'arm-up',6:'arm-down',
+        1:'rinse1',2:'rinse2',3:'blow',4:'piston-vent',5:'postsample'
 
         } )
 

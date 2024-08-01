@@ -52,8 +52,16 @@ if main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
 else:
         server_port=5000
 
+if len(AFL_GLOBAL_CONFIG['tiled_server'])>0:
+        data = DataTiled(AFL_GLOBAL_CONFIG['tiled_server'],
+                api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
+                backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
+else:
+        data = None
 
-def _reconstitute_objects(obj_dict):
+def _reconstitute_objects(obj_dict,data=None):
+        if not isinstance(obj_dict,dict):
+                return obj_dict
         if '_classname' not in obj_dict.keys():
                 return obj_dict
         class_to_make = obj_dict.pop('_classname')
@@ -67,10 +75,14 @@ def _reconstitute_objects(obj_dict):
                 _args = []
         args = []
         for item in _args:
-                args.append(_reconstitute_objects(item))
+                args.append(_reconstitute_objects(item,data=data))
+
         kwargs = {}
+        if '_add_data' in obj_dict.keys():
+               data_name = obj_dict.pop('_add_data')
+               kwargs[data_name] = data
         for k,v in obj_dict.items():
-                kwargs[k] = _reconstitute_objects(v)
+                kwargs[k] = _reconstitute_objects(v,data=data)
 
         return cls_obj(*args,**kwargs)
 
@@ -87,15 +99,10 @@ def _reconstitute_objects(obj_dict):
 
 '''
 if main_module_name in AFL_GLOBAL_CONFIG['driver_custom_configs']:
-        driver = _reconstitute_objs(AFL_GLOBAL_CONFIG['driver_custom_configs'][main_module_name])
+        driver = _reconstitute_objs(AFL_GLOBAL_CONFIG['driver_custom_configs'][main_module_name],data=data)
 else:
         driver = driver_cls()
-if len(AFL_GLOBAL_CONFIG['tiled_server'])>0:
-        data = DataTiled(AFL_GLOBAL_CONFIG['tiled_server'],
-                api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
-                backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
-else:
-        data = None
+
 server = APIServer(main_module_name,data=data,contact=AFL_GLOBAL_CONFIG['owner_email'])
 server.add_standard_routes()
 

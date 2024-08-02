@@ -88,15 +88,15 @@ class SeabreezeUVVis(Driver):
             pass
 
         while datetime.datetime.now() < (start + duration):
-            data.append(list(self.spectrometer.intensities(
+            data = [self.spectrometer.intensities(
                         correct_dark_counts=self.config['correctDarkCounts'], 
-                        correct_nonlinearity=self.config['correctNonlinearity'])))
+                        correct_nonlinearity=self.config['correctNonlinearity'])]
             time.sleep(self.config['exposure_delay'])
         
         if self.data is not None:
             self.data['mode'] = 'continuous'
-            self.data['wavelength'] = self.wl.tolist()
-            self.data['main_array'] = np.array(data)
+            self.data.add_array('wavelength',self.wl.tolist())
+            self.data.add_array('spectra',data[0])
            
         self._writedata(data)
 
@@ -108,18 +108,17 @@ class SeabreezeUVVis(Driver):
 
     @Driver.unqueued()
     def collectSingleSpectrum(self,**kwargs):
-        data = [list(self.wl),list(self.spectrometer.intensities(
+        data = [self.wl,self.spectrometer.intensities(
             correct_dark_counts=self.config['correctDarkCounts'], 
-                    correct_nonlinearity=self.config['correctNonlinearity']))]
+                    correct_nonlinearity=self.config['correctNonlinearity'])]
 
         if self.config['saveSingleScan']:
             self._writedata(data)
 
         if self.data is not None:
             self.data['mode'] = 'single'
-            self.data['wavelength'] = self.wl.tolist()
-            self.data['spectrum'] = [x.tolist() for x in data] 
-            self.data['main_array'] = np.array(data)
+            self.data.add_array('wavelength',data[0])
+            self.data.add_array('spectrum',data[1])
         return [x.tolist() for x in data]
 
     def _writedata(self,data):

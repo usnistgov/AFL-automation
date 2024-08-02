@@ -47,6 +47,19 @@ try:
                 print(f'added previously missing custom config for {driver_name} to local file')
 except NameError:
         pass
+
+try:
+        _DEFAULT_PORT = driver_module._DEFAULT_PORT
+        # if this driver has not provided a default custom config, we simply throw a NameError
+        # and move on
+        if driver_name not in AFL_GLOBAL_CONFIG['ports'].keys():
+                # if there is already global config for this driver, do nothing, otherwise...
+                dports = AFL_GLOBAL_CONFIG['ports']
+                dports[driver_name]  = _DEFAULT_PORT
+                AFL_GLOBAL_CONFIG['ports'] = dports              
+                print(f'added previously missing custom port for {driver_name} to local file')
+except NameError:
+        pass
 if 'AFL_SYSTEM_SERIAL' not in os.environ.keys():
         os.environ['AFL_SYSTEM_SERIAL'] = AFL_GLOBAL_CONFIG['system_serial']
 

@@ -8,6 +8,7 @@ import h5py
 from pathlib import Path
 import uuid
 import pathlib
+import copy
 
 class SeabreezeUVVis(Driver):
     defaults = {}
@@ -18,8 +19,10 @@ class SeabreezeUVVis(Driver):
     defaults['saveSingleScan'] = False
     defaults['filename'] = 'test.h5'
     defaults['filepath'] = '.'
+    defaults['reference_uuid'] = '.' #variable name in tiled
+    defaults['air_uuid'] = '.' #variable name in tiled
     
-    def __init__(self,backend='cseabreeze',device_serial=None,overrides=None):
+    def __init__(self,backend='cseabreeze',tiled_uri=None, device_serial=None,overrides=None):
         self.app = None
         self.name = 'SeabreezeUVVis'
         Driver.__init__(self,name='SeabreezeUVVis',defaults = self.gather_defaults(),overrides=overrides)
@@ -37,6 +40,10 @@ class SeabreezeUVVis(Driver):
         print(f'Connected successfully, to a {self.spectrometer}')
 
         self.wl = self.spectrometer.wavelengths()
+
+        if tiled_uri is not None:
+            self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
+
 
     @Driver.unqueued()
     def getExposure(self):
@@ -107,26 +114,48 @@ class SeabreezeUVVis(Driver):
         else:
             return data
 
+    def reduce(data):
+        tiled_result = self.tiled_client .search(Eq('sample_uuid',self.config['reference_uuid']))
+        if len(tiled_result)==0:
+            raise ValueError(f"Can't reduce! Could not find tiled entry for measurement sample_uuid={self.config['reference_uuid']}")
+
+        ref_data = tiled_result.items()[-1][-1][()]
+        return data/ref_data
+
+
     @Driver.unqueued()
-    def collectSingleSpectrum(self,**kwargs):
-        data = [self.wl,self.spectrometer.intensities(
-            correct_dark_counts=self.config['correctDarkCounts'], 
-                    correct_nonlinearity=self.config['correctNonlinearity'])]
+    def collectSingleSpectrum(self, reduce=False, set_reference=False, set_air=False, **kwargs):
+        data = self.spectrometer.intensities( 
+                correct_dark_counts=self.config['correctDarkCounts'], 
+                correct_nonlinearity=self.config['correctNonlinearity']
+                )
+                
+        if reduce:
+            data = self.reduce(data)
 
         if self.config['saveSingleScan']:
             self._writedata(data)
 
+        if set_reference:
+            self.config['reference_uuid'] = copy.deepcopy(self.data['sample_uuid'])
+
+        if set_air:
+            self.config['air_uuid'] = copy.deepcopy(self.data['sample_uuid'])
+        
+
         if self.data is not None:
             self.data['mode'] = 'single'
-            self.data['wavelength'] = data[0]
-            self.data.add_array('wavelength',data[0])
-            self.data.add_array('spectrum',data[1])
-        return [x.tolist() for x in data]
+            self.data['wavelength'] = self.wl
+            self.data['reduced'] = reduce
+            self.data.add_array('wavelength',self.wl)
+            self.data.add_array('spectrum',data)
+
+        return [x.tolist() for x in [self.wl,data]]
 
     def _writedata(self,data):
         filepath = pathlib.Path(self.config['filepath'])
         filename = pathlib.Path(self.config['filename'])
-        data = np.array(data)
+        data = np.array([self.wl,data])
         with h5py.File(filepath/filename, 'w') as f:
             dset = f.create_dataset(str(uuid.uuid1()), data=data)
 

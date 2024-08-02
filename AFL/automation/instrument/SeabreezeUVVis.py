@@ -88,13 +88,14 @@ class SeabreezeUVVis(Driver):
             pass
 
         while datetime.datetime.now() < (start + duration):
-            data = [self.spectrometer.intensities(
+            data.append(self.spectrometer.intensities(
                         correct_dark_counts=self.config['correctDarkCounts'], 
-                        correct_nonlinearity=self.config['correctNonlinearity'])]
+                        correct_nonlinearity=self.config['correctNonlinearity']))
             time.sleep(self.config['exposure_delay'])
         
         if self.data is not None:
             self.data['mode'] = 'continuous'
+            self.data['wavelength'] = self.wl.tolist()
             self.data.add_array('wavelength',self.wl.tolist())
             self.data.add_array('spectra',data[0])
            
@@ -117,6 +118,7 @@ class SeabreezeUVVis(Driver):
 
         if self.data is not None:
             self.data['mode'] = 'single'
+            self.data['wavelength'] = data[0]
             self.data.add_array('wavelength',data[0])
             self.data.add_array('spectrum',data[1])
         return [x.tolist() for x in data]

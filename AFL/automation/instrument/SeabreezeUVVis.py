@@ -25,10 +25,9 @@ class SeabreezeUVVis(Driver):
     defaults['exposure_delay'] = 0
     defaults['saveSingleScan'] = False
     defaults['filename'] = 'test.h5'
-    defaults['filepath'] = '.'
-    defaults['reference_uuid'] = '.' #variable name in tiled
+    defaults['filepath'] = '.' defaults['reference_uuid'] = '.' #variable name in tiled
     defaults['air_uuid'] = '.' #variable name in tiled
-    
+
     def __init__(self,backend='cseabreeze', device_serial=None,overrides=None):
         self.app = None
         self.name = 'SeabreezeUVVis'
@@ -88,8 +87,9 @@ class SeabreezeUVVis(Driver):
         self.spectrometer.integration_time_micros(1e6*time)
 
     def collectContinuous(self,duration,start=None,return_data=False,**kwargs):
+        warnings.warn('collectContinuous should be replaced with collect', DeprecationWarning, stacklevel=2)
+
         data = []
-        
         duration = datetime.timedelta(seconds=duration)
 
         if start is None:
@@ -120,32 +120,21 @@ class SeabreezeUVVis(Driver):
         else:
             return data
 
-    def reduce(self,data):
-        if self.data is None:
-            raise ValueError("Cannot reduce without DataTiled...please set tiled parameters in server_script")
-
-        tiled_result = self.data.tiled_client.search(Eq('sample_uuid',self.config['reference_uuid']))
-        if len(tiled_result)==0:
-            raise ValueError(f"Can't reduce! Could not find tiled entry for measurement sample_uuid={self.config['reference_uuid']}")
-
-        ref_data = tiled_result.items()[-1][-1][()]
-        return data/ref_data
-
 
     @Driver.unqueued()
-    def collectSingleSpectrum(self, reduce=False, set_reference=False, set_air=False, **kwargs):
+    def collectSingleSpectrum(self, set_reference=False, set_air=False, **kwargs):
+        warnings.warn('collectSingleSpectrum should be replaced with collect', DeprecationWarning, stacklevel=2)
+
+        wl = self.wl[1:]
         raw_data = self.spectrometer.intensities( 
                 correct_dark_counts=self.config['correctDarkCounts'], 
                 correct_nonlinearity=self.config['correctNonlinearity']
                 )
+        raw_data = raw_data[1:]
                 
-        if reduce:
-            data = self.reduce(raw_data)
-        else:
-            data = raw_data
 
         if self.config['saveSingleScan']:
-            self._writedata(data)
+            self._writedata(raw_data)
 
         if set_reference:
             self.config['reference_uuid'] = copy.deepcopy(self.data['sample_uuid'])
@@ -156,11 +145,10 @@ class SeabreezeUVVis(Driver):
 
         if self.data is not None:
             self.data['mode'] = 'single'
-            self.data['wavelength'] = self.wl
-            self.data['reduced'] = reduce
-            self.data.add_array('raw_spectrum',raw_data)
-            self.data.add_array('wavelength',self.wl)
-            self.data.add_array('spectrum',data)
+            self.data['wavelength'] = wl
+            self.data['reduced'] = False
+            self.data.add_array('wavelength',wl)
+            self.data.add_array('spectrum_raw',raw_data)
 
 
     def _writedata(self,data):
@@ -170,5 +158,80 @@ class SeabreezeUVVis(Driver):
         with h5py.File(filepath/filename, 'w') as f:
             dset = f.create_dataset(str(uuid.uuid1()), data=data)
 
+    def collect(
+        self,
+        nframes: int,
+        reduced: bool= False,
+        set_reference: bool =False,
+        set_air: bool=False,
+        exposure: Optional[float] = None,
+        **kwargs: 
+        ):
+
+        if exposure is not None:
+            self.setExposure(exposure)
+
+        wl = self.wl[1:] # remove internal dark reference 
+        data_raw = []
+        for frame in nframes:
+           I = self.spectrometer.intensities( 
+                   correct_dark_counts=self.config['correctDarkCounts'], 
+                   correct_nonlinearity=self.config['correctNonlinearity'])
+           )
+           I = I[1:] # remove internal dark reference
+           data_raw.append(I)
+           time.sleep(self.config['exposure_delay']
+
+        data_raw_mean = np.mean(data_raw,axis=0)
+        data_raw_std = np.std(data_raw,axis=0)
+
+        if reduced:
+            data_mean, data_std = self.reduced(data_mean_raw,data_mean_std)
+
+        if self.config['saveSingleScan']:
+            self._writedata(data_raw)
+
+        if set_reference:
+            self.config['reference_uuid'] = copy.deepcopy(self.data['sample_uuid'])
+
+        if set_air:
+            self.config['air_uuid'] = copy.deepcopy(self.data['sample_uuid'])
+        
+        if self.data is not None:
+            self.data['mode'] = 'collect'
+            self.data['wavelength'] = wl
+            self.data['reference_uuid'] = self.config['reference_uuid']
+            self.data['air_uuid'] = self.config['air_uuid']
+            self.data['reduced'] = reduced
+            self.data.add_array('wavelength',wl))
+            self.data.add_array('all_spectra',data_raw)
+            self.data.add_array('spectrum_raw',data_raw_mean)
+            self.data.add_array('spectrum_raw_std',data_raw_std)
+            if reduced:
+                self.data.add_array('spectrum',data_mean)
+                self.data.add_array('spectrum_std',data_std)
+
+        if reduced:
+            data_out = [wl,data_mean] 
+        else:
+            data_out = [wl,data_raw_mean] 
+
+        return data_out
+
+    def reduced(self,data_raw_mean,data_raw_std):
+        if self.data is None:
+            raise ValueError("Cannot reduce without DataTiled...please set tiled parameters in server_script")
+
+        tiled_result = self.data.tiled_client.search(Eq('sample_uuid',self.config['reference_uuid']))
+        if len(tiled_result)==0:
+            raise ValueError(f"Can't reduce! Could not find tiled entry for measurement sample_uuid={self.config['reference_uuid']}")
+
+        ref_spectrum = tiled_result.search(Eq('array_name','spectrum_raw')).items()[-1][-1][()] #grabs the last entry that matches
+        ref_spectrum_std = tiled_result.search(Eq('array_name','spectrum_raw_std')).items()[-1][-1][()]
+
+        data_mean = data_raw_mean/ref_spectrum
+        data_std = data_mean*(data_raw_std/np.abs(data_raw_mean) + ref_spectrum_std/np.abs(ref_spectrum_std))
+
+        return data_mean,data_std
 
 

@@ -9,6 +9,13 @@ from pathlib import Path
 import uuid
 import pathlib
 import copy
+import warnings
+
+try:
+    from tiled.queries import Eq
+except ImportError:
+    warnings.warn("Cannot import from tiled...reduction will not work",stacklevel=2)
+
 
 class SeabreezeUVVis(Driver):
     defaults = {}
@@ -22,7 +29,7 @@ class SeabreezeUVVis(Driver):
     defaults['reference_uuid'] = '.' #variable name in tiled
     defaults['air_uuid'] = '.' #variable name in tiled
     
-    def __init__(self,backend='cseabreeze',tiled_uri=None, device_serial=None,overrides=None):
+    def __init__(self,backend='cseabreeze', device_serial=None,overrides=None):
         self.app = None
         self.name = 'SeabreezeUVVis'
         Driver.__init__(self,name='SeabreezeUVVis',defaults = self.gather_defaults(),overrides=overrides)
@@ -41,8 +48,7 @@ class SeabreezeUVVis(Driver):
 
         self.wl = self.spectrometer.wavelengths()
 
-        if tiled_uri is not None:
-            self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
+        self.setExposure(self.config['exposure'])
 
 
     @Driver.unqueued()
@@ -114,8 +120,11 @@ class SeabreezeUVVis(Driver):
         else:
             return data
 
-    def reduce(data):
-        tiled_result = self.tiled_client .search(Eq('sample_uuid',self.config['reference_uuid']))
+    def reduce(self,data):
+        if self.data is None:
+            raise ValueError("Cannot reduce without DataTiled...please set tiled parameters in server_script")
+
+        tiled_result = self.data.tiled_client.search(Eq('sample_uuid',self.config['reference_uuid']))
         if len(tiled_result)==0:
             raise ValueError(f"Can't reduce! Could not find tiled entry for measurement sample_uuid={self.config['reference_uuid']}")
 
@@ -125,13 +134,15 @@ class SeabreezeUVVis(Driver):
 
     @Driver.unqueued()
     def collectSingleSpectrum(self, reduce=False, set_reference=False, set_air=False, **kwargs):
-        data = self.spectrometer.intensities( 
+        raw_data = self.spectrometer.intensities( 
                 correct_dark_counts=self.config['correctDarkCounts'], 
                 correct_nonlinearity=self.config['correctNonlinearity']
                 )
                 
         if reduce:
-            data = self.reduce(data)
+            data = self.reduce(raw_data)
+        else:
+            data = raw_data
 
         if self.config['saveSingleScan']:
             self._writedata(data)
@@ -147,10 +158,10 @@ class SeabreezeUVVis(Driver):
             self.data['mode'] = 'single'
             self.data['wavelength'] = self.wl
             self.data['reduced'] = reduce
+            self.data.add_array('raw_spectrum',raw_data)
             self.data.add_array('wavelength',self.wl)
             self.data.add_array('spectrum',data)
 
-        return [x.tolist() for x in [self.wl,data]]
 
     def _writedata(self,data):
         filepath = pathlib.Path(self.config['filepath'])

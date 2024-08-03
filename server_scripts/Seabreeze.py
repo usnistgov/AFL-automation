@@ -12,7 +12,7 @@ from AFL.automation.APIServer.data.DataTiled import DataTiled
 
 data = DataTiled('http://10.42.0.1:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/pi/.afl/json-backup')
 
-server_port=5050
+server_port=5000
 
 driver = SeabreezeUVVis(backend='pyseabreeze')
 

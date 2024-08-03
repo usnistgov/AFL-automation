@@ -67,7 +67,7 @@ def _reconstitute_objects(obj_dict,data=None):
             if isinstance(obj_dict,list):
                 rlist = []
                 for itm in obj_dict:
-                    rlist.append(_reconstitute_objects(itm))
+                    rlist.append(_reconstitute_objects(itm,data=data))
                 return rlist
             else:
                 return obj_dict

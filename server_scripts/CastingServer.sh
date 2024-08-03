@@ -4,7 +4,7 @@ git config --global credential.helper store
 
 conda activate afl_agent
 
-cd ~/NistoRoboto/
+cd ~/AFL-automation/
 git pull
 
-python ~/NistoRoboto/server_scripts/CastingServer.py
+python ~/AFL-automation/AFL/automation/sample/CastingServer.py

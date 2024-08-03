@@ -333,3 +333,5 @@ class ISISLARMOR(Driver):
         self.data.add_array('dI',sasdata.dy)
 
 
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

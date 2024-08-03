@@ -123,3 +123,19 @@ class OpticalTurbidity(Driver):
             
         #returns the turbidity value in normalized units, the center of the circular mask and the radius as a list
         return  turbidity_metric, [cx, cy]
+
+
+
+_DEFAULT_CUSTOM_CONFIG = {
+        '_classname': 'AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity',
+        '_args': [
+            {'_classname': 'AFL.automation.instrument.NetworkCamera.NetworkCamera',
+             '_args' : [
+                 'http://afl-video:8081/103/current'
+             ]
+             }
+        ]
+}
+_DEFAULT_CUSTOM_PORT = 5001
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

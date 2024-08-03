@@ -130,4 +130,10 @@ class SeabreezeUVVis(Driver):
             dset = f.create_dataset(str(uuid.uuid1()), data=data)
 
 
+_DEFAULT_CUSTOM_CONFIG = {
+        '_classname': 'AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis',
+        'backend': 'pyseabreeze'
+}
 
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

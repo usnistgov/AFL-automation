@@ -11,6 +11,8 @@ import pathlib
 import copy
 import warnings
 
+from typing import Optional
+
 try:
     from tiled.queries import Eq
 except ImportError:
@@ -25,7 +27,8 @@ class SeabreezeUVVis(Driver):
     defaults['exposure_delay'] = 0
     defaults['saveSingleScan'] = False
     defaults['filename'] = 'test.h5'
-    defaults['filepath'] = '.' defaults['reference_uuid'] = '.' #variable name in tiled
+    defaults['filepath'] = '.' 
+    defaults['reference_uuid'] = '.' #variable name in tiled
     defaults['air_uuid'] = '.' #variable name in tiled
 
     def __init__(self,backend='cseabreeze', device_serial=None,overrides=None):
@@ -162,10 +165,11 @@ class SeabreezeUVVis(Driver):
         self,
         nframes: int,
         reduced: bool= False,
+        absorbance: bool=True,
         set_reference: bool =False,
         set_air: bool=False,
         exposure: Optional[float] = None,
-        **kwargs: 
+        **kwargs
         ):
 
         if exposure is not None:
@@ -173,20 +177,20 @@ class SeabreezeUVVis(Driver):
 
         wl = self.wl[1:] # remove internal dark reference 
         data_raw = []
-        for frame in nframes:
+        for frame in range(nframes):
            I = self.spectrometer.intensities( 
                    correct_dark_counts=self.config['correctDarkCounts'], 
-                   correct_nonlinearity=self.config['correctNonlinearity'])
+                   correct_nonlinearity=self.config['correctNonlinearity']
            )
            I = I[1:] # remove internal dark reference
            data_raw.append(I)
-           time.sleep(self.config['exposure_delay']
+           time.sleep(self.config['exposure_delay'])
 
         data_raw_mean = np.mean(data_raw,axis=0)
         data_raw_std = np.std(data_raw,axis=0)
 
         if reduced:
-            data_mean, data_std = self.reduced(data_mean_raw,data_mean_std)
+            data_mean, data_std = self.reduced(data_mean_raw, data_mean_std, absorbance=absorbance)
 
         if self.config['saveSingleScan']:
             self._writedata(data_raw)
@@ -203,7 +207,8 @@ class SeabreezeUVVis(Driver):
             self.data['reference_uuid'] = self.config['reference_uuid']
             self.data['air_uuid'] = self.config['air_uuid']
             self.data['reduced'] = reduced
-            self.data.add_array('wavelength',wl))
+            self.data['absorbance'] = absorbance
+            self.data.add_array('wavelength',wl)
             self.data.add_array('all_spectra',data_raw)
             self.data.add_array('spectrum_raw',data_raw_mean)
             self.data.add_array('spectrum_raw_std',data_raw_std)
@@ -212,13 +217,13 @@ class SeabreezeUVVis(Driver):
                 self.data.add_array('spectrum_std',data_std)
 
         if reduced:
-            data_out = [wl,data_mean] 
+            data_out = [wl.tolist(),data_mean.tolist()] 
         else:
-            data_out = [wl,data_raw_mean] 
+            data_out = [wl.tolist(),data_raw_mean.tolist()] 
 
         return data_out
 
-    def reduced(self,data_raw_mean,data_raw_std):
+    def reduced(self,data_raw_mean,data_raw_std,absorbance=True):
         if self.data is None:
             raise ValueError("Cannot reduce without DataTiled...please set tiled parameters in server_script")
 
@@ -231,6 +236,9 @@ class SeabreezeUVVis(Driver):
 
         data_mean = data_raw_mean/ref_spectrum
         data_std = data_mean*(data_raw_std/np.abs(data_raw_mean) + ref_spectrum_std/np.abs(ref_spectrum_std))
+
+        if absorbance:
+            data_mean = 1.0 - data_mean
 
         return data_mean,data_std
 

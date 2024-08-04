@@ -17,9 +17,13 @@ except NameError:
     import __main__
     main_module_fullpath = os.path.abspath(__main__.__file__)
     main_module_name = os.path.basename(main_module_fullpath).replace('.py','')
-driver_module = importlib.import_module(main_module_name,'')
+try:
+    driver_module = importlib.import_module(main_module_name,'')
+except ModuleNotFoundError:
+    # driver_module = sys.modules[__name__]
+    driver_module = __main__
 driver_name = driver_module.__name__.split('.')[-1]
-driver_cls = getattr(driver_module,driver_name)
+driver_cls = getattr(driver_module,main_module_name)
 
 
 AFL_GLOBAL_CONFIG = PersistentConfig(
@@ -45,7 +49,7 @@ try:
                 dccs[driver_name]  = _DEFAULT_CUSTOM_CONFIG
                 AFL_GLOBAL_CONFIG['driver_custom_configs'] = dccs                
                 print(f'added previously missing custom config for {driver_name} to local file')
-except NameError:
+except (AttributeError,NameError):
         pass
 
 try:
@@ -58,7 +62,7 @@ try:
                 dports[driver_name]  = _DEFAULT_PORT
                 AFL_GLOBAL_CONFIG['ports'] = dports              
                 print(f'added previously missing custom port for {driver_name} to local file')
-except NameError:
+except (AttributeError,NameError):
         pass
 if 'AFL_SYSTEM_SERIAL' not in os.environ.keys():
         os.environ['AFL_SYSTEM_SERIAL'] = AFL_GLOBAL_CONFIG['system_serial']
@@ -125,8 +129,6 @@ if main_module_name in AFL_GLOBAL_CONFIG['driver_custom_configs']:
         driver = _reconstitute_objects(AFL_GLOBAL_CONFIG['driver_custom_configs'][main_module_name],data=data)
 else:
         driver = driver_cls()
-print(driver.unqueued.functions)
-print(driver.unqueued.function_info)
 server = APIServer(main_module_name,data=data,contact=AFL_GLOBAL_CONFIG['owner_email'])
 server.add_standard_routes()
 

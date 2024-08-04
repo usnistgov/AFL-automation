@@ -190,7 +190,7 @@ class SeabreezeUVVis(Driver):
         data_raw_std = np.std(data_raw,axis=0)
 
         if reduced:
-            data_mean, data_std = self.reduced(data_mean_raw, data_mean_std, absorbance=absorbance)
+            data_mean, data_std = self.reduced(data_raw_mean, data_raw_std, absorbance=absorbance)
 
         if self.config['saveSingleScan']:
             self._writedata(data_raw)

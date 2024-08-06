@@ -123,7 +123,10 @@ class APIServer:
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
         if _ADVERTISE_ZEROCONF:
-            self.advertise_zeroconf(**kwargs)
+            try:
+                self.advertise_zeroconf(**kwargs)
+            except Exception as e:
+                print(f'failed while trying to start zeroconf {e}, continuing')
         try:
             self.app.run(**kwargs)
         finally:

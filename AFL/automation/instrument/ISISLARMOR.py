@@ -9,6 +9,7 @@ import epics as pye
 import sans.command_interface.ISISCommandInterface as ici
 # import mantid algorithms, numpy and matplotlib
 from mantid.simpleapi import *
+import numpy as np
 
 from sasdata.dataloader.loader import Loader
 
@@ -34,7 +35,6 @@ Filename for pre-reduced data should be as nxs file:
 """
 
 PREFIX = "//isis/inst$"
-DATA_LOCATION = "/NDXLARMOR/Instrument/data/cycle_23_5/"
 
 
 class ISISLARMOR(Driver):
@@ -45,7 +45,6 @@ class ISISLARMOR(Driver):
     defaults['sample_thickness'] = 1
 
     defaults['reduced_data_dir'] = './'
-    defaults['tiled_uri'] = 'http://130.246.37.131:8000'
 
     defaults['open_beam_trans_rn'] = -1
     defaults['empty_cell_scatt_rn'] = -1
@@ -54,12 +53,16 @@ class ISISLARMOR(Driver):
     defaults['slow_wait_time'] = 2
     defaults['fast_wait_time'] = 1
     defaults['file_wait_time'] = 1
+    
+    defaults['cycle_path'] = "/NDXLARMOR/Instrument/data/cycle_24_2/"
+    defaults['mask_file'] = '/NDXLARMOR/User/Masks/USER_Beaucage_242D_AFL_r86070.TOML'
+    
 
     def __init__(self,name:str='ISISLARMOR',overrides=None):
         """ """
         self.app = None
         Driver.__init__(self,name=name,defaults=self.gather_defaults(),overrides=overrides)
-        self.tiled_client = None
+
         self.status_str = "New Server"
 
         
@@ -68,9 +71,6 @@ class ISISLARMOR(Driver):
         status.append(self.status_str)
         return status
         
-    def _init_tiled_client(self):
-        if tiled_client is None:
-            self.tiled_client = from_uri(self.config['tiled_uri'],api_key='NistoRoboto642')
 
     def getRunNumber(self):
         rn = pye.caget("IN:LARMOR:DAE:IRUNNUMBER")
@@ -161,7 +161,7 @@ class ISISLARMOR(Driver):
         else:
             raise ValueError(f'Invalid exposure metric = {expose_metric}')
             
-    def waitforfile(self, fpath, max_t=600):
+    def waitforfile(self, fpath, max_t=900):
         # TODO: Check that the file is not changing, not that is just exists
         self.status_str = f"Waiting for file {fpath} to be written..."
         start_time = time.time()
@@ -169,10 +169,15 @@ class ISISLARMOR(Driver):
             time.sleep(self.config['file_wait_time'])
             now = time.time()
             if now - start_time >= max_t:
-                raise FileNotFound(f"The file {fpath} was not written within {max_t} seconds.")
-        self.status_str = f"File {fpath} was created successfully."
+                raise FileNotFoundError(f"The file {fpath} was not written within {max_t} seconds.")
+        while not os.access(str(fpath),os.R_OK):
+            time.sleep(self.config['file_wait_time'])
+            now = time.time()
+            if now - start_time >= max_t:
+                raise FileNotFoundError(f"The file {fpath} was not readable within {max_t} seconds.")
+        self.status_str = f"File {fpath} exists and is readable."
 
-    def waitforSASfile(self, fpath, max_t=600):
+    def waitforSASfile(self, fpath, max_t=900):
         # TODO: Check that the file is not changing, not that is just exists
         self.status_str = f"Waiting for file {fpath} to be written..."
         start_time = time.time()
@@ -185,7 +190,7 @@ class ISISLARMOR(Driver):
                 time.sleep(self.config['file_wait_time'])
                 now = time.time()
                 if now - start_time >= max_t:
-                    raise FileNotFound(f"The file {fpath} was not written within {max_t} seconds.")
+                    raise FileNotFoundError(f"The file {fpath} was not written within {max_t} seconds.")
         self.status_str = f"SASFile {fpath} was loaded successfully."
                 
     def waitforsetup(self):
@@ -268,15 +273,21 @@ class ISISLARMOR(Driver):
         self.endrun()
 
         if reduce_data:
-            self.waitforfile(Path(PREFIX) / DATA_LOCATION / sampleSANS_fname)
-            self.reduce(name=name, sampleSANS_rn=sampleSANS_rn, sampleTRANS_rn=sampleTRANS_rn)
-    def reduce(self, sampleSANS_rn: int, sampleTRANS_rn: Optional[int]=None, sample_thickness: Number=1, name:str=""):
+            self.waitforfile(Path(PREFIX) / self.config['cycle_path'] / sampleSANS_fname)
+            try:
+                self.reduce(name=name, sampleSANS_rn=sampleSANS_rn, sampleTRANS_rn=sampleTRANS_rn,sample_thickness=self.config['sample_thickness'])
+            except Exception as e:
+                print(f'retrying reduction after an exception {e}, waiting 60 s first for any transient things to resolve')
+                time.sleep(60)
+                self.reduce(name=name, sampleSANS_rn=sampleSANS_rn, sampleTRANS_rn=sampleTRANS_rn,sample_thickness=self.config['sample_thickness'])
+            return self.data['transmission']
+    def reduce(self, sampleSANS_rn: int, sampleTRANS_rn: Optional[int]=None, sample_thickness: Number=2, name:str=""):
         prefix = "//isis/inst$"
         ConfigService.setDataSearchDirs(
             prefix + "/NDXLARMOR/User/Masks/;" + \
-            prefix + "/NDXLARMOR/Instrument/data/cycle_23_5/")
+            prefix + self.config['cycle_path'])
         #mask_file = prefix + '/NDXLARMOR/User/Masks/USER_Beaucage_235C_SampleChanger_r80447.TOML'
-        mask_file = prefix + '/NDXLARMOR/User/Masks/USER_Beaucage_235D_AFL_Robot_r80530.TOML'
+        mask_file = prefix + self.config['mask_file']
         self.status_str = f"Reducing run number {sampleSANS_rn}."
         ici.Clean()
         ici.LARMOR()
@@ -325,11 +336,15 @@ class ISISLARMOR(Driver):
             warnings.warn("Loaded multiple data from file...taking the last one",stacklevel=2)
             
         sasdata = sasdata[-1]
-
+        self.data['transmission'] = np.mean(sasdata.trans_spectrum[-1].transmission)
         self.data['q'] = sasdata.x
         self.data['filename'] = filename
         self.data.add_array('q',sasdata.x)
         self.data.add_array('I',sasdata.y)
         self.data.add_array('dI',sasdata.dy)
+        self.data.add_array('dq',sasdata.dx)
+        
+        self.data.add_array('transmission_spectrum',sasdata.trans_spectrum[-1].transmission)
+        self.data.add_array('transmission_wavelength',sasdata.trans_spectrum[-1].wavelength)
 
 

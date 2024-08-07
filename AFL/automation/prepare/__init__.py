@@ -1,3 +1,15 @@
+import os
+if 'RUNNING_ON_PI' in os.environ:
+    # we are running on an OT2 and need to hack the path now
+    print('we seem to be running on an OT-2; running path hacking')
+    import sys
+    sys.path.insert(0,f'/var/user-packages/root/.local/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages/')
+    import os
+    os.environ['NISTOROBOTO_CUSTOM_LABWARE'] = '/root/custom_beta/'
+
+    
+
+
 from AFL.automation.prepare.ComponentDB import ComponentDB
 db = ComponentDB()
 

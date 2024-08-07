@@ -39,14 +39,14 @@ try:
     import io
     import numpy as np
     from distutils.util import strtobool
-except ImportError:
+except (ModuleNotFoundError,ImportError):
     warnings.warn('Plotting imports failed! Live data plotting will not work on this server.',stacklevel=2)
 
 try:
     import socket
     from zeroconf import IPVersion, ServiceInfo, Zeroconf
     _ADVERTISE_ZEROCONF=True
-except ImportError:
+except (ModuleNotFoundError,ImportError):
     warnings.warn('Could not import zeroconf! Network autodiscovery will not work on this server.',stacklevel=2)
     _ADVERTISE_ZEROCONF=False
 
@@ -123,7 +123,10 @@ class APIServer:
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
         if _ADVERTISE_ZEROCONF:
-            self.advertise_zeroconf(**kwargs)
+            try:
+                self.advertise_zeroconf(**kwargs)
+            except Exception as e:
+                print(f'failed while trying to start zeroconf {e}, continuing')
         try:
             self.app.run(**kwargs)
         finally:

@@ -12,8 +12,6 @@ try:
         os.environ['RUNNING_ON_PI'] = '1'
         os.environ['OT_SMOOTHIE_ID'] = 'AMA'
 except FileNotFoundError as e:
-    print('exception: ')
-    print(e)
     pass    
 
 

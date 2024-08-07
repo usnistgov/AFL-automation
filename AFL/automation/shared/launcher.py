@@ -43,10 +43,10 @@ try:
         _DEFAULT_CUSTOM_CONFIG = driver_module._DEFAULT_CUSTOM_CONFIG
         # if this driver has not provided a default custom config, we simply throw a NameError
         # and move on
-        if driver_name not in AFL_GLOBAL_CONFIG['driver_custom_configs'].keys():
+        if main_module_name not in AFL_GLOBAL_CONFIG['driver_custom_configs'].keys():
                 # if there is already global config for this driver, do nothing, otherwise...
                 dccs = AFL_GLOBAL_CONFIG['driver_custom_configs']
-                dccs[driver_name]  = _DEFAULT_CUSTOM_CONFIG
+                dccs[main_module_name]  = _DEFAULT_CUSTOM_CONFIG
                 AFL_GLOBAL_CONFIG['driver_custom_configs'] = dccs                
                 print(f'added previously missing custom config for {driver_name} to local file')
 except (AttributeError,NameError):

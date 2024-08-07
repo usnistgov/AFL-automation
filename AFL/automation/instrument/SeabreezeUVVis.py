@@ -28,8 +28,8 @@ class SeabreezeUVVis(Driver):
     defaults['saveSingleScan'] = False
     defaults['filename'] = 'test.h5'
     defaults['filepath'] = '.' 
-    defaults['reference_uuid'] = '.' #variable name in tiled
-    defaults['air_uuid'] = '.' #variable name in tiled
+    defaults['reference_uuid'] = '' #sample_uuid in tiled
+    defaults['air_uuid'] = '' #sample_uuid in tiled
 
     def __init__(self,backend='cseabreeze', device_serial=None,overrides=None):
         self.app = None
@@ -169,6 +169,7 @@ class SeabreezeUVVis(Driver):
         set_reference: bool =False,
         set_air: bool=False,
         exposure: Optional[float] = None,
+        return_data: bool=False,
         **kwargs
         ):
 
@@ -192,6 +193,15 @@ class SeabreezeUVVis(Driver):
         if reduced:
             data_mean, data_std = self.reduced(data_raw_mean, data_raw_std, absorbance=absorbance)
 
+        #reduce against air as a 'miss-check'
+        if self.config['air_uuid']: #make sure its set
+            data_mean_air, data_std_air = self.reduced(data_raw_mean, data_raw_std, absorbance=True, reference_uuid='air_uuid')
+            mean_air = np.mean(data_mean_air)
+            std_air = np.mean(data_std_air)
+        else:
+            mean_air = None
+            std_air = None
+
         if self.config['saveSingleScan']:
             self._writedata(data_raw)
 
@@ -208,6 +218,8 @@ class SeabreezeUVVis(Driver):
             self.data['air_uuid'] = self.config['air_uuid']
             self.data['reduced'] = reduced
             self.data['absorbance'] = absorbance
+            self.data['mean_air'] = mean_air
+            self.data['std_air'] = std_air
             self.data.add_array('wavelength',wl)
             self.data.add_array('all_spectra',data_raw)
             self.data.add_array('spectrum_raw',data_raw_mean)
@@ -220,16 +232,16 @@ class SeabreezeUVVis(Driver):
             data_out = [wl.tolist(),data_mean.tolist()] 
         else:
             data_out = [wl.tolist(),data_raw_mean.tolist()] 
+        if return_data:
+            return data_out
 
-        return data_out
-
-    def reduced(self,data_raw_mean,data_raw_std,absorbance=True):
+    def reduced(self,data_raw_mean,data_raw_std,absorbance=True, reference_uuid='reference_uuid'):
         if self.data is None:
             raise ValueError("Cannot reduce without DataTiled...please set tiled parameters in server_script")
 
-        tiled_result = self.data.tiled_client.search(Eq('sample_uuid',self.config['reference_uuid']))
+        tiled_result = self.data.tiled_client.search(Eq('sample_uuid',self.config[reference_uuid]))
         if len(tiled_result)==0:
-            raise ValueError(f"Can't reduce! Could not find tiled entry for measurement sample_uuid={self.config['reference_uuid']}")
+            raise ValueError(f"Can't reduce! Could not find tiled entry for measurement {reference_uuid}={self.config[reference_uuid]}")
 
         ref_spectrum = tiled_result.search(Eq('array_name','spectrum_raw')).items()[-1][-1][()] #grabs the last entry that matches
         ref_spectrum_std = tiled_result.search(Eq('array_name','spectrum_raw_std')).items()[-1][-1][()]

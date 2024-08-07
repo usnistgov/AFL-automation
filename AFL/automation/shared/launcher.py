@@ -23,6 +23,11 @@ except ModuleNotFoundError:
     # driver_module = sys.modules[__name__]
     driver_module = __main__
 driver_name = driver_module.__name__.split('.')[-1]
+try:
+    main_module_name = driver_module._OVERRIDE_MAIN_MODULE_NAME
+    print(f'found override {main_module_name}')
+except AttributeError:
+    pass
 driver_cls = getattr(driver_module,main_module_name)
 
 
@@ -56,12 +61,12 @@ try:
         _DEFAULT_PORT = driver_module._DEFAULT_PORT
         # if this driver has not provided a default custom config, we simply throw a NameError
         # and move on
-        if driver_name not in AFL_GLOBAL_CONFIG['ports'].keys():
+        if main_module_name not in AFL_GLOBAL_CONFIG['ports'].keys():
                 # if there is already global config for this driver, do nothing, otherwise...
                 dports = AFL_GLOBAL_CONFIG['ports']
-                dports[driver_name]  = _DEFAULT_PORT
+                dports[main_module_name]  = _DEFAULT_PORT
                 AFL_GLOBAL_CONFIG['ports'] = dports              
-                print(f'added previously missing custom port for {driver_name} to local file')
+                print(f'added previously missing custom port for {main_module_name} to local file')
 except (AttributeError,NameError):
         pass
 if 'AFL_SYSTEM_SERIAL' not in os.environ.keys():
@@ -69,6 +74,7 @@ if 'AFL_SYSTEM_SERIAL' not in os.environ.keys():
 
 if main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
         server_port = AFL_GLOBAL_CONFIG['ports'][main_module_name]
+        print(f'Found configured non-default port {server_port}, starting there')
 else:
         server_port=5000
 

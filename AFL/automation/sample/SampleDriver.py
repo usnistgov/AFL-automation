@@ -243,6 +243,7 @@ class SampleDriver(Driver):
             predict_combine_comps: Optional[Dict]=None,
             predict_next: bool = False,
             enqueue_next: bool = False,
+            calibrate_sensor: bool = False,
             name: Optional[str] = None,
             sample_uuid: Optional[str] = None,
             AL_campaign_name: Optional[str] = None,
@@ -270,6 +271,9 @@ class SampleDriver(Driver):
 
         enqueue_next: bool
             If True, will pull the next sample from the dropbox of the agent
+
+        calibrate_sensor: bool
+            If True, trigger a load stopper sensor recalibration before the next measurement
 
         name: str
             The name of the sample, if not generated, it will be auto generated from the self.config['data_tag'] and
@@ -345,7 +349,7 @@ class SampleDriver(Driver):
         for client_name in self.config['client'].keys():
             self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
-        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol)
+        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol, calibrate_sensor=calibrate_sensor)
         self.construct_datasets(combine_comps=predict_combine_comps)
 
         if predict_next:
@@ -476,6 +480,7 @@ class SampleDriver(Driver):
             name: str,
             prep_protocol: dict,
             catch_protocol: dict,
+            calibrate_sensor: bool = False,
     ):
 
         targets = set()
@@ -511,8 +516,9 @@ class SampleDriver(Driver):
             self.get_client('load').wait(self.uuid['rinse'],for_history=False)
             self.update_status(f'Rinse done!')
 
-        # calibrate sensor to avoid drift
-        self.get_client('load').enqueue(task_name='calibrate_sensor')
+        if calibrate_sensor:
+                # calibrate sensor to avoid drift
+                self.get_client('load').enqueue(task_name='calibrate_sensor')
 
         #XXX need to work out measure loop
         self.update_status(f'Cell is clean, measuring empty cell scattering...')
@@ -585,15 +591,15 @@ class SampleDriver(Driver):
             measure_kw['name'] = name
             self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
 
-        if wait:
-            self.uuid['measure'] = self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+            if wait:
+                self.get_client(instrument['client_name']).wait(self.uuid['measure'])
 
     def construct_datasets(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""
         data_path = pathlib.Path(self.config['data_path'])
 
-        if len(self.config['instrument'])>1:
-            raise NotImplemented
+        #if len(self.config['instrument'])>1:
+        #    raise NotImplementedError
 
         self.new_data = xr.Dataset()
         for i,instrument in enumerate(self.config['instrument']):

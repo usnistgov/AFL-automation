@@ -58,7 +58,7 @@ class SampleDriver(Driver):
 
     def __init__(
             self,
-            tiled_uri: str,
+            tiled_uri: Optional[str] = None,
             camera_urls: Optional[List[str]] = None,
             snapshot_directory: Optional[str] = None,
             overrides: Optional[Dict] = None,
@@ -68,7 +68,7 @@ class SampleDriver(Driver):
         Parameters
         -----------
         tiled_uri: str
-            uri (url:port) of the tiled server
+            uri (url:port) of the tiled server.  If a data object is set, will be ignored and the Tiled connection inside the data object used instead.
 
         camera_urls: Optional[List[str]]
             url endpoints for ip cameras
@@ -86,7 +86,9 @@ class SampleDriver(Driver):
 
 
         # start tiled catalog connection
-        self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
+        if tiled_uri is not None:
+            self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
+        
 
         self.camera_urls = camera_urls
 
@@ -602,6 +604,10 @@ class SampleDriver(Driver):
 
         # if len(self.config['instrument'])>1:
         #     raise NotImplementedError
+        
+        if self.tiled_client is None:
+            self.tiled_client = self.data.tiled_client
+            # this needs to be here, because in the constructor, we don't have the datapacket attached
 
         self.new_data = xr.Dataset()
         for i,instrument in enumerate(self.config['instrument']):
@@ -750,3 +756,13 @@ class SampleDriver(Driver):
             transmission_validated = True
 
         return transmission_validated
+
+_DEFAULT_CUSTOM_CONFIG = {
+
+    '_classname': 'AFL.automation.sample.SampleDriver.SampleDriver',
+    'camera_urls': [],
+    'snapshot_directory': '/home/afl642/snaps'
+}
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

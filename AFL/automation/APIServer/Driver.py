@@ -13,21 +13,22 @@ def makeRegistrar():
     def registrarfactory(**kwargs):
         #print(f'Set up registrar-factory with registry {registry}...')
         def registrar(func):#,render_hint=None):  #kwarg = kwargs):
-            functions.append(func.__name__)
-            decorator_kwargs[func.__name__]=kwargs
-
-            argspec = inspect.getfullargspec(func)
-            if argspec.defaults is None:
-                fargs = argspec.args
-                fkwargs = []
-            else:
-                fargs = argspec.args[:-len(argspec.defaults)]
-                fkwargs = [(i,j) for i,j in zip(argspec.args[-len(argspec.defaults):],argspec.defaults)]
-            if fargs[0] == 'self':
-                del fargs[0]
-            function_info[func.__name__] = {'args':fargs,'kwargs':fkwargs,'doc':func.__doc__}
-            if 'qb' in kwargs:
-                function_info[func.__name__]['qb'] = kwargs['qb']
+            if func.__name__ not in functions:
+                functions.append(func.__name__)
+                decorator_kwargs[func.__name__]=kwargs
+        
+                argspec = inspect.getfullargspec(func)
+                if argspec.defaults is None:
+                    fargs = argspec.args
+                    fkwargs = []
+                else:
+                    fargs = argspec.args[:-len(argspec.defaults)]
+                    fkwargs = [(i,j) for i,j in zip(argspec.args[-len(argspec.defaults):],argspec.defaults)]
+                if fargs[0] == 'self':
+                    del fargs[0]
+                function_info[func.__name__] = {'args':fargs,'kwargs':fkwargs,'doc':func.__doc__}
+                if 'qb' in kwargs:
+                    function_info[func.__name__]['qb'] = kwargs['qb']
             return func  # normally a decorator returns a wrapped function, 
                          # but here we return func unmodified, after registering it
         return registrar

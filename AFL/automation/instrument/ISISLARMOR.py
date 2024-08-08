@@ -348,3 +348,5 @@ class ISISLARMOR(Driver):
         self.data.add_array('transmission_wavelength',sasdata.trans_spectrum[-1].wavelength)
 
 
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

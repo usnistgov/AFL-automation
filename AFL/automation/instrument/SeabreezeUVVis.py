@@ -254,4 +254,10 @@ class SeabreezeUVVis(Driver):
 
         return data_mean,data_std
 
+_DEFAULT_CUSTOM_CONFIG = {
+        '_classname': 'AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis',
+        'backend': 'pyseabreeze'
+}
 
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

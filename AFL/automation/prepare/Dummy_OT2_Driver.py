@@ -126,4 +126,6 @@ class Dummy_OT2_Driver(Driver):
     def set_gantry_speed(self,speed=400):
         print(f'Setting gantry speed to {speed}')
 
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *
 

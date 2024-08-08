@@ -161,3 +161,7 @@ class I22SAXS(Driver):
         self.data.add_array('dI',data['dI'].values.squeeze())
         return scanid
 
+
+_DEFAULT_CUSTOM_PORT = 5001
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

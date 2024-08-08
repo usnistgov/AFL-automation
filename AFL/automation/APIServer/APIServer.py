@@ -39,8 +39,16 @@ try:
     import io
     import numpy as np
     from distutils.util import strtobool
-except ImportError:
+except (ModuleNotFoundError,ImportError):
     warnings.warn('Plotting imports failed! Live data plotting will not work on this server.',stacklevel=2)
+
+try:
+    import socket
+    from zeroconf import IPVersion, ServiceInfo, Zeroconf
+    _ADVERTISE_ZEROCONF=True
+except (ModuleNotFoundError,ImportError):
+    warnings.warn('Could not import zeroconf! Network autodiscovery will not work on this server.',stacklevel=2)
+    _ADVERTISE_ZEROCONF=False
 
 class APIServer:
     def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',new_index_template='index-new.html',plot_template='simple-bokeh.html'):
@@ -88,16 +96,51 @@ class APIServer:
         self.queue_daemon.terminate()
         self.create_queue(self.driver)
         return 'Success',200
-
+    def advertise_zeroconf(self,**kwargs):
+        if 'port' not in kwargs.keys():
+            port = 5000
+        else:
+            port = kwargs['port']
+        self.zeroconf_info = ServiceInfo(
+            "_aflhttp._tcp.local.",
+            f"{self.queue_daemon.driver.name}._aflhttp._tcp.local.",
+            addresses=[socket.inet_aton("127.0.0.1")],
+            port=port,
+            properties= {
+                        'system_info': 'AFL',
+                        'driver_name': self.queue_daemon.driver.name,
+                        'server_name': self.name,
+                        'contact': self.contact,
+                        'driver_parents': repr(self.queue_daemon.driver.__class__.__mro__)
+                        # other stuff here, AFL system serial, etc.
+                        },
+            server=f"{socket.gethostname()}.local.",
+         )
+        self.zeroconf = Zeroconf(ip_version=IPVersion.All)
+        self.zeroconf.register_service(self.zeroconf_info)
+        print("Started mDNS service advertisement.")
     def run(self,**kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
-        self.app.run(**kwargs)
+        if _ADVERTISE_ZEROCONF:
+            try:
+                self.advertise_zeroconf(**kwargs)
+            except Exception as e:
+                print(f'failed while trying to start zeroconf {e}, continuing')
+        try:
+            self.app.run(**kwargs)
+        finally:
+            if _ADVERTISE_ZEROCONF:
+                self.zeroconf.unregister_service(self.zeroconf_info)
+                self.zeroconf.close()
 
     def run_threaded(self,start_thread=True,**kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
-
+        if _ADVERTISE_ZEROCONF:
+            self.advertise_zeroconf(**kwargs)
+        
+        
         thread = threading.Thread(target=self.app.run,daemon=True,kwargs=kwargs)
         if start_thread:
             thread.start()
@@ -631,4 +674,4 @@ if __name__ =='__main__':
     server = APIServer('TestServer')
     server.add_standard_routes()
     server.create_queue(DummyDriver())
-    server.run(host='0.0.0.0',debug=True)
+    server.run(host='0.0.0.0',debug=False)

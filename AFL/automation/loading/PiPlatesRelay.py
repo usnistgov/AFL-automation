@@ -26,14 +26,17 @@ class PiPlatesRelay(MultiChannelRelay):
         self.state = [False]*7
         self.board_id = board_id
         #Sanitize labels:
+        
+        
 
         for port_id in range(1,7):
-            if port_id not in relaylabels.keys():
+            if port_id not in [int(x) for x in relaylabels.keys()]:
                 relaylabels[port_id] = f'UNUSED{port_id}'
 
-        self.labels = relaylabels
-
+        self.labels = {int(key):val for key,val in relaylabels.items()}
+        
         self.ids = {val:key for key,val in self.labels.items()}
+        
         atexit.register(self.setAllChannelsOff)
         
     def setAllChannelsOff(self):

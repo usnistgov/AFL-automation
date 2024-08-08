@@ -616,7 +616,7 @@ class DataLabelerView:
         self.bprev = ipywidgets.Button(description="Prev")
         self.bnext = ipywidgets.Button(description="Next")
         self.bgoto = ipywidgets.Button(description="GoTo")
-        self.current_index = ipywidgets.IntText(description="Data Index:", value=0)
+        self.current_index = ipywidgets.IntText(description="Data Index:", value=0, min=0)
 
         self.n_orders = ipywidgets.BoundedIntText(
             description="n_orders", min=1, max=8, value=4
@@ -644,8 +644,16 @@ class DataLabelerView:
             ]
         )
         self.output = ipywidgets.Output()
-        vbox = ipywidgets.VBox(
+        plot_tab = ipywidgets.VBox(
             [buttons_hbox1, buttons_hbox2, phase_box, plot_box, self.output]
         )
 
-        return vbox
+        ### Tab2
+
+        # dataset_loader_tab = ipywidgets.VBox(
+        #     []
+        # )
+
+        # tabs = ipywidgets.Tab([dataset_loader_tab,plot_tab])
+
+        return plot_tab

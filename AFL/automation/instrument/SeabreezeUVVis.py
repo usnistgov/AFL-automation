@@ -75,7 +75,7 @@ class SeabreezeUVVis(Driver):
         self.spectrometer.integration_time_micros(1e6*time)
 
     def collectContinuous(self,duration,start=None,return_data=False,**kwargs):
-        data = []
+        data = [list(self.wl)]
         
         duration = datetime.timedelta(seconds=duration)
 

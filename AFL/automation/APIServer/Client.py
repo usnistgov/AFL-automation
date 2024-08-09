@@ -78,7 +78,7 @@ class Client:
             server_queue_iteration = requests.get(self.url+'/get_queue_iteration',headers=self.headers).json()
             if server_queue_iteration != self.queue_iteration:
                 # the queue in our store is not so fresh, need to update it
-                self.cached_queue = requests.get(self.url + '/get_queue?with_iteration=True',headers=self.headers).json()
+                self.cached_queue = requests.get(self.url + '/get_queue?with_iteration=1',headers=self.headers).json()
                 self.queue_iteration = self.cached_queue.pop(0)
             return self.cached_queue
         else:

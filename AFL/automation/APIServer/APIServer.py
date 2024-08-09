@@ -435,13 +435,18 @@ class APIServer:
         status = self.queue_daemon.driver.status()
         return jsonify(status),200
 
-    def get_queue(self,with_iteration=False):
+    def get_queue(self):
+        data = request.args
+        if 'with_iteration' in data:
+            with_iteration = bool(data['with_iteration'])
+        else:
+            with_iteration = False
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
         if with_iteration:
             output.insert(0,self.task_queue.iterationid())
         return jsonify(output),200
     def get_queue_iteration(self):
-        return self.task_queue.iterationid()
+        return jsonify(self.task_queue.iterationid()),200
 
     @jwt_required()
     def deposit_obj(self):

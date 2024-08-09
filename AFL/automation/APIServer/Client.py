@@ -21,6 +21,8 @@ class Client:
         self.port = port
         self.url = f'http://{ip}:{port}'
         self.interactive=interactive
+        self.cached_queue = None
+        self.queue_iteration = None
         try:
             import AFL.automation.shared.widgetui
             import IPython
@@ -54,13 +56,17 @@ class Client:
         response = requests.post(url,json={'username':username,'password':'domo_arigato'})
         if not (response.status_code == 200):
             raise RuntimeError(f'Client login failed with status code {response.status_code}:\n{response.content}')
-
         # headers should be included in all HTTP requests 
         self.token  = response.json()['token']
         self.headers = {'Authorization':'Bearer {}'.format(self.token)}
         if populate_commands:
             self.get_queued_commmands()
             self.get_unqueued_commmands()
+        try:
+            response = requests.post(self.url + '/get_queue_iteration',headers=self.headers)
+            self.supports_queue_iteration = True
+        except Exception as e:
+            self.supports_queue_iteration = False
 
     def driver_status(self):
         response = requests.get(self.url+'/driver_status',headers=self.headers)
@@ -68,10 +74,18 @@ class Client:
             raise RuntimeError(f'API call to driver_status command failed with status_code {response.status_code}\n{response.text}')
         return response.json()
     def get_queue(self):
-        response = requests.get(self.url+'/get_queue',headers=self.headers)
-        if response.status_code != 200:
-            raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
-        return response.json()
+        if self.supports_queue_iteration:
+            server_queue_iteration = requests.get(self.url+'/get_queue_iteration',headers=self.headers).json()
+            if server_queue_iteration != self.queue_iteration:
+                # the queue in our store is not so fresh, need to update it
+                self.cached_queue = requests.get(self.url + '/get_queue?with_iteration=True',headers=self.headers).json()
+                self.queue_iteration = self.cached_queue.pop(0)
+            return self.cached_queue
+        else:
+            response = requests.get(self.url+'/get_queue',headers=self.headers)
+            if response.status_code != 200:
+                raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
+            return response.json()
 
     def wait(self,target_uuid=None,interval=0.1,for_history=True,first_check_delay=5.0):
         time.sleep(first_check_delay)

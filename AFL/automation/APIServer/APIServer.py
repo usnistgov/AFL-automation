@@ -160,6 +160,7 @@ class APIServer:
         self.app.add_url_rule('/pause','pause',self.pause,methods=['POST'])
         self.app.add_url_rule('/halt','halt',self.halt,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
+        self.app.add_url_rule('/get_queue_iteration', 'get_queue_iteration', self.get_queue_iteration, methods=['GET'])
         self.app.add_url_rule('/queue_state','queue_state',self.queue_state,methods=['GET'])
         self.app.add_url_rule('/driver_status','driver_status',self.driver_status,methods=['GET'])
         self.app.add_url_rule('/login','login',self.login,methods=['POST'])
@@ -435,8 +436,17 @@ class APIServer:
         return jsonify(status),200
 
     def get_queue(self):
+        data = request.args
+        if 'with_iteration' in data:
+            with_iteration = bool(data['with_iteration'])
+        else:
+            with_iteration = False
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
+        if with_iteration:
+            output.insert(0,self.task_queue.iterationid())
         return jsonify(output),200
+    def get_queue_iteration(self):
+        return jsonify(self.task_queue.iterationid()),200
 
     @jwt_required()
     def deposit_obj(self):

@@ -1,7 +1,7 @@
 import threading
 import warnings
 from queue import Empty, Full
-
+import time
 
 class MutableQueue:
     '''Thread-safe, mutable queue
@@ -18,18 +18,25 @@ class MutableQueue:
         # Notify not_empty whenever an item is added to the queue; a
         # thread waiting to get is notified then.
         self.not_empty = threading.Condition(self.lock)
+
+        self.iteration_id = time.time()
         
     def qsize(self):
         return len(self.queue)
-    
+
+    def iterationid(self):
+        return self.iteration_id
+
     def empty(self):
         with self.lock:
             return not self.qsize()
         
     def _put(self,item,loc):
         self.queue.insert(loc,item)
+        self.iteration_id = time.time()
             
     def _get(self,loc=0):
+        self.iteration_id = time.time()
         return self.queue.pop(loc)
     
     def put(self,item,loc):
@@ -41,6 +48,7 @@ class MutableQueue:
     def remove(self,loc):
         '''Remove an item from the queue'''
         with self.lock:
+            self.iteration_id = time.time()
             if loc>=self.qsize():
                 raise IndexError
             self._get(loc)
@@ -65,6 +73,7 @@ class MutableQueue:
     def move(self,old_index,new_index=None):
         '''Move item in queue'''
         with self.lock:
+            self.iteration_id = time.time()
             if new_index is None:
                 new_index = self.qsize()
             

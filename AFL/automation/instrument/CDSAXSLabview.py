@@ -113,7 +113,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
  
 
 
-        '''with (LabviewConnection() if lv is None else lv) as lv:
+        '''
+        with (LabviewConnection() if lv is None else lv) as lv:
             self.status_txt = 'Moving beamstop out for transmission...'
             self.moveAxis(self.config['nmc_beamstop_out'],block=True,lv=lv)
             self.moveAxis(self.config['nmc_sample_out'],block=True,lv=lv)

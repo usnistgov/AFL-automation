@@ -2,7 +2,7 @@ numpy
 pandas 
 scipy
 xarray
-#tiled[client]
+tiled[client]
 netcdf4
 jupyterlab
 ipywidgets
@@ -12,7 +12,7 @@ matplotlib
 seaborn
 pint
 periodictable
-flask
+flask <2.3
 flask-jwt-extended >=4.0
 bokeh
 pillow

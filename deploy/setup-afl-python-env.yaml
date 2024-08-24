@@ -1,0 +1,33 @@
+- name: Setup basic AFL software on Pi
+  hosts: afl.pis
+  tasks:
+   - name: clone AFL-automation git
+     ansible.builtin.git:
+       repo: 'https://github.com/usnistgov/AFL-automation.git'
+       dest: /home/pi/AFL-automation  
+   - name: Create new python venv
+     ansible.builtin.pip:
+       requirements: /home/pi/AFL-automation/requirements.txt
+       virtualenv: /home/pi/aflpy
+       virtualenv_command: "python3 -m venv"
+   - name: Install editable AFL-automation in this venv
+     ansible.builtin.pip:
+       name: /home/pi/AFL-automation/
+       extra_args: -e
+       virtualenv: /home/pi/aflpy
+       virtualenv_command: "python3 -m venv"
+   - name: Make aflpy default venv
+     ansible.builtin.lineinfile:
+       path: /home/pi/.bashrc
+       line: source /home/pi/aflpy/bin/activate
+   - name: Install basic utilities
+     become: true
+     ansible.builtin.apt:
+       pkg:
+         - vim
+         - screen
+   - name: Create .afl config directory
+     ansible.builtin.file:
+       path: /home/pi/.afl
+       state: directory
+       mode: '0755'

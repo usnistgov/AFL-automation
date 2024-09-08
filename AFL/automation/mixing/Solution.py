@@ -2,16 +2,12 @@ import numpy as np
 import copy
 import warnings
 
-from AFL.automation.prepare.Component import Component
-from AFL.automation.prepare.PrepType import PrepType,prepRegistrar
-from AFL.automation.prepare.PrepareDB import componentFactory
+from AFL.automation.mixing.Component import Component
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.exceptions import EmptyException,NotFoundError
 from AFL.automation.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER
 
-from AFL.automation.prepare import db
 
-@prepRegistrar(PrepType.Solution)
 class Solution:
     ''' '''
     def __init__(self,name,components,properties=None):

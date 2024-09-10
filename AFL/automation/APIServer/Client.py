@@ -23,6 +23,7 @@ class Client:
         self.interactive=interactive
         self.cached_queue = None
         self.queue_iteration = None
+        self.supports_queue_iteration = False
         try:
             import AFL.automation.shared.widgetui
             import IPython

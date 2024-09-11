@@ -5,6 +5,15 @@
      ansible.builtin.git:
        repo: 'https://github.com/usnistgov/AFL-automation.git'
        dest: /home/pi/AFL-automation  
+   - name: install hdf5 with apt
+     become: true
+     ansible.builtin.apt:
+       pkg: 
+       - libhdf5-dev 
+       - hdf5-helpers 
+       - hdf5-tools
+       - libnetcdf-dev
+       - python3-netcdf4
    - name: Create new python venv
      ansible.builtin.pip:
        requirements: /home/pi/AFL-automation/requirements.txt

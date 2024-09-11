@@ -1,0 +1,519 @@
+"""
+ToDO
+- add non file based data reading?
+- MLScatt batch function?
+- need to test how reliably live data is updated
+
+"""
+import time
+import datetime
+import pathlib
+import warnings
+import json
+import copy
+import os
+
+import numpy as np  # for return types in get data
+import h5py  # for Nexus file writing
+
+from AFL.automation.APIServer.Driver import Driver
+from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
+
+from nicos.clients.base import ConnectionData, NicosClient
+from nicos.protocols.daemon import STATUS_IDLE, STATUS_IDLEEXC
+from nicos.utils.loggers import ACTION, INPUT
+
+EVENTMASK = ('watch', 'datapoint', 'datacurve', 'clientexec')
+class SINQSANS_NICOS(ScatteringInstrument, Driver):
+    defaults = {}
+    defaults['nicos_host'] = 'sans.psi.ch'
+    defaults['nicos_port'] = 1301
+    defaults['nicos_user'] = 'user'
+    defaults['empty transmission'] = 1
+    defaults['transmission strategy'] = 'sum'
+    defaults['reduced_data_dir'] = ''
+    defaults['exposure'] = 1.
+    defaults['absolute_calibration_factor'] = 1
+    defaults['data_path'] = ''
+    defaults['detector'] = 'sansdet'
+
+    defaults['pixel1'] = 0.075  # pixel y size in m
+    defaults['pixel2'] = 0.075  # pixel x size in m
+    defaults['num_pixel1'] = 128
+    defaults['num_pixel2'] = 128
+
+    def __init__(self, overrides=None):
+
+        self.app = None
+        Driver.__init__(self, name='SINQSANS_NICOS', defaults=self.gather_defaults(), overrides=overrides)
+        ScatteringInstrument.__init__(self)
+
+        self.client = NicosClient_AFL()
+        self.connect_to_nicos()
+
+        if self.config['reduced_data_dir'] is not None:
+            os.chdir(self.config['reduced_data_dir'])
+
+        self.__instrument_name__ = 'PSI SINQ SANS instrument'
+
+        self.status_txt = 'Just started...'
+        self.last_measured_transmission = [0, 0, 0, 0]
+
+    def connect_to_nicos(self):
+        self.client.connect(
+            host= self.config['nicos_host'],
+            port=self.config['nicos_port'],
+            user=self.config['nicos_user'],
+            password = os.environ['AFL_NICOS_PASSWORD'],
+        )
+
+    def pre_execute(self, **kwargs):
+        pass
+
+    def setReducedDataDir(self, path):
+        self.config['reduced_data_dir'] = path
+        os.chdir(path)
+
+    @Driver.quickbar(qb={'button_text': 'Measure Transmission',
+                         'params': {
+                             'set_empty_transmission': {'label': 'Set Empty Trans?', 'type': 'boolean',
+                                                        'default': False}
+                         }})
+    def measureTransmission(self, set_empty_transmission=False, return_full=False):
+        self._simple_expose(exposure=2, block=True, mode='trans')
+
+        cts = self.banana(40,80,40,80)
+
+        monitor_cts = 10 #!!!
+        trans = cts / monitor_cts
+
+        if set_empty_transmission:
+            self.config['empty transmission'] = trans
+
+        self.last_measured_transmission = (
+            trans / self.config['empty transmission'],
+            monitor_cts,
+            cts,
+            self.config['empty transmission']
+        )
+
+        if return_full:
+            return self.last_measured_transmission
+        else:
+            return trans / self.config['empty transmission']
+
+    def lastMeasuredTransmission(self):
+        return self.last_measured_transmission
+
+    @Driver.unqueued()
+    def getExposure(self):
+        '''
+            get the currently set exposure time
+
+        '''
+        return self.config['exposure']
+
+    @Driver.unqueued()
+    def getLastFilename(self):
+        """ get the currently set file name """
+
+        scans = self.client.eval('session.experiment.data.getLastScans()', None)
+        if not scans:
+            raise ValueError('No scans returned.')
+
+        return scans[-1].filenames[-1]
+
+        [-1].filenames
+
+    @Driver.unqueued()
+    def getLastFilePathLocal(self, **kwargs):
+        ''' get the currently set file name '''
+
+        filename = self.getLastFilename()
+        filepath = pathlib.Path(self.config['data_path']) / filename
+        if self.app is not None:
+            self.app.logger.debug(f'Last file found to be {filepath}')
+        else:
+            print(f'Last file found to be {filepath}')
+        return filepath
+
+    def setExposure(self, exposure):
+        if self.app is not None:
+            self.app.logger.debug(f'Setting exposure time to {exposure}')
+        self.config['exposure'] = exposure
+
+    def setSample(self, name):
+        name = name.replace('\\', '').replace('/', '').replace(':', '').replace('%', '')
+
+        if self.app is not None:
+            self.app.logger.debug(f'Setting filename to {name}')
+
+        self.client.command(f'setSample(0,"{name}")')
+
+    def getSample(self):
+        name = self.client.eval('session.experiment.sample.samplename', None)
+        return name
+
+    def getElapsedTime(self):
+        raise NotImplementedError
+
+    def readH5(self, filepath, update_config=False, **kwargs):
+        out_dict = {}
+        with h5py.File(filepath, 'r') as h5:
+            out_dict['counts'] = h5['entry1/data1/counts'][()]
+            # out_dict['name']           = h5['entry1/sample/name'][()]
+            # out_dict['dist']           = h5['entry1/SANS/detector/x_position'][()]/1000
+            # out_dict['wavelength']     = h5['entry1/data1/lambda'][()]*1e-9,
+            # out_dict['beam_center_x']  = h5['entry1/SANS/detector/beam_center_x'][()]
+            # out_dict['beam_center_y']  = h5['entry1/SANS/detector/beam_center_y'][()]
+            # out_dict['poni2']          = h5['entry1/SANS/detector/beam_center_x'][()]*self.config['pixel1']
+            # out_dict['poni1 ']         = h5['entry1/SANS/detector/beam_center_y'][()]*self.config['pixel2']
+
+        # if update_config:
+        #     self.config['wavelength'] = out_dict['wavelength']
+        #     self.config['dist']       = out_dict['dist']
+        #     self.config['poni1']      = out_dict['poni1']
+        #     self.config['poni2']      = out_dict['poni2']
+
+        return out_dict
+
+    @Driver.unqueued(render_hint='2d_img', log_image=True)
+    def getData(self, **kwargs):
+        try:
+            filepath = self.getLastFilePathLocal()
+            data = self.readH5(filepath)['counts']
+        except (FileNotFoundError, OSError, KeyError):
+            nattempts = 1
+            while nattempts < 31:
+                nattempts = nattempts + 1
+                time.sleep(1.0)
+                try:
+                    filepath = self.getLastFilePathLocal()
+                    data = self.readH5(filepath)['counts']
+                except (FileNotFoundError, OSError, KeyError):
+                    if nattempts == 30:
+                        raise FileNotFoundError(f'could not locate file after {nattempts} tries')
+                    else:
+                        warnings.warn(f'failed to load file, trying again, this is try {nattempts}')
+                else:
+                    break
+
+        return np.nan_to_num(data)
+
+    def _simple_expose(self, name=None, exposure=None, mode='scatt', aects=1e6, block=False):
+        if name is None:
+            name = self.getSample()
+        else:
+            self.setSample(name)
+
+        if exposure is None:
+            exposure = self.getAutoExposure(desired_counts=aects)
+
+        self.setExposure(exposure)
+
+        self.status_txt = f'Starting {exposure} moni count named {name}'
+        if self.app is not None:
+            self.app.logger.debug(f'Starting exposure with name {name} for {exposure} moni cts')
+
+        if mode == 'scatt':
+            self.client.send_cmd(f'MLscatt {self.config["exposure"]}')
+        else:
+            self.client.send_cmd(f'MLtrans {self.config["exposure"]}')
+        if block:
+            time.sleep(2)
+            self.blockForMLCompleted()
+            time.sleep(0.5)
+            self.client.clear_queue()
+
+    def getAutoExposure(self, short_count_dur=2, desired_counts=1000000):
+        self.client.command(f'count moni {short_count_dur} n') #!!!!!
+        time.sleep(1)
+        self.blockForIdle()
+        time.sleep(1)
+        try:
+            counts = self.banana(40,80,40,80)
+        except ValueError:
+            counts = self.banana(0,127,0,127)
+        count_rate = counts / short_count_dur
+        proposed_time = (desired_counts / count_rate)
+        if proposed_time > 500:
+            print(
+                f'with {counts} in a {short_count_dur} exposure, I would like to measure {proposed_time}, but that seems too high.')
+            print(f'setting to 500 instead.')
+            proposed_time = 500
+        if proposed_time < 5:
+            print(
+                f'with {counts} in a {short_count_dur} exposure, I would like to measure {proposed_time}, but that seems too low.')
+            print(f'setting to 5 instead.')
+            proposed_time = 5
+        return proposed_time
+
+    @Driver.quickbar(qb={'button_text': 'Expose',
+                         'params': {
+                             'name': {'label': 'Name', 'type': 'text', 'default': 'test_exposure'},
+                             'exposure': {'label': 'Exposure (s)', 'type': 'float', 'default': 5},
+                             'reduce_data': {'label': 'Reduce?', 'type': 'bool', 'default': True},
+                             'measure_transmission': {'label': 'Measure Trans?', 'type': 'bool', 'default': True}
+                         }})
+    def expose(self, name=None, exposure=None, block=True, reduce_data=True, measure_transmission=True,
+               save_nexus=True):
+
+        if name is None:
+            name = self.getLastFilename()
+        else:
+            self.setSample(name) #sets the sample name
+
+        if measure_transmission:
+            self.measureTransmission()
+
+        if exposure is not None:
+            # time.sleep(5)
+            # print('finding auto exposure counts..:')
+            # exposure=self.getAutoExposure()
+            self.setExposure(exposure)
+
+        pre_filename = self.getLastFilename()
+        if self.data is not None:
+            self.data['pre_filename'] = pre_filename
+        self.status_txt = f'Starting {exposure} moni count named {name}'
+        if self.app is not None:
+            self.app.logger.debug(f'Starting exposure with name {name} for {exposure} moni cts')
+
+        self.client.command(f'MLscatt {self.config["exposure"]}') #!!!!
+        if block or reduce_data or save_nexus:
+            self.blockForMLCompleted()
+            self.client.clear_queue()
+
+            try:
+                trash = self.banana(40,80,40,80)
+            except ValueError:
+                try:
+                    self.client.clear_queue()
+                    trash = self.banana(40, 80, 40, 80)
+                except IndexError:
+                    self.client.clear_queue()
+
+            data = self.getData()
+            if save_nexus:
+                self.status_txt = 'Writing Nexus'
+                normalized_sample_transmission = self.last_measured_transmission[0]
+                if self.data is not None:
+                    self.data['raw_data'] = data
+                    self.data['normalized_sample_transmission'] = normalized_sample_transmission
+                self._writeNexus(data, name, name, self.last_measured_transmission)
+
+            if reduce_data:
+                self.status_txt = 'Reducing Data'
+                reduced = self.getReducedData(write_data=True, filename=name)
+                if self.data is not None:
+                    self.data['reduced_data'] = reduced
+                np.savetxt(f'{name}_chosen_r1d.csv', np.transpose(reduced), delimiter=',')
+
+                normalized_sample_transmission = self.last_measured_transmission[0]
+                open_flux = self.last_measured_transmission[1]
+                sample_flux = self.last_measured_transmission[2]
+                empty_cell_transmission = self.last_measured_transmission[3]
+                sample_transmission = normalized_sample_transmission * empty_cell_transmission
+
+                if self.data is not None:
+                    self.data['normalized_sample_transmission'] = normalized_sample_transmission
+                    self.data['open_flux'] = open_flux
+                    self.data['sample_flux'] = sample_flux
+                    self.data['empty_cell_transmission'] = empty_cell_transmission
+                    self.data['sample_transmission'] = sample_transmission
+
+                if save_nexus:
+                    self._appendReducedToNexus(reduced, name, name)
+
+                out = {}
+                out['normalized_sample_transmission'] = normalized_sample_transmission
+                out['open_flux'] = open_flux
+                out['sample_flux'] = sample_flux
+                out['empty_cell_transmission'] = empty_cell_transmission
+                out['sample_transmission'] = sample_transmission
+                with open(f'{name}_trans.json', 'w') as f:
+                    json.dump(out, f)
+
+            self.status_txt = 'Instrument Idle'
+
+    def blockForIdle(self, timeout=1800, initial_delay=5):
+        time.sleep(initial_delay)
+
+        notDone = True
+        start = datetime.datetime.now()
+        delta = datetime.timedelta(seconds=timeout)
+        timedout = start + delta
+        while notDone and (datetime.datetime.now() < timedout):
+            notDone = (self.getStatus()!='idle')
+            time.sleep(0.1)
+
+    def blockForMLCompleted(self, timeout=1800, initial_delay=5):
+        time.sleep(initial_delay)
+
+        notDone = True
+        start = datetime.datetime.now()
+        delta = datetime.timedelta(seconds=timeout)
+        timedout = start + delta
+        while notDone and (datetime.datetime.now() < timedout):
+            notDone = all('ML completed' not in r for r in self.client.message_queue)
+            time.sleep(0.1)
+
+    def getStatus(self):
+        return self.client.status
+
+    def banana(self,xlo=40,xhi=80,ylo=40,yhi=80):
+        self.client.command('count(m=1e4)')
+        self.blockForIdle()
+        array = self.client.livedata[self.config['detector']]
+        counts = array[xlo:xhi,ylo:yhi].sum()
+        return counts
+
+    def status(self):
+        status = []
+        status.append(
+            f'Last Measured Transmission: scaled={self.last_measured_transmission[0]} using empty cell trans of {self.last_measured_transmission[3]} with {self.last_measured_transmission[1]} raw counts in open/ {self.last_measured_transmission[2]} sample')
+        status.append(f'Status: {self.status_txt}')
+        # lmj = self._getLabviewValue("LMJ Status")
+
+        # status.append(f'LMJ status: {"running, power on target = "+str(lmj[0]*lmj[1])+"W" if lmj[6]==1 else "not running"}')
+        # status.append(f'Vacuum (mbar): {self._getLabviewValue("Pressure (mbar)")}')
+        status.append(f'<a href="getData" target="_blank">Live Data (2D)</a>')
+        status.append(f'<a href="getReducedData" target="_blank">Live Data (1D)</a>')
+        status.append(f'<a href="getReducedData?render_hint=2d_img&reduce_type=2d">Live Data (2D, reduced)</a>')
+        return status
+
+
+class NicosClient_AFL(NicosClient):
+    livedata = {}
+    status = 'idle'
+
+    def __init__(self):
+        NicosClient.__init__(self, self.log)
+        self.message_queue = []
+
+    def signal(self, name, data=None, exc=None):
+        accept = ['message', 'processing', 'done']
+        if name in accept:
+            self.log_func(name, data)
+        elif name == 'livedata':
+            converted_data = []
+            for desc, ardata in zip(data['datadescs'], exc):
+                npdata = np.frombuffer(ardata,
+                                       dtype=desc['dtype'])
+                npdata = npdata.reshape(desc['shape'])
+                converted_data.append(npdata)
+            self.livedata[data['det'] + '_live'] = converted_data
+        elif name == 'status':
+            status, _ = data
+            if status == STATUS_IDLE or status == STATUS_IDLEEXC:
+                self.status = 'idle'
+            else:
+                self.status = 'run'
+        else:
+            if name != 'cache':
+                # print(name, data)
+                pass
+
+    def log(self, name, txt):
+        self.message_queue.append((name, txt))
+
+    def print_queue(self):
+        for msg in self.message_queue:
+            print(f'{msg[0]}: {msg[1]}')
+        self.message_queue = []
+
+    def clear_queue(self):
+        self.message_queue = []
+
+    def connect(self, host, port, user, password):
+        con = ConnectionData(host, port, user, password)
+
+        NicosClient.connect(self, con, EVENTMASK)
+        if self.daemon_info.get('protocol_version') < 22:
+            raise RuntimeError("incompatible nicos server")
+
+        state = self.ask('getstatus')
+        self.signal('status', state['status'])
+        self.print_queue()
+        if self.isconnected:
+            print('Successfully connected to %s' % host)
+        else:
+            print('Failed to connect to %s' % host)
+
+    def _command(self, line):
+        com = "%s" % line.strip()
+        if self.status == 'idle':
+            self.run(com)
+            return com
+        return None
+
+    def command(self, line):
+        """
+
+        Command is a bit fraught as it doesn't always catch the start signal, i.e., the processing flag
+
+        If you're running into an error, switch to run
+
+        Note that you'll want to clear the message queue periodically if not using 'command'
+
+        """
+        start_detected = False
+        ignore = [ACTION, INPUT]
+        reqID = None
+        testcom = self._command(line)
+        if not testcom:
+            return 'NICOS is busy, cannot send commands'
+        while True:
+            if self.message_queue:
+                # own copy for thread safety
+                work_queue = copy.deepcopy(self.message_queue)
+                self.message_queue = []
+                for name, message in work_queue:
+                    #print(f'COMMAND: NAME={name} MESSAGE={message}')
+                    if name == 'processing':
+                        if message['script'] == testcom:
+                            start_detected = True
+                            reqID = message['reqid']
+                        continue
+                    if name == 'done' and message['reqid'] == reqID:
+                        return
+                    if message[2] in ignore:
+                        continue
+                    if message[0] != 'nicos':
+                        messagetxt = message[0] + ' ' + message[3]
+                    else:
+                        messagetxt = message[3]
+                    if start_detected and reqID == message[-1]:
+                        print(messagetxt.strip())
+
+    def val(self, parameter):
+        """
+        This can be implemented on top of the client.devValue()
+        and devParamValue() interfaces. The problem to be solved is
+        how to make the data visible in ipython
+        """
+        # check for livedata first
+        if parameter in self.livedata:
+            return self.livedata[parameter]
+
+        # Now check for scan data
+        if parameter == 'scandata':
+            xs, ys, _, names = self.eval(
+                '__import__("nicos").commands.analyze._getData()[:4]')
+            return xs, ys, names
+
+        # Try get device data from NICOS
+        if parameter.find('.') > 0:
+            devpar = parameter.split('.')
+            return self.getDeviceParam(devpar[0], devpar[1])
+        else:
+            return self.getDeviceValue(parameter)
+
+    def list_livedata(self):
+        print('Available livedata:')
+        keys = self.livedata.keys()
+        for k in keys:
+            print(k)
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

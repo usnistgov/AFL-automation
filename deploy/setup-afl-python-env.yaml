@@ -14,11 +14,17 @@
        - hdf5-tools
        - libnetcdf-dev
        - python3-netcdf4
+       - liblapack-dev
+       - gfortran
+       - libatlas-base-dev
+       - libgfortran5 
+       - libopenblas0-pthread
    - name: Create new python venv
      ansible.builtin.pip:
        requirements: /home/pi/AFL-automation/requirements.txt
        virtualenv: /home/pi/aflpy
        virtualenv_command: "python3 -m venv"
+       virtualenv_site_packages: yes
    - name: Install editable AFL-automation in this venv
      ansible.builtin.pip:
        name: /home/pi/AFL-automation/

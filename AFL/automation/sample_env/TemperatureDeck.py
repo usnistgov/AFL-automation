@@ -25,8 +25,10 @@ class TemperatureDeck(Driver):
         with serial.Serial(self.config['serial_port'],115200) as p:
             p.write(f'M105\r\n'.encode())
             ret1 = p.readline()
-            setpoint = float(ret1[2:6])
-            readback = float(ret1[10:14])
+            #print(ret1) T:####### C:########\r\n
+            ret1 = ret1.decode('UTF-8').replace('T:','').replace('C:','').replace("\r\n",'').split(' ')
+            setpoint = float(ret1[0])
+            readback = float(ret1[1])
             ret2 = p.readline()
         return (setpoint,readback)
 if __name__ == '__main__':

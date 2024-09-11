@@ -39,6 +39,9 @@ To run these:
        (this copies your private key to the pi for passwordless signin)
 4) Put the machines you're running against into a file called hosts.ini like so:
 ```
+[all:vars]
+ansible_connection=ssh
+ansible_user=pi
 [afl.pis]
 afl-loader.local
 ```

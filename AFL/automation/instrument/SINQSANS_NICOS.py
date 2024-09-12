@@ -33,7 +33,9 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
     defaults['data_path'] = ''
 
     defaults['detector'] = 'sansdet'
-    defaults['detector_main_index'] = 0
+    defaults['detector_index'] = 0
+    defaults['normalization_monitor'] = 'monitor1'
+    defaults['normalization_monitor_index'] = 0
 
     defaults['pixel1'] = 0.075  # pixel y size in m
     defaults['pixel2'] = 0.075  # pixel x size in m
@@ -70,32 +72,27 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
             password = self.config['nicos_password'],
         )
 
-    def pre_execute(self, **kwargs):
-        pass
-
     def setReducedDataDir(self, path):
         self.config['reduced_data_dir'] = path
         os.chdir(path)
-
 
     def lastMeasuredTransmission(self):
         return self.last_measured_transmission
 
     @Driver.unqueued()
     def getExposure(self):
-        ''' get the currently set exposure counts
+        """ get the currently set exposure counts
 
         if using counts() NICOS command, this is the number of counts on a monitor
 
         if using counts2() NICOS command, this is the number of counts on the detector
 
-        '''
+        """
         return self.config['exposure']
 
     @Driver.unqueued()
     def getLastFilename(self):
         """ get the currently set file name """
-
         scans = self.client.eval('session.experiment.data.getLastScans()', None)
         if not scans:
             raise ValueError('No scans returned.')
@@ -105,8 +102,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
     @Driver.unqueued()
     def getLastFilePathLocal(self, **kwargs):
-        ''' get the currently set file name '''
-
+        """ get the currently set file name """
         filename = self.getLastFilename()
         filepath = pathlib.Path(self.config['data_path']) / filename
         if self.app is not None:
@@ -132,26 +128,10 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         name = self.client.eval('session.experiment.sample.samplename', None)
         return name
 
-    def getElapsedTime(self):
-        raise NotImplementedError
-
-    def readH5(self, filepath, update_config=False, **kwargs):
+    def readH5(self, filepath):
         out_dict = {}
         with h5py.File(filepath, 'r') as h5:
             out_dict['counts'] = h5['entry1/data1/counts'][()]
-            # out_dict['name']           = h5['entry1/sample/name'][()]
-            # out_dict['dist']           = h5['entry1/SANS/detector/x_position'][()]/1000
-            # out_dict['wavelength']     = h5['entry1/data1/lambda'][()]*1e-9,
-            # out_dict['beam_center_x']  = h5['entry1/SANS/detector/beam_center_x'][()]
-            # out_dict['beam_center_y']  = h5['entry1/SANS/detector/beam_center_y'][()]
-            # out_dict['poni2']          = h5['entry1/SANS/detector/beam_center_x'][()]*self.config['pixel1']
-            # out_dict['poni1 ']         = h5['entry1/SANS/detector/beam_center_y'][()]*self.config['pixel2']
-
-        # if update_config:
-        #     self.config['wavelength'] = out_dict['wavelength']
-        #     self.config['dist']       = out_dict['dist']
-        #     self.config['poni1']      = out_dict['poni1']
-        #     self.config['poni2']      = out_dict['poni2']
 
         return out_dict
 
@@ -165,8 +145,8 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
             while nattempts < 31:
                 nattempts = nattempts + 1
                 time.sleep(1.0)
+                filepath = self.getLastFilePathLocal()
                 try:
-                    filepath = self.getLastFilePathLocal()
                     data = self.readH5(filepath)['counts']
                 except (FileNotFoundError, OSError, KeyError):
                     if nattempts == 30:
@@ -177,7 +157,6 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                     break
 
         return np.nan_to_num(data)
-
 
     def _simple_expose(self, exposure, name=None, block=False):
         if name is None:
@@ -227,21 +206,16 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         ylo = int(ycenter - self.config['transmission_box_radius_y'])
         yhi = int(ycenter + self.config['transmission_box_radius_y'])
 
-
         # make sure x and y bounds are within detector size
         xhi = int(min(xhi,self.config['num_pixel2']-1))
         yhi = int(min(yhi,self.config['num_pixel1']-1))
         xlo = int(max(xlo,0))
         ylo = int(max(ylo,0))
 
-        print('Using bounds for transmission box:')
-        print(f'xlo: {xlo}; ylo: {ylo}')
-        print(f'xhi: {xhi}; yhi: {yhi}')
-        print(f'xcenter: {xcenter}; ycenter: {ycenter}')
-
         cts = self.banana(xlo=xlo,xhi=xhi,ylo=ylo,yhi=yhi,measure=False)
 
-        monitor_cts = self.client.val('monitor1')[0]
+        monitor_cts = self.client.val(self.config['normalization_monitor'])
+        monitor_cts = monitor_cts[self.config['normalization_monitor_index']]
 
         trans = cts / monitor_cts #!!! add dead_time correction to monitor
 
@@ -349,8 +323,8 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
             self.client.command('count(m=1e3)')
             self.blockForIdle()
         arrays = self.client.livedata[self.config['detector']+'_live'] #return arrays from all detectors
-        array  = arrays[self.config['detector_main_index']] #return selected detector array
-        counts = array[xlo:xhi,ylo:yhi].sum()
+        array  = arrays[self.config['detector_index']] #return selected detector array
+        counts = array[ylo:yhi,xlo:xhi].sum()
         return counts
 
     def status(self):

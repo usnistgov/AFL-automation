@@ -221,7 +221,6 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         xcenter = int(self.config['poni2']/self.config['pixel2'])
         ycenter = int(self.config['poni1']/self.config['pixel1'])
 
-
         # calculate bounds of integration box
         xlo = int(xcenter - self.config['transmission_box_radius_x'])
         xhi = int(xcenter + self.config['transmission_box_radius_x'])
@@ -234,6 +233,11 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         yhi = int(min(yhi,self.config['num_pixel1']-1))
         xlo = int(max(xlo,0))
         ylo = int(max(ylo,0))
+
+        print('Using bounds for transmission box:')
+        print(f'xlo: {xlo}; ylo: {ylo}')
+        print(f'xhi: {xhi}; yhi: {yhi}')
+        print(f'xcenter: {xcenter}; ycenter: {ycenter}')
 
         cts = self.banana(xlo=xlo,xhi=xhi,ylo=ylo,yhi=yhi,measure=False)
 
@@ -356,6 +360,13 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         status.append(f'<a href="getReducedData" target="_blank">Live Data (1D)</a>')
         status.append(f'<a href="getReducedData?render_hint=2d_img&reduce_type=2d">Live Data (2D, reduced)</a>')
         return status
+
+        self.last_measured_transmission = (
+            trans / self.config['empty transmission'],
+            monitor_cts,
+            cts,
+            self.config['empty transmission']
+        )
 
 
 class NicosClient_AFL(NicosClient):

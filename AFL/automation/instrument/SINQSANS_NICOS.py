@@ -1,10 +1,3 @@
-"""
-ToDO
-- add non file based data reading?
-- MLScatt batch function?
-- need to test how reliably live data is updated
-
-"""
 import time
 import datetime
 import pathlib
@@ -23,7 +16,9 @@ from nicos.clients.base import ConnectionData, NicosClient
 from nicos.protocols.daemon import STATUS_IDLE, STATUS_IDLEEXC
 from nicos.utils.loggers import ACTION, INPUT
 
+#NICOS events to exclude from client
 EVENTMASK = ('watch', 'datapoint', 'datacurve', 'clientexec')
+
 class SINQSANS_NICOS(ScatteringInstrument, Driver):
     defaults = {}
     defaults['nicos_host'] = 'sans.psi.ch'
@@ -41,6 +36,9 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
     defaults['pixel2'] = 0.075  # pixel x size in m
     defaults['num_pixel1'] = 128
     defaults['num_pixel2'] = 128
+
+    defaults['beamstop_in'] = -70 #bsy
+    defaults['beamstop_out'] = -200 #bsy
 
     def __init__(self, overrides=None):
 
@@ -61,9 +59,9 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
     def connect_to_nicos(self):
         self.client.connect(
-            host= self.config['nicos_host'],
-            port=self.config['nicos_port'],
-            user=self.config['nicos_user'],
+            host = self.config['nicos_host'],
+            port = self.config['nicos_port'],
+            user = self.config['nicos_user'],
             password = os.environ['AFL_NICOS_PASSWORD'],
         )
 
@@ -74,41 +72,17 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         self.config['reduced_data_dir'] = path
         os.chdir(path)
 
-    @Driver.quickbar(qb={'button_text': 'Measure Transmission',
-                         'params': {
-                             'set_empty_transmission': {'label': 'Set Empty Trans?', 'type': 'boolean',
-                                                        'default': False}
-                         }})
-    def measureTransmission(self, set_empty_transmission=False, return_full=False):
-        self._simple_expose(exposure=2, block=True, mode='trans')
-
-        cts = self.banana(40,80,40,80)
-
-        monitor_cts = 10 #!!!
-        trans = cts / monitor_cts
-
-        if set_empty_transmission:
-            self.config['empty transmission'] = trans
-
-        self.last_measured_transmission = (
-            trans / self.config['empty transmission'],
-            monitor_cts,
-            cts,
-            self.config['empty transmission']
-        )
-
-        if return_full:
-            return self.last_measured_transmission
-        else:
-            return trans / self.config['empty transmission']
 
     def lastMeasuredTransmission(self):
         return self.last_measured_transmission
 
     @Driver.unqueued()
     def getExposure(self):
-        '''
-            get the currently set exposure time
+        ''' get the currently set exposure counts
+
+        if using counts() NICOS command, this is the number of counts on a monitor
+
+        if using counts2() NICOS command, this is the number of counts on the detector
 
         '''
         return self.config['exposure']
@@ -123,7 +97,6 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
         return scans[-1].filenames[-1]
 
-        [-1].filenames
 
     @Driver.unqueued()
     def getLastFilePathLocal(self, **kwargs):
@@ -200,53 +173,65 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
         return np.nan_to_num(data)
 
-    def _simple_expose(self, name=None, exposure=None, mode='scatt', aects=1e6, block=False):
+
+    def _simple_expose(self, exposure, name=None, block=False):
         if name is None:
             name = self.getSample()
         else:
             self.setSample(name)
 
-        if exposure is None:
-            exposure = self.getAutoExposure(desired_counts=aects)
-
         self.setExposure(exposure)
 
-        self.status_txt = f'Starting {exposure} moni count named {name}'
+        self.status_txt = f'Starting {exposure} count named {name}'
         if self.app is not None:
-            self.app.logger.debug(f'Starting exposure with name {name} for {exposure} moni cts')
+            self.app.logger.debug(self.status_txt)
 
-        if mode == 'scatt':
-            self.client.send_cmd(f'MLscatt {self.config["exposure"]}')
-        else:
-            self.client.send_cmd(f'MLtrans {self.config["exposure"]}')
+        self.client.command(f'count2({self.config["exposure"]})')
+
         if block:
-            time.sleep(2)
-            self.blockForMLCompleted()
-            time.sleep(0.5)
-            self.client.clear_queue()
+            self.blockForIdle()
 
-    def getAutoExposure(self, short_count_dur=2, desired_counts=1000000):
-        self.client.command(f'count moni {short_count_dur} n') #!!!!!
-        time.sleep(1)
-        self.blockForIdle()
-        time.sleep(1)
-        try:
-            counts = self.banana(40,80,40,80)
-        except ValueError:
-            counts = self.banana(0,127,0,127)
-        count_rate = counts / short_count_dur
-        proposed_time = (desired_counts / count_rate)
-        if proposed_time > 500:
-            print(
-                f'with {counts} in a {short_count_dur} exposure, I would like to measure {proposed_time}, but that seems too high.')
-            print(f'setting to 500 instead.')
-            proposed_time = 500
-        if proposed_time < 5:
-            print(
-                f'with {counts} in a {short_count_dur} exposure, I would like to measure {proposed_time}, but that seems too low.')
-            print(f'setting to 5 instead.')
-            proposed_time = 5
-        return proposed_time
+    @Driver.quickbar(qb={'button_text': 'Measure Transmission',
+                         'params': {
+                             'set_empty_transmission': {'label': 'Set Empty Trans?', 'type': 'boolean',
+                                                        'default': False}
+                         }})
+    def measureTransmission(self, set_empty_transmission=False, return_full=False):
+
+       self.client.command(f'maw(shutter,"closed")')
+       self.client.command(f'move(att,"1")')
+       self.client.command(f'move(bsy,{self.config["beamstop_out"]})')
+       self.client.command(f'wait()')
+       self.client.command(f'maw(shutter,"open")')
+
+       self._simple_expose(exposure=1e4, block=True) #!!!
+
+       self.client.command(f'maw(shutter,"closed")')
+       self.client.command(f'move(bsy,{self.config["beamstop_in"]})')
+       self.client.command(f'move(att,"0")')
+       self.client.command(f'wait()')
+       self.client.command(f'maw(shutter,"open")')
+
+        cts = self.banana(xlo=40,xhi=80,ylo=40,yhi=80,measure=False)
+
+        monitor_cts = 10 #!!
+        trans = cts / monitor_cts
+
+        if set_empty_transmission:
+            self.config['empty transmission'] = trans
+
+        self.last_measured_transmission = (
+            trans / self.config['empty transmission'],
+            monitor_cts,
+            cts,
+            self.config['empty transmission']
+        )
+
+        if return_full:
+            return self.last_measured_transmission
+        else:
+            return trans / self.config['empty transmission']
+
 
     @Driver.quickbar(qb={'button_text': 'Expose',
                          'params': {
@@ -258,40 +243,13 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
     def expose(self, name=None, exposure=None, block=True, reduce_data=True, measure_transmission=True,
                save_nexus=True):
 
-        if name is None:
-            name = self.getLastFilename()
-        else:
-            self.setSample(name) #sets the sample name
-
         if measure_transmission:
             self.measureTransmission()
 
-        if exposure is not None:
-            # time.sleep(5)
-            # print('finding auto exposure counts..:')
-            # exposure=self.getAutoExposure()
-            self.setExposure(exposure)
+        self._simple_expose(exposure=exposure, block=block)
+        self.client.clear_queue()
 
-        pre_filename = self.getLastFilename()
-        if self.data is not None:
-            self.data['pre_filename'] = pre_filename
-        self.status_txt = f'Starting {exposure} moni count named {name}'
-        if self.app is not None:
-            self.app.logger.debug(f'Starting exposure with name {name} for {exposure} moni cts')
-
-        self.client.command(f'MLscatt {self.config["exposure"]}') #!!!!
-        if block or reduce_data or save_nexus:
-            self.blockForMLCompleted()
-            self.client.clear_queue()
-
-            try:
-                trash = self.banana(40,80,40,80)
-            except ValueError:
-                try:
-                    self.client.clear_queue()
-                    trash = self.banana(40, 80, 40, 80)
-                except IndexError:
-                    self.client.clear_queue()
+        if reduce_data or save_nexus:
 
             data = self.getData()
             if save_nexus:
@@ -344,26 +302,14 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         delta = datetime.timedelta(seconds=timeout)
         timedout = start + delta
         while notDone and (datetime.datetime.now() < timedout):
-            notDone = (self.getStatus()!='idle')
+            notDone = (self.client.status!='idle')
             time.sleep(0.1)
 
-    def blockForMLCompleted(self, timeout=1800, initial_delay=5):
-        time.sleep(initial_delay)
-
-        notDone = True
-        start = datetime.datetime.now()
-        delta = datetime.timedelta(seconds=timeout)
-        timedout = start + delta
-        while notDone and (datetime.datetime.now() < timedout):
-            notDone = all('ML completed' not in r for r in self.client.message_queue)
-            time.sleep(0.1)
-
-    def getStatus(self):
-        return self.client.status
-
-    def banana(self,xlo=40,xhi=80,ylo=40,yhi=80):
-        self.client.command('count(m=1e4)')
-        self.blockForIdle()
+    def banana(self,xlo=40,xhi=80,ylo=40,yhi=80,measure=True):
+        """ Calculate a sum of data over a pixel range """
+        if measure:
+            self.client.command('count(m=1e3)')
+            self.blockForIdle()
         array = self.client.livedata[self.config['detector']]
         counts = array[xlo:xhi,ylo:yhi].sum()
         return counts
@@ -373,10 +319,6 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         status.append(
             f'Last Measured Transmission: scaled={self.last_measured_transmission[0]} using empty cell trans of {self.last_measured_transmission[3]} with {self.last_measured_transmission[1]} raw counts in open/ {self.last_measured_transmission[2]} sample')
         status.append(f'Status: {self.status_txt}')
-        # lmj = self._getLabviewValue("LMJ Status")
-
-        # status.append(f'LMJ status: {"running, power on target = "+str(lmj[0]*lmj[1])+"W" if lmj[6]==1 else "not running"}')
-        # status.append(f'Vacuum (mbar): {self._getLabviewValue("Pressure (mbar)")}')
         status.append(f'<a href="getData" target="_blank">Live Data (2D)</a>')
         status.append(f'<a href="getReducedData" target="_blank">Live Data (1D)</a>')
         status.append(f'<a href="getReducedData?render_hint=2d_img&reduce_type=2d">Live Data (2D, reduced)</a>')
@@ -411,7 +353,6 @@ class NicosClient_AFL(NicosClient):
                 self.status = 'run'
         else:
             if name != 'cache':
-                # print(name, data)
                 pass
 
     def log(self, name, txt):
@@ -440,6 +381,11 @@ class NicosClient_AFL(NicosClient):
         else:
             print('Failed to connect to %s' % host)
 
+    def command(self, line):
+        com = "%s" % line.strip()
+        run_uid = self.run(com)
+        return run_uid
+
     def _command(self, line):
         com = "%s" % line.strip()
         if self.status == 'idle':
@@ -447,9 +393,8 @@ class NicosClient_AFL(NicosClient):
             return com
         return None
 
-    def command(self, line):
+    def interactive(self, line):
         """
-
         Command is a bit fraught as it doesn't always catch the start signal, i.e., the processing flag
 
         If you're running into an error, switch to run
@@ -509,11 +454,6 @@ class NicosClient_AFL(NicosClient):
         else:
             return self.getDeviceValue(parameter)
 
-    def list_livedata(self):
-        print('Available livedata:')
-        keys = self.livedata.keys()
-        for k in keys:
-            print(k)
 
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *

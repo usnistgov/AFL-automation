@@ -24,13 +24,16 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
     defaults['nicos_host'] = 'sans.psi.ch'
     defaults['nicos_port'] = 1301
     defaults['nicos_user'] = 'user'
+    defaults['nicos_password'] = ''
     defaults['empty transmission'] = 1
     defaults['transmission strategy'] = 'sum'
     defaults['reduced_data_dir'] = ''
     defaults['exposure'] = 1.
     defaults['absolute_calibration_factor'] = 1
     defaults['data_path'] = ''
+
     defaults['detector'] = 'sansdet'
+    defaults['detector_main_index'] = 0
 
     defaults['pixel1'] = 0.075  # pixel y size in m
     defaults['pixel2'] = 0.075  # pixel x size in m
@@ -62,7 +65,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
             host = self.config['nicos_host'],
             port = self.config['nicos_port'],
             user = self.config['nicos_user'],
-            password = os.environ['AFL_NICOS_PASSWORD'],
+            password = self.config['nicos_password'],
         )
 
     def pre_execute(self, **kwargs):
@@ -121,7 +124,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         if self.app is not None:
             self.app.logger.debug(f'Setting filename to {name}')
 
-        self.client.command(f'setSample(0,"{name}")')
+        self.client.command(f'NewSample("{name}")')
 
     def getSample(self):
         name = self.client.eval('session.experiment.sample.samplename', None)
@@ -165,9 +168,9 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                     data = self.readH5(filepath)['counts']
                 except (FileNotFoundError, OSError, KeyError):
                     if nattempts == 30:
-                        raise FileNotFoundError(f'could not locate file after {nattempts} tries')
+                        raise FileNotFoundError(f'Could not locate file {filepath} after {nattempts} tries')
                     else:
-                        warnings.warn(f'failed to load file, trying again, this is try {nattempts}')
+                        warnings.warn(f'Failed to load file {filepath}, trying again, this is try {nattempts}')
                 else:
                     break
 
@@ -196,26 +199,26 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                              'set_empty_transmission': {'label': 'Set Empty Trans?', 'type': 'boolean',
                                                         'default': False}
                          }})
-    def measureTransmission(self, set_empty_transmission=False, return_full=False):
+    def measureTransmission(self, exposure=1e5, set_empty_transmission=False, return_full=False): 
+        self.client.command(f'maw(shutter,"closed")')
+        self.client.command(f'move(att,"1")')
+        self.client.command(f'move(bsy,{self.config["beamstop_out"]})')
+        self.client.command(f'wait()')
+        self.client.command(f'maw(shutter,"open")')
 
-       self.client.command(f'maw(shutter,"closed")')
-       self.client.command(f'move(att,"1")')
-       self.client.command(f'move(bsy,{self.config["beamstop_out"]})')
-       self.client.command(f'wait()')
-       self.client.command(f'maw(shutter,"open")')
+        self._simple_expose(exposure=exposure, block=True) 
 
-       self._simple_expose(exposure=1e4, block=True) #!!!
-
-       self.client.command(f'maw(shutter,"closed")')
-       self.client.command(f'move(bsy,{self.config["beamstop_in"]})')
-       self.client.command(f'move(att,"0")')
-       self.client.command(f'wait()')
-       self.client.command(f'maw(shutter,"open")')
+        self.client.command(f'maw(shutter,"closed")')
+        self.client.command(f'move(bsy,{self.config["beamstop_in"]})')
+        self.client.command(f'move(att,"0")')
+        self.client.command(f'wait()')
+        self.client.command(f'maw(shutter,"open")')
 
         cts = self.banana(xlo=40,xhi=80,ylo=40,yhi=80,measure=False)
 
-        monitor_cts = 10 #!!
-        trans = cts / monitor_cts
+        monitor_cts = self.client.val('monitor1')[0]
+
+        trans = cts / monitor_cts #!!! add dead_time correction to monitor
 
         if set_empty_transmission:
             self.config['empty transmission'] = trans
@@ -240,18 +243,24 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                              'reduce_data': {'label': 'Reduce?', 'type': 'bool', 'default': True},
                              'measure_transmission': {'label': 'Measure Trans?', 'type': 'bool', 'default': True}
                          }})
-    def expose(self, name=None, exposure=None, block=True, reduce_data=True, measure_transmission=True,
+    def expose(self, name=None, exposure=None, exposure_transmission=None, block=True, reduce_data=True, measure_transmission=True,
                save_nexus=True):
+        if name is None:
+            name = self.getSample()
+        else:
+            self.setSample(name)
 
         if measure_transmission:
-            self.measureTransmission()
+            self.measureTransmission(exposure=exposure_transmission)
 
         self._simple_expose(exposure=exposure, block=block)
         self.client.clear_queue()
+        time.sleep(15)
 
         if reduce_data or save_nexus:
 
             data = self.getData()
+            print(f"Loaded data with {data.sum()} total counts")
             if save_nexus:
                 self.status_txt = 'Writing Nexus'
                 normalized_sample_transmission = self.last_measured_transmission[0]
@@ -285,11 +294,13 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
                 out = {}
                 out['normalized_sample_transmission'] = normalized_sample_transmission
-                out['open_flux'] = open_flux
-                out['sample_flux'] = sample_flux
-                out['empty_cell_transmission'] = empty_cell_transmission
+                out['open_flux']                      = open_flux
+                out['sample_flux']                    = sample_flux
+                out['empty_cell_transmission']        = empty_cell_transmission
                 out['sample_transmission'] = sample_transmission
-                with open(f'{name}_trans.json', 'w') as f:
+
+                out = {k:float(v) for k,v in out.items()}
+                with open(pathlib.Path(self.config['reduced_data_dir'])/f'{name}_trans.json', 'w') as f:
                     json.dump(out, f)
 
             self.status_txt = 'Instrument Idle'
@@ -310,14 +321,15 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         if measure:
             self.client.command('count(m=1e3)')
             self.blockForIdle()
-        array = self.client.livedata[self.config['detector']]
+        arrays = self.client.livedata[self.config['detector']+'_live'] #return arrays from all detectors
+        array  = arrays[self.config['detector_main_index']] #return selected detector array
         counts = array[xlo:xhi,ylo:yhi].sum()
         return counts
 
     def status(self):
         status = []
         status.append(
-            f'Last Measured Transmission: scaled={self.last_measured_transmission[0]} using empty cell trans of {self.last_measured_transmission[3]} with {self.last_measured_transmission[1]} raw counts in open/ {self.last_measured_transmission[2]} sample')
+            f'Last Measured Transmission: scaled={self.last_measured_transmission[0]} using empty cell trans of {self.last_measured_transmission[3]} with {self.last_measured_transmission[1]} raw counts in open {self.last_measured_transmission[2]} sample')
         status.append(f'Status: {self.status_txt}')
         status.append(f'<a href="getData" target="_blank">Live Data (2D)</a>')
         status.append(f'<a href="getReducedData" target="_blank">Live Data (1D)</a>')
@@ -454,6 +466,7 @@ class NicosClient_AFL(NicosClient):
         else:
             return self.getDeviceValue(parameter)
 
+_DEFAULT_PORT=5001
 
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *

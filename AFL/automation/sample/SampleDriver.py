@@ -1,3 +1,4 @@
+import itertools
 import copy
 import datetime
 import os
@@ -623,7 +624,47 @@ class SampleDriver(Driver):
             else:
                 measure_kw = instrument['measure_base_kw']
             measure_kw['name'] = name
-            self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
+            
+            if 'sample_env' in instrument.keys() and not empty:
+                """
+                  schema:
+                    'sample_env': { 'client_name' = 'tempdeck',
+                                    'set_base_kw' = {'task_name': 'move_temp'},
+                                    'set_swept_kw' = {'temperature': [15,20,25,30]},
+                                    }
+                                    
+                """
+                params = []
+                vals = []
+                for param,conds in instrument['sample_env']['set_swept_kw'].items():
+                    params.append(param)
+                    vals.append(conds)
+                conditions = [{i:j for i,j in zip(params,vallist)} for vallist in itertools.product(*vals)]
+                # this ravels the list of conditions above in n-dimensional space, e.g.:
+                # 'set_swept_kw' = {'temperature': [15,20,25,30], 'vibes': ['harsh', 'mid', 'cool']}
+                # conditions = [{'temperature': 15, 'vibes': 'harsh'}, {'temperature': 15, 'vibes': 'mid'} ...]
+
+                for i,cond in enumerate(conditions):
+                    sample_env_kw = {}
+                    sample_env_kw.update(cond)
+                    sample_env_kw.update(instrument['sample_env']['move_base_kw']
+                    sample_data = self.get_sample()
+                    sample_data['sample_env_conditions'] = cond
+                    sample_data['sample_name'] = sample_data['sample_name'] + f'_{str(i).zfill(3)}' # track up to 1000 conditions
+
+                    self.get_client(instrument['sample_env']['client_name']).enqueue(task_name='set_sample',**sample_data)
+                    self.get_client(instrument['client_name']).enqueue(task_name='set_sample',**sample_data)
+                    
+                    self.uuid['move_sample_env'] = self.get_client(instrument['sample_env']['client_name']).enqueue(**sample_env_kw)
+                    
+                    self.get_client(instrument['sample_env']['client_name']).wait(self.uuid['move_sample_env'])
+                    
+                    self.uuid['measure'] = self.get_client(instrument['client_name'].enqueue(**measure_kw))
+                    
+                    self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+                
+            else:
+                self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
 
             if wait:
                 self.get_client(instrument['client_name']).wait(self.uuid['measure'])

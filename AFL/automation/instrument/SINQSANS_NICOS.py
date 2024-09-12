@@ -39,6 +39,8 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
     defaults['pixel2'] = 0.075  # pixel x size in m
     defaults['num_pixel1'] = 128
     defaults['num_pixel2'] = 128
+    defaults['transmission_box_radius_x'] = 20
+    defaults['transmission_box_radius_y'] = 20
 
     defaults['beamstop_in'] = -70 #bsy
     defaults['beamstop_out'] = -200 #bsy
@@ -214,7 +216,26 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         self.client.command(f'wait()')
         self.client.command(f'maw(shutter,"open")')
 
-        cts = self.banana(xlo=40,xhi=80,ylo=40,yhi=80,measure=False)
+        # convert PONI to pixels.
+        # XXX Needs to be shifted into Python index coords???
+        xcenter = int(self.config['poni2']/self.config['pixel2'])
+        ycenter = int(self.config['poni1']/self.config['pixel1'])
+
+
+        # calculate bounds of integration box
+        xlo = int(xcenter - self.config['transmission_box_radius_x'])
+        xhi = int(xcenter + self.config['transmission_box_radius_x'])
+        ylo = int(ycenter - self.config['transmission_box_radius_y'])
+        yhi = int(ycenter + self.config['transmission_box_radius_y'])
+
+
+        # make sure x and y bounds are within detector size
+        xhi = int(min(xhi,self.config['num_pixel2']-1))
+        yhi = int(min(yhi,self.config['num_pixel1']-1))
+        xlo = int(max(xlo,0))
+        ylo = int(max(ylo,0))
+
+        cts = self.banana(xlo=xlo,xhi=xhi,ylo=ylo,yhi=yhi,measure=False)
 
         monitor_cts = self.client.val('monitor1')[0]
 

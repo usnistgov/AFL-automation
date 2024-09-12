@@ -191,7 +191,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         if self.app is not None:
             self.app.logger.debug(self.status_txt)
 
-        self.client.command(f'count2({self.config["exposure"]})')
+        self.client.command(f'count2({self.config["exposure"]},tmax=1e6)')
 
         if block:
             self.blockForIdle()
@@ -290,7 +290,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                 self.status_txt = 'Writing Nexus'
                 normalized_sample_transmission = self.last_measured_transmission[0]
                 if self.data is not None:
-                    self.data['raw_data'] = data
+                    self.data.add_array('raw',data)
                     self.data['normalized_sample_transmission'] = normalized_sample_transmission
                 self._writeNexus(data, name, name, self.last_measured_transmission)
 
@@ -298,7 +298,9 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                 self.status_txt = 'Reducing Data'
                 reduced = self.getReducedData(write_data=True, filename=name)
                 if self.data is not None:
-                    self.data['reduced_data'] = reduced
+                    self.data['q'] = reduced[0]
+                    self.data.add_array('I', reduced[1])
+                    self.data.add_array('dI', reduced[2])
                 np.savetxt(f'{name}_chosen_r1d.csv', np.transpose(reduced), delimiter=',')
 
                 normalized_sample_transmission = self.last_measured_transmission[0]
@@ -360,14 +362,6 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         status.append(f'<a href="getReducedData" target="_blank">Live Data (1D)</a>')
         status.append(f'<a href="getReducedData?render_hint=2d_img&reduce_type=2d">Live Data (2D, reduced)</a>')
         return status
-
-        self.last_measured_transmission = (
-            trans / self.config['empty transmission'],
-            monitor_cts,
-            cts,
-            self.config['empty transmission']
-        )
-
 
 class NicosClient_AFL(NicosClient):
     livedata = {}

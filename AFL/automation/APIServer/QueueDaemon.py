@@ -1,3 +1,4 @@
+import time
 import functools
 import threading
 import time
@@ -138,6 +139,8 @@ class QueueDaemon(threading.Thread):
             masked_package['meta']['run_time_seconds'] = run_time.seconds
             masked_package['meta']['run_time_minutes'] = run_time.seconds/60
             masked_package['meta']['exit_state'] = exit_state
+            self.task_queue.iteration_id = time.time()
+            # mark queue iteration as changed
             if isinstance(return_val,np.ndarray):
                 masked_package['meta']['return_val'] = return_val.tolist()
             elif isinstance(return_val,pd.Series):

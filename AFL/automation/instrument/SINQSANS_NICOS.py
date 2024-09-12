@@ -350,7 +350,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
             self.blockForIdle()
         arrays = self.client.livedata[self.config['detector']+'_live'] #return arrays from all detectors
         array  = arrays[self.config['detector_main_index']] #return selected detector array
-        counts = array[xlo:xhi,ylo:yhi].sum()
+        counts = array[ylo:yhi,xlo:xhi].sum()
         return counts
 
     def status(self):

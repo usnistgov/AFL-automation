@@ -58,6 +58,17 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         self.last_measured_transmission = [0, 0, 0, 0]
 
     def connect_to_nicos(self):
+        """
+        Connect to the NICOS server using the configuration parameters.
+
+        This method establishes a connection to the NICOS server using the host, port, user, and password
+        specified in the configuration.
+
+        Notes
+        -----
+        The connection parameters are retrieved from the `config` attribute of the instance.
+        If the connection fails, an exception will be raised.
+        """
         self.client.connect(
             host = self.config['nicos_host'],
             port = self.config['nicos_port'],
@@ -149,7 +160,31 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         if exposure_type not in ['time', 'detector', 'monitor']:
             raise ValueError(f'Exposure type must be one of "time", "detector", or "monitor", not {exposure_type}')
 
-    def _simple_expose(self, exposure, name=None, block=False, exposure_type='detector',tmax=1800):
+    def _simple_expose(self, exposure, name=None, block=False, exposure_type='detector', tmax=1800):
+        """
+        Perform a simple exposure with the specified parameters.
+
+        This method sets up and performs an exposure of the sample, optionally blocking until the exposure is complete.
+
+        Parameters
+        ----------
+        exposure : float
+            The exposure time or counts.
+        name : str, optional
+            The name of the sample (default is None).
+        block : bool, optional
+            If True, block until the exposure is complete (default is False).
+        exposure_type : str, optional
+            The type of exposure, must be one of 'time', 'detector', or 'monitor' (default is 'detector').
+        tmax : int, optional
+            The maximum time to wait for the exposure in seconds (default is 1800). This is only applicable for the
+            exposure_type 'detector'.
+
+        Raises
+        ------
+        ValueError
+            If the exposure type is not one of 'time', 'detector', or 'monitor'.
+        """
         self._validateExposureType(exposure_type)
 
         if name is None:
@@ -178,11 +213,46 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                              'set_empty_transmission': {'label': 'Set Empty Trans?', 'type': 'boolean',
                                                         'default': False}
                          }})
-    def measureTransmission(self, exposure=1e5, exposure_type='detector', set_empty_transmission=False, return_full=False):
+    def measureTransmission(self, exposure=1e5, exposure_type='detector', set_empty_transmission=False,
+                            return_full=False):
+        """
+        Measure the transmission of the sample.
+
+        This method measures the transmission of the sample by performing a series of commands to move the beamstop,
+        open the shutter, and expose the sample. The transmission is calculated based on the counts from the detector
+        and the normalization monitor.
+
+        Parameters
+        ----------
+        exposure : float, optional
+            The exposure time or counts (default is 1e5).
+        exposure_type : str, optional
+            The type of exposure, must be one of 'time', 'detector', or 'monitor' (default is 'detector').
+        set_empty_transmission : bool, optional
+            If True, set the measured transmission as the empty transmission (default is False).
+        return_full : bool, optional
+            If True, return the full transmission data including raw counts and empty transmission (default is False).
+
+        Returns
+        -------
+        float or tuple
+            The measured transmission. If `return_full` is True, returns a tuple containing the scaled transmission,
+            monitor counts, sample counts, and empty transmission.
+
+        Notes
+        -----
+        This method performs the following steps:
+        1. Close the shutter and move the beamstop out.
+        2. Open the shutter and expose the sample.
+        3. Close the shutter and move the beamstop back in.
+        4. Calculate the transmission based on the counts from the detector and the normalization monitor.
+        5. Optionally set the measured transmission as the empty transmission.
+        6. Return the measured transmission or the full transmission data.
+        """
         self._validateExposureType(exposure_type)
 
         self.client.command(f'maw(shutter,"closed")')
-        self.client.command(f'move(att,"1")')
+        self.client.command(f'move(att,"1")') #move attenuator to 1
         self.client.command(f'move(bsy,{self.config["beamstop_out"]})')
         self.client.command(f'wait()')
         self.client.command(f'maw(shutter,"open")')
@@ -242,8 +312,42 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                              'reduce_data': {'label': 'Reduce?', 'type': 'bool', 'default': True},
                              'measure_transmission': {'label': 'Measure Trans?', 'type': 'bool', 'default': True}
                          }})
-    def expose(self, name=None, exposure=None, exposure_transmission=None, block=True, reduce_data=True, measure_transmission=True,
-               save_nexus=True,exposure_type='detector'):
+    def expose(self, name=None, exposure=None, exposure_transmission=None, block=True, reduce_data=True,
+               measure_transmission=True,
+               save_nexus=True, exposure_type='detector'):
+        """
+        Perform an exposure with the specified parameters.
+
+        This method performs an exposure of the sample, optionally measuring the transmission, reducing the data,
+        and saving it in Nexus format.
+
+        Parameters
+        ----------
+        name : str, optional
+            The name of the sample (default is None).
+        exposure : float, optional
+            The exposure time or counts (default is None).
+        exposure_transmission : float, optional
+            The exposure time or counts for transmission measurement (default is None).
+        block : bool, optional
+            If True, block until the exposure is complete (default is True).
+        reduce_data : bool, optional
+            If True, reduce the data after exposure (default is True).
+        measure_transmission : bool, optional
+            If True, measure the transmission before exposure (default is True).
+        save_nexus : bool, optional
+            If True, save the data in Nexus format (default is True).
+        exposure_type : str, optional
+            The type of exposure, must be one of 'time', 'detector', or 'monitor' (default is 'detector').
+
+        Raises
+        ------
+        ValueError
+            If the exposure type is not one of 'time', 'detector', or 'monitor'.
+        FileNotFoundError
+            If the data file cannot be located after multiple attempts.
+
+        """
         self._validateExposureType(exposure_type)
         if name is None:
             name = self.getSample()

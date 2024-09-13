@@ -1,5 +1,4 @@
 import time
-import datetime
 import pathlib
 import warnings
 import json
@@ -75,13 +74,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
     @Driver.unqueued()
     def getExposure(self):
-        """ get the currently set exposure counts
-
-        if using counts() NICOS command, this is the number of counts on a monitor
-
-        if using counts2() NICOS command, this is the number of counts on the detector
-
-        """
+        """ get the currently set exposure counts """
         return self.config['exposure']
 
     @Driver.unqueued()
@@ -152,7 +145,13 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
         return np.nan_to_num(data)
 
-    def _simple_expose(self, exposure, name=None, block=False):
+    def _validateExposureType(self, exposure_type):
+        if exposure_type not in ['time', 'detector', 'monitor']:
+            raise ValueError(f'Exposure type must be one of "time", "detector", or "monitor", not {exposure_type}')
+
+    def _simple_expose(self, exposure, name=None, block=False, exposure_type='detector',tmax=1800):
+        self._validateExposureType(exposure_type)
+
         if name is None:
             name = self.getSample()
         else:
@@ -164,7 +163,12 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         if self.app is not None:
             self.app.logger.debug(self.status_txt)
 
-        self.client.command(f'count2({self.config["exposure"]},tmax=1e6)')
+        if exposure_type == 'time':
+            self.client.command(f'count(t={self.config["exposure"]})')
+        elif exposure_type == 'monitor':
+            self.client.command(f'count(m={self.config["exposure"]})')
+        elif exposure_type == 'detector':
+            self.client.command(f'count2({self.config["exposure"]},tmax={tmax})')
 
         if block:
             self.client.blockForIdle()
@@ -174,14 +178,16 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                              'set_empty_transmission': {'label': 'Set Empty Trans?', 'type': 'boolean',
                                                         'default': False}
                          }})
-    def measureTransmission(self, exposure=1e5, set_empty_transmission=False, return_full=False): 
+    def measureTransmission(self, exposure=1e5, exposure_type='detector', set_empty_transmission=False, return_full=False):
+        self._validateExposureType(exposure_type)
+
         self.client.command(f'maw(shutter,"closed")')
         self.client.command(f'move(att,"1")')
         self.client.command(f'move(bsy,{self.config["beamstop_out"]})')
         self.client.command(f'wait()')
         self.client.command(f'maw(shutter,"open")')
 
-        self._simple_expose(exposure=exposure, block=True) 
+        self._simple_expose(exposure=exposure, exposure_type=exposure_type, block=True)
 
         self.client.command(f'maw(shutter,"closed")')
         self.client.command(f'move(bsy,{self.config["beamstop_in"]})')
@@ -208,7 +214,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
         cts = self.banana(xlo=xlo,xhi=xhi,ylo=ylo,yhi=yhi,measure=False)
 
-        monitor_cts = self.client.val(self.config['normalization_monitor'])
+        monitor_cts = self.client.get(self.config['normalization_monitor'])
         monitor_cts = monitor_cts[self.config['normalization_monitor_index']]
 
         trans = cts / monitor_cts #!!! add dead_time correction to monitor
@@ -237,16 +243,17 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                              'measure_transmission': {'label': 'Measure Trans?', 'type': 'bool', 'default': True}
                          }})
     def expose(self, name=None, exposure=None, exposure_transmission=None, block=True, reduce_data=True, measure_transmission=True,
-               save_nexus=True):
+               save_nexus=True,exposure_type='detector'):
+        self._validateExposureType(exposure_type)
         if name is None:
             name = self.getSample()
         else:
             self.setSample(name)
 
         if measure_transmission:
-            self.measureTransmission(exposure=exposure_transmission)
+            self.measureTransmission(exposure=exposure_transmission,exposure_type=exposure_type)
 
-        self._simple_expose(exposure=exposure, block=block)
+        self._simple_expose(exposure=exposure, exposure_type=exposure_type, block=block)
         self.client.clear_messages()
         time.sleep(15)
 

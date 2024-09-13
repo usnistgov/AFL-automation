@@ -11,8 +11,9 @@ import numpy as np
 import copy
 
 from nicos.clients.base import ConnectionData, NicosClient
-from nicos.protocols.daemon import STATUS_IDLE, STATUS_IDLEEXC
 from nicos.utils.loggers import ACTION, INPUT
+from nicos.protocols.daemon import BREAK_AFTER_LINE, BREAK_AFTER_STEP, \
+     STATUS_IDLE, STATUS_IDLEEXC
 
 #NICOS events to exclude from client
 EVENTMASK = ('watch', 'datapoint', 'datacurve', 'clientexec')
@@ -259,3 +260,40 @@ class NicosScriptClient(NicosClient):
             time.sleep(0.1)
 
         raise TimeoutError(f"Timeout of {timeout} seconds reached while waiting for idle status")
+    def stop_after_step(self):
+        """
+        Stop the client after the current step.
+        """
+        self.tell('stop', BREAK_AFTER_STEP)
+
+    def estop(self):
+        """
+        Emergency stop the client.
+        """
+        self.tell('emergency')
+    def stop(self, after_command=True, after_scan_point=False, emergency=False):
+        """
+        Stop the client based on the specified conditions.
+
+        Parameters
+        ----------
+        after_command : bool, optional
+            If True, stop the client after the current command (default is True).
+        after_scan_point : bool, optional
+            If True, stop the client after the current scan point (default is False).
+        emergency : bool, optional
+            If True, perform an emergency stop (default is False).
+
+        Notes
+        -----
+        This method allows stopping the client in different ways:
+        - If `emergency` is True, an emergency stop is performed.
+        - If `after_command` is True, the client stops after the current command.
+        - If `after_scan_point` is True, the client stops after the current scan point.
+        """
+        if emergency:
+            self.estop()
+        elif after_command:
+            self.tell('stop', BREAK_AFTER_LINE)
+        elif after_scan_point:
+            self.tell('stop', BREAK_AFTER_STEP)

@@ -616,9 +616,9 @@ class SampleDriver(Driver):
                 else:
                     load_kw['task_name'] = 'advanceSample'
                 load_kw['load_dest_label'] = instrument.get('load_dest_label','')
-                # temporary debug hack self.uuid['load'] = self.get_client('load').enqueue(**load_kw)
-                # temporary debug hack self.get_client('load').wait(self.uuid['load'])
-                # temporary debug hack self.take_snapshot(prefix=f'05-after-load-{instrument["name"]}-{name}')
+                self.uuid['load'] = self.get_client('load').enqueue(**load_kw)
+                self.get_client('load').wait(self.uuid['load'])
+                self.take_snapshot(prefix=f'05-after-load-{instrument["name"]}-{name}')
 
             if empty:
                 measure_kw = instrument['empty_base_kw']

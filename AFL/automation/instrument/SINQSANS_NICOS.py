@@ -247,7 +247,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
             self.measureTransmission(exposure=exposure_transmission)
 
         self._simple_expose(exposure=exposure, block=block)
-        self.client.clear_queue()
+        self.client.clear_messages()
         time.sleep(15)
 
         if reduce_data or save_nexus:

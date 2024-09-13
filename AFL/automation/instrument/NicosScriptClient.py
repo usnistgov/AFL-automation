@@ -2,7 +2,6 @@
 ToDo
 - Add support for reading h5 data written by nicos
     - get list of files, load data by file name or data title
-- Add support for aborting a running command
 """
 import datetime
 import time
@@ -31,7 +30,7 @@ class NicosScriptClient(NicosClient):
         connected.
     status : str
         Current status of the client, either 'idle' or 'run'.
-    message_queue : list
+    messages : list
         Queue to store log messages.
     """
 
@@ -43,7 +42,7 @@ class NicosScriptClient(NicosClient):
         Initialize the NicosScriptClient.
         """
         NicosClient.__init__(self, self.log)
-        self.message_queue = []
+        self.messages = []
 
     def signal(self, name, data=None, exc=None):
         """
@@ -89,22 +88,22 @@ class NicosScriptClient(NicosClient):
         txt : str
             The log message.
         """
-        self.message_queue.append((name, txt))
-        self.message_queue = self.message_queue[-MAX_MESSAGE_QUEUE_SIZE:]
+        self.messages.append((name, txt))
+        self.messages = self.messages[-MAX_MESSAGE_QUEUE_SIZE:]
 
-    def print_queue(self):
+    def print_messages(self):
         """
         Print and clear the message queue.
         """
-        for msg in self.message_queue:
+        for msg in self.messages:
             print(f'{msg[0]}: {msg[1]}')
-        self.message_queue = []
+        self.messages = []
 
-    def clear_queue(self):
+    def clear_messages(self):
         """
         Clear the message queue.
         """
-        self.message_queue = []
+        self.messages = []
 
     def connect(self, host, port, user, password):
         """
@@ -134,7 +133,7 @@ class NicosScriptClient(NicosClient):
 
         state = self.ask('getstatus')
         self.signal('status', state['status'])
-        self.print_queue()
+        self.print_messages()
         if self.isconnected:
             print('Successfully connected to %s' % host)
         else:
@@ -186,10 +185,10 @@ class NicosScriptClient(NicosClient):
             return 'NICOS is busy, cannot send commands'
 
         while True:
-            if self.message_queue:
-                work_queue = copy.deepcopy(self.message_queue)
-                self.message_queue = []
-                for name, message in work_queue:
+            if self.messages:
+                work_messages = copy.deepcopy(self.messages)
+                self.messages = []
+                for name, message in work_messages:
                     if name == 'processing':
                         if message['script'] == com:
                             start_detected = True
@@ -206,9 +205,9 @@ class NicosScriptClient(NicosClient):
                     if start_detected and reqID == message[-1]:
                         print(messagetxt.strip())
 
-    def val(self, parameter):
+    def get(self, parameter):
         """
-        Get the value of a parameter.
+        Get the value of a parameter or array
 
         Parameters
         ----------
@@ -260,12 +259,6 @@ class NicosScriptClient(NicosClient):
             time.sleep(0.1)
 
         raise TimeoutError(f"Timeout of {timeout} seconds reached while waiting for idle status")
-    def stop_after_step(self):
-        """
-        Stop the client after the current step.
-        """
-        self.tell('stop', BREAK_AFTER_STEP)
-
     def estop(self):
         """
         Emergency stop the client.

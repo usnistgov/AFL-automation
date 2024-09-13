@@ -3,7 +3,6 @@ import datetime
 import pathlib
 import warnings
 import json
-import copy
 import os
 
 import numpy as np  # for return types in get data
@@ -11,13 +10,8 @@ import h5py  # for Nexus file writing
 
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
+from AFL.automation.instrument.NicosScriptClient import NicosScriptClient
 
-from nicos.clients.base import ConnectionData, NicosClient
-from nicos.protocols.daemon import STATUS_IDLE, STATUS_IDLEEXC
-from nicos.utils.loggers import ACTION, INPUT
-
-#NICOS events to exclude from client
-EVENTMASK = ('watch', 'datapoint', 'datacurve', 'clientexec')
 
 class SINQSANS_NICOS(ScatteringInstrument, Driver):
     defaults = {}
@@ -53,7 +47,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         Driver.__init__(self, name='SINQSANS_NICOS', defaults=self.gather_defaults(), overrides=overrides)
         ScatteringInstrument.__init__(self)
 
-        self.client = NicosClient_AFL()
+        self.client = NicosScriptClient()
         self.connect_to_nicos()
 
         if self.config['reduced_data_dir'] is not None:
@@ -173,7 +167,7 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         self.client.command(f'count2({self.config["exposure"]},tmax=1e6)')
 
         if block:
-            self.blockForIdle()
+            self.client.blockForIdle()
 
     @Driver.quickbar(qb={'button_text': 'Measure Transmission',
                          'params': {
@@ -306,22 +300,12 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
 
             self.status_txt = 'Instrument Idle'
 
-    def blockForIdle(self, timeout=1800, initial_delay=5):
-        time.sleep(initial_delay)
-
-        notDone = True
-        start = datetime.datetime.now()
-        delta = datetime.timedelta(seconds=timeout)
-        timedout = start + delta
-        while notDone and (datetime.datetime.now() < timedout):
-            notDone = (self.client.status!='idle')
-            time.sleep(0.1)
 
     def banana(self,xlo=40,xhi=80,ylo=40,yhi=80,measure=True):
         """ Calculate a sum of data over a pixel range """
         if measure:
             self.client.command('count(m=1e3)')
-            self.blockForIdle()
+            self.client.blockForIdle()
         arrays = self.client.livedata[self.config['detector']+'_live'] #return arrays from all detectors
         array  = arrays[self.config['detector_index']] #return selected detector array
         counts = array[ylo:yhi,xlo:xhi].sum()
@@ -337,134 +321,6 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         status.append(f'<a href="getReducedData?render_hint=2d_img&reduce_type=2d">Live Data (2D, reduced)</a>')
         return status
 
-class NicosClient_AFL(NicosClient):
-    livedata = {}
-    status = 'idle'
-
-    def __init__(self):
-        NicosClient.__init__(self, self.log)
-        self.message_queue = []
-
-    def signal(self, name, data=None, exc=None):
-        accept = ['message', 'processing', 'done']
-        if name in accept:
-            self.log_func(name, data)
-        elif name == 'livedata':
-            converted_data = []
-            for desc, ardata in zip(data['datadescs'], exc):
-                npdata = np.frombuffer(ardata,
-                                       dtype=desc['dtype'])
-                npdata = npdata.reshape(desc['shape'])
-                converted_data.append(npdata)
-            self.livedata[data['det'] + '_live'] = converted_data
-        elif name == 'status':
-            status, _ = data
-            if status == STATUS_IDLE or status == STATUS_IDLEEXC:
-                self.status = 'idle'
-            else:
-                self.status = 'run'
-        else:
-            if name != 'cache':
-                pass
-
-    def log(self, name, txt):
-        self.message_queue.append((name, txt))
-
-    def print_queue(self):
-        for msg in self.message_queue:
-            print(f'{msg[0]}: {msg[1]}')
-        self.message_queue = []
-
-    def clear_queue(self):
-        self.message_queue = []
-
-    def connect(self, host, port, user, password):
-        con = ConnectionData(host, port, user, password)
-
-        NicosClient.connect(self, con, EVENTMASK)
-        if self.daemon_info.get('protocol_version') < 22:
-            raise RuntimeError("incompatible nicos server")
-
-        state = self.ask('getstatus')
-        self.signal('status', state['status'])
-        self.print_queue()
-        if self.isconnected:
-            print('Successfully connected to %s' % host)
-        else:
-            print('Failed to connect to %s' % host)
-
-    def command(self, line):
-        com = "%s" % line.strip()
-        run_uid = self.run(com)
-        return run_uid
-
-    def _command(self, line):
-        com = "%s" % line.strip()
-        if self.status == 'idle':
-            self.run(com)
-            return com
-        return None
-
-    def interactive(self, line):
-        """
-        Command is a bit fraught as it doesn't always catch the start signal, i.e., the processing flag
-
-        If you're running into an error, switch to run
-
-        Note that you'll want to clear the message queue periodically if not using 'command'
-
-        """
-        start_detected = False
-        ignore = [ACTION, INPUT]
-        reqID = None
-        testcom = self._command(line)
-        if not testcom:
-            return 'NICOS is busy, cannot send commands'
-        while True:
-            if self.message_queue:
-                # own copy for thread safety
-                work_queue = copy.deepcopy(self.message_queue)
-                self.message_queue = []
-                for name, message in work_queue:
-                    #print(f'COMMAND: NAME={name} MESSAGE={message}')
-                    if name == 'processing':
-                        if message['script'] == testcom:
-                            start_detected = True
-                            reqID = message['reqid']
-                        continue
-                    if name == 'done' and message['reqid'] == reqID:
-                        return
-                    if message[2] in ignore:
-                        continue
-                    if message[0] != 'nicos':
-                        messagetxt = message[0] + ' ' + message[3]
-                    else:
-                        messagetxt = message[3]
-                    if start_detected and reqID == message[-1]:
-                        print(messagetxt.strip())
-
-    def val(self, parameter):
-        """
-        This can be implemented on top of the client.devValue()
-        and devParamValue() interfaces. The problem to be solved is
-        how to make the data visible in ipython
-        """
-        # check for livedata first
-        if parameter in self.livedata:
-            return self.livedata[parameter]
-
-        # Now check for scan data
-        if parameter == 'scandata':
-            xs, ys, _, names = self.eval(
-                '__import__("nicos").commands.analyze._getData()[:4]')
-            return xs, ys, names
-
-        # Try get device data from NICOS
-        if parameter.find('.') > 0:
-            devpar = parameter.split('.')
-            return self.getDeviceParam(devpar[0], devpar[1])
-        else:
-            return self.getDeviceValue(parameter)
 
 _DEFAULT_PORT=5001
 

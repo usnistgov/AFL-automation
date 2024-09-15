@@ -287,7 +287,13 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         monitor_cts = self.client.get(self.config['normalization_monitor'])
         monitor_cts = monitor_cts[self.config['normalization_monitor_index']]
 
-        trans = cts / monitor_cts #!!! add dead_time correction to monitor
+        try:
+            trans = cts / monitor_cts #!!! add dead_time correction to monitor
+        except ZeroDivisionError:
+            trans = -1
+        
+        if np.isnan(trans):
+            trans = -1
 
         if set_empty_transmission:
             self.config['empty transmission'] = trans
@@ -394,6 +400,9 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                     self.data['sample_flux'] = sample_flux
                     self.data['empty_cell_transmission'] = empty_cell_transmission
                     self.data['sample_transmission'] = sample_transmission
+
+                    # for sample server
+                    self.data['transmission'] = normalized_sample_transmission
 
                 if save_nexus:
                     self._appendReducedToNexus(reduced, name, name)

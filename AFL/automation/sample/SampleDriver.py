@@ -59,7 +59,6 @@ class SampleDriver(Driver):
 
     def __init__(
             self,
-            tiled_uri: Optional[str] = None,
             camera_urls: Optional[List[str]] = None,
             snapshot_directory: Optional[str] = None,
             overrides: Optional[Dict] = None,
@@ -68,12 +67,8 @@ class SampleDriver(Driver):
 
         Parameters
         -----------
-        tiled_uri: str
-            uri (url:port) of the tiled server.  If a data object is set, will be ignored and the Tiled connection inside the data object used instead.
-
         camera_urls: Optional[List[str]]
             url endpoints for ip cameras
-
 
         """
 
@@ -84,12 +79,6 @@ class SampleDriver(Driver):
         self.sample_name: Optional[str] = None
         self.app = None
         self.name = 'SampleDriver'
-
-
-        # start tiled catalog connection
-        if tiled_uri is not None:
-            self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
-        
 
         self.camera_urls = camera_urls
 
@@ -109,6 +98,14 @@ class SampleDriver(Driver):
 
         # XXX need to make deck inside this object because of 'different registries error in Pint
         self.reset_deck()
+
+
+    @property
+    def tiled_client(self):
+        # start tiled catalog connection
+        if self.data is None:
+            raise ValueError("No DataTiled object added to this class...was it instantiated correctly?")
+        return self.data.tiled_client
 
     def status(self):
         status = []
@@ -645,6 +642,7 @@ class SampleDriver(Driver):
                 # 'move_swept_kw' = {'temperature': [15,20,25,30], 'vibes': ['harsh', 'mid', 'cool']}
                 # conditions = [{'temperature': 15, 'vibes': 'harsh'}, {'temperature': 15, 'vibes': 'mid'} ...]
 
+                starting_condition = conditions[0]
                 for i,cond in enumerate(conditions):
                     sample_env_kw = {}
                     sample_env_kw.update(cond)
@@ -660,15 +658,22 @@ class SampleDriver(Driver):
                     
                     self.get_client(instrument['sample_env']['client_name']).wait(self.uuid['move_sample_env'])
                     self.update_status(f'Measuring on instrument {instrument["client_name"]}')
+                    measure_kw['name'] = sample_data['sample_name']
                     self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
                     
                     self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+
+                # move sample environment to initial starting state to prepare for next measurement 
+                sample_env_kw = {}
+                sample_env_kw.update(starting_condition)
+                sample_env_kw.update(instrument['sample_env']['move_base_kw'])
+                self.uuid['move_sample_env'] = self.get_client(instrument['sample_env']['client_name']).enqueue(**sample_env_kw)
                 
             else:
                 self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
 
-            if wait:
-                self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+                if wait:
+                    self.get_client(instrument['client_name']).wait(self.uuid['measure'])
 
     def construct_datasets(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""

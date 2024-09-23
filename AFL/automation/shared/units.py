@@ -55,8 +55,14 @@ def get_unit_type(value):
     else:
         raise ValueError(f'Unit system ({value}) not recognized as one of: {SUPPORTED_TYPES}')
 
+def to_quantity(value: str | pint.Quantity) -> pint.Quantity:
+    """Convert a string to a pint quantity"""
+    if isinstance(value, str):
+        return units(value)
+    return value
 
-def enforce_units(value, unit_type):
+
+def enforce_units(value:None | str | pint.Quantity, unit_type:str) -> pint.Quantity:
     """Ensure that a number has units and convert to the default_units"""
     # None bypasses all unit testing
     if value is None:

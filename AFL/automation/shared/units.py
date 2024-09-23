@@ -14,34 +14,34 @@ DEFAULT_UNITS['molarity'] = 'millimolar'
 SUPPORTED_TYPES = ['volume', 'mass', 'density', 'molarity', 'concentration']
 
 
-def has_units(value):
+def has_units(value: pint.Quantity) -> bool:
     return hasattr(value, 'units')
 
 
-def is_volume(value):
+def is_volume(value: pint.Quantity) -> bool:
     return (len(value.dimensionality) == 1) and (value.dimensionality['[length]'] == 3)
 
 
-def is_molarity(value):
+def is_molarity(value: pint.Quantity) -> bool:
     return ((len(value.dimensionality) == 2) and (value.dimensionality['[length]'] == -3) and (
             value.dimensionality['[substance]'] == 1))
 
 
-def is_mass(value):
+def is_mass(value: pint.Quantity) -> bool:
     return (len(value.dimensionality) == 1) and (value.dimensionality['[mass]'] == 1)
 
 
-def is_density(value):
+def is_density(value: pint.Quantity) -> bool:
     return ((len(value.dimensionality) == 2) and (value.dimensionality['[mass]'] == 1) and (
             value.dimensionality['[length]'] == -3))
 
 
-def is_concentration(value):
+def is_concentration(value: pint.Quantity) -> bool:
     return ((len(value.dimensionality) == 2) and (value.dimensionality['[mass]'] == 1) and (
             value.dimensionality['[length]'] == -3))
 
 
-def get_unit_type(value):
+def get_unit_type(value: pint.Quantity) -> str:
     if is_volume(value):
         return 'volume'
     elif is_molarity(value):
@@ -66,7 +66,9 @@ def enforce_units(value:None | str | pint.Quantity, unit_type:str) -> pint.Quant
     """Ensure that a number has units and convert to the default_units"""
     # None bypasses all unit testing
     if value is None:
-        return
+        return value
+
+    value = to_quantity(value)
 
     if unit_type.lower() not in SUPPORTED_TYPES:
         raise ValueError(f'Not configured to enforce unit_type: {unit_type}')

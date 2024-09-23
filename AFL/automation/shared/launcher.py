@@ -1,4 +1,5 @@
 import os,sys,subprocess,importlib
+import argparse
 from pathlib import Path
 try:
         import AFL.automation
@@ -130,6 +131,13 @@ def _reconstitute_objects(obj_dict,data=None):
 
 '''
 
+
+parser = argparse.ArgumentParser(prog = f'AFL // {main_module_name}',
+                                description = f'AFL APIServer launcher for {main_module_name}')
+parser.add_argument('-i', '--interactive', action= 'store_true')
+
+args = parser.parse_args()
+
 if main_module_name in AFL_GLOBAL_CONFIG['driver_custom_configs']:
         print(f'launching from custom config for {main_module_name}')
         driver = _reconstitute_objects(AFL_GLOBAL_CONFIG['driver_custom_configs'][main_module_name],data=data)
@@ -143,8 +151,14 @@ server.create_queue(driver)
 server.init_logging(toaddrs=AFL_GLOBAL_CONFIG['owner_email'])
 
 #process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
+if args.interactive:
+        server.run_threaded(host=AFL_GLOBAL_CONFIG['bind_address'], port=server_port, debug=False)#,threaded=False)
+        import code,time
+        time.sleep(1) # this is mostly cosmetic, to let the server spin up.
+        code.interact(local=globals(), banner = 'AFL APIServer started.  Access driver in "driver" global object, APIServer in "server".  Exit with ctrl-D or exit().  Have a lot of fun...')
 
-server.run(host=AFL_GLOBAL_CONFIG['bind_address'], port=server_port, debug=False)#,threaded=False)
+else:
+        server.run(host=AFL_GLOBAL_CONFIG['bind_address'], port=server_port, debug=False)#,threaded=False)
 
 #process.wait()
 

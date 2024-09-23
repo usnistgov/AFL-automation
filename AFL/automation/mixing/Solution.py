@@ -1,26 +1,54 @@
 import numpy as np
 import copy
 import warnings
+from typing import Optional, Dict
 
+import pint
+
+from AFL.automation.mixing.MixDB import MixDB
 from AFL.automation.mixing.Component import Component
-from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.exceptions import EmptyException,NotFoundError
 from AFL.automation.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER
 
 
 class Solution:
-    ''' '''
-    def __init__(self,name,components,properties=None):
+    """ """
+    def __init__(
+            self,
+            name: str,
+            total_mass: Optional[pint.Quantity]=None,
+            total_volume: Optional[pint.Quantity]=None,
+            masses: Optional[Dict]=None,
+            volumes: Optional[Dict]=None,
+            concentrations: Optional[Dict]=None,
+            ):
         self.name = name
-        self.preptype=PrepType.Solution
-        
         self.components = {}
-        for name in listify(components):
-            self.add_component_from_name(name,inplace=True)
-        
-        self.set_properties_from_dict(properties,inplace=True)
-    
-        
+
+        if masses is not None:
+            for name,mass in masses.items():
+                self.add_component_from_name(name)
+                self.components[name].mass = mass
+
+        if volumes is not None:
+            for name,volume in volumes.items():
+                self.add_component_from_name(name)
+                self.components[name].volume = volume
+
+        if concentrations is not None:
+            if (self.volume is None) or (self.volume.magnitude==0):
+                raise ValueError('Cannot set concentrations without setting volume')
+            for name,conc in concentrations.items():
+                self.add_component_from_name(name)
+            self.concentration = concentrations
+
+        if total_mass is not None:
+            self.mass = total_mass
+
+        if total_volume is not None:
+            self.volume = total_volume
+
+
     def __str__(self):
         out_str = f'<Solution name:\"{self.name}\" size:{self.size}>'
         return out_str
@@ -39,7 +67,7 @@ class Solution:
             yield name,component
         
     def __hash__(self):
-        '''Needed so Solutions can be dictionary keys'''
+        """Needed so Solutions can be dictionary keys"""
         return id(self)
     
     def to_dict(self):
@@ -51,41 +79,28 @@ class Solution:
             out_dict['mg_masses'][k] = v.mass.to('mg').magnitude
         return out_dict
     
-    @classmethod
-    def from_dict(cls,in_dict):
-        soln = cls(name=in_dict['name'],components=in_dict["components"])
-        for k,v in in_dict['mg_masses'].items():
-            soln[k].mass = v*units('mg')
-        return soln
-    
-    def add_component_from_name(self,name,properties=None,inplace=False):
-        if properties is None:
-            properties = {}
-            
-        if inplace:
-            solution = self
-        else:
-            solution = self.copy()
-            
-        try:
-            solution.components[name] = db[name]
-        except NotFoundError:
-            if name in properties:
-                #attempt to make component based on properties dict
-                solution.component[name] = componentFactory(name=name,**properties[name])
-            else:
-                db.add_interactive(name)
-                solution.components[name] = db[name]
-            
-        return solution
-    
+    def add_component_from_name(self,name):
+        if name not in self.components:
+            try:
+                mixdb = MixDB.get_db()
+            except ValueError:
+                # attempt to instantiate from default location
+                mixdb = MixDB()
+
+            try:
+                self.components[name] = Component(**mixdb.get_component(name))
+            except NotFoundError:
+                raise
+
+            return
+
     def set_properties_from_dict(self,properties=None,inplace=False):
         if properties is not None:
             if inplace:
                 solution = self
             else:
                 solution = self.copy()
-            
+
             for name,props in properties.items():
                 if name in ['mass','volume','density']:
                     setattr(solution,name,props)
@@ -95,7 +110,7 @@ class Solution:
             return solution
         else:
             return self
-    
+
     def rename_component(self,old_name,new_name,inplace=False):
         if inplace:
             solution = self
@@ -123,11 +138,11 @@ class Solution:
     
     @property
     def solutes(self):
-        return [(name,component) for name,component in self if component.is_solute]
+        return [(name,component) for name,component in self if not component.has_volume]
 
     @property
     def solvents(self):
-        return [(name,component) for name,component in self if component.is_solvent]
+        return [(name,component) for name,component in self if component.has_volume]
     
     def __add__(self,other):
         mixture = self.copy()
@@ -140,37 +155,40 @@ class Solution:
         return mixture
     
     def __eq__(self,other):
-        ''''Compare the mass,volume, and composition of two mixtures'''
+        """Compare the mass,volume, and composition of two mixtures"""
 
-        if other.preptype==PrepType.Solution:
-            checks = []# list of true/false values that represent equality checks
-            checks.append(np.isclose(self.mass,other.mass))
-            checks.append(np.isclose(self.volume,other.volume))
+        # list of true/false values that represent equality checks
+        checks = [
+            np.isclose(self.mass, other.mass),
+            np.isclose(self.volume, other.volume)
+        ]
 
-            for name,component in self:
-                checks.append(np.isclose(self[name].mass,other[name].mass))
-                checks.append(np.isclose(self.mass_fraction[name],other.mass_fraction[name]))
+        for name,component in self:
+            checks.append(np.isclose(self[name].mass,other[name].mass))
+            checks.append(np.isclose(self.mass_fraction[name],other.mass_fraction[name]))
 
-            return all(checks)
+        return all(checks)
 
-        else:
-            raise TypeError(f'Unsure how to compare Solution with {other.preptype}')
+    def all_components_have_mass(self):
+        return all([component.has_mass for name, component in self])
 
     @property
     def mass(self):
-        '''Total mass of mixture.'''
+        """Total mass of mixture."""
         return sum([component.mass for name,component in self])
 
     @mass.setter
     def mass(self,value):
-        '''Set total mass of mixture.'''
+        """Set total mass of mixture."""
+        assert self.all_components_have_mass(), (f'Cannot set mass of solution with components lacking mass. Current '
+                                                 'solution has: {k:v.mass for k,v in self.components.items()}')
         value = enforce_units(value,'mass')
         scale_factor = value/self.mass
-        for name,component in self: 
+        for name,component in self:
             component.mass = enforce_units((component.mass*scale_factor),'mass')
             
     def set_mass(self,value):
-        '''Setter for inline mass changes'''
+        """Setter for inline mass changes"""
         value = enforce_units(value,'mass')
         solution = self.copy()
         solution.mass = value
@@ -178,12 +196,16 @@ class Solution:
             
     @property
     def volume(self):
-        '''Total volume of mixture. Only solvents are included in volume calculation'''
-        return sum([component.volume for name, component in self.solvents])
+        """Total volume of mixture. Only solvents are included in volume calculation"""
+        volumes =[component.volume for name, component in self.solvents]
+        if len(volumes)==0:
+            return 0*units('ml')
+        else:
+            return sum(volumes)
 
     @volume.setter
     def volume(self,value):
-        '''Set total volume of mixture. Mass composition will be preserved'''
+        """Set total volume of mixture. Mass composition will be preserved"""
         if len(self.solvents)==0:
             raise  ValueError('Cannot set Solution volume without any Solvents')
 
@@ -207,7 +229,7 @@ class Solution:
         self.mass = total_mass
     
     def set_volume(self,value):
-        '''Setter for inline volume changes'''
+        """Setter for inline volume changes"""
         solution = self.copy()
         solution.volume = value
         return solution
@@ -242,13 +264,13 @@ class Solution:
     
     @property
     def mass_fraction(self):
-        '''Mass fraction of components in mixture
+        """Mass fraction of components in mixture
 
         Returns
         -------
         mass_fraction: dict
         Component mass fractions
-        '''
+        """
         total_mass = self.mass
         mass_fraction = {}
         for name,component in self:
@@ -257,13 +279,13 @@ class Solution:
     
     @mass_fraction.setter
     def mass_fraction(self,target_mass_fractions):
-        '''Mass fraction of components in mixture
+        """Mass fraction of components in mixture
 
         Returns
         -------
         mass_fraction: dict
         Component mass fractions
-        '''
+        """
         missing_comp = list(self.components.keys())
         for comp in target_mass_fractions.keys():
             if comp in missing_comp:
@@ -281,32 +303,32 @@ class Solution:
     
     @property
     def volume_fraction(self):
-        '''Volume fraction of solvents in mixture
+        """Volume fraction of solvents in mixture
 
         Returns
         -------
         solvent_fraction: dict
         Component mass fractions
-        '''
+        """
         total_volume = self.volume
         return {name:component.volume/total_volume for name,component in self.solvents}
     
     @volume_fraction.setter
     def volume_fraction(self,vfrac_dict):
-        '''Volume fraction of components in mixture
+        """Volume fraction of components in mixture
 
         Returns
         -------
         volume_fraction: dict
         Component volume fractions
-        '''
+        """
         missing_comp = [name for name,component in self.solvents]
         for comp in vfrac_dict.keys():
             if comp in missing_comp:
                 missing_comp.remove(comp)
         
         if len(missing_comp)>1:
-            raise ValueError(f'Must specify at least {len(self.sovlents)-1} volume fractions for mixture with {len(self.solvents)}')
+            raise ValueError(f'Must specify at least {len(self.solvents)-1} volume fractions for mixture with {len(self.solvents)}')
         elif len(missing_comp)==1:
             vfrac_dict[missing_comp[0]] = 1.0 - sum(vfrac_dict.values())
         
@@ -332,7 +354,7 @@ class Solution:
         total_volume = self.volume
         result = {}
         for name,component in self:
-            if component._has_formula:
+            if component.has_formula:
                 result[name] = enforce_units(component.moles/total_volume,'molarity')
         return result
     
@@ -340,18 +362,18 @@ class Solution:
     def molarity(self,molarity_dict):
         total_volume = self.volume
         for name,molarity in molarity_dict.items():
-            if not self.components[name]._has_formula:
+            if not self.components[name].has_formula:
                 raise ValueError(f'Attempting to set molarity of component without formula: {name}')
             else:
                 molar_mass = self.components[name].formula.molecular_mass*AVOGADROS_NUMBER*units('g')
                 self.components[name].mass = enforce_units(molarity*molar_mass*total_volume,'mass')
     
-    def measure_out(self,amount,deplete=False):
-        '''Create solution with identical composition at new total mass/volume'''
+    def measure_out(self, amount: object, deplete: object = False) -> "Solution":
+        """Create solution with identical composition at new total mass/volume"""
         
         if not has_units(amount):
-            raise ValueError('Must supply units to measure_out')
-        
+            amount = units(amount)
+
         if is_volume(amount):
             solution = self.copy()
             solution.volume = amount

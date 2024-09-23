@@ -7,38 +7,42 @@ from AFL.automation.shared.units import units, AVOGADROS_NUMBER, enforce_units  
 
 
 class Component:
-    """
-    Base class for components of a mixture
+    """ Component of a mixture
 
-    This class defines the basic properties and methods to be shared across material objects.
-    It includes attributes for mass, volume, density, formula, and scattering length density (SLD).
+    This class defines the basic properties of a component within a mixture. It
+    includes attributes for mass, volume, density, formula, and scattering length
+    density (SLD). It also enforces unit specifications for these attributes.
 
     Parameters
     ----------
     name : str
         The name of the component.
-    mass : Optional[units.Quantity], optional
+    mass : str | units.Quantity | None
         The mass of the component, by default None.
-    volume : Optional[units.Quantity], optional
+    volume : str | units.Quantity | None
         The volume of the component, by default None.
-    density : Optional[units.Quantity], optional
+    density : str | units.Quantity | None
         The density of the component, by default None.
     formula : Optional[str], optional
         The chemical formula of the component, by default None.
-    sld : Optional[units.Quantity], optional
+    sld : str | units.Quantity | None
         The scattering length density of the component, by default None.
-
     """
 
     def __init__(self, name: str, mass: Optional[units.Quantity] = None, volume: Optional[units.Quantity] = None,
-                 density: Optional[units.Quantity] = None, formula: Optional[str] = None, sld: Optional[units.Quantity] = None):
+                 density: Optional[units.Quantity] = None, formula: Optional[str] = None, sld: Optional[units.Quantity] = None,
+                 uid: Optional[str] = None) -> None:
         self.name: str = name
-        self._mass: Optional[units.Quantity] = mass
-        self._volume: Optional[units.Quantity] = volume
-        self._density: Optional[units.Quantity] = density
-        self._sld: Optional[units.Quantity] = sld
-        self._formula: Optional[periodictable.formula] = None
-        self.formula = formula
+
+        self._mass: Optional[units.Quantity] = enforce_units(mass, 'mass')
+        self._volume: Optional[units.Quantity] = enforce_units(volume, 'volume')
+        self._density: Optional[units.Quantity] = enforce_units(density, 'density')
+        self._sld: Optional[units.Quantity] = sld #need to add sld units
+        if formula is None:
+            self.formula = name
+        else:
+            self.formula = formula
+        self.uid = uid
 
     def emit(self) -> Dict[str, Union[str, units.Quantity]]:
         return {
@@ -50,9 +54,9 @@ class Component:
 
     def __str__(self) -> str:
         out_str = '<Component '
-        out_str += f' M={self.mass:4.3f}' if self._has_mass else ' M=None'
-        out_str += f' V={self.volume:4.3f}' if self._has_volume else ' V=None'
-        out_str += f' D={self.density:4.3f}' if self._has_density else ' D=None'
+        out_str += f' M={self.mass:4.3f}' if self.has_mass else ' M=None'
+        out_str += f' V={self.volume:4.3f}' if self.has_volume else ' V=None'
+        out_str += f' D={self.density:4.3f}' if self.has_density else ' D=None'
         out_str += '>'
         return out_str
 
@@ -77,7 +81,7 @@ class Component:
 
     @mass.setter
     def mass(self, value: units.Quantity) -> None:
-        enforce_units(value, 'mass')
+        value = enforce_units(value, 'mass')
         self._mass = value
 
     def set_mass(self, value: units.Quantity) -> 'Component':
@@ -88,15 +92,15 @@ class Component:
 
     @property
     def volume(self) -> Optional[units.Quantity]:
-        if self._has_mass and self._has_density:
+        if self.has_mass and self.has_density:
             return enforce_units(self._mass / self._density, 'volume')  # type: ignore
         else:
             return None
 
     @volume.setter
     def volume(self, value: units.Quantity) -> None:
-        enforce_units(value, 'volume')
-        if not self._has_density:
+        value = enforce_units(value, 'volume')
+        if not self.has_density:
             raise ValueError('Can\'t set volume without specifying density')
         else:
             self.mass = enforce_units(value * self._density, 'mass')
@@ -113,7 +117,7 @@ class Component:
 
     @density.setter
     def density(self, value: units.Quantity) -> None:
-        enforce_units(value, 'density')
+        value = enforce_units(value, 'density')
         self._density = value
 
     @property
@@ -121,7 +125,7 @@ class Component:
         return self._formula
 
     @formula.setter
-    def formula(self, value: Optional[str]) -> None:
+    def formula(self, value: Optional[str]) :
         if value is None:
             self._formula = None
         else:
@@ -132,7 +136,7 @@ class Component:
 
     @property
     def moles(self) -> Optional[units.Quantity]:
-        if self._has_formula:
+        if self.has_formula:
             return self._mass / (self.formula.molecular_mass * units('g')) / AVOGADROS_NUMBER  # type: ignore
         else:
             return None
@@ -141,7 +145,7 @@ class Component:
     def sld(self) -> Optional[units.Quantity]:
         if self._sld is not None:
             return self._sld
-        elif self._has_formula and self._has_density:
+        elif self.has_formula and self.has_density:
             self.formula.density = self.density.to('g/ml').magnitude  # type: ignore
             sld = self.formula.neutron_sld(wavelength=5.0)[0]  # type: ignore
             return sld * 1e-6 * units('angstrom^(-2)')
@@ -154,31 +158,32 @@ class Component:
 
     @property
     def is_solute(self) -> bool:
-        return not self._has_volume
+        return not self.has_volume
 
     @property
     def is_solvent(self) -> bool:
-        return self._has_volume
+        return self.has_volume
 
     @property
-    def _has_mass(self) -> bool:
+    def has_mass(self) -> bool:
         return self._mass is not None
 
     @property
-    def _has_volume(self) -> bool:
-        return self._volume is not None
+    def has_volume(self) -> bool:
+        if self._volume is not None or (self.has_mass and self.has_density):
+            return True
 
     @property
-    def _has_density(self) -> bool:
+    def has_density(self) -> bool:
         return self._density is not None
 
     @property
-    def _has_formula(self) -> bool:
+    def has_formula(self) -> bool:
         return self._formula is not None
 
     @property
-    def _has_sld(self) -> bool:
-        return self._sld is not None or (self._has_formula and self._has_density)
+    def has_sld(self) -> bool:
+        return self._sld is not None or (self.has_formula and self.has_density)
 
     def __add__(self, other: 'Component') -> 'Component':
 

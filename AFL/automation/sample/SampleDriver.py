@@ -54,10 +54,11 @@ class SampleDriver(Driver):
     defaults['custom_stock_settings'] = []
     defaults['composition_var_name'] = 'comps'
     defaults['concat_dim'] = 'sample'
+    defaults['sample_composition_tol'] = 0.0
 
     def __init__(
             self,
-            tiled_uri: str,
+            tiled_uri: Optional[str] = None,
             camera_urls: Optional[List[str]] = None,
             snapshot_directory: Optional[str] = None,
             overrides: Optional[Dict] = None,
@@ -67,7 +68,7 @@ class SampleDriver(Driver):
         Parameters
         -----------
         tiled_uri: str
-            uri (url:port) of the tiled server
+            uri (url:port) of the tiled server.  If a data object is set, will be ignored and the Tiled connection inside the data object used instead.
 
         camera_urls: Optional[List[str]]
             url endpoints for ip cameras
@@ -85,7 +86,9 @@ class SampleDriver(Driver):
 
 
         # start tiled catalog connection
-        self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
+        if tiled_uri is not None:
+            self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
+        
 
         self.camera_urls = camera_urls
 
@@ -243,6 +246,7 @@ class SampleDriver(Driver):
             predict_combine_comps: Optional[Dict]=None,
             predict_next: bool = False,
             enqueue_next: bool = False,
+            calibrate_sensor: bool = False,
             name: Optional[str] = None,
             sample_uuid: Optional[str] = None,
             AL_campaign_name: Optional[str] = None,
@@ -259,8 +263,8 @@ class SampleDriver(Driver):
         sample_volume: dict
             Dict should be of the form sample_volume =  {"value":value, "units":units}
 
-        fixed_concs: List[Optional[Dict]]
-            Dict should be of the form fixed_concs[0] = {"value":value, "units":units}
+        fixed_concs: Optional[Dict]
+            Dict should be of the form fixed_concs[component] = {"value":value, "units":units}
 
         mfrac_split: Dict
             Dict should be of the form mfrac_split = {'component_to_split':{'component_A':'mfrac_A','component_B':'mfrac_B'}}
@@ -270,6 +274,9 @@ class SampleDriver(Driver):
 
         enqueue_next: bool
             If True, will pull the next sample from the dropbox of the agent
+
+        calibrate_sensor: bool
+            If True, trigger a load stopper sensor recalibration before the next measurement
 
         name: str
             The name of the sample, if not generated, it will be auto generated from the self.config['data_tag'] and
@@ -318,8 +325,33 @@ class SampleDriver(Driver):
             self.AL_campaign_name = f"{self.config['data_tag']}_{self.uuid['AL'][-8:]}"
         else:
             self.AL_campaign_name = AL_campaign_name
+       
 
+        print(f'Composition: {composition}')
+        if composition: # composition is not empty
+            prep_protocol, catch_protocol = self.compute_prep_protocol(
+                composition = composition,
+                fixed_concs = fixed_concs,
+                mfrac_split = prepare_mfrac_split,
+                sample_volume = sample_volume
+            )
 
+            # configure all servers to this sample name and uuid
+            sample_composition_realized = {
+                k:{'value':v.magnitude ,'units':str(v.units)} for k,v in self.sample.target_check.concentration.items()
+            }
+            self.data['sample_composition_target'] = composition
+            self.data['sample_composition_realized'] = sample_composition_realized
+            sample_data = self.set_sample(
+                sample_name = self.sample_name,
+                sample_uuid = self.uuid['sample'],
+                AL_campaign_name = self.AL_campaign_name,
+                AL_uuid = self.uuid['AL'],
+                AL_components = self.config['AL_components'],
+                sample_composition = sample_composition_realized,
+            )
+            for client_name in self.config['client'].keys():
+                self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
         prep_protocol, catch_protocol = self.compute_prep_protocol(
             composition = composition,
@@ -345,10 +377,12 @@ class SampleDriver(Driver):
         for client_name in self.config['client'].keys():
             self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
-        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol)
+        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol, calibrate_sensor=calibrate_sensor)
         self.construct_datasets(combine_comps=predict_combine_comps)
 
         if predict_next:
+            if composition:#assume we made/measured a sample and append
+                self.add_new_data_to_agent()
             self.predict_next_sample()
 
         # Look away ... here be dragons ...
@@ -418,12 +452,17 @@ class SampleDriver(Driver):
             )
         else:
             # assume concs for now...
-            if len(composition) < (len(self.config['components']) - 1):
+            if len(composition) < (len(self.config['components']) - len(fixed_concs) - 1):
                 raise ValueError('System under specified...')
 
             mass_dict = {}
             for name, comp in composition.items():
                 mass_dict[name] = (comp['value'] * units(comp['units']) * sample_volume).to('mg')
+
+            for name, comp in fixed_concs.items():
+                mass_dict[name] = (comp['value'] * units(comp['units']) * sample_volume).to('mg')
+
+            print(mass_dict)
 
             if mfrac_split is not None:
                 for split_component, split_def in mfrac_split.items():
@@ -449,7 +488,7 @@ class SampleDriver(Driver):
         self.deck.reset_targets()
         self.deck.add_target(self.target, name='target')
         self.deck.make_sample_series(reset_sample_series=True)
-        self.deck.validate_sample_series(tolerance=0.15)
+        self.deck.validate_sample_series(tolerance=self.config['sample_composition_tol'])
         self.deck.make_protocol(only_validated=False)
         self.fix_protocol_order(self.config['mix_order'], self.config['custom_stock_settings'])
         self.sample, self.validated = self.deck.sample_series[0]
@@ -470,12 +509,12 @@ class SampleDriver(Driver):
         return self.sample.emit_protocol(), [self.catch_protocol.emit_protocol()]
 
 
-
     def make_and_measure(
             self,
             name: str,
             prep_protocol: dict,
             catch_protocol: dict,
+            calibrate_sensor: bool = False,
     ):
 
         targets = set()
@@ -511,8 +550,9 @@ class SampleDriver(Driver):
             self.get_client('load').wait(self.uuid['rinse'],for_history=False)
             self.update_status(f'Rinse done!')
 
-        # calibrate sensor to avoid drift
-        self.get_client('load').enqueue(task_name='calibrate_sensor')
+        if calibrate_sensor:
+                # calibrate sensor to avoid drift
+                self.get_client('load').enqueue(task_name='calibrate_sensor')
 
         #XXX need to work out measure loop
         self.update_status(f'Cell is clean, measuring empty cell scattering...')
@@ -585,15 +625,18 @@ class SampleDriver(Driver):
             measure_kw['name'] = name
             self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
 
-        if wait:
-            self.uuid['measure'] = self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+            if wait:
+                self.get_client(instrument['client_name']).wait(self.uuid['measure'])
 
     def construct_datasets(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""
         data_path = pathlib.Path(self.config['data_path'])
-
-        if len(self.config['instrument'])>1:
-            raise NotImplementedError
+        # if len(self.config['instrument'])>1:
+        #     raise NotImplementedError
+        
+        if self.tiled_client is None:
+            self.tiled_client = self.data.tiled_client
+            # this needs to be here, because in the constructor, we don't have the datapacket attached
 
         self.new_data = xr.Dataset()
         for i,instrument in enumerate(self.config['instrument']):
@@ -614,9 +657,26 @@ class SampleDriver(Driver):
                     dims = None
                     coords = None
 
-                data = tiled_result.items()[-1][-1][()]
-                measurement = xr.DataArray(data, dims=dims, coords=coords)
+                tiled_data = tiled_result.items()[-1][-1]
+                measurement = xr.DataArray(tiled_data[()], dims=dims, coords=coords)
                 self.new_data[instrument_data['data_name']] = measurement
+
+                if 'quality_metric' in instrument.keys():
+                    quality_metric = instrument['quality_metric']
+                    instrument_value = tiled_data.metadata[quality_metric['tiled_metadata_key']]
+                    if quality_metric['comparison'].lower() in ['<','lt']:
+                        accept = instrument_value < quality_metric['threshold']
+                    elif quality_metric['comparison'].lower() in ['>','gt']:
+                        accept = instrument_value > quality_metric['threshold']
+                    elif quality_metric['comparison'].lower() in ['==','=','eq']:
+                        accept = instrument_value == quality_metric['threshold']
+                    else:
+                        raise ValueError(f'Cannot recognize comparison for quality_metric. You passed {quality_metric["comparison"]}')
+                else:
+                    accept = True
+                self.new_data[instrument_data['data_name']].attrs['accept'] = int(accept)
+
+
 
 
         self.new_data['validated'] = self.validated
@@ -682,34 +742,26 @@ class SampleDriver(Driver):
             self.data['time'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f %Z%z')
             #self.data.finalize() #I don't think we want this with the new sampel_server style
 
-    def predict_next_sample(self,combine_comps=None):
+    def add_new_data_to_agent(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""
 
-        result = self.tiled_client.search(Eq('array_name','I')).items()[-1][-1]
-        if 'transmissions' not in result.metadata:
-            do_append = True
-            warnings.warn('No transmissions found in tiled entry! Assuming the sample hit!', stacklevel=2)
-        else:
-            transmissions = result.metadata['transmissions']
-            transmissions = [i for i in transmissions if i>0]
-            if len(transmissions)==0:
-                do_append = False
-            elif min(transmissions) > self.config['max_sample_transmission']:
-                do_append = False
-            else:
-                do_append = True
-
-        if do_append:
+        for i,instrument in enumerate(self.config['instrument']):
             self.ds_append = xr.Dataset()
-            self.ds_append[self.config['composition_var_name']] = self.new_data[self.config['AL_components']].to_array('component').transpose(...,'component')
+            self.ds_append[instrument['sample_comps_variable']] = self.new_data[self.config['AL_components']].to_array('component').transpose(...,'component')
 
-            for i,instrument in enumerate(self.config['instrument']):
-                for instrument_data in instrument['data']:
+            data_added=0
+            for instrument_data in instrument['data']:
+                if bool(self.new_data[instrument_data['data_name']].attrs['accept']):#because xArray and json is the worst
                     self.ds_append[instrument_data['data_name']] = self.new_data[instrument_data['data_name']]
+                    data_added+=1
+                else:
+                    continue
 
-            db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
-            self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=self.config['concat_dim'])
+            if data_added>0:
+                db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
+                self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=instrument['sample_dim'])
 
+    def predict_next_sample(self):
         self.uuid['agent'] = self.get_client('agent').enqueue(
             task_name='predict',
             sample_uuid=self.uuid['sample'],
@@ -733,3 +785,13 @@ class SampleDriver(Driver):
             transmission_validated = True
 
         return transmission_validated
+
+_DEFAULT_CUSTOM_CONFIG = {
+
+    '_classname': 'AFL.automation.sample.SampleDriver.SampleDriver',
+    'camera_urls': [],
+    'snapshot_directory': '/home/afl642/snaps'
+}
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

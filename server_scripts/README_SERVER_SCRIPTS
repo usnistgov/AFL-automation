@@ -1,0 +1,10 @@
+In new versions of AFL-automation, the "server script" model is removed.  Instead, simply start the relevant Driver using the `python -m` command, e.g.
+
+`python -m AFL.automation.prepare.OT2_Driver`
+
+this will use configuration from a new global config file created in `~/.afl/config.json`: a Tiled server, system serial, port bindings, and driver configs.
+
+Running a module for the first time will create this file and/or add any custom defaults from the module; it thus can make sense to run the module once,
+then edit the file to set your defaults.
+
+

@@ -113,7 +113,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
  
 
 
-        '''with (LabviewConnection() if lv is None else lv) as lv:
+        '''
+        with (LabviewConnection() if lv is None else lv) as lv:
             self.status_txt = 'Moving beamstop out for transmission...'
             self.moveAxis(self.config['nmc_beamstop_out'],block=True,lv=lv)
             self.moveAxis(self.config['nmc_sample_out'],block=True,lv=lv)
@@ -496,3 +497,6 @@ class LabviewConnection():
         if(pythoncom._GetInterfaceCount()>0):
             print(f'Closed COM connection, but had remaining objects: {pythoncom._GetInterfaceCount()}')
             SetProcessWorkingSetSize(OpenProcess(PROCESS_ALL_ACCESS,True,GetCurrentProcessId()),-1,-1)
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *
+

@@ -1,4 +1,4 @@
 pi-plates
 spidev
-RPi-GPIO
+rpi-lgpio
 labjack-ljm

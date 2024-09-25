@@ -13,4 +13,4 @@ jobs:
             epub
             pdf
           pre-build-command: 'pip install -e .'
-          pip-requirements: 'requirements.txt'
+          pip-requirements: 'requirements-all.txt'

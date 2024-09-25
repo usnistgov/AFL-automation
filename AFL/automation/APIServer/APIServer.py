@@ -148,8 +148,9 @@ class APIServer:
             return thread
 
     def add_standard_routes(self):
-        self.app.add_url_rule('/','index',self.index)
+        self.app.add_url_rule('/','index_new',self.index_new)
         self.app.add_url_rule('/new','index_new',self.index_new)
+        self.app.add_url_rule('/old','index',self.index)
         self.app.add_url_rule('/app','app',self.webapp)
         self.app.add_url_rule('/webapp','webapp',self.webapp)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])

@@ -21,7 +21,7 @@ plotly==5.23.0
 pyFAI==2024.5.0
 pyparsing==3.1.2
 pyserial==3.5
-pyspec==0.2-r213
+certif-pyspec<1.4
 pytest==8.3.2
 pywin32==306
 Requests==2.32.3

@@ -22,11 +22,11 @@ pyFAI==2024.5.0
 pyparsing==3.1.2
 pyserial==3.5
 certif-pyspec<1.4
-pytest==8.3.2
+pytest
 Requests==2.32.3
 sans==1.2.3
-sasdata==0.8.1
-sasmodels==1.0.7
+sasdata
+sasmodels
 scikit_learn==1.5.1
 scipy==1.14.0
 seabreeze==2.9.2

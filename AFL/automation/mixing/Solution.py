@@ -9,9 +9,10 @@ from AFL.automation.mixing.MixDB import MixDB
 from AFL.automation.mixing.Component import Component
 from AFL.automation.shared.exceptions import EmptyException,NotFoundError
 from AFL.automation.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER
+from AFL.automation.mixing.Context import Context
 
 
-class Solution:
+class Solution(Context):
     """ """
     def __init__(
             self,
@@ -22,8 +23,10 @@ class Solution:
             volumes: Optional[Dict]=None,
             concentrations: Optional[Dict]=None,
             ):
-        self.name = name
-        self.components = {}
+        super().__init__(name=name)
+        self.context_type = 'Solution'
+        self.components: Dict = {}
+        self.add_self_to_context(stack_name='stocks')
 
         if masses is not None:
             for name,mass in masses.items():
@@ -48,6 +51,11 @@ class Solution:
         if total_volume is not None:
             self.volume = total_volume
 
+
+    def __call__(self, reset=False):
+        if reset:
+            self.components.clear()
+        return self
 
     def __str__(self):
         out_str = f'<Solution name:\"{self.name}\" size:{self.size}>'
@@ -368,7 +376,7 @@ class Solution:
                 molar_mass = self.components[name].formula.molecular_mass*AVOGADROS_NUMBER*units('g')
                 self.components[name].mass = enforce_units(molarity*molar_mass*total_volume,'mass')
     
-    def measure_out(self, amount: object, deplete: object = False) -> "Solution":
+    def measure_out(self, amount: str | pint.Quantity, deplete: object = False) -> "Solution":
         """Create solution with identical composition at new total mass/volume"""
         
         if not has_units(amount):

@@ -11,6 +11,7 @@ class Context:
     """
 
     contexts = threading.local()
+    _stack_name = 'stack'
 
     def __init__(self, name):
         self.name = name
@@ -44,7 +45,10 @@ class Context:
         except IndexError:
             raise NoContextException("No context on context stack")
 
-    def add_self_to_context(self, stack_name='stack'):
+    def add_self_to_context(self, stack_name=None):
+        if stack_name is None:
+            stack_name = self._stack_name
+
         try:
             context = Context.get_context()
         except NoContextException:

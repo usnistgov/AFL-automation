@@ -14,19 +14,24 @@ from AFL.automation.mixing.Context import Context
 
 class Solution(Context):
     """ """
+
+    _stack_name = 'stocks'
     def __init__(
             self,
             name: str,
-            total_mass: Optional[pint.Quantity]=None,
-            total_volume: Optional[pint.Quantity]=None,
+            total_mass: Optional[str|pint.Quantity]=None,
+            total_volume: Optional[str|pint.Quantity]=None,
             masses: Optional[Dict]=None,
             volumes: Optional[Dict]=None,
             concentrations: Optional[Dict]=None,
+            location: Optional[str]=None,
             ):
         super().__init__(name=name)
         self.context_type = 'Solution'
+        self.location = location
         self.components: Dict = {}
-        self.add_self_to_context(stack_name='stocks')
+        self.add_self_to_context()
+
 
         if masses is not None:
             for name,mass in masses.items():

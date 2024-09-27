@@ -1,13 +1,12 @@
 import itertools
-import copy
 import datetime
-import os
 import pathlib
 import shutil
 import traceback
 import uuid
 from typing import Optional, Dict, List
 import warnings
+import os
 
 import h5py  # type: ignore
 import numpy as np
@@ -675,51 +674,67 @@ class SampleDriver(Driver):
         data_path = pathlib.Path(self.config['data_path'])
         # if len(self.config['instrument'])>1:
         #     raise NotImplementedError
-        
+
         if self.tiled_client is None:
             self.tiled_client = self.data.tiled_client
             # this needs to be here, because in the constructor, we don't have the datapacket attached
 
         self.new_data = xr.Dataset()
-        for i,instrument in enumerate(self.config['instrument']):
+        for i, instrument in enumerate(self.config['instrument']):
             for instrument_data in instrument['data']:
                 tiled_result = (
                     self.tiled_client
-                    .search(Eq('sample_uuid',self.uuid['sample']))
+                    .search(Eq('sample_uuid', self.uuid['sample']))
                     .search(Eq('array_name', instrument_data['tiled_array_name']))
                 )
-                if len(tiled_result)==0:
+                if len(tiled_result) == 0:
                     raise ValueError(f"Could not find tiled entry for measurement sample_uuid={self.uuid['sample']}")
 
                 # handle Python None and "None" depending on how json deserialization works out
                 if (instrument_data['data_dim'] is not None) and (instrument_data['data_dim'] != 'None'):
                     dims = instrument_data['data_dim']
-                    coords = {instrument_data['data_dim']:tiled_result.items()[-1][-1].metadata[instrument_data['tiled_metadata_dim']]}
+                    coords = {instrument_data['data_dim']: tiled_result.items()[-1][-1].metadata[
+                        instrument_data['tiled_metadata_dim']]}
                 else:
                     dims = None
                     coords = None
 
-                tiled_data = tiled_result.items()[-1][-1]
-                measurement = xr.DataArray(tiled_data[()], dims=dims, coords=coords)
-                self.new_data[instrument_data['data_name']] = measurement
+                if 'sample_env' in instrument.keys():
+
+                    sample_env_dims = list(instrument['sample_env']['set_swept_kw'].keys())
+
+                    measurement_list = []
+                    for _,tiled_data in tiled_result.items():
+                        if 'MT-' in tiled_data.metadata['name']:
+                            continue
+                        measurement_list.append(xr.DataArray(tiled_data[()], dims=dims, coords=coords))
+                    measurement = xr.concat(measurement_list, dim='sample_env')
+                    for key,values in instrument['sample_env']['set_swept_kw'].items():
+                        measurement[key] = ("sample_env",values)
+                    self.new_data[instrument_data['data_name']] = measurement
+                    print(self.new_data)
+                    print(self.new_data)
+                else:
+
+                    tiled_data = tiled_result.items()[-1][-1]
+                    measurement = xr.DataArray(tiled_data[()], dims=dims, coords=coords)
+                    self.new_data[instrument_data['data_name']] = measurement
 
                 if 'quality_metric' in instrument.keys():
                     quality_metric = instrument['quality_metric']
                     instrument_value = tiled_data.metadata[quality_metric['tiled_metadata_key']]
-                    if quality_metric['comparison'].lower() in ['<','lt']:
+                    if quality_metric['comparison'].lower() in ['<', 'lt']:
                         accept = instrument_value < quality_metric['threshold']
-                    elif quality_metric['comparison'].lower() in ['>','gt']:
+                    elif quality_metric['comparison'].lower() in ['>', 'gt']:
                         accept = instrument_value > quality_metric['threshold']
-                    elif quality_metric['comparison'].lower() in ['==','=','eq']:
+                    elif quality_metric['comparison'].lower() in ['==', '=', 'eq']:
                         accept = instrument_value == quality_metric['threshold']
                     else:
-                        raise ValueError(f'Cannot recognize comparison for quality_metric. You passed {quality_metric["comparison"]}')
+                        raise ValueError(
+                            f'Cannot recognize comparison for quality_metric. You passed {quality_metric["comparison"]}')
                 else:
                     accept = True
                 self.new_data[instrument_data['data_name']].attrs['accept'] = int(accept)
-
-
-
 
         self.new_data['validated'] = self.validated
         self.new_data['sample_uuid'] = self.uuid['sample']

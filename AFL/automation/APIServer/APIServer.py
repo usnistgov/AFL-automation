@@ -339,6 +339,9 @@ class APIServer:
         elif render_hint == 'precomposed_jpeg':
             self.app.logger.info('Sending png to browser')
             return send_file(result,mimetype='image/jpeg')
+        elif render_hint == 'html':
+            self.app.logger.info('Sending raw html to browser')
+            return result
         else:
             return "Error while rendering output",500
 

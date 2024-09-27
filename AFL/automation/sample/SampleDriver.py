@@ -513,7 +513,7 @@ class SampleDriver(Driver):
             catch_protocol: dict,
             calibrate_sensor: bool = False,
     ):
-
+        self.update_status(f'starting make and measure for {name}')
         targets = set()
         for task in prep_protocol:
             if 'target' in task['source'].lower():
@@ -750,9 +750,9 @@ class SampleDriver(Driver):
                         if 'MT-' in tiled_data.metadata['name']:
                             continue
                         measurement_list.append(xr.DataArray(tiled_data[()], dims=dims, coords=coords))
-                    measurement = xr.concat(measurement_list, dim='sample_env')
+                    measurement = xr.concat(measurement_list, dim=instrument['sample_dim'])
                     for key,values in instrument['sample_env']['set_swept_kw'].items():
-                        measurement[key] = ("sample_env",values)
+                        measurement[key] = (instrument['sample_dim'],values)
                     self.new_data[instrument_data['data_name']] = measurement
                     print(self.new_data)
                     print(self.new_data)

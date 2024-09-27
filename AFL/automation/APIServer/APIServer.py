@@ -148,8 +148,9 @@ class APIServer:
             return thread
 
     def add_standard_routes(self):
-        self.app.add_url_rule('/','index',self.index)
+        self.app.add_url_rule('/','index_new',self.index_new)
         self.app.add_url_rule('/new','index_new',self.index_new)
+        self.app.add_url_rule('/old','index',self.index)
         self.app.add_url_rule('/app','app',self.webapp)
         self.app.add_url_rule('/webapp','webapp',self.webapp)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
@@ -338,6 +339,9 @@ class APIServer:
         elif render_hint == 'precomposed_jpeg':
             self.app.logger.info('Sending png to browser')
             return send_file(result,mimetype='image/jpeg')
+        elif render_hint == 'html':
+            self.app.logger.info('Sending raw html to browser')
+            return result
         else:
             return "Error while rendering output",500
 

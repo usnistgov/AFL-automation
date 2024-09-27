@@ -55,10 +55,11 @@ class SampleDriver(Driver):
     defaults['composition_var_name'] = 'comps'
     defaults['concat_dim'] = 'sample'
     defaults['sample_composition_tol'] = 0.0
+    defaults['camera_urls'] = []
+    defaults['snapshot_directory'] = []
 
     def __init__(
             self,
-            tiled_uri: Optional[str] = None,
             camera_urls: Optional[List[str]] = None,
             snapshot_directory: Optional[str] = None,
             overrides: Optional[Dict] = None,
@@ -67,13 +68,6 @@ class SampleDriver(Driver):
 
         Parameters
         -----------
-        tiled_uri: str
-            uri (url:port) of the tiled server.  If a data object is set, will be ignored and the Tiled connection inside the data object used instead.
-
-        camera_urls: Optional[List[str]]
-            url endpoints for ip cameras
-
-
         """
 
         Driver.__init__(self, name='SampleDriver', defaults=self.gather_defaults(), overrides=overrides)
@@ -84,13 +78,8 @@ class SampleDriver(Driver):
         self.app = None
         self.name = 'SampleDriver'
 
-
-        # start tiled catalog connection
-        if tiled_uri is not None:
-            self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
-        
-
-        self.camera_urls = camera_urls
+        if camera_urls is not None:
+            self.config['camera_urls'] = camera_urls
 
         if snapshot_directory is not None:
             self.config['snapshot_directory'] = snapshot_directory
@@ -109,10 +98,18 @@ class SampleDriver(Driver):
         # XXX need to make deck inside this object because of 'different registries error in Pint
         self.reset_deck()
 
+
+    @property
+    def tiled_client(self):
+        # start tiled catalog connection
+        if self.data is None:
+            raise ValueError("No DataTiled object added to this class...was it instantiated correctly?")
+        return self.data.tiled_client
+
     def status(self):
         status = []
         status.append(f'Snapshots: {self.config["snapshot_directory"]}')
-        status.append(f'Cameras: {self.camera_urls}')
+        status.append(f'Cameras: {self.config["camera_urls"]}')
         status.append(f'{len(self.deck.stocks)} stocks loaded!')
         status.append(self.status_str)
         status.append(self.AL_status_str)
@@ -144,7 +141,7 @@ class SampleDriver(Driver):
 
     def take_snapshot(self, prefix):
         now = datetime.datetime.now().strftime('%y%m%d-%H:%M:%S')
-        for i, cam_url in enumerate(self.camera_urls):
+        for i, cam_url in enumerate(self.config['camera_urls']):
             fname = self.config['snapshot_directory'] + '/'
             fname += prefix
             fname += f'-{i}-'
@@ -585,6 +582,8 @@ class SampleDriver(Driver):
         self.uuid['rinse'] = self.get_client('load').enqueue(task_name='rinseCell')
         self.take_snapshot(prefix=f'07-after-measure-{name}')
 
+        self.reset_sample_env(wait=False)
+
         self.update_status(f'All done for {name}!')
 
 
@@ -644,13 +643,16 @@ class SampleDriver(Driver):
                 # 'move_swept_kw' = {'temperature': [15,20,25,30], 'vibes': ['harsh', 'mid', 'cool']}
                 # conditions = [{'temperature': 15, 'vibes': 'harsh'}, {'temperature': 15, 'vibes': 'mid'} ...]
 
+                starting_condition = conditions[0]
+                sample_data = self.get_sample()
+                base_sample_name = sample_data["sample_name"]
                 for i,cond in enumerate(conditions):
                     sample_env_kw = {}
                     sample_env_kw.update(cond)
                     sample_env_kw.update(instrument['sample_env']['move_base_kw'])
                     sample_data = self.get_sample()
                     sample_data['sample_env_conditions'] = cond
-                    sample_data['sample_name'] = sample_data['sample_name'] + f'_{str(i).zfill(3)}' # track up to 1000 conditions
+                    sample_data['sample_name'] = base_sample_name + f'_{str(i).zfill(3)}' # track up to 1000 conditions
 
                     self.get_client(instrument['sample_env']['client_name']).enqueue(task_name='set_sample',**sample_data)
                     self.get_client(instrument['client_name']).enqueue(task_name='set_sample',**sample_data)
@@ -659,15 +661,55 @@ class SampleDriver(Driver):
                     
                     self.get_client(instrument['sample_env']['client_name']).wait(self.uuid['move_sample_env'])
                     self.update_status(f'Measuring on instrument {instrument["client_name"]}')
+                    measure_kw['name'] = sample_data['sample_name']
                     self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
                     
                     self.get_client(instrument['client_name']).wait(self.uuid['measure'])
-                
+
+                # # move sample environment to initial starting state to prepare for next measurement
+                # sample_env_kw = {}
+                # sample_env_kw.update(starting_condition)
+                # sample_env_kw.update(instrument['sample_env']['move_base_kw'])
+                # self.uuid['move_sample_env'] = self.get_client(instrument['sample_env']['client_name']).enqueue(**sample_env_kw)
+
             else:
                 self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
 
-            if wait:
-                self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+                if wait:
+                    self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+
+    def reset_sample_env(self, wait: bool = True):
+
+        for i,instrument in enumerate(self.config['instrument']):
+            if 'sample_env' in instrument.keys():
+                """
+                  schema:
+                    'sample_env': { 'client_name' = 'tempdeck',
+                                    'move_base_kw' = {'task_name': 'move_temp'},
+                                    'move_swept_kw' = {'temperature': [15,20,25,30]},
+                                    }
+                                    
+                """
+                params = []
+                vals = []
+                for param,conds in instrument['sample_env']['move_swept_kw'].items():
+                    params.append(param)
+                    vals.append(conds)
+                conditions = [{i:j for i,j in zip(params,vallist)} for vallist in itertools.product(*vals)]
+                # this ravels the list of conditions above in n-dimensional space, e.g.:
+                # 'move_swept_kw' = {'temperature': [15,20,25,30], 'vibes': ['harsh', 'mid', 'cool']}
+                # conditions = [{'temperature': 15, 'vibes': 'harsh'}, {'temperature': 15, 'vibes': 'mid'} ...]
+
+                starting_condition = conditions[0]
+
+                sample_env_kw = {}
+                sample_env_kw.update(starting_condition)
+                sample_env_kw.update(instrument['sample_env']['move_base_kw'])
+                self.uuid['move_sample_env'] = self.get_client(instrument['sample_env']['client_name']).enqueue(**sample_env_kw)
+
+                if wait:
+                    self.get_client(instrument['sample_env']['client_name']).wait(self.uuid['move_sample_env'])
+
 
     def construct_datasets(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""
@@ -846,7 +888,6 @@ class SampleDriver(Driver):
 _DEFAULT_CUSTOM_CONFIG = {
 
     '_classname': 'AFL.automation.sample.SampleDriver.SampleDriver',
-    'camera_urls': [],
     'snapshot_directory': '/home/afl642/snaps'
 }
 

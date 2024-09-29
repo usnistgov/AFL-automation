@@ -131,6 +131,10 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         with h5py.File(filepath, 'r') as h5:
             out_dict['counts'] = h5['entry1/data1/counts'][()]
 
+        # NICOS makes partially written files, this is a workaround
+        if np.sum(out_dict['counts'])<1e-6:
+            raise FileNotFoundError
+
         return out_dict
 
     @Driver.unqueued(render_hint='2d_img', log_image=True)

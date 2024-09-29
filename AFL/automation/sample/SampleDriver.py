@@ -350,32 +350,34 @@ class SampleDriver(Driver):
             for client_name in self.config['client'].keys():
                 self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
-        prep_protocol, catch_protocol = self.compute_prep_protocol(
-            composition = composition,
-            fixed_concs = fixed_concs,
-            mfrac_split = prepare_mfrac_split,
-            sample_volume = sample_volume
-        )
+            # START NEW INDENT 
+            prep_protocol, catch_protocol = self.compute_prep_protocol(
+                composition = composition,
+                fixed_concs = fixed_concs,
+                mfrac_split = prepare_mfrac_split,
+                sample_volume = sample_volume
+            )
 
-        # configure all servers to this sample name and uuid
-        sample_composition_realized = {
-            k:{'value':v.magnitude ,'units':str(v.units)} for k,v in self.sample.target_check.concentration.items()
-        }
-        self.data['sample_composition_target'] = composition
-        self.data['sample_composition_realized'] = sample_composition_realized
-        sample_data = self.set_sample(
-            sample_name = self.sample_name,
-            sample_uuid = self.uuid['sample'],
-            AL_campaign_name = self.AL_campaign_name,
-            AL_uuid = self.uuid['AL'],
-            AL_components = self.config['AL_components'],
-            sample_composition = sample_composition_realized,
-        )
-        for client_name in self.config['client'].keys():
-            self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
+            # configure all servers to this sample name and uuid
+            sample_composition_realized = {
+                k:{'value':v.magnitude ,'units':str(v.units)} for k,v in self.sample.target_check.concentration.items()
+            }
+            self.data['sample_composition_target'] = composition
+            self.data['sample_composition_realized'] = sample_composition_realized
+            sample_data = self.set_sample(
+                sample_name = self.sample_name,
+                sample_uuid = self.uuid['sample'],
+                AL_campaign_name = self.AL_campaign_name,
+                AL_uuid = self.uuid['AL'],
+                AL_components = self.config['AL_components'],
+                sample_composition = sample_composition_realized,
+            )
+            for client_name in self.config['client'].keys():
+                self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
-        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol, calibrate_sensor=calibrate_sensor)
-        self.construct_datasets(combine_comps=predict_combine_comps)
+            self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol, calibrate_sensor=calibrate_sensor)
+            self.construct_datasets(combine_comps=predict_combine_comps)
+            # END NEW INDENT 
 
         if predict_next:
             if composition:#assume we made/measured a sample and append
@@ -385,9 +387,12 @@ class SampleDriver(Driver):
         # Look away ... here be dragons ...
         if enqueue_next:
             ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
+            print('AG_RESULT:',ag_result)
 
             #this assumes that 'component' is going to be a dim name
             for AL_sample in ag_result.next_samples.transpose(...,'component'):
+                print('AL_SAMPLE:',AL_sample)
+                
                 new_composition = {} #this currently only works on the last sample
                 for sample in AL_sample:
                     new_composition[sample.component.values[()]] = {'value':sample.values[()],'units':'milligram / milliliter'}
@@ -743,7 +748,7 @@ class SampleDriver(Driver):
 
                 if 'sample_env' in instrument.keys():
 
-                    sample_env_dims = list(instrument['sample_env']['set_swept_kw'].keys())
+                    sample_env_dims = list(instrument['sample_env']['move_swept_kw'].keys())
 
                     measurement_list = []
                     for _,tiled_data in tiled_result.items():
@@ -751,7 +756,7 @@ class SampleDriver(Driver):
                             continue
                         measurement_list.append(xr.DataArray(tiled_data[()], dims=dims, coords=coords))
                     measurement = xr.concat(measurement_list, dim=instrument['sample_dim'])
-                    for key,values in instrument['sample_env']['set_swept_kw'].items():
+                    for key,values in instrument['sample_env']['move_swept_kw'].items():
                         measurement[key] = (instrument['sample_dim'],values)
                     self.new_data[instrument_data['data_name']] = measurement
                     print(self.new_data)
@@ -857,6 +862,7 @@ class SampleDriver(Driver):
                     continue
 
             if data_added>0:
+                self.ds_append = self.ds_append.reset_coords()
                 db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
                 self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=instrument['sample_dim'])
 

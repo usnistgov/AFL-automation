@@ -1,3 +1,5 @@
+import warnings
+
 import periodictable  # type: ignore
 import copy
 from pyparsing import ParseException
@@ -31,13 +33,23 @@ class Component:
 
     def __init__(self, name: str, mass: Optional[units.Quantity] = None, volume: Optional[units.Quantity] = None,
                  density: Optional[units.Quantity] = None, formula: Optional[str] = None, sld: Optional[units.Quantity] = None,
-                 uid: Optional[str] = None) -> None:
+                 uid: Optional[str] = None, solute: bool = False) -> None:
         self.name: str = name
 
         self._mass: Optional[units.Quantity] = enforce_units(mass, 'mass')
         self._volume: Optional[units.Quantity] = enforce_units(volume, 'volume')
         self._density: Optional[units.Quantity] = enforce_units(density, 'density')
         self._sld: Optional[units.Quantity] = sld #need to add sld units
+
+        self.solute = solute
+        if not self.solute and not self.has_density:
+            warnings.warn(
+                (
+                    f'Component "{name}" initialized with solute=False and no density specification.' 
+                    ' Assuming this is in error and setting solute=True.'
+                ), stacklevel=2)
+            self.solute = True
+
         if formula is None:
             self.formula = name
         else:
@@ -53,7 +65,10 @@ class Component:
         }
 
     def __str__(self) -> str:
-        out_str = '<Component '
+        if self.solute:
+            out_str = '<Solute '
+        else:
+            out_str = '<Solvent '
         out_str += f' M={self.mass:4.3f}' if self.has_mass else ' M=None'
         out_str += f' V={self.volume:4.3f}' if self.has_volume else ' V=None'
         out_str += f' D={self.density:4.3f}' if self.has_density else ' D=None'
@@ -92,21 +107,25 @@ class Component:
 
     @property
     def volume(self) -> Optional[units.Quantity]:
-        if self.has_mass and self.has_density:
+        if (not self.is_solute) and (self.has_mass and self.has_density):
             return enforce_units(self._mass / self._density, 'volume')  # type: ignore
         else:
             return None
 
     @volume.setter
     def volume(self, value: units.Quantity) -> None:
-        value = enforce_units(value, 'volume')
-        if not self.has_density:
+        if self.solute:
+            raise ValueError('Can\'t set volume on a solute')
+        elif not self.has_density:
             raise ValueError('Can\'t set volume without specifying density')
         else:
+            value = enforce_units(value, 'volume')
             self.mass = enforce_units(value * self._density, 'mass')
 
     def set_volume(self, value: units.Quantity) -> 'Component':
         """Setter for inline volume changes"""
+        if self.solute:
+            raise ValueError('Can\'t set volume on a solute')
         component = self.copy()
         component.volume = value
         return component
@@ -158,11 +177,11 @@ class Component:
 
     @property
     def is_solute(self) -> bool:
-        return not self.has_volume
+        return self.solute or (not self.has_volume)
 
     @property
     def is_solvent(self) -> bool:
-        return self.has_volume
+        return (not self.solute) and self.has_volume
 
     @property
     def has_mass(self) -> bool:

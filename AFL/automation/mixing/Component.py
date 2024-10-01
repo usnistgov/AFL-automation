@@ -6,6 +6,7 @@ from pyparsing import ParseException
 from typing import Optional, Dict, Iterator, Tuple, Union
 
 from AFL.automation.shared.units import units, AVOGADROS_NUMBER, enforce_units  # type: ignore
+from AFL.automation.shared.warnings import MixWarning
 
 
 class Component:
@@ -44,10 +45,10 @@ class Component:
         self.solute = solute
         if not self.solute and not self.has_density:
             warnings.warn(
-                (
-                    f'Component "{name}" initialized with solute=False and no density specification.' 
-                    ' Assuming this is in error and setting solute=True.'
-                ), stacklevel=2)
+                ( f'Component "{name}" initialized with solute=False and no density specification.\n' 
+                  f'Assuming this is in error and setting solute=True. You can fix this by adding "{name}"\n'
+                  f'to the solutes argument to Solution() or by passing solute=True to Component()\n' )
+                , MixWarning, stacklevel=2)
             self.solute = True
 
         if formula is None:

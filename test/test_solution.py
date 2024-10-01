@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from AFL.automation.mixing.Solution import Solution
+from AFL.automation.mixing.Component import Component
 from AFL.automation.shared.units import units
 from AFL.automation.shared.exceptions import EmptyException
 
@@ -14,14 +15,14 @@ def test_solution_initialization():
 @pytest.mark.usefixtures('mixdb')
 def test_add_component_from_name():
     solution = Solution(name='TestSolution')
-    solution.add_component_from_name('H2O')
+    solution.add_component('H2O')
     assert 'H2O' in solution.components
     assert solution.components['H2O'].mass == None
 
 @pytest.mark.usefixtures('mixdb')
 def test_set_properties_from_dict():
     solution = Solution(name='TestSolution')
-    solution.add_component_from_name('H2O')
+    solution.add_component('H2O')
     solution["H2O"].mass = 10 * units.g #need to initialize the mass
     properties = {'mass': '20 g'}
     solution.set_properties_from_dict(properties, inplace=True)
@@ -31,7 +32,7 @@ def test_set_properties_from_dict():
 @pytest.mark.usefixtures('mixdb')
 def test_rename_component():
     solution = Solution(name='TestSolution')
-    solution.add_component_from_name('H2O')
+    solution.add_component('H2O')
     solution.rename_component('H2O', 'D2O', inplace=True)
     assert 'D2O' in solution.components
     assert 'H2O' not in solution.components
@@ -39,7 +40,7 @@ def test_rename_component():
 @pytest.mark.usefixtures('mixdb')
 def test_contains():
     solution = Solution(name='TestSolution')
-    solution.add_component_from_name('H2O')
+    solution.add_component('H2O')
     assert solution.contains('H2O')
     assert not solution.contains('Ethanol')
 
@@ -47,14 +48,14 @@ def test_contains():
 def test_mass_property():
     solution = Solution(name='TestSolution', masses={'H2O': '10 g'})
     assert solution.mass == 10 * units.g
-    solution.mass = 20 * units.g
+    solution.mass = '20 g'
     assert solution.mass == 20 * units.g
 
 @pytest.mark.usefixtures('mixdb')
 def test_volume_property():
     solution = Solution(name='TestSolution', volumes={'H2O': '10 ml'})
     assert solution.volume == 10 * units.ml
-    solution.volume = 20 * units.ml
+    solution.volume = '20 ml'
     assert solution.volume == 20 * units.ml
 
 @pytest.mark.usefixtures('mixdb')
@@ -149,4 +150,36 @@ def test_mixed_solvents_error():
             concentrations={'NaCl':'200 mg/ml'},
             total_volume='10 ml'
         )
+
+@pytest.mark.usefixtures('mixdb')
+def test_solute_override():
+    mass_H2O = 10.0 #g
+    mass_Hexanes = 2 #g
+    conc_NaCl = 200 #mg/ml
+    rho_H2O = 1.0 #g/ml
+
+    total_volume = mass_H2O/rho_H2O
+    mass_NaCl = conc_NaCl*total_volume/1000# mg ->g
+    total_mass = mass_H2O + mass_Hexanes + mass_NaCl #mass before volume scaling, mass fraction should be preserved
+
+    solution = Solution(
+        name='TestSolution',
+        masses={'H2O': f'{mass_H2O} g', 'Hexanes':f'{mass_Hexanes} g'},
+        concentrations={'NaCl':f'{conc_NaCl} mg/ml'},
+        solutes = ['NaCl', 'Hexanes'],
+        total_volume = '10 ml',
+    )
+
+    assert solution.volume.to("ml").magnitude == pytest.approx(10.0)
+    assert solution.mass_fraction['H2O'].magnitude == pytest.approx((mass_H2O/total_mass))
+    assert solution.mass_fraction['Hexanes'].magnitude == pytest.approx((mass_Hexanes/total_mass))
+    assert solution.mass_fraction['NaCl'].magnitude == pytest.approx((mass_NaCl/total_mass))
+    assert solution.concentration['NaCl'].to('mg/ml').magnitude == pytest.approx(conc_NaCl)
+    assert [s.name for n,s in solution.solvents] == ['H2O']
+    assert [s.name for n,s in solution.solutes] == ['Hexanes','NaCl']
+
+@pytest.mark.usefixtures('mixdb')
+def test_solution_sanity_check_warning_mass():
+    with pytest.warns(UserWarning, match="Mass of H2O was specified to be 10000.0 milligram but is now to 1000.0 milligram"):
+        Solution(name='TestSolution', masses={'H2O': '10 g'}, total_volume='1 ml')
 

@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 import warnings
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 import pint
 
@@ -10,6 +10,18 @@ from AFL.automation.mixing.Component import Component
 from AFL.automation.shared.exceptions import EmptyException,NotFoundError
 from AFL.automation.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER
 from AFL.automation.mixing.Context import Context
+from AFL.automation.shared.warnings import MixWarning
+
+from itertools import chain
+
+SANITY_MSG = """
+Solution Check:
+---------------
+{results}
+Potential Reasons:
+------------------
+{reasons}
+"""
 
 
 class Solution(Context):
@@ -24,7 +36,10 @@ class Solution(Context):
             masses: Optional[Dict]=None,
             volumes: Optional[Dict]=None,
             concentrations: Optional[Dict]=None,
+            mass_fractions: Optional[Dict]=None,
             location: Optional[str]=None,
+            solutes: Optional[List[str]]=None,
+            sanity_check: Optional[bool]=True,
             ):
         super().__init__(name=name)
         self.context_type = 'Solution'
@@ -32,29 +47,95 @@ class Solution(Context):
         self.components: Dict = {}
         self.add_self_to_context()
 
+        # Handle initialization of non-specific properties
+        if masses is None:
+            masses = {}
+        if volumes is None:
+            volumes = {}
+        if concentrations is None:
+            concentrations = {}
+        if mass_fractions is None:
+            mass_fractions = {}
+        if solutes is None:
+            solutes = []
 
-        if masses is not None:
-            for name,mass in masses.items():
-                self.add_component_from_name(name)
-                self.components[name].mass = mass
+        # Initialize components
+        for name in chain(masses, volumes, concentrations,mass_fractions,solutes):
+            self.add_component(name, solutes)
 
-        if volumes is not None:
-            for name,volume in volumes.items():
-                self.add_component_from_name(name)
-                self.components[name].volume = volume
+        for name,mass in masses.items():
+            self.components[name].mass = mass
+        for name,volume in volumes.items():
+            self.components[name].volume = volume
 
-        if concentrations is not None:
-            if (self.volume is None) or (self.volume.magnitude==0):
-                raise ValueError('Cannot set concentrations without setting volume')
-            for name,conc in concentrations.items():
-                self.add_component_from_name(name)
-            self.concentration = concentrations
+        if len(concentrations)>0 and ((self.volume is None) or (self.volume.magnitude==0)):
+            raise ValueError('Cannot set concentrations without setting a component with volume.')
+        self.concentration = concentrations
+
+        if len(mass_fractions)>0:
+            if (total_mass is None) and ((self.mass is None) or (self.mass.magnitude==0)):
+                raise ValueError('Cannot set concentrations without setting a component with mass or specifying the total_mass.')
+            else:
+                # need to initialize all components with a mass
+                for name in self.components:
+                    self.components[name].mass = 1.0
+                self.mass = total_mass
+
+        self.mass_fractions = mass_fractions
+
 
         if total_mass is not None:
             self.mass = total_mass
 
         if total_volume is not None:
             self.volume = total_volume
+
+        if sanity_check:
+            # do re-checks on initial specifications:
+            msg = ""
+            for name,mass in masses.items():
+                mass = enforce_units(mass,'mass')
+                if not (self[name].mass == mass):
+                    msg += f'Mass of {name} was specified to be {mass} but is now to {self[name].mass}.\n'
+
+            for name,volume in volumes.items():
+                volume = enforce_units(volume, 'volume')
+                if not (self[name].volume == volume):
+                    msg += f'Volume of {name} was specified to be {volume} but is now {self[name].volume}.\n'
+
+            for name, concentration in concentrations.items():
+                concentration = enforce_units(concentration,'concentration')
+                if not (self.concentration[name] == concentration):
+                    msg += f'Concentration of {name} was specified to be {concentration} but is now {self.concentration[name]}.\n'
+
+            if total_mass is not None:
+                if not (self.mass == enforce_units(total_mass,'mass')):
+                    msg += f'Total mass was specified to be {total_mass} but is now {self.mass}.\n'
+
+            if total_volume is not None:
+                if not (self.volume == enforce_units(total_volume,'volume')):
+                    msg += f'Total volume was specified to be {total_volume} but is now {self.volume}.\n'
+
+            if msg:
+                reasons = ''
+                if any([((name in masses) and (name in volumes)) for name,component in self]):
+                    reasons += '- You have specified the same component(s) in both masses and volumes.\n'
+
+                if any([((name in masses) and (name in concentrations)) for name,component in self]):
+                    reasons += '- You have specified the same component(s) in both masses and concentrations.\n'
+
+                if any([((name in volumes) and (name in concentrations)) for name,component in self]):
+                    reasons += '- You have specified the same component(s) in both volumes and concentrations.\n'
+
+                if (total_mass is not None) or (total_volume is not None):
+                    reasons += ('- You specified total_mass and/or total_volume. These transforms happen at the end of the\n '
+                           'solution creation and, while they conserve mass_fractions, they do not conserve other\n '
+                           'quantities.')
+                if not reasons:
+                    reasons = f'- No clear reasons. This may be the sign of a bug, please report!\n'
+
+                msg = SANITY_MSG.format(results=msg,reasons=reasons)
+                warnings.warn(msg,MixWarning,stacklevel=2)
 
 
     def __call__(self, reset=False):
@@ -84,15 +165,12 @@ class Solution(Context):
         return id(self)
     
     def to_dict(self):
-        out_dict = {}
-        out_dict['name'] = self.name
-        out_dict['components'] = list(self.components.keys())
-        out_dict['mg_masses'] = {}
+        out_dict = {'name': self.name, 'components': list(self.components.keys()), 'masses': {}}
         for k,v in self:
-            out_dict['mg_masses'][k] = v.mass.to('mg').magnitude
+            out_dict['masses'][k] = {'value':v.mass.to('mg').magnitude,'units':'mg'}
         return out_dict
-    
-    def add_component_from_name(self,name):
+
+    def add_component(self, name, solutes: Optional[List[str]]=None):
         if name not in self.components:
             try:
                 mixdb = MixDB.get_db()
@@ -100,12 +178,15 @@ class Solution(Context):
                 # attempt to instantiate from default location
                 mixdb = MixDB()
 
+            if solutes and (name in solutes):
+                solute=True
+            else:
+                solute=False
+
             try:
-                self.components[name] = Component(**mixdb.get_component(name))
+                self.components[name] = Component(solute=solute, **mixdb.get_component(name))
             except NotFoundError:
                 raise
-
-            return
 
     def set_properties_from_dict(self,properties=None,inplace=False):
         if properties is not None:
@@ -151,11 +232,11 @@ class Solution(Context):
     
     @property
     def solutes(self):
-        return [(name,component) for name,component in self if not component.has_volume]
+        return [(name,component) for name,component in self if component.is_solute]
 
     @property
     def solvents(self):
-        return [(name,component) for name,component in self if component.has_volume]
+        return [(name,component) for name,component in self if component.is_solvent]
     
     def __add__(self,other):
         mixture = self.copy()
@@ -229,16 +310,16 @@ class Solution(Context):
         #grab the density of the first solvent
         rho_1 = self.solvents[0][1].density
         
-        denom = [1.0]
+        denominator = [1.0]
         #skip the first solvent
         for name,component in self.solvents[1:]:
             rho_2 = component.density
-            denom.append(-w[name]*(1-rho_1/rho_2))
+            denominator.append(-w[name]*(1-rho_1/rho_2))
             
         for name,component in self.solutes:
-            denom.append(-w[name])
+            denominator.append(-w[name])
         
-        total_mass = enforce_units(total_volume*rho_1/sum(denom),'mass')
+        total_mass = enforce_units(total_volume*rho_1/sum(denominator),'mass')
         self.mass = total_mass
     
     def set_volume(self,value):
@@ -313,7 +394,27 @@ class Solution(Context):
             
         for name,fraction in target_mass_fractions.items():
             self.components[name].mass = fraction*total_mass
-    
+
+    def set_mass_fraction(self,target_mass_fractions,partial=False):
+        if not partial:
+            missing_comp = list(self.components.keys())
+            for comp in target_mass_fractions.keys():
+                if comp in missing_comp:
+                    missing_comp.remove(comp)
+
+            if len(missing_comp) > 1:
+                raise ValueError(
+                    f'Must specify at least {self.size - 1} mass fractions for mixture of size {self.size}')
+            elif len(missing_comp) == 1:
+                target_mass_fractions[missing_comp[0]] = 1.0 - sum(target_mass_fractions.values())
+
+            total_mass = self.mass
+        else:
+            total_mass = sum([self.components[name] for name in target_mass_fractions.keys()])
+
+        for name, fraction in target_mass_fractions.items():
+            self.components[name].mass = fraction * total_mass
+
     @property
     def volume_fraction(self):
         """Volume fraction of solvents in mixture
@@ -356,11 +457,11 @@ class Solution(Context):
         return {name:component.mass/total_volume for name,component in self}
     
     @concentration.setter
-    def concentration(self,conc_dict):
+    def concentration(self,concentration_dict):
         total_volume = self.volume
-        for name,conc in conc_dict.items():
-            conc = enforce_units(conc,'concentration')
-            self.components[name].mass = enforce_units(conc*total_volume,'mass')
+        for name,concentration in concentration_dict.items():
+            concentration = enforce_units(concentration,'concentration')
+            self.components[name].mass = enforce_units(concentration*total_volume,'mass')
     
     @property
     def molarity(self):
@@ -402,4 +503,5 @@ class Solution(Context):
             else:
                 raise EmptyException()
         return solution
+
 

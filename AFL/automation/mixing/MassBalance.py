@@ -1,15 +1,34 @@
 import numpy as np
+
 from AFL.automation.mixing.Context import Context
+from AFL.automation.mixing.PipetteAction import PipetteAction
+from AFL.automation.shared.units import enforce_units,units
 
 from scipy.optimize import lsq_linear, Bounds
 
+
+def _extract_masses(solution,components,array=None,unit='g'):
+    if array is None:
+        array = np.zeros(len(components))
+    for i, component in enumerate(components):
+        if solution.contains(component):
+            array[i] =solution[component].mass.to(unit).magnitude
+        else:
+            array[i] = 0
+    return array
+
+
 class MassBalance(Context):
-    def __init__(self,name='MassBalance'):
+    def __init__(self,name='MassBalance', minimum_volume='20 ul'):
         super().__init__(name=name)
+        self.mass_transfers = None
         self.context_type = 'MassBalance'
         self.stocks = []
         self.targets = []
+        self.balanced_targets = []
         self.protocols = []
+
+        self.minimum_volume = enforce_units(minimum_volume,'volume')
 
     def __call__(self,reset=False,reset_stocks=False,reset_targets=False):
         if reset:
@@ -46,36 +65,79 @@ class MassBalance(Context):
 
         return matrix
 
-    @property
-    def target_mass_vector(self):
-        """This needs to support returning all targets at once"""
+    def balance(self,tol=0.05):
+        lower_bounds = [stock.measure_out(self.minimum_volume).mass.to('g').magnitude for stock in self.stocks]
+        upper_bounds = [np.inf]*len(self.stocks)
+        bounds = Bounds(
+            lb=lower_bounds,
+            ub=upper_bounds,
+            keep_feasible=False
+        )
+
+        if any([stock.location is None for stock in self.stocks]):
+            raise ValueError('Some stocks don\'t have a location specified. This should be specified when the stocks are instantiated')
+
+        mass_fraction_matrix = self.mass_fraction_matrix
         components = list(self.components)
-        vector = np.zeros(len(components))
+        target_masses = np.zeros(len(components))
+        self.mass_transfers = []
+        for target in self.targets:
+            target_masses = _extract_masses(target,components,array=target_masses)
 
-        for i, component in enumerate(components):
-            for target in self.targets:
-                if target.contains(component):
-                    vector[i] = target[component].mass.to('g').magnitude
-                else:
-                    vector[i] = 0
+            result = lsq_linear(mass_fraction_matrix, target_masses, bounds=bounds)
+            mass_transfers = {stock: mass * units('g') for stock, mass in zip(self.stocks, result.x)}
+            self.mass_transfers.append(mass_transfers)
 
-        return vector
+            protocol = []
+            for stock, mass in mass_transfers.items():
+                measured = stock.measure_out(mass)
 
-    def balance(self):
-        for stock in self.stocks:
-            print(stock)
-        # lbs, ubs = [], []
-        # for stock in self.stocks:
-        #     lb = (stock.measure_out('100 ul')).mass).to('g').magnitude
-        #     ub = np.inf
-        #     lbs.append(lb)
-        #     ubs.append(ub)
+                action = PipetteAction(
+                    source=stock.location,
+                    dest=target.location,
+                    volume=measured.volume.to('ul').magnitude,  # convet from ml for to ul
+                )
+                protocol.append(action)
+            self.protocols.append(protocol)
 
-        # bounds = Bounds(lb=lbs, ub=ubs, keep_feasible=False)
-        # A = self.mass_fraction_matrix
-        # for b in self.target_mass_vectors:
-        #     b = self.mass_fraction_matrix
-        #     scipy.optimize.lsq_linear(A, b, bounds=bounds)
+            # validate
+
+            # difference = (masses - target_masses)/target_masses
+            # if any(difference<tol):
+            #     balanced_target = target.copy()
+            #     for name,mass in zip(components,masses):
+            #         balanced_target[name]._mass = mass*units.g
+            #     self.balanced_targets.append(balanced_target)
+
+        return protocol
+
+    def make_solution_from_protocol(self, protocol):
+        target_check = Solution('target_check', components=[])
+        for stock, (stock_loc, mass) in self.balancer.mass_transfers.items():
+            if mass > self.mass_cutoff:  # tolerance
+                removed = stock.copy()
+                removed.mass = mass
+
+                ##if this is changed, make_protocol needs to be updated
+                if (removed.volume > 0) and (removed.volume < self.volume_cutoff):
+                    continue
+
+                target_check = target_check + removed
+
+        # need to add empty components for equality check
+        for name, component in target:
+            if not target_check.contains(name):
+                c = component.copy()
+                c._mass = 0.0 * units('g')
+                target_check = target_check + c
+
+
+
+
+
+
+
+
 
 
 

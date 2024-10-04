@@ -8,6 +8,7 @@ import numpy as np
 import plotly.express as px  # type: ignore
 import plotly.graph_objects as go  # type: ignore
 import xarray as xr
+from ipywidgets import Layout
 from sklearn.preprocessing import OrdinalEncoder  # type: ignore
 
 
@@ -104,14 +105,22 @@ class DatasetWidget:
         (
             x,
             y,
+            z,
             xname,
             yname,
+            zname,
         ) = self.get_comps()
-        self.data_view.update_selected(x=(x[self.data_index],), y=(y[self.data_index],))
+        if z is None:
+            self.data_view.update_selected(x=(x[self.data_index],), y=(y[self.data_index],))
+        else:
+            self.data_view.update_selected(
+                x=(x[self.data_index],), y=(y[self.data_index],), z=(z[self.data_index],)
+            )
 
     def update_scattering_plot(self):
-        x, y, name = self.get_scatt(0)
-        self.data_view.plot_sas(x, y, name, append=False)
+        if self.data_view.dropdown["scatter1"].value != "None":
+            x, y, name = self.get_scatt(0)
+            self.data_view.plot_sas(x, y, name, append=False)
 
         if self.data_view.dropdown["scatter2"].value != "None":
             x, y, name = self.get_scatt(1)
@@ -123,8 +132,8 @@ class DatasetWidget:
 
     def get_comps(self):
         composition_variable = self.data_view.dropdown["composition"].value
-        x, y, xname, yname = self.data_model.get_composition(composition_variable)
-        return x, y, xname, yname
+        x, y, z, xname, yname, zname = self.data_model.get_composition(composition_variable)
+        return x, y, z, xname, yname, zname
 
     def get_scatt(self, num=0):
         if num == 0:
@@ -138,7 +147,7 @@ class DatasetWidget:
         self.update_scattering_plot()
 
         # need to plot comps manually, so we don't redraw "all comps" every time
-        x, y, xname, yname = self.get_comps()
+        x, y, z, xname, yname, zname = self.get_comps()
         if self.data_view.dropdown["composition_color"].value != "None":
             colors = self.data_model.dataset[
                 self.data_view.dropdown["composition_color"].value
@@ -146,7 +155,10 @@ class DatasetWidget:
         else:
             colors = None
 
-        self.data_view.plot_comp(x, y, xname, yname, colors=colors)
+        if z is None:
+            self.data_view.plot_comp(x=x, y=y, xname=xname, yname=yname, colors=colors)
+        else:
+            self.data_view.plot_comp(x=x, y=y, z=z, xname=xname, yname=yname, zname=zname, colors=colors)
         self.data_view.comp_fig.data[0].on_click(self.composition_click_callback)
 
     def update_colors(self, *args):
@@ -168,6 +180,7 @@ class DatasetWidget:
         extract_from_var = self.data_view.dropdown["extract_from_var"].value
         extract_from_coord = self.data_view.dropdown["extract_from_coord"].value
         self.data_model.extract_var(extract_from_var,extract_from_coord)
+        self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
         self.update_dropdowns()
 
     def combine_vars(self, *args):
@@ -194,7 +207,8 @@ class DatasetWidget:
         )
 
     def update_sample_dim(self, *args):
-        self.data_model.sample_dim = self.data_view.dropdown["sample_dim"].value
+        self.data_model.sample_dim = self.data_view.text_input["sample_dim"].value
+        self.update_dropdowns()
 
     def update_extract_coords(self, change):
         if change["type"] == "change" and change["name"] == "value":
@@ -323,10 +337,18 @@ class DatasetWidget_Model:
     def get_composition(self, variable):
         x = self.dataset[variable][:, 0].values
         y = self.dataset[variable][:, 1].values
+        if self.dataset[variable].values.shape[1]>2:
+            z = self.dataset[variable][:, 2].values
+        else:
+            z = None
 
         component_dim = self.dataset[variable].transpose(self.sample_dim, ...).dims[1]
-        xname, yname = self.dataset[variable][component_dim].values
-        return x, y, xname, yname
+        if z is None:
+            xname, yname = self.dataset[variable][component_dim].values[:2]
+            zname = None
+        else:
+            xname, yname, zname = self.dataset[variable][component_dim].values[:3]
+        return x, y, z, xname, yname, zname
 
     def get_scattering(self, variable, index):
         sds = self.dataset[variable].isel(**{self.sample_dim: index})
@@ -349,6 +371,7 @@ class DatasetWidget_View:
     ):
         self.scatt_fig = None
         self.comp_fig = None
+        self.comp3D_fig = None
         self.initial_scatter1_variable = initial_scatter1_variable
         self.initial_scatter2_variable = initial_scatter2_variable
         self.initial_comps_variable = initial_comps_variable
@@ -386,17 +409,20 @@ class DatasetWidget_View:
 
         if scatt_vars is not None:
             for dropdown in self.dropdown_categories["scatter"]:
-                dropdown.options = scatt_vars
+                dropdown.options = ["None"] + scatt_vars
 
                 # set the default value if possible
                 if "Scatter1" in dropdown.description:
                     if self.initial_scatter1_variable is None:
-                        self.initial_scatter1_variable = scatt_vars[0]
+                        if len(scatt_vars)>0:
+                            self.initial_scatter1_variable = scatt_vars[0]
+                        else:
+                            self.initial_scatter1_variable = "None"
                     dropdown.value = self.initial_scatter1_variable
                 elif "Scatter2" in dropdown.description:
                     if self.initial_scatter2_variable is None:
                         self.initial_scatter2_variable = "None"
-                    dropdown.options = ["None"] + list(dropdown.options)
+                    #dropdown.options = ["None"] + list(dropdown.options)
                     dropdown.value = self.initial_scatter2_variable
 
         if comp_vars is not None:
@@ -437,53 +463,97 @@ class DatasetWidget_View:
         else:
             self.scatt_fig.update_yaxes(type="linear")
 
-    def plot_comp(self, x, y, xname="x", yname="y", colors=None):
+    def plot_comp(self, x, y, z=None, xname="x", yname="y", zname="z", colors=None):
         if colors is None:
             colors = ([0] * len(x),)
         else:
             self.text_input["cmin"].value = min(colors)
             self.text_input["cmax"].value = max(colors)
 
-        scatt1 = go.Scatter(
-            x=x,
-            y=y,
-            mode="markers",
-            marker={
-                "color": colors,
-                "showscale": True,
-                "cmin": self.text_input["cmin"].value,
-                "cmax": self.text_input["cmax"].value,
-                "colorscale": px.colors.get_colorscale(
-                    self.dropdown["composition_colorscale"].value
+        if z is None:
+            scatt1 = go.Scatter(
+                x=x,
+                y=y,
+                mode="markers",
+                marker={
+                    "color": colors,
+                    "showscale": True,
+                    "cmin": self.text_input["cmin"].value,
+                    "cmax": self.text_input["cmax"].value,
+                    "colorscale": px.colors.get_colorscale(
+                        self.dropdown["composition_colorscale"].value
+                    ),
+                    "colorbar": dict(thickness=15, outlinewidth=0),
+                },
+                opacity=1.0,
+                showlegend=False,
+                customdata=colors,
+                hovertemplate=(
+                    f"""{xname}: %{{x:3.2f}} <br>"""
+                    f"""{yname}: %{{y:3.2f}} <br>"""
+                    """color: %{customdata:3.2f}"""
                 ),
-                "colorbar": dict(thickness=15, outlinewidth=0),
-            },
-            opacity=1.0,
-            showlegend=False,
-            customdata=colors,
-            hovertemplate=(
-                f"""{xname}: %{{x:3.2f}} <br>"""
-                f"""{yname}: %{{y:3.2f}} <br>"""
-                """color: %{customdata:3.2f}"""
-            ),
-        )
-        scatt2 = go.Scatter(
-            x=(x[0],),
-            y=(y[0],),
-            mode="markers",
-            showlegend=False,
-            marker={
-                "color": "red",
-                "symbol": "hexagon-open",
-                "size": 10,
-            },
-        )
+            )
+            scatt2 = go.Scatter(
+                x=(x[0],),
+                y=(y[0],),
+                mode="markers",
+                showlegend=False,
+                marker={
+                    "color": "red",
+                    "symbol": "hexagon-open",
+                    "size": 10,
+                },
+            )
+            #self.comp_fig.update_layout(xaxis_title=xname, yaxis_title=yname)
+        else:
+            scatt1 = go.Scatter3d(
+                x=x,
+                y=y,
+                z=z,
+                mode="markers",
+                marker={
+                    "color": colors,
+                    "showscale": True,
+                    "cmin": self.text_input["cmin"].value,
+                    "cmax": self.text_input["cmax"].value,
+                    "colorscale": px.colors.get_colorscale(
+                        self.dropdown["composition_colorscale"].value
+                    ),
+                    "colorbar": dict(thickness=15, outlinewidth=0),
+                },
+                opacity=1.0,
+                showlegend=False,
+                customdata=colors,
+                hovertemplate=(
+                    f"""{xname}: %{{x:3.2f}} <br>"""
+                    f"""{yname}: %{{y:3.2f}} <br>"""
+                    f"""{zname}: %{{z:3.2f}} <br>"""
+                    """color: %{customdata:3.2f}"""
+                ),
+            )
+            scatt2 = go.Scatter3d(
+                x=(x[0],),
+                y=(y[0],),
+                z=(z[0],),
+                mode="markers",
+                showlegend=False,
+                marker={
+                    "color": "red",
+                    "symbol": "circle-open",
+                    "size": 10,
+                },
+            )
+            #self.comp_fig.update_layout(xaxis_title=xname, yaxis_title=yname, zaxis_title=zname)
+
+
 
         if hasattr(self.comp_fig, "data"):
             self.comp_fig.data = []
-        self.comp_fig.update_layout(xaxis_title=xname, yaxis_title=yname)
         self.comp_fig.add_trace(scatt1)
         self.comp_fig.add_trace(scatt2)
+        self.comp_fig.update_scenes(aspectmode="cube")
+
 
     def init_plots(self):
         self.scatt_fig = go.FigureWidget(
@@ -512,6 +582,15 @@ class DatasetWidget_View:
             [],
             layout=dict(
                 height=300,
+                width=500,
+                margin=dict(t=25, b=35, l=10),
+            ),
+        )
+
+        self.comp3D_fig = go.FigureWidget(
+            [],
+            layout=dict(
+                height=500,
                 width=500,
                 margin=dict(t=25, b=35, l=10),
             ),
@@ -553,6 +632,12 @@ class DatasetWidget_View:
             description="Composition",
         )
         self.dropdown_categories["composition"].append(self.dropdown["composition"])
+
+        self.dropdown["composition3D"] = ipywidgets.Dropdown(
+            options=[],
+            description="Composition",
+        )
+        self.dropdown_categories["composition"].append(self.dropdown["composition3D"])
 
         self.dropdown["composition_color"] = ipywidgets.Dropdown(
             options=[],
@@ -719,11 +804,15 @@ class DatasetWidget_View:
             ]
         )
 
-        # dummy_box = ipywidgets.Box()
-
         # Build Tabs
         self.tabs = ipywidgets.Tab([dataset_tab, plot_box, config_tab])
         self.tabs.titles = ["Dataset", "Plot", "Config"]
         self.tabs.selected_index = 1
 
-        return self.tabs
+        self.output = ipywidgets.Output()
+
+        output_hbox = ipywidgets.HBox([self.output],layout=Layout(height='100px', overflow_y='auto'))
+
+        out = ipywidgets.VBox([self.tabs,output_hbox])
+
+        return out

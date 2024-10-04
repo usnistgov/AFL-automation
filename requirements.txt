@@ -1,8 +1,8 @@
-numpy
+numpy<2
 pandas 
 scipy
 xarray
-#tiled[client]
+tiled[minimal-client]
 netcdf4
 jupyterlab
 ipywidgets
@@ -12,14 +12,15 @@ matplotlib
 seaborn
 pint
 periodictable
-flask
+flask <2.3
 flask-jwt-extended >=4.0
 bokeh
 pillow
-scikit-image
+scikit-image<0.20
 pyserial
 requests
 flask_cors
+zeroconf
 #pyFAI
 #certif-pyspec==1.1.12
 

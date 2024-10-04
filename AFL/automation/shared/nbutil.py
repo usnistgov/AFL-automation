@@ -47,12 +47,12 @@ if not args.noclients:
     except requests.ConnectionError as e:
         warnings.warn('Failed to connect to OT2 server.')
     
-    try:
-        inst = Client(ip='cdsaxs',port='5000',interactive=True)
-        inst.login('RobotoStation')
-        inst.debug(False)
-    except requests.ConnectionError as e:
-        warnings.warn('Failed to connect to CDSAXS server.')
+    # try:
+    #     inst = Client(ip='cdsaxs',port='5001',interactive=True)
+    #     inst.login('RobotoStation')
+    #     inst.debug(False)
+    # except requests.ConnectionError as e:
+    #     warnings.warn('Failed to connect to CDSAXS server.')
     
     for loader_name in ['piloader','piloader2']:
         try:
@@ -77,7 +77,7 @@ if not args.noclients:
 def measureEmptyTransmission():
     load.enqueue(task_name='rinseCell',interactive=True)
     load.enqueue(task_name='blowOutCell',interactive=True)
-    inst.enqueue(task_name='measureTransmission',set_empty_transmission=True,interactive=True)
+    # inst.enqueue(task_name='measureTransmission',set_empty_transmission=True,interactive=True)
 
 def calibrateLoaderToCell(autoload=False,upper=None,step=None,lower=None,rate=None,delay=2):
      if autoload is not False:
@@ -117,8 +117,7 @@ def calibrateLoaderToCell(autoload=False,upper=None,step=None,lower=None,rate=No
                   task_name='selectPort',
                   port='cell',
                   interactive=True)
-     trans = inst.enqueue(task_name='measureTransmissionQuick',
-                 setup=True)['return_val']
+     # trans = inst.enqueue(task_name='measureTransmissionQuick', setup=True)['return_val']
      load.enqueue(device='pump',
                  task_name='setRate',
                  rate=rate)
@@ -139,13 +138,11 @@ def calibrateLoaderToCell(autoload=False,upper=None,step=None,lower=None,rate=No
          time.sleep(delay)
          vol_remaining -= step
          transfer_vol += step
-         trans = inst.enqueue(task_name='measureTransmissionQuick',
-                              interactive=True)['return_val']
+         # trans = inst.enqueue(task_name='measureTransmissionQuick', interactive=True)['return_val']
          print(f'    @{transfer_vol}, trans={trans}')
          data.append([transfer_vol,trans])
 
-     trans = inst.enqueue(task_name='measureTransmissionQuick',
-                         restore=True)['return_val']
+     # trans = inst.enqueue(task_name='measureTransmissionQuick', restore=True)['return_val']
      data.append([transfer_vol,trans])
      print(f'    @{transfer_vol}, trans={trans}')
      print('Scan complete')
@@ -170,15 +167,18 @@ class NRUI:
         load.enqueue(task_name='loadSample',sampleVolume=NRUI.widgets['volume'].value,interactive=False)
         
     def measureEmptyTrans(caller):
-        inst.enqueue(task_name='measureTransmission',set_empty_transmission=True,interactive=False)
+        pass
+        # inst.enqueue(task_name='measureTransmission',set_empty_transmission=True,interactive=False)
     def measureTrans(caller):
-        inst.enqueue(task_name='measureTransmission',interactive=False)        
+        # inst.enqueue(task_name='measureTransmission',interactive=False)        
+        pass
     def measureSample(caller):
-            inst.enqueue(task_name='expose',
-                         name=NRUI.widgets['samplename'].value,
-                         exposure=NRUI.widgets['exposure'].value,
-                         measure_transmission=NRUI.widgets['doTransmission'].value,
-                         interactive=False)
+        pass
+             # inst.enqueue(task_name='expose',
+             #             name=NRUI.widgets['samplename'].value,
+             #             exposure=NRUI.widgets['exposure'].value,
+             #             measure_transmission=NRUI.widgets['doTransmission'].value,
+             #             interactive=False)
 NRUI.tabs = {}
 NRUI.tabs['robot'] = []
 NRUI.tabs['loader'] = []

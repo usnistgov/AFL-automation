@@ -1,0 +1,16 @@
+- name: backup AFL pis
+  hosts: afl.all
+  tasks:
+   - name: Create a directory if it does not exist
+     ansible.builtin.file:
+       path: ~/.afl
+       state: directory
+       mode: '0755'
+   - name: find relevant files 
+     shell: (cd ;cd .afl; find . -type f) | cut -c 3-
+     register: files_to_copy
+
+   - name: download files
+     fetch: src=~/.afl/{{ item }} dest=aflbackup/dotafl/
+     with_items: "{{ files_to_copy.stdout_lines }}" 
+

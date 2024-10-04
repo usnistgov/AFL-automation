@@ -1,0 +1,50 @@
+- name: Print facts
+  hosts: afl.pis
+  tasks:
+   - name: create LabJackM dir
+     ansible.builtin.file:
+       path: /home/pi/LabJackM
+       state: directory
+       mode: '0755'
+   - name: download and untar LabJack LJM (aarch64)
+     when: ansible_architecture == "aarch64"
+     ansible.builtin.unarchive:
+       src: https://files.labjack.com/installers/LJM/Linux/AArch64/release/LabJackM-1.2000-openSUSE-Linux-aarch64-release.tar.gz
+       dest: /home/pi/LabJackM
+       remote_src: yes
+   - name: install LJM
+     when: ansible_architecture == "aarch64"
+     ansible.builtin.command: /home/pi/LabJackM/LabJackM-1.2000-openSUSE-Linux-aarch64/LabJackM.run       
+     args:
+        creates: /usr/local/lib/libLabJackM.so.1.20.0
+     become: true
+   - name: download and untar LabJack LJM (armv7)
+     when: ansible_architecture == "armhf"
+     ansible.builtin.unarchive:
+       src: https://files.labjack.com/installers/LJM/Linux/ARMv7:ARMhf/release/LabJackM-1.1804-Raspbian-Linux-armhf-release.tar.gz
+       dest: /home/pi/LabJackM
+       remote_src: yes
+   - name: install LJM
+     when: ansible_architecture == "armhf"
+     ansible.builtin.command: /home/pi/LabJackM/LabJackM-1.1804-Raspbian-Linux-armhf/LabJackM.run       
+     args:
+        creates: /usr/local/lib/libLabJackM.so.1.18.4
+     become: true
+   - name: Install loader-specific requirements
+     ansible.builtin.pip:
+       requirements: /home/pi/AFL-automation/requirements-loader.txt
+       virtualenv: /home/pi/aflpy
+   - name: Add LabJack library to LD_LIBRARY_PATH
+     ansible.builtin.lineinfile:
+       path: /home/pi/.bashrc
+       line: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+   - name: Enable raspi SPI
+     become: true
+     ansible.builtin.lineinfile:
+       path: /boot/firmware/config.txt
+       line: dtparam=spi=on
+     register: bootconfig
+   - name: Reboot pi if boot config changed
+     when: bootconfig.changed
+     become: true
+     ansible.builtin.reboot:

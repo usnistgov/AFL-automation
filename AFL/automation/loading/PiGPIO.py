@@ -18,7 +18,7 @@ class PiGPIO():
 			if dict, key = pin number, val = 'UP' or 'DOWN'
 
 		'''
-		self.channels = channels
+		self.channels = {int(key):val for key,val in channels.items()}
 
 		self.state = {}
 		if mode == 'BCM':

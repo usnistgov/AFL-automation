@@ -162,19 +162,27 @@ class DatasetWidget:
         self.data_view.comp_fig.data[0].on_click(self.composition_click_callback)
 
     def update_colors(self, *args):
-        self.data_view.update_colorscale()
+        if self.data_view.dropdown["composition_color"].value != "None":
+            colors = self.data_model.dataset[
+                self.data_view.dropdown["composition_color"].value
+            ].values
+        else:
+            colors = None
+        self.data_view.update_colorscale(colors)
 
     def apply_sel(self, *args):
         key = self.data_view.dropdown["sel"].value
         value = ast.literal_eval(self.data_view.text_input["sel"].value)
         self.data_model.apply_sel({key: value})
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
+        self.update_dropdowns()
 
     def apply_isel(self, *args):
         key = self.data_view.dropdown["sel"].value
         value = ast.literal_eval(self.data_view.text_input["sel"].value)
         self.data_model.apply_isel({key: value})
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
+        self.update_dropdowns()
 
     def extract_var(self, *args):
         extract_from_var = self.data_view.dropdown["extract_from_var"].value
@@ -207,7 +215,12 @@ class DatasetWidget:
         )
 
     def update_sample_dim(self, *args):
-        self.data_model.sample_dim = self.data_view.text_input["sample_dim"].value
+        # self.data_model.sample_dim = self.data_view.text_input["sample_dim"].value
+        self.data_model.sample_dim = self.data_view.dropdown["sample_dim"].value
+        self.data_view.initial_scatter1_variable = "None"
+        self.data_view.initial_scatter2_variable = "None"
+        self.data_view.initial_comps_variable = "None"
+        self.data_view.initial_comps_color_variable = "None"
         self.update_dropdowns()
 
     def update_extract_coords(self, change):
@@ -224,8 +237,11 @@ class DatasetWidget:
 
         self.data_view.dataset_html.value = self.data_model.dataset._repr_html_()
 
-        self.data_view.text_input["sample_dim"].value = self.data_model.sample_dim
-        self.data_view.text_input["sample_dim"].observe(self.update_sample_dim)
+        #self.data_view.text_input["sample_dim"].value = self.data_model.sample_dim
+        #self.data_view.text_input["sample_dim"].observe(self.update_sample_dim)
+        self.data_view.dropdown["sample_dim"].options = list(self.data_model.dataset.sizes.keys())
+        self.data_view.dropdown["sample_dim"].value = self.data_model.sample_dim
+        self.data_view.dropdown["sample_dim"].observe(self.update_sample_dim)
 
         self.data_view.text_input["xmin"].value = self.initial_xmin
         self.data_view.text_input["xmax"].value = self.initial_xmax
@@ -371,7 +387,6 @@ class DatasetWidget_View:
     ):
         self.scatt_fig = None
         self.comp_fig = None
-        self.comp3D_fig = None
         self.initial_scatter1_variable = initial_scatter1_variable
         self.initial_scatter2_variable = initial_scatter2_variable
         self.initial_comps_variable = initial_comps_variable
@@ -388,7 +403,10 @@ class DatasetWidget_View:
         # keep track of dropdowns in categories in case options need to be updated
         self.dropdown_categories: Dict[str, List] = defaultdict(list)
 
-    def update_colorscale(self):
+    def update_colorscale(self,colors=None):
+        if colors is not None:
+            self.comp_fig.data[0]["marker"]["color"] = colors
+            self.comp_fig.data[0]["marker"]["customdata"] = colors
         self.comp_fig.data[0]["marker"]["cmin"] = self.text_input["cmin"].value
         self.comp_fig.data[0]["marker"]["cmax"] = self.text_input["cmax"].value
 
@@ -427,7 +445,7 @@ class DatasetWidget_View:
 
         if comp_vars is not None:
             for dropdown in self.dropdown_categories["composition"]:
-                dropdown.options = comp_vars
+                dropdown.options = ["None"] + comp_vars
 
                 # set the default value if possible
                 if "Composition" in dropdown.description:
@@ -505,7 +523,7 @@ class DatasetWidget_View:
                     "size": 10,
                 },
             )
-            #self.comp_fig.update_layout(xaxis_title=xname, yaxis_title=yname)
+            self.comp_fig.update_layout(xaxis_title=xname, yaxis_title=yname)
         else:
             scatt1 = go.Scatter3d(
                 x=x,
@@ -544,7 +562,13 @@ class DatasetWidget_View:
                     "size": 10,
                 },
             )
-            #self.comp_fig.update_layout(xaxis_title=xname, yaxis_title=yname, zaxis_title=zname)
+            self.comp_fig.update_layout(
+                scene=dict(
+                    xaxis_title=xname,
+                    yaxis_title=yname,
+                    zaxis_title=zname
+                )
+            )
 
 
 
@@ -582,15 +606,6 @@ class DatasetWidget_View:
             [],
             layout=dict(
                 height=300,
-                width=500,
-                margin=dict(t=25, b=35, l=10),
-            ),
-        )
-
-        self.comp3D_fig = go.FigureWidget(
-            [],
-            layout=dict(
-                height=500,
                 width=500,
                 margin=dict(t=25, b=35, l=10),
             ),
@@ -661,6 +676,11 @@ class DatasetWidget_View:
 
         self.dropdown["extract_from_coord"] = ipywidgets.Dropdown(options=[])
 
+        self.dropdown["sample_dim"] = ipywidgets.Dropdown(
+            description="Sample Dim",
+            options=[]
+        )
+
     def init_inputs(self):
         self.text_input["cmin"] = ipywidgets.FloatText(
             description="Color Min",
@@ -673,9 +693,9 @@ class DatasetWidget_View:
         self.text_input["index"] = ipywidgets.IntText(
             description="Data Index:", value=0, min=0
         )
-        self.text_input["sample_dim"] = ipywidgets.Text(
-            description="Sample Dim", value="", continuous_update=False
-        )
+        # self.text_input["sample_dim"] = ipywidgets.Text(
+        #     description="Sample Dim", value="", continuous_update=False
+        # )
 
         self.text_input["xmin"] = ipywidgets.FloatText(
             description="xmin",
@@ -717,9 +737,16 @@ class DatasetWidget_View:
             [
                 ipywidgets.HBox(
                     [
+                        #self.text_input["sample_dim"],
+                        self.dropdown["sample_dim"],
+                    ]
+                ),
+                ipywidgets.HBox(
+                    [
                         self.dropdown["scatter1"],
                         self.dropdown["scatter2"],
                         self.dropdown["composition"],
+                        #self.button["update_plot"],
                     ]
                 ),
                 ipywidgets.HBox(
@@ -727,6 +754,7 @@ class DatasetWidget_View:
                         self.dropdown["composition_color"],
                         self.text_input["cmin"],
                         self.text_input["cmax"],
+                        #self.button["update_color"],
                     ]
                 ),
                 ipywidgets.HBox(
@@ -756,7 +784,8 @@ class DatasetWidget_View:
         config_tab = ipywidgets.VBox(
             [
                 self.dropdown["composition_colorscale"],
-                self.text_input["sample_dim"],
+                #self.text_input["sample_dim"],
+                self.dropdown["sample_dim"],
                 self.text_input["xmin"],
                 self.text_input["xmax"],
                 self.checkbox["logx"],
@@ -809,10 +838,9 @@ class DatasetWidget_View:
         self.tabs.titles = ["Dataset", "Plot", "Config"]
         self.tabs.selected_index = 1
 
-        self.output = ipywidgets.Output()
+        #self.output = ipywidgets.Output()
+        #output_hbox = ipywidgets.HBox([self.output],layout=Layout(height='100px', overflow_y='auto'))
 
-        output_hbox = ipywidgets.HBox([self.output],layout=Layout(height='100px', overflow_y='auto'))
+        #out = ipywidgets.VBox([self.tabs,output_hbox])
 
-        out = ipywidgets.VBox([self.tabs,output_hbox])
-
-        return out
+        return self.tabs

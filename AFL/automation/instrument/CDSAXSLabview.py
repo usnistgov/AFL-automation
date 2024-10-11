@@ -519,3 +519,6 @@ class LabviewConnection():
         if(pythoncom._GetInterfaceCount()>0):
             print(f'Closed COM connection, but had remaining objects: {pythoncom._GetInterfaceCount()}')
             SetProcessWorkingSetSize(OpenProcess(PROCESS_ALL_ACCESS,True,GetCurrentProcessId()),-1,-1)
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *
+

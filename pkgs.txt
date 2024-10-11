@@ -20,4 +20,5 @@ scikit-image
 pyserial
 requests
 flask_cors
+zeroconf
 

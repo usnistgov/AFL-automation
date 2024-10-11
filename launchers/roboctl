@@ -8,9 +8,9 @@ import pathlib
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
-            usage= 'roboctl (start || stop || restart || status) (loader || robot || sample)'
+            usage= 'roboctl (start || stop || restart || status || join) (loader || robot || sample)'
             )
-    parser.add_argument('command',choices=['start','stop','restart','status'])
+    parser.add_argument('command',choices=['start','stop','restart','status','join'])
     parser.add_argument('server_names',nargs='*')
     parser.add_argument('-v',action='store_true')
     parser.add_argument('--config_file',default='launchers.json')
@@ -34,8 +34,14 @@ if __name__=="__main__":
         
         host = server_config[server_name]['host']
         screen_name = server_config[server_name]['screen_name']
-        server_script = server_config[server_name]['server_script']
+        try:
+            server_module = server_config[server_name]['server_module']
+            server_type = 'module'
+        except KeyError:
+            server_script = server_config[server_name]['server_script']
+            server_type = 'script'
 
+        
         #we want the path without home...
         screenlog_path = pathlib.Path(args.storage_path) / f'{screen_name}.screenlog'
 
@@ -46,16 +52,33 @@ if __name__=="__main__":
 
         if (args.command == 'start') or (args.command == 'restart'):
             print(f'--> Starting {screen_name} in screen session on {host}...')
-            cmds.append(f'screen -d -m -L -Logfile ${{HOME}}/{screenlog_path} -S {screen_name} {server_script}')
+            if server_type == 'script':
+                cmds.append(f'screen -d -m -L -Logfile ${{HOME}}/{screenlog_path} -S {screen_name} {server_script}')
             # cmds.append(f'screen -d -m -S {screen_name} {server_script}')
-
+            elif server_type == 'module':
+                if 'shell' in server_config[server_name]:
+                    shell = server_config[server_name]['shell']
+                else:
+                    shell = 'bash'
+                if 'conda_env' in server_config[server_name]:
+                    env = server_config[server_name]['conda_env']
+                    cmds.append(f'screen -d -m -L -Logfile ${{HOME}}/{screenlog_path} -S {screen_name} {shell} -ci "conda activate {env};python -m {server_module}"')
+                else:
+                    cmds.append(f'screen -d -m -L -Logfile ${{HOME}}/{screenlog_path} -S {screen_name} {shell} -ci "python -m {server_module}"')
+            else:
+                raise ValueError('unknown server type, check config')
         if args.command == 'status':
             print(f'--> Getting status of {screen_name} in screen session on {host}...')
             cmds.append(f'screen -ls')
             cmds.append(f'tail -n 100 ${{HOME}}/{screenlog_path}')
 
+        if args.command == 'join':
+            cmds.append(f'bash -ic "screen -x {screen_name}"')
         for cmd in cmds:
-            cmd = f"ssh {host} -f '{cmd}'"
+            if args.command == 'join':
+                cmd = f"ssh {host} -t '{cmd}'"
+            else:
+                cmd = f"ssh {host} -f '{cmd}'"
 
             if args.v: print(f'--> Running command: {cmd}')
             p = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)

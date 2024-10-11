@@ -8,11 +8,15 @@ except:
 
 from AFL.automation.APIServer.APIServer import APIServer
 from AFL.automation.instrument.CDSAXSLabview import CDSAXSLabview
+from AFL.automation.APIServer.data.DataTiled import DataTiled
+
+data = DataTiled('http://192.168.0.250:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/afl642/.afl/json-backup')
+
 
 server_port=5000
 
 driver = CDSAXSLabview()
-server = APIServer('CDSAXS',contact='pab2@nist.gov')
+server = APIServer('CDSAXS',contact='pab2@nist.gov',data=data)
 server.add_standard_routes()
 
 server.create_queue(driver)

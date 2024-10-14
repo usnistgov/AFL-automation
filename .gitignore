@@ -17,3 +17,6 @@ AFL/automation/EpicsADLiveProcess/templates/static/deck.jpeg
 AFL/automation/EpicsADLiveProcess/templates/static/jquery-3.4.1.min.js
 AFL/automation/EpicsADLiveProcess/templates/static/logo.svg
 AFL/automation/EpicsADLiveProcess/templates/static/ncnr.png
+docs/build/*
+docs/source/generated/*
+docs/source/_autosummary/*

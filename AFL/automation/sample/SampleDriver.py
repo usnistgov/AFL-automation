@@ -98,6 +98,83 @@ class SampleDriver(Driver):
         # XXX need to make deck inside this object because of 'different registries error in Pint
         self.reset_deck()
 
+    def validate_config(self):
+        required_keys = [
+            'client',
+            'instrument',
+            'ternary',
+            'data_tag',
+            'data_path',
+            'components',
+            'AL_components',
+            'snapshot_directory',
+            'max_sample_transmission',
+            'mix_order',
+            'custom_stock_settings',
+            'composition_var_name',
+            'concat_dim',
+            'sample_composition_tol',
+            'camera_urls'
+        ]
+
+        missing_keys = [key for key in required_keys if key not in self.config]
+
+        if missing_keys:
+            raise KeyError(f"The following required keys are missing from self.config: {', '.join(missing_keys)}")
+
+        # Validate client configuration
+        if not isinstance(self.config['client'], dict):
+            raise TypeError("self.config['client'] must be a dictionary")
+        if 'load' not in self.config['client']:
+            raise KeyError("'load' client must be configured in self.config['client']")
+        if 'prep' not in self.config['client']:
+            raise KeyError("'prep' client must be configured in self.config['client']")
+
+        # Validate instrument configuration
+        if not isinstance(self.config['instrument'], list):
+            raise TypeError("self.config['instrument'] must be a list")
+        if len(self.config['instrument']) == 0:
+            raise ValueError("At least one instrument must be configured in self.config['instrument']")
+
+        for i, instrument in enumerate(self.config['instrument']):
+            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim']
+            missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
+            if missing_instrument_keys:
+                raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
+            
+            if not isinstance(instrument['data'], list):
+                raise TypeError(f"Instrument {i}: 'data' must be a list")
+            for j, data_item in enumerate(instrument['data']):
+                required_data_keys = ['data_name', 'tiled_array_name']
+                missing_data_keys = [key for key in required_data_keys if key not in data_item]
+                if missing_data_keys:
+                    raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
+
+        # Validate other list types
+        list_keys = ['components', 'AL_components', 'mix_order', 'custom_stock_settings', 'camera_urls']
+        for key in list_keys:
+            if not isinstance(self.config[key], list):
+                raise TypeError(f"self.config['{key}'] must be a list")
+
+        # Validate types of other keys
+        if not isinstance(self.config['ternary'], bool):
+            raise TypeError("self.config['ternary'] must be a boolean")
+        if not isinstance(self.config['data_tag'], str):
+            raise TypeError("self.config['data_tag'] must be a string")
+        if not isinstance(self.config['data_path'], (str, pathlib.Path)):
+            raise TypeError("self.config['data_path'] must be a string or pathlib.Path")
+        if not isinstance(self.config['snapshot_directory'], (str, pathlib.Path)):
+            raise TypeError("self.config['snapshot_directory'] must be a string or pathlib.Path")
+        if not isinstance(self.config['max_sample_transmission'], (int, float)):
+            raise TypeError("self.config['max_sample_transmission'] must be a number")
+        if not isinstance(self.config['composition_var_name'], str):
+            raise TypeError("self.config['composition_var_name'] must be a string")
+        if not isinstance(self.config['concat_dim'], str):
+            raise TypeError("self.config['concat_dim'] must be a string")
+        if not isinstance(self.config['sample_composition_tol'], (int, float)):
+            raise TypeError("self.config['sample_composition_tol'] must be a number")
+
+        print("Configuration validation passed successfully.")
 
     @property
     def tiled_client(self):
@@ -302,6 +379,9 @@ class SampleDriver(Driver):
             assert ('agent' in self.config['client']), (
                 f"No client url for 'agent'! self.config['client']={self.config['client']}"
             )
+
+        # do this now, so that we fail early if we're missing something
+        self.validate_config()
 
         if sample_uuid is None:
             self.uuid['sample'] =  'SAM-' + str(uuid.uuid4())

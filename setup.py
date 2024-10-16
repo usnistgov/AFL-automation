@@ -13,7 +13,9 @@ setup(
     scripts=['launchers/roboctl'],
     entry_points={
         'tiled.special_client': [
-                'afl.event_catalog = AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents:CatalogOfAFLEvents'
+                'afl.event_catalog = AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents:CatalogOfAFLEvents',
+                'afl.driver_task = AFL.automation.APIServer.data.TiledClients.DriverTask:DriverTask'
+                
                 ]
     }
 )

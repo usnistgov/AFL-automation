@@ -19,6 +19,8 @@ Things we want to fix:
 class OT2_Driver(Driver):
     defaults = {}
     defaults['shaker_port'] = '/dev/ttyACM0'
+    defaults['camera_offset'] = (-12,-52)
+    
     def __init__(self,overrides=None):
         self.app = None
         Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
@@ -259,7 +261,20 @@ class OT2_Driver(Driver):
         location_well = self.get_wells(location)[0]
 
         pipette.mix(repetitions,volume,location_well)
-    
+    def position_for_image(self,location,z=180):
+        '''Position the gantry to take an image of a well specified in location using a mounted riding-camera.
+        
+        '''
+        pipette = list(self.protocol.loaded_instruments.values())[0] # just use the first loaded instrument
+        target_loc = get_wells(location).top()
+        target_loc = opentrons.types.Location(
+                    opentrons.types.Point(target_loc.point.x + self.config['camera_offset'][0],
+                                          target_loc.point.y + self.config['camera_offset'][1],
+                                          z),
+                    target_loc.labware)
+        
+        pipette.move_to(target_loc)
+        
     @Driver.quickbar(qb={'button_text':'Transfer',
         'params':{
         'source':{'label':'Source Well','type':'text','default':'1A1'},

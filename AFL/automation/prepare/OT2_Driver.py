@@ -266,7 +266,7 @@ class OT2_Driver(Driver):
         
         '''
         pipette = list(self.protocol.loaded_instruments.values())[0] # just use the first loaded instrument
-        target_loc = self.get_wells(location).top()
+        target_loc = self.get_wells(location)[0].top()
         target_loc = opentrons.types.Location(
                     opentrons.types.Point(target_loc.point.x + self.config['camera_offset'][0],
                                           target_loc.point.y + self.config['camera_offset'][1],

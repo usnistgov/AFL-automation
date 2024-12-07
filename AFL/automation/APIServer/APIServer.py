@@ -342,6 +342,9 @@ class APIServer:
         elif render_hint == 'html':
             self.app.logger.info('Sending raw html to browser')
             return result
+        elif render_hint == 'netcdf':
+            self.app.logger.info('Sending netcdf to browser')
+            return send_file(result,download_name = 'dataset.nc',mimetype='application/netcdf')
         else:
             return "Error while rendering output",500
 

@@ -10,5 +10,10 @@ setup(
     packages=find_packages(where='.'),
     license='LICENSE',
     long_description=open('README.md').read(),
-    scripts=['launchers/roboctl']
+    scripts=['launchers/roboctl'],
+    entry_points={
+        'tiled.special_client': [
+                'afl.event_catalog = AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents:CatalogOfAFLEvents'
+                ]
+    }
 )

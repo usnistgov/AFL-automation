@@ -24,6 +24,7 @@ class Client:
         self.cached_queue = None
         self.queue_iteration = None
         self.supports_queue_iteration = False
+        self.headers = {}
         try:
             import AFL.automation.shared.widgetui
             import IPython

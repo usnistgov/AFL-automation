@@ -1,7 +1,9 @@
 import requests,uuid,time,copy,inspect
 from AFL.automation.shared import serialization
-from AFL.automation.shared.ServerDiscovery import ServerDiscovery
-
+try:
+    from AFL.automation.shared.ServerDiscovery import ServerDiscovery
+except ModuleNotFoundError:
+    pass
 class Client:
     '''
     Communicate with APIServer 

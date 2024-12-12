@@ -151,7 +151,13 @@ class SampleDriver(Driver):
                     raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
 
         # Validate other list types
-        list_keys = ['components', 'AL_components', 'mix_order', 'custom_stock_settings', 'camera_urls']
+        list_keys = ['custom_stock_settings']
+        for key in list_keys:
+            if not isinstance(self.config[key], dict):
+                raise TypeError(f"self.config['{key}'] must be a list")
+
+        # Validate other list types
+        list_keys = ['components', 'AL_components', 'mix_order', 'camera_urls']
         for key in list_keys:
             if not isinstance(self.config[key], list):
                 raise TypeError(f"self.config['{key}'] must be a list")
@@ -266,7 +272,7 @@ class SampleDriver(Driver):
     def set_catch_protocol(self, **kwargs):
         self.catch_protocol = AFL.automation.prepare.PipetteAction(**kwargs)
 
-    def fix_protocol_order(self, mix_order: List, custom_stock_settings: List):
+    def fix_protocol_order(self, mix_order: List, custom_stock_settings):
         mix_order = [self.deck.get_stock(i) for i in mix_order]
         mix_order_map = {loc: new_index for new_index, (stock, loc) in enumerate(mix_order)}
         for sample, validated in self.deck.sample_series:

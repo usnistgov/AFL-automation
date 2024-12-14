@@ -123,11 +123,16 @@ class I22SAXS(Driver):
         self.data['scan_ids'] = scan_id_list
         self.data['counters'] = counters_list
         self.data['transmissions'] = transmission_list
-        
+
         if empty and set_empty:
             self.config['empty_scan_id'] = scan_id_list[selected_run]
+        self.data['scan_id'] = scan_id_list[selected_run]
+        self.data['counter'] = counters_list[selected_run]
+        self.data['transmission'] = transmission_list[selected_run]
+    
+        self.read_integrated(scan_id_list[selected_run])
 
-        return self.read_integrated(scan_id_list[selected_run])
+        return transmission_list[selected_run]
 
     def read_integrated(self,scanid):
         """ 

@@ -137,7 +137,7 @@ class SampleDriver(Driver):
             raise ValueError("At least one instrument must be configured in self.config['instrument']")
 
         for i, instrument in enumerate(self.config['instrument']):
-            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim']
+            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim', 'sample_comps_variable']
             missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
             if missing_instrument_keys:
                 raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")

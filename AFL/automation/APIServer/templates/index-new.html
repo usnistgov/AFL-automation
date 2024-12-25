@@ -150,6 +150,18 @@
         </div>
 
         <div id="driver_status" class="overflow"></div>
+        {% if useful_links %}
+        <div id="useful_links">
+            <h3>Driver Links</h3>
+            <ul>
+            {% for link in useful_links %}
+                {% for text, url in link.items() %}
+                    <li><a href="{{ url|safe }}" target="_blank">{{ text }}</a></li>
+                {% endfor %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
         <div id="quickbar-commands" class="command-container"></div>
 
         <div id="queued-commands" class="command-container"></div>

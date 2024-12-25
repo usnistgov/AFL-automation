@@ -129,7 +129,8 @@ class Driver:
 
         kwargs.update({'sample_name':sample_name,'sample_uuid':sample_uuid})
         self.data.update(kwargs)
-
+        self.data.PROTECTED_SAMPLE_KEYS.update(kwargs.keys())
+        
         return kwargs
 
     def get_sample(self):

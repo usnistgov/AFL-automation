@@ -16,13 +16,21 @@
             <br/>
             Driver:&nbsp;{{driver}} • Queue&nbsp;State:&nbsp;<span id='queue_state'></span> 
             <br/>
-            Experiment:&nbsp;{{experiment}} • Contact:&nbsp;{{contact}}  
-            <br/>
             Last&nbsp;Updated:&nbsp;<span id='time'></span> 
             </p>
-            <!--<form action="/halt" method="POST"><input id="estop" type="submit" value="HALT"></form>-->
             <img id="ncnr-logo" src="static/ncnr.png" />
         </div>
+        {% if useful_links %}
+        <div id="useful_links">
+            <ul>
+            {% for link in useful_links %}
+                {% for text, url in link.items() %}
+                    <li><a href="{{ url|safe }}" target="_blank">{{ text }}</a></li>
+                {% endfor %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
         <div id="content_container">
             <div class="button_row">
                 <button class='button' onclick=$.post('/clear_history')>Clear History</button>

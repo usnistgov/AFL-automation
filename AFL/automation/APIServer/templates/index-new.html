@@ -151,13 +151,10 @@
 
         <div id="driver_status" class="overflow"></div>
         {% if useful_links %}
-        <div id="useful_links">
-            <h3>Driver Links</h3>
+        <div id="useful_links" class="element status">
             <ul>
-            {% for link in useful_links %}
-                {% for text, url in link.items() %}
-                    <li><a href="{{ url|safe }}" target="_blank">{{ text }}</a></li>
-                {% endfor %}
+            {% for text, url in useful_links.items() %}
+                <li class="element status"><a href="{{ url|safe }}" target="_blank">{{ text }}</a></li>
             {% endfor %}
             </ul>
         </div>

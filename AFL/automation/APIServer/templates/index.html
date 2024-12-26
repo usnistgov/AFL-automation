@@ -21,12 +21,10 @@
             <img id="ncnr-logo" src="static/ncnr.png" />
         </div>
         {% if useful_links %}
-        <div id="useful_links">
+        <div id="useful_links" class="element status">
             <ul>
-            {% for link in useful_links %}
-                {% for text, url in link.items() %}
+            {% for text,url in useful_links.items() %}
                     <li><a href="{{ url|safe }}" target="_blank">{{ text }}</a></li>
-                {% endfor %}
             {% endfor %}
             </ul>
         </div>

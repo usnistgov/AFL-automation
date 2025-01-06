@@ -19,65 +19,47 @@ import alphashape
 class Interpolator():
     def __init__(self, dataset):
         self.defaults = {}
-        self.defaults['X_data_pointer'] = 'components'
-        self.defaults['X_data_exclude']  = 'P188' #typically the solutes components
-        self.defaults['Y_data_filter']  = ('SAS_savgol_xlo', 'SAS_savgol_xhi')
-        self.defaults['Y_data_pointer'] = 'SAS'
-        self.defaults['Y_data_coord']  = 'q'
+        self.defaults['X_in_coords'] = 'components'
+        self.defaults['X_in']  = 'P188' #typically the solutes components
+        self.defaults['X_in_limits'] = None #a list of tuples along the X_in dimensions over which to standardize the data in
+        self.defaults['Y_in']  = 'SAS'
+        self.defaults['Y_in_err'] = 'SAS_err'
+        self.defaults['Y_in_classes'] = ['model_A','model_B']
+        self.defaults['sample_dim'] = 'sample'
+        self.defaults['GP_type'] = 'classification'
+
         
+        self.sample_dim = self.defaults['sample_dim']
+        self.X_ranges = self.defaults['X_in_limits']
         self.dataset = dataset
         
         
         #construct a kernel for fitting a GP model
-        self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
+        self.optimizer = tf.optimizers.legacy.Adam(learning_rate=0.005)
         self.kernel = gpflow.kernels.Matern52(variance=1.0, lengthscales=(1e-1))
         self.opt_HPs = []
         
     def get_defaults(self):
         return self.defaults
     
-    def set_defaults(self,default_dict):
-        self.defaults = default_dict
+    def set_defaults(self,defaults):
+        self.defaults = defaults
+        self.sample_dim = self.defaults['sample_dim']
+        self.X_ranges = self.defaults['X_in_limits']
         
     def load_data(self, dataset=None):
         if isinstance(self.dataset,xr.core.dataset.Dataset)==False:
             self.dataset = dataset
             
-        print('default params')
-        for k,v in self.defaults.items():
-            print(k,v)
-        self.defaults['X_data_range']   = [f'{component}_range' for component in self.dataset.attrs[self.defaults['X_data_pointer']] if component not in self.defaults['X_data_exclude']]
-        
-        
-        try: 
-            #produces an N x M array N is the number of samples, M is the number of dimensions N is the number of input points
-            self.X_raw = xr.DataArray(np.array([self.dataset[i].values for i in self.dataset.attrs[self.defaults['X_data_pointer']] if i not in self.defaults['X_data_exclude']]).T) 
-            self.X_ranges = [self.dataset.attrs[i] for i in self.defaults['X_data_range']]
-            
-            #produces an N x K array N is the number of training data points, K is the number of scattering values
-            if None not in self.defaults['Y_data_filter']:
-                print('-----------------------')
-                print("nones in Y_data_filter")
-                self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].sel({self.defaults['Y_data_coord']:slice(self.dataset.attrs[self.defaults['Y_data_filter'][0]],self.dataset.attrs[self.defaults['Y_data_filter'][1]])}).T
-                
-                if self.defaults['Y_data_coord'] == []:
-                    self.Y_coord = []
-                else:
-                    self.Y_coord = self.dataset[self.defaults['Y_data_coord']]
-            else:
-                self.Y_raw = self.dataset[self.defaults['Y_data_pointer']].T
-                if self.defaults['Y_data_coord'] == []:
-                    self.Y_coord = []
-                else:
-                    try:
-                        self.Y_coord = self.dataset[self.defaults['Y_data_coord']]
-                    except:
-                        raise ValueError('check the Y_data_coord it can be none or linked to another coordinate/dimension')
-            # print('The set Y_coords')
-            # print(self.Y_coord)
-        except:
-            raise ValueError("One or more of the inputs X or Y are not correct. Check the defaluts")
-       # print(self.X_raw.shape, self.Y_raw.shape)
+        # print('default params')
+        # for k,v in self.defaults.items():
+        #     print(k,v)
+        self.X_in = self.dataset[self.defaults["X_in"]].transpose(self.sample_dim, ...)
+        self.Y_in = self.dataset[self.defaults["Y_in"]]
+        # print(self.X_in.shape, self.Y_in.shape)
+        if self.defaults['Y_in_err'] != None:
+            self.Y_err_in = self.dataset[self.defaults['Y_in_err']].transpose(self.sample_dim, ...)
+            # print(self.Y_err_in.shape)
         
         
     def standardize_data(self):
@@ -85,39 +67,39 @@ class Interpolator():
         #if there is only one data point, there is an issue in how the X_train data standardizes. It needs to be set to a default that falls between the range. 
         #####
         
-        
         #the grid of compositions does not always start at 0, this shifts the minimum
-        if len(self.X_raw) > 1:
+        if len(self.X_in) > 1:
             
             
-            self.Y_mean = self.Y_raw.mean(dim='sample') #this should give a mean and stdev for each q value or coefficient
-            self.Y_std = self.Y_raw.std(dim='sample') #this should give a mean and stdev for each q value or coefficient
+            self.Y_mean = self.Y_in.mean(dim=self.sample_dim)  #this should give a mean and stdev for each q value or coefficient
+            self.Y_std = self.Y_in.std(dim=self.sample_dim)  #this should give a mean and stdev for each q value or coefficient
 
             #sets X_train to be from 0. to 1. along each dimension
-            #should be determined based on the range of the dataset....
-            self.X_train = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(self.X_raw.T)]).T                           
+            #The X_in will have dimensions of N samples by M coordinates. X_train willl also be N_samples by M coordinates
+            self.X_train = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] - self.X_ranges[idx][0]) for idx, i in enumerate(self.X_in.T)]).T                           
             
             #sets Y_train to be within -1. to 1. for every target parameter
-            self.Y_train = (self.Y_raw - self.Y_mean)/self.Y_std
+            ### The above comment is wrong. THis sets the Y_train to have a variance of 1. This might need to be adusted...
+            self.Y_train = (self.Y_in - self.Y_mean)/self.Y_std
             print(self.Y_train.shape)
             if len(self.Y_train.shape) == 1:
                 self.Y_train = np.expand_dims(self.Y_train.values,axis=1).T
-            self.Y_train = self.Y_train.T
+            self.Y_train = self.Y_train
             
             print('data standardized')
             print('Y_train shape',self.Y_train.shape)
             print('X_train shape',self.X_train.shape)
-            print('Y_coord',self.Y_coord)
             
             
             
         else:
-            self.Y_mean = self.Y_raw.mean(dim='sample')
-            self.Y_std = self.Y_raw.std(dim='sample')
+            print("Warning! only one data point")
+            self.Y_mean = self.Y_in.mean(dim=self.sample_dim)
+            self.Y_std = self.Y_in.std(dim=self.sample_dim)
             
-            self.X_train = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] -  self.X_ranges[idx][0]) for idx, i in enumerate(self.X_raw.T)]).T
+            self.X_train = np.array([(i - self.X_ranges[idx][0])/(self.X_ranges[idx][1] -  self.X_ranges[idx][0]) for idx, i in enumerate(self.X_in.T)]).T
             ## the best I can do is subtract the mean of the data. If the training data are scalars, not spectra, then there will be no stdev for one point
-            self.Y_train = self.Y_raw.values.T
+            self.Y_train = self.Y_in.values
             print('X_train shape', self.X_train.shape)
             print('Y_train shape', self.Y_train.shape)
             
@@ -218,25 +200,25 @@ class Interpolator():
         """
 
         #convert the requested X_new into standardized coordinates
-        print('X_new non-standardized should be DxM', np.array(X_new), np.array(X_new).shape)
-        print('X_ranges should be length D', self.X_ranges)
+        # print('X_new non-standardized should be DxM', np.array(X_new), np.array(X_new).shape)
+        # print('X_ranges should be length D', self.X_ranges)
         try:        
             X_new = np.array([(i - min(self.X_ranges[idx]))/(max(self.X_ranges[idx]) - min(self.X_ranges[idx])) for idx, i in enumerate(np.array(X_new))]).T
         except:
             raise ValueError("Check the dimensions of X_new and compare to the input dimensions on X_raw")
 
-        print('X_new standardized', X_new)
+        # print('X_new standardized', X_new.shape)
         # for col in X_new.T:
         #     print(min(col),max(col))
         #check to see if the input coordinates and dimensions are correct:
         if np.any(np.round(X_new,5)< 0.) or np.any(np.round(X_new,5)> 1.00001):
             raise ValueError('check requested values for X_new, data not within model range')
         
-        print('requested point ', X_new, X_new.shape)
+        # print('requested point ', X_new, X_new.shape)
         
         self.predictive_mean, self.predictive_variance = self.model.predict_f(X_new)
-        self.predictive_mean = self.predictive_mean.numpy()[0]
-        self.predictive_variance = self.predictive_variance.numpy()[0]
+        self.predictive_mean = self.predictive_mean.numpy().squeeze()
+        self.predictive_variance = self.predictive_variance.numpy().squeeze()
         
         
         #un-standardize
@@ -255,6 +237,7 @@ class Interpolator():
             print(item, self.__dict__[item])
             print('')
         return
+
     
 
 class ClusteredGPs():

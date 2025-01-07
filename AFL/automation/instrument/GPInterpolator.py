@@ -107,11 +107,11 @@ class Interpolator():
         
         if kernel != None:
             self.kernel = kernel
-            
+        
         ### Due to the difficulty of doing the heteroscedastic modeling, I would avoid this for now
-        if (heteroscedastic):# & (self.Y_unct!=None):
+        if (heteroscedastic):# & (self.Y_err_in!=None):
             likelihood = HGP.HeteroscedasticGaussian()
-            data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
+            data = (self.X_train,np.stack((self.Y_train,self.Y_err_in),axis=1))
             # print(data[0].shape,data[1].shape)
             self.model = gpflow.models.VGP(
                 data   = data,
@@ -173,6 +173,7 @@ class Interpolator():
         print()
         i = 0
         break_criteria = False
+        self.opt_HPs = []
         while (i <= niter) or (break_criteria==True):
         # for i in range(niter):
             if heteroscedastic == False:
@@ -183,10 +184,12 @@ class Interpolator():
                 i+=1
                 if all(abs(pre_step_HPs-post_step_HPs) <= tol):
                     break_criteria=True
+                    print(f"stopped after {i} iterations")
                     break
             else:
                 self.natgrad.minimize(self.model.training_loss, [(self.model.q_mu, self.model.q_sqrt)])
                 self.adam.minimize(self.model.training_loss, self.model.trainable_variables)
+                self.opt_HPs.append([i.numpy() for i in self.model.parameters])
                 i+=1 
         
         # print('test_prediction')
@@ -236,8 +239,19 @@ class Interpolator():
         for item in self.__dict__:
             print(item, self.__dict__[item])
             print('')
-        return
 
+    # def plot_HPs(self):
+    #     data = np.array(self.opt_HPs)
+    #     for i in np.arange(data.shape[1]):
+    #         fig,ax = plt.subplots()
+    #         ax.plot(data[i,:])
+    #         ax.set(
+    #             xlabel='iteration',
+    #             ylabel='HP value',
+    #             # title=
+    #         )
+            
+        
     
 
 class ClusteredGPs():

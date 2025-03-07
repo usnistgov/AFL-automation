@@ -1,3 +1,5 @@
+import requests
+
 from AFL.automation.loading.SampleCell import SampleCell
 from AFL.automation.APIServer.Driver import Driver
 from collections import defaultdict
@@ -43,7 +45,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                       rinse2_tank_level=950,
                       waste_tank_level=0,
                       load_stopper=None,
-                      overrides=None, 
+                      robot_interlock_host=None,
+                      overrides=None,
                       ):
         '''
             pctrl: a pressurecontroller object supporting the set_P method() and the optional p_ramp() method.
@@ -68,9 +71,15 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
 
         self.loadStoppedExternally = False
         self.state = 'FRESH'
-        if 'enable' in self.relayboard.labels.keys():
+        if 'enable' in self.relayboard.labels.values():
             self.relayboard.setChannels({'enable':True})
-        
+
+        if robot_interlock_host:
+            self.robot_interlock_url = f'http://{robot_interlock_host}:31950/robot/door/status'
+        else:
+            self.robot_interlock_url = None
+
+
         self._USE_ARM_LIMITS = False
         self._USE_DOOR_INTERLOCK = False
         if self.digitalin is not None:
@@ -78,6 +87,9 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                 self._USE_ARM_LIMITS =True
             if 'DOOR' in self.digitalin.state.keys():
                 self._USE_DOOR_INTERLOCK = True
+        if self.robot_interlock_url:
+            self._USE_DOOR_INTERLOCK = True
+
 
 
 
@@ -149,9 +161,9 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         status.append(f'Waste tank: {self.waste_tank_level} mL')
         status.append(f'Relay status: {self.relayboard.getChannels()}')
         if self._USE_ARM_LIMITS:
-            status.append(f"Arm Up Limit: {not self.digitalin.state['ARM_UP']} / Arm Down Limit{not self.digitalin.state['ARM_DOWN']}")
+            status.append(f"Arm Up Limit: {self.digitalin.state['ARM_UP']} / Arm Down Limit{self.digitalin.state['ARM_DOWN']}")
         if self._USE_DOOR_INTERLOCK:
-            status.append(f"Door closed: {not self.digitalin.state['DOOR']}")
+            status.append(f"Door closed: {not self._door_state()}")
         if self.digitalin is not None:
             status.append(f'DIO state: {self.digitalin.state}') 
         status.append(self.rinse_status)
@@ -165,10 +177,27 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     def _arm_interlock_check(self):
         if self._USE_DOOR_INTERLOCK:
             oldstate = self.state
-            while self.digitalin.state['DOOR']:
+            while self._door_state():
                 time.sleep(0.2)
                 self.state = 'AWAITING DOOR CLOSED BEFORE MOVING ARM'
             self.state = oldstate
+
+    def _door_state(self):
+        if self.digitalin is not None:
+            if 'DOOR' in self.digitalin.state.keys():
+                return not self.digitalin.state['DOOR']
+        try:
+            state = requests.get(self.robot_interlock_url,headers = {
+        'Opentrons-Version': '2'}).json()['data']['status']
+        except Exception:
+            return True
+        if state == 'open':
+            return True
+        elif state == 'closed':
+            return False
+        else:
+            raise ValueError('could not get robot door status')
+
 
     def _arm_up(self):
         self._arm_interlock_check()

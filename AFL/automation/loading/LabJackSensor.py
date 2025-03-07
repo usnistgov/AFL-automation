@@ -3,6 +3,8 @@ from labjack import ljm
 from AFL.automation.loading.Sensor import Sensor
 import time
 
+from labjack.ljm.ljm import LJMError
+
 
 
 class LabJackSensor(Sensor):
@@ -27,24 +29,25 @@ class LabJackSensor(Sensor):
         self.intermittent_device_handle = intermittent_device_handle
         ljm.startInterval(self.intervalHandle, polling_rate)
         ljm.eWriteName(self.device_handle,self.fio,1)#set physical FIO6 / logical DIO6 to TTL-hi
-        if self.intermittent_device_handle:
-            ljm.close(self.device_handle)
+        # if self.intermittent_device_handle:
+        #     ljm.close(self.device_handle)
 
-    def __del__(self):
-    	ljm.close(self.device_handle)
+    # def __del__(self):
+    # 	ljm.close(self.device_handle)
+
     	
     def calibrate(self):
         ljm.eWriteName(self.device_handle,self.fio,0)
         time.sleep(0.2)
         ljm.eWriteName(self.device_handle,self.fio,1)
-        if self.intermittent_device_handle:
-            ljm.close(self.device_handle)
-        
+        # if self.intermittent_device_handle:
+        #     ljm.close(self.device_handle)
+        #
     def read(self):
         numSkippedIntervals = ljm.waitForNextInterval(self.intervalHandle)
         result = ljm.eReadName(self.device_handle, self.port_to_read)
-        if self.intermittent_device_handle:
-            ljm.close(self.device_handle)
+        # if self.intermittent_device_handle:
+        #     ljm.close(self.device_handle)
         return result 
     def __str__(self):
         info = ljm.getHandleInfo(self.device_handle)

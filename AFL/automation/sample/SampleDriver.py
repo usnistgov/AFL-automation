@@ -151,10 +151,14 @@ class SampleDriver(Driver):
                     raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
 
         # Validate other list types
-        list_keys = ['components', 'AL_components', 'mix_order', 'custom_stock_settings', 'camera_urls']
+        list_keys = ['components', 'AL_components', 'mix_order',  'camera_urls']
         for key in list_keys:
             if not isinstance(self.config[key], list):
                 raise TypeError(f"self.config['{key}'] must be a list")
+        # Validate dicts
+
+        if not isinstance(self.config['custom_stock_settings'],dict):
+            raise TypeError("self.config['custom_stock_settings'] must be a dict")
 
         # Validate types of other keys
         if not isinstance(self.config['ternary'], bool):

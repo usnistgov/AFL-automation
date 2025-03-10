@@ -11,8 +11,7 @@ import os
 import h5py  # type: ignore
 import numpy as np
 import requests  # type: ignore
-import xarray as xr
-
+import xarray as xr 
 from tiled.client import from_uri  # type: ignore
 from tiled.queries import Eq  # type: ignore
 
@@ -55,6 +54,7 @@ class SampleDriver(Driver):
     defaults['composition_var_name'] = 'comps'
     defaults['concat_dim'] = 'sample'
     defaults['sample_composition_tol'] = 0.0
+    defaults['next_samples_variable'] = 'next_samples'
     defaults['camera_urls'] = []
     defaults['snapshot_directory'] = []
 
@@ -137,7 +137,7 @@ class SampleDriver(Driver):
             raise ValueError("At least one instrument must be configured in self.config['instrument']")
 
         for i, instrument in enumerate(self.config['instrument']):
-            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim']
+            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim', 'sample_comps_variable']
             missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
             if missing_instrument_keys:
                 raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
@@ -151,7 +151,7 @@ class SampleDriver(Driver):
                     raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
 
         # Validate other list types
-        list_keys = ['components', 'AL_components', 'mix_order',  'camera_urls']
+        list_keys = ['components', 'AL_components', 'mix_order', 'camera_urls']
         for key in list_keys:
             if not isinstance(self.config[key], list):
                 raise TypeError(f"self.config['{key}'] must be a list")
@@ -159,6 +159,12 @@ class SampleDriver(Driver):
 
         if not isinstance(self.config['custom_stock_settings'],dict):
             raise TypeError("self.config['custom_stock_settings'] must be a dict")
+
+        # Validate other dict types
+        list_keys = ['custom_stock_settings']
+        for key in list_keys:
+            if not isinstance(self.config[key], dict):
+                raise TypeError(f"self.config['{key}'] must be a dict")
 
         # Validate types of other keys
         if not isinstance(self.config['ternary'], bool):
@@ -270,7 +276,7 @@ class SampleDriver(Driver):
     def set_catch_protocol(self, **kwargs):
         self.catch_protocol = AFL.automation.prepare.PipetteAction(**kwargs)
 
-    def fix_protocol_order(self, mix_order: List, custom_stock_settings: List):
+    def fix_protocol_order(self, mix_order: List, custom_stock_settings: Dict):
         mix_order = [self.deck.get_stock(i) for i in mix_order]
         mix_order_map = {loc: new_index for new_index, (stock, loc) in enumerate(mix_order)}
         for sample, validated in self.deck.sample_series:
@@ -384,6 +390,7 @@ class SampleDriver(Driver):
                 f"No client url for 'agent'! self.config['client']={self.config['client']}"
             )
 
+
         # do this now, so that we fail early if we're missing something
         self.validate_config()
 
@@ -471,15 +478,10 @@ class SampleDriver(Driver):
         # Look away ... here be dragons ...
         if enqueue_next:
             ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
-            print('AG_RESULT:',ag_result)
-
-            #this assumes that 'component' is going to be a dim name
-            for AL_sample in ag_result.next_samples.transpose(...,'component'):
-                print('AL_SAMPLE:',AL_sample)
-                
-                new_composition = {} #this currently only works on the last sample
-                for sample in AL_sample:
-                    new_composition[sample.component.values[()]] = {'value':sample.values[()],'units':'milligram / milliliter'}
+            next_samples = ag_result[self.config['next_samples_variable']]
+            
+            new_composition = next_samples.to_pandas().squeeze().to_dict()
+            new_composition = {k:{'value':v,'units':'milligram / milliliter'} for k,v in new_composition.items()}
 
             task = {
                 'task_name':'process_sample',
@@ -899,6 +901,9 @@ class SampleDriver(Driver):
             self.new_data['mfrac_' + component] = self.sample.target_check.mass_fraction[component].magnitude
             self.new_data['mass_' + component] = self.sample.target_check[component].mass.to('mg').magnitude
             self.new_data['mass_' + component].attrs['units'] = 'mg'
+            if self.sample.target_check[component].volume is not None:
+                self.new_data['volume_' + component] = self.sample.target_check[component].volume.to('ml').magnitude
+                self.new_data['volume_' + component].attrs['units'] = 'ml'
 
             # for tiled
             sample_composition['mfrac_' + component] = self.sample.target_check.mass_fraction[component].magnitude

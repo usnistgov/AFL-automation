@@ -1,7 +1,9 @@
 import requests,uuid,time,copy,inspect
 from AFL.automation.shared import serialization
-from AFL.automation.shared.ServerDiscovery import ServerDiscovery
-
+try:
+    from AFL.automation.shared.ServerDiscovery import ServerDiscovery
+except ModuleNotFoundError:
+    pass
 class Client:
     '''
     Communicate with APIServer 
@@ -24,6 +26,7 @@ class Client:
         self.cached_queue = None
         self.queue_iteration = None
         self.supports_queue_iteration = False
+        self.headers = {}
         try:
             import AFL.automation.shared.widgetui
             import IPython

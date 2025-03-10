@@ -137,7 +137,7 @@ class StopLoadCBv2(SensorCallbackThread):
         threshold_v_step = 1,
         threshold_std = 2.5,
         timeout = 120,
-        min_load_time=30,
+        min_load_time=3,
         loadstop_cooldown = 2,
         post_detection_sleep = 0.2,
         baseline_duration = 2,

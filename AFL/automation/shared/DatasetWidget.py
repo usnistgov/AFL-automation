@@ -61,9 +61,9 @@ class DatasetWidget:
 
         # preprocess the dataset before sending to the data model
         self.data_view = DatasetWidget_View(
-            scatt_variables,
-            comps_variable,
-            comps_color_variable,
+            initial_scatt_variables=scatt_variables,
+            initial_comps_variable=comps_variable,
+            initial_comps_color_variable=comps_color_variable,
         )
         self.data_model = DatasetWidget_Model(dataset, sample_dim)
         self.data_index = 0
@@ -88,7 +88,7 @@ class DatasetWidget:
 
     def composition_click_callback(self, figure, location, click):
         index = location.point_inds[0]
-        self.data_index = index
+        self.data_index = int(index)
         self.data_view.text_input["index"].value = self.data_index
         self.update_plots()
 
@@ -109,8 +109,8 @@ class DatasetWidget:
             )
 
     def update_scattering_plot(self):
-        append=False
         if len(self.data_view.dropdown["scatter"].value)>0:
+            append = False
             for scatt_variable in self.data_view.dropdown["scatter"].value:
                 if scatt_variable != "None":
                     x, y = self.data_model.get_scattering(scatt_variable, self.data_index)
@@ -385,6 +385,8 @@ class DatasetWidget_View:
         self.dropdown_categories: Dict[str, List] = defaultdict(list)
 
     def update_colorscale(self,colors=None):
+        if len(self.comp_fig.data) == 0:
+            return
         if colors is not None:
             self.comp_fig.data[0]["marker"]["color"] = colors
             #self.comp_fig.data[0]["marker"]["customdata"] = colors
@@ -421,10 +423,11 @@ class DatasetWidget_View:
                 dropdown.options = ["None"] + comp_vars
 
                 # set the default value if possible
-                if "Composition" in dropdown.description:
-                    if self.initial_comps_variable is None:
-                        self.initial_comps_variable = comp_vars[0]
-                    dropdown.value = self.initial_comps_variable
+                if self.initial_comps_variable is None:
+                    initial_comps_variable = "None"
+                else:
+                    initial_comps_variable = self.initial_comps_variable
+                dropdown.value = initial_comps_variable
 
     def plot_sas(self, x, y, name="SAS", append=False):
         scatt1 = go.Scatter(x=x, y=y, name=name, mode="markers")

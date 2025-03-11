@@ -272,13 +272,13 @@ class OT2HTTPDriver(Driver):
             maintenance_run_id = response.json()['data']['id']
             self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
             
-            # Send home command using the homeAll command type
+            # Send home command using the home command type
             home_response = requests.post(
                 url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands",
                 headers=self.headers,
                 json={
                     "data": {
-                        "commandType": "homeAll",
+                        "commandType": "home",
                         "params": {}
                     }
                 }

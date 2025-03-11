@@ -254,63 +254,90 @@ class OT2HTTPDriver(Driver):
     def home(self, **kwargs):
         self.app.logger.info('Homing the robot\'s axes')
         
+        # Store the maintenance run ID
+        maintenance_run_id = None
+        
         try:
-            # Create a maintenance session for homing
+            # Create a maintenance run for homing
             response = requests.post(
-                url=f"{self.base_url}/sessions",
+                url=f"{self.base_url}/maintenance_runs",
+                headers=self.headers,
+                json={"data": {}}
+            )
+            
+            if response.status_code != 201:
+                self.app.logger.error(f"Failed to create maintenance run: {response.status_code}")
+                raise RuntimeError(f"Failed to create maintenance run: {response.text}")
+            
+            maintenance_run_id = response.json()['data']['id']
+            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            
+            # Send home command using the homeAll command type
+            home_response = requests.post(
+                url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands",
                 headers=self.headers,
                 json={
                     "data": {
-                        "sessionType": "maintenance",
-                        "createParams": {
-                            "emulationMode": False
-                        }
+                        "commandType": "homeAll",
+                        "params": {}
                     }
                 }
             )
             
-            if response.status_code == 201:
-                maintenance_session_id = response.json()['data']['id']
-                
-                # Send home command
-                home_response = requests.post(
-                    url=f"{self.base_url}/sessions/{maintenance_session_id}/commands/execute",
-                    headers=self.headers,
-                    json={"data": {"command": "robot.home", "data": {}}}
+            if home_response.status_code != 201:
+                self.app.logger.error(f"Failed to home robot: {home_response.status_code}")
+                raise RuntimeError(f"Failed to home robot: {home_response.text}")
+            
+            command_id = home_response.json()['data']['id']
+            self.app.logger.info(f"Sent home command: {command_id}")
+            
+            # Wait for the command to complete
+            while True:
+                command_status_response = requests.get(
+                    url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands/{command_id}",
+                    headers=self.headers
                 )
                 
-                if home_response.status_code != 201:
-                    self.app.logger.error(f"Failed to home robot: {home_response.status_code}")
-                    raise RuntimeError(f"Failed to home robot: {home_response.text}")
+                if command_status_response.status_code != 200:
+                    self.app.logger.error(f"Failed to get command status: {command_status_response.status_code}")
+                    raise RuntimeError(f"Failed to get command status: {command_status_response.text}")
                 
-                # Wait for homing to complete
-                while True:
-                    status_response = requests.get(
+                status = command_status_response.json()['data']['status']
+                self.app.logger.debug(f"Command status: {status}")
+                
+                if status == 'succeeded':
+                    self.app.logger.info("Homing completed successfully")
+                    break
+                elif status == 'failed':
+                    error_data = command_status_response.json()['data'].get('error', 'Unknown error')
+                    self.app.logger.error(f"Homing failed: {error_data}")
+                    raise RuntimeError(f"Homing failed: {error_data}")
+                
+                time.sleep(0.5)  # Short delay between status checks
+                
+                time.sleep(0.5)
+            
+            self.app.logger.info("Robot homing completed successfully")
+            return True
+            
+        except Exception as e:
+            self.app.logger.error(f"Error during homing: {str(e)}")
+            raise RuntimeError(f"Error during homing: {str(e)}")
+        
+        finally:
+            # Always clean up the maintenance session if it was created
+            if maintenance_session_id:
+                try:
+                    delete_response = requests.delete(
                         url=f"{self.base_url}/sessions/{maintenance_session_id}",
                         headers=self.headers
                     )
-                    
-                    if status_response.status_code == 200:
-                        current_state = status_response.json()['data']['details']['currentState']
-                        if current_state == 'idle':
-                            break
-                        elif current_state == 'error':
-                            raise RuntimeError(f"Error during homing: {status_response.text}")
-                    
-                    time.sleep(0.5)
-                
-                # Clean up the maintenance session
-                requests.delete(
-                    url=f"{self.base_url}/sessions/{maintenance_session_id}",
-                    headers=self.headers
-                )
-            else:
-                self.app.logger.error(f"Failed to create maintenance session: {response.status_code}")
-                raise RuntimeError(f"Failed to create maintenance session: {response.text}")
-                
-        except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error during homing: {str(e)}")
-            raise RuntimeError(f"Error during homing: {str(e)}")
+                    if delete_response.status_code == 200:
+                        self.app.logger.info(f"Cleaned up maintenance session: {maintenance_session_id}")
+                    else:
+                        self.app.logger.warning(f"Failed to clean up maintenance session: {delete_response.status_code}")
+                except Exception as e:
+                    self.app.logger.warning(f"Error cleaning up maintenance session: {str(e)}")
     
     def parse_well(self, loc):
         for i, loc_part in enumerate(list(loc)):

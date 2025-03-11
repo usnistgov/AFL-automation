@@ -314,8 +314,6 @@ class OT2HTTPDriver(Driver):
                     raise RuntimeError(f"Homing failed: {error_data}")
                 
                 time.sleep(0.5)  # Short delay between status checks
-                
-                time.sleep(0.5)
             
             self.app.logger.info("Robot homing completed successfully")
             return True
@@ -325,19 +323,19 @@ class OT2HTTPDriver(Driver):
             raise RuntimeError(f"Error during homing: {str(e)}")
         
         finally:
-            # Always clean up the maintenance session if it was created
-            if maintenance_session_id:
+            # Always clean up the maintenance run if it was created
+            if maintenance_run_id:
                 try:
                     delete_response = requests.delete(
-                        url=f"{self.base_url}/sessions/{maintenance_session_id}",
+                        url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}",
                         headers=self.headers
                     )
                     if delete_response.status_code == 200:
-                        self.app.logger.info(f"Cleaned up maintenance session: {maintenance_session_id}")
+                        self.app.logger.info(f"Cleaned up maintenance run: {maintenance_run_id}")
                     else:
-                        self.app.logger.warning(f"Failed to clean up maintenance session: {delete_response.status_code}")
+                        self.app.logger.warning(f"Failed to clean up maintenance run: {delete_response.status_code}")
                 except Exception as e:
-                    self.app.logger.warning(f"Error cleaning up maintenance session: {str(e)}")
+                    self.app.logger.warning(f"Error cleaning up maintenance run: {str(e)}")
     
     def parse_well(self, loc):
         for i, loc_part in enumerate(list(loc)):

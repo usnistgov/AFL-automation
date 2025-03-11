@@ -49,7 +49,6 @@ class OT2HTTPDriver(Driver):
                 headers=self.headers
             )
             if response.status_code != 200:
-                self.app.logger.error(f"Failed to connect to robot: {response.status_code}")
                 raise ConnectionError(f"Failed to connect to robot at {self.base_url}")
                 
             # Get attached pipettes
@@ -62,7 +61,7 @@ class OT2HTTPDriver(Driver):
     def _update_pipettes(self):
         """Get information about attached pipettes and their settings"""
         try:
-            self.app.logger.info("Fetching pipette information from robot")
+            if self.app is not None: self.app.logger.info("Fetching pipette information from robot")
             
             # Get basic pipette information
             response = requests.get(
@@ -71,10 +70,9 @@ class OT2HTTPDriver(Driver):
             )
             
             if response.status_code != 200:
-                self.app.logger.error(f"Failed to get pipettes: {response.status_code}")
                 raise RuntimeError(f"Failed to get pipettes: {response.text}")
                 
-            pipettes_data = response.json().get('data', {})
+            pipettes_data = response.json()
             self.pipette_info = {}
             
             # Update min/max transfer values based on attached pipettes
@@ -119,18 +117,17 @@ class OT2HTTPDriver(Driver):
                     
                     if (self.min_transfer is None) or (self.min_transfer > min_volume):
                         self.min_transfer = min_volume
-                        self.app.logger.info(f'Setting minimum transfer to {self.min_transfer}')
+                        if self.app is not None: self.app.logger.info(f'Setting minimum transfer to {self.min_transfer}')
                     
                     if (self.max_transfer is None) or (self.max_transfer < max_volume):
                         self.max_transfer = max_volume
-                        self.app.logger.info(f'Setting maximum transfer to {self.max_transfer}')
+                        if self.app is not None: self.app.logger.info(f'Setting maximum transfer to {self.max_transfer}')
                 else:
-                    self.app.logger.warning(f"Failed to get settings for pipette {pipette['id']}: {settings_response.status_code}")
+                    if self.app is not None: self.app.logger.warning(f"Failed to get settings for pipette {pipette['id']}: {settings_response.status_code}")
             
-            self.app.logger.info(f"Pipette information updated: {self.pipette_info}")
+            if self.app is not None: self.app.logger.info(f"Pipette information updated: {self.pipette_info}")
             
         except Exception as e:
-            self.app.logger.error(f"Error getting pipettes: {str(e)}")
             raise RuntimeError(f"Error getting pipettes: {str(e)}")
     
     def reset_prep_targets(self):
@@ -399,7 +396,7 @@ class OT2HTTPDriver(Driver):
             if module:
                 self.modules[slot] = module
     
- def load_instrument(self, name, mount, tip_rack_slots, **kwargs):
+    def load_instrument(self, name, mount, tip_rack_slots, **kwargs):
         '''
         Store tiprack information for pipettes.
         
@@ -877,7 +874,7 @@ class OT2HTTPDriver(Driver):
         # This is a placeholder - actual implementation would depend on HTTP API capabilities
         self.app.logger.warning("Setting gantry speed is not fully implemented in HTTP API mode")
     
-  def get_pipette(self, volume, method='min_transfers'):
+    def get_pipette(self, volume, method='min_transfers'):
         self.app.logger.debug(f'Looking for a pipette for volume {volume}')
         
         # Make sure we have the latest pipette information

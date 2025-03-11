@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <style>
+
+        .button_row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            padding: 12px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .button:hover {
+            background-color: #555;
+        }
+
+        .element {
+            list-style-type: none;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            word-wrap: break-word; /* Allow text to wrap */
+        }
+
+        .element p {
+            margin: 0;
+        }
+
+        .element.queued {
+            background-color: #ffd966;
+        }
+
+        .element.running {
+            background-color: #85e085;
+        }
+
+        .element.history {
+            background-color: #b3b3b3;
+        }
+
+        .element.status {
+            width: auto; /* Set width to auto */
+            display: inline-block; /* Display as inline block */
+            margin: 2px;
+            padding: 2px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #header-bar {
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+
+        #content-container {
+            display: flex;
+            flex: 1;
+            overflow-x: hidden; /* Hide horizontal overflow */
+            position: relative; /* Position for the resizable handle */
+        }
+
+        .command-args-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        #left-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto; /* Enable vertical scrolling */
+            word-wrap: break-word; /* Allow text to wrap */
+            min-width: 100px; /* Set a minimum width to prevent collapsing */
+            flex-grow: 1; /* Allow left section to grow */
+            width: 50px;
+            overflow-x: hidden; /* Hide horizontal overflow */
+        }
+
+        #right-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto; /* Enable vertical scrolling */
+            flex-grow: 1; /* Allow right section to grow */
+        }
+
+        #resizable-handle {
+            width: 10px;
+            cursor: ew-resize; /* Set cursor style to indicate resize */
+            background-color: #ccc;
+            z-index: 1; /* Ensure it's above other elements */
+        }
+
+        #resizable-handle:hover {
+            background-color: #999; /* Change color on hover for better visibility */
+        }
+
+        .command-container {
+            margin-bottom: 20px;
+        }
+
+    </style>
+    <title>{{ name }}</title>
+</head>
+<body>
+<div id="header-bar">
+    <p>
+    <h3>• {{ name }} • </h3>
+        <span id='time'></span>: <span id='queue_state'></span> with <span id='queue_size'></span> queued /  <span id='history_size'></span> completed
+
+    </p>
+</div>
+<div id="content-container">
+    <div id="left-section">
+        <!-- <h3>Server Status</h3> -->
+       <!-- <p>
+            <span id='time'></span>: {{name}} is <span id='queue_state'></span> with <span id='queue_size'></span> queued /  <span id='history_size'></span> completed
+        </p> -->
+        <div class="button_row">
+            <button class='button' onclick=$.post('/clear_history')>Clear History</button>
+            <button class='button' onclick=$.post('/clear_queue')>Clear Queue</button>
+            <button class='button' onclick=$.post('/halt') style="background-color:red">HALT</button>
+            <button class='button' onclick=$.post({url:'/pause',data:'{"state":true}',contentType:'application/json'})>Pause</button>
+            <button class='button' onclick=$.post({url:'/pause',data:'{"state":false}',contentType:'application/json'})>Unpause</button>
+        </div>
+
+        <div id="driver_status" class="overflow"></div>
+        <div id="quickbar-commands" class="command-container"></div>
+
+        <div id="queued-commands" class="command-container"></div>
+         <a href="static/config-retro.html" target="_blank">Edit Driver Config >></a>
+
+    </div>
+    <div id="right-section">
+        <div id="command-queue">
+            <div id="history" class="overflow"></div>
+            <div id="running" class="overflow"></div>
+            <div id="queued" class="overflow"></div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+   // Global variable to store the JWT token
+    var token = null;
+ function updateTaskList(containerId, tasks, type) {
+        var ul = $("<ul class='element " + type + "'>");
+        for (var i = 0; i < tasks.length; i++) {
+            var task = tasks[i];
+            var meta_str = task.uuid; // Use task.meta.uuid as key
+            if (type === "history") {
+                var displayText = (task.meta.exit_state === "Success!" ? "✓ " : "✗ ");
+            } else {
+                var displayText = "";
+            }
+            displayText += task.task.task_name + ": ";
+            if (type === "queued" && task.meta.queued) {
+                displayText += "queued " + task.meta.queued;
+            } else if (type === "running" && task.meta.started) {
+                displayText += "started " + task.meta.started;
+            } else if (type === "history" && task.meta.ended) {
+                displayText += "completed " + task.meta.ended;
+            } else {
+                displayText += "details unavailable";
+            }
+            ul.append(
+                "<li class='element " + type + "' data-div='" + meta_str + "' uuid='" + meta_str + "'>" +
+                displayText +
+                "</li>")
+
+            // Toggle visibility on click and update local storage
+            ul.children().last().on('click', function () {
+                var metaDiv = $(this).next('.meta'); // Find corresponding meta div
+                metaDiv.toggle();
+                var newState = metaDiv.is(':visible') ? 'visible' : 'hidden';
+                localStorage.setItem(metaDiv[0].id, newState);
+            });
+            ul.append(
+                "<div class='meta' id='" + meta_str + "'><pre>" +
+                JSON.stringify(task, undefined, 2) + // Display full task JSON
+                "</pre></div>"
+            );
+
+            // Check local storage for visibility state
+            var visibilityState = localStorage.getItem(meta_str);
+            if (visibilityState === 'hidden' || visibilityState === null) {
+                ul.children().last().hide();
+            } else {
+                ul.children().last().show();
+            }
+        }
+        $(containerId).html(ul);
+    }
+    // Function to perform login and retrieve JWT token
+    async function login() {
+        try {
+            // Check if token already exists
+            if (token) {
+                return token;
+            }
+
+            // Send login request
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: 'your_username', password: 'domo_arigato' })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to login: ${response.statusText}`);
+            }
+
+            // Retrieve and store the token
+            const data = await response.json();
+            token = data.token;
+            return token;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    $(function () {
+        // Make the content container resizable
+        $('#left-section').resizable({
+            handles: 'e', // Only allow resizing from the east (right) side
+            minWidth: 80, // Set a minimum width for the left section
+            resize: function (event, ui) {
+                // Adjust the width of the right section dynamically
+                var containerWidth = $('#content-container').width();
+                var leftWidth = ui.size.width;
+                var rightWidth = containerWidth - leftWidth;
+                $('#right-section').width(rightWidth);
+            }
+        });
+
+        // Update function to include login before command execution
+        function update() {
+            // Retrieve server time
+            $.get('/get_server_time', function (result) {
+                $("#time").text(result);
+            });
+
+            // Retrieve driver status
+            $.get("driver_status", function (result) {
+                var ul_status = $("<ul class=element>");
+                for (var i = 0, l = result.length; i < l; ++i) {
+                    ul_status.append(
+                        "<li class='element status'>" +
+                        result[i] +
+                        "</li>"
+                    );
+                }
+                $("#driver_status").html(ul_status);
+            });
+
+            // Retrieve queue state
+            $.get('/queue_state', function (data) {
+                $("#queue_state").text(data);
+            });
+
+            // Retrieve queue information
+            $.get("get_queue", function (result) {
+                // Update queue size and history size
+                $('#queue_size').text(result[2].length);
+                $('#history_size').text(result[0].length);
+
+                // Update queue, running tasks, and history
+                updateTaskList("#history", result[0], "history");
+                updateTaskList("#running", result[1], "running");
+                updateTaskList("#queued", result[2], "queued");
+            });
+
+            // Retrieve unqueued commands
+            $.get("/get_quickbar", function (data) {
+                displayCommands("#quickbar-commands", data);
+            });
+
+            // Retrieve queued commands
+            $.get("/get_queued_commands", function (data) {
+                displayCommands("#queued-commands", data);
+            });
+        }
+
+ // Function to display commands and handle command execution
+function displayCommands(containerId, commands) {
+    var container = $(containerId);
+    container.empty(); // Clear previous commands
+
+    // Iterate over each command
+    for (var key in commands) {
+        if (commands.hasOwnProperty(key)) {
+            var command = commands[key];
+            var commandContainer = $("<div class='command-args-container'></div>");
+            var button = $("<button class='button'>" + key + "</button>");
+
+            // Add click event handler to execute the command
+            button.click((function (cmd, args, kwargs) {
+                return function () {
+                    login().then(function (token) {
+                        var payload = { task_name: cmd };
+                        // Add any arguments to the payload
+                        for (var i = 0; i < args.length; i++) {
+                            payload[args[i]] = ""; // Add empty textboxes for arguments
+                        }
+                        // Add kwargs with values from the command definition
+                        for (var j = 0; j < kwargs.length; j++) {
+                            var kwarg = kwargs[j];
+                            payload[kwarg[0]] = kwarg[1]; // Add kwarg name and default value
+                        }
+                        // Execute the command with JWT token in request headers
+                        $.ajax({
+                            type: "POST",
+                            url: "/enqueue",
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            data: JSON.stringify(payload),
+                            success: function () {
+                                console.log("Command enqueued successfully.");
+                            },
+                            error: function (xhr, status, error) {
+                                console.error("Error enqueuing command:", error);
+                            }
+                        });
+                    });
+                };
+            })(key, command.args, command.kwargs));
+
+            // Append button to command container
+            commandContainer.append(button);
+
+            // Add labeled textboxes for kwargs
+            for (var k = 0; k < command.kwargs.length; k++) {
+                var kwarg = command.kwargs[k];
+                var label = $("<label>" + kwarg[0] + ": </label>");
+                var textbox = $("<input type='text' value='" + kwarg[1] + "'>");
+                textbox.on('input', function() {
+                    command[kwarg[0]] = $(this).val(); // Update value in command object
+                });
+                commandContainer.append(label);
+                commandContainer.append(textbox);
+            }
+
+            // Append command container to main container
+            container.append(commandContainer);
+        }
+    }
+}
+
+        // Initial update
+        update();
+        setInterval(update, 500); // Update every 0.5 seconds
+        setTimeout(function () {
+            $('#running')[0].scrollIntoView();
+        }, 1500);
+    });
+</script>
+</body>
+</html>

@@ -16,6 +16,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
 
     '''
     defaults={}
+    defaults['load_mode'] = 'static'
     defaults['load_pressure'] = 2
     defaults['blowout_pressure'] = 20
 
@@ -32,7 +33,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                                 ('blow',5)
                                 ] 
     defaults['external_load_complete_trigger'] = False
-
+    defaults['ramp_load_stop_pressure'] = 7
+    defaults['ramp_load_duration'] = 20
 
     def __init__(self,pctrl,
                       relayboard,
@@ -212,8 +214,12 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         else:
             self.state = f'LOAD IN PROGRESS to {load_dest_label}'
         print('sending dispense command')
-        self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
-        
+        if self.config['load_mode'] == 'static':
+            self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
+        elif self.config['load_mode'] == 'ramp':
+            self.pctrl.ramp_dispense(self.config['load_pressure'],self.config['ramp_load_stop_pressure'],self.config['load_timeout'],const_time = self.config['load_timeout']-self.config['ramp_load_duration'])
+        else:
+            raise ValueError('invalid load_mode in config.  cannot load.  valid values are "static" or "ramp"')
         while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
             time.sleep(0.02)
             
@@ -415,3 +421,53 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                         ls.stopper.data = self._data
                     ls.poll.start()
                     ls.stopper.start()
+
+
+
+
+_DEFAULT_CUSTOM_CONFIG = {
+        '_classname': 'AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell',
+        '_args': [
+                {'_classname': 'AFL.automation.loading.DigitalOutPressureController.DigitalOutPressureController',
+                 '_args': [
+                        {'_classname': 'AFL.automation.loading.LabJackDigitalOut.LabJackDigitalOut',
+                         'intermittent_device_handle': False,
+                         'port_to_write': 'TDAC4',
+                         #'shared_device' = 
+                         },
+                        3
+                 ]},
+                {'_classname': 'AFL.automation.loading.PiPlatesRelay.PiPlatesRelay',
+                '_args': [        
+                        {
+                                7:'arm-up',6:'arm-down',
+                                1:'rinse1',2:'rinse2',3:'blow',4:'piston-vent',5:'postsample'
+                        }]}
+                ],
+        'digitalin': {'_classname': 'AFL.automation.loading.PiGPIO.PiGPIO',
+                        '_args': [{4:'DOOR',14:'ARM_UP',15:'ARM_DOWN'}],
+                        'pull_dir':'UP'
+                        },
+        'load_stopper': [
+                {'_classname': 'AFL.automation.loading.LoadStopperDriver.LoadStopperDriver',
+                '_args': [{'_classname': 'AFL.automation.loading.LabJackSensor.LabJackSensor',
+                           'port_to_read': 'AIN0',
+                           'reset_port': 'DIO6'}],
+                '_add_data': 'data',
+                'name': 'LoadStopperDriver_sans',
+                 'auto_initialize':False,
+                 'sensorlabel':'afterSANS'
+                },
+                {'_classname': 'AFL.automation.loading.LoadStopperDriver.LoadStopperDriver',
+                '_args': [{'_classname': 'AFL.automation.loading.LabJackSensor.LabJackSensor',
+                           'port_to_read': 'AIN1',
+                           'reset_port': 'DIO7'}],
+                '_add_data': 'data',
+                'name': 'LoadStopperDriver_spec',
+                 'auto_initialize':False,
+                 'sensorlabel':'afterSPEC'
+                }
+        ],
+}
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

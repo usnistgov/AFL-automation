@@ -97,7 +97,8 @@ function update(){
         for (var i=0, l=result.length; i<l; ++i) {
             ul_status.append(
                 "<li class='element status'>" + 
-                JSON.stringify(result[i]) + 
+                result[i] +
+		//JSON.stringify(result[i]) + 
                 "</li>"
             );
         }

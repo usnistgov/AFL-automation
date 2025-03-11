@@ -6,6 +6,10 @@ class Server {
         this.address = address;
         this.key = 'S'+(++numOfServers);
         
+        this.queueIterationId = null;
+        this.cachedQueue = null;
+        this.fetchInitialInfo();
+        
         var addStatusBtnID = this.key+'_addStatusBtn';
         this.statusDiv = new Div(this.key,'status',addStatusBtnID);
         var addControlsBtnID = this.key+'_addControlsBtn';
@@ -32,48 +36,43 @@ class Server {
         this.statusbarIDs = [this.key+'_sb_state', this.key+'_sb_time', ];
         $('#status-bar').append(this.name + ': <span id="'+this.statusbarIDs[0]+'"></span>, <span id="'+this.statusbarIDs[1]+'"></span> | ');
         
+          this.debouncedUpdate = debounce(this.update.bind(this), 200); // 200ms delay
+
+
         servers.push(this);
         console.log(servers);
     }
 
-    /**
-     * Updates all shown info about the server
-     */
-    update() {
-        var key = this.key;
-        var state = '#'+this.statusbarIDs[0];
-        var time = '#'+this.statusbarIDs[1];
 
-        this.getQueueState(function(result) {
-            $(state).text(result);
-            var statusDiv = getDiv(key, 'status');
-            var controlsDiv = getDiv(key, 'controls');
-            var queueDiv = getDiv(key, 'queue');
-            var quickbarDiv = getDiv(key, 'quickbar');
-            statusDiv.update(result);
-            queueDiv.update(result);
-            controlsDiv.update(result);
-            quickbarDiv.update(result);
-        });
-
-        this.getServerTime(function(result) {
-            $(time).text(result);
-        })
-    }
-
-    /**
+/**
      * Runs a GET ajax call for the server's queue which runs success_func on success
      * @param {Function} success_func 
      */
     getQueue(success_func) {
-        var link = this.address + 'get_queue';
+        const self = this;
         $.ajax({
-            type:"GET",
-            dataType:"json",
-            url:link,
-            success:success_func
+            type: "GET",
+            dataType: "json",
+            url: this.address + 'get_queue_iteration',
+            success: function(iterationId) {
+                if (iterationId !== self.queueIterationId) {
+                    $.ajax({
+                        type: "GET",
+                        dataType: "json",
+                        url: self.address + 'get_queue?with_iteration=1',
+                        success: function(result) {
+                            self.queueIterationId = result.shift();
+                            self.cachedQueue = result;
+                            success_func(result);
+                        }
+                    });
+                } else if (self.cachedQueue) {
+                    success_func(self.cachedQueue);
+                }
+            }
         });
     }
+
 
     /**
      * Runs a GET ajax call for the server's queued commands which runs success_func on success
@@ -117,19 +116,54 @@ class Server {
         });
     }
 
-    /**
-     * Runs a GET ajax call for the server's queue state which runs success_func on success
-     * @param {Function} success_func 
-     */
-    getQueueState(success_func) {
-        var link = this.address + 'queue_state';
+   
+    fetchInitialInfo() {
+        var link = this.address + 'get_info';
         $.ajax({
-            type:"GET",
-            dataType:"text",
-            url:link,
-            success:success_func
+            type: "GET",
+            dataType: "json",
+            url: link,
+            async: false,
+            success: (result) => {
+                this.name = result.driver;
+                this.experiment = result.experiment;
+                // Store any other necessary initial info
+            }
         });
     }
+
+    getQueueState(callback) {
+        const link = this.address + 'queue_state';
+        $.ajax({
+            type: "GET",
+            dataType: "text",
+            url: link,
+            success: callback
+        });
+    }
+
+    update() {
+        const key = this.key;
+        const state = '#'+this.statusbarIDs[0];
+        const time = '#'+this.statusbarIDs[1];
+
+        this.getQueueState((result) => {
+            $(state).text(result);
+            const statusDiv = getDiv(key, 'status');
+            const controlsDiv = getDiv(key, 'controls');
+            const queueDiv = getDiv(key, 'queue');
+            const quickbarDiv = getDiv(key, 'quickbar');
+            statusDiv.update(result);
+            queueDiv.update(result);
+            controlsDiv.update(result);
+            quickbarDiv.update(result);
+        });
+
+        this.getServerTime((result) => {
+            $(time).text(result);
+        });
+    }
+ 
 
     /**
      * Runs a GET ajax call for the server's info which runs success_func on success
@@ -361,6 +395,7 @@ function getServer(key) {
     console.log('Server not found');
 }
 
+
 /**
  * Adds a server from the info recived from the popup
  * @param {Popup object} popup 
@@ -375,6 +410,15 @@ function addServer(popup) {
     if(isValid) {
         storeServerRoute(route);
         let server = new Server(route); // a new Server object created from the route
+
+        // Save server info in cookie
+        let servers = getCookie('cachedServers') || [];
+        servers.push({
+            address: server.address,
+            name: server.name,
+            key: server.key
+        });
+        setCookie('cachedServers', servers, 30); // Cache for 30 days
 
         addServerToMenu(server); // adds the menu items related to the server to the menu
         addQuickbarDiv(server.key);
@@ -404,7 +448,6 @@ function addServer(popup) {
         alert('URL was not valid.');
     }
 }
-
 /**
  * Stores the server route in local storage (provided the route is not already stored)
  * @param {String} route 
@@ -428,4 +471,16 @@ function storeServerRoute(route) {
         }
     }
     console.log('Stored Routes: ',localStorage.getItem('routes'));
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }

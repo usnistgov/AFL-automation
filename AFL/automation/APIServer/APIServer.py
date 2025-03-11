@@ -39,15 +39,24 @@ try:
     import io
     import numpy as np
     from distutils.util import strtobool
-except ImportError:
+except (ModuleNotFoundError,ImportError):
     warnings.warn('Plotting imports failed! Live data plotting will not work on this server.',stacklevel=2)
 
+try:
+    import socket
+    from zeroconf import IPVersion, ServiceInfo, Zeroconf
+    _ADVERTISE_ZEROCONF=True
+except (ModuleNotFoundError,ImportError):
+    warnings.warn('Could not import zeroconf! Network autodiscovery will not work on this server.',stacklevel=2)
+    _ADVERTISE_ZEROCONF=False
+
 class APIServer:
-    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',plot_template='simple-bokeh.html'):
+    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',new_index_template='index-new.html',plot_template='simple-bokeh.html'):
         self.name = name
         self.experiment = experiment
         self.contact = contact
         self.index_template = index_template
+        self.new_index_template = new_index_template
         self.plot_template = plot_template
         self.data = data
 
@@ -66,16 +75,19 @@ class APIServer:
         self.cors = CORS(self.app)
 
 
-    def create_queue(self,driver):
+    def create_queue(self,driver,add_unqueued=True):
         self.history = []
         self.task_queue = MutableQueue()
         self.driver     = driver
         self.driver.app = self.app
         self.driver.data = self.data
+        if self.driver.dropbox is None:
+            self.driver.dropbox = {}
         self.driver._queue = self.task_queue
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
 
-        self.add_unqueued_routes()
+        if add_unqueued:
+            self.add_unqueued_routes()
 
 
     def reset_queue_daemon(self,driver=None):
@@ -84,16 +96,51 @@ class APIServer:
         self.queue_daemon.terminate()
         self.create_queue(self.driver)
         return 'Success',200
-
+    def advertise_zeroconf(self,**kwargs):
+        if 'port' not in kwargs.keys():
+            port = 5000
+        else:
+            port = kwargs['port']
+        self.zeroconf_info = ServiceInfo(
+            "_aflhttp._tcp.local.",
+            f"{self.queue_daemon.driver.name}._aflhttp._tcp.local.",
+            addresses=[socket.inet_aton("127.0.0.1")],
+            port=port,
+            properties= {
+                        'system_info': 'AFL',
+                        'driver_name': self.queue_daemon.driver.name,
+                        'server_name': self.name,
+                        'contact': self.contact,
+                        'driver_parents': repr(self.queue_daemon.driver.__class__.__mro__)
+                        # other stuff here, AFL system serial, etc.
+                        },
+            server=f"{socket.gethostname()}.local.",
+         )
+        self.zeroconf = Zeroconf(ip_version=IPVersion.All)
+        self.zeroconf.register_service(self.zeroconf_info)
+        print("Started mDNS service advertisement.")
     def run(self,**kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
-        self.app.run(**kwargs)
+        if _ADVERTISE_ZEROCONF:
+            try:
+                self.advertise_zeroconf(**kwargs)
+            except Exception as e:
+                print(f'failed while trying to start zeroconf {e}, continuing')
+        try:
+            self.app.run(**kwargs)
+        finally:
+            if _ADVERTISE_ZEROCONF:
+                self.zeroconf.unregister_service(self.zeroconf_info)
+                self.zeroconf.close()
 
     def run_threaded(self,start_thread=True,**kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
-
+        if _ADVERTISE_ZEROCONF:
+            self.advertise_zeroconf(**kwargs)
+        
+        
         thread = threading.Thread(target=self.app.run,daemon=True,kwargs=kwargs)
         if start_thread:
             thread.start()
@@ -101,7 +148,9 @@ class APIServer:
             return thread
 
     def add_standard_routes(self):
-        self.app.add_url_rule('/','index',self.index)
+        self.app.add_url_rule('/','index_new',self.index_new)
+        self.app.add_url_rule('/new','index_new',self.index_new)
+        self.app.add_url_rule('/old','index',self.index)
         self.app.add_url_rule('/app','app',self.webapp)
         self.app.add_url_rule('/webapp','webapp',self.webapp)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
@@ -112,6 +161,7 @@ class APIServer:
         self.app.add_url_rule('/pause','pause',self.pause,methods=['POST'])
         self.app.add_url_rule('/halt','halt',self.halt,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
+        self.app.add_url_rule('/get_queue_iteration', 'get_queue_iteration', self.get_queue_iteration, methods=['GET'])
         self.app.add_url_rule('/queue_state','queue_state',self.queue_state,methods=['GET'])
         self.app.add_url_rule('/driver_status','driver_status',self.driver_status,methods=['GET'])
         self.app.add_url_rule('/login','login',self.login,methods=['POST'])
@@ -129,6 +179,11 @@ class APIServer:
         self.app.add_url_rule('/get_quickbar','get_quickbar',self.get_quickbar,methods=['POST','GET'])
         self.app.add_url_rule('/set_driver_object','set_driver_object',self.set_driver_object,methods=['POST','GET'])
         self.app.add_url_rule('/get_driver_object','get_driver_object',self.get_driver_object,methods=['POST','GET'])
+        self.app.add_url_rule('/deposit_obj', 'deposit_obj', self.deposit_obj,
+                              methods=['POST', 'GET'])
+        self.app.add_url_rule('/retrieve_obj', 'retrieve_obj', self.retrieve_obj,
+                              methods=['POST', 'GET'])
+
         self.app.before_first_request(self.init)
 
     def get_info(self):
@@ -224,6 +279,18 @@ class APIServer:
         kw['name']        = self.name
         kw['driver']    = self.queue_daemon.driver.name
         return render_template(self.index_template,**kw),200
+    def index_new(self):
+        '''Live, status page of the robot'''
+        self.app.logger.info('Serving index page')
+
+        kw = {}
+        kw['queue']       = self.get_queue()
+        kw['contact']     = self.contact
+        kw['experiment']  = self.experiment
+        kw['queue_state'] = self.queue_state()
+        kw['name']        = self.name
+        kw['driver']    = self.queue_daemon.driver.name
+        return render_template(self.new_index_template,**kw),200
 
     def webapp(self):
         '''Live, status page of the robot'''
@@ -272,6 +339,12 @@ class APIServer:
         elif render_hint == 'precomposed_jpeg':
             self.app.logger.info('Sending png to browser')
             return send_file(result,mimetype='image/jpeg')
+        elif render_hint == 'html':
+            self.app.logger.info('Sending raw html to browser')
+            return result
+        elif render_hint == 'netcdf':
+            self.app.logger.info('Sending netcdf to browser')
+            return send_file(result,download_name = 'dataset.nc',mimetype='application/netcdf')
         else:
             return "Error while rendering output",500
 
@@ -370,8 +443,63 @@ class APIServer:
         return jsonify(status),200
 
     def get_queue(self):
+        data = request.args
+        if 'with_iteration' in data:
+            with_iteration = bool(data['with_iteration'])
+        else:
+            with_iteration = False
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
+        if with_iteration:
+            output.insert(0,self.task_queue.iterationid())
         return jsonify(output),200
+    def get_queue_iteration(self):
+        return jsonify(self.task_queue.iterationid()),200
+
+    @jwt_required()
+    def deposit_obj(self):
+        '''
+        Store an object named obj in the driver's dropbox
+        If a uuid is provided, the object will be stored with that uuid
+        Otherwise, a new uuid will be generated.
+        In either case, the uuid will be returned to the client.
+        '''
+        task = request.json
+        user = get_jwt_identity()
+        obj = request.json['obj']
+        print(f'')
+        if 'uuid' in request.json.keys():
+            uid = request.json['uuid']
+        else:
+            uid = 'DB-' + str(uuid.uuid4())
+        self.app.logger.info(f'{user} is storing an object w uuid {id} in driver dropbox')
+        obj = serialization.deserialize(obj)
+        if self.driver.dropbox is None:
+            self.driver.dropbox = {}
+        self.driver.dropbox[uid] = obj
+        return uid,200
+
+    @jwt_required()
+    def retrieve_obj(self):
+        '''
+        Retrieve an object from the driver's dropbox
+        uuid specifies the object to retrieve
+        delete specifies whether to delete the object after retrieval
+        '''
+        task = request.json
+        user = get_jwt_identity()
+        self.app.logger.info(f'{user} is getting an object with uuid {task["uuid"]} from driver, delete = {task["delete"]} ')
+        if(task['uuid'] not in self.driver.dropbox.keys()):
+            return 'Nothing in dropbox under this uuid',404
+        result = self.driver.dropbox[task['uuid']]
+        if 'delete' not in task.keys():
+            delete = True
+        else:
+            delete = task['delete']
+        if delete:
+            del self.driver.dropbox[task['uuid']]
+        result = serialization.serialize(result)
+        return jsonify({'obj':result}),200
+
 
     @jwt_required()
     def set_driver_object(self):
@@ -406,7 +534,7 @@ class APIServer:
             task_uuid = task['uuid']
             del task['uuid']
         else:
-            task_uuid = uuid.uuid4()
+            task_uuid = 'QD-' + str(uuid.uuid4())
         
         user = get_jwt_identity()
         self.app.logger.info(f'{user} enqueued {request.json}')
@@ -563,4 +691,4 @@ if __name__ =='__main__':
     server = APIServer('TestServer')
     server.add_standard_routes()
     server.create_queue(DummyDriver())
-    server.run(host='0.0.0.0',debug=True)
+    server.run(host='0.0.0.0',debug=False)

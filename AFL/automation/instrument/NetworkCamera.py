@@ -7,10 +7,12 @@ class NetworkCamera:
     
     def __init__(self,url):
         self.url = url
-        
+
+    def camera_reset(self):
+        pass        
     def collect(self):
         '''
         
         '''
         
-        return np.array(Image.open(io.BytesIO(requests.get(self.url).content)))
+        return (True,np.array(Image.open(io.BytesIO(requests.get(self.url).content))))

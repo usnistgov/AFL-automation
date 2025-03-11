@@ -13,21 +13,22 @@ def makeRegistrar():
     def registrarfactory(**kwargs):
         #print(f'Set up registrar-factory with registry {registry}...')
         def registrar(func):#,render_hint=None):  #kwarg = kwargs):
-            functions.append(func.__name__)
-            decorator_kwargs[func.__name__]=kwargs
-
-            argspec = inspect.getfullargspec(func)
-            if argspec.defaults is None:
-                fargs = argspec.args
-                fkwargs = []
-            else:
-                fargs = argspec.args[:-len(argspec.defaults)]
-                fkwargs = [(i,j) for i,j in zip(argspec.args[-len(argspec.defaults):],argspec.defaults)]
-            if fargs[0] == 'self':
-                del fargs[0]
-            function_info[func.__name__] = {'args':fargs,'kwargs':fkwargs,'doc':func.__doc__}
-            if 'qb' in kwargs:
-                function_info[func.__name__]['qb'] = kwargs['qb']
+            if func.__name__ not in functions:
+                functions.append(func.__name__)
+                decorator_kwargs[func.__name__]=kwargs
+        
+                argspec = inspect.getfullargspec(func)
+                if argspec.defaults is None:
+                    fargs = argspec.args
+                    fkwargs = []
+                else:
+                    fargs = argspec.args[:-len(argspec.defaults)]
+                    fkwargs = [(i,j) for i,j in zip(argspec.args[-len(argspec.defaults):],argspec.defaults)]
+                if fargs[0] == 'self':
+                    del fargs[0]
+                function_info[func.__name__] = {'args':fargs,'kwargs':fkwargs,'doc':func.__doc__}
+                if 'qb' in kwargs:
+                    function_info[func.__name__]['qb'] = kwargs['qb']
             return func  # normally a decorator returns a wrapped function, 
                          # but here we return func unmodified, after registering it
         return registrar
@@ -44,6 +45,8 @@ class Driver:
     def __init__(self,name,defaults=None,overrides=None):
         self.app = None
         self.data = None
+        self.dropbox = None
+
         if name is None:
             self.name = 'Driver'
         else:
@@ -122,7 +125,7 @@ class Driver:
     
     def set_sample(self,sample_name,sample_uuid=None,**kwargs):
         if sample_uuid is None:
-            sample_uuid = str(uuid.uuid4())
+            sample_uuid = 'SAM-' + str(uuid.uuid4())
 
         kwargs.update({'sample_name':sample_name,'sample_uuid':sample_uuid})
         self.data.update(kwargs)
@@ -205,3 +208,34 @@ class Driver:
         for name,value in data.items():
             self.app.logger.info(f'Setting data \'{name}\'')
             self.data.update(data)
+
+    def retrieve_obj(self,uid,delete=True):
+        '''Retrieve an object from the dropbox
+
+        Parameters
+        ----------
+        uid : str
+            The uuid of the file to retrieve
+        '''
+        self.app.logger.info(f'Retrieving file \'{uid}\' from dropbox')
+        obj = self.dropbox[uid]
+        if delete:
+            del self.dropbox[uid]
+        return obj
+    def deposit_obj(self,obj,uid=None):
+        '''Store an object in the dropbox
+
+        Parameters
+        ----------
+        obj : object
+            The object to store in the dropbox
+        uid : str
+            The uuid to store the object under
+        '''
+        if uid is None:
+            uid = 'DB-' + str(uuid.uuid4())
+        if self.dropbox is None:
+            self.dropbox = {}
+        self.app.logger.info(f'Storing object in dropbox as {uuid}')
+        self.dropbox[uid] = obj
+        return uid

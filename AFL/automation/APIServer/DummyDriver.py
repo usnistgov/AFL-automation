@@ -3,6 +3,7 @@ from AFL.automation.APIServer.Driver import Driver
 from math import ceil,sqrt
 import numpy as np
 import pathlib
+import time
 
 class DummyDriver(Driver):
     defaults = {}
@@ -21,19 +22,17 @@ class DummyDriver(Driver):
         status.append('Selectors: selecting')
         status.append('Neutrons: scattering')
         return status
-    '''
-    def execute(self,**kwargs):
-        if self.app is not None:
-            self.app.logger.debug(f'Executing task {kwargs}')
-
-        if 'task_name' in kwargs:
-            if kwargs['task_name'] == 'error':
-                raise RuntimeError()
-            elif kwargs['task_name'] in ('get_parameter','get_parameters','set_parameter','set_parameters'):
-                task_name = kwargs.get('task_name',None)
-                del kwargs['task_name']
-                return_val = getattr(self,task_name)(**kwargs)
-                return return_val
+    
+    '''def execute(self,**kwargs):
+        try:
+           Driver.execute(self,**kwargs)
+        except AttributeError:
+            if self.app is not None:
+                self.app.logger.debug(f'Executing non-existent task {kwargs}')
+            time.sleep(0.5)
+            return 0
+    
+    #add the get_well_plate here
     '''
     @Driver.queued()
     def test_command1(self,kwarg1=None,kwarg2=True):
@@ -99,3 +98,6 @@ class DummyDriver(Driver):
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
     def loadSample(self,cellname='cell',sampleVolume=0):
         pass
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

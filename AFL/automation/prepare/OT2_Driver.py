@@ -55,6 +55,12 @@ class OT2_Driver(Driver):
             flow_str = f' @ {aspirate}/{dispense} uL/s'
             status.append(str(v)+flow_str)
             status.append(f'Gantry Speed: {v.default_speed} mm/s')
+            n_tips_remain = 0
+            for rack in v.tip_racks:
+                for well in rack.wells():
+                    if well.has_tip:
+                        n_tips_remain += 1
+            status.append(f'{str(v)}: {n_tips_remain} tips left')
         for k,v in self.protocol.loaded_labwares.items():
             status.append(str(v))
         return status
@@ -656,3 +662,5 @@ def argmax(array):
 #argmin because numpy cannot be installed
 def argmin(array):
     return array.index(min(array)) 
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

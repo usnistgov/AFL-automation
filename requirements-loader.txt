@@ -1,0 +1,4 @@
+pi-plates
+spidev
+rpi-lgpio
+labjack-ljm

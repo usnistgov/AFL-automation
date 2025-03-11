@@ -60,48 +60,78 @@ class OT2HTTPDriver(Driver):
             raise ConnectionError(f"Error connecting to robot at {self.base_url}: {str(e)}")
     
     def _update_pipettes(self):
-        """Get information about attached pipettes"""
+        """Get information about attached pipettes and their settings"""
         try:
+            self.app.logger.info("Fetching pipette information from robot")
+            
+            # Get basic pipette information
             response = requests.get(
                 url=f"{self.base_url}/pipettes",
                 headers=self.headers
             )
-            if response.status_code == 200:
-                pipettes_data = response.json().get('data', {})
-                self.pipette_info = pipettes_data
-                
-                # Update min/max transfer values based on attached pipettes
-                self.min_transfer = None
-                self.max_transfer = None
-                
-                for mount, pipette in pipettes_data.items():
-                    if not pipette:
-                        continue
-                    
-                    # Get pipette settings to determine min/max volumes
-                    settings_response = requests.get(
-                        url=f"{self.base_url}/settings/pipettes/{pipette['id']}",
-                        headers=self.headers
-                    )
-                    
-                    if settings_response.status_code == 200:
-                        settings = settings_response.json().get('data', {})
-                        min_volume = settings.get('minVolume', 1)
-                        max_volume = settings.get('maxVolume', 300)
-                        
-                        if (self.min_transfer is None) or (self.min_transfer > min_volume):
-                            self.min_transfer = min_volume
-                            self.app.logger.info(f'Setting minimum transfer to {self.min_transfer}')
-                        
-                        if (self.max_transfer is None) or (self.max_transfer < max_volume):
-                            self.max_transfer = max_volume
-                            self.app.logger.info(f'Setting maximum transfer to {self.max_transfer}')
-                
-            else:
+            
+            if response.status_code != 200:
                 self.app.logger.error(f"Failed to get pipettes: {response.status_code}")
+                raise RuntimeError(f"Failed to get pipettes: {response.text}")
                 
-        except requests.exceptions.RequestException as e:
+            pipettes_data = response.json().get('data', {})
+            self.pipette_info = {}
+            
+            # Update min/max transfer values based on attached pipettes
+            self.min_transfer = None
+            self.max_transfer = None
+            
+            for mount, pipette in pipettes_data.items():
+                if not pipette:
+                    # No pipette in this mount
+                    self.pipette_info[mount] = None
+                    continue
+                
+                # Store basic pipette info
+                self.pipette_info[mount] = {
+                    'id': pipette['id'],
+                    'name': pipette['name'],
+                    'model': pipette['model'],
+                    'mount': mount
+                }
+                
+                # Get detailed pipette settings
+                settings_response = requests.get(
+                    url=f"{self.base_url}/settings/pipettes/{pipette['id']}",
+                    headers=self.headers
+                )
+                
+                if settings_response.status_code == 200:
+                    settings = settings_response.json().get('data', {})
+                    
+                    # Store all settings in the pipette info
+                    self.pipette_info[mount].update({
+                        'min_volume': settings.get('minVolume', 1),
+                        'max_volume': settings.get('maxVolume', 300),
+                        'aspirate_flow_rate': settings.get('aspirateFlowRate', {}).get('value'),
+                        'dispense_flow_rate': settings.get('dispenseFlowRate', {}).get('value'),
+                        'channels': pipette.get('channels', 1)
+                    })
+                    
+                    # Update global min/max transfer values
+                    min_volume = settings.get('minVolume', 1)
+                    max_volume = settings.get('maxVolume', 300)
+                    
+                    if (self.min_transfer is None) or (self.min_transfer > min_volume):
+                        self.min_transfer = min_volume
+                        self.app.logger.info(f'Setting minimum transfer to {self.min_transfer}')
+                    
+                    if (self.max_transfer is None) or (self.max_transfer < max_volume):
+                        self.max_transfer = max_volume
+                        self.app.logger.info(f'Setting maximum transfer to {self.max_transfer}')
+                else:
+                    self.app.logger.warning(f"Failed to get settings for pipette {pipette['id']}: {settings_response.status_code}")
+            
+            self.app.logger.info(f"Pipette information updated: {self.pipette_info}")
+            
+        except Exception as e:
             self.app.logger.error(f"Error getting pipettes: {str(e)}")
+            raise RuntimeError(f"Error getting pipettes: {str(e)}")
     
     def reset_prep_targets(self):
         self.prep_targets = []
@@ -369,19 +399,28 @@ class OT2HTTPDriver(Driver):
             if module:
                 self.modules[slot] = module
     
-    def load_instrument(self, name, mount, tip_rack_slots, **kwargs):
-        '''Load a pipette into the protocol'''
-        self.app.logger.debug(f'Loading pipette \'{name}\' into mount \'{mount}\' with tip_racks in slots {tip_rack_slots}')
+ def load_instrument(self, name, mount, tip_rack_slots, **kwargs):
+        '''
+        Store tiprack information for pipettes.
         
-        # In HTTP API, instruments are loaded when creating a protocol session
-        # We'll store the information for later use when generating the protocol
-        if mount in self.loaded_instruments:
-            self.app.logger.info(f'Instrument already loaded on {mount} mount')
-        else:
-            self.loaded_instruments[mount] = {
-                'name': name,
-                'tip_racks': [self.loaded_labware.get(slot) for slot in listify(tip_rack_slots)]
-            }
+        In the HTTP API, pipettes are physically attached to the robot and don't need to be "loaded".
+        This method just ensures we have the latest pipette data and stores tiprack information.
+        '''
+        self.app.logger.debug(f'Storing tiprack information for mount \'{mount}\' with tip_racks in slots {tip_rack_slots}')
+        
+        # Make sure we have the latest pipette information
+        self._update_pipettes()
+        
+        # Store the tiprack information for this mount
+        self.loaded_instruments[mount] = {
+            'name': name,  # We store this for backward compatibility
+            'tip_racks': [self.loaded_labware.get(slot) for slot in listify(tip_rack_slots)]
+        }
+        
+        # Verify that there's actually a pipette in this mount
+        if mount not in self.pipette_info or self.pipette_info[mount] is None:
+            self.app.logger.warning(f"No physical pipette detected in {mount} mount, but tiprack information stored")
+
     
     def _generate_protocol(self):
         """Generate a Python protocol based on loaded labware and instruments"""
@@ -838,34 +877,29 @@ class OT2HTTPDriver(Driver):
         # This is a placeholder - actual implementation would depend on HTTP API capabilities
         self.app.logger.warning("Setting gantry speed is not fully implemented in HTTP API mode")
     
-    def get_pipette(self, volume, method='min_transfers'):
+  def get_pipette(self, volume, method='min_transfers'):
         self.app.logger.debug(f'Looking for a pipette for volume {volume}')
+        
+        # Make sure we have the latest pipette information
+        self._update_pipettes()
         
         pipettes = []
         for mount, pipette_data in self.pipette_info.items():
             if not pipette_data:
                 continue
             
-            # Get pipette settings
-            try:
-                settings_response = requests.get(
-                    url=f"{self.base_url}/settings/pipettes/{pipette_data['id']}",
-                    headers=self.headers
-                )
-                
-                if settings_response.status_code == 200:
-                    settings = settings_response.json().get('data', {})
-                    min_volume = settings.get('minVolume', 1)
-                    max_volume = settings.get('maxVolume', 300)
-                    
-                    if volume >= min_volume:
-                        pipettes.append({
-                            'object': mount,  # Use mount as the identifier
-                            'min_volume': min_volume,
-                            'max_volume': max_volume
-                        })
-            except requests.exceptions.RequestException:
-                continue
+            min_volume = pipette_data.get('min_volume', 1)
+            max_volume = pipette_data.get('max_volume', 300)
+            
+            if volume >= min_volume:
+                pipettes.append({
+                    'object': mount,  # Use mount as the identifier
+                    'min_volume': min_volume,
+                    'max_volume': max_volume,
+                    'name': pipette_data.get('name'),
+                    'model': pipette_data.get('model'),
+                    'channels': pipette_data.get('channels', 1)
+                })
         
         if not pipettes:
             raise ValueError('No suitable pipettes found!\n')
@@ -899,7 +933,7 @@ class OT2HTTPDriver(Driver):
         if self.data is not None:
             self.data['chosen_pipette'] = str(pipette)
         
-        return pipette['object']
+        return pipette
     
     def get_aspirate_rate(self, pipette=None):
         '''Get current aspirate rate for a pipette'''
@@ -916,14 +950,7 @@ class OT2HTTPDriver(Driver):
         try:
             for mount, pipette_data in self.pipette_info.items():
                 if mount == pipette and pipette_data:
-                    settings_response = requests.get(
-                        url=f"{self.base_url}/settings/pipettes/{pipette_data['id']}",
-                        headers=self.headers
-                    )
-                    
-                    if settings_response.status_code == 200:
-                        settings = settings_response.json().get('data', {})
-                        return settings.get('aspirateFlowRate', 150)
+                    return pipette_data.get('aspirate_flow_rate', 150)
         except requests.exceptions.RequestException:
             pass
             
@@ -944,14 +971,7 @@ class OT2HTTPDriver(Driver):
         try:
             for mount, pipette_data in self.pipette_info.items():
                 if mount == pipette and pipette_data:
-                    settings_response = requests.get(
-                        url=f"{self.base_url}/settings/pipettes/{pipette_data['id']}",
-                        headers=self.headers
-                    )
-                    
-                    if settings_response.status_code == 200:
-                        settings = settings_response.json().get('data', {})
-                        return settings.get('dispenseFlowRate', 300)
+                    return pipette_data.get('dispense_flow_rate', 300)
         except requests.exceptions.RequestException:
             pass
             
@@ -968,8 +988,7 @@ class OT2HTTPDriver(Driver):
             # Create a maintenance run
             response = requests.post(
                 url=f"{self.base_url}/maintenance_runs",
-                headers=self.headers,
-                json={"data": {}}
+                headers=self.headers
             )
             
             if response.status_code != 201:
@@ -1075,8 +1094,7 @@ class OT2HTTPDriver(Driver):
             # Create a maintenance run
             response = requests.post(
                 url=f"{self.base_url}/maintenance_runs",
-                headers=self.headers,
-                json={"data": {}}
+                headers=self.headers
             )
             
             if response.status_code != 201:
@@ -1182,8 +1200,7 @@ class OT2HTTPDriver(Driver):
             # Create a maintenance run
             response = requests.post(
                 url=f"{self.base_url}/maintenance_runs",
-                headers=self.headers,
-                json={"data": {}}
+                headers=self.headers
             )
             
             if response.status_code != 201:
@@ -1289,8 +1306,7 @@ class OT2HTTPDriver(Driver):
             # Create a maintenance run
             response = requests.post(
                 url=f"{self.base_url}/maintenance_runs",
-                headers=self.headers,
-                json={"data": {}}
+                headers=self.headers
             )
             
             if response.status_code != 201:
@@ -1395,8 +1411,7 @@ class OT2HTTPDriver(Driver):
             # Create a maintenance run
             response = requests.post(
                 url=f"{self.base_url}/maintenance_runs",
-                headers=self.headers,
-                json={"data": {}}
+                headers=self.headers
             )
             
             if response.status_code != 201:

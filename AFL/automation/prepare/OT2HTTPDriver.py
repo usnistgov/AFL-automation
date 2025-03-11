@@ -959,238 +959,580 @@ class OT2HTTPDriver(Driver):
     
     # HTTP API communication with heater-shaker module
     def set_shake(self, rpm):
-        self._ensure_session_exists()
+        self.app.logger.info(f'Setting heater-shaker speed to {rpm} RPM')
+        
+        # Store the maintenance run ID
+        maintenance_run_id = None
+        
         try:
-            # Find the heater-shaker module ID
+            # Create a maintenance run
+            response = requests.post(
+                url=f"{self.base_url}/maintenance_runs",
+                headers=self.headers,
+                json={"data": {}}
+            )
+            
+            if response.status_code != 201:
+                self.app.logger.error(f"Failed to create maintenance run: {response.status_code}")
+                raise RuntimeError(f"Failed to create maintenance run: {response.text}")
+            
+            maintenance_run_id = response.json()['data']['id']
+            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            
+            # Get modules to find the heater-shaker module ID
             modules_response = requests.get(
                 url=f"{self.base_url}/modules",
                 headers=self.headers
             )
             
-            if modules_response.status_code == 200:
-                modules = modules_response.json().get('data', [])
-                heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
-                
-                if heater_shaker_module:
-                    module_id = heater_shaker_module.get('id')
-                    
-                    # Execute the shake command
-                    command_response = requests.post(
-                        url=f"{self.base_url}/modules/{module_id}/commands/execute",
-                        headers=self.headers,
-                        json={
-                            "data": {
-                                "command": "setShakeSpeed",
-                                "data": {"rpm": int(rpm)}
-                            }
-                        }
-                    )
-                    
-                    if command_response.status_code != 201:
-                        self.app.logger.error(f"Failed to set shake speed: {command_response.status_code}")
-                        self.app.logger.error(f"Response: {command_response.text}")
-                else:
-                    self.app.logger.error("No heater-shaker module found")
-            else:
+            if modules_response.status_code != 200:
                 self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
+                raise RuntimeError(f"Failed to get modules: {modules_response.text}")
                 
-        except requests.exceptions.RequestException as e:
+            modules = modules_response.json().get('data', [])
+            heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
+            
+            if not heater_shaker_module:
+                self.app.logger.error("No heater-shaker module found")
+                raise RuntimeError("No heater-shaker module found")
+                
+            module_id = heater_shaker_module.get('id')
+            
+            # Send setShakeSpeed command using the maintenance run
+            command_response = requests.post(
+                url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands",
+                headers=self.headers,
+                json={
+                    "data": {
+                        "commandType": "setShakeSpeed",
+                        "params": {
+                            "moduleId": module_id,
+                            "rpm": int(rpm)
+                        }
+                    }
+                }
+            )
+            
+            if command_response.status_code != 201:
+                self.app.logger.error(f"Failed to set shake speed: {command_response.status_code}")
+                raise RuntimeError(f"Failed to set shake speed: {command_response.text}")
+            
+            command_id = command_response.json()['data']['id']
+            self.app.logger.info(f"Sent setShakeSpeed command: {command_id}")
+            
+            # Wait for the command to complete
+            while True:
+                command_status_response = requests.get(
+                    url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands/{command_id}",
+                    headers=self.headers
+                )
+                
+                if command_status_response.status_code != 200:
+                    self.app.logger.error(f"Failed to get command status: {command_status_response.status_code}")
+                    raise RuntimeError(f"Failed to get command status: {command_status_response.text}")
+                
+                status = command_status_response.json()['data']['status']
+                self.app.logger.debug(f"Command status: {status}")
+                
+                if status == 'succeeded':
+                    self.app.logger.info(f"Successfully set shake speed to {rpm} RPM")
+                    break
+                elif status == 'failed':
+                    error_data = command_status_response.json()['data'].get('error', 'Unknown error')
+                    self.app.logger.error(f"Failed to set shake speed: {error_data}")
+                    raise RuntimeError(f"Failed to set shake speed: {error_data}")
+                
+                time.sleep(0.5)  # Short delay between status checks
+            
+            return True
+            
+        except Exception as e:
             self.app.logger.error(f"Error setting shake speed: {str(e)}")
-    
-    def stop_shake(self):
-        self._ensure_session_exists()
-        try:
-            # Find the heater-shaker module ID
-            modules_response = requests.get(
-                url=f"{self.base_url}/modules",
-                headers=self.headers
-            )
-            
-            if modules_response.status_code == 200:
-                modules = modules_response.json().get('data', [])
-                heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
-                
-                if heater_shaker_module:
-                    module_id = heater_shaker_module.get('id')
-                    
-                    # Execute the stop shake command
-                    command_response = requests.post(
-                        url=f"{self.base_url}/modules/{module_id}/commands/execute",
-                        headers=self.headers,
-                        json={
-                            "data": {
-                                "command": "setShakeSpeed",
-                                "data": {"rpm": 0}
-                            }
-                        }
-                    )
-                    
-                    if command_response.status_code != 201:
-                        self.app.logger.error(f"Failed to stop shaking: {command_response.status_code}")
-                        self.app.logger.error(f"Response: {command_response.text}")
-                else:
-                    self.app.logger.error("No heater-shaker module found")
-            else:
-                self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
-                
-        except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error stopping shake: {str(e)}")
-    
-    def set_shaker_temp(self, temp):
-        self._ensure_session_exists()
-        try:
-            # Find the heater-shaker module ID
-            modules_response = requests.get(
-                url=f"{self.base_url}/modules",
-                headers=self.headers
-            )
-            
-            if modules_response.status_code == 200:
-                modules = modules_response.json().get('data', [])
-                heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
-                
-                if heater_shaker_module:
-                    module_id = heater_shaker_module.get('id')
-                    
-                    # Execute the set temperature command
-                    command_response = requests.post(
-                        url=f"{self.base_url}/modules/{module_id}/commands/execute",
-                        headers=self.headers,
-                        json={
-                            "data": {
-                                "command": "setTargetTemperature",
-                                "data": {"celsius": int(temp)}
-                            }
-                        }
-                    )
-                    
-                    if command_response.status_code != 201:
-                        self.app.logger.error(f"Failed to set temperature: {command_response.status_code}")
-                        self.app.logger.error(f"Response: {command_response.text}")
-                else:
-                    self.app.logger.error("No heater-shaker module found")
-            else:
-                self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
-                
-        except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error setting temperature: {str(e)}")
-    
-    def unlatch_shaker(self):
-        self._ensure_session_exists()
-        try:
-            # Find the heater-shaker module ID
-            modules_response = requests.get(
-                url=f"{self.base_url}/modules",
-                headers=self.headers
-            )
-            
-            if modules_response.status_code == 200:
-                modules = modules_response.json().get('data', [])
-                heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
-                
-                if heater_shaker_module:
-                    module_id = heater_shaker_module.get('id')
-                    
-                    # Execute the unlatch command
-                    command_response = requests.post(
-                        url=f"{self.base_url}/modules/{module_id}/commands/execute",
-                        headers=self.headers,
-                        json={
-                            "data": {
-                                "command": "openLabwareLatch",
-                                "data": {}
-                            }
-                        }
-                    )
-                    
-                    if command_response.status_code != 201:
-                        self.app.logger.error(f"Failed to unlatch shaker: {command_response.status_code}")
-                        self.app.logger.error(f"Response: {command_response.text}")
-                else:
-                    self.app.logger.error("No heater-shaker module found")
-            else:
-                self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
-                
-        except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error unlatching shaker: {str(e)}")
-    
-    def latch_shaker(self):
-        self._ensure_session_exists()
-        try:
-            # Find the heater-shaker module ID
-            modules_response = requests.get(
-                url=f"{self.base_url}/modules",
-                headers=self.headers
-            )
-            
-            if modules_response.status_code == 200:
-                modules = modules_response.json().get('data', [])
-                heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
-                
-                if heater_shaker_module:
-                    module_id = heater_shaker_module.get('id')
-                    
-                    # Execute the latch command
-                    command_response = requests.post(
-                        url=f"{self.base_url}/modules/{module_id}/commands/execute",
-                        headers=self.headers,
-                        json={
-                            "data": {
-                                "command": "closeLabwareLatch",
-                                "data": {}
-                            }
-                        }
-                    )
-                    
-                    if command_response.status_code != 201:
-                        self.app.logger.error(f"Failed to latch shaker: {command_response.status_code}")
-                        self.app.logger.error(f"Response: {command_response.text}")
-                else:
-                    self.app.logger.error("No heater-shaker module found")
-            else:
-                self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
-                
-        except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error latching shaker: {str(e)}")
-    
-    def get_shaker_temp(self):
-        self._ensure_session_exists()
-        try:
-            # Find the heater-shaker module ID
-            modules_response = requests.get(
-                url=f"{self.base_url}/modules",
-                headers=self.headers
-            )
-            
-            if modules_response.status_code == 200:
-                modules = modules_response.json().get('data', [])
-                heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
-                
-                if heater_shaker_module:
-                    module_id = heater_shaker_module.get('id')
-                    
-                    # Get the module data which includes temperature
-                    module_data_response = requests.get(
-                        url=f"{self.base_url}/modules/{module_id}",
+            raise RuntimeError(f"Error setting shake speed: {str(e)}")
+        
+        finally:
+            # Always clean up the maintenance run if it was created
+            if maintenance_run_id:
+                try:
+                    delete_response = requests.delete(
+                        url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}",
                         headers=self.headers
                     )
-                    
-                    if module_data_response.status_code == 200:
-                        module_data = module_data_response.json().get('data', {})
-                        current_temp = module_data.get('data', {}).get('currentTemperature')
-                        target_temp = module_data.get('data', {}).get('targetTemperature')
-                        return f"Current: {current_temp}°C, Target: {target_temp}°C"
+                    if delete_response.status_code == 200:
+                        self.app.logger.info(f"Cleaned up maintenance run: {maintenance_run_id}")
                     else:
-                        self.app.logger.error(f"Failed to get module data: {module_data_response.status_code}")
-                        return "Error getting temperature"
-                else:
-                    self.app.logger.error("No heater-shaker module found")
-                    return "No heater-shaker module found"
-            else:
+                        self.app.logger.warning(f"Failed to clean up maintenance run: {delete_response.status_code}")
+                except Exception as e:
+                    self.app.logger.warning(f"Error cleaning up maintenance run: {str(e)}")
+    
+    def stop_shake(self):
+        self.app.logger.info('Stopping heater-shaker')
+        
+        # Store the maintenance run ID
+        maintenance_run_id = None
+        
+        try:
+            # Create a maintenance run
+            response = requests.post(
+                url=f"{self.base_url}/maintenance_runs",
+                headers=self.headers,
+                json={"data": {}}
+            )
+            
+            if response.status_code != 201:
+                self.app.logger.error(f"Failed to create maintenance run: {response.status_code}")
+                raise RuntimeError(f"Failed to create maintenance run: {response.text}")
+            
+            maintenance_run_id = response.json()['data']['id']
+            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            
+            # Get modules to find the heater-shaker module ID
+            modules_response = requests.get(
+                url=f"{self.base_url}/modules",
+                headers=self.headers
+            )
+            
+            if modules_response.status_code != 200:
                 self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
-                return "Error getting modules"
+                raise RuntimeError(f"Failed to get modules: {modules_response.text}")
                 
-        except requests.exceptions.RequestException as e:
+            modules = modules_response.json().get('data', [])
+            heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
+            
+            if not heater_shaker_module:
+                self.app.logger.error("No heater-shaker module found")
+                raise RuntimeError("No heater-shaker module found")
+                
+            module_id = heater_shaker_module.get('id')
+            
+            # Send setShakeSpeed command with 0 RPM to stop shaking
+            command_response = requests.post(
+                url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands",
+                headers=self.headers,
+                json={
+                    "data": {
+                        "commandType": "setShakeSpeed",
+                        "params": {
+                            "moduleId": module_id,
+                            "rpm": 0
+                        }
+                    }
+                }
+            )
+            
+            if command_response.status_code != 201:
+                self.app.logger.error(f"Failed to stop shaking: {command_response.status_code}")
+                raise RuntimeError(f"Failed to stop shaking: {command_response.text}")
+            
+            command_id = command_response.json()['data']['id']
+            self.app.logger.info(f"Sent stop shaking command: {command_id}")
+            
+            # Wait for the command to complete
+            while True:
+                command_status_response = requests.get(
+                    url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands/{command_id}",
+                    headers=self.headers
+                )
+                
+                if command_status_response.status_code != 200:
+                    self.app.logger.error(f"Failed to get command status: {command_status_response.status_code}")
+                    raise RuntimeError(f"Failed to get command status: {command_status_response.text}")
+                
+                status = command_status_response.json()['data']['status']
+                self.app.logger.debug(f"Command status: {status}")
+                
+                if status == 'succeeded':
+                    self.app.logger.info("Successfully stopped shaking")
+                    break
+                elif status == 'failed':
+                    error_data = command_status_response.json()['data'].get('error', 'Unknown error')
+                    self.app.logger.error(f"Failed to stop shaking: {error_data}")
+                    raise RuntimeError(f"Failed to stop shaking: {error_data}")
+                
+                time.sleep(0.5)  # Short delay between status checks
+            
+            return True
+            
+        except Exception as e:
+            self.app.logger.error(f"Error stopping shake: {str(e)}")
+            raise RuntimeError(f"Error stopping shake: {str(e)}")
+        
+        finally:
+            # Always clean up the maintenance run if it was created
+            if maintenance_run_id:
+                try:
+                    delete_response = requests.delete(
+                        url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}",
+                        headers=self.headers
+                    )
+                    if delete_response.status_code == 200:
+                        self.app.logger.info(f"Cleaned up maintenance run: {maintenance_run_id}")
+                    else:
+                        self.app.logger.warning(f"Failed to clean up maintenance run: {delete_response.status_code}")
+                except Exception as e:
+                    self.app.logger.warning(f"Error cleaning up maintenance run: {str(e)}")
+    
+    def set_shaker_temp(self, temp):
+        self.app.logger.info(f'Setting heater-shaker temperature to {temp}°C')
+        
+        # Store the maintenance run ID
+        maintenance_run_id = None
+        
+        try:
+            # Create a maintenance run
+            response = requests.post(
+                url=f"{self.base_url}/maintenance_runs",
+                headers=self.headers,
+                json={"data": {}}
+            )
+            
+            if response.status_code != 201:
+                self.app.logger.error(f"Failed to create maintenance run: {response.status_code}")
+                raise RuntimeError(f"Failed to create maintenance run: {response.text}")
+            
+            maintenance_run_id = response.json()['data']['id']
+            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            
+            # Get modules to find the heater-shaker module ID
+            modules_response = requests.get(
+                url=f"{self.base_url}/modules",
+                headers=self.headers
+            )
+            
+            if modules_response.status_code != 200:
+                self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
+                raise RuntimeError(f"Failed to get modules: {modules_response.text}")
+                
+            modules = modules_response.json().get('data', [])
+            heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
+            
+            if not heater_shaker_module:
+                self.app.logger.error("No heater-shaker module found")
+                raise RuntimeError("No heater-shaker module found")
+                
+            module_id = heater_shaker_module.get('id')
+            
+            # Send setTargetTemperature command using the maintenance run
+            command_response = requests.post(
+                url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands",
+                headers=self.headers,
+                json={
+                    "data": {
+                        "commandType": "setTargetTemperature",
+                        "params": {
+                            "moduleId": module_id,
+                            "celsius": int(temp)
+                        }
+                    }
+                }
+            )
+            
+            if command_response.status_code != 201:
+                self.app.logger.error(f"Failed to set temperature: {command_response.status_code}")
+                raise RuntimeError(f"Failed to set temperature: {command_response.text}")
+            
+            command_id = command_response.json()['data']['id']
+            self.app.logger.info(f"Sent setTargetTemperature command: {command_id}")
+            
+            # Wait for the command to complete
+            while True:
+                command_status_response = requests.get(
+                    url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands/{command_id}",
+                    headers=self.headers
+                )
+                
+                if command_status_response.status_code != 200:
+                    self.app.logger.error(f"Failed to get command status: {command_status_response.status_code}")
+                    raise RuntimeError(f"Failed to get command status: {command_status_response.text}")
+                
+                status = command_status_response.json()['data']['status']
+                self.app.logger.debug(f"Command status: {status}")
+                
+                if status == 'succeeded':
+                    self.app.logger.info(f"Successfully set temperature to {temp}°C")
+                    break
+                elif status == 'failed':
+                    error_data = command_status_response.json()['data'].get('error', 'Unknown error')
+                    self.app.logger.error(f"Failed to set temperature: {error_data}")
+                    raise RuntimeError(f"Failed to set temperature: {error_data}")
+                
+                time.sleep(0.5)  # Short delay between status checks
+            
+            return True
+            
+        except Exception as e:
+            self.app.logger.error(f"Error setting temperature: {str(e)}")
+            raise RuntimeError(f"Error setting temperature: {str(e)}")
+        
+        finally:
+            # Always clean up the maintenance run if it was created
+            if maintenance_run_id:
+                try:
+                    delete_response = requests.delete(
+                        url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}",
+                        headers=self.headers
+                    )
+                    if delete_response.status_code == 200:
+                        self.app.logger.info(f"Cleaned up maintenance run: {maintenance_run_id}")
+                    else:
+                        self.app.logger.warning(f"Failed to clean up maintenance run: {delete_response.status_code}")
+                except Exception as e:
+                    self.app.logger.warning(f"Error cleaning up maintenance run: {str(e)}")
+    
+    def unlatch_shaker(self):
+        self.app.logger.info('Unlatching heater-shaker')
+        
+        # Store the maintenance run ID
+        maintenance_run_id = None
+        
+        try:
+            # Create a maintenance run
+            response = requests.post(
+                url=f"{self.base_url}/maintenance_runs",
+                headers=self.headers,
+                json={"data": {}}
+            )
+            
+            if response.status_code != 201:
+                self.app.logger.error(f"Failed to create maintenance run: {response.status_code}")
+                raise RuntimeError(f"Failed to create maintenance run: {response.text}")
+            
+            maintenance_run_id = response.json()['data']['id']
+            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            
+            # Get modules to find the heater-shaker module ID
+            modules_response = requests.get(
+                url=f"{self.base_url}/modules",
+                headers=self.headers
+            )
+            
+            if modules_response.status_code != 200:
+                self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
+                raise RuntimeError(f"Failed to get modules: {modules_response.text}")
+                
+            modules = modules_response.json().get('data', [])
+            heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
+            
+            if not heater_shaker_module:
+                self.app.logger.error("No heater-shaker module found")
+                raise RuntimeError("No heater-shaker module found")
+                
+            module_id = heater_shaker_module.get('id')
+            
+            # Send openLabwareLatch command using the maintenance run
+            command_response = requests.post(
+                url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands",
+                headers=self.headers,
+                json={
+                    "data": {
+                        "commandType": "openLabwareLatch",
+                        "params": {
+                            "moduleId": module_id
+                        }
+                    }
+                }
+            )
+            
+            if command_response.status_code != 201:
+                self.app.logger.error(f"Failed to unlatch shaker: {command_response.status_code}")
+                raise RuntimeError(f"Failed to unlatch shaker: {command_response.text}")
+            
+            command_id = command_response.json()['data']['id']
+            self.app.logger.info(f"Sent openLabwareLatch command: {command_id}")
+            
+            # Wait for the command to complete
+            while True:
+                command_status_response = requests.get(
+                    url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands/{command_id}",
+                    headers=self.headers
+                )
+                
+                if command_status_response.status_code != 200:
+                    self.app.logger.error(f"Failed to get command status: {command_status_response.status_code}")
+                    raise RuntimeError(f"Failed to get command status: {command_status_response.text}")
+                
+                status = command_status_response.json()['data']['status']
+                self.app.logger.debug(f"Command status: {status}")
+                
+                if status == 'succeeded':
+                    self.app.logger.info("Successfully unlatched shaker")
+                    break
+                elif status == 'failed':
+                    error_data = command_status_response.json()['data'].get('error', 'Unknown error')
+                    self.app.logger.error(f"Failed to unlatch shaker: {error_data}")
+                    raise RuntimeError(f"Failed to unlatch shaker: {error_data}")
+                
+                time.sleep(0.5)  # Short delay between status checks
+            
+            return True
+            
+        except Exception as e:
+            self.app.logger.error(f"Error unlatching shaker: {str(e)}")
+            raise RuntimeError(f"Error unlatching shaker: {str(e)}")
+        
+        finally:
+            # Always clean up the maintenance run if it was created
+            if maintenance_run_id:
+                try:
+                    delete_response = requests.delete(
+                        url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}",
+                        headers=self.headers
+                    )
+                    if delete_response.status_code == 200:
+                        self.app.logger.info(f"Cleaned up maintenance run: {maintenance_run_id}")
+                    else:
+                        self.app.logger.warning(f"Failed to clean up maintenance run: {delete_response.status_code}")
+                except Exception as e:
+                    self.app.logger.warning(f"Error cleaning up maintenance run: {str(e)}")
+    
+    def latch_shaker(self):
+        self.app.logger.info('Latching heater-shaker')
+        
+        # Store the maintenance run ID
+        maintenance_run_id = None
+        
+        try:
+            # Create a maintenance run
+            response = requests.post(
+                url=f"{self.base_url}/maintenance_runs",
+                headers=self.headers,
+                json={"data": {}}
+            )
+            
+            if response.status_code != 201:
+                self.app.logger.error(f"Failed to create maintenance run: {response.status_code}")
+                raise RuntimeError(f"Failed to create maintenance run: {response.text}")
+            
+            maintenance_run_id = response.json()['data']['id']
+            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            
+            # Get modules to find the heater-shaker module ID
+            modules_response = requests.get(
+                url=f"{self.base_url}/modules",
+                headers=self.headers
+            )
+            
+            if modules_response.status_code != 200:
+                self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
+                raise RuntimeError(f"Failed to get modules: {modules_response.text}")
+                
+            modules = modules_response.json().get('data', [])
+            heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
+            
+            if not heater_shaker_module:
+                self.app.logger.error("No heater-shaker module found")
+                raise RuntimeError("No heater-shaker module found")
+                
+            module_id = heater_shaker_module.get('id')
+            
+            # Send closeLabwareLatch command using the maintenance run
+            command_response = requests.post(
+                url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands",
+                headers=self.headers,
+                json={
+                    "data": {
+                        "commandType": "closeLabwareLatch",
+                        "params": {
+                            "moduleId": module_id
+                        }
+                    }
+                }
+            )
+            
+            if command_response.status_code != 201:
+                self.app.logger.error(f"Failed to latch shaker: {command_response.status_code}")
+                raise RuntimeError(f"Failed to latch shaker: {command_response.text}")
+            
+            command_id = command_response.json()['data']['id']
+            self.app.logger.info(f"Sent closeLabwareLatch command: {command_id}")
+            
+            # Wait for the command to complete
+            while True:
+                command_status_response = requests.get(
+                    url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}/commands/{command_id}",
+                    headers=self.headers
+                )
+                
+                if command_status_response.status_code != 200:
+                    self.app.logger.error(f"Failed to get command status: {command_status_response.status_code}")
+                    raise RuntimeError(f"Failed to get command status: {command_status_response.text}")
+                
+                status = command_status_response.json()['data']['status']
+                self.app.logger.debug(f"Command status: {status}")
+                
+                if status == 'succeeded':
+                    self.app.logger.info("Successfully latched shaker")
+                    break
+                elif status == 'failed':
+                    error_data = command_status_response.json()['data'].get('error', 'Unknown error')
+                    self.app.logger.error(f"Failed to latch shaker: {error_data}")
+                    raise RuntimeError(f"Failed to latch shaker: {error_data}")
+                
+                time.sleep(0.5)  # Short delay between status checks
+            
+            return True
+            
+        except Exception as e:
+            self.app.logger.error(f"Error latching shaker: {str(e)}")
+            raise RuntimeError(f"Error latching shaker: {str(e)}")
+        
+        finally:
+            # Always clean up the maintenance run if it was created
+            if maintenance_run_id:
+                try:
+                    delete_response = requests.delete(
+                        url=f"{self.base_url}/maintenance_runs/{maintenance_run_id}",
+                        headers=self.headers
+                    )
+                    if delete_response.status_code == 200:
+                        self.app.logger.info(f"Cleaned up maintenance run: {maintenance_run_id}")
+                    else:
+                        self.app.logger.warning(f"Failed to clean up maintenance run: {delete_response.status_code}")
+                except Exception as e:
+                    self.app.logger.warning(f"Error cleaning up maintenance run: {str(e)}")
+    
+    def get_shaker_temp(self):
+        self.app.logger.info('Getting heater-shaker temperature')
+        
+        # For get operations, we still need to use the modules API directly
+        # No need for maintenance run as we're just reading data
+        try:
+            # Get modules to find the heater-shaker module ID
+            modules_response = requests.get(
+                url=f"{self.base_url}/modules",
+                headers=self.headers
+            )
+            
+            if modules_response.status_code != 200:
+                self.app.logger.error(f"Failed to get modules: {modules_response.status_code}")
+                return f"Error getting modules: {modules_response.status_code}"
+                
+            modules = modules_response.json().get('data', [])
+            heater_shaker_module = next((m for m in modules if m.get('moduleType') == 'heaterShakerModuleType'), None)
+            
+            if not heater_shaker_module:
+                self.app.logger.error("No heater-shaker module found")
+                return "No heater-shaker module found"
+                
+            module_id = heater_shaker_module.get('id')
+            
+            # Get the module data which includes temperature
+            module_data_response = requests.get(
+                url=f"{self.base_url}/modules/{module_id}",
+                headers=self.headers
+            )
+            
+            if module_data_response.status_code == 200:
+                module_data = module_data_response.json().get('data', {})
+                current_temp = module_data.get('data', {}).get('currentTemperature')
+                target_temp = module_data.get('data', {}).get('targetTemperature')
+                self.app.logger.info(f"Heater-shaker temperature - Current: {current_temp}°C, Target: {target_temp}°C")
+                return f"Current: {current_temp}°C, Target: {target_temp}°C"
+            else:
+                self.app.logger.error(f"Failed to get module data: {module_data_response.status_code}")
+                return f"Error getting temperature: {module_data_response.status_code}"
+                
+        except Exception as e:
             self.app.logger.error(f"Error getting temperature: {str(e)}")
             return f"Error: {str(e)}"
     

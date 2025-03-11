@@ -448,6 +448,102 @@ class OT2HTTPDriver(Driver):
         protocol_content.append("")
         
         return "\n".join(protocol_content)
+        
+    def _generate_command_protocol(self, command, data):
+        """Generate a Python protocol for a specific command"""
+        # Start with the basic protocol structure
+        protocol_content = [
+            "from opentrons import protocol_api",
+            "",
+            "metadata = {'apiLevel': '2.13'}",
+            "",
+            "def run(protocol: protocol_api.ProtocolContext):",
+        ]
+        
+        # Add labware loading
+        for slot, labware_name in self.loaded_labware.items():
+            if slot in self.modules:
+                module_name = self.modules[slot]
+                protocol_content.append(f"    module_{slot} = protocol.load_module('{module_name}', '{slot}')")
+                protocol_content.append(f"    {slot} = module_{slot}.load_labware('{labware_name}')")
+            else:
+                protocol_content.append(f"    {slot} = protocol.load_labware('{labware_name}', '{slot}')")
+        
+        # Add instrument loading
+        for mount, instrument in self.loaded_instruments.items():
+            tip_racks = ", ".join([f"{slot}" for slot in instrument['tip_racks']])
+            protocol_content.append(f"    pipette_{mount} = protocol.load_instrument('{instrument['name']}', '{mount}', tip_racks=[{tip_racks}])")
+        
+        # Process the command and add it to the protocol
+        if command == "protocol.pickUpTip":
+            pipette_mount = data.get('pipette', {}).get('object')
+            protocol_content.append(f"    pipette_{pipette_mount}.pick_up_tip()")
+            
+        elif command == "protocol.dropTip":
+            pipette_mount = data.get('pipette', {}).get('object')
+            protocol_content.append(f"    pipette_{pipette_mount}.drop_tip()")
+            
+        elif command == "protocol.aspirate":
+            pipette_mount = data.get('pipette', {}).get('object')
+            volume = data.get('volume')
+            location = data.get('location')
+            well_position = data.get('wellPosition', 'bottom')
+            
+            # Handle well position
+            if well_position == "bottom":
+                protocol_content.append(f"    pipette_{pipette_mount}.aspirate({volume}, {location})")
+            else:
+                protocol_content.append(f"    pipette_{pipette_mount}.aspirate({volume}, {location}.{well_position}())")
+            
+        elif command == "protocol.dispense":
+            pipette_mount = data.get('pipette', {}).get('object')
+            volume = data.get('volume')
+            location = data.get('location')
+            well_position = data.get('wellPosition', 'bottom')
+            offset = data.get('offset')
+            
+            # Handle well position and offset
+            if offset:
+                z_offset = offset.get('z', 0)
+                if well_position == "top":
+                    protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.top(z={z_offset}))")
+                elif well_position == "center":
+                    protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.center(z={z_offset}))")
+                else:
+                    protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.bottom(z={z_offset}))")
+            else:
+                if well_position == "bottom":
+                    protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location})")
+                else:
+                    protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.{well_position}())")
+            
+        elif command == "protocol.mix":
+            pipette_mount = data.get('pipette', {}).get('object')
+            volume = data.get('volume')
+            location = data.get('location')
+            repetitions = data.get('repetitions', 1)
+            
+            protocol_content.append(f"    pipette_{pipette_mount}.mix({repetitions}, {volume}, {location})")
+            
+        elif command == "protocol.blowOut":
+            pipette_mount = data.get('pipette', {}).get('object')
+            location = data.get('location')
+            
+            protocol_content.append(f"    pipette_{pipette_mount}.blow_out({location})")
+            
+        elif command == "protocol.airGap":
+            pipette_mount = data.get('pipette', {}).get('object')
+            volume = data.get('volume')
+            
+            protocol_content.append(f"    pipette_{pipette_mount}.air_gap({volume})")
+            
+        elif command == "protocol.delay":
+            seconds = data.get('seconds', 0)
+            
+            protocol_content.append(f"    protocol.delay(seconds={seconds})")
+        
+        # Return the complete protocol
+        return "\n".join(protocol_content)
     
     def _create_protocol_session(self):
         """Create a protocol session on the robot"""
@@ -544,43 +640,112 @@ class OT2HTTPDriver(Driver):
             return self._create_protocol_session()
     
     def _execute_command(self, command, data=None):
-        """Execute a command in the current session"""
-        if not self._ensure_session_exists():
-            raise RuntimeError("Failed to create or validate protocol session")
-        
+        """Execute a command by creating a new protocol run for each command"""
         if data is None:
             data = {}
         
+        self.app.logger.debug(f"Executing command: {command} with data: {data}")
+        
         try:
-            response = requests.post(
-                url=f"{self.base_url}/sessions/{self.session_id}/commands/execute",
-                headers=self.headers,
-                json={"data": {"command": command, "data": data}}
-            )
+            # Generate a minimal protocol for this specific command
+            protocol_content = self._generate_command_protocol(command, data)
             
-            if response.status_code != 201:
-                self.app.logger.error(f"Failed to execute command: {response.status_code}")
-                raise RuntimeError(f"Failed to execute command: {response.text}")
+            # Create a unique protocol ID
+            protocol_id = None
+            session_id = None
             
-            command_id = response.json()['data']['id']
-            
-            # Wait for command to complete
-            while True:
-                status_response = requests.get(
-                    url=f"{self.base_url}/sessions/{self.session_id}/commands/{command_id}",
-                    headers=self.headers
+            try:
+                # Upload the protocol
+                protocol_response = requests.post(
+                    url=f"{self.base_url}/protocols",
+                    headers=self.headers,
+                    files=[("protocolFile", ("protocol.py", protocol_content.encode(), "text/plain"))]
                 )
                 
-                if status_response.status_code == 200:
-                    status = status_response.json()['data']['status']
-                    if status == 'succeeded':
-                        return status_response.json()['data'].get('result')
-                    elif status == 'failed':
-                        raise RuntimeError(f"Command failed: {status_response.text}")
+                if protocol_response.status_code != 201:
+                    self.app.logger.error(f"Failed to upload protocol: {protocol_response.status_code}")
+                    raise RuntimeError(f"Failed to upload protocol: {protocol_response.text}")
                 
-                time.sleep(0.5)
+                protocol_id = protocol_response.json()['data']['id']
+                self.app.logger.debug(f"Created protocol: {protocol_id}")
                 
-        except requests.exceptions.RequestException as e:
+                # Create a protocol session
+                session_response = requests.post(
+                    url=f"{self.base_url}/sessions",
+                    headers=self.headers,
+                    json={
+                        "data": {
+                            "sessionType": "protocol",
+                            "createParams": {
+                                "protocolId": protocol_id,
+                                "useCommandMode": False  # Run the protocol directly
+                            }
+                        }
+                    }
+                )
+                
+                if session_response.status_code != 201:
+                    self.app.logger.error(f"Failed to create session: {session_response.status_code}")
+                    raise RuntimeError(f"Failed to create session: {session_response.text}")
+                
+                session_id = session_response.json()['data']['id']
+                self.app.logger.debug(f"Created session: {session_id}")
+                
+                # Run the protocol
+                run_response = requests.post(
+                    url=f"{self.base_url}/sessions/{session_id}/commands/execute",
+                    headers=self.headers,
+                    json={"data": {"command": "protocol.startRun", "data": {}}}
+                )
+                
+                if run_response.status_code != 201:
+                    self.app.logger.error(f"Failed to start run: {run_response.status_code}")
+                    raise RuntimeError(f"Failed to start run: {run_response.text}")
+                
+                run_command_id = run_response.json()['data']['id']
+                
+                # Wait for run to complete
+                while True:
+                    status_response = requests.get(
+                        url=f"{self.base_url}/sessions/{session_id}",
+                        headers=self.headers
+                    )
+                    
+                    if status_response.status_code == 200:
+                        current_state = status_response.json()['data']['details']['currentState']
+                        if current_state == 'finished':
+                            self.app.logger.debug(f"Protocol run completed successfully")
+                            return True
+                        elif current_state == 'error':
+                            error_info = status_response.json()['data']['details'].get('errorInfo', 'Unknown error')
+                            self.app.logger.error(f"Protocol run failed: {error_info}")
+                            raise RuntimeError(f"Protocol run failed: {error_info}")
+                    
+                    time.sleep(0.5)
+                
+            finally:
+                # Clean up the session and protocol
+                if session_id:
+                    try:
+                        requests.delete(
+                            url=f"{self.base_url}/sessions/{session_id}",
+                            headers=self.headers
+                        )
+                        self.app.logger.debug(f"Cleaned up session: {session_id}")
+                    except Exception as e:
+                        self.app.logger.warning(f"Failed to clean up session: {str(e)}")
+                
+                if protocol_id:
+                    try:
+                        requests.delete(
+                            url=f"{self.base_url}/protocols/{protocol_id}",
+                            headers=self.headers
+                        )
+                        self.app.logger.debug(f"Cleaned up protocol: {protocol_id}")
+                    except Exception as e:
+                        self.app.logger.warning(f"Failed to clean up protocol: {str(e)}")
+                
+        except Exception as e:
             self.app.logger.error(f"Error executing command: {str(e)}")
             raise RuntimeError(f"Error executing command: {str(e)}")
     
@@ -645,6 +810,7 @@ class OT2HTTPDriver(Driver):
         
         # Get pipette based on volume
         pipette = self.get_pipette(volume)
+        pipette_mount = pipette['object']  # Get the mount from the pipette object
         
         # Get source and destination wells
         source_wells = self.get_wells(source)
@@ -671,14 +837,16 @@ class OT2HTTPDriver(Driver):
         # Split transfers if needed
         transfers = self.split_up_transfers(volume)
         
-        # Perform the transfer as a sequence of atomic commands rather than a single transfer command
+        # Since each command is now a separate protocol run, we need to combine commands into a single protocol
+        # for each transfer to minimize the number of protocol runs
         for sub_volume in transfers:
-            # 1. Pick up tip if needed
-            if force_new_tip or (not self.has_tip):
-                self._execute_command("protocol.pickUpTip", {
-                    "pipette": pipette
-                })
-                self.has_tip = True
+            # Create a list of commands to execute in a single protocol
+            commands = []
+            
+            # 1. Always pick up a new tip for each transfer since we're creating a new protocol
+            commands.append(("protocol.pickUpTip", {
+                "pipette": pipette
+            }))
             
             # 2. Mix before if specified
             if mix_before is not None:
@@ -686,54 +854,54 @@ class OT2HTTPDriver(Driver):
                 
                 # Set mix aspirate rate if specified
                 if mix_aspirate_rate is not None:
-                    original_aspirate_rate = self.get_aspirate_rate(pipette)
                     self.set_aspirate_rate(mix_aspirate_rate, pipette)
                 
                 # Set mix dispense rate if specified
                 if mix_dispense_rate is not None:
-                    original_dispense_rate = self.get_dispense_rate(pipette)
                     self.set_dispense_rate(mix_dispense_rate, pipette)
                 
-                # Perform mixing
-                self._execute_command("protocol.mix", {
+                # Add mix command
+                commands.append(("protocol.mix", {
                     "pipette": pipette,
                     "volume": mix_volume,
                     "location": source_well,
                     "repetitions": n_mixes
-                })
+                }))
                 
                 # Restore original rates
-                if mix_aspirate_rate is not None:
-                    self.set_aspirate_rate(original_aspirate_rate, pipette)
-                if mix_dispense_rate is not None:
-                    self.set_dispense_rate(original_dispense_rate, pipette)
+                if mix_aspirate_rate is not None or mix_dispense_rate is not None:
+                    # Reset rates to default or specified rates
+                    if aspirate_rate is not None:
+                        self.set_aspirate_rate(aspirate_rate, pipette)
+                    if dispense_rate is not None:
+                        self.set_dispense_rate(dispense_rate, pipette)
             
             # 3. Aspirate
-            self._execute_command("protocol.aspirate", {
+            commands.append(("protocol.aspirate", {
                 "pipette": pipette,
                 "volume": sub_volume,
                 "location": source_well,
                 "wellPosition": source_position
-            })
+            }))
             
             # 4. Post-aspirate delay
             if post_aspirate_delay > 0:
-                self._execute_command("protocol.delay", {
+                commands.append(("protocol.delay", {
                     "seconds": post_aspirate_delay
-                })
+                }))
             
             # 5. Aspirate equilibration delay
             if aspirate_equilibration_delay > 0:
-                self._execute_command("protocol.delay", {
+                commands.append(("protocol.delay", {
                     "seconds": aspirate_equilibration_delay
-                })
+                }))
             
             # 6. Air gap if specified
             if air_gap > 0:
-                self._execute_command("protocol.airGap", {
+                commands.append(("protocol.airGap", {
                     "pipette": pipette,
                     "volume": air_gap
-                })
+                }))
             
             # 7. Dispense
             dispense_params = {
@@ -746,14 +914,14 @@ class OT2HTTPDriver(Driver):
             # Add z-offset if specified
             if dest_position == "top" and to_top_z_offset != 0:
                 dispense_params["offset"] = {"z": to_top_z_offset}
-                
-            self._execute_command("protocol.dispense", dispense_params)
+            
+            commands.append(("protocol.dispense", dispense_params))
             
             # 8. Post-dispense delay
             if post_dispense_delay > 0:
-                self._execute_command("protocol.delay", {
+                commands.append(("protocol.delay", {
                     "seconds": post_dispense_delay
-                })
+                }))
             
             # 9. Mix after if specified
             if mix_after is not None:
@@ -761,44 +929,250 @@ class OT2HTTPDriver(Driver):
                 
                 # Set mix aspirate rate if specified
                 if mix_aspirate_rate is not None:
-                    original_aspirate_rate = self.get_aspirate_rate(pipette)
                     self.set_aspirate_rate(mix_aspirate_rate, pipette)
                 
                 # Set mix dispense rate if specified
                 if mix_dispense_rate is not None:
-                    original_dispense_rate = self.get_dispense_rate(pipette)
                     self.set_dispense_rate(mix_dispense_rate, pipette)
                 
-                # Perform mixing
-                self._execute_command("protocol.mix", {
+                # Add mix command
+                commands.append(("protocol.mix", {
                     "pipette": pipette,
                     "volume": mix_volume,
                     "location": dest_well,
                     "repetitions": n_mixes
-                })
+                }))
                 
                 # Restore original rates
-                if mix_aspirate_rate is not None:
-                    self.set_aspirate_rate(original_aspirate_rate, pipette)
-                if mix_dispense_rate is not None:
-                    self.set_dispense_rate(original_dispense_rate, pipette)
+                if mix_aspirate_rate is not None or mix_dispense_rate is not None:
+                    # Reset rates to default or specified rates
+                    if aspirate_rate is not None:
+                        self.set_aspirate_rate(aspirate_rate, pipette)
+                    if dispense_rate is not None:
+                        self.set_dispense_rate(dispense_rate, pipette)
             
             # 10. Blow out if specified
             if blow_out:
-                self._execute_command("protocol.blowOut", {
+                commands.append(("protocol.blowOut", {
                     "pipette": pipette,
                     "location": dest_well
-                })
+                }))
             
             # 11. Drop tip if specified
             if drop_tip:
-                self._execute_command("protocol.dropTip", {
+                commands.append(("protocol.dropTip", {
                     "pipette": pipette
-                })
-                self.has_tip = False
+                }))
+            
+            # Now create a single protocol with all these commands and execute it
+            self._execute_transfer_protocol(commands)
             
             # Update last pipette
             self.last_pipette = pipette
+    
+    def _execute_transfer_protocol(self, commands):
+        """Execute a protocol containing multiple transfer commands"""
+        self.app.logger.debug(f"Executing transfer protocol with {len(commands)} commands")
+        
+        try:
+            # Generate a protocol that includes all the commands
+            protocol_content = self._generate_transfer_protocol(commands)
+            
+            # Create a unique protocol ID
+            protocol_id = None
+            session_id = None
+            
+            try:
+                # Upload the protocol
+                protocol_response = requests.post(
+                    url=f"{self.base_url}/protocols",
+                    headers=self.headers,
+                    files=[("protocolFile", ("protocol.py", protocol_content.encode(), "text/plain"))]
+                )
+                
+                if protocol_response.status_code != 201:
+                    self.app.logger.error(f"Failed to upload protocol: {protocol_response.status_code}")
+                    raise RuntimeError(f"Failed to upload protocol: {protocol_response.text}")
+                
+                protocol_id = protocol_response.json()['data']['id']
+                self.app.logger.debug(f"Created protocol: {protocol_id}")
+                
+                # Create a protocol session
+                session_response = requests.post(
+                    url=f"{self.base_url}/sessions",
+                    headers=self.headers,
+                    json={
+                        "data": {
+                            "sessionType": "protocol",
+                            "createParams": {
+                                "protocolId": protocol_id,
+                                "useCommandMode": False  # Run the protocol directly
+                            }
+                        }
+                    }
+                )
+                
+                if session_response.status_code != 201:
+                    self.app.logger.error(f"Failed to create session: {session_response.status_code}")
+                    raise RuntimeError(f"Failed to create session: {session_response.text}")
+                
+                session_id = session_response.json()['data']['id']
+                self.app.logger.debug(f"Created session: {session_id}")
+                
+                # Run the protocol
+                run_response = requests.post(
+                    url=f"{self.base_url}/sessions/{session_id}/commands/execute",
+                    headers=self.headers,
+                    json={"data": {"command": "protocol.startRun", "data": {}}}
+                )
+                
+                if run_response.status_code != 201:
+                    self.app.logger.error(f"Failed to start run: {run_response.status_code}")
+                    raise RuntimeError(f"Failed to start run: {run_response.text}")
+                
+                run_command_id = run_response.json()['data']['id']
+                
+                # Wait for run to complete
+                while True:
+                    status_response = requests.get(
+                        url=f"{self.base_url}/sessions/{session_id}",
+                        headers=self.headers
+                    )
+                    
+                    if status_response.status_code == 200:
+                        current_state = status_response.json()['data']['details']['currentState']
+                        if current_state == 'finished':
+                            self.app.logger.debug(f"Protocol run completed successfully")
+                            return True
+                        elif current_state == 'error':
+                            error_info = status_response.json()['data']['details'].get('errorInfo', 'Unknown error')
+                            self.app.logger.error(f"Protocol run failed: {error_info}")
+                            raise RuntimeError(f"Protocol run failed: {error_info}")
+                    
+                    time.sleep(0.5)
+                
+            finally:
+                # Clean up the session and protocol
+                if session_id:
+                    try:
+                        requests.delete(
+                            url=f"{self.base_url}/sessions/{session_id}",
+                            headers=self.headers
+                        )
+                        self.app.logger.debug(f"Cleaned up session: {session_id}")
+                    except Exception as e:
+                        self.app.logger.warning(f"Failed to clean up session: {str(e)}")
+                
+                if protocol_id:
+                    try:
+                        requests.delete(
+                            url=f"{self.base_url}/protocols/{protocol_id}",
+                            headers=self.headers
+                        )
+                        self.app.logger.debug(f"Cleaned up protocol: {protocol_id}")
+                    except Exception as e:
+                        self.app.logger.warning(f"Failed to clean up protocol: {str(e)}")
+                
+        except Exception as e:
+            self.app.logger.error(f"Error executing transfer protocol: {str(e)}")
+            raise RuntimeError(f"Error executing transfer protocol: {str(e)}")
+    
+    def _generate_transfer_protocol(self, commands):
+        """Generate a Python protocol for a sequence of transfer commands"""
+        # Start with the basic protocol structure
+        protocol_content = [
+            "from opentrons import protocol_api",
+            "",
+            "metadata = {'apiLevel': '2.13'}",
+            "",
+            "def run(protocol: protocol_api.ProtocolContext):",
+        ]
+        
+        # Add labware loading
+        for slot, labware_name in self.loaded_labware.items():
+            if slot in self.modules:
+                module_name = self.modules[slot]
+                protocol_content.append(f"    module_{slot} = protocol.load_module('{module_name}', '{slot}')")
+                protocol_content.append(f"    {slot} = module_{slot}.load_labware('{labware_name}')")
+            else:
+                protocol_content.append(f"    {slot} = protocol.load_labware('{labware_name}', '{slot}')")
+        
+        # Add instrument loading
+        for mount, instrument in self.loaded_instruments.items():
+            tip_racks = ", ".join([f"{slot}" for slot in instrument['tip_racks']])
+            protocol_content.append(f"    pipette_{mount} = protocol.load_instrument('{instrument['name']}', '{mount}', tip_racks=[{tip_racks}])")
+        
+        # Process each command and add it to the protocol
+        for command, data in commands:
+            if command == "protocol.pickUpTip":
+                pipette_mount = data.get('pipette', {}).get('object')
+                protocol_content.append(f"    pipette_{pipette_mount}.pick_up_tip()")
+                
+            elif command == "protocol.dropTip":
+                pipette_mount = data.get('pipette', {}).get('object')
+                protocol_content.append(f"    pipette_{pipette_mount}.drop_tip()")
+                
+            elif command == "protocol.aspirate":
+                pipette_mount = data.get('pipette', {}).get('object')
+                volume = data.get('volume')
+                location = data.get('location')
+                well_position = data.get('wellPosition', 'bottom')
+                
+                # Handle well position
+                if well_position == "bottom":
+                    protocol_content.append(f"    pipette_{pipette_mount}.aspirate({volume}, {location})")
+                else:
+                    protocol_content.append(f"    pipette_{pipette_mount}.aspirate({volume}, {location}.{well_position}())")
+                
+            elif command == "protocol.dispense":
+                pipette_mount = data.get('pipette', {}).get('object')
+                volume = data.get('volume')
+                location = data.get('location')
+                well_position = data.get('wellPosition', 'bottom')
+                offset = data.get('offset')
+                
+                # Handle well position and offset
+                if offset:
+                    z_offset = offset.get('z', 0)
+                    if well_position == "top":
+                        protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.top(z={z_offset}))")
+                    elif well_position == "center":
+                        protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.center(z={z_offset}))")
+                    else:
+                        protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.bottom(z={z_offset}))")
+                else:
+                    if well_position == "bottom":
+                        protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location})")
+                    else:
+                        protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.{well_position}())")
+                
+            elif command == "protocol.mix":
+                pipette_mount = data.get('pipette', {}).get('object')
+                volume = data.get('volume')
+                location = data.get('location')
+                repetitions = data.get('repetitions', 1)
+                
+                protocol_content.append(f"    pipette_{pipette_mount}.mix({repetitions}, {volume}, {location})")
+                
+            elif command == "protocol.blowOut":
+                pipette_mount = data.get('pipette', {}).get('object')
+                location = data.get('location')
+                
+                protocol_content.append(f"    pipette_{pipette_mount}.blow_out({location})")
+                
+            elif command == "protocol.airGap":
+                pipette_mount = data.get('pipette', {}).get('object')
+                volume = data.get('volume')
+                
+                protocol_content.append(f"    pipette_{pipette_mount}.air_gap({volume})")
+                
+            elif command == "protocol.delay":
+                seconds = data.get('seconds', 0)
+                
+                protocol_content.append(f"    protocol.delay(seconds={seconds})")
+        
+        # Return the complete protocol
+        return "\n".join(protocol_content)
     
     def split_up_transfers(self, vol):
         transfers = []

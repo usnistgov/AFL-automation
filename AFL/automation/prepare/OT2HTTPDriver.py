@@ -14,7 +14,6 @@ class OT2HTTPDriver(Driver):
     defaults = {}
     defaults['robot_ip'] = '127.0.0.1'  # Default to localhost, should be overridden
     defaults['robot_port'] = '31950'    # Default Opentrons HTTP API port
-    defaults['shaker_port'] = '/dev/ttyACM0'
     
     def __init__(self, overrides=None):
         self.app = None
@@ -1250,3 +1249,6 @@ class OT2HTTPDriver(Driver):
         except requests.exceptions.RequestException as e:
             self.app.logger.error(f"Error getting latch status: {str(e)}")
             return f"Error: {str(e)}"
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

@@ -476,15 +476,19 @@ class OT2HTTPDriver(Driver):
         
         # Process the command and add it to the protocol
         if command == "protocol.pickUpTip":
-            pipette_mount = data.get('pipette', {}).get('object')
+            # Get the mount directly from the pipette data
+            pipette_data = data.get('pipette', {})
+            pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
             protocol_content.append(f"    pipette_{pipette_mount}.pick_up_tip()")
             
         elif command == "protocol.dropTip":
-            pipette_mount = data.get('pipette', {}).get('object')
+            pipette_data = data.get('pipette', {})
+            pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
             protocol_content.append(f"    pipette_{pipette_mount}.drop_tip()")
             
         elif command == "protocol.aspirate":
-            pipette_mount = data.get('pipette', {}).get('object')
+            pipette_data = data.get('pipette', {})
+            pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
             volume = data.get('volume')
             location = data.get('location')
             well_position = data.get('wellPosition', 'bottom')
@@ -496,7 +500,8 @@ class OT2HTTPDriver(Driver):
                 protocol_content.append(f"    pipette_{pipette_mount}.aspirate({volume}, {location}.{well_position}())")
             
         elif command == "protocol.dispense":
-            pipette_mount = data.get('pipette', {}).get('object')
+            pipette_data = data.get('pipette', {})
+            pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
             volume = data.get('volume')
             location = data.get('location')
             well_position = data.get('wellPosition', 'bottom')
@@ -518,7 +523,8 @@ class OT2HTTPDriver(Driver):
                     protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.{well_position}())")
             
         elif command == "protocol.mix":
-            pipette_mount = data.get('pipette', {}).get('object')
+            pipette_data = data.get('pipette', {})
+            pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
             volume = data.get('volume')
             location = data.get('location')
             repetitions = data.get('repetitions', 1)
@@ -526,13 +532,15 @@ class OT2HTTPDriver(Driver):
             protocol_content.append(f"    pipette_{pipette_mount}.mix({repetitions}, {volume}, {location})")
             
         elif command == "protocol.blowOut":
-            pipette_mount = data.get('pipette', {}).get('object')
+            pipette_data = data.get('pipette', {})
+            pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
             location = data.get('location')
             
             protocol_content.append(f"    pipette_{pipette_mount}.blow_out({location})")
             
         elif command == "protocol.airGap":
-            pipette_mount = data.get('pipette', {}).get('object')
+            pipette_data = data.get('pipette', {})
+            pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
             volume = data.get('volume')
             
             protocol_content.append(f"    pipette_{pipette_mount}.air_gap({volume})")
@@ -541,6 +549,9 @@ class OT2HTTPDriver(Driver):
             seconds = data.get('seconds', 0)
             
             protocol_content.append(f"    protocol.delay(seconds={seconds})")
+        
+        # Add debugging information
+        protocol_content.append(f"    # Command: {command}, Data: {data}")
         
         # Return the complete protocol
         return "\n".join(protocol_content)
@@ -659,7 +670,9 @@ class OT2HTTPDriver(Driver):
                 protocol_response = requests.post(
                     url=f"{self.base_url}/protocols",
                     headers=self.headers,
-                    files=[("protocolFile", ("protocol.py", protocol_content.encode(), "text/plain"))]
+                    files={
+                        "files": ("protocol.py", protocol_content.encode(), "text/plain")
+                    }
                 )
                 
                 if protocol_response.status_code != 201:
@@ -845,7 +858,7 @@ class OT2HTTPDriver(Driver):
             
             # 1. Always pick up a new tip for each transfer since we're creating a new protocol
             commands.append(("protocol.pickUpTip", {
-                "pipette": pipette
+                "pipette": pipette_mount  # Use the mount string directly
             }))
             
             # 2. Mix before if specified
@@ -862,7 +875,7 @@ class OT2HTTPDriver(Driver):
                 
                 # Add mix command
                 commands.append(("protocol.mix", {
-                    "pipette": pipette,
+                    "pipette": pipette_mount,  # Use the mount string directly
                     "volume": mix_volume,
                     "location": source_well,
                     "repetitions": n_mixes
@@ -878,7 +891,7 @@ class OT2HTTPDriver(Driver):
             
             # 3. Aspirate
             commands.append(("protocol.aspirate", {
-                "pipette": pipette,
+                "pipette": pipette_mount,  # Use the mount string directly
                 "volume": sub_volume,
                 "location": source_well,
                 "wellPosition": source_position
@@ -899,13 +912,13 @@ class OT2HTTPDriver(Driver):
             # 6. Air gap if specified
             if air_gap > 0:
                 commands.append(("protocol.airGap", {
-                    "pipette": pipette,
+                    "pipette": pipette_mount,  # Use the mount string directly
                     "volume": air_gap
                 }))
             
             # 7. Dispense
             dispense_params = {
-                "pipette": pipette,
+                "pipette": pipette_mount,  # Use the mount string directly
                 "volume": sub_volume + air_gap,  # Include air gap in dispense volume
                 "location": dest_well,
                 "wellPosition": dest_position
@@ -937,7 +950,7 @@ class OT2HTTPDriver(Driver):
                 
                 # Add mix command
                 commands.append(("protocol.mix", {
-                    "pipette": pipette,
+                    "pipette": pipette_mount,  # Use the mount string directly
                     "volume": mix_volume,
                     "location": dest_well,
                     "repetitions": n_mixes
@@ -954,14 +967,14 @@ class OT2HTTPDriver(Driver):
             # 10. Blow out if specified
             if blow_out:
                 commands.append(("protocol.blowOut", {
-                    "pipette": pipette,
+                    "pipette": pipette_mount,  # Use the mount string directly
                     "location": dest_well
                 }))
             
             # 11. Drop tip if specified
             if drop_tip:
                 commands.append(("protocol.dropTip", {
-                    "pipette": pipette
+                    "pipette": pipette_mount  # Use the mount string directly
                 }))
             
             # Now create a single protocol with all these commands and execute it
@@ -987,7 +1000,9 @@ class OT2HTTPDriver(Driver):
                 protocol_response = requests.post(
                     url=f"{self.base_url}/protocols",
                     headers=self.headers,
-                    files=[("protocolFile", ("protocol.py", protocol_content.encode(), "text/plain"))]
+                    files={
+                        "files": ("protocol.py", protocol_content.encode(), "text/plain")
+                    }
                 )
                 
                 if protocol_response.status_code != 201:
@@ -1102,18 +1117,26 @@ class OT2HTTPDriver(Driver):
             tip_racks = ", ".join([f"{slot}" for slot in instrument['tip_racks']])
             protocol_content.append(f"    pipette_{mount} = protocol.load_instrument('{instrument['name']}', '{mount}', tip_racks=[{tip_racks}])")
         
+        # Add debug information
+        protocol_content.append(f"    # Transfer protocol with {len(commands)} commands")
+        
         # Process each command and add it to the protocol
-        for command, data in commands:
+        for i, (command, data) in enumerate(commands):
+            protocol_content.append(f"    # Command {i+1}: {command}")
+            
             if command == "protocol.pickUpTip":
-                pipette_mount = data.get('pipette', {}).get('object')
+                pipette_data = data.get('pipette', {})
+                pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
                 protocol_content.append(f"    pipette_{pipette_mount}.pick_up_tip()")
                 
             elif command == "protocol.dropTip":
-                pipette_mount = data.get('pipette', {}).get('object')
+                pipette_data = data.get('pipette', {})
+                pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
                 protocol_content.append(f"    pipette_{pipette_mount}.drop_tip()")
                 
             elif command == "protocol.aspirate":
-                pipette_mount = data.get('pipette', {}).get('object')
+                pipette_data = data.get('pipette', {})
+                pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
                 volume = data.get('volume')
                 location = data.get('location')
                 well_position = data.get('wellPosition', 'bottom')
@@ -1125,7 +1148,8 @@ class OT2HTTPDriver(Driver):
                     protocol_content.append(f"    pipette_{pipette_mount}.aspirate({volume}, {location}.{well_position}())")
                 
             elif command == "protocol.dispense":
-                pipette_mount = data.get('pipette', {}).get('object')
+                pipette_data = data.get('pipette', {})
+                pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
                 volume = data.get('volume')
                 location = data.get('location')
                 well_position = data.get('wellPosition', 'bottom')
@@ -1147,7 +1171,8 @@ class OT2HTTPDriver(Driver):
                         protocol_content.append(f"    pipette_{pipette_mount}.dispense({volume}, {location}.{well_position}())")
                 
             elif command == "protocol.mix":
-                pipette_mount = data.get('pipette', {}).get('object')
+                pipette_data = data.get('pipette', {})
+                pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
                 volume = data.get('volume')
                 location = data.get('location')
                 repetitions = data.get('repetitions', 1)
@@ -1155,13 +1180,15 @@ class OT2HTTPDriver(Driver):
                 protocol_content.append(f"    pipette_{pipette_mount}.mix({repetitions}, {volume}, {location})")
                 
             elif command == "protocol.blowOut":
-                pipette_mount = data.get('pipette', {}).get('object')
+                pipette_data = data.get('pipette', {})
+                pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
                 location = data.get('location')
                 
                 protocol_content.append(f"    pipette_{pipette_mount}.blow_out({location})")
                 
             elif command == "protocol.airGap":
-                pipette_mount = data.get('pipette', {}).get('object')
+                pipette_data = data.get('pipette', {})
+                pipette_mount = pipette_data.get('object') if isinstance(pipette_data, dict) else pipette_data
                 volume = data.get('volume')
                 
                 protocol_content.append(f"    pipette_{pipette_mount}.air_gap({volume})")

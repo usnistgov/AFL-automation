@@ -990,7 +990,7 @@ class OT2HTTPDriver(Driver):
         try:
             # Generate a protocol that includes all the commands
             protocol_content = self._generate_transfer_protocol(commands)
-            
+            print(f'\nProtocol content:\n\n\n{protocol_content}\n\n\n') 
             # Create a unique protocol ID
             protocol_id = None
             session_id = None
@@ -1108,9 +1108,9 @@ class OT2HTTPDriver(Driver):
             if slot in self.modules:
                 module_name = self.modules[slot]
                 protocol_content.append(f"    module_{slot} = protocol.load_module('{module_name}', '{slot}')")
-                protocol_content.append(f"    {slot} = module_{slot}.load_labware('{labware_name}')")
+                protocol_content.append(f"    labware_{slot} = module_{slot}.load_labware('{labware_name}')")
             else:
-                protocol_content.append(f"    {slot} = protocol.load_labware('{labware_name}', '{slot}')")
+                protocol_content.append(f"    labware_{slot} = protocol.load_labware('{labware_name}', '{slot}')")
         
         # Add instrument loading
         for mount, instrument in self.loaded_instruments.items():

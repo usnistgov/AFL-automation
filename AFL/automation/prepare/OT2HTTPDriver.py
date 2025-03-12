@@ -557,7 +557,7 @@ class OT2HTTPDriver(Driver):
         return "\n".join(protocol_content)
     
     def _create_protocol_session(self):
-        """Create a protocol session on the robot"""
+        """Create a protocol run on the robot"""
         if not self.loaded_labware or not self.loaded_instruments:
             raise ValueError("No labware or instruments loaded. Cannot create protocol.")
         
@@ -569,85 +569,94 @@ class OT2HTTPDriver(Driver):
             protocol_response = requests.post(
                 url=f"{self.base_url}/protocols",
                 headers=self.headers,
-                files=[("protocolFile", ("protocol.py", protocol_content.encode(), "text/plain"))]
+                files={
+                    "protocolFile": ("protocol.py", protocol_content.encode(), "text/plain"),
+                    "source": (None, "protocol-designer")
+                }
             )
             
             if protocol_response.status_code != 201:
                 self.app.logger.error(f"Failed to upload protocol: {protocol_response.status_code}")
+                self.app.logger.error(f"Response: {protocol_response.text}")
                 raise RuntimeError(f"Failed to upload protocol: {protocol_response.text}")
             
             self.protocol_id = protocol_response.json()['data']['id']
             
-            # Create a protocol session
-            session_response = requests.post(
-                url=f"{self.base_url}/sessions",
+            # Create a protocol run instead of a session
+            import datetime
+            run_response = requests.post(
+                url=f"{self.base_url}/protocols/{self.protocol_id}/runs",
                 headers=self.headers,
                 json={
                     "data": {
-                        "sessionType": "protocol",
-                        "createParams": {
-                            "protocolId": self.protocol_id,
-                            # Use command mode for atomic operations rather than running a full protocol
-                            "useCommandMode": True
-                        }
+                        "labwareOffsets": [],
+                        "startedAt": datetime.datetime.now().isoformat(),
+                        "createParams": {}
                     }
                 }
             )
             
-            if session_response.status_code != 201:
-                self.app.logger.error(f"Failed to create session: {session_response.status_code}")
-                raise RuntimeError(f"Failed to create session: {session_response.text}")
+            if run_response.status_code != 201:
+                self.app.logger.error(f"Failed to create run: {run_response.status_code}")
+                self.app.logger.error(f"Response: {run_response.text}")
+                raise RuntimeError(f"Failed to create run: {run_response.text}")
             
-            self.session_id = session_response.json()['data']['id']
+            self.run_id = run_response.json()['data']['id']
             
-            # Wait for session to be loaded
+            # Wait for run to be ready
             while True:
                 status_response = requests.get(
-                    url=f"{self.base_url}/sessions/{self.session_id}",
+                    url=f"{self.base_url}/protocols/{self.protocol_id}/runs/{self.run_id}",
                     headers=self.headers
                 )
                 
                 if status_response.status_code == 200:
-                    current_state = status_response.json()['data']['details']['currentState']
-                    if current_state == 'loaded':
+                    status_data = status_response.json()['data']
+                    current_state = status_data['status']
+                    if current_state == 'running' or current_state == 'succeeded':
                         break
-                    elif current_state == 'error':
-                        raise RuntimeError(f"Error loading session: {status_response.text}")
+                    elif current_state in ['failed', 'error']:
+                        error_info = status_data.get('errors', 'Unknown error')
+                        raise RuntimeError(f"Error starting run: {error_info}")
                 
                 time.sleep(0.5)
             
             return True
             
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error creating protocol session: {str(e)}")
-            raise RuntimeError(f"Error creating protocol session: {str(e)}")
+            self.app.logger.error(f"Error creating protocol run: {str(e)}")
+            raise RuntimeError(f"Error creating protocol run: {str(e)}")
     
-    def _ensure_session_exists(self):
-        """Ensure a protocol session exists, creating one if needed"""
-        if not self.session_id:
+    def _ensure_run_exists(self):
+        """Ensure a protocol run exists, creating one if needed"""
+        if not hasattr(self, 'run_id') or not self.run_id:
             return self._create_protocol_session()
         
-        # Check if the session is still valid
+        # Check if the run is still valid
         try:
+            if not hasattr(self, 'protocol_id') or not self.protocol_id:
+                # If we don't have a protocol ID, we need to create a new run
+                return self._create_protocol_session()
+                
             response = requests.get(
-                url=f"{self.base_url}/sessions/{self.session_id}",
+                url=f"{self.base_url}/protocols/{self.protocol_id}/runs/{self.run_id}",
                 headers=self.headers
             )
             
             if response.status_code != 200:
-                # Session doesn't exist, create a new one
+                # Run doesn't exist, create a new one
                 return self._create_protocol_session()
             
-            # Check session state
-            current_state = response.json()['data']['details']['currentState']
-            if current_state in ['error', 'finished']:
-                # Session is in a terminal state, create a new one
+            # Check run state
+            current_state = response.json()['data']['status']
+            if current_state in ['failed', 'error', 'succeeded']:
+                # Run is in a terminal state, create a new one
                 return self._create_protocol_session()
             
             return True
             
         except requests.exceptions.RequestException:
-            # Error checking session, create a new one
+            # Error checking run, create a new one
             return self._create_protocol_session()
     
     def _execute_command(self, command, data=None):
@@ -663,7 +672,7 @@ class OT2HTTPDriver(Driver):
             
             # Create a unique protocol ID
             protocol_id = None
-            session_id = None
+            run_id = None
             
             try:
                 # Upload the protocol
@@ -671,82 +680,83 @@ class OT2HTTPDriver(Driver):
                     url=f"{self.base_url}/protocols",
                     headers=self.headers,
                     files={
-                        "files": ("protocol.py", protocol_content.encode(), "text/plain")
+                        "protocolFile": ("protocol.py", protocol_content.encode(), "text/plain"),
+                        "source": (None, "protocol-designer")
                     }
                 )
                 
                 if protocol_response.status_code != 201:
                     self.app.logger.error(f"Failed to upload protocol: {protocol_response.status_code}")
+                    self.app.logger.error(f"Response: {protocol_response.text}")
                     raise RuntimeError(f"Failed to upload protocol: {protocol_response.text}")
                 
                 protocol_id = protocol_response.json()['data']['id']
                 self.app.logger.debug(f"Created protocol: {protocol_id}")
                 
-                # Create a protocol session
-                session_response = requests.post(
-                    url=f"{self.base_url}/sessions",
+                # Create a protocol run instead of a session
+                import datetime
+                run_response = requests.post(
+                    url=f"{self.base_url}/protocols/{protocol_id}/runs",
                     headers=self.headers,
                     json={
                         "data": {
-                            "sessionType": "protocol",
-                            "createParams": {
-                                "protocolId": protocol_id,
-                                "useCommandMode": False  # Run the protocol directly
-                            }
+                            "labwareOffsets": [],
+                            "startedAt": datetime.datetime.now().isoformat(),
+                            "createParams": {}
                         }
                     }
                 )
                 
-                if session_response.status_code != 201:
-                    self.app.logger.error(f"Failed to create session: {session_response.status_code}")
-                    raise RuntimeError(f"Failed to create session: {session_response.text}")
-                
-                session_id = session_response.json()['data']['id']
-                self.app.logger.debug(f"Created session: {session_id}")
-                
-                # Run the protocol
-                run_response = requests.post(
-                    url=f"{self.base_url}/sessions/{session_id}/commands/execute",
-                    headers=self.headers,
-                    json={"data": {"command": "protocol.startRun", "data": {}}}
-                )
-                
                 if run_response.status_code != 201:
-                    self.app.logger.error(f"Failed to start run: {run_response.status_code}")
-                    raise RuntimeError(f"Failed to start run: {run_response.text}")
+                    self.app.logger.error(f"Failed to create run: {run_response.status_code}")
+                    self.app.logger.error(f"Response: {run_response.text}")
+                    raise RuntimeError(f"Failed to create run: {run_response.text}")
                 
-                run_command_id = run_response.json()['data']['id']
+                run_id = run_response.json()['data']['id']
+                self.app.logger.debug(f"Created run: {run_id}")
                 
                 # Wait for run to complete
                 while True:
+                    # Get the current status of the run
                     status_response = requests.get(
-                        url=f"{self.base_url}/sessions/{session_id}",
+                        url=f"{self.base_url}/protocols/{protocol_id}/runs/{run_id}",
                         headers=self.headers
                     )
                     
                     if status_response.status_code == 200:
-                        current_state = status_response.json()['data']['details']['currentState']
-                        if current_state == 'finished':
+                        status_data = status_response.json()['data']
+                        current_state = status_data['status']
+                        self.app.logger.debug(f"Current run state: {current_state}")
+                        
+                        if current_state == 'succeeded':
                             self.app.logger.debug(f"Protocol run completed successfully")
                             return True
-                        elif current_state == 'error':
-                            error_info = status_response.json()['data']['details'].get('errorInfo', 'Unknown error')
+                        elif current_state in ['failed', 'error']:
+                            error_info = status_data.get('errors', 'Unknown error')
                             self.app.logger.error(f"Protocol run failed: {error_info}")
                             raise RuntimeError(f"Protocol run failed: {error_info}")
-                    
-                    time.sleep(0.5)
+                        elif current_state == 'running':
+                            # Still running, wait and check again
+                            time.sleep(0.5)
+                        else:
+                            # Unknown state, keep waiting
+                            time.sleep(0.5)
+                    else:
+                        self.app.logger.error(f"Failed to get run status: {status_response.status_code}")
+                        self.app.logger.error(f"Response: {status_response.text}")
+                        raise RuntimeError(f"Failed to get run status: {status_response.text}")
                 
             finally:
-                # Clean up the session and protocol
-                if session_id:
+                # Clean up the run and protocol
+                if run_id and protocol_id:
                     try:
                         requests.delete(
-                            url=f"{self.base_url}/sessions/{session_id}",
+                            url=f"{self.base_url}/protocols/{protocol_id}/runs/{run_id}",
                             headers=self.headers
                         )
-                        self.app.logger.debug(f"Cleaned up session: {session_id}")
+                        self.app.logger.debug(f"Cleaned up run: {run_id}")
                     except Exception as e:
-                        self.app.logger.warning(f"Failed to clean up session: {str(e)}")
+                        self.app.logger.warning(f"Failed to clean up run: {str(e)}")
                 
                 if protocol_id:
                     try:
@@ -993,7 +1003,7 @@ class OT2HTTPDriver(Driver):
             print(f'\nProtocol content:\n\n\n{protocol_content}\n\n\n') 
             # Create a unique protocol ID
             protocol_id = None
-            session_id = None
+            run_id = None
             
             try:
                 # Upload the protocol
@@ -1001,82 +1011,83 @@ class OT2HTTPDriver(Driver):
                     url=f"{self.base_url}/protocols",
                     headers=self.headers,
                     files={
-                        "files": ("protocol.py", protocol_content.encode(), "text/plain")
+                        "protocolFile": ("protocol.py", protocol_content.encode(), "text/plain"),
+                        "source": (None, "protocol-designer")
                     }
                 )
                 
                 if protocol_response.status_code != 201:
                     self.app.logger.error(f"Failed to upload protocol: {protocol_response.status_code}")
+                    self.app.logger.error(f"Response: {protocol_response.text}")
                     raise RuntimeError(f"Failed to upload protocol: {protocol_response.text}")
                 
                 protocol_id = protocol_response.json()['data']['id']
                 self.app.logger.debug(f"Created protocol: {protocol_id}")
                 
-                # Create a protocol session
-                session_response = requests.post(
-                    url=f"{self.base_url}/sessions",
+                # Create a protocol run instead of a session
+                import datetime
+                run_response = requests.post(
+                    url=f"{self.base_url}/protocols/{protocol_id}/runs",
                     headers=self.headers,
                     json={
                         "data": {
-                            "sessionType": "protocol",
-                            "createParams": {
-                                "protocolId": protocol_id,
-                                "useCommandMode": False  # Run the protocol directly
-                            }
+                            "labwareOffsets": [],
+                            "startedAt": datetime.datetime.now().isoformat(),
+                            "createParams": {}
                         }
                     }
                 )
                 
-                if session_response.status_code != 201:
-                    self.app.logger.error(f"Failed to create session: {session_response.status_code}")
-                    raise RuntimeError(f"Failed to create session: {session_response.text}")
-                
-                session_id = session_response.json()['data']['id']
-                self.app.logger.debug(f"Created session: {session_id}")
-                
-                # Run the protocol
-                run_response = requests.post(
-                    url=f"{self.base_url}/sessions/{session_id}/commands/execute",
-                    headers=self.headers,
-                    json={"data": {"command": "protocol.startRun", "data": {}}}
-                )
-                
                 if run_response.status_code != 201:
-                    self.app.logger.error(f"Failed to start run: {run_response.status_code}")
-                    raise RuntimeError(f"Failed to start run: {run_response.text}")
+                    self.app.logger.error(f"Failed to create run: {run_response.status_code}")
+                    self.app.logger.error(f"Response: {run_response.text}")
+                    raise RuntimeError(f"Failed to create run: {run_response.text}")
                 
-                run_command_id = run_response.json()['data']['id']
+                run_id = run_response.json()['data']['id']
+                self.app.logger.debug(f"Created run: {run_id}")
                 
                 # Wait for run to complete
                 while True:
+                    # Get the current status of the run
                     status_response = requests.get(
-                        url=f"{self.base_url}/sessions/{session_id}",
+                        url=f"{self.base_url}/protocols/{protocol_id}/runs/{run_id}",
                         headers=self.headers
                     )
                     
                     if status_response.status_code == 200:
-                        current_state = status_response.json()['data']['details']['currentState']
-                        if current_state == 'finished':
+                        status_data = status_response.json()['data']
+                        current_state = status_data['status']
+                        self.app.logger.debug(f"Current run state: {current_state}")
+                        
+                        if current_state == 'succeeded':
                             self.app.logger.debug(f"Protocol run completed successfully")
                             return True
-                        elif current_state == 'error':
-                            error_info = status_response.json()['data']['details'].get('errorInfo', 'Unknown error')
+                        elif current_state in ['failed', 'error']:
+                            error_info = status_data.get('errors', 'Unknown error')
                             self.app.logger.error(f"Protocol run failed: {error_info}")
                             raise RuntimeError(f"Protocol run failed: {error_info}")
-                    
-                    time.sleep(0.5)
+                        elif current_state == 'running':
+                            # Still running, wait and check again
+                            time.sleep(0.5)
+                        else:
+                            # Unknown state, keep waiting
+                            time.sleep(0.5)
+                    else:
+                        self.app.logger.error(f"Failed to get run status: {status_response.status_code}")
+                        self.app.logger.error(f"Response: {status_response.text}")
+                        raise RuntimeError(f"Failed to get run status: {status_response.text}")
                 
             finally:
-                # Clean up the session and protocol
-                if session_id:
+                # Clean up the run and protocol
+                if run_id and protocol_id:
                     try:
                         requests.delete(
-                            url=f"{self.base_url}/sessions/{session_id}",
+                            url=f"{self.base_url}/protocols/{protocol_id}/runs/{run_id}",
                             headers=self.headers
                         )
-                        self.app.logger.debug(f"Cleaned up session: {session_id}")
+                        self.app.logger.debug(f"Cleaned up run: {run_id}")
                     except Exception as e:
-                        self.app.logger.warning(f"Failed to clean up session: {str(e)}")
+                        self.app.logger.warning(f"Failed to clean up run: {str(e)}")
                 
                 if protocol_id:
                     try:

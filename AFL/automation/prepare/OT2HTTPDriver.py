@@ -316,21 +316,34 @@ class OT2HTTPDriver(Driver):
 
     @Driver.quickbar(qb={"button_text": "Home"})
     def home(self, **kwargs):
+        """
+        Home the robot's axes using the dedicated /robot/home endpoint.
+
+        This endpoint is a direct control endpoint and doesn't require creating a run.
+        It can be used to home all axes at once or specific axes as needed.
+        """
         self.app.logger.info("Homing the robot's axes")
 
         try:
-            # Create a run for the home command
-            run_id = self._ensure_run_exists()
 
-            # Execute home command
-            self._execute_atomic_command(
-                "home", {"axes": ["x", "y", "z"]}  # Home all axes
+            # Call the dedicated home endpoint
+            response = requests.post(
+                url=f"{self.base_url}/robot/home",
+                headers=self.headers,
+                json={
+                    "target": "robot",  # Home the entire robot
+                },
             )
+
+            if response.status_code != 200:
+                self.app.logger.error(f"Failed to home robot: {response.status_code}")
+                self.app.logger.error(f"Response: {response.text}")
+                raise RuntimeError(f"Failed to home robot: {response.text}")
 
             self.app.logger.info("Robot homing completed successfully")
             return True
 
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             self.app.logger.error(f"Error during homing: {str(e)}")
             raise RuntimeError(f"Error during homing: {str(e)}")
 

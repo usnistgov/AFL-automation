@@ -46,6 +46,31 @@ class OT2HTTPDriver(Driver):
         # Initialize the robot connection
         self._initialize_robot()
 
+    def _log(self, level, message):
+        """Safe logging that checks if app exists before logging"""
+        if self.app is not None and hasattr(self.app, "logger"):
+            log_method = getattr(self.app.logger, level, None)
+            if log_method:
+                log_method(message)
+        else:
+            print(f"[{level.upper()}] {message}")
+
+    def log_info(self, message):
+        """Log info message safely"""
+        self._log("info", message)
+
+    def log_error(self, message):
+        """Log error message safely"""
+        self._log("error", message)
+
+    def log_debug(self, message):
+        """Log debug message safely"""
+        self._log("debug", message)
+
+    def log_warning(self, message):
+        """Log warning message safely"""
+        self._log("warning", message)
+
     def _initialize_robot(self):
         """Initialize the connection to the robot and get basic information"""
         try:
@@ -58,7 +83,7 @@ class OT2HTTPDriver(Driver):
             self._update_pipettes()
 
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error connecting to robot: {str(e)}")
+            self.log_error(f"Error connecting to robot: {str(e)}")
             raise ConnectionError(
                 f"Error connecting to robot at {self.base_url}: {str(e)}"
             )
@@ -67,7 +92,7 @@ class OT2HTTPDriver(Driver):
         """Get information about attached pipettes and their settings"""
         try:
             if self.app is not None:
-                self.app.logger.info("Fetching pipette information from robot")
+                self.log_info("Fetching pipette information from robot")
 
             # Get basic pipette information
             response = requests.get(
@@ -129,26 +154,24 @@ class OT2HTTPDriver(Driver):
                     if (self.min_transfer is None) or (self.min_transfer > min_volume):
                         self.min_transfer = min_volume
                         if self.app is not None:
-                            self.app.logger.info(
+                            self.log_info(
                                 f"Setting minimum transfer to {self.min_transfer}"
                             )
 
                     if (self.max_transfer is None) or (self.max_transfer < max_volume):
                         self.max_transfer = max_volume
                         if self.app is not None:
-                            self.app.logger.info(
+                            self.log_info(
                                 f"Setting maximum transfer to {self.max_transfer}"
                             )
                 else:
                     if self.app is not None:
-                        self.app.logger.warning(
+                        self.log_warning(
                             f"Failed to get settings for pipette {pipette['id']}: {settings_response.status_code}"
                         )
 
             if self.app is not None:
-                self.app.logger.info(
-                    f"Pipette information updated: {self.pipette_info}"
-                )
+                self.log_info(f"Pipette information updated: {self.pipette_info}")
 
         except Exception as e:
             raise RuntimeError(f"Error getting pipettes: {str(e)}")
@@ -214,7 +237,7 @@ class OT2HTTPDriver(Driver):
         }
     )
     def reset_tipracks(self, mount="both"):
-        self.app.logger.info(f"Resetting tipracks for {mount} mount")
+        self.log_info(f"Resetting tipracks for {mount} mount")
 
         # Create a maintenance session for tiprack reset
         try:
@@ -255,10 +278,10 @@ class OT2HTTPDriver(Driver):
                         )
 
                         if reset_response.status_code != 201:
-                            self.app.logger.error(
+                            self.log_error(
                                 f"Failed to reset tiprack: {reset_response.status_code}"
                             )
-                            self.app.logger.error(f"Response: {reset_response.text}")
+                            self.log_error(f"Response: {reset_response.text}")
 
                 # Clean up the maintenance session
                 requests.delete(
@@ -270,18 +293,18 @@ class OT2HTTPDriver(Driver):
                 self.has_tip = False
 
             else:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to create maintenance session: {response.status_code}"
                 )
-                self.app.logger.error(f"Response: {response.text}")
+                self.log_error(f"Response: {response.text}")
 
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error resetting tipracks: {str(e)}")
+            self.log_error(f"Error resetting tipracks: {str(e)}")
 
-        self.app.logger.info(f"Tipracks reset for {mount} mount")
+        self.log_info(f"Tipracks reset for {mount} mount")
 
     def reset(self):
-        self.app.logger.info("Resetting the protocol context")
+        self.log_info("Resetting the protocol context")
 
         # Delete any active session
         if self.session_id:
@@ -291,7 +314,7 @@ class OT2HTTPDriver(Driver):
                     headers=self.headers,
                 )
             except requests.exceptions.RequestException as e:
-                self.app.logger.error(f"Error deleting session: {str(e)}")
+                self.log_error(f"Error deleting session: {str(e)}")
 
         # Delete any uploaded protocol
         if self.protocol_id:
@@ -301,7 +324,7 @@ class OT2HTTPDriver(Driver):
                     headers=self.headers,
                 )
             except requests.exceptions.RequestException as e:
-                self.app.logger.error(f"Error deleting protocol: {str(e)}")
+                self.log_error(f"Error deleting protocol: {str(e)}")
 
         # Reset state variables
         self.session_id = None
@@ -322,7 +345,7 @@ class OT2HTTPDriver(Driver):
         This endpoint is a direct control endpoint and doesn't require creating a run.
         It can be used to home all axes at once or specific axes as needed.
         """
-        self.app.logger.info("Homing the robot's axes")
+        self.log_info("Homing the robot's axes")
 
         try:
 
@@ -336,18 +359,21 @@ class OT2HTTPDriver(Driver):
             )
 
             if response.status_code != 200:
-                self.app.logger.error(f"Failed to home robot: {response.status_code}")
-                self.app.logger.error(f"Response: {response.text}")
+                self.log_error(f"Failed to home robot: {response.status_code}")
+                self.log_error(f"Response: {response.text}")
                 raise RuntimeError(f"Failed to home robot: {response.text}")
 
-            self.app.logger.info("Robot homing completed successfully")
+            self.log_info("Robot homing completed successfully")
             return True
 
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error during homing: {str(e)}")
+            self.log_error(f"Error during homing: {str(e)}")
             raise RuntimeError(f"Error during homing: {str(e)}")
 
     def parse_well(self, loc):
+        """Parse a well location string into slot and well components"""
+        # Default value in case no alphabetic character is found
+        i = 0
         for i, loc_part in enumerate(list(loc)):
             if loc_part.isalpha():
                 break
@@ -356,22 +382,22 @@ class OT2HTTPDriver(Driver):
         return slot, well
 
     def get_wells(self, locs):
-        self.app.logger.debug(f"Converting locations to well objects: {locs}")
+        self.log_debug(f"Converting locations to well objects: {locs}")
         wells = []
         for loc in listify(locs):
             slot, well = self.parse_well(loc)
             wells.append({"labwareId": self.loaded_labware.get(slot), "wellName": well})
-        self.app.logger.debug(f"Created well objects: {wells}")
+        self.log_debug(f"Created well objects: {wells}")
         return wells
 
     def load_labware(self, name, slot, module=None, **kwargs):
         """Load labware (containers, tipracks) into the protocol"""
-        self.app.logger.debug(f"Loading labware '{name}' into slot '{slot}'")
+        self.log_debug(f"Loading labware '{name}' into slot '{slot}'")
 
         # In HTTP API, labware is loaded when creating a protocol session
         # We'll store the information for later use when generating the protocol
         if slot in self.loaded_labware:
-            self.app.logger.info(f"Labware already loaded in slot {slot}")
+            self.log_info(f"Labware already loaded in slot {slot}")
         else:
             self.loaded_labware[slot] = name
 
@@ -386,7 +412,7 @@ class OT2HTTPDriver(Driver):
         In the HTTP API, pipettes are physically attached to the robot and don't need to be "loaded".
         This method just ensures we have the latest pipette data and stores tiprack information.
         """
-        self.app.logger.debug(
+        self.log_debug(
             f"Storing tiprack information for mount '{mount}' with tip_racks in slots {tip_rack_slots}"
         )
 
@@ -403,9 +429,58 @@ class OT2HTTPDriver(Driver):
 
         # Verify that there's actually a pipette in this mount
         if mount not in self.pipette_info or self.pipette_info[mount] is None:
-            self.app.logger.warning(
+            self.log_warning(
                 f"No physical pipette detected in {mount} mount, but tiprack information stored"
             )
+
+        # Update min/max values for largest and smallest pipettes
+        self._update_pipette_ranges()
+
+    def _update_pipette_ranges(self):
+        """Update the min/max values for largest and smallest pipettes"""
+        self.min_largest_pipette = None
+        self.max_smallest_pipette = None
+
+        # Get all available pipettes with their volumes
+        available_pipettes = {
+            mount: info for mount, info in self.pipette_info.items() if info is not None
+        }
+
+        if available_pipettes:
+            # Get min and max volumes for each pipette
+            min_vols = {
+                mount: info.get("min_volume", float("inf"))
+                for mount, info in available_pipettes.items()
+            }
+            max_vols = {
+                mount: info.get("max_volume", 0)
+                for mount, info in available_pipettes.items()
+            }
+
+            # Find the smallest and largest pipettes
+            if max_vols:
+                # Use list and regular max/min functions with a key function
+                mounts = list(max_vols.keys())
+                if mounts:
+                    largest_pipette_mount = max(
+                        mounts, key=lambda m: max_vols.get(m, 0)
+                    )
+                    smallest_pipette_mount = min(
+                        mounts, key=lambda m: max_vols.get(m, float("inf"))
+                    )
+
+                    # Set global min/max values
+                    if min_vols and largest_pipette_mount in min_vols:
+                        self.min_largest_pipette = min_vols[largest_pipette_mount]
+                        self.log_info(
+                            f"Setting min_largest_pipette to {self.min_largest_pipette}"
+                        )
+
+                    if max_vols and smallest_pipette_mount in max_vols:
+                        self.max_smallest_pipette = max_vols[smallest_pipette_mount]
+                        self.log_info(
+                            f"Setting max_smallest_pipette to {self.max_smallest_pipette}"
+                        )
 
     def _generate_protocol(self):
         """Generate a Python protocol based on loaded labware and instruments"""
@@ -630,10 +705,10 @@ class OT2HTTPDriver(Driver):
             )
 
             if protocol_response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to upload protocol: {protocol_response.status_code}"
                 )
-                self.app.logger.error(f"Response: {protocol_response.text}")
+                self.log_error(f"Response: {protocol_response.text}")
                 raise RuntimeError(
                     f"Failed to upload protocol: {protocol_response.text}"
                 )
@@ -656,10 +731,8 @@ class OT2HTTPDriver(Driver):
             )
 
             if run_response.status_code != 201:
-                self.app.logger.error(
-                    f"Failed to create run: {run_response.status_code}"
-                )
-                self.app.logger.error(f"Response: {run_response.text}")
+                self.log_error(f"Failed to create run: {run_response.status_code}")
+                self.log_error(f"Response: {run_response.text}")
                 raise RuntimeError(f"Failed to create run: {run_response.text}")
 
             self.run_id = run_response.json()["data"]["id"]
@@ -685,43 +758,15 @@ class OT2HTTPDriver(Driver):
             return True
 
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error creating protocol run: {str(e)}")
+            self.log_error(f"Error creating protocol run: {str(e)}")
             raise RuntimeError(f"Error creating protocol run: {str(e)}")
-
-    def _ensure_run_exists(self):
-        """Ensure a run exists for executing commands, creating one if needed"""
-        if not hasattr(self, "run_id") or not self.run_id:
-            return self._create_run()
-
-        # Check if the run is still valid
-        try:
-            response = requests.get(
-                url=f"{self.base_url}/runs/{self.run_id}", headers=self.headers
-            )
-
-            if response.status_code != 200:
-                # Run doesn't exist, create a new one
-                return self._create_run()
-
-            # Check run state
-            run_data = response.json()["data"]
-            current_state = run_data.get("status")
-            if current_state in ["failed", "error", "succeeded", "stopped"]:
-                # Run is in a terminal state, create a new one
-                return self._create_run()
-
-            return self.run_id
-
-        except requests.exceptions.RequestException:
-            # Error checking run, create a new one
-            return self._create_run()
 
     def _execute_command(self, command, data=None):
         """Execute a command by creating a new protocol run for each command"""
         if data is None:
             data = {}
 
-        self.app.logger.debug(f"Executing command: {command} with data: {data}")
+        self.log_debug(f"Executing command: {command} with data: {data}")
 
         try:
             # Generate a minimal protocol for this specific command
@@ -747,16 +792,16 @@ class OT2HTTPDriver(Driver):
                 )
 
                 if protocol_response.status_code != 201:
-                    self.app.logger.error(
+                    self.log_error(
                         f"Failed to upload protocol: {protocol_response.status_code}"
                     )
-                    self.app.logger.error(f"Response: {protocol_response.text}")
+                    self.log_error(f"Response: {protocol_response.text}")
                     raise RuntimeError(
                         f"Failed to upload protocol: {protocol_response.text}"
                     )
 
                 protocol_id = protocol_response.json()["data"]["id"]
-                self.app.logger.debug(f"Created protocol: {protocol_id}")
+                self.log_debug(f"Created protocol: {protocol_id}")
 
                 # Create a protocol run instead of a session
                 import datetime
@@ -774,14 +819,12 @@ class OT2HTTPDriver(Driver):
                 )
 
                 if run_response.status_code != 201:
-                    self.app.logger.error(
-                        f"Failed to create run: {run_response.status_code}"
-                    )
-                    self.app.logger.error(f"Response: {run_response.text}")
+                    self.log_error(f"Failed to create run: {run_response.status_code}")
+                    self.log_error(f"Response: {run_response.text}")
                     raise RuntimeError(f"Failed to create run: {run_response.text}")
 
                 run_id = run_response.json()["data"]["id"]
-                self.app.logger.debug(f"Created run: {run_id}")
+                self.log_debug(f"Created run: {run_id}")
 
                 # Wait for run to complete
                 while True:
@@ -794,16 +837,14 @@ class OT2HTTPDriver(Driver):
                     if status_response.status_code == 200:
                         status_data = status_response.json()["data"]
                         current_state = status_data["status"]
-                        self.app.logger.debug(f"Current run state: {current_state}")
+                        self.log_debug(f"Current run state: {current_state}")
 
                         if current_state == "succeeded":
-                            self.app.logger.debug(
-                                f"Protocol run completed successfully"
-                            )
+                            self.log_debug(f"Protocol run completed successfully")
                             return True
                         elif current_state in ["failed", "error"]:
                             error_info = status_data.get("errors", "Unknown error")
-                            self.app.logger.error(f"Protocol run failed: {error_info}")
+                            self.log_error(f"Protocol run failed: {error_info}")
                             raise RuntimeError(f"Protocol run failed: {error_info}")
                         elif current_state == "running":
                             # Still running, wait and check again
@@ -812,10 +853,10 @@ class OT2HTTPDriver(Driver):
                             # Unknown state, keep waiting
                             time.sleep(0.5)
                     else:
-                        self.app.logger.error(
+                        self.log_error(
                             f"Failed to get run status: {status_response.status_code}"
                         )
-                        self.app.logger.error(f"Response: {status_response.text}")
+                        self.log_error(f"Response: {status_response.text}")
                         raise RuntimeError(
                             f"Failed to get run status: {status_response.text}"
                         )
@@ -828,9 +869,9 @@ class OT2HTTPDriver(Driver):
                             url=f"{self.base_url}/protocols/{protocol_id}/runs/{run_id}",
                             headers=self.headers,
                         )
-                        self.app.logger.debug(f"Cleaned up run: {run_id}")
+                        self.log_debug(f"Cleaned up run: {run_id}")
                     except Exception as e:
-                        self.app.logger.warning(f"Failed to clean up run: {str(e)}")
+                        self.log_warning(f"Failed to clean up run: {str(e)}")
 
                 if protocol_id:
                     try:
@@ -838,18 +879,16 @@ class OT2HTTPDriver(Driver):
                             url=f"{self.base_url}/protocols/{protocol_id}",
                             headers=self.headers,
                         )
-                        self.app.logger.debug(f"Cleaned up protocol: {protocol_id}")
+                        self.log_debug(f"Cleaned up protocol: {protocol_id}")
                     except Exception as e:
-                        self.app.logger.warning(
-                            f"Failed to clean up protocol: {str(e)}"
-                        )
+                        self.log_warning(f"Failed to clean up protocol: {str(e)}")
 
         except Exception as e:
-            self.app.logger.error(f"Error executing command: {str(e)}")
+            self.log_error(f"Error executing command: {str(e)}")
             raise RuntimeError(f"Error executing command: {str(e)}")
 
     def mix(self, volume, location, repetitions=1, **kwargs):
-        self.app.logger.info(f"Mixing {volume}uL {repetitions} times at {location}")
+        self.log_info(f"Mixing {volume}uL {repetitions} times at {location}")
 
         # Get pipette based on volume
         pipette = self.get_pipette(volume)
@@ -914,26 +953,43 @@ class OT2HTTPDriver(Driver):
             )
 
     def _split_up_transfers(self, vol):
+        """Split up transfer volumes based on pipette constraints"""
         transfers = []
-        while True:
-            if sum(transfers) < vol:
-                transfer = min(self.max_transfer, vol - sum(transfers))
-                if (
-                    transfer < self.min_transfer
-                    and (len(transfers) > 0)
-                    and (transfers[-1] >= (2 * (self.min_transfer)))
-                ):
-                    transfers[-1] -= self.min_transfer - transfer
-                    transfer = self.min_transfer
-                if (transfer < self.min_largest_pipette) and (
-                    transfer > self.max_smallest_pipette
-                ):  # Valley of death
-                    # n_transfers = np.ceil(transfer/self.max_smallest_pipette)
-                    transfer = self.max_smallest_pipette  # I fear no evil
 
-                transfers.append(transfer)
-            else:
+        if self.max_transfer is None or vol <= 0:
+            return transfers
+
+        while sum(transfers) < vol:
+            transfer = min(self.max_transfer, vol - sum(transfers))
+
+            # Handle case where remaining volume is less than minimum transfer
+            if (
+                transfer < (self.min_transfer or 0)
+                and len(transfers) > 0
+                and transfers[-1] >= (2 * (self.min_transfer or 0))
+            ):
+
+                transfers[-1] -= (self.min_transfer or 0) - transfer
+                transfer = self.min_transfer or 0
+
+            # Handle "valley of death" case - when transfer is between pipette ranges
+            if (
+                self.min_largest_pipette is not None
+                and self.max_smallest_pipette is not None
+                and transfer < self.min_largest_pipette
+                and transfer > self.max_smallest_pipette
+            ):
+
+                transfer = (
+                    self.max_smallest_pipette
+                )  # Use smaller pipette at max capacity
+
+            transfers.append(transfer)
+
+            # Exit condition - we've reached the target volume
+            if sum(transfers) >= vol:
                 break
+
         return transfers
 
     @Driver.quickbar(
@@ -971,7 +1027,7 @@ class OT2HTTPDriver(Driver):
         **kwargs,
     ):
         """Transfer fluid from one location to another using atomic HTTP API commands"""
-        self.app.logger.info(f"Transferring {volume}uL from {source} to {dest}")
+        self.log_info(f"Transferring {volume}uL from {source} to {dest}")
 
         # Set flow rates if specified
         if aspirate_rate is not None:
@@ -1213,7 +1269,7 @@ class OT2HTTPDriver(Driver):
         if params is None:
             params = {}
 
-        self.app.logger.debug(
+        self.log_debug(
             f"Executing atomic command: {command_type} with params: {params}"
         )
 
@@ -1241,17 +1297,17 @@ class OT2HTTPDriver(Driver):
             )
 
             if command_response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to execute command: {command_response.status_code}"
                 )
-                self.app.logger.error(f"Response: {command_response.text}")
+                self.log_error(f"Response: {command_response.text}")
                 raise RuntimeError(
                     f"Failed to execute command: {command_response.text}"
                 )
 
             command_data = command_response.json()["data"]
             command_id = command_data["id"]
-            self.app.logger.debug(
+            self.log_debug(
                 f"Command {command_id} executed with status: {command_data['status']}"
             )
 
@@ -1261,19 +1317,19 @@ class OT2HTTPDriver(Driver):
                     return True
                 elif command_data["status"] in ["failed", "error"]:
                     error_info = command_data.get("error", "Unknown error")
-                    self.app.logger.error(f"Command failed: {error_info}")
+                    self.log_error(f"Command failed: {error_info}")
                     raise RuntimeError(f"Command failed: {error_info}")
 
             # If we're not waiting or the command is still running, return the command ID for tracking
             return command_id
 
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error executing command: {str(e)}")
+            self.log_error(f"Error executing command: {str(e)}")
             raise RuntimeError(f"Error executing command: {str(e)}")
 
     def set_aspirate_rate(self, rate=150, pipette=None):
         """Set aspirate rate in uL/s. Default is 150 uL/s"""
-        self.app.logger.info(f"Setting aspirate rate to {rate} uL/s")
+        self.log_info(f"Setting aspirate rate to {rate} uL/s")
 
         # If no specific pipette is provided, update all pipettes
         pipettes_to_update = []
@@ -1295,13 +1351,13 @@ class OT2HTTPDriver(Driver):
                     json={"data": {"value": rate}},
                 )
             except requests.exceptions.RequestException as e:
-                self.app.logger.error(
+                self.log_error(
                     f"Error setting aspirate rate for {mount} pipette: {str(e)}"
                 )
 
     def set_dispense_rate(self, rate=300, pipette=None):
         """Set dispense rate in uL/s. Default is 300 uL/s"""
-        self.app.logger.info(f"Setting dispense rate to {rate} uL/s")
+        self.log_info(f"Setting dispense rate to {rate} uL/s")
 
         # If no specific pipette is provided, update all pipettes
         pipettes_to_update = []
@@ -1323,22 +1379,22 @@ class OT2HTTPDriver(Driver):
                     json={"data": {"value": rate}},
                 )
             except requests.exceptions.RequestException as e:
-                self.app.logger.error(
+                self.log_error(
                     f"Error setting dispense rate for {mount} pipette: {str(e)}"
                 )
 
     def set_gantry_speed(self, speed=400):
         """Set movement speed of gantry. Default is 400 mm/s"""
-        self.app.logger.info(f"Setting gantry speed to {speed} mm/s")
+        self.log_info(f"Setting gantry speed to {speed} mm/s")
 
         # In HTTP API, this would require updating robot settings
         # This is a placeholder - actual implementation would depend on HTTP API capabilities
-        self.app.logger.warning(
+        self.log_warning(
             "Setting gantry speed is not fully implemented in HTTP API mode"
         )
 
     def get_pipette(self, volume, method="min_transfers"):
-        self.app.logger.debug(f"Looking for a pipette for volume {volume}")
+        self.log_debug(f"Looking for a pipette for volume {volume}")
 
         # Make sure we have the latest pipette information
         self._update_pipettes()
@@ -1393,7 +1449,7 @@ class OT2HTTPDriver(Driver):
         else:
             raise ValueError(f"Pipette selection method {method} was not recognized.")
 
-        self.app.logger.debug(f"Chosen pipette: {pipette}")
+        self.log_debug(f"Chosen pipette: {pipette}")
         if self.data is not None:
             self.data["chosen_pipette"] = str(pipette)
 
@@ -1443,7 +1499,7 @@ class OT2HTTPDriver(Driver):
 
     # HTTP API communication with heater-shaker module
     def set_shake(self, rpm):
-        self.app.logger.info(f"Setting heater-shaker speed to {rpm} RPM")
+        self.log_info(f"Setting heater-shaker speed to {rpm} RPM")
 
         # Store the maintenance run ID
         maintenance_run_id = None
@@ -1455,13 +1511,13 @@ class OT2HTTPDriver(Driver):
             )
 
             if response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to create maintenance run: {response.status_code}"
                 )
                 raise RuntimeError(f"Failed to create maintenance run: {response.text}")
 
             maintenance_run_id = response.json()["data"]["id"]
-            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            self.log_info(f"Created maintenance run: {maintenance_run_id}")
 
             # Get modules to find the heater-shaker module ID
             modules_response = requests.get(
@@ -1469,9 +1525,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if modules_response.status_code != 200:
-                self.app.logger.error(
-                    f"Failed to get modules: {modules_response.status_code}"
-                )
+                self.log_error(f"Failed to get modules: {modules_response.status_code}")
                 raise RuntimeError(f"Failed to get modules: {modules_response.text}")
 
             modules = modules_response.json().get("data", [])
@@ -1481,7 +1535,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if not heater_shaker_module:
-                self.app.logger.error("No heater-shaker module found")
+                self.log_error("No heater-shaker module found")
                 raise RuntimeError("No heater-shaker module found")
 
             module_id = heater_shaker_module.get("id")
@@ -1499,7 +1553,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if command_response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to set shake speed: {command_response.status_code}"
                 )
                 raise RuntimeError(
@@ -1507,7 +1561,7 @@ class OT2HTTPDriver(Driver):
                 )
 
             command_id = command_response.json()["data"]["id"]
-            self.app.logger.info(f"Sent setShakeSpeed command: {command_id}")
+            self.log_info(f"Sent setShakeSpeed command: {command_id}")
 
             # Wait for the command to complete
             while True:
@@ -1517,7 +1571,7 @@ class OT2HTTPDriver(Driver):
                 )
 
                 if command_status_response.status_code != 200:
-                    self.app.logger.error(
+                    self.log_error(
                         f"Failed to get command status: {command_status_response.status_code}"
                     )
                     raise RuntimeError(
@@ -1525,16 +1579,16 @@ class OT2HTTPDriver(Driver):
                     )
 
                 status = command_status_response.json()["data"]["status"]
-                self.app.logger.debug(f"Command status: {status}")
+                self.log_debug(f"Command status: {status}")
 
                 if status == "succeeded":
-                    self.app.logger.info(f"Successfully set shake speed to {rpm} RPM")
+                    self.log_info(f"Successfully set shake speed to {rpm} RPM")
                     break
                 elif status == "failed":
                     error_data = command_status_response.json()["data"].get(
                         "error", "Unknown error"
                     )
-                    self.app.logger.error(f"Failed to set shake speed: {error_data}")
+                    self.log_error(f"Failed to set shake speed: {error_data}")
                     raise RuntimeError(f"Failed to set shake speed: {error_data}")
 
                 time.sleep(0.5)  # Short delay between status checks
@@ -1542,7 +1596,7 @@ class OT2HTTPDriver(Driver):
             return True
 
         except Exception as e:
-            self.app.logger.error(f"Error setting shake speed: {str(e)}")
+            self.log_error(f"Error setting shake speed: {str(e)}")
             raise RuntimeError(f"Error setting shake speed: {str(e)}")
 
         finally:
@@ -1554,20 +1608,18 @@ class OT2HTTPDriver(Driver):
                         headers=self.headers,
                     )
                     if delete_response.status_code == 200:
-                        self.app.logger.info(
+                        self.log_info(
                             f"Cleaned up maintenance run: {maintenance_run_id}"
                         )
                     else:
-                        self.app.logger.warning(
+                        self.log_warning(
                             f"Failed to clean up maintenance run: {delete_response.status_code}"
                         )
                 except Exception as e:
-                    self.app.logger.warning(
-                        f"Error cleaning up maintenance run: {str(e)}"
-                    )
+                    self.log_warning(f"Error cleaning up maintenance run: {str(e)}")
 
     def stop_shake(self):
-        self.app.logger.info("Stopping heater-shaker")
+        self.log_info("Stopping heater-shaker")
 
         # Store the maintenance run ID
         maintenance_run_id = None
@@ -1579,13 +1631,13 @@ class OT2HTTPDriver(Driver):
             )
 
             if response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to create maintenance run: {response.status_code}"
                 )
                 raise RuntimeError(f"Failed to create maintenance run: {response.text}")
 
             maintenance_run_id = response.json()["data"]["id"]
-            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            self.log_info(f"Created maintenance run: {maintenance_run_id}")
 
             # Get modules to find the heater-shaker module ID
             modules_response = requests.get(
@@ -1593,9 +1645,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if modules_response.status_code != 200:
-                self.app.logger.error(
-                    f"Failed to get modules: {modules_response.status_code}"
-                )
+                self.log_error(f"Failed to get modules: {modules_response.status_code}")
                 raise RuntimeError(f"Failed to get modules: {modules_response.text}")
 
             modules = modules_response.json().get("data", [])
@@ -1605,7 +1655,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if not heater_shaker_module:
-                self.app.logger.error("No heater-shaker module found")
+                self.log_error("No heater-shaker module found")
                 raise RuntimeError("No heater-shaker module found")
 
             module_id = heater_shaker_module.get("id")
@@ -1623,13 +1673,13 @@ class OT2HTTPDriver(Driver):
             )
 
             if command_response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to stop shaking: {command_response.status_code}"
                 )
                 raise RuntimeError(f"Failed to stop shaking: {command_response.text}")
 
             command_id = command_response.json()["data"]["id"]
-            self.app.logger.info(f"Sent stop shaking command: {command_id}")
+            self.log_info(f"Sent stop shaking command: {command_id}")
 
             # Wait for the command to complete
             while True:
@@ -1639,7 +1689,7 @@ class OT2HTTPDriver(Driver):
                 )
 
                 if command_status_response.status_code != 200:
-                    self.app.logger.error(
+                    self.log_error(
                         f"Failed to get command status: {command_status_response.status_code}"
                     )
                     raise RuntimeError(
@@ -1647,16 +1697,16 @@ class OT2HTTPDriver(Driver):
                     )
 
                 status = command_status_response.json()["data"]["status"]
-                self.app.logger.debug(f"Command status: {status}")
+                self.log_debug(f"Command status: {status}")
 
                 if status == "succeeded":
-                    self.app.logger.info("Successfully stopped shaking")
+                    self.log_info("Successfully stopped shaking")
                     break
                 elif status == "failed":
                     error_data = command_status_response.json()["data"].get(
                         "error", "Unknown error"
                     )
-                    self.app.logger.error(f"Failed to stop shaking: {error_data}")
+                    self.log_error(f"Failed to stop shaking: {error_data}")
                     raise RuntimeError(f"Failed to stop shaking: {error_data}")
 
                 time.sleep(0.5)  # Short delay between status checks
@@ -1664,7 +1714,7 @@ class OT2HTTPDriver(Driver):
             return True
 
         except Exception as e:
-            self.app.logger.error(f"Error stopping shake: {str(e)}")
+            self.log_error(f"Error stopping shake: {str(e)}")
             raise RuntimeError(f"Error stopping shake: {str(e)}")
 
         finally:
@@ -1676,20 +1726,18 @@ class OT2HTTPDriver(Driver):
                         headers=self.headers,
                     )
                     if delete_response.status_code == 200:
-                        self.app.logger.info(
+                        self.log_info(
                             f"Cleaned up maintenance run: {maintenance_run_id}"
                         )
                     else:
-                        self.app.logger.warning(
+                        self.log_warning(
                             f"Failed to clean up maintenance run: {delete_response.status_code}"
                         )
                 except Exception as e:
-                    self.app.logger.warning(
-                        f"Error cleaning up maintenance run: {str(e)}"
-                    )
+                    self.log_warning(f"Error cleaning up maintenance run: {str(e)}")
 
     def set_shaker_temp(self, temp):
-        self.app.logger.info(f"Setting heater-shaker temperature to {temp}°C")
+        self.log_info(f"Setting heater-shaker temperature to {temp}°C")
 
         # Store the maintenance run ID
         maintenance_run_id = None
@@ -1701,13 +1749,13 @@ class OT2HTTPDriver(Driver):
             )
 
             if response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to create maintenance run: {response.status_code}"
                 )
                 raise RuntimeError(f"Failed to create maintenance run: {response.text}")
 
             maintenance_run_id = response.json()["data"]["id"]
-            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            self.log_info(f"Created maintenance run: {maintenance_run_id}")
 
             # Get modules to find the heater-shaker module ID
             modules_response = requests.get(
@@ -1715,9 +1763,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if modules_response.status_code != 200:
-                self.app.logger.error(
-                    f"Failed to get modules: {modules_response.status_code}"
-                )
+                self.log_error(f"Failed to get modules: {modules_response.status_code}")
                 raise RuntimeError(f"Failed to get modules: {modules_response.text}")
 
             modules = modules_response.json().get("data", [])
@@ -1727,7 +1773,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if not heater_shaker_module:
-                self.app.logger.error("No heater-shaker module found")
+                self.log_error("No heater-shaker module found")
                 raise RuntimeError("No heater-shaker module found")
 
             module_id = heater_shaker_module.get("id")
@@ -1745,7 +1791,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if command_response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to set temperature: {command_response.status_code}"
                 )
                 raise RuntimeError(
@@ -1753,7 +1799,7 @@ class OT2HTTPDriver(Driver):
                 )
 
             command_id = command_response.json()["data"]["id"]
-            self.app.logger.info(f"Sent setTargetTemperature command: {command_id}")
+            self.log_info(f"Sent setTargetTemperature command: {command_id}")
 
             # Wait for the command to complete
             while True:
@@ -1763,7 +1809,7 @@ class OT2HTTPDriver(Driver):
                 )
 
                 if command_status_response.status_code != 200:
-                    self.app.logger.error(
+                    self.log_error(
                         f"Failed to get command status: {command_status_response.status_code}"
                     )
                     raise RuntimeError(
@@ -1771,16 +1817,16 @@ class OT2HTTPDriver(Driver):
                     )
 
                 status = command_status_response.json()["data"]["status"]
-                self.app.logger.debug(f"Command status: {status}")
+                self.log_debug(f"Command status: {status}")
 
                 if status == "succeeded":
-                    self.app.logger.info(f"Successfully set temperature to {temp}°C")
+                    self.log_info(f"Successfully set temperature to {temp}°C")
                     break
                 elif status == "failed":
                     error_data = command_status_response.json()["data"].get(
                         "error", "Unknown error"
                     )
-                    self.app.logger.error(f"Failed to set temperature: {error_data}")
+                    self.log_error(f"Failed to set temperature: {error_data}")
                     raise RuntimeError(f"Failed to set temperature: {error_data}")
 
                 time.sleep(0.5)  # Short delay between status checks
@@ -1788,7 +1834,7 @@ class OT2HTTPDriver(Driver):
             return True
 
         except Exception as e:
-            self.app.logger.error(f"Error setting temperature: {str(e)}")
+            self.log_error(f"Error setting temperature: {str(e)}")
             raise RuntimeError(f"Error setting temperature: {str(e)}")
 
         finally:
@@ -1800,20 +1846,18 @@ class OT2HTTPDriver(Driver):
                         headers=self.headers,
                     )
                     if delete_response.status_code == 200:
-                        self.app.logger.info(
+                        self.log_info(
                             f"Cleaned up maintenance run: {maintenance_run_id}"
                         )
                     else:
-                        self.app.logger.warning(
+                        self.log_warning(
                             f"Failed to clean up maintenance run: {delete_response.status_code}"
                         )
                 except Exception as e:
-                    self.app.logger.warning(
-                        f"Error cleaning up maintenance run: {str(e)}"
-                    )
+                    self.log_warning(f"Error cleaning up maintenance run: {str(e)}")
 
     def unlatch_shaker(self):
-        self.app.logger.info("Unlatching heater-shaker")
+        self.log_info("Unlatching heater-shaker")
 
         # Store the maintenance run ID
         maintenance_run_id = None
@@ -1825,13 +1869,13 @@ class OT2HTTPDriver(Driver):
             )
 
             if response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to create maintenance run: {response.status_code}"
                 )
                 raise RuntimeError(f"Failed to create maintenance run: {response.text}")
 
             maintenance_run_id = response.json()["data"]["id"]
-            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            self.log_info(f"Created maintenance run: {maintenance_run_id}")
 
             # Get modules to find the heater-shaker module ID
             modules_response = requests.get(
@@ -1839,9 +1883,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if modules_response.status_code != 200:
-                self.app.logger.error(
-                    f"Failed to get modules: {modules_response.status_code}"
-                )
+                self.log_error(f"Failed to get modules: {modules_response.status_code}")
                 raise RuntimeError(f"Failed to get modules: {modules_response.text}")
 
             modules = modules_response.json().get("data", [])
@@ -1851,7 +1893,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if not heater_shaker_module:
-                self.app.logger.error("No heater-shaker module found")
+                self.log_error("No heater-shaker module found")
                 raise RuntimeError("No heater-shaker module found")
 
             module_id = heater_shaker_module.get("id")
@@ -1869,13 +1911,13 @@ class OT2HTTPDriver(Driver):
             )
 
             if command_response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to unlatch shaker: {command_response.status_code}"
                 )
                 raise RuntimeError(f"Failed to unlatch shaker: {command_response.text}")
 
             command_id = command_response.json()["data"]["id"]
-            self.app.logger.info(f"Sent openLabwareLatch command: {command_id}")
+            self.log_info(f"Sent openLabwareLatch command: {command_id}")
 
             # Wait for the command to complete
             while True:
@@ -1885,7 +1927,7 @@ class OT2HTTPDriver(Driver):
                 )
 
                 if command_status_response.status_code != 200:
-                    self.app.logger.error(
+                    self.log_error(
                         f"Failed to get command status: {command_status_response.status_code}"
                     )
                     raise RuntimeError(
@@ -1893,16 +1935,16 @@ class OT2HTTPDriver(Driver):
                     )
 
                 status = command_status_response.json()["data"]["status"]
-                self.app.logger.debug(f"Command status: {status}")
+                self.log_debug(f"Command status: {status}")
 
                 if status == "succeeded":
-                    self.app.logger.info("Successfully unlatched shaker")
+                    self.log_info("Successfully unlatched shaker")
                     break
                 elif status == "failed":
                     error_data = command_status_response.json()["data"].get(
                         "error", "Unknown error"
                     )
-                    self.app.logger.error(f"Failed to unlatch shaker: {error_data}")
+                    self.log_error(f"Failed to unlatch shaker: {error_data}")
                     raise RuntimeError(f"Failed to unlatch shaker: {error_data}")
 
                 time.sleep(0.5)  # Short delay between status checks
@@ -1910,7 +1952,7 @@ class OT2HTTPDriver(Driver):
             return True
 
         except Exception as e:
-            self.app.logger.error(f"Error unlatching shaker: {str(e)}")
+            self.log_error(f"Error unlatching shaker: {str(e)}")
             raise RuntimeError(f"Error unlatching shaker: {str(e)}")
 
         finally:
@@ -1922,20 +1964,18 @@ class OT2HTTPDriver(Driver):
                         headers=self.headers,
                     )
                     if delete_response.status_code == 200:
-                        self.app.logger.info(
+                        self.log_info(
                             f"Cleaned up maintenance run: {maintenance_run_id}"
                         )
                     else:
-                        self.app.logger.warning(
+                        self.log_warning(
                             f"Failed to clean up maintenance run: {delete_response.status_code}"
                         )
                 except Exception as e:
-                    self.app.logger.warning(
-                        f"Error cleaning up maintenance run: {str(e)}"
-                    )
+                    self.log_warning(f"Error cleaning up maintenance run: {str(e)}")
 
     def latch_shaker(self):
-        self.app.logger.info("Latching heater-shaker")
+        self.log_info("Latching heater-shaker")
 
         # Store the maintenance run ID
         maintenance_run_id = None
@@ -1947,13 +1987,13 @@ class OT2HTTPDriver(Driver):
             )
 
             if response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to create maintenance run: {response.status_code}"
                 )
                 raise RuntimeError(f"Failed to create maintenance run: {response.text}")
 
             maintenance_run_id = response.json()["data"]["id"]
-            self.app.logger.info(f"Created maintenance run: {maintenance_run_id}")
+            self.log_info(f"Created maintenance run: {maintenance_run_id}")
 
             # Get modules to find the heater-shaker module ID
             modules_response = requests.get(
@@ -1961,9 +2001,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if modules_response.status_code != 200:
-                self.app.logger.error(
-                    f"Failed to get modules: {modules_response.status_code}"
-                )
+                self.log_error(f"Failed to get modules: {modules_response.status_code}")
                 raise RuntimeError(f"Failed to get modules: {modules_response.text}")
 
             modules = modules_response.json().get("data", [])
@@ -1973,7 +2011,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if not heater_shaker_module:
-                self.app.logger.error("No heater-shaker module found")
+                self.log_error("No heater-shaker module found")
                 raise RuntimeError("No heater-shaker module found")
 
             module_id = heater_shaker_module.get("id")
@@ -1991,13 +2029,13 @@ class OT2HTTPDriver(Driver):
             )
 
             if command_response.status_code != 201:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to latch shaker: {command_response.status_code}"
                 )
                 raise RuntimeError(f"Failed to latch shaker: {command_response.text}")
 
             command_id = command_response.json()["data"]["id"]
-            self.app.logger.info(f"Sent closeLabwareLatch command: {command_id}")
+            self.log_info(f"Sent closeLabwareLatch command: {command_id}")
 
             # Wait for the command to complete
             while True:
@@ -2007,7 +2045,7 @@ class OT2HTTPDriver(Driver):
                 )
 
                 if command_status_response.status_code != 200:
-                    self.app.logger.error(
+                    self.log_error(
                         f"Failed to get command status: {command_status_response.status_code}"
                     )
                     raise RuntimeError(
@@ -2015,16 +2053,16 @@ class OT2HTTPDriver(Driver):
                     )
 
                 status = command_status_response.json()["data"]["status"]
-                self.app.logger.debug(f"Command status: {status}")
+                self.log_debug(f"Command status: {status}")
 
                 if status == "succeeded":
-                    self.app.logger.info("Successfully latched shaker")
+                    self.log_info("Successfully latched shaker")
                     break
                 elif status == "failed":
                     error_data = command_status_response.json()["data"].get(
                         "error", "Unknown error"
                     )
-                    self.app.logger.error(f"Failed to latch shaker: {error_data}")
+                    self.log_error(f"Failed to latch shaker: {error_data}")
                     raise RuntimeError(f"Failed to latch shaker: {error_data}")
 
                 time.sleep(0.5)  # Short delay between status checks
@@ -2032,7 +2070,7 @@ class OT2HTTPDriver(Driver):
             return True
 
         except Exception as e:
-            self.app.logger.error(f"Error latching shaker: {str(e)}")
+            self.log_error(f"Error latching shaker: {str(e)}")
             raise RuntimeError(f"Error latching shaker: {str(e)}")
 
         finally:
@@ -2044,20 +2082,18 @@ class OT2HTTPDriver(Driver):
                         headers=self.headers,
                     )
                     if delete_response.status_code == 200:
-                        self.app.logger.info(
+                        self.log_info(
                             f"Cleaned up maintenance run: {maintenance_run_id}"
                         )
                     else:
-                        self.app.logger.warning(
+                        self.log_warning(
                             f"Failed to clean up maintenance run: {delete_response.status_code}"
                         )
                 except Exception as e:
-                    self.app.logger.warning(
-                        f"Error cleaning up maintenance run: {str(e)}"
-                    )
+                    self.log_warning(f"Error cleaning up maintenance run: {str(e)}")
 
     def get_shaker_temp(self):
-        self.app.logger.info("Getting heater-shaker temperature")
+        self.log_info("Getting heater-shaker temperature")
 
         # For get operations, we still need to use the modules API directly
         # No need for maintenance run as we're just reading data
@@ -2068,9 +2104,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if modules_response.status_code != 200:
-                self.app.logger.error(
-                    f"Failed to get modules: {modules_response.status_code}"
-                )
+                self.log_error(f"Failed to get modules: {modules_response.status_code}")
                 return f"Error getting modules: {modules_response.status_code}"
 
             modules = modules_response.json().get("data", [])
@@ -2080,7 +2114,7 @@ class OT2HTTPDriver(Driver):
             )
 
             if not heater_shaker_module:
-                self.app.logger.error("No heater-shaker module found")
+                self.log_error("No heater-shaker module found")
                 return "No heater-shaker module found"
 
             module_id = heater_shaker_module.get("id")
@@ -2094,22 +2128,22 @@ class OT2HTTPDriver(Driver):
                 module_data = module_data_response.json().get("data", {})
                 current_temp = module_data.get("data", {}).get("currentTemperature")
                 target_temp = module_data.get("data", {}).get("targetTemperature")
-                self.app.logger.info(
+                self.log_info(
                     f"Heater-shaker temperature - Current: {current_temp}°C, Target: {target_temp}°C"
                 )
                 return f"Current: {current_temp}°C, Target: {target_temp}°C"
             else:
-                self.app.logger.error(
+                self.log_error(
                     f"Failed to get module data: {module_data_response.status_code}"
                 )
                 return f"Error getting temperature: {module_data_response.status_code}"
 
         except Exception as e:
-            self.app.logger.error(f"Error getting temperature: {str(e)}")
+            self.log_error(f"Error getting temperature: {str(e)}")
             return f"Error: {str(e)}"
 
     def get_shake_rpm(self):
-        self._ensure_session_exists()
+        self._create_protocol_session()
         try:
             # Find the heater-shaker module ID
             modules_response = requests.get(
@@ -2141,25 +2175,23 @@ class OT2HTTPDriver(Driver):
                         target_rpm = module_data.get("data", {}).get("targetRPM")
                         return f"Current: {current_rpm} RPM, Target: {target_rpm} RPM"
                     else:
-                        self.app.logger.error(
+                        self.log_error(
                             f"Failed to get module data: {module_data_response.status_code}"
                         )
                         return "Error getting RPM"
                 else:
-                    self.app.logger.error("No heater-shaker module found")
+                    self.log_error("No heater-shaker module found")
                     return "No heater-shaker module found"
             else:
-                self.app.logger.error(
-                    f"Failed to get modules: {modules_response.status_code}"
-                )
+                self.log_error(f"Failed to get modules: {modules_response.status_code}")
                 return "Error getting modules"
 
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error getting RPM: {str(e)}")
+            self.log_error(f"Error getting RPM: {str(e)}")
             return f"Error: {str(e)}"
 
     def get_shake_latch_status(self):
-        self._ensure_session_exists()
+        self._create_protocol_session()
         try:
             # Find the heater-shaker module ID
             modules_response = requests.get(
@@ -2192,26 +2224,24 @@ class OT2HTTPDriver(Driver):
                         )
                         return f"Latch status: {latch_status}"
                     else:
-                        self.app.logger.error(
+                        self.log_error(
                             f"Failed to get module data: {module_data_response.status_code}"
                         )
                         return "Error getting latch status"
                 else:
-                    self.app.logger.error("No heater-shaker module found")
+                    self.log_error("No heater-shaker module found")
                     return "No heater-shaker module found"
             else:
-                self.app.logger.error(
-                    f"Failed to get modules: {modules_response.status_code}"
-                )
+                self.log_error(f"Failed to get modules: {modules_response.status_code}")
                 return "Error getting modules"
 
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error getting latch status: {str(e)}")
+            self.log_error(f"Error getting latch status: {str(e)}")
             return f"Error: {str(e)}"
 
     def _create_run(self):
         """Create a run on the robot for executing commands"""
-        self.app.logger.info("Creating a new run for commands")
+        self.log_info("Creating a new run for commands")
 
         try:
             # Create a run
@@ -2234,18 +2264,16 @@ class OT2HTTPDriver(Driver):
             )
 
             if run_response.status_code != 201:
-                self.app.logger.error(
-                    f"Failed to create run: {run_response.status_code}"
-                )
-                self.app.logger.error(f"Response: {run_response.text}")
+                self.log_error(f"Failed to create run: {run_response.status_code}")
+                self.log_error(f"Response: {run_response.text}")
                 raise RuntimeError(f"Failed to create run: {run_response.text}")
 
             self.run_id = run_response.json()["data"]["id"]
-            self.app.logger.debug(f"Created run: {self.run_id}")
+            self.log_debug(f"Created run: {self.run_id}")
             return self.run_id
 
         except requests.exceptions.RequestException as e:
-            self.app.logger.error(f"Error creating run: {str(e)}")
+            self.log_error(f"Error creating run: {str(e)}")
             raise RuntimeError(f"Error creating run: {str(e)}")
 
     def _ensure_run_exists(self):

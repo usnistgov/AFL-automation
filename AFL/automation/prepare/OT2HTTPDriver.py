@@ -913,6 +913,29 @@ class OT2HTTPDriver(Driver):
                 },
             )
 
+    def _split_up_transfers(self, vol):
+        transfers = []
+        while True:
+            if sum(transfers) < vol:
+                transfer = min(self.max_transfer, vol - sum(transfers))
+                if (
+                    transfer < self.min_transfer
+                    and (len(transfers) > 0)
+                    and (transfers[-1] >= (2 * (self.min_transfer)))
+                ):
+                    transfers[-1] -= self.min_transfer - transfer
+                    transfer = self.min_transfer
+                if (transfer < self.min_largest_pipette) and (
+                    transfer > self.max_smallest_pipette
+                ):  # Valley of death
+                    # n_transfers = np.ceil(transfer/self.max_smallest_pipette)
+                    transfer = self.max_smallest_pipette  # I fear no evil
+
+                transfers.append(transfer)
+            else:
+                break
+        return transfers
+
     @Driver.quickbar(
         qb={
             "button_text": "Transfer",
@@ -994,7 +1017,7 @@ class OT2HTTPDriver(Driver):
             dest_position = "center"
 
         # Split transfers if needed
-        transfers = self.split_up_transfers(volume)
+        transfers = self._split_up_transfers(volume)
 
         for sub_volume in transfers:
             # 1. Always pick up a new tip for each transfer

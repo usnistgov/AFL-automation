@@ -10,6 +10,21 @@ import uuid
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 
+# Add this constant at the top of the file, after the imports
+TIPRACK_WELLS = [
+    'A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1',
+    'A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2',
+    'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3',
+    'A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4',
+    'A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5', 'H5',
+    'A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6',
+    'A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7',
+    'A8', 'B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8',
+    'A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9',
+    'A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10',
+    'A11', 'B11', 'C11', 'D11', 'E11', 'F11', 'G11', 'H11',
+    'A12', 'B12', 'C12', 'D12', 'E12', 'F12', 'G12', 'H12'
+]
 
 class OT2HTTPDriver(Driver):
     defaults = {}
@@ -45,6 +60,9 @@ class OT2HTTPDriver(Driver):
 
         # Initialize the robot connection
         self._initialize_robot()
+
+        # Add tip tracking state
+        self.available_tips = {}  # Format: {mount: [(tiprack_id, well_name), ...]}
 
     def _log(self, level, message):
         """Safe logging that checks if app exists before logging"""
@@ -115,9 +133,14 @@ class OT2HTTPDriver(Driver):
                     self.pipette_info[mount] = None
                     continue
 
+                try:
+                    pipette_id = self.loaded_instruments[mount]["pipette_id"]
+                except KeyError:
+                    pipette_id = pipette["id"]
+
                 # Store basic pipette info
                 self.pipette_info[mount] = {
-                    "id": pipette["id"],
+                    "id": pipette_id,
                     "name": pipette["name"],
                     "model": pipette["model"],
                     "mount": mount,
@@ -195,6 +218,8 @@ class OT2HTTPDriver(Driver):
         else:
             status.append("No prep targets loaded")
 
+        status.append(self.get_tip_status())
+
         # Get current session status if available
         if self.session_id:
             try:
@@ -219,8 +244,8 @@ class OT2HTTPDriver(Driver):
                 )
 
         # Get loaded labware information
-        for slot, labware in self.loaded_labware.items():
-            status.append(f"Labware in slot {slot}: {labware}")
+        for slot, (labware_id, name) in self.loaded_labware.items():
+            status.append(f"Labware in slot {slot}: {name}")
 
         return status
 
@@ -237,71 +262,26 @@ class OT2HTTPDriver(Driver):
         }
     )
     def reset_tipracks(self, mount="both"):
+        """Reset the available tips for the specified mount(s)"""
         self.log_info(f"Resetting tipracks for {mount} mount")
 
-        # Create a maintenance session for tiprack reset
-        try:
-            response = requests.post(
-                url=f"{self.base_url}/sessions",
-                headers=self.headers,
-                json={
-                    "data": {
-                        "sessionType": "maintenance",
-                        "createParams": {"emulationMode": False},
-                    }
-                },
-            )
+        mounts_to_reset = []
+        if mount == "both":
+            mounts_to_reset = list(self.loaded_instruments.keys())
+        else:
+            mounts_to_reset = [mount]
 
-            if response.status_code == 201:
-                maintenance_session_id = response.json()["data"]["id"]
+        for m in mounts_to_reset:
+            if m in self.loaded_instruments:
+                # Reinitialize available tips for this mount
+                self.available_tips[m] = []
+                for tiprack in self.loaded_instruments[m]["tip_racks"]:
+                    for well in TIPRACK_WELLS:
+                        self.available_tips[m].append((tiprack, well))
+                self.log_info(f"Reset {len(self.available_tips[m])} tips for {m} mount")
 
-                # For each loaded instrument, reset its tipracks
-                for instrument_mount, instrument in self.loaded_instruments.items():
-                    if mount not in ["both", instrument_mount]:
-                        continue
-
-                    # For each tiprack associated with this instrument
-                    for tiprack in instrument["tip_racks"]:
-                        # Send command to reset this tiprack
-                        reset_response = requests.post(
-                            url=f"{self.base_url}/sessions/{maintenance_session_id}/commands/execute",
-                            headers=self.headers,
-                            json={
-                                "data": {
-                                    "command": "robot.resetTipracks",
-                                    "data": {
-                                        "mount": instrument_mount,
-                                        "tipracks": [tiprack],
-                                    },
-                                }
-                            },
-                        )
-
-                        if reset_response.status_code != 201:
-                            self.log_error(
-                                f"Failed to reset tiprack: {reset_response.status_code}"
-                            )
-                            self.log_error(f"Response: {reset_response.text}")
-
-                # Clean up the maintenance session
-                requests.delete(
-                    url=f"{self.base_url}/sessions/{maintenance_session_id}",
-                    headers=self.headers,
-                )
-
-                # Reset tip status
-                self.has_tip = False
-
-            else:
-                self.log_error(
-                    f"Failed to create maintenance session: {response.status_code}"
-                )
-                self.log_error(f"Response: {response.text}")
-
-        except requests.exceptions.RequestException as e:
-            self.log_error(f"Error resetting tipracks: {str(e)}")
-
-        self.log_info(f"Tipracks reset for {mount} mount")
+        # Reset tip status
+        self.has_tip = False
 
     def reset(self):
         self.log_info("Resetting the protocol context")
@@ -382,59 +362,184 @@ class OT2HTTPDriver(Driver):
         return slot, well
 
     def get_wells(self, locs):
+        """Convert location strings to well objects with proper labware IDs.
+        
+        Args:
+            locs: Single location string or list of location strings in format "slotwell" (e.g. "1A1")
+            
+        Returns:
+            List of well objects with labwareId and wellName
+            
+        Raises:
+            ValueError: If labware is not found in the specified slot
+        """
         self.log_debug(f"Converting locations to well objects: {locs}")
         wells = []
         for loc in listify(locs):
             slot, well = self.parse_well(loc)
-            wells.append({"labwareId": self.loaded_labware.get(slot), "wellName": well})
+            
+            # Get labware info from the slot
+            labware_info = self.loaded_labware.get(slot)
+            
+            if not labware_info:
+                raise ValueError(f"No labware found in slot {slot}")
+                
+            if not isinstance(labware_info, tuple) or len(labware_info) < 1:
+                raise ValueError(f"Invalid labware info format in slot {slot}")
+                
+            labware_id = labware_info[0]
+            wells.append({"labwareId": labware_id, "wellName": well})
+            
         self.log_debug(f"Created well objects: {wells}")
         return wells
 
     def load_labware(self, name, slot, module=None, **kwargs):
-        """Load labware (containers, tipracks) into the protocol"""
+        """Load labware (containers, tipracks) into the protocol using HTTP API"""
         self.log_debug(f"Loading labware '{name}' into slot '{slot}'")
 
-        # In HTTP API, labware is loaded when creating a protocol session
-        # We'll store the information for later use when generating the protocol
-        if slot in self.loaded_labware:
-            self.log_info(f"Labware already loaded in slot {slot}")
-        else:
-            self.loaded_labware[slot] = name
+        # Ensure we have a valid run
+        run_id = self._ensure_run_exists()
+
+        try:
+            # Determine namespace and version
+            # For custom labware, the name might include namespace info
+            namespace = "opentrons"  # default namespace
+            version = 1  # default version
+            
+            # Check if name includes namespace info (e.g. "custom/my_plate")
+            if "/" in name:
+                namespace, name = name.split("/", 1)
+
+            # Prepare the loadLabware command
+            command_dict = {
+                "data": {
+                    "commandType": "loadLabware",
+                    "params": {
+                        "location": {"slotName": str(slot)},
+                        "loadName": name,
+                        "namespace": namespace,
+                        "version": version
+                    },
+                    "intent": "setup"
+                }
+            }
+
+            # If this is a module, we need to specify the moduleId
+            if module:
+                command_dict["data"]["params"]["moduleId"] = module
+
+            # Execute the command
+            response = requests.post(
+                url=f"{self.base_url}/runs/{run_id}/commands",
+                headers=self.headers,
+                params={"waitUntilComplete": True},
+                json=command_dict
+            )
+
+            if response.status_code != 201:
+                self.log_error(f"Failed to load labware: {response.status_code}")
+                self.log_error(f"Response: {response.text}")
+                raise RuntimeError(f"Failed to load labware: {response.text}")
+
+            # Get the labware ID from the response
+            response_data = response.json()
+            labware_id = response_data["data"]["result"]["labwareId"]
+            
+            # Store the labware information
+            self.loaded_labware[slot] = (labware_id, name)
 
             # If this is a module, store it
             if module:
                 self.modules[slot] = module
 
-    def load_instrument(self, name, mount, tip_rack_slots, **kwargs):
-        """
-        Store tiprack information for pipettes.
+            self.log_info(f"Successfully loaded labware '{name}' in slot {slot} with ID {labware_id}")
+            return labware_id
 
-        In the HTTP API, pipettes are physically attached to the robot and don't need to be "loaded".
-        This method just ensures we have the latest pipette data and stores tiprack information.
-        """
+        except (requests.exceptions.RequestException, KeyError) as e:
+            self.log_error(f"Error loading labware: {str(e)}")
+            raise RuntimeError(f"Error loading labware: {str(e)}")
+
+    def load_instrument(self, name, mount, tip_rack_slots, **kwargs):
+        """Load pipette and store tiprack information using HTTP API."""
         self.log_debug(
-            f"Storing tiprack information for mount '{mount}' with tip_racks in slots {tip_rack_slots}"
+            f"Loading pipette '{name}' on '{mount}' mount with tip_racks in slots {tip_rack_slots}"
         )
 
-        # Make sure we have the latest pipette information
-        self._update_pipettes()
+        # Ensure we have a valid run
+        run_id = self._ensure_run_exists()
 
-        # Store the tiprack information for this mount
-        self.loaded_instruments[mount] = {
-            "name": name,  # We store this for backward compatibility
-            "tip_racks": [
-                self.loaded_labware.get(slot) for slot in listify(tip_rack_slots)
-            ],
-        }
+        try:
+            # First, load the pipette using the HTTP API
+            command_dict = {
+                "data": {
+                    "commandType": "loadPipette",
+                    "params": {
+                        "pipetteName": name,
+                        "mount": mount,
+                    },
+                    "intent": "setup"
+                }
+            }
 
-        # Verify that there's actually a pipette in this mount
-        if mount not in self.pipette_info or self.pipette_info[mount] is None:
-            self.log_warning(
-                f"No physical pipette detected in {mount} mount, but tiprack information stored"
+            # Execute the loadPipette command
+            response = requests.post(
+                url=f"{self.base_url}/runs/{run_id}/commands",
+                headers=self.headers,
+                params={"waitUntilComplete": True},
+                json=command_dict
             )
 
-        # Update min/max values for largest and smallest pipettes
-        self._update_pipette_ranges()
+            if response.status_code != 201:
+                self.log_error(f"Failed to load pipette: {response.status_code}")
+                self.log_error(f"Response: {response.text}")
+                raise RuntimeError(f"Failed to load pipette: {response.text}")
+
+            # Get the pipette ID from the response
+            response_data = response.json()
+            pipette_id = response_data["data"]["result"]["pipetteId"]
+
+            # Make sure we have the latest pipette information
+            self._update_pipettes()
+            self.pipette_info[mount]['id'] = pipette_id #patch the correct pipette id to the pipette_info dict
+
+            # Get the tip rack IDs - note that loaded_labware now stores tuples of (id, name)
+            tip_racks = []
+            for slot in listify(tip_rack_slots):
+                labware_info = self.loaded_labware.get(slot)
+                if labware_info and isinstance(labware_info, tuple) and len(labware_info) >= 1:
+                    tip_racks.append(labware_info[0])
+            
+            if not tip_racks:
+                self.log_warning(f"No valid tip racks found in slots {tip_rack_slots}")
+
+            # Store the instrument information including the pipette ID
+            self.loaded_instruments[mount] = {
+                "name": name,
+                "pipette_id": pipette_id,
+                "tip_racks": tip_racks,
+            }
+
+            # Initialize available tips for this mount
+            self.available_tips[mount] = []
+            for tiprack in tip_racks:
+                for well in TIPRACK_WELLS:
+                    self.available_tips[mount].append((tiprack, well))
+
+            # Verify that there's actually a pipette in this mount
+            if mount not in self.pipette_info or self.pipette_info[mount] is None:
+                self.log_warning(
+                    f"No physical pipette detected in {mount} mount, but pipette information stored"
+                )
+
+            # Update min/max values for largest and smallest pipettes
+            self._update_pipette_ranges()
+
+            self.log_info(f"Successfully loaded pipette '{name}' on {mount} mount with ID {pipette_id}")
+            return pipette_id
+
+        except (requests.exceptions.RequestException, KeyError) as e:
+            self.log_error(f"Error loading pipette: {str(e)}")
+            raise RuntimeError(f"Error loading pipette: {str(e)}")
 
     def _update_pipette_ranges(self):
         """Update the min/max values for largest and smallest pipettes"""
@@ -482,417 +587,13 @@ class OT2HTTPDriver(Driver):
                             f"Setting max_smallest_pipette to {self.max_smallest_pipette}"
                         )
 
-    def _generate_protocol(self):
-        """Generate a Python protocol based on loaded labware and instruments"""
-        protocol_content = [
-            "from opentrons import protocol_api",
-            "",
-            "metadata = {'apiLevel': '2.13'}",
-            "",
-            "def run(protocol: protocol_api.ProtocolContext):",
-        ]
-
-        # Add labware loading
-        for slot, labware_name in self.loaded_labware.items():
-            if slot in self.modules:
-                module_name = self.modules[slot]
-                protocol_content.append(
-                    f"    module_{slot} = protocol.load_module('{module_name}', '{slot}')"
-                )
-                protocol_content.append(
-                    f"    {slot} = module_{slot}.load_labware('{labware_name}')"
-                )
-            else:
-                protocol_content.append(
-                    f"    {slot} = protocol.load_labware('{labware_name}', '{slot}')"
-                )
-
-        # Add instrument loading
-        for mount, instrument in self.loaded_instruments.items():
-            tip_racks = ", ".join([f"{slot}" for slot in instrument["tip_racks"]])
-            protocol_content.append(
-                f"    pipette_{mount} = protocol.load_instrument('{instrument['name']}', '{mount}', tip_racks=[{tip_racks}])"
-            )
-
-        # Add placeholder for commands
-        protocol_content.append("    # Commands will be added dynamically")
-        protocol_content.append("")
-
-        return "\n".join(protocol_content)
-
-    def _generate_command_protocol(self, command, data):
-        """Generate a Python protocol for a specific command"""
-        # Start with the basic protocol structure
-        protocol_content = [
-            "from opentrons import protocol_api",
-            "",
-            "metadata = {'apiLevel': '2.13'}",
-            "",
-            "def run(protocol: protocol_api.ProtocolContext):",
-        ]
-
-        # Add labware loading
-        for slot, labware_name in self.loaded_labware.items():
-            if slot in self.modules:
-                module_name = self.modules[slot]
-                protocol_content.append(
-                    f"    module_{slot} = protocol.load_module('{module_name}', '{slot}')"
-                )
-                protocol_content.append(
-                    f"    {slot} = module_{slot}.load_labware('{labware_name}')"
-                )
-            else:
-                protocol_content.append(
-                    f"    {slot} = protocol.load_labware('{labware_name}', '{slot}')"
-                )
-
-        # Add instrument loading
-        for mount, instrument in self.loaded_instruments.items():
-            tip_racks = ", ".join([f"{slot}" for slot in instrument["tip_racks"]])
-            protocol_content.append(
-                f"    pipette_{mount} = protocol.load_instrument('{instrument['name']}', '{mount}', tip_racks=[{tip_racks}])"
-            )
-
-        # Process the command and add it to the protocol
-        if command == "protocol.pickUpTip":
-            # Get the mount directly from the pipette data
-            pipette_data = data.get("pipette", {})
-            pipette_mount = (
-                pipette_data.get("object")
-                if isinstance(pipette_data, dict)
-                else pipette_data
-            )
-            protocol_content.append(f"    pipette_{pipette_mount}.pick_up_tip()")
-
-        elif command == "protocol.dropTip":
-            pipette_data = data.get("pipette", {})
-            pipette_mount = (
-                pipette_data.get("object")
-                if isinstance(pipette_data, dict)
-                else pipette_data
-            )
-            protocol_content.append(f"    pipette_{pipette_mount}.drop_tip()")
-
-        elif command == "protocol.aspirate":
-            pipette_data = data.get("pipette", {})
-            pipette_mount = (
-                pipette_data.get("object")
-                if isinstance(pipette_data, dict)
-                else pipette_data
-            )
-            volume = data.get("volume")
-            location = data.get("location")
-            well_position = data.get("wellPosition", "bottom")
-
-            # Handle well position
-            if well_position == "bottom":
-                protocol_content.append(
-                    f"    pipette_{pipette_mount}.aspirate({volume}, {location})"
-                )
-            else:
-                protocol_content.append(
-                    f"    pipette_{pipette_mount}.aspirate({volume}, {location}.{well_position}())"
-                )
-
-        elif command == "protocol.dispense":
-            pipette_data = data.get("pipette", {})
-            pipette_mount = (
-                pipette_data.get("object")
-                if isinstance(pipette_data, dict)
-                else pipette_data
-            )
-            volume = data.get("volume")
-            location = data.get("location")
-            well_position = data.get("wellPosition", "bottom")
-            offset = data.get("offset")
-
-            # Handle well position and offset
-            if offset:
-                z_offset = offset.get("z", 0)
-                if well_position == "top":
-                    protocol_content.append(
-                        f"    pipette_{pipette_mount}.dispense({volume}, {location}.top(z={z_offset}))"
-                    )
-                elif well_position == "center":
-                    protocol_content.append(
-                        f"    pipette_{pipette_mount}.dispense({volume}, {location}.center(z={z_offset}))"
-                    )
-                else:
-                    protocol_content.append(
-                        f"    pipette_{pipette_mount}.dispense({volume}, {location}.bottom(z={z_offset}))"
-                    )
-            else:
-                if well_position == "bottom":
-                    protocol_content.append(
-                        f"    pipette_{pipette_mount}.dispense({volume}, {location})"
-                    )
-                else:
-                    protocol_content.append(
-                        f"    pipette_{pipette_mount}.dispense({volume}, {location}.{well_position}())"
-                    )
-
-        elif command == "protocol.mix":
-            pipette_data = data.get("pipette", {})
-            pipette_mount = (
-                pipette_data.get("object")
-                if isinstance(pipette_data, dict)
-                else pipette_data
-            )
-            volume = data.get("volume")
-            location = data.get("location")
-            repetitions = data.get("repetitions", 1)
-
-            protocol_content.append(
-                f"    pipette_{pipette_mount}.mix({repetitions}, {volume}, {location})"
-            )
-
-        elif command == "protocol.blowOut":
-            pipette_data = data.get("pipette", {})
-            pipette_mount = (
-                pipette_data.get("object")
-                if isinstance(pipette_data, dict)
-                else pipette_data
-            )
-            location = data.get("location")
-
-            protocol_content.append(f"    pipette_{pipette_mount}.blow_out({location})")
-
-        elif command == "protocol.airGap":
-            pipette_data = data.get("pipette", {})
-            pipette_mount = (
-                pipette_data.get("object")
-                if isinstance(pipette_data, dict)
-                else pipette_data
-            )
-            volume = data.get("volume")
-
-            protocol_content.append(f"    pipette_{pipette_mount}.air_gap({volume})")
-
-        elif command == "protocol.delay":
-            seconds = data.get("seconds", 0)
-
-            protocol_content.append(f"    protocol.delay(seconds={seconds})")
-
-        # Add debugging information
-        protocol_content.append(f"    # Command: {command}, Data: {data}")
-
-        # Return the complete protocol
-        return "\n".join(protocol_content)
-
-    def _create_protocol_session(self):
-        """Create a protocol run on the robot"""
-        if not self.loaded_labware or not self.loaded_instruments:
-            raise ValueError(
-                "No labware or instruments loaded. Cannot create protocol."
-            )
-
-        # Generate protocol content
-        protocol_content = self._generate_protocol()
-
-        # Upload the protocol
-        try:
-            protocol_response = requests.post(
-                url=f"{self.base_url}/protocols",
-                headers=self.headers,
-                files={
-                    "protocolFile": (
-                        "protocol.py",
-                        protocol_content.encode(),
-                        "text/plain",
-                    ),
-                    "source": (None, "protocol-designer"),
-                },
-            )
-
-            if protocol_response.status_code != 201:
-                self.log_error(
-                    f"Failed to upload protocol: {protocol_response.status_code}"
-                )
-                self.log_error(f"Response: {protocol_response.text}")
-                raise RuntimeError(
-                    f"Failed to upload protocol: {protocol_response.text}"
-                )
-
-            self.protocol_id = protocol_response.json()["data"]["id"]
-
-            # Create a protocol run instead of a session
-            import datetime
-
-            run_response = requests.post(
-                url=f"{self.base_url}/protocols/{self.protocol_id}/runs",
-                headers=self.headers,
-                json={
-                    "data": {
-                        "labwareOffsets": [],
-                        "startedAt": datetime.datetime.now().isoformat(),
-                        "createParams": {},
-                    }
-                },
-            )
-
-            if run_response.status_code != 201:
-                self.log_error(f"Failed to create run: {run_response.status_code}")
-                self.log_error(f"Response: {run_response.text}")
-                raise RuntimeError(f"Failed to create run: {run_response.text}")
-
-            self.run_id = run_response.json()["data"]["id"]
-
-            # Wait for run to be ready
-            while True:
-                status_response = requests.get(
-                    url=f"{self.base_url}/protocols/{self.protocol_id}/runs/{self.run_id}",
-                    headers=self.headers,
-                )
-
-                if status_response.status_code == 200:
-                    status_data = status_response.json()["data"]
-                    current_state = status_data["status"]
-                    if current_state == "running" or current_state == "succeeded":
-                        break
-                    elif current_state in ["failed", "error"]:
-                        error_info = status_data.get("errors", "Unknown error")
-                        raise RuntimeError(f"Error starting run: {error_info}")
-
-                time.sleep(0.5)
-
-            return True
-
-        except requests.exceptions.RequestException as e:
-            self.log_error(f"Error creating protocol run: {str(e)}")
-            raise RuntimeError(f"Error creating protocol run: {str(e)}")
-
-    def _execute_command(self, command, data=None):
-        """Execute a command by creating a new protocol run for each command"""
-        if data is None:
-            data = {}
-
-        self.log_debug(f"Executing command: {command} with data: {data}")
-
-        try:
-            # Generate a minimal protocol for this specific command
-            protocol_content = self._generate_command_protocol(command, data)
-
-            # Create a unique protocol ID
-            protocol_id = None
-            run_id = None
-
-            try:
-                # Upload the protocol
-                protocol_response = requests.post(
-                    url=f"{self.base_url}/protocols",
-                    headers=self.headers,
-                    files={
-                        "protocolFile": (
-                            "protocol.py",
-                            protocol_content.encode(),
-                            "text/plain",
-                        ),
-                        "source": (None, "protocol-designer"),
-                    },
-                )
-
-                if protocol_response.status_code != 201:
-                    self.log_error(
-                        f"Failed to upload protocol: {protocol_response.status_code}"
-                    )
-                    self.log_error(f"Response: {protocol_response.text}")
-                    raise RuntimeError(
-                        f"Failed to upload protocol: {protocol_response.text}"
-                    )
-
-                protocol_id = protocol_response.json()["data"]["id"]
-                self.log_debug(f"Created protocol: {protocol_id}")
-
-                # Create a protocol run instead of a session
-                import datetime
-
-                run_response = requests.post(
-                    url=f"{self.base_url}/protocols/{protocol_id}/runs",
-                    headers=self.headers,
-                    json={
-                        "data": {
-                            "labwareOffsets": [],
-                            "startedAt": datetime.datetime.now().isoformat(),
-                            "createParams": {},
-                        }
-                    },
-                )
-
-                if run_response.status_code != 201:
-                    self.log_error(f"Failed to create run: {run_response.status_code}")
-                    self.log_error(f"Response: {run_response.text}")
-                    raise RuntimeError(f"Failed to create run: {run_response.text}")
-
-                run_id = run_response.json()["data"]["id"]
-                self.log_debug(f"Created run: {run_id}")
-
-                # Wait for run to complete
-                while True:
-                    # Get the current status of the run
-                    status_response = requests.get(
-                        url=f"{self.base_url}/protocols/{protocol_id}/runs/{run_id}",
-                        headers=self.headers,
-                    )
-
-                    if status_response.status_code == 200:
-                        status_data = status_response.json()["data"]
-                        current_state = status_data["status"]
-                        self.log_debug(f"Current run state: {current_state}")
-
-                        if current_state == "succeeded":
-                            self.log_debug(f"Protocol run completed successfully")
-                            return True
-                        elif current_state in ["failed", "error"]:
-                            error_info = status_data.get("errors", "Unknown error")
-                            self.log_error(f"Protocol run failed: {error_info}")
-                            raise RuntimeError(f"Protocol run failed: {error_info}")
-                        elif current_state == "running":
-                            # Still running, wait and check again
-                            time.sleep(0.5)
-                        else:
-                            # Unknown state, keep waiting
-                            time.sleep(0.5)
-                    else:
-                        self.log_error(
-                            f"Failed to get run status: {status_response.status_code}"
-                        )
-                        self.log_error(f"Response: {status_response.text}")
-                        raise RuntimeError(
-                            f"Failed to get run status: {status_response.text}"
-                        )
-
-            finally:
-                # Clean up the run and protocol
-                if run_id and protocol_id:
-                    try:
-                        requests.delete(
-                            url=f"{self.base_url}/protocols/{protocol_id}/runs/{run_id}",
-                            headers=self.headers,
-                        )
-                        self.log_debug(f"Cleaned up run: {run_id}")
-                    except Exception as e:
-                        self.log_warning(f"Failed to clean up run: {str(e)}")
-
-                if protocol_id:
-                    try:
-                        requests.delete(
-                            url=f"{self.base_url}/protocols/{protocol_id}",
-                            headers=self.headers,
-                        )
-                        self.log_debug(f"Cleaned up protocol: {protocol_id}")
-                    except Exception as e:
-                        self.log_warning(f"Failed to clean up protocol: {str(e)}")
-
-        except Exception as e:
-            self.log_error(f"Error executing command: {str(e)}")
-            raise RuntimeError(f"Error executing command: {str(e)}")
 
     def mix(self, volume, location, repetitions=1, **kwargs):
         self.log_info(f"Mixing {volume}uL {repetitions} times at {location}")
 
         # Get pipette based on volume
         pipette = self.get_pipette(volume)
-        pipette_mount = pipette["object"]
+        pipette_mount = pipette["mount"]
 
         # Get the pipette ID
         pipette_id = None
@@ -917,6 +618,7 @@ class OT2HTTPDriver(Driver):
                 "pickUpTip",
                 {
                     "pipetteId": pipette_id,
+                    "pipetteMount": pipette_mount,
                     "wellLocation": None,  # Use next available tip in rack
                 },
             )
@@ -1038,7 +740,7 @@ class OT2HTTPDriver(Driver):
 
         # Get pipette based on volume
         pipette = self.get_pipette(volume)
-        pipette_mount = pipette["object"]  # Get the mount from the pipette object
+        pipette_mount = pipette["mount"]  # Get the mount from the pipette object
 
         # Get the pipette ID
         pipette_id = None
@@ -1081,7 +783,8 @@ class OT2HTTPDriver(Driver):
                 "pickUpTip",
                 {
                     "pipetteId": pipette_id,
-                    "wellLocation": None,  # Use next available tip in rack
+                    "pipetteMount": pipette_mount,
+                    "wellLocation": None,  # Use next available tip in rack, will be updated in _execute_atomic_command
                 },
             )
 
@@ -1269,6 +972,21 @@ class OT2HTTPDriver(Driver):
         if params is None:
             params = {}
 
+        # Track tip usage for pick up and drop commands
+        if command_type == "pickUpTip":
+            mount = params.get("pipetteMount")
+            if mount and mount in self.available_tips and self.available_tips[mount]:
+                tiprack_id, well = self.get_tip(mount)
+                self.log_debug(f"Using tip from {tiprack_id} well {well} for {mount} mount")
+                # Update the params to specify the exact tip location
+                params["labwareId"] = tiprack_id
+                params["wellName"] = well
+                params["wellLocation"] = {"origin": "top", "offset": {"x": 0, "y": 0, "z": 0}}
+                del params["pipetteMount"]
+            else:
+                raise RuntimeError(f"No tips available for {mount} mount")
+
+
         self.log_debug(
             f"Executing atomic command: {command_type} with params: {params}"
         )
@@ -1291,7 +1009,7 @@ class OT2HTTPDriver(Driver):
                     "data": {
                         "commandType": command_type,
                         "params": params,
-                        "intent": "protocol",
+                        "intent": "setup",
                     }
                 },
             )
@@ -1410,12 +1128,13 @@ class OT2HTTPDriver(Driver):
             if volume >= min_volume:
                 pipettes.append(
                     {
-                        "object": mount,  # Use mount as the identifier
+                        "mount": mount,  # Use mount as the identifier
                         "min_volume": min_volume,
                         "max_volume": max_volume,
                         "name": pipette_data.get("name"),
                         "model": pipette_data.get("model"),
                         "channels": pipette_data.get("channels", 1),
+                        "pipette_id": pipette_data.get("id"),
                     }
                 )
 
@@ -2143,7 +1862,6 @@ class OT2HTTPDriver(Driver):
             return f"Error: {str(e)}"
 
     def get_shake_rpm(self):
-        self._create_protocol_session()
         try:
             # Find the heater-shaker module ID
             modules_response = requests.get(
@@ -2191,7 +1909,6 @@ class OT2HTTPDriver(Driver):
             return f"Error: {str(e)}"
 
     def get_shake_latch_status(self):
-        self._create_protocol_session()
         try:
             # Find the heater-shaker module ID
             modules_response = requests.get(
@@ -2250,17 +1967,6 @@ class OT2HTTPDriver(Driver):
             run_response = requests.post(
                 url=f"{self.base_url}/runs",
                 headers=self.headers,
-                json={
-                    "data": {
-                        "labwareDefinitions": {},
-                        "pipetteDefinitions": {},
-                        "labwarePositions": {},
-                        "pipettePositions": {},
-                        "labwareOffsets": [],
-                        "startedAt": datetime.datetime.now().isoformat(),
-                        "createParams": {"createEmulated": False},
-                    }
-                },
             )
 
             if run_response.status_code != 201:
@@ -2303,6 +2009,24 @@ class OT2HTTPDriver(Driver):
         except requests.exceptions.RequestException:
             # Error checking run, create a new one
             return self._create_run()
+    
+    def get_tip(self,mount):
+        return self.available_tips[mount].pop(0)
+
+    def get_tip_status(self, mount=None):
+        """Get the current tip usage status"""
+        if mount:
+            if mount not in self.available_tips:
+                return f"No tipracks loaded for {mount} mount"
+            total_tips = len(TIPRACK_WELLS) * len(self.loaded_instruments[mount]["tip_racks"])
+            available_tips = len(self.available_tips[mount])
+            return f"{available_tips}/{total_tips} tips available on {mount} mount"
+        
+        # Return status for all mounts
+        status = []
+        for m in self.available_tips:
+            status.append(self.get_tip_status(m))
+        return "\n".join(status)
 
 
 if __name__ == "__main__":

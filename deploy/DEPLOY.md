@@ -4,7 +4,22 @@ Max version supported on OT-2: 4.7.0.  Downgrade newer robots before setup via t
 Deployment instructions on Opentrons robots
 ============================================
 
-1) Obtain SSH access to the OT-2 following instructions in the Opentrons docs.  SSH to root@(ot2-ip)
+Setting up SSH Access
+---------------------
+https://support.opentrons.com/s/article/Setting-up-SSH-access-to-your-OT-2
+
+https://support.opentrons.com/s/article/Connecting-to-your-OT-2-with-SSH#:~:text=Sometimes%20when%20you%20try%20to%20connect%20you,is%20blocking%20this%20connection%20like%20a%20firewall.
+
+1) Generate a new ssh key if needed or desired. Resusing an old key is fine: `ssh-keygen -f ot2_ssh_key`
+2) Ensure that you are connected to the robot on a link-local, 169.x.x.x subnet. If you modify the network settings, you need to restart the network interface and then the robot
+3) curl -H 'Content-Type: application/json' -d "{\"key\":\"$(cat ot2_ssh_key.pub)\"}" ROBOT_IP:31950/server/ssh_keys
+4) Ensure that `HostkeyAlgorithms +ssh-rsa` and `PubkeyAcceptedAlgorithms +ssh-rsa` are in your /etc/ssh/ssh_config
+5) connect with ssh -i root@ROBOT_IP
+
+Deploying AFL-Automation
+------------------------
+
+1) SSH to root@(ot2-ip)
 2) `cd /data/user_storage`
 3) `git clone https://github.com/usnistgov/AFL-automation.git`
 3.1) `pip install --user -e AFL-automation/` (may need to cd into directory)

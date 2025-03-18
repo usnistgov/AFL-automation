@@ -310,7 +310,7 @@ class Solution:
                 missing_comp.remove(comp)
         
         if len(missing_comp)>1:
-            raise ValueError(f'Must specify at least {len(self.sovlents)-1} volume fractions for mixture with {len(self.solvents)}')
+            raise ValueError(f'Must specify at least {len(self.solvents)-1} volume fractions for mixture with {len(self.solvents)}')
         elif len(missing_comp)==1:
             vfrac_dict[missing_comp[0]] = 1.0 - sum(vfrac_dict.values())
         

@@ -224,7 +224,7 @@ _DEFAULT_CUSTOM_CONFIG = {
         '_classname': 'AFL.automation.sample.CastingServer.CastingServer',
         'prep_url': 'localhost:5000'
 }
-_DEFAULT_CUSTOM_PORT = 5050
+_DEFAULT_CUSTOM_PORT = 5000
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *
 

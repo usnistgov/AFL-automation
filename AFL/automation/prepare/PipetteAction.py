@@ -49,16 +49,19 @@ class PipetteAction:
         self.kwargs['fast_mixing'] = fast_mixing
     
     def __str__(self):
-        return f'<PipetteAction Vol:{self.volume:4.3f} {self.source}-->{self.dest}>'
+        return f'<PipetteAction Vol:{self.kw["volume"]:4.3f} {self.kw["source"]}-->{self.kw["dest"]}>'
     
     def __repr__(self):
         return self.__str__()
 
-    def __getattr__(self,name):
+    def __getitem__(self,name):
         if name in self.kwargs:
             return self.kwargs[name]
         else:
             return getattr(self,name)
+        
+    def copy(self):
+        return PipetteAction(**self.kwargs)
 
     def emit_protocol(self):
         return self.get_kwargs()

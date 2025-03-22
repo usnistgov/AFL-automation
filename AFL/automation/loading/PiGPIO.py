@@ -1,12 +1,9 @@
 import RPi.GPIO
 
-
 class PiGPIO():
-
 	def __init__(self,channels,mode='BCM',pull_dir='UP'):
 		'''
 		Initializes GPIO pins in channels and maps their values to a local dict.
-
 
 		Params:
 		channels (dict):

@@ -439,7 +439,8 @@ class SampleDriver(Driver):
                 sample_composition = sample_composition_realized,
             )
             for client_name in self.config['client'].keys():
-                self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
+                if client_name not in self.config['tiled_exclusion_list']:
+                    self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
             # START NEW INDENT 
             prep_protocol, catch_protocol = self.compute_prep_protocol(
@@ -464,7 +465,8 @@ class SampleDriver(Driver):
                 sample_composition = sample_composition_realized,
             )
             for client_name in self.config['client'].keys():
-                self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
+                if client_name not in self.config['tiled_exclusion_list']:
+                    self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
             self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol, calibrate_sensor=calibrate_sensor)
             self.construct_datasets(combine_comps=predict_combine_comps)

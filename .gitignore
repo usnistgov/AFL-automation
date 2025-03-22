@@ -20,3 +20,6 @@ AFL/automation/EpicsADLiveProcess/templates/static/ncnr.png
 docs/build/*
 docs/source/generated/*
 docs/source/_autosummary/*
+
+dev/*
+tiled/*

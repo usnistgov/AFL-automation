@@ -1,30 +1,13 @@
 import requests
 import time
-import json
-import warnings
-from math import ceil, sqrt
-import os
-import pathlib
-import uuid
 
+from math import ceil
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 
 # Add this constant at the top of the file, after the imports
-TIPRACK_WELLS = [
-    'A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1',
-    'A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2',
-    'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3',
-    'A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4',
-    'A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5', 'H5',
-    'A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6',
-    'A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7',
-    'A8', 'B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8',
-    'A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9',
-    'A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10',
-    'A11', 'B11', 'C11', 'D11', 'E11', 'F11', 'G11', 'H11',
-    'A12', 'B12', 'C12', 'D12', 'E12', 'F12', 'G12', 'H12'
-]
+TIPRACK_WELLS = [f"{row}{col}" for col in range(1, 13) for row in "ABCDEFGH"]
+
 
 class OT2HTTPDriver(Driver):
     defaults = {}
@@ -363,13 +346,13 @@ class OT2HTTPDriver(Driver):
 
     def get_wells(self, locs):
         """Convert location strings to well objects with proper labware IDs.
-        
+
         Args:
             locs: Single location string or list of location strings in format "slotwell" (e.g. "1A1")
-            
+
         Returns:
             List of well objects with labwareId and wellName
-            
+
         Raises:
             ValueError: If labware is not found in the specified slot
         """
@@ -377,19 +360,19 @@ class OT2HTTPDriver(Driver):
         wells = []
         for loc in listify(locs):
             slot, well = self.parse_well(loc)
-            
+
             # Get labware info from the slot
             labware_info = self.loaded_labware.get(slot)
-            
+
             if not labware_info:
                 raise ValueError(f"No labware found in slot {slot}")
-                
+
             if not isinstance(labware_info, tuple) or len(labware_info) < 1:
                 raise ValueError(f"Invalid labware info format in slot {slot}")
-                
+
             labware_id = labware_info[0]
             wells.append({"labwareId": labware_id, "wellName": well})
-            
+
         self.log_debug(f"Created well objects: {wells}")
         return wells
 
@@ -401,11 +384,57 @@ class OT2HTTPDriver(Driver):
         run_id = self._ensure_run_exists()
 
         try:
+            # Check if there's existing labware in the slot
+            if slot in self.loaded_labware:
+                self.log_info(
+                    f"Found existing labware in slot {slot}, moving it off-deck first"
+                )
+                existing_labware_id = self.loaded_labware[slot][
+                    0
+                ]  # Get the ID of existing labware
+
+                # Create command to move existing labware off-deck
+                move_command = {
+                    "data": {
+                        "commandType": "moveLabware",
+                        "params": {
+                            "labwareId": existing_labware_id,
+                            "newLocation": {
+                                "addressableAreaName": "trashBin",  # this area must be configured as trash/waste chute
+                            },
+                            "strategy": "manualMoveWithoutPause",  # Allow user to manually move the labware
+                        },
+                        "intent": "setup",
+                    }
+                }
+
+                # Execute the move command
+                move_response = requests.post(
+                    url=f"{self.base_url}/runs/{run_id}/commands",
+                    headers=self.headers,
+                    params={"waitUntilComplete": True},
+                    json=move_command,
+                )
+                print("move_response")
+                print(move_response.json())
+
+                if move_response.status_code != 201:
+                    self.log_error(
+                        f"Failed to move existing labware off-deck: {move_response.status_code}"
+                    )
+                    self.log_error(f"Response: {move_response.text}")
+                    raise RuntimeError(
+                        f"Failed to move existing labware off-deck: {move_response.text}"
+                    )
+
+                # Remove from our tracking
+                del self.loaded_labware[slot]
+
             # Determine namespace and version
             # For custom labware, the name might include namespace info
             namespace = "opentrons"  # default namespace
             version = 1  # default version
-            
+
             # Check if name includes namespace info (e.g. "custom/my_plate")
             if "/" in name:
                 namespace, name = name.split("/", 1)
@@ -418,9 +447,9 @@ class OT2HTTPDriver(Driver):
                         "location": {"slotName": str(slot)},
                         "loadName": name,
                         "namespace": namespace,
-                        "version": version
+                        "version": version,
                     },
-                    "intent": "setup"
+                    "intent": "setup",
                 }
             }
 
@@ -433,7 +462,7 @@ class OT2HTTPDriver(Driver):
                 url=f"{self.base_url}/runs/{run_id}/commands",
                 headers=self.headers,
                 params={"waitUntilComplete": True},
-                json=command_dict
+                json=command_dict,
             )
 
             if response.status_code != 201:
@@ -443,8 +472,34 @@ class OT2HTTPDriver(Driver):
 
             # Get the labware ID from the response
             response_data = response.json()
-            labware_id = response_data["data"]["result"]["labwareId"]
-            
+
+            # Debug log the response structure
+            self.log_debug(f"Load labware response: {response_data}")
+
+            # Handle different response structures that might occur
+            try:
+                if "data" in response_data and "result" in response_data["data"]:
+                    labware_id = response_data["data"]["result"]["labwareId"]
+                elif "data" in response_data and "labwareId" in response_data["data"]:
+                    labware_id = response_data["data"]["labwareId"]
+                elif "data" in response_data and "id" in response_data["data"]:
+                    labware_id = response_data["data"]["id"]
+                else:
+                    # Try to find labware ID in any structure
+                    self.log_warning(f"Unexpected response structure: {response_data}")
+                    for key, value in response_data.items():
+                        if isinstance(value, dict) and "labwareId" in value:
+                            labware_id = value["labwareId"]
+                            break
+                    else:
+                        raise KeyError("Could not find labwareId in response")
+            except KeyError as e:
+                self.log_error(f"Error extracting labware ID from response: {str(e)}")
+                self.log_error(f"Response data: {response_data}")
+                raise RuntimeError(
+                    f"Failed to extract labware ID from response: {str(e)}"
+                )
+
             # Store the labware information
             self.loaded_labware[slot] = (labware_id, name)
 
@@ -452,7 +507,9 @@ class OT2HTTPDriver(Driver):
             if module:
                 self.modules[slot] = module
 
-            self.log_info(f"Successfully loaded labware '{name}' in slot {slot} with ID {labware_id}")
+            self.log_info(
+                f"Successfully loaded labware '{name}' in slot {slot} with ID {labware_id}"
+            )
             return labware_id
 
         except (requests.exceptions.RequestException, KeyError) as e:
@@ -477,7 +534,7 @@ class OT2HTTPDriver(Driver):
                         "pipetteName": name,
                         "mount": mount,
                     },
-                    "intent": "setup"
+                    "intent": "setup",
                 }
             }
 
@@ -486,7 +543,7 @@ class OT2HTTPDriver(Driver):
                 url=f"{self.base_url}/runs/{run_id}/commands",
                 headers=self.headers,
                 params={"waitUntilComplete": True},
-                json=command_dict
+                json=command_dict,
             )
 
             if response.status_code != 201:
@@ -500,15 +557,21 @@ class OT2HTTPDriver(Driver):
 
             # Make sure we have the latest pipette information
             self._update_pipettes()
-            self.pipette_info[mount]['id'] = pipette_id #patch the correct pipette id to the pipette_info dict
+            self.pipette_info[mount][
+                "id"
+            ] = pipette_id  # patch the correct pipette id to the pipette_info dict
 
             # Get the tip rack IDs - note that loaded_labware now stores tuples of (id, name)
             tip_racks = []
             for slot in listify(tip_rack_slots):
                 labware_info = self.loaded_labware.get(slot)
-                if labware_info and isinstance(labware_info, tuple) and len(labware_info) >= 1:
+                if (
+                    labware_info
+                    and isinstance(labware_info, tuple)
+                    and len(labware_info) >= 1
+                ):
                     tip_racks.append(labware_info[0])
-            
+
             if not tip_racks:
                 self.log_warning(f"No valid tip racks found in slots {tip_rack_slots}")
 
@@ -534,7 +597,9 @@ class OT2HTTPDriver(Driver):
             # Update min/max values for largest and smallest pipettes
             self._update_pipette_ranges()
 
-            self.log_info(f"Successfully loaded pipette '{name}' on {mount} mount with ID {pipette_id}")
+            self.log_info(
+                f"Successfully loaded pipette '{name}' on {mount} mount with ID {pipette_id}"
+            )
             return pipette_id
 
         except (requests.exceptions.RequestException, KeyError) as e:
@@ -586,7 +651,6 @@ class OT2HTTPDriver(Driver):
                         self.log_info(
                             f"Setting max_smallest_pipette to {self.max_smallest_pipette}"
                         )
-
 
     def mix(self, volume, location, repetitions=1, **kwargs):
         self.log_info(f"Mixing {volume}uL {repetitions} times at {location}")
@@ -977,15 +1041,19 @@ class OT2HTTPDriver(Driver):
             mount = params.get("pipetteMount")
             if mount and mount in self.available_tips and self.available_tips[mount]:
                 tiprack_id, well = self.get_tip(mount)
-                self.log_debug(f"Using tip from {tiprack_id} well {well} for {mount} mount")
+                self.log_debug(
+                    f"Using tip from {tiprack_id} well {well} for {mount} mount"
+                )
                 # Update the params to specify the exact tip location
                 params["labwareId"] = tiprack_id
                 params["wellName"] = well
-                params["wellLocation"] = {"origin": "top", "offset": {"x": 0, "y": 0, "z": 0}}
+                params["wellLocation"] = {
+                    "origin": "top",
+                    "offset": {"x": 0, "y": 0, "z": 0},
+                }
                 del params["pipetteMount"]
             else:
                 raise RuntimeError(f"No tips available for {mount} mount")
-
 
         self.log_debug(
             f"Executing atomic command: {command_type} with params: {params}"
@@ -2009,8 +2077,8 @@ class OT2HTTPDriver(Driver):
         except requests.exceptions.RequestException:
             # Error checking run, create a new one
             return self._create_run()
-    
-    def get_tip(self,mount):
+
+    def get_tip(self, mount):
         return self.available_tips[mount].pop(0)
 
     def get_tip_status(self, mount=None):
@@ -2018,10 +2086,12 @@ class OT2HTTPDriver(Driver):
         if mount:
             if mount not in self.available_tips:
                 return f"No tipracks loaded for {mount} mount"
-            total_tips = len(TIPRACK_WELLS) * len(self.loaded_instruments[mount]["tip_racks"])
+            total_tips = len(TIPRACK_WELLS) * len(
+                self.loaded_instruments[mount]["tip_racks"]
+            )
             available_tips = len(self.available_tips[mount])
             return f"{available_tips}/{total_tips} tips available on {mount} mount"
-        
+
         # Return status for all mounts
         status = []
         for m in self.available_tips:

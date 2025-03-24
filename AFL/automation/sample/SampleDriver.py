@@ -7,6 +7,9 @@ import uuid
 from typing import Optional, Dict, List
 import warnings
 import os
+import time
+import copy
+import pandas as pd
 
 import h5py  # type: ignore
 import numpy as np
@@ -14,6 +17,7 @@ import requests  # type: ignore
 import xarray as xr 
 from tiled.client import from_uri  # type: ignore
 from tiled.queries import Eq  # type: ignore
+from scipy.spatial.distance import cdist
 
 import AFL.automation.prepare  # type: ignore
 from AFL.automation.APIServer.Client import Client  # type: ignore
@@ -57,6 +61,10 @@ class SampleDriver(Driver):
     defaults['next_samples_variable'] = 'next_samples'
     defaults['camera_urls'] = []
     defaults['snapshot_directory'] = []
+    defaults['grid_file'] = None
+    defaults['grid_blank_interval'] = None
+    defaults['grid_blank_sample'] = None
+    defaults['grid_use_agent'] = False
 
     def __init__(
             self,
@@ -93,7 +101,9 @@ class SampleDriver(Driver):
 
         self.catch_protocol = None
         self.AL_status_str = ''
-        self.data_manifest = None
+        self.grid_sample_count = 0
+        self.grid_data = None
+        self.stop_grid = False
 
         # XXX need to make deck inside this object because of 'different registries error in Pint
         self.reset_deck()
@@ -185,6 +195,88 @@ class SampleDriver(Driver):
             raise TypeError("self.config['sample_composition_tol'] must be a number")
 
         print("Configuration validation passed successfully.")
+
+    def validate_config_grid(self):
+        """Validate configuration specific to grid-based sample processing."""
+        # Basic client validation
+        if not isinstance(self.config['client'], dict):
+            raise TypeError("self.config['client'] must be a dictionary")
+            
+        # For grid mode, only 'load' client is required (no 'prep' needed)
+        if 'load' not in self.config['client']:
+            raise KeyError("'load' client must be configured in self.config['client']")
+            
+        # Agent client validation if using agent
+        if self.config['grid_use_agent'] and 'agent' not in self.config['client']:
+            raise KeyError("'agent' client must be configured when grid_use_agent=True")
+            
+        # Instrument validation - simplified compared to regular validate_config
+        if not isinstance(self.config['instrument'], list):
+            raise TypeError("self.config['instrument'] must be a list")
+        if len(self.config['instrument']) == 0:
+            raise ValueError("At least one instrument must be configured in self.config['instrument']")
+            
+        for i, instrument in enumerate(self.config['instrument']):
+            # Minimal required keys for grid mode
+            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw']
+            missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
+            if missing_instrument_keys:
+                raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
+                
+            if not isinstance(instrument['data'], list):
+                raise TypeError(f"Instrument {i}: 'data' must be a list")
+            for j, data_item in enumerate(instrument['data']):
+                required_data_keys = ['data_name', 'tiled_array_name']
+                missing_data_keys = [key for key in required_data_keys if key not in data_item]
+                if missing_data_keys:
+                    raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
+                    
+        # Validate grid-specific configuration items
+        if self.config['grid_file'] is not None and not isinstance(self.config['grid_file'], (str, pathlib.Path)):
+            raise TypeError("self.config['grid_file'] must be a string or pathlib.Path")
+            
+        if self.config['grid_blank_interval'] is not None and not isinstance(self.config['grid_blank_interval'], int):
+            raise TypeError("self.config['grid_blank_interval'] must be an integer")
+            
+        if self.config['blank_sample'] is not None and not isinstance(self.config['blank_sample'], dict):
+            raise TypeError("self.config['blank_sample'] must be a dictionary")
+            
+        if not isinstance(self.config['grid_use_agent'], bool):
+            raise TypeError("self.config['grid_use_agent'] must be a boolean")
+            
+        # Validate required components for AL if using agent
+        if self.config['grid_use_agent']:
+            if not isinstance(self.config['AL_components'], list) or not self.config['AL_components']:
+                raise ValueError("self.config['AL_components'] must be a non-empty list when grid_use_agent is True")
+                
+        # Validate data-related settings
+        if not isinstance(self.config['data_path'], (str, pathlib.Path)):
+            raise TypeError("self.config['data_path'] must be a string or pathlib.Path")
+            
+        if not isinstance(self.config['data_tag'], str):
+            raise TypeError("self.config['data_tag'] must be a string")
+            
+        # Validate instrument configuration
+        if not isinstance(self.config['instrument'], list):
+            raise TypeError("self.config['instrument'] must be a list")
+        if len(self.config['instrument']) == 0:
+            raise ValueError("At least one instrument must be configured in self.config['instrument']")
+
+        for i, instrument in enumerate(self.config['instrument']):
+            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim', 'sample_comps_variable']
+            missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
+            if missing_instrument_keys:
+                raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
+            
+            if not isinstance(instrument['data'], list):
+                raise TypeError(f"Instrument {i}: 'data' must be a list")
+            for j, data_item in enumerate(instrument['data']):
+                required_data_keys = ['data_name', 'tiled_array_name']
+                missing_data_keys = [key for key in required_data_keys if key not in data_item]
+                if missing_data_keys:
+                    raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
+            
+        print("Grid configuration validation passed successfully.")
 
     @property
     def tiled_client(self):
@@ -470,7 +562,7 @@ class SampleDriver(Driver):
             self.construct_datasets(combine_comps=predict_combine_comps)
             # END NEW INDENT 
 
-        if predict_next:
+        if enqueue_next or predict_next:
             if composition:#assume we made/measured a sample and append
                 self.add_new_data_to_agent()
             self.predict_next_sample()
@@ -979,6 +1071,376 @@ class SampleDriver(Driver):
             transmission_validated = True
 
         return transmission_validated
+
+    def process_sample_grid(
+            self,
+            sample,
+            name: Optional[str] = None,
+            sample_uuid: Optional[str] = None,
+            AL_campaign_name: Optional[str] = None,
+            AL_uuid: Optional[str] = None,
+            predict_next: bool = False,
+            enqueue_next: bool = False,
+            calibrate_sensor: bool = False,
+            reset_grid: bool = False,
+    ):
+        """Process a sample from a grid of samples.
+
+        Sample is a dictionary of sample information with the following keys:
+        - name: required, name of the sample
+
+        It must have one of the following sets of keys:
+
+        - index: index of the sample in the grid corresponding to the 1D isel sample index
+        - composition: dictionary of sample composition with keys corresponding to the AL components
+         
+        
+        Parameters
+        ----------
+        sample: Dict, optional
+            Dictionary containing sample coordinates or properties. If None, will be fetched 
+            from the grid or agent.
+            
+        name: str, optional
+            The name of the sample. If not provided, will be auto-generated.
+            
+        sample_uuid: str, optional
+            UUID for the sample. If not provided, will be auto-generated.
+            
+        AL_campaign_name: str, optional
+            Name of the active learning campaign.
+            
+        AL_uuid: str, optional
+            UUID for the active learning campaign.
+            
+        predict_next: bool
+            If True, triggers a predict call to the agent.
+            
+        enqueue_next: bool
+            If True, will enqueue the next sample for measurement.
+            
+        """
+        # Validate config for grid processing
+        self.validate_config_grid()
+
+        if reset_grid or self.grid_data is None:
+            self.reset_grid()
+        
+        # Handle sample UUID generation
+        if sample_uuid is None:
+            self.uuid['sample'] = 'SAM-' + str(uuid.uuid4())
+        else:
+            self.uuid['sample'] = sample_uuid
+            
+        # Handle AL UUID
+        if predict_next and AL_uuid is None:
+            self.uuid['AL'] = 'AL-' + str(uuid.uuid4())
+        else:
+            self.uuid['AL'] = AL_uuid
+            
+        # Handle campaign name
+        if predict_next and AL_campaign_name is None:
+            self.AL_campaign_name = f"{self.config['data_tag']}_{self.uuid['AL'][-8:]}"
+        else:
+            self.AL_campaign_name = AL_campaign_name
+        
+        # Check if we should measure a blank
+        if (self.config['grid_blank_interval'] is not None and 
+            self.config['grid_blank_sample'] is not None and 
+            self.grid_sample_count > 0 and 
+            self.grid_sample_count % self.config['grid_blank_interval'] == 0):
+            
+            self.update_status(f"Measuring blank sample (scheduled interval {self.config['grid_blank_interval']})")
+            blank_sample = self.config['grid_blank_sample']
+            blank_name = f"blank_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+            # Configure blank measurement
+            self.measure_grid_sample(blank_sample, name=blank_name, empty=True)
+            
+        # Handle the next sample based on mode
+        if sample is not None:
+            # Validate that sample has exactly one of 'index' or 'composition'
+            has_index = 'index' in sample
+            has_composition = 'composition' in sample
+            
+            if not (has_index ^ has_composition):
+                raise ValueError("Sample dict must contain exactly one of 'sample_index' or 'composition', not both or neither")
+
+            if 'index' in sample:
+                sample_index = sample['index']
+            elif 'composition' in sample:
+                coords_available = self.grid_data[self.config['components']].to_array('component').transpose(...,'component')
+                coord_selected = xr.DataArray(
+                    [sample['composition'].values()], 
+                    dims=['sample', 'component'], 
+                    coords={'component': sample['composition'].keys()}
+                    )
+                sample_distances = cdist(coord_selected,coords_available)
+                sample_index = sample_distances.argmin()
+            
+            # Get the data variables from grid_data and add them individually to sample dict
+            grid_sample = self.grid_data.isel(sample=sample_index).reset_coords()
+            for var_name in grid_sample.data_vars:
+                sample[var_name] = grid_sample[var_name].item()
+
+            # Generate sample name if not provided
+            if name is None:
+                self.sample_name = f"{self.config['data_tag']}_{self.uuid['sample'][-8:]}"
+            else:
+                self.sample_name = name
+        
+            # Measure the sample
+            self.measure_grid_sample(sample, name=self.sample_name, empty=False)
+            self.construct_grid_datasets(sample)
+        
+            # update sample manifest and grid data
+            self.num_samples = self.grid_data.sizes['sample']#update num samples
+            self.grid_data = self.grid_data.drop_isel(sample=sample_index)
+            self.grid_sample_count += 1
+        
+        # Predict next sample if requested
+        if predict_next:
+            self.add_new_data_to_agent()
+            self.predict_next_sample()
+            
+        # Enqueue next sample if requested
+        if enqueue_next:
+            ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
+            next_samples = ag_result[self.config['next_samples_variable']]
+            
+            new_composition = next_samples.to_pandas().squeeze().to_dict()
+            new_composition = {k:{'value':v} for k,v in new_composition.items()}
+
+            task = {
+                'task_name': 'process_sample_grid',
+                'sample': new_composition,
+                'predict_next': predict_next,
+                'enqueue_next': enqueue_next,
+                'AL_campaign_name': self.AL_campaign_name,
+                'AL_uuid': self.uuid['AL'],
+            }
+            
+            task_uuid = 'QD-' + str(uuid.uuid4())
+            package = {'task': task, 'meta': {}, 'uuid': task_uuid}
+            package['meta']['queued'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f')
+            
+            queue_loc = self._queue.qsize()  # append at end of queue
+            self._queue.put(package, queue_loc)
+    
+    def measure_grid_sample(self, sample, name, empty=False):
+        """Measure a sample using the grid-based workflow.
+
+        instrument = {
+            'client_name': 'APSUSAXS',
+            'empty_base_kw': {'task_name': 'expose'},
+            'measure_base_kw': {'task_name': 'expose'},
+            'select_sample_base_kw': {'task_name': 'setPosition', 'y_offset': 2},
+            'sample_select_kwargs': ['plate', 'row', 'col'],
+            'sample_comps_variable': 'sample_composition'
+        }
+        
+        Parameters
+        ----------
+        sample: Dict
+            Dictionary containing sample coordinates and properties
+            
+        name: str
+            Sample name for the measurement
+        
+
+
+        """
+        self.update_status(f"Starting measurement of {name}")
+        
+        # Set sample information in all clients
+        sample_data = self.set_sample(
+            sample_name=name,
+            sample_uuid=self.uuid['sample'],
+            AL_campaign_name=self.AL_campaign_name,
+            AL_uuid=self.uuid['AL'],
+            AL_components=self.config['AL_components'],
+            sample_composition=sample,
+        )
+        
+        for client_name in self.config['client'].keys():
+            self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
+
+        
+        # Move to the sample position based on instrument configuration
+        for i, instrument in enumerate(self.config['instrument']):
+            self.update_status(f"Moving to sample position using global command template")
+            move_cmd_kwargs = {k:sample[k] for k in instrument['sample_select_kwargs']}
+            move_cmd_kwargs.update(instrument['select_sample_base_kw'])
+            self.uuid['move'] = self.get_client(instrument['client_name']).enqueue(**move_cmd_kwargs)
+            self.get_client(instrument['client_name']).wait(self.uuid['move'])
+
+
+            self.update_status(f"Measuring sample with {client_name}")
+            measure_cmd_kwargs = instrument['measure_base_kw'] if not empty else instrument['empty_base_kw']
+            measure_cmd_kwargs['name'] = name
+            self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_cmd_kwargs)
+            self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+
+        
+        self.update_status(f'All done for {name}!')
+    
+    def construct_grid_datasets(self, sample: dict):
+        """Construct datasets from grid-based measurements"""
+        data_path = pathlib.Path(self.config['data_path'])
+
+        if self.tiled_client is None:
+            self.tiled_client = self.data.tiled_client
+            # this needs to be here, because in the constructor, we don't have the datapacket attached
+
+        self.new_data = xr.Dataset()
+        for i, instrument in enumerate(self.config['instrument']):
+            for k in instrument['sample_select_kwargs']:
+                self.new_data[k] = sample[k]
+                self.new_data[k].attrs['description'] = 'sample coordinate'
+
+            for instrument_data in instrument['data']:
+                tiled_result = (
+                    self.tiled_client
+                    .search(Eq('sample_uuid', self.uuid['sample']))
+                    .search(Eq('array_name', instrument_data['tiled_array_name']))
+                )
+                if len(tiled_result) == 0:
+                    raise ValueError(f"Could not find tiled entry for measurement sample_uuid={self.uuid['sample']}")
+
+                # handle Python None and "None" depending on how json deserialization works out
+                if (instrument_data['data_dim'] is not None) and (instrument_data['data_dim'] != 'None'):
+                    dims = instrument_data['data_dim']
+                    coords = {instrument_data['data_dim']: tiled_result.items()[-1][-1].metadata[
+                        instrument_data['tiled_metadata_dim']]}
+                else:
+                    dims = None
+                    coords = None
+
+                if 'sample_env' in instrument.keys():
+
+                    sample_env_dims = list(instrument['sample_env']['move_swept_kw'].keys())
+
+                    measurement_list = []
+                    for _,tiled_data in tiled_result.items():
+                        if 'MT-' in tiled_data.metadata['name']:
+                            continue
+                        measurement_list.append(xr.DataArray(tiled_data[()], dims=dims, coords=coords))
+                    measurement = xr.concat(measurement_list, dim=instrument['sample_dim'])
+                    for key,values in instrument['sample_env']['move_swept_kw'].items():
+                        measurement[key] = (instrument['sample_dim'],values)
+                    self.new_data[instrument_data['data_name']] = measurement
+                else:
+
+                    tiled_data = tiled_result.items()[-1][-1]
+                    measurement = xr.DataArray(tiled_data[()], dims=dims, coords=coords)
+                    self.new_data[instrument_data['data_name']] = measurement
+
+                if 'quality_metric' in instrument.keys():
+                    quality_metric = instrument['quality_metric']
+                    instrument_value = tiled_data.metadata[quality_metric['tiled_metadata_key']]
+                    if quality_metric['comparison'].lower() in ['<', 'lt']:
+                        accept = instrument_value < quality_metric['threshold']
+                    elif quality_metric['comparison'].lower() in ['>', 'gt']:
+                        accept = instrument_value > quality_metric['threshold']
+                    elif quality_metric['comparison'].lower() in ['==', '=', 'eq']:
+                        accept = instrument_value == quality_metric['threshold']
+                    else:
+                        raise ValueError(
+                            f'Cannot recognize comparison for quality_metric. You passed {quality_metric["comparison"]}')
+                else:
+                    accept = True
+                self.new_data[instrument_data['data_name']].attrs['accept'] = int(accept)
+
+        self.new_data['validated'] = self.validated
+        self.new_data['sample_uuid'] = self.uuid['sample']
+
+        sample_composition = {}
+        for component in self.config['components']:
+            try:
+                self.new_data[component] = sample[component]
+                self.new_data[component].attrs['units'] = 'mg/ml'
+
+                # for tiled
+                sample_composition[component] = sample[component]
+            except KeyError:
+                warnings.warn(f"Skipping component {component} in AL_components")
+
+
+        self.new_data.to_netcdf(data_path / (self.sample_name + '.nc'))
+
+        sample_composition['components'] = self.config['components']
+        if self.data is not None:
+            self.data['sample_composition'] = sample_composition
+            self.data['time'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f %Z%z')
+        
+    
+
+    def set_sample(self, 
+                  sample_name: str, 
+                  sample_uuid: str, 
+                  AL_campaign_name: Optional[str] = None,
+                  AL_uuid: Optional[str] = None,
+                  AL_components: Optional[List] = None,
+                  sample_composition: Optional[Dict] = None):
+        """Set sample information for all clients
+        
+        Parameters
+        ----------
+        sample_name: str
+            Name of the sample
+            
+        sample_uuid: str
+            UUID of the sample
+            
+        AL_campaign_name: str, optional
+            Name of the AL campaign
+            
+        AL_uuid: str, optional
+            UUID of the AL campaign
+            
+        AL_components: List, optional
+            List of components for AL
+            
+        sample_composition: Dict, optional
+            Composition of the sample
+            
+        Returns
+        -------
+        Dict
+            Sample data for client communication
+        """
+        sample_data = {
+            'sample_name': sample_name,
+            'sample_uuid': sample_uuid,
+        }
+        
+        if AL_campaign_name is not None:
+            sample_data['AL_campaign_name'] = AL_campaign_name
+            
+        if AL_uuid is not None:
+            sample_data['AL_uuid'] = AL_uuid
+            
+        if AL_components is not None:
+            sample_data['AL_components'] = AL_components
+            
+        if sample_composition is not None:
+            sample_data['sample_composition'] = sample_composition
+            
+        return sample_data
+
+    # New grid reset methods
+    @Driver.quickbar(qb={'button_text':'Reset Grid'})
+    def reset_grid(self):
+        """Reload the grid from file and reset grid_sample_count."""
+        if self.config['grid_file'] is None:
+            self.app.logger.info("No grid file specified in configuration.")
+            self.grid_data = None
+            self.grid_sample_count = 0
+        else:
+            self.grid_data = xr.load_dataset(self.config['grid_file'])
+            self.grid_sample_count = 0
+            self.app.logger.info(f"Grid reloaded: {self.grid_data.sizes['sample']} samples available.")
+    
 
 _DEFAULT_CUSTOM_CONFIG = {
 

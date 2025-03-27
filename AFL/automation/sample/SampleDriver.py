@@ -64,7 +64,6 @@ class SampleDriver(Driver):
     defaults['grid_file'] = None
     defaults['grid_blank_interval'] = None
     defaults['grid_blank_sample'] = None
-    defaults['grid_use_agent'] = False
 
     def __init__(
             self,
@@ -202,14 +201,6 @@ class SampleDriver(Driver):
         if not isinstance(self.config['client'], dict):
             raise TypeError("self.config['client'] must be a dictionary")
             
-        # For grid mode, only 'load' client is required (no 'prep' needed)
-        if 'load' not in self.config['client']:
-            raise KeyError("'load' client must be configured in self.config['client']")
-            
-        # Agent client validation if using agent
-        if self.config['grid_use_agent'] and 'agent' not in self.config['client']:
-            raise KeyError("'agent' client must be configured when grid_use_agent=True")
-            
         # Instrument validation - simplified compared to regular validate_config
         if not isinstance(self.config['instrument'], list):
             raise TypeError("self.config['instrument'] must be a list")
@@ -218,7 +209,7 @@ class SampleDriver(Driver):
             
         for i, instrument in enumerate(self.config['instrument']):
             # Minimal required keys for grid mode
-            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw']
+            required_instrument_keys = ['client_name', 'data', 'measure_base_kw', 'empty_base_kw']
             missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
             if missing_instrument_keys:
                 raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
@@ -238,17 +229,9 @@ class SampleDriver(Driver):
         if self.config['grid_blank_interval'] is not None and not isinstance(self.config['grid_blank_interval'], int):
             raise TypeError("self.config['grid_blank_interval'] must be an integer")
             
-        if self.config['blank_sample'] is not None and not isinstance(self.config['blank_sample'], dict):
-            raise TypeError("self.config['blank_sample'] must be a dictionary")
+        if self.config['grid_blank_sample'] is not None and not isinstance(self.config['grid_blank_sample'], dict):
+            raise TypeError("self.config['grid_blank_sample'] must be a dictionary")
             
-        if not isinstance(self.config['grid_use_agent'], bool):
-            raise TypeError("self.config['grid_use_agent'] must be a boolean")
-            
-        # Validate required components for AL if using agent
-        if self.config['grid_use_agent']:
-            if not isinstance(self.config['AL_components'], list) or not self.config['AL_components']:
-                raise ValueError("self.config['AL_components'] must be a non-empty list when grid_use_agent is True")
-                
         # Validate data-related settings
         if not isinstance(self.config['data_path'], (str, pathlib.Path)):
             raise TypeError("self.config['data_path'] must be a string or pathlib.Path")
@@ -263,7 +246,7 @@ class SampleDriver(Driver):
             raise ValueError("At least one instrument must be configured in self.config['instrument']")
 
         for i, instrument in enumerate(self.config['instrument']):
-            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim', 'sample_comps_variable']
+            required_instrument_keys = ['client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim', 'sample_comps_variable']
             missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
             if missing_instrument_keys:
                 raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
@@ -292,6 +275,8 @@ class SampleDriver(Driver):
         status.append(f'{len(self.deck.stocks)} stocks loaded!')
         status.append(self.status_str)
         status.append(self.AL_status_str)
+        if self.grid_data:
+            status.append(f'Grid Dims: {self.grid_data.sizes}')
         return status
 
     def update_status(self, value):
@@ -1044,6 +1029,8 @@ class SampleDriver(Driver):
 
             if data_added>0:
                 self.ds_append = self.ds_append.reset_coords()
+                if instrument['sample_dim'] not in self.ds_append:
+                    self.ds_append = self.ds_append.expand_dims(instrument['sample_dim'])
                 db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
                 self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=instrument['sample_dim'])
 
@@ -1081,20 +1068,10 @@ class SampleDriver(Driver):
             AL_uuid: Optional[str] = None,
             predict_next: bool = False,
             enqueue_next: bool = False,
-            calibrate_sensor: bool = False,
             reset_grid: bool = False,
     ):
         """Process a sample from a grid of samples.
 
-        Sample is a dictionary of sample information with the following keys:
-        - name: required, name of the sample
-
-        It must have one of the following sets of keys:
-
-        - index: index of the sample in the grid corresponding to the 1D isel sample index
-        - composition: dictionary of sample composition with keys corresponding to the AL components
-         
-        
         Parameters
         ----------
         sample: Dict, optional
@@ -1159,29 +1136,17 @@ class SampleDriver(Driver):
             
         # Handle the next sample based on mode
         if sample is not None:
-            # Validate that sample has exactly one of 'index' or 'composition'
-            has_index = 'index' in sample
-            has_composition = 'composition' in sample
-            
-            if not (has_index ^ has_composition):
-                raise ValueError("Sample dict must contain exactly one of 'sample_index' or 'composition', not both or neither")
-
-            if 'index' in sample:
-                sample_index = sample['index']
-            elif 'composition' in sample:
-                coords_available = self.grid_data[self.config['components']].to_array('component').transpose(...,'component')
-                coord_selected = xr.DataArray(
-                    [sample['composition'].values()], 
-                    dims=['sample', 'component'], 
-                    coords={'component': sample['composition'].keys()}
-                    )
-                sample_distances = cdist(coord_selected,coords_available)
-                sample_index = sample_distances.argmin()
+            # find the closest sample in the grid by euclidean distance
+            available = self.grid_data[self.config['components']].to_array('component').transpose(...,'component')
+            selected = xr.Dataset(sample).to_array('component')
+            dist = (selected - available).pipe(np.square).sum('component') #no sqrt needed for just min distance
+            sample_index = dist.argmin()
             
             # Get the data variables from grid_data and add them individually to sample dict
             grid_sample = self.grid_data.isel(sample=sample_index).reset_coords()
             for var_name in grid_sample.data_vars:
                 sample[var_name] = grid_sample[var_name].item()
+            self.update_status(f"Found closest sample to be {grid_sample}")
 
             # Generate sample name if not provided
             if name is None:
@@ -1200,7 +1165,8 @@ class SampleDriver(Driver):
         
         # Predict next sample if requested
         if predict_next:
-            self.add_new_data_to_agent()
+            if sample is not None:
+                self.add_new_data_to_agent()
             self.predict_next_sample()
             
         # Enqueue next sample if requested
@@ -1209,7 +1175,7 @@ class SampleDriver(Driver):
             next_samples = ag_result[self.config['next_samples_variable']]
             
             new_composition = next_samples.to_pandas().squeeze().to_dict()
-            new_composition = {k:{'value':v} for k,v in new_composition.items()}
+            new_composition = {k:v for k,v in new_composition.items()}
 
             task = {
                 'task_name': 'process_sample_grid',
@@ -1275,7 +1241,7 @@ class SampleDriver(Driver):
             self.get_client(instrument['client_name']).wait(self.uuid['move'])
 
 
-            self.update_status(f"Measuring sample with {client_name}")
+            self.update_status(f"Measuring sample with {instrument['client_name']}")
             measure_cmd_kwargs = instrument['measure_base_kw'] if not empty else instrument['empty_base_kw']
             measure_cmd_kwargs['name'] = name
             self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_cmd_kwargs)
@@ -1309,9 +1275,19 @@ class SampleDriver(Driver):
 
                 # handle Python None and "None" depending on how json deserialization works out
                 if (instrument_data['data_dim'] is not None) and (instrument_data['data_dim'] != 'None'):
-                    dims = instrument_data['data_dim']
-                    coords = {instrument_data['data_dim']: tiled_result.items()[-1][-1].metadata[
-                        instrument_data['tiled_metadata_dim']]}
+                    # first try to read this as an array entry in tiled, if not found, look in metadata
+                    tiled_result_dim = (
+                        self.tiled_client
+                        .search(Eq('sample_uuid', self.uuid['sample']))
+                        .search(Eq('array_name', instrument_data['data_dim']))
+                    )
+                    if len(tiled_result_dim)>0:
+                        dims = instrument_data['data_dim']
+                        coords = {instrument_data['data_dim']: tiled_result_dim.values()[-1].read()}
+                    else:
+                        dims = instrument_data['data_dim']
+                        coords = {instrument_data['data_dim']: tiled_result.items()[-1][-1].metadata[
+                            instrument_data['tiled_metadata_dim']]}
                 else:
                     dims = None
                     coords = None
@@ -1351,14 +1327,12 @@ class SampleDriver(Driver):
                     accept = True
                 self.new_data[instrument_data['data_name']].attrs['accept'] = int(accept)
 
-        self.new_data['validated'] = self.validated
         self.new_data['sample_uuid'] = self.uuid['sample']
 
         sample_composition = {}
         for component in self.config['components']:
             try:
                 self.new_data[component] = sample[component]
-                self.new_data[component].attrs['units'] = 'mg/ml'
 
                 # for tiled
                 sample_composition[component] = sample[component]

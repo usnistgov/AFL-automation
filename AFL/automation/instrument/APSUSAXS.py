@@ -8,11 +8,12 @@ import epics
 import os
 import pathlib
 import warnings
+import Matilda
+import Matilda.convertUSAXS
+import Matilda.readfromtiled
 
 class APSUSAXS(Driver):
     defaults = {}
-    defaults['data_dir_basepath'] = '/mnt/'
-    defaults['data_dir_pv'] = '9idcLAX:userDir'
     defaults['sample_thickness'] = 1.58
     defaults['run_initiate_pv'] = '9idcLAX:AutoCollectionStart'
     defaults['script_name_pv'] = '9idcLAX:AutoCollectionStrInput'
@@ -26,7 +27,6 @@ class APSUSAXS(Driver):
     defaults['magic_xpos_key'] = '!!AFLXPOS!!'
     defaults['magic_ypos_key'] = '!!AFLYPOS!!'
     defaults['active_holder'] = '6A'
-    defaults['reduced_data_key'] = 'flyScan_reduced_250'
     defaults['script_write_cooldown'] = 1 
     defaults['platemap'] = {
                          '6A':{
@@ -60,7 +60,7 @@ class APSUSAXS(Driver):
 
                     }
                     }
-    defaults['move_mode'] = 'MOVE_SAMPLE'
+    defaults['empty_scan_title'] = ''
 
     def __init__(self,overrides=None):
         '''
@@ -72,10 +72,6 @@ class APSUSAXS(Driver):
         Driver.__init__(self,name='APSUSAXS',defaults=self.gather_defaults(),overrides=overrides)
         
         
-        self.config['data_dir'] = self.config['data_dir_basepath']+epics.caget(self.config['data_dir_pv'],as_string=True)
-        if self.config['data_dir'] is not None:
-            os.chdir(self.config['data_dir'])
-
         self.__instrument_name__ = 'APS USAXS instrument'
         
         self.status_txt = 'Just started...'
@@ -115,6 +111,7 @@ class APSUSAXS(Driver):
         if len(row)>1:
             raise ValueError('row must be a single letter')
         row = ord(row) & 31
+        col = int(col)
 
         geom = self.config['platemap'][self.config['active_holder']][slot]
 
@@ -153,7 +150,7 @@ class APSUSAXS(Driver):
         'reduce_data':{'label':'Reduce?','type':'bool','default':True},
         'measure_transmission':{'label':'Measure Trans?','type':'bool','default':True}
         }})
-    def expose(self,name=None,block=True):
+    def expose(self, name = None, block = True, reduce_data = True):
         if name is None:
             name=self.getFilename()
         else:
@@ -171,11 +168,39 @@ class APSUSAXS(Driver):
         self.status_txt = 'Run started!'
 
         time.sleep(0.5)
-        if block:
+        if block or reduce_data:
             time.sleep(20)
             self.block_for_run_finish()
             self.status_txt = 'Instrument Idle'
-    
+        if reduce_data:
+            # connect to USAXS Tiled (instance var)
+            last_scan = Matilda.readfromtiled.FindLastScanData('Flyscan',1)
+
+            # get run + find path to h5 file
+            results = Matilda.convertUSAXS.reduceFlyscanToQR(last_scan[0][0],last_scan[0][1])
+            
+            # get empty, reduce it
+            relevant_empty = Matilda.readfromtiled.FindScanDataByName('Flyscan',self.config['empty_scan_title'])
+            empty_results = Matilda.convertUSAXS.reduceFlyscanToQR(relevant_empty[0][0],relevant_empty[0][1])
+            
+            results_ds = Matilda.supportFunctions.results_to_dataset(results)
+            clean_name = name.replace('-','_')
+            assert clean_name in results_ds['Filename'].item(),f"Did not get data that seemed to match, you collected {name}, we got {results_ds['Filename'].values}"
+            empty_ds = Matilda.supportFunctions.results_to_dataset(empty_results)
+            peaktopeak_T = (results_ds.Maximum / empty_ds.Maximum)
+            results_ds['USAXS_sub'] = 1/peaktopeak_T * results_ds['USAXS_int'] - empty_ds['USAXS_int'].interp_like(results_ds['USAXS_int'])
+            
+
+            # store QR in _our_ Tiled self.data
+            for key in ['q','USAXS_int','USAXS_sub']:
+                self.data.add_array(key,results_ds[key].values)
+                
+            for key in ['q','USAXS_int']:
+                self.data.add_array('MT_'+key,empty_ds[key].values)
+            for key in ['Filename']:
+                self.data[key] = results_ds[key]
+            self.data['transmission'] = peaktopeak_T
+
     def block_for_run_finish(self):
         while self.getRunInProgress():
             time.sleep(5)
@@ -191,45 +216,6 @@ class APSUSAXS(Driver):
     def getRunInProgress(self):
         return epics.caget(self.config['instrument_running_pv']) 
     
-    @Driver.unqueued(render_hint='2d_image',log_image=True)
-    def getData(self,**kwargs):
-        try:
-            filepath = self.getLastFilePath()
-            data = np.array(PIL.Image.open(filepath))
-        except FileNotFoundError:
-            nattempts = 1
-            while nattempts<11:
-                nattempts = nattempts +1
-                time.sleep(0.2)
-                try:
-                    filepath = self.getLastFilePath()
-                    data = np.array(PIL.Image.open(filepath))
-                except FileNotFoundError:
-                    if nattempts == 10:
-                        raise FileNotFoundError(f'could not locate file after {nattempts} tries')
-                    else:
-                        warnings.warn(f'failed to load file, trying again, this is try {nattempts}')
-                else:
-                    break
-                
-        return np.nan_to_num(data)
-    
-    @Driver.unqueued(render_hint='1d_plot')
-    def getReducedData(self,**kwargs):
-        try:
-            filepath = pathlib.Path(self.config['data_dir'])
-            with h5py.File(filepath/self.filename) as f:
-                return f['entry'][self.config['reduced_data_key']]
-        except KeyError as e:
-            try:
-                kwargs['retry'] = True
-            except KeyError:
-                time.sleep(5)
-                return self.getReducedData(**kwargs,retry = True)
-            else:
-                raise e
-
-
                
     def status(self):
         status = []

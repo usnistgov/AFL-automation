@@ -1,22 +1,44 @@
-.ipynb_checkpoints
-.ipynb_checkpoints/*
-dev/.ipynb_checkpoints/*
-*egg-info*
-*log
-*tif
-*tiff
-data/*
-*poni
-*pyc
-*swp
-*.DS_Store
-dev/*
-.idea/*
-AFL/automation/EpicsADLiveProcess/templates/static/.gitkeep
-AFL/automation/EpicsADLiveProcess/templates/static/deck.jpeg
-AFL/automation/EpicsADLiveProcess/templates/static/jquery-3.4.1.min.js
-AFL/automation/EpicsADLiveProcess/templates/static/logo.svg
-AFL/automation/EpicsADLiveProcess/templates/static/ncnr.png
-docs/build/*
-docs/source/generated/*
-docs/source/_autosummary/*
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# IDE files
+.idea/
+*.swp
+
+# OS specific files
+.DS_Store
+
+# Data and media files
+*.log
+*.tif
+*.tiff
+*.poni
+data/
+
+# Development directories
+dev/
+
+# Documentation build
+docs/build/
+docs/source/generated/
+docs/source/_autosummary/
+
+# Tiled database specific
+tiled/data/
+tiled/catalog*
+
+# Specific files to keep
+!AFL/automation/EpicsADLiveProcess/templates/static/.gitkeep
+!AFL/automation/EpicsADLiveProcess/templates/static/deck.jpeg
+!AFL/automation/EpicsADLiveProcess/templates/static/jquery-3.4.1.min.js
+!AFL/automation/EpicsADLiveProcess/templates/static/logo.svg
+!AFL/automation/EpicsADLiveProcess/templates/static/ncnr.png

@@ -10,6 +10,7 @@ import pathlib
 import warnings
 import Matilda
 import Matilda.convertUSAXS
+import Matilda.convertSAS
 import Matilda.readfromtiled
 
 class APSUSAXS(Driver):
@@ -61,6 +62,9 @@ class APSUSAXS(Driver):
                     }
                     }
     defaults['empty_scan_title'] = ''
+    defaults['USAXS_mode'] = 'Flyscan' #Flyscane or uascan
+    defaults['USAXS_npts'] = 400
+    defaults['USAXS_signal_cutoff'] = 1.05
 
     def __init__(self,overrides=None):
         '''
@@ -150,7 +154,7 @@ class APSUSAXS(Driver):
         'reduce_data':{'label':'Reduce?','type':'bool','default':True},
         'measure_transmission':{'label':'Measure Trans?','type':'bool','default':True}
         }})
-    def expose(self, name = None, block = True, reduce_data = True):
+    def expose(self, name = None, block = True, reduce_USAXS = True, reduce_WAXS = True):
         if name is None:
             name=self.getFilename()
         else:
@@ -172,34 +176,61 @@ class APSUSAXS(Driver):
             time.sleep(20)
             self.block_for_run_finish()
             self.status_txt = 'Instrument Idle'
-        if reduce_data:
-            # connect to USAXS Tiled (instance var)
-            last_scan = Matilda.readfromtiled.FindLastScanData('Flyscan',1)
+            
+        if reduce_USAXS:
+           # get last flyscan from Tiled and check that the set filename matches the found file
+           [last_scan_path, last_scan_file] = Matilda.readfromtiled.FindLastScanData('Flyscan',1)[0]
+           if name.replace('-','_') not in last_scan_file:
+                   raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
 
-            # get run + find path to h5 file
-            results = Matilda.convertUSAXS.reduceFlyscanToQR(last_scan[0][0],last_scan[0][1])
-            
-            # get empty, reduce it
-            relevant_empty = Matilda.readfromtiled.FindScanDataByName('Flyscan',self.config['empty_scan_title'])
-            empty_results = Matilda.convertUSAXS.reduceFlyscanToQR(relevant_empty[0][0],relevant_empty[0][1])
-            
-            results_ds = Matilda.supportFunctions.results_to_dataset(results)
-            clean_name = name.replace('-','_')
-            assert clean_name in results_ds['Filename'].item(),f"Did not get data that seemed to match, you collected {name}, we got {results_ds['Filename'].values}"
-            empty_ds = Matilda.supportFunctions.results_to_dataset(empty_results)
-            peaktopeak_T = (results_ds.Maximum / empty_ds.Maximum)
-            results_ds['USAXS_sub'] = 1/peaktopeak_T * results_ds['USAXS_int'] - empty_ds['USAXS_int'].interp_like(results_ds['USAXS_int'])
-            
+           # reduce flyscan data
+           last_scan_results = Matilda.convertUSAXS.reduceFlyscanToQR(last_scan_path,last_scan_file)
+           results_ds = Matilda.supportFunctions.results_to_dataset(last_scan_results)
+           USAXS_int = results_ds['USAXS_int']
 
-            # store QR in _our_ Tiled self.data
-            for key in ['q','USAXS_int','USAXS_sub']:
-                self.data.add_array(key,results_ds[key].values)
-                
-            for key in ['q','USAXS_int']:
-                self.data.add_array('MT_'+key,empty_ds[key].values)
-            for key in ['Filename']:
-                self.data[key] = results_ds[key]
-            self.data['transmission'] = peaktopeak_T
+           # get empty flyscan, reduce it
+           [empty_path,empty_file] = Matilda.readfromtiled.FindScanDataByName('Flyscan',self.config['empty_scan_title'])[0]
+           empty_results = Matilda.convertUSAXS.reduceFlyscanToQR(empty_path,empty_file)
+           empty_ds = Matilda.supportFunctions.results_to_dataset(empty_results)
+           MT_USAXS_int = empty_ds['USAXS_int']
+           MT_USAXS_int = MT_USAXS_int.interp_like(USAXS_int) #interpolate to match last scan
+
+           # determine minimum q; argmax because we're looking for the first True (which is cast to be 1)
+           qmin_index = np.argmax((USAXS_int.values/MT_USAXS_int.values)>float(self.config['USAXS_signal_cutoff']))
+           qmin = USAXS_int['q'].isel(q=qmin_index).item()
+           
+           #interpolate
+           new_q = np.geomspace(qmin,USAXS_int['q'].max(),self.config['USAXS_npts'])
+           USAXS_int = USAXS_int.interp(q=new_q)
+           MT_USAXS_int = MT_USAXS_int.interp(q=new_q)
+
+           # background subtraction
+           peaktopeak_T = (results_ds.Maximum / empty_ds.Maximum)
+           USAXS_sub = 1/peaktopeak_T * USAXS_int - MT_USAXS_int
+
+           # add data to tiled
+           self.data.add_array('USAXS_q',USAXS_int['q'].values)
+           self.data.add_array('USAXS_int',USAXS_int.values)
+           self.data.add_array('USAXS_sub',USAXS_sub.values)
+           self.data.add_array('MT_USAXS_q',MT_USAXS_int['q'].values)
+           self.data.add_array('MT_USAXS_int',MT_USAXS_int.values)
+           self.data['USAXS_Filepath'] = last_scan_path
+           self.data['USAXS_Filename'] = last_scan_file
+           self.data['USAXS_transmission'] = peaktopeak_T
+           
+        if reduce_WAXS: 
+           # get last WAXS from Tiled, reduce it
+           [last_scan_path, last_scan_file] = Matilda.readfromtiled.FindLastScanData('WAXS',1)[0]
+           if name.replace('-','_') not in last_scan_file:
+                   raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
+           #reduce
+           last_scan_results = Matilda.convertSAS.ImportAndReduceAD(last_scan_path,last_scan_file)
+           
+           # add data to tiled
+           self.data.add_array('WAXS_q',last_scan_results['Q_array'])
+           self.data.add_array('WAXS_int',last_scan_results['Intensity'])
+           self.data['WAXS_Filepath'] = last_scan_path
+           self.data['WAXS_Filename'] = last_scan_file
 
     def block_for_run_finish(self):
         while self.getRunInProgress():

@@ -1,0 +1,6 @@
+{
+  "LiteBuildConfig": {
+    "contents": ["../../shared/DatasetWidget.py","files/BrowseDataset.ipynb"],
+    "output_dir": "../static/jl"
+  }
+}

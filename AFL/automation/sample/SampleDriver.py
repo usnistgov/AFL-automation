@@ -1,20 +1,23 @@
-import copy
+import itertools
 import datetime
-import os
 import pathlib
 import shutil
 import traceback
 import uuid
 from typing import Optional, Dict, List
 import warnings
+import os
+import time
+import copy
+import pandas as pd
 
 import h5py  # type: ignore
 import numpy as np
 import requests  # type: ignore
-import xarray as xr
-
+import xarray as xr 
 from tiled.client import from_uri  # type: ignore
 from tiled.queries import Eq  # type: ignore
+from scipy.spatial.distance import cdist
 
 import AFL.automation.prepare  # type: ignore
 from AFL.automation.APIServer.Client import Client  # type: ignore
@@ -55,10 +58,15 @@ class SampleDriver(Driver):
     defaults['composition_var_name'] = 'comps'
     defaults['concat_dim'] = 'sample'
     defaults['sample_composition_tol'] = 0.0
+    defaults['next_samples_variable'] = 'next_samples'
+    defaults['camera_urls'] = []
+    defaults['snapshot_directory'] = []
+    defaults['grid_file'] = None
+    defaults['grid_blank_interval'] = None
+    defaults['grid_blank_sample'] = None
 
     def __init__(
             self,
-            tiled_uri: Optional[str] = None,
             camera_urls: Optional[List[str]] = None,
             snapshot_directory: Optional[str] = None,
             overrides: Optional[Dict] = None,
@@ -67,13 +75,6 @@ class SampleDriver(Driver):
 
         Parameters
         -----------
-        tiled_uri: str
-            uri (url:port) of the tiled server.  If a data object is set, will be ignored and the Tiled connection inside the data object used instead.
-
-        camera_urls: Optional[List[str]]
-            url endpoints for ip cameras
-
-
         """
 
         Driver.__init__(self, name='SampleDriver', defaults=self.gather_defaults(), overrides=overrides)
@@ -84,13 +85,8 @@ class SampleDriver(Driver):
         self.app = None
         self.name = 'SampleDriver'
 
-
-        # start tiled catalog connection
-        if tiled_uri is not None:
-            self.tiled_client = from_uri(tiled_uri, api_key=os.environ['TILED_API_KEY'])
-        
-
-        self.camera_urls = camera_urls
+        if camera_urls is not None:
+            self.config['camera_urls'] = camera_urls
 
         if snapshot_directory is not None:
             self.config['snapshot_directory'] = snapshot_directory
@@ -104,18 +100,183 @@ class SampleDriver(Driver):
 
         self.catch_protocol = None
         self.AL_status_str = ''
-        self.data_manifest = None
+        self.grid_sample_count = 0
+        self.grid_data = None
+        self.stop_grid = False
 
         # XXX need to make deck inside this object because of 'different registries error in Pint
         self.reset_deck()
 
+    def validate_config(self):
+        required_keys = [
+            'client',
+            'instrument',
+            'ternary',
+            'data_tag',
+            'data_path',
+            'components',
+            'AL_components',
+            'snapshot_directory',
+            'max_sample_transmission',
+            'mix_order',
+            'custom_stock_settings',
+            'composition_var_name',
+            'concat_dim',
+            'sample_composition_tol',
+            'camera_urls'
+        ]
+
+        missing_keys = [key for key in required_keys if key not in self.config]
+
+        if missing_keys:
+            raise KeyError(f"The following required keys are missing from self.config: {', '.join(missing_keys)}")
+
+        # Validate client configuration
+        if not isinstance(self.config['client'], dict):
+            raise TypeError("self.config['client'] must be a dictionary")
+        if 'load' not in self.config['client']:
+            raise KeyError("'load' client must be configured in self.config['client']")
+        if 'prep' not in self.config['client']:
+            raise KeyError("'prep' client must be configured in self.config['client']")
+
+        # Validate instrument configuration
+        if not isinstance(self.config['instrument'], list):
+            raise TypeError("self.config['instrument'] must be a list")
+        if len(self.config['instrument']) == 0:
+            raise ValueError("At least one instrument must be configured in self.config['instrument']")
+
+        for i, instrument in enumerate(self.config['instrument']):
+            required_instrument_keys = ['name', 'client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim', 'sample_comps_variable']
+            missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
+            if missing_instrument_keys:
+                raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
+            
+            if not isinstance(instrument['data'], list):
+                raise TypeError(f"Instrument {i}: 'data' must be a list")
+            for j, data_item in enumerate(instrument['data']):
+                required_data_keys = ['data_name', 'tiled_array_name']
+                missing_data_keys = [key for key in required_data_keys if key not in data_item]
+                if missing_data_keys:
+                    raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
+
+        # Validate other list types
+        list_keys = ['components', 'AL_components', 'mix_order', 'camera_urls']
+        for key in list_keys:
+            if not isinstance(self.config[key], list):
+                raise TypeError(f"self.config['{key}'] must be a list")
+        # Validate dicts
+
+        if not isinstance(self.config['custom_stock_settings'],dict):
+            raise TypeError("self.config['custom_stock_settings'] must be a dict")
+
+        # Validate other dict types
+        list_keys = ['custom_stock_settings']
+        for key in list_keys:
+            if not isinstance(self.config[key], dict):
+                raise TypeError(f"self.config['{key}'] must be a dict")
+
+        # Validate types of other keys
+        if not isinstance(self.config['ternary'], bool):
+            raise TypeError("self.config['ternary'] must be a boolean")
+        if not isinstance(self.config['data_tag'], str):
+            raise TypeError("self.config['data_tag'] must be a string")
+        if not isinstance(self.config['data_path'], (str, pathlib.Path)):
+            raise TypeError("self.config['data_path'] must be a string or pathlib.Path")
+        if not isinstance(self.config['snapshot_directory'], (str, pathlib.Path)):
+            raise TypeError("self.config['snapshot_directory'] must be a string or pathlib.Path")
+        if not isinstance(self.config['max_sample_transmission'], (int, float)):
+            raise TypeError("self.config['max_sample_transmission'] must be a number")
+        if not isinstance(self.config['composition_var_name'], str):
+            raise TypeError("self.config['composition_var_name'] must be a string")
+        if not isinstance(self.config['concat_dim'], str):
+            raise TypeError("self.config['concat_dim'] must be a string")
+        if not isinstance(self.config['sample_composition_tol'], (int, float)):
+            raise TypeError("self.config['sample_composition_tol'] must be a number")
+
+        print("Configuration validation passed successfully.")
+
+    def validate_config_grid(self):
+        """Validate configuration specific to grid-based sample processing."""
+        # Basic client validation
+        if not isinstance(self.config['client'], dict):
+            raise TypeError("self.config['client'] must be a dictionary")
+            
+        # Instrument validation - simplified compared to regular validate_config
+        if not isinstance(self.config['instrument'], list):
+            raise TypeError("self.config['instrument'] must be a list")
+        if len(self.config['instrument']) == 0:
+            raise ValueError("At least one instrument must be configured in self.config['instrument']")
+            
+        for i, instrument in enumerate(self.config['instrument']):
+            # Minimal required keys for grid mode
+            required_instrument_keys = ['client_name', 'data', 'measure_base_kw', 'empty_base_kw']
+            missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
+            if missing_instrument_keys:
+                raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
+                
+            if not isinstance(instrument['data'], list):
+                raise TypeError(f"Instrument {i}: 'data' must be a list")
+            for j, data_item in enumerate(instrument['data']):
+                required_data_keys = ['data_name', 'tiled_array_name']
+                missing_data_keys = [key for key in required_data_keys if key not in data_item]
+                if missing_data_keys:
+                    raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
+                    
+        # Validate grid-specific configuration items
+        if self.config['grid_file'] is not None and not isinstance(self.config['grid_file'], (str, pathlib.Path)):
+            raise TypeError("self.config['grid_file'] must be a string or pathlib.Path")
+            
+        if self.config['grid_blank_interval'] is not None and not isinstance(self.config['grid_blank_interval'], int):
+            raise TypeError("self.config['grid_blank_interval'] must be an integer")
+            
+        if self.config['grid_blank_sample'] is not None and not isinstance(self.config['grid_blank_sample'], dict):
+            raise TypeError("self.config['grid_blank_sample'] must be a dictionary")
+            
+        # Validate data-related settings
+        if not isinstance(self.config['data_path'], (str, pathlib.Path)):
+            raise TypeError("self.config['data_path'] must be a string or pathlib.Path")
+            
+        if not isinstance(self.config['data_tag'], str):
+            raise TypeError("self.config['data_tag'] must be a string")
+            
+        # Validate instrument configuration
+        if not isinstance(self.config['instrument'], list):
+            raise TypeError("self.config['instrument'] must be a list")
+        if len(self.config['instrument']) == 0:
+            raise ValueError("At least one instrument must be configured in self.config['instrument']")
+
+        for i, instrument in enumerate(self.config['instrument']):
+            required_instrument_keys = ['client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim', 'sample_comps_variable']
+            missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
+            if missing_instrument_keys:
+                raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
+            
+            if not isinstance(instrument['data'], list):
+                raise TypeError(f"Instrument {i}: 'data' must be a list")
+            for j, data_item in enumerate(instrument['data']):
+                required_data_keys = ['data_name', 'tiled_array_name']
+                missing_data_keys = [key for key in required_data_keys if key not in data_item]
+                if missing_data_keys:
+                    raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
+            
+        print("Grid configuration validation passed successfully.")
+
+    @property
+    def tiled_client(self):
+        # start tiled catalog connection
+        if self.data is None:
+            raise ValueError("No DataTiled object added to this class...was it instantiated correctly?")
+        return self.data.tiled_client
+
     def status(self):
         status = []
         status.append(f'Snapshots: {self.config["snapshot_directory"]}')
-        status.append(f'Cameras: {self.camera_urls}')
+        status.append(f'Cameras: {self.config["camera_urls"]}')
         status.append(f'{len(self.deck.stocks)} stocks loaded!')
         status.append(self.status_str)
         status.append(self.AL_status_str)
+        if self.grid_data:
+            status.append(f'Grid Dims: {self.grid_data.sizes}')
         return status
 
     def update_status(self, value):
@@ -144,7 +305,7 @@ class SampleDriver(Driver):
 
     def take_snapshot(self, prefix):
         now = datetime.datetime.now().strftime('%y%m%d-%H:%M:%S')
-        for i, cam_url in enumerate(self.camera_urls):
+        for i, cam_url in enumerate(self.config['camera_urls']):
             fname = self.config['snapshot_directory'] + '/'
             fname += prefix
             fname += f'-{i}-'
@@ -192,7 +353,7 @@ class SampleDriver(Driver):
     def set_catch_protocol(self, **kwargs):
         self.catch_protocol = AFL.automation.prepare.PipetteAction(**kwargs)
 
-    def fix_protocol_order(self, mix_order: List, custom_stock_settings: List):
+    def fix_protocol_order(self, mix_order: List, custom_stock_settings: Dict):
         mix_order = [self.deck.get_stock(i) for i in mix_order]
         mix_order_map = {loc: new_index for new_index, (stock, loc) in enumerate(mix_order)}
         for sample, validated in self.deck.sample_series:
@@ -306,6 +467,10 @@ class SampleDriver(Driver):
                 f"No client url for 'agent'! self.config['client']={self.config['client']}"
             )
 
+
+        # do this now, so that we fail early if we're missing something
+        self.validate_config()
+
         if sample_uuid is None:
             self.uuid['sample'] =  'SAM-' + str(uuid.uuid4())
         else:
@@ -351,36 +516,40 @@ class SampleDriver(Driver):
                 sample_composition = sample_composition_realized,
             )
             for client_name in self.config['client'].keys():
-                self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
+                if client_name not in self.config['tiled_exclusion_list']:
+                    self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
-        prep_protocol, catch_protocol = self.compute_prep_protocol(
-            composition = composition,
-            fixed_concs = fixed_concs,
-            mfrac_split = prepare_mfrac_split,
-            sample_volume = sample_volume
-        )
+            # START NEW INDENT 
+            prep_protocol, catch_protocol = self.compute_prep_protocol(
+                composition = composition,
+                fixed_concs = fixed_concs,
+                mfrac_split = prepare_mfrac_split,
+                sample_volume = sample_volume
+            )
 
-        # configure all servers to this sample name and uuid
-        sample_composition_realized = {
-            k:{'value':v.magnitude ,'units':str(v.units)} for k,v in self.sample.target_check.concentration.items()
-        }
-        self.data['sample_composition_target'] = composition
-        self.data['sample_composition_realized'] = sample_composition_realized
-        sample_data = self.set_sample(
-            sample_name = self.sample_name,
-            sample_uuid = self.uuid['sample'],
-            AL_campaign_name = self.AL_campaign_name,
-            AL_uuid = self.uuid['AL'],
-            AL_components = self.config['AL_components'],
-            sample_composition = sample_composition_realized,
-        )
-        for client_name in self.config['client'].keys():
-            self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
+            # configure all servers to this sample name and uuid
+            sample_composition_realized = {
+                k:{'value':v.magnitude ,'units':str(v.units)} for k,v in self.sample.target_check.concentration.items()
+            }
+            self.data['sample_composition_target'] = composition
+            self.data['sample_composition_realized'] = sample_composition_realized
+            sample_data = self.set_sample(
+                sample_name = self.sample_name,
+                sample_uuid = self.uuid['sample'],
+                AL_campaign_name = self.AL_campaign_name,
+                AL_uuid = self.uuid['AL'],
+                AL_components = self.config['AL_components'],
+                sample_composition = sample_composition_realized,
+            )
+            for client_name in self.config['client'].keys():
+                if client_name not in self.config['tiled_exclusion_list']:
+                    self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
 
-        self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol, calibrate_sensor=calibrate_sensor)
-        self.construct_datasets(combine_comps=predict_combine_comps)
+            self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol, calibrate_sensor=calibrate_sensor)
+            self.construct_datasets(combine_comps=predict_combine_comps)
+            # END NEW INDENT 
 
-        if predict_next:
+        if enqueue_next or predict_next:
             if composition:#assume we made/measured a sample and append
                 self.add_new_data_to_agent()
             self.predict_next_sample()
@@ -388,12 +557,10 @@ class SampleDriver(Driver):
         # Look away ... here be dragons ...
         if enqueue_next:
             ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
-
-            #this assumes that 'component' is going to be a dim name
-            for AL_sample in ag_result.next_samples.transpose(...,'component'):
-                new_composition = {} #this currently only works on the last sample
-                for sample in AL_sample:
-                    new_composition[sample.component.values[()]] = {'value':sample.values[()],'units':'milligram / milliliter'}
+            next_samples = ag_result[self.config['next_samples_variable']]
+            
+            new_composition = next_samples.to_pandas().squeeze().to_dict()
+            new_composition = {k:{'value':v,'units':'milligram / milliliter'} for k,v in new_composition.items()}
 
             task = {
                 'task_name':'process_sample',
@@ -516,7 +683,7 @@ class SampleDriver(Driver):
             catch_protocol: dict,
             calibrate_sensor: bool = False,
     ):
-
+        self.update_status(f'starting make and measure for {name}')
         targets = set()
         for task in prep_protocol:
             if 'target' in task['source'].lower():
@@ -585,6 +752,8 @@ class SampleDriver(Driver):
         self.uuid['rinse'] = self.get_client('load').enqueue(task_name='rinseCell')
         self.take_snapshot(prefix=f'07-after-measure-{name}')
 
+        self.reset_sample_env(wait=False)
+
         self.update_status(f'All done for {name}!')
 
 
@@ -607,6 +776,7 @@ class SampleDriver(Driver):
 
         instrument=None
         for i,instrument in enumerate(self.config['instrument']):
+            self.update_status(f'Measuring using instrument #{i}')
             if not empty:
                 load_kw = {}
                 if i==0:
@@ -623,61 +793,160 @@ class SampleDriver(Driver):
             else:
                 measure_kw = instrument['measure_base_kw']
             measure_kw['name'] = name
-            self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
+            
+            if 'sample_env' in instrument.keys() and not empty:
+                """
+                  schema:
+                    'sample_env': { 'client_name' = 'tempdeck',
+                                    'move_base_kw' = {'task_name': 'move_temp'},
+                                    'move_swept_kw' = {'temperature': [15,20,25,30]},
+                                    }
+                                    
+                """
+                params = []
+                vals = []
+                for param,conds in instrument['sample_env']['move_swept_kw'].items():
+                    params.append(param)
+                    vals.append(conds)
+                conditions = [{i:j for i,j in zip(params,vallist)} for vallist in itertools.product(*vals)]
+                # this ravels the list of conditions above in n-dimensional space, e.g.:
+                # 'move_swept_kw' = {'temperature': [15,20,25,30], 'vibes': ['harsh', 'mid', 'cool']}
+                # conditions = [{'temperature': 15, 'vibes': 'harsh'}, {'temperature': 15, 'vibes': 'mid'} ...]
 
-            if wait:
-                self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+                starting_condition = conditions[0]
+                sample_data = self.get_sample()
+                base_sample_name = sample_data["sample_name"]
+                for i,cond in enumerate(conditions):
+                    sample_env_kw = {}
+                    sample_env_kw.update(cond)
+                    sample_env_kw.update(instrument['sample_env']['move_base_kw'])
+                    sample_data = self.get_sample()
+                    sample_data['sample_env_conditions'] = cond
+                    sample_data['sample_name'] = base_sample_name + f'_{str(i).zfill(3)}' # track up to 1000 conditions
+
+                    self.get_client(instrument['sample_env']['client_name']).enqueue(task_name='set_sample',**sample_data)
+                    self.get_client(instrument['client_name']).enqueue(task_name='set_sample',**sample_data)
+                    self.update_status(f'Moving sample env {instrument["sample_env"]["client_name"]}...') 
+                    self.uuid['move_sample_env'] = self.get_client(instrument['sample_env']['client_name']).enqueue(**sample_env_kw)
+                    
+                    self.get_client(instrument['sample_env']['client_name']).wait(self.uuid['move_sample_env'])
+                    self.update_status(f'Measuring on instrument {instrument["client_name"]}')
+                    measure_kw['name'] = sample_data['sample_name']
+                    self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
+                    
+                    self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+
+                # # move sample environment to initial starting state to prepare for next measurement
+                # sample_env_kw = {}
+                # sample_env_kw.update(starting_condition)
+                # sample_env_kw.update(instrument['sample_env']['move_base_kw'])
+                # self.uuid['move_sample_env'] = self.get_client(instrument['sample_env']['client_name']).enqueue(**sample_env_kw)
+
+            else:
+                self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_kw)
+
+                if wait:
+                    self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+
+    def reset_sample_env(self, wait: bool = True):
+
+        for i,instrument in enumerate(self.config['instrument']):
+            if 'sample_env' in instrument.keys():
+                """
+                  schema:
+                    'sample_env': { 'client_name' = 'tempdeck',
+                                    'move_base_kw' = {'task_name': 'move_temp'},
+                                    'move_swept_kw' = {'temperature': [15,20,25,30]},
+                                    }
+                                    
+                """
+                params = []
+                vals = []
+                for param,conds in instrument['sample_env']['move_swept_kw'].items():
+                    params.append(param)
+                    vals.append(conds)
+                conditions = [{i:j for i,j in zip(params,vallist)} for vallist in itertools.product(*vals)]
+                # this ravels the list of conditions above in n-dimensional space, e.g.:
+                # 'move_swept_kw' = {'temperature': [15,20,25,30], 'vibes': ['harsh', 'mid', 'cool']}
+                # conditions = [{'temperature': 15, 'vibes': 'harsh'}, {'temperature': 15, 'vibes': 'mid'} ...]
+
+                starting_condition = conditions[0]
+
+                sample_env_kw = {}
+                sample_env_kw.update(starting_condition)
+                sample_env_kw.update(instrument['sample_env']['move_base_kw'])
+                self.uuid['move_sample_env'] = self.get_client(instrument['sample_env']['client_name']).enqueue(**sample_env_kw)
+
+                if wait:
+                    self.get_client(instrument['sample_env']['client_name']).wait(self.uuid['move_sample_env'])
+
 
     def construct_datasets(self,combine_comps=None):
         """Construct AL manifest from measurement and call predict"""
         data_path = pathlib.Path(self.config['data_path'])
         # if len(self.config['instrument'])>1:
         #     raise NotImplementedError
-        
+
         if self.tiled_client is None:
             self.tiled_client = self.data.tiled_client
             # this needs to be here, because in the constructor, we don't have the datapacket attached
 
         self.new_data = xr.Dataset()
-        for i,instrument in enumerate(self.config['instrument']):
+        for i, instrument in enumerate(self.config['instrument']):
             for instrument_data in instrument['data']:
                 tiled_result = (
                     self.tiled_client
-                    .search(Eq('sample_uuid',self.uuid['sample']))
+                    .search(Eq('sample_uuid', self.uuid['sample']))
                     .search(Eq('array_name', instrument_data['tiled_array_name']))
                 )
-                if len(tiled_result)==0:
+                if len(tiled_result) == 0:
                     raise ValueError(f"Could not find tiled entry for measurement sample_uuid={self.uuid['sample']}")
 
                 # handle Python None and "None" depending on how json deserialization works out
                 if (instrument_data['data_dim'] is not None) and (instrument_data['data_dim'] != 'None'):
                     dims = instrument_data['data_dim']
-                    coords = {instrument_data['data_dim']:tiled_result.items()[-1][-1].metadata[instrument_data['tiled_metadata_dim']]}
+                    coords = {instrument_data['data_dim']: tiled_result.items()[-1][-1].metadata[
+                        instrument_data['tiled_metadata_dim']]}
                 else:
                     dims = None
                     coords = None
 
-                tiled_data = tiled_result.items()[-1][-1]
-                measurement = xr.DataArray(tiled_data[()], dims=dims, coords=coords)
-                self.new_data[instrument_data['data_name']] = measurement
+                if 'sample_env' in instrument.keys():
+
+                    sample_env_dims = list(instrument['sample_env']['move_swept_kw'].keys())
+
+                    measurement_list = []
+                    for _,tiled_data in tiled_result.items():
+                        if 'MT-' in tiled_data.metadata['name']:
+                            continue
+                        measurement_list.append(xr.DataArray(tiled_data[()], dims=dims, coords=coords))
+                    measurement = xr.concat(measurement_list, dim=instrument['sample_dim'])
+                    for key,values in instrument['sample_env']['move_swept_kw'].items():
+                        measurement[key] = (instrument['sample_dim'],values)
+                    self.new_data[instrument_data['data_name']] = measurement
+                    print(self.new_data)
+                    print(self.new_data)
+                else:
+
+                    tiled_data = tiled_result.items()[-1][-1]
+                    measurement = xr.DataArray(tiled_data[()], dims=dims, coords=coords)
+                    self.new_data[instrument_data['data_name']] = measurement
 
                 if 'quality_metric' in instrument.keys():
                     quality_metric = instrument['quality_metric']
                     instrument_value = tiled_data.metadata[quality_metric['tiled_metadata_key']]
-                    if quality_metric['comparison'].lower() in ['<','lt']:
+                    if quality_metric['comparison'].lower() in ['<', 'lt']:
                         accept = instrument_value < quality_metric['threshold']
-                    elif quality_metric['comparison'].lower() in ['>','gt']:
+                    elif quality_metric['comparison'].lower() in ['>', 'gt']:
                         accept = instrument_value > quality_metric['threshold']
-                    elif quality_metric['comparison'].lower() in ['==','=','eq']:
+                    elif quality_metric['comparison'].lower() in ['==', '=', 'eq']:
                         accept = instrument_value == quality_metric['threshold']
                     else:
-                        raise ValueError(f'Cannot recognize comparison for quality_metric. You passed {quality_metric["comparison"]}')
+                        raise ValueError(
+                            f'Cannot recognize comparison for quality_metric. You passed {quality_metric["comparison"]}')
                 else:
                     accept = True
                 self.new_data[instrument_data['data_name']].attrs['accept'] = int(accept)
-
-
-
 
         self.new_data['validated'] = self.validated
         self.new_data['sample_uuid'] = self.uuid['sample']
@@ -711,6 +980,9 @@ class SampleDriver(Driver):
             self.new_data['mfrac_' + component] = self.sample.target_check.mass_fraction[component].magnitude
             self.new_data['mass_' + component] = self.sample.target_check[component].mass.to('mg').magnitude
             self.new_data['mass_' + component].attrs['units'] = 'mg'
+            if self.sample.target_check[component].volume is not None:
+                self.new_data['volume_' + component] = self.sample.target_check[component].volume.to('ml').magnitude
+                self.new_data['volume_' + component].attrs['units'] = 'ml'
 
             # for tiled
             sample_composition['mfrac_' + component] = self.sample.target_check.mass_fraction[component].magnitude
@@ -758,6 +1030,9 @@ class SampleDriver(Driver):
                     continue
 
             if data_added>0:
+                self.ds_append = self.ds_append.reset_coords()
+                if instrument['sample_dim'] not in self.ds_append:
+                    self.ds_append = self.ds_append.expand_dims(instrument['sample_dim'])
                 db_uuid = self.get_client('agent').deposit_obj(obj=self.ds_append)
                 self.get_client('agent').enqueue(task_name='append',db_uuid=db_uuid,concat_dim=instrument['sample_dim'])
 
@@ -786,10 +1061,366 @@ class SampleDriver(Driver):
 
         return transmission_validated
 
+    def process_sample_grid(
+            self,
+            sample,
+            name: Optional[str] = None,
+            sample_uuid: Optional[str] = None,
+            AL_campaign_name: Optional[str] = None,
+            AL_uuid: Optional[str] = None,
+            predict_next: bool = False,
+            enqueue_next: bool = False,
+            reset_grid: bool = False,
+    ):
+        """Process a sample from a grid of samples.
+
+        Parameters
+        ----------
+        sample: Dict, optional
+            Dictionary containing sample coordinates or properties. If None, will be fetched 
+            from the grid or agent.
+            
+        name: str, optional
+            The name of the sample. If not provided, will be auto-generated.
+            
+        sample_uuid: str, optional
+            UUID for the sample. If not provided, will be auto-generated.
+            
+        AL_campaign_name: str, optional
+            Name of the active learning campaign.
+            
+        AL_uuid: str, optional
+            UUID for the active learning campaign.
+            
+        predict_next: bool
+            If True, triggers a predict call to the agent.
+            
+        enqueue_next: bool
+            If True, will enqueue the next sample for measurement.
+            
+        """
+        # Validate config for grid processing
+        self.validate_config_grid()
+
+        if reset_grid or self.grid_data is None:
+            self.reset_grid()
+        
+        # Handle sample UUID generation
+        if sample_uuid is None:
+            self.uuid['sample'] = 'SAM-' + str(uuid.uuid4())
+        else:
+            self.uuid['sample'] = sample_uuid
+            
+        # Handle AL UUID
+        if predict_next and AL_uuid is None:
+            self.uuid['AL'] = 'AL-' + str(uuid.uuid4())
+        else:
+            self.uuid['AL'] = AL_uuid
+            
+        # Handle campaign name
+        if predict_next and AL_campaign_name is None:
+            self.AL_campaign_name = f"{self.config['data_tag']}_{self.uuid['AL'][-8:]}"
+        else:
+            self.AL_campaign_name = AL_campaign_name
+        
+        # Check if we should measure a blank
+        if (self.config['grid_blank_interval'] is not None and 
+            self.config['grid_blank_sample'] is not None and 
+            self.grid_sample_count > 0 and 
+            self.grid_sample_count % self.config['grid_blank_interval'] == 0):
+            
+            self.update_status(f"Measuring blank sample (scheduled interval {self.config['grid_blank_interval']})")
+            blank_sample = self.config['grid_blank_sample']
+            blank_name = f"blank_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+            # Configure blank measurement
+            self.measure_grid_sample(blank_sample, name=blank_name, empty=True)
+            
+        # Handle the next sample based on mode
+        if sample is not None:
+            # find the closest sample in the grid by euclidean distance
+            available = self.grid_data[self.config['components']].to_array('component').transpose(...,'component')
+            selected = xr.Dataset(sample).to_array('component')
+            dist = (selected - available).pipe(np.square).sum('component') #no sqrt needed for just min distance
+            sample_index = dist.argmin()
+            
+            # Get the data variables from grid_data and add them individually to sample dict
+            grid_sample = self.grid_data.isel(sample=sample_index).reset_coords()
+            for var_name in grid_sample.data_vars:
+                sample[var_name] = grid_sample[var_name].item()
+            self.update_status(f"Found closest sample to be {grid_sample}")
+
+            # Generate sample name if not provided
+            if name is None:
+                self.sample_name = f"{self.config['data_tag']}_{self.uuid['sample'][-8:]}"
+            else:
+                self.sample_name = name
+        
+            # Measure the sample
+            self.measure_grid_sample(sample, name=self.sample_name, empty=False)
+            self.construct_grid_datasets(sample)
+        
+            # update sample manifest and grid data
+            self.num_samples = self.grid_data.sizes['sample']#update num samples
+            self.grid_data = self.grid_data.drop_isel(sample=sample_index)
+            self.grid_sample_count += 1
+        
+        # Predict next sample if requested
+        if predict_next:
+            if sample is not None:
+                self.add_new_data_to_agent()
+            self.predict_next_sample()
+            
+        # Enqueue next sample if requested
+        if enqueue_next:
+            ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
+            next_samples = ag_result[self.config['next_samples_variable']]
+            
+            new_composition = next_samples.to_pandas().squeeze().to_dict()
+            new_composition = {k:v for k,v in new_composition.items()}
+
+            task = {
+                'task_name': 'process_sample_grid',
+                'sample': new_composition,
+                'predict_next': predict_next,
+                'enqueue_next': enqueue_next,
+                'AL_campaign_name': self.AL_campaign_name,
+                'AL_uuid': self.uuid['AL'],
+            }
+            
+            task_uuid = 'QD-' + str(uuid.uuid4())
+            package = {'task': task, 'meta': {}, 'uuid': task_uuid}
+            package['meta']['queued'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f')
+            
+            queue_loc = self._queue.qsize()  # append at end of queue
+            self._queue.put(package, queue_loc)
+    
+    def measure_grid_sample(self, sample, name, empty=False):
+        """Measure a sample using the grid-based workflow.
+
+        instrument = {
+            'client_name': 'APSUSAXS',
+            'empty_base_kw': {'task_name': 'expose'},
+            'measure_base_kw': {'task_name': 'expose'},
+            'select_sample_base_kw': {'task_name': 'setPosition', 'y_offset': 2},
+            'sample_select_kwargs': ['plate', 'row', 'col'],
+            'sample_comps_variable': 'sample_composition'
+        }
+        
+        Parameters
+        ----------
+        sample: Dict
+            Dictionary containing sample coordinates and properties
+            
+        name: str
+            Sample name for the measurement
+        
+
+
+        """
+        self.update_status(f"Starting measurement of {name}")
+        
+        # Set sample information in all clients
+        sample_data = self.set_sample(
+            sample_name=name,
+            sample_uuid=self.uuid['sample'],
+            AL_campaign_name=self.AL_campaign_name,
+            AL_uuid=self.uuid['AL'],
+            AL_components=self.config['AL_components'],
+            sample_composition=sample,
+        )
+        
+        for client_name in self.config['client'].keys():
+            self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
+
+        
+        # Move to the sample position based on instrument configuration
+        for i, instrument in enumerate(self.config['instrument']):
+            self.update_status(f"Moving to sample position using global command template")
+            move_cmd_kwargs = {k:sample[k] for k in instrument['sample_select_kwargs']}
+            move_cmd_kwargs.update(instrument['select_sample_base_kw'])
+            self.uuid['move'] = self.get_client(instrument['client_name']).enqueue(**move_cmd_kwargs)
+            self.get_client(instrument['client_name']).wait(self.uuid['move'])
+
+
+            self.update_status(f"Measuring sample with {instrument['client_name']}")
+            measure_cmd_kwargs = instrument['measure_base_kw'] if not empty else instrument['empty_base_kw']
+            measure_cmd_kwargs['name'] = name
+            self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_cmd_kwargs)
+            self.get_client(instrument['client_name']).wait(self.uuid['measure'])
+
+        
+        self.update_status(f'All done for {name}!')
+    
+    def construct_grid_datasets(self, sample: dict):
+        """Construct datasets from grid-based measurements"""
+        data_path = pathlib.Path(self.config['data_path'])
+
+        if self.tiled_client is None:
+            self.tiled_client = self.data.tiled_client
+            # this needs to be here, because in the constructor, we don't have the datapacket attached
+
+        self.new_data = xr.Dataset()
+        for i, instrument in enumerate(self.config['instrument']):
+            for k in instrument['sample_select_kwargs']:
+                self.new_data[k] = sample[k]
+                self.new_data[k].attrs['description'] = 'sample coordinate'
+
+            for instrument_data in instrument['data']:
+                tiled_result = (
+                    self.tiled_client
+                    .search(Eq('sample_uuid', self.uuid['sample']))
+                    .search(Eq('array_name', instrument_data['tiled_array_name']))
+                )
+                if len(tiled_result) == 0:
+                    raise ValueError(f"Could not find tiled entry for measurement sample_uuid={self.uuid['sample']}")
+
+                # handle Python None and "None" depending on how json deserialization works out
+                if (instrument_data['data_dim'] is not None) and (instrument_data['data_dim'] != 'None'):
+                    # first try to read this as an array entry in tiled, if not found, look in metadata
+                    tiled_result_dim = (
+                        self.tiled_client
+                        .search(Eq('sample_uuid', self.uuid['sample']))
+                        .search(Eq('array_name', instrument_data['data_dim']))
+                    )
+                    if len(tiled_result_dim)>0:
+                        dims = instrument_data['data_dim']
+                        coords = {instrument_data['data_dim']: tiled_result_dim.values()[-1].read()}
+                    else:
+                        dims = instrument_data['data_dim']
+                        coords = {instrument_data['data_dim']: tiled_result.items()[-1][-1].metadata[
+                            instrument_data['tiled_metadata_dim']]}
+                else:
+                    dims = None
+                    coords = None
+
+                if 'sample_env' in instrument.keys():
+
+                    sample_env_dims = list(instrument['sample_env']['move_swept_kw'].keys())
+
+                    measurement_list = []
+                    for _,tiled_data in tiled_result.items():
+                        if 'MT-' in tiled_data.metadata['name']:
+                            continue
+                        measurement_list.append(xr.DataArray(tiled_data[()], dims=dims, coords=coords))
+                    measurement = xr.concat(measurement_list, dim=instrument['sample_dim'])
+                    for key,values in instrument['sample_env']['move_swept_kw'].items():
+                        measurement[key] = (instrument['sample_dim'],values)
+                    self.new_data[instrument_data['data_name']] = measurement
+                else:
+
+                    tiled_data = tiled_result.items()[-1][-1]
+                    measurement = xr.DataArray(tiled_data[()], dims=dims, coords=coords)
+                    self.new_data[instrument_data['data_name']] = measurement
+
+                if 'quality_metric' in instrument.keys():
+                    quality_metric = instrument['quality_metric']
+                    instrument_value = tiled_data.metadata[quality_metric['tiled_metadata_key']]
+                    if quality_metric['comparison'].lower() in ['<', 'lt']:
+                        accept = instrument_value < quality_metric['threshold']
+                    elif quality_metric['comparison'].lower() in ['>', 'gt']:
+                        accept = instrument_value > quality_metric['threshold']
+                    elif quality_metric['comparison'].lower() in ['==', '=', 'eq']:
+                        accept = instrument_value == quality_metric['threshold']
+                    else:
+                        raise ValueError(
+                            f'Cannot recognize comparison for quality_metric. You passed {quality_metric["comparison"]}')
+                else:
+                    accept = True
+                self.new_data[instrument_data['data_name']].attrs['accept'] = int(accept)
+
+        self.new_data['sample_uuid'] = self.uuid['sample']
+
+        sample_composition = {}
+        for component in self.config['components']:
+            try:
+                self.new_data[component] = sample[component]
+
+                # for tiled
+                sample_composition[component] = sample[component]
+            except KeyError:
+                warnings.warn(f"Skipping component {component} in AL_components")
+
+
+        self.new_data.to_netcdf(data_path / (self.sample_name + '.nc'))
+
+        sample_composition['components'] = self.config['components']
+        if self.data is not None:
+            self.data['sample_composition'] = sample_composition
+            self.data['time'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f %Z%z')
+        
+    
+
+    def set_sample(self, 
+                  sample_name: str, 
+                  sample_uuid: str, 
+                  AL_campaign_name: Optional[str] = None,
+                  AL_uuid: Optional[str] = None,
+                  AL_components: Optional[List] = None,
+                  sample_composition: Optional[Dict] = None):
+        """Set sample information for all clients
+        
+        Parameters
+        ----------
+        sample_name: str
+            Name of the sample
+            
+        sample_uuid: str
+            UUID of the sample
+            
+        AL_campaign_name: str, optional
+            Name of the AL campaign
+            
+        AL_uuid: str, optional
+            UUID of the AL campaign
+            
+        AL_components: List, optional
+            List of components for AL
+            
+        sample_composition: Dict, optional
+            Composition of the sample
+            
+        Returns
+        -------
+        Dict
+            Sample data for client communication
+        """
+        sample_data = {
+            'sample_name': sample_name,
+            'sample_uuid': sample_uuid,
+        }
+        
+        if AL_campaign_name is not None:
+            sample_data['AL_campaign_name'] = AL_campaign_name
+            
+        if AL_uuid is not None:
+            sample_data['AL_uuid'] = AL_uuid
+            
+        if AL_components is not None:
+            sample_data['AL_components'] = AL_components
+            
+        if sample_composition is not None:
+            sample_data['sample_composition'] = sample_composition
+            
+        return sample_data
+
+    # New grid reset methods
+    @Driver.quickbar(qb={'button_text':'Reset Grid'})
+    def reset_grid(self):
+        """Reload the grid from file and reset grid_sample_count."""
+        if self.config['grid_file'] is None:
+            self.app.logger.info("No grid file specified in configuration.")
+            self.grid_data = None
+            self.grid_sample_count = 0
+        else:
+            self.grid_data = xr.load_dataset(self.config['grid_file'])
+            self.grid_sample_count = 0
+            self.app.logger.info(f"Grid reloaded: {self.grid_data.sizes['sample']} samples available.")
+    
+
 _DEFAULT_CUSTOM_CONFIG = {
 
     '_classname': 'AFL.automation.sample.SampleDriver.SampleDriver',
-    'camera_urls': [],
     'snapshot_directory': '/home/afl642/snaps'
 }
 

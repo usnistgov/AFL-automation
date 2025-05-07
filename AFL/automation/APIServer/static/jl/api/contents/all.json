@@ -1,0 +1,43 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2024-11-20T13:04:50.078783Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2024-11-20T12:58:54.439187Z",
+      "mimetype": null,
+      "name": "BrowseDataset.ipynb",
+      "path": "BrowseDataset.ipynb",
+      "size": 1030,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2024-11-20T13:04:50.079316Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2024-10-13T20:25:36.813722Z",
+      "mimetype": "text/x-python",
+      "name": "DatasetWidget.py",
+      "path": "DatasetWidget.py",
+      "size": 28304,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2024-11-20T13:04:50.079004Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2024-11-20T13:04:50.079004Z",
+  "mimetype": null,
+  "name": "",
+  "path": "",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}

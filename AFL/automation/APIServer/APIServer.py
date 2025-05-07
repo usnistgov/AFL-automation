@@ -148,8 +148,9 @@ class APIServer:
             return thread
 
     def add_standard_routes(self):
-        self.app.add_url_rule('/','index',self.index)
+        self.app.add_url_rule('/','index_new',self.index_new)
         self.app.add_url_rule('/new','index_new',self.index_new)
+        self.app.add_url_rule('/old','index',self.index)
         self.app.add_url_rule('/app','app',self.webapp)
         self.app.add_url_rule('/webapp','webapp',self.webapp)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
@@ -160,6 +161,7 @@ class APIServer:
         self.app.add_url_rule('/pause','pause',self.pause,methods=['POST'])
         self.app.add_url_rule('/halt','halt',self.halt,methods=['POST'])
         self.app.add_url_rule('/get_queue','get_queue',self.get_queue,methods=['GET'])
+        self.app.add_url_rule('/get_queue_iteration', 'get_queue_iteration', self.get_queue_iteration, methods=['GET'])
         self.app.add_url_rule('/queue_state','queue_state',self.queue_state,methods=['GET'])
         self.app.add_url_rule('/driver_status','driver_status',self.driver_status,methods=['GET'])
         self.app.add_url_rule('/login','login',self.login,methods=['POST'])
@@ -337,6 +339,12 @@ class APIServer:
         elif render_hint == 'precomposed_jpeg':
             self.app.logger.info('Sending png to browser')
             return send_file(result,mimetype='image/jpeg')
+        elif render_hint == 'html':
+            self.app.logger.info('Sending raw html to browser')
+            return result
+        elif render_hint == 'netcdf':
+            self.app.logger.info('Sending netcdf to browser')
+            return send_file(result,download_name = 'dataset.nc',mimetype='application/netcdf')
         else:
             return "Error while rendering output",500
 
@@ -435,8 +443,17 @@ class APIServer:
         return jsonify(status),200
 
     def get_queue(self):
+        data = request.args
+        if 'with_iteration' in data:
+            with_iteration = bool(data['with_iteration'])
+        else:
+            with_iteration = False
         output = [self.history,self.queue_daemon.running_task,list(self.task_queue.queue)]
+        if with_iteration:
+            output.insert(0,self.task_queue.iterationid())
         return jsonify(output),200
+    def get_queue_iteration(self):
+        return jsonify(self.task_queue.iterationid()),200
 
     @jwt_required()
     def deposit_obj(self):

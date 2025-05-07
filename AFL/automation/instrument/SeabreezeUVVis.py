@@ -258,6 +258,7 @@ _DEFAULT_CUSTOM_CONFIG = {
         '_classname': 'AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis',
         'backend': 'pyseabreeze'
 }
+_DEFAULT_PORT=5051
 
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *

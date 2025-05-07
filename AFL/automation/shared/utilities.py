@@ -43,3 +43,10 @@ def mpl_plot_to_bytes(fig=None,format='svg'):
     byte_str.seek(0) # need to rewind
     return byte_str
 
+
+def xarray_to_bytes(ds,format='svg'):
+    byteobj = ds.to_netcdf()
+    byte_str  = io.BytesIO(byteobj)
+    byte_str.seek(0) # need to rewind
+    return byte_str
+

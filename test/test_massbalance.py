@@ -39,10 +39,18 @@ def test_mixed_solvents_mass():
     mb.balance()
     assert len(mb.targets) == 5
     assert len(mb.stocks) == 3
-    for balanced in mb.balanced:
+    for target,balanced in mb.balanced:
+        if balanced is None:
+            continue
         assert balanced.mass.to('mg').magnitude == pytest.approx(500)
-        #assert balanced.mass_fractions['H2O'] == pytest.approx(ratio)
-        #assert balanced.mass_fractions['Hexanes'] == pytest.approx(1.0-ratio)
         assert balanced.concentration['NaCl'].to('mg/ml').magnitude == pytest.approx(25)
+
+        sub_balanced = balanced.copy()
+        sub_target = target.copy()
+        del sub_balanced.components['NaCl']
+        del sub_target.components['NaCl']
+
+        assert sub_balanced.mass_fraction['H2O'] == pytest.approx(sub_target.mass_fraction['H2O'])
+        assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'])
 
 

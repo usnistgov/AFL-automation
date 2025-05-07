@@ -136,9 +136,10 @@ class MassBalanceLocal(Context):
 
             if not balanced_targets:
                 warnings.warn(f'No suitable mass balance found for {target.name}')
+                self.balanced.append((target,None))
             else:
                 balanced_target = min(balanced_targets,key=lambda x: sum(x[1]))
-                self.balanced.append(balanced_target[0])
+                self.balanced.append((target,balanced_target[0]))
 
     def _calculate_mass_transfers(self, target_masses: np.ndarray) -> List[Dict[Solution,str]]:
         """

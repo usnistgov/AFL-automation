@@ -1,3 +1,4 @@
+import time
 import functools
 import threading
 import time
@@ -164,6 +165,9 @@ class QueueDaemon(threading.Thread):
             self.data.finalize()
             self.history.append(masked_package)#history for this server restart
 
+            self.task_queue.iteration_id = time.time()
+            # mark queue iteration as changed
+            
             self.busy = False
             time.sleep(0.1)
 

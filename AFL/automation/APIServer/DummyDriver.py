@@ -98,3 +98,6 @@ class DummyDriver(Driver):
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
     def loadSample(self,cellname='cell',sampleVolume=0):
         pass
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

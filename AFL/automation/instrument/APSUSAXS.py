@@ -8,11 +8,13 @@ import epics
 import os
 import pathlib
 import warnings
+import Matilda
+import Matilda.convertUSAXS
+import Matilda.convertSAS
+import Matilda.readfromtiled
 
 class APSUSAXS(Driver):
     defaults = {}
-    defaults['data_dir_basepath'] = '/mnt/'
-    defaults['data_dir_pv'] = '9idcLAX:userDir'
     defaults['sample_thickness'] = 1.58
     defaults['run_initiate_pv'] = '9idcLAX:AutoCollectionStart'
     defaults['script_name_pv'] = '9idcLAX:AutoCollectionStrInput'
@@ -26,7 +28,6 @@ class APSUSAXS(Driver):
     defaults['magic_xpos_key'] = '!!AFLXPOS!!'
     defaults['magic_ypos_key'] = '!!AFLYPOS!!'
     defaults['active_holder'] = '6A'
-    defaults['reduced_data_key'] = 'flyScan_reduced_250'
     defaults['script_write_cooldown'] = 1 
     defaults['platemap'] = {
                          '6A':{
@@ -60,7 +61,10 @@ class APSUSAXS(Driver):
 
                     }
                     }
-    defaults['move_mode'] = 'MOVE_SAMPLE'
+    defaults['empty_scan_title'] = ''
+    defaults['USAXS_mode'] = 'Flyscan' #Flyscane or uascan
+    defaults['USAXS_npts'] = 400
+    defaults['USAXS_signal_cutoff'] = 1.05
 
     def __init__(self,overrides=None):
         '''
@@ -72,10 +76,6 @@ class APSUSAXS(Driver):
         Driver.__init__(self,name='APSUSAXS',defaults=self.gather_defaults(),overrides=overrides)
         
         
-        self.config['data_dir'] = self.config['data_dir_basepath']+epics.caget(self.config['data_dir_pv'],as_string=True)
-        if self.config['data_dir'] is not None:
-            os.chdir(self.config['data_dir'])
-
         self.__instrument_name__ = 'APS USAXS instrument'
         
         self.status_txt = 'Just started...'
@@ -115,6 +115,7 @@ class APSUSAXS(Driver):
         if len(row)>1:
             raise ValueError('row must be a single letter')
         row = ord(row) & 31
+        col = int(col)
 
         geom = self.config['platemap'][self.config['active_holder']][slot]
 
@@ -153,7 +154,7 @@ class APSUSAXS(Driver):
         'reduce_data':{'label':'Reduce?','type':'bool','default':True},
         'measure_transmission':{'label':'Measure Trans?','type':'bool','default':True}
         }})
-    def expose(self,name=None,block=True):
+    def expose(self, name = None, block = True, reduce_USAXS = True, reduce_WAXS = True):
         if name is None:
             name=self.getFilename()
         else:
@@ -171,11 +172,66 @@ class APSUSAXS(Driver):
         self.status_txt = 'Run started!'
 
         time.sleep(0.5)
-        if block:
+        if block or reduce_data:
             time.sleep(20)
             self.block_for_run_finish()
             self.status_txt = 'Instrument Idle'
-    
+            
+        if reduce_USAXS:
+           # get last flyscan from Tiled and check that the set filename matches the found file
+           [last_scan_path, last_scan_file] = Matilda.readfromtiled.FindLastScanData('Flyscan',1)[0]
+           if name.replace('-','_') not in last_scan_file:
+                   raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
+
+           # reduce flyscan data
+           last_scan_results = Matilda.convertUSAXS.reduceFlyscanToQR(last_scan_path,last_scan_file)
+           results_ds = Matilda.supportFunctions.results_to_dataset(last_scan_results)
+           USAXS_int = results_ds['USAXS_int']
+
+           # get empty flyscan, reduce it
+           [empty_path,empty_file] = Matilda.readfromtiled.FindScanDataByName('Flyscan',self.config['empty_scan_title'])[0]
+           empty_results = Matilda.convertUSAXS.reduceFlyscanToQR(empty_path,empty_file)
+           empty_ds = Matilda.supportFunctions.results_to_dataset(empty_results)
+           MT_USAXS_int = empty_ds['USAXS_int']
+           MT_USAXS_int = MT_USAXS_int.interp_like(USAXS_int) #interpolate to match last scan
+
+           # determine minimum q; argmax because we're looking for the first True (which is cast to be 1)
+           qmin_index = np.argmax((USAXS_int.values/MT_USAXS_int.values)>float(self.config['USAXS_signal_cutoff']))
+           qmin = USAXS_int['q'].isel(q=qmin_index).item()
+           
+           #interpolate
+           new_q = np.geomspace(qmin,USAXS_int['q'].max(),self.config['USAXS_npts'])
+           USAXS_int = USAXS_int.interp(q=new_q)
+           MT_USAXS_int = MT_USAXS_int.interp(q=new_q)
+
+           # background subtraction
+           peaktopeak_T = (results_ds.Maximum / empty_ds.Maximum)
+           USAXS_sub = 1/peaktopeak_T * USAXS_int - MT_USAXS_int
+
+           # add data to tiled
+           self.data.add_array('USAXS_q',USAXS_int['q'].values)
+           self.data.add_array('USAXS_int',USAXS_int.values)
+           self.data.add_array('USAXS_sub',USAXS_sub.values)
+           self.data.add_array('MT_USAXS_q',MT_USAXS_int['q'].values)
+           self.data.add_array('MT_USAXS_int',MT_USAXS_int.values)
+           self.data['USAXS_Filepath'] = last_scan_path
+           self.data['USAXS_Filename'] = last_scan_file
+           self.data['USAXS_transmission'] = peaktopeak_T
+           
+        if reduce_WAXS: 
+           # get last WAXS from Tiled, reduce it
+           [last_scan_path, last_scan_file] = Matilda.readfromtiled.FindLastScanData('WAXS',1)[0]
+           if name.replace('-','_') not in last_scan_file:
+                   raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
+           #reduce
+           last_scan_results = Matilda.convertSAS.ImportAndReduceAD(last_scan_path,last_scan_file)
+           
+           # add data to tiled
+           self.data.add_array('WAXS_q',last_scan_results['Q_array'])
+           self.data.add_array('WAXS_int',last_scan_results['Intensity'])
+           self.data['WAXS_Filepath'] = last_scan_path
+           self.data['WAXS_Filename'] = last_scan_file
+
     def block_for_run_finish(self):
         while self.getRunInProgress():
             time.sleep(5)
@@ -191,45 +247,6 @@ class APSUSAXS(Driver):
     def getRunInProgress(self):
         return epics.caget(self.config['instrument_running_pv']) 
     
-    @Driver.unqueued(render_hint='2d_image',log_image=True)
-    def getData(self,**kwargs):
-        try:
-            filepath = self.getLastFilePath()
-            data = np.array(PIL.Image.open(filepath))
-        except FileNotFoundError:
-            nattempts = 1
-            while nattempts<11:
-                nattempts = nattempts +1
-                time.sleep(0.2)
-                try:
-                    filepath = self.getLastFilePath()
-                    data = np.array(PIL.Image.open(filepath))
-                except FileNotFoundError:
-                    if nattempts == 10:
-                        raise FileNotFoundError(f'could not locate file after {nattempts} tries')
-                    else:
-                        warnings.warn(f'failed to load file, trying again, this is try {nattempts}')
-                else:
-                    break
-                
-        return np.nan_to_num(data)
-    
-    @Driver.unqueued(render_hint='1d_plot')
-    def getReducedData(self,**kwargs):
-        try:
-            filepath = pathlib.Path(self.config['data_dir'])
-            with h5py.File(filepath/self.filename) as f:
-                return f['entry'][self.config['reduced_data_key']]
-        except KeyError as e:
-            try:
-                kwargs['retry'] = True
-            except KeyError:
-                time.sleep(5)
-                return self.getReducedData(**kwargs,retry = True)
-            else:
-                raise e
-
-
                
     def status(self):
         status = []

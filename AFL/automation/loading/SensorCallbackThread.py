@@ -137,7 +137,7 @@ class StopLoadCBv2(SensorCallbackThread):
         threshold_v_step = 1,
         threshold_std = 2.5,
         timeout = 120,
-        min_load_time=30,
+        min_load_time=3,
         loadstop_cooldown = 2,
         post_detection_sleep = 0.2,
         baseline_duration = 2,
@@ -240,9 +240,13 @@ class StopLoadCBv2(SensorCallbackThread):
                         print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
 
                     self.loader_comm.stopLoad()
-                    filename = self.filepath/str('Sensor-'+datestr+'.txt')
-                    # self.update_status(f'Saving signal data to {filename}')
-                    np.savetxt(filename,signal)
+                    try:
+                        filename = str(self.filepath/str('Sensor-'+datestr+'.txt'))
+                        # self.update_status(f'Saving signal data to {filename}')
+                        np.savetxt(filename,signal)
+                    except Exception as e:
+                        print(f"Could not write load trace to {filename}, {e}")
+
                     if self.data is not None:
                         self.data[f'{self.sensorlabel}_load_stop_trace'] = signal
                         self.data[f'{self.sensorlabel}_final_voltage'] = np.mean(signal[-self.threshold_npts:,1])

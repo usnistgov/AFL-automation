@@ -1,0 +1,6 @@
+AFL.automation.loading.SerialDevice.SerialCommsException
+========================================================
+
+.. currentmodule:: AFL.automation.loading.SerialDevice
+
+.. autoexception:: SerialCommsException

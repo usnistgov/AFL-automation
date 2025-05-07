@@ -1,0 +1,26 @@
+AFL.automation.instrument.FileCamera.FileCamera
+===============================================
+
+.. currentmodule:: AFL.automation.instrument.FileCamera
+
+.. autoclass:: FileCamera
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FileCamera.__init__
+      ~FileCamera.collect
+   
+   
+
+   
+   
+   

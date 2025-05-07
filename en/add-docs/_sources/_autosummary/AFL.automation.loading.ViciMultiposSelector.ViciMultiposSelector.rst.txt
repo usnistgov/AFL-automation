@@ -1,0 +1,28 @@
+AFL.automation.loading.ViciMultiposSelector.ViciMultiposSelector
+================================================================
+
+.. currentmodule:: AFL.automation.loading.ViciMultiposSelector
+
+.. autoclass:: ViciMultiposSelector
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ViciMultiposSelector.__init__
+      ~ViciMultiposSelector.getPort
+      ~ViciMultiposSelector.selectPort
+      ~ViciMultiposSelector.sendCommand
+   
+   
+
+   
+   
+   

@@ -1,0 +1,27 @@
+AFL.automation.instrument.NetworkCamera.NetworkCamera
+=====================================================
+
+.. currentmodule:: AFL.automation.instrument.NetworkCamera
+
+.. autoclass:: NetworkCamera
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~NetworkCamera.__init__
+      ~NetworkCamera.camera_reset
+      ~NetworkCamera.collect
+   
+   
+
+   
+   
+   

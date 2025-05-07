@@ -1,0 +1,31 @@
+AFL.automation.loading.SampleCell
+=================================
+
+.. automodule:: AFL.automation.loading.SampleCell
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      SampleCell
+   
+   
+
+   
+   
+   
+
+
+

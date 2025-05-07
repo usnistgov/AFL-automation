@@ -1,0 +1,47 @@
+AFL.automation.APIServer.QueueDaemon.DataTrashcan
+=================================================
+
+.. currentmodule:: AFL.automation.APIServer.QueueDaemon
+
+.. autoclass:: DataTrashcan
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DataTrashcan.__init__
+      ~DataTrashcan.add_array
+      ~DataTrashcan.clear
+      ~DataTrashcan.finalize
+      ~DataTrashcan.get
+      ~DataTrashcan.items
+      ~DataTrashcan.keys
+      ~DataTrashcan.pop
+      ~DataTrashcan.popitem
+      ~DataTrashcan.reset
+      ~DataTrashcan.reset_sample
+      ~DataTrashcan.setdefault
+      ~DataTrashcan.setupDefaults
+      ~DataTrashcan.transmit
+      ~DataTrashcan.update
+      ~DataTrashcan.values
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DataTrashcan.PROTECTED_SAMPLE_KEYS
+      ~DataTrashcan.PROTECTED_SYSTEM_KEYS
+   
+   

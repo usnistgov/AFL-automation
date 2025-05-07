@@ -1,0 +1,6 @@
+AFL.automation.loading.ChemyxSyringePump.parsePortName
+======================================================
+
+.. currentmodule:: AFL.automation.loading.ChemyxSyringePump
+
+.. autofunction:: parsePortName

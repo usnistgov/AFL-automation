@@ -1,0 +1,30 @@
+AFL.automation.loading.UltimusVPressureController.PressureController
+====================================================================
+
+.. currentmodule:: AFL.automation.loading.UltimusVPressureController
+
+.. autoclass:: PressureController
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PressureController.__init__
+      ~PressureController.blockUntilStatusStopped
+      ~PressureController.dispenseRunning
+      ~PressureController.ramp_dispense
+      ~PressureController.stop
+      ~PressureController.timed_dispense
+   
+   
+
+   
+   
+   

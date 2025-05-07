@@ -1,0 +1,25 @@
+AFL.automation.APIServer.LoggerFilter.LoggerFilter
+==================================================
+
+.. currentmodule:: AFL.automation.APIServer.LoggerFilter
+
+.. autoclass:: LoggerFilter
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~LoggerFilter.__init__
+   
+   
+
+   
+   
+   

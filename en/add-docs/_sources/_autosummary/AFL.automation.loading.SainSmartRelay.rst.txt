@@ -1,0 +1,40 @@
+AFL.automation.loading.SainSmartRelay
+=====================================
+
+.. automodule:: AFL.automation.loading.SainSmartRelay
+  
+   
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+      :toctree:                                    
+   
+      usbrelay
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      MultiChannelRelay
+      SainSmartRelay
+      SerialDevice
+   
+   
+
+   
+   
+   
+
+
+

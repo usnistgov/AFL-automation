@@ -1,0 +1,39 @@
+AFL.automation.shared.MutableQueue
+==================================
+
+.. automodule:: AFL.automation.shared.MutableQueue
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      MutableQueue
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:                                        
+   
+      Empty
+      Full
+   
+   
+
+
+

@@ -1,0 +1,45 @@
+AFL.automation.APIServer.QueueDaemon.QueueDaemon
+================================================
+
+.. currentmodule:: AFL.automation.APIServer.QueueDaemon
+
+.. autoclass:: QueueDaemon
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~QueueDaemon.__init__
+      ~QueueDaemon.check_if_paused
+      ~QueueDaemon.getName
+      ~QueueDaemon.isDaemon
+      ~QueueDaemon.is_alive
+      ~QueueDaemon.join
+      ~QueueDaemon.mask_serialized_objs
+      ~QueueDaemon.run
+      ~QueueDaemon.setDaemon
+      ~QueueDaemon.setName
+      ~QueueDaemon.start
+      ~QueueDaemon.terminate
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~QueueDaemon.daemon
+      ~QueueDaemon.ident
+      ~QueueDaemon.name
+      ~QueueDaemon.native_id
+   
+   

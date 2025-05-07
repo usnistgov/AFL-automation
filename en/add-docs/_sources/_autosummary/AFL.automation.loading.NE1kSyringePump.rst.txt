@@ -1,0 +1,33 @@
+AFL.automation.loading.NE1kSyringePump
+======================================
+
+.. automodule:: AFL.automation.loading.NE1kSyringePump
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      NE1kSyringePump
+      SerialDevice
+      SyringePump
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,44 @@
+AFL.automation.shared.DatasetWidget.DatasetWidget
+=================================================
+
+.. currentmodule:: AFL.automation.shared.DatasetWidget
+
+.. autoclass:: DatasetWidget
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DatasetWidget.__init__
+      ~DatasetWidget.apply_isel
+      ~DatasetWidget.apply_sel
+      ~DatasetWidget.combine_vars
+      ~DatasetWidget.composition_click_callback
+      ~DatasetWidget.extract_var
+      ~DatasetWidget.get_comps
+      ~DatasetWidget.goto_callback
+      ~DatasetWidget.initialize_plots
+      ~DatasetWidget.next_button_callback
+      ~DatasetWidget.prev_button_callback
+      ~DatasetWidget.reset_dataset
+      ~DatasetWidget.run
+      ~DatasetWidget.update_colors
+      ~DatasetWidget.update_composition_plot
+      ~DatasetWidget.update_dropdowns
+      ~DatasetWidget.update_extract_coords
+      ~DatasetWidget.update_plots
+      ~DatasetWidget.update_sample_dim
+      ~DatasetWidget.update_scattering_plot
+   
+   
+
+   
+   
+   

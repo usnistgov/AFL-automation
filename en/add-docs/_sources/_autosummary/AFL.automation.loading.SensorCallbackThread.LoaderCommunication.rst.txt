@@ -1,0 +1,27 @@
+AFL.automation.loading.SensorCallbackThread.LoaderCommunication
+===============================================================
+
+.. currentmodule:: AFL.automation.loading.SensorCallbackThread
+
+.. autoclass:: LoaderCommunication
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~LoaderCommunication.__init__
+      ~LoaderCommunication.getServerState
+      ~LoaderCommunication.stopLoad
+   
+   
+
+   
+   
+   

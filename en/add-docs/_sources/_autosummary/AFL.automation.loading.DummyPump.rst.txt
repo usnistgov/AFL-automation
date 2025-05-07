@@ -1,0 +1,33 @@
+AFL.automation.loading.DummyPump
+================================
+
+.. automodule:: AFL.automation.loading.DummyPump
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      DummyPump
+      SerialDevice
+      SyringePump
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,41 @@
+AFL.automation.shared.ServerDiscovery
+=====================================
+
+.. automodule:: AFL.automation.shared.ServerDiscovery
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      AsyncServiceBrowser
+      AsyncServiceInfo
+      AsyncZeroconf
+      AsyncZeroconfServiceTypes
+      IPVersion
+      RunThread
+      ServerDiscovery
+      ServiceBrowser
+      ServiceInfo
+      ServiceStateChange
+      Zeroconf
+   
+   
+
+   
+   
+   
+
+
+

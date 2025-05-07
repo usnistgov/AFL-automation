@@ -1,0 +1,6 @@
+AFL.automation.shared.exceptions.MixingException
+================================================
+
+.. currentmodule:: AFL.automation.shared.exceptions
+
+.. autoexception:: MixingException

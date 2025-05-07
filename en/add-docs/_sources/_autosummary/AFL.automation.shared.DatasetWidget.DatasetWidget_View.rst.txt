@@ -1,0 +1,36 @@
+AFL.automation.shared.DatasetWidget.DatasetWidget\_View
+=======================================================
+
+.. currentmodule:: AFL.automation.shared.DatasetWidget
+
+.. autoclass:: DatasetWidget_View
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DatasetWidget_View.__init__
+      ~DatasetWidget_View.init_buttons
+      ~DatasetWidget_View.init_checkboxes
+      ~DatasetWidget_View.init_dropdowns
+      ~DatasetWidget_View.init_inputs
+      ~DatasetWidget_View.init_plots
+      ~DatasetWidget_View.plot_comp
+      ~DatasetWidget_View.plot_sas
+      ~DatasetWidget_View.run
+      ~DatasetWidget_View.update_colorscale
+      ~DatasetWidget_View.update_dropdowns
+      ~DatasetWidget_View.update_selected
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+AFL.automation.loading.SainSmartRelay.usbrelay
+==============================================
+
+.. currentmodule:: AFL.automation.loading.SainSmartRelay
+
+.. autodata:: usbrelay

@@ -1,0 +1,33 @@
+AFL.automation.loading.Sensor
+=============================
+
+.. automodule:: AFL.automation.loading.Sensor
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      DummySensor1
+      DummySensor2
+      Sensor
+   
+   
+
+   
+   
+   
+
+
+

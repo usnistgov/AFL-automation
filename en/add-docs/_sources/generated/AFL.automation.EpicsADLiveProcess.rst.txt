@@ -1,0 +1,18 @@
+AFL.automation.EpicsADLiveProcess
+=================================
+
+.. automodule:: AFL.automation.EpicsADLiveProcess
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   AreaDetectorLive
+   Client
+   CollateDaemon
+   EpicsADLiveProcessDaemon
+   FlaskApp
+   ReduceDaemon

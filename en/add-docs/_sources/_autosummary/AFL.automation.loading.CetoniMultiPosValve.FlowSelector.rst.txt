@@ -1,0 +1,27 @@
+AFL.automation.loading.CetoniMultiPosValve.FlowSelector
+=======================================================
+
+.. currentmodule:: AFL.automation.loading.CetoniMultiPosValve
+
+.. autoclass:: FlowSelector
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FlowSelector.__init__
+      ~FlowSelector.getPort
+      ~FlowSelector.selectPort
+   
+   
+
+   
+   
+   

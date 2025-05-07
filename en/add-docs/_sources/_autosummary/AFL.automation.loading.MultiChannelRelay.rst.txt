@@ -1,0 +1,31 @@
+AFL.automation.loading.MultiChannelRelay
+========================================
+
+.. automodule:: AFL.automation.loading.MultiChannelRelay
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      MultiChannelRelay
+   
+   
+
+   
+   
+   
+
+
+

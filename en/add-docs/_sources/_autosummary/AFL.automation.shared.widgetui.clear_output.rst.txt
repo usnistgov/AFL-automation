@@ -1,0 +1,6 @@
+AFL.automation.shared.widgetui.clear\_output
+============================================
+
+.. currentmodule:: AFL.automation.shared.widgetui
+
+.. autofunction:: clear_output

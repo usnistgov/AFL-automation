@@ -1,0 +1,6 @@
+AFL.automation.shared.serialization.is\_serialized
+==================================================
+
+.. currentmodule:: AFL.automation.shared.serialization
+
+.. autofunction:: is_serialized

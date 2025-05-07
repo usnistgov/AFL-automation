@@ -1,0 +1,30 @@
+AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView
+===============================================================
+
+.. currentmodule:: AFL.automation.shared.DiffractionLabeler
+
+.. autoclass:: DiffractionLabelerView
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DiffractionLabelerView.__init__
+      ~DiffractionLabelerView.add_vertical_line
+      ~DiffractionLabelerView.remove_vertical_lines
+      ~DiffractionLabelerView.run
+      ~DiffractionLabelerView.update_plot
+      ~DiffractionLabelerView.update_ternary_colors
+   
+   
+
+   
+   
+   

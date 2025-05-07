@@ -1,0 +1,30 @@
+AFL.automation.loading.SainSmartRelay.SainSmartRelay
+====================================================
+
+.. currentmodule:: AFL.automation.loading.SainSmartRelay
+
+.. autoclass:: SainSmartRelay
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SainSmartRelay.__init__
+      ~SainSmartRelay.getChannels
+      ~SainSmartRelay.sendCommand
+      ~SainSmartRelay.setAllChannelsOff
+      ~SainSmartRelay.setChannels
+      ~SainSmartRelay.toggleChannels
+   
+   
+
+   
+   
+   

@@ -1,0 +1,6 @@
+AFL.automation.shared.DataLabelerWidget.sqrt
+============================================
+
+.. currentmodule:: AFL.automation.shared.DataLabelerWidget
+
+.. autofunction:: sqrt

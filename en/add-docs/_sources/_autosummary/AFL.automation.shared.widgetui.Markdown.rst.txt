@@ -1,0 +1,32 @@
+AFL.automation.shared.widgetui.Markdown
+=======================================
+
+.. currentmodule:: AFL.automation.shared.widgetui
+
+.. autoclass:: Markdown
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Markdown.__init__
+      ~Markdown.reload
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Markdown.metadata
+   
+   

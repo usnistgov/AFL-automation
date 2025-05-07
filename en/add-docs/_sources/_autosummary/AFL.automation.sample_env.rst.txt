@@ -1,0 +1,32 @@
+AFL.automation.sample\_env
+==========================
+
+.. automodule:: AFL.automation.sample_env
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst               
+   :recursive:
+
+   TemperatureDeck
+

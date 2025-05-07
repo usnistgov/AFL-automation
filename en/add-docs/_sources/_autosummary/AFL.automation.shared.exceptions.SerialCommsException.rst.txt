@@ -1,0 +1,6 @@
+AFL.automation.shared.exceptions.SerialCommsException
+=====================================================
+
+.. currentmodule:: AFL.automation.shared.exceptions
+
+.. autoexception:: SerialCommsException

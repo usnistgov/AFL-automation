@@ -1,0 +1,37 @@
+AFL.automation.shared.PersistentConfig.PersistentConfig
+=======================================================
+
+.. currentmodule:: AFL.automation.shared.PersistentConfig
+
+.. autoclass:: PersistentConfig
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PersistentConfig.__init__
+      ~PersistentConfig.clear
+      ~PersistentConfig.get
+      ~PersistentConfig.get_historical_values
+      ~PersistentConfig.items
+      ~PersistentConfig.keys
+      ~PersistentConfig.pop
+      ~PersistentConfig.popitem
+      ~PersistentConfig.revert
+      ~PersistentConfig.setdefault
+      ~PersistentConfig.toJSON
+      ~PersistentConfig.update
+      ~PersistentConfig.values
+   
+   
+
+   
+   
+   

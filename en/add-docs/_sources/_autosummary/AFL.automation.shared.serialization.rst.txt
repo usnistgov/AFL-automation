@@ -1,0 +1,39 @@
+AFL.automation.shared.serialization
+===================================
+
+.. automodule:: AFL.automation.shared.serialization
+  
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:                                     
+   
+      deserialize
+      is_serialized
+      serialize
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:                                        
+   
+      UnpicklingError
+   
+   
+
+
+

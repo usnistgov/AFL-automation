@@ -1,0 +1,6 @@
+AFL.automation.shared.widgetui.display
+======================================
+
+.. currentmodule:: AFL.automation.shared.widgetui
+
+.. autofunction:: display

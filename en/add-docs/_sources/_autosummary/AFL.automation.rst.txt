@@ -1,6 +1,45 @@
 ﻿AFL.automation
 ==============
 
-.. currentmodule:: AFL.automation
-
 .. automodule:: AFL.automation
+  
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:                                     
+   
+      test
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst               
+   :recursive:
+
+   APIServer
+   EpicsADLiveProcess
+   instrument
+   loading
+   prepare
+   sample_env
+   shared
+

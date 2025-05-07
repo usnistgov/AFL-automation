@@ -1,0 +1,6 @@
+AFL.automation.shared.exceptions.NotFoundError
+==============================================
+
+.. currentmodule:: AFL.automation.shared.exceptions
+
+.. autoexception:: NotFoundError

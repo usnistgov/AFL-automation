@@ -1,0 +1,31 @@
+AFL.automation.loading.SyringePump.SyringePump
+==============================================
+
+.. currentmodule:: AFL.automation.loading.SyringePump
+
+.. autoclass:: SyringePump
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SyringePump.__init__
+      ~SyringePump.dispense
+      ~SyringePump.emptySyringe
+      ~SyringePump.getRate
+      ~SyringePump.setRate
+      ~SyringePump.stop
+      ~SyringePump.withdraw
+   
+   
+
+   
+   
+   

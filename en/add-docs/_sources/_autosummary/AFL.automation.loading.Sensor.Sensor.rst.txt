@@ -1,0 +1,27 @@
+AFL.automation.loading.Sensor.Sensor
+====================================
+
+.. currentmodule:: AFL.automation.loading.Sensor
+
+.. autoclass:: Sensor
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Sensor.__init__
+      ~Sensor.calibrate
+      ~Sensor.read
+   
+   
+
+   
+   
+   

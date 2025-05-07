@@ -1,0 +1,31 @@
+AFL.automation.loading.DigitalOutPressureController.DigitalOutPressureController
+================================================================================
+
+.. currentmodule:: AFL.automation.loading.DigitalOutPressureController
+
+.. autoclass:: DigitalOutPressureController
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DigitalOutPressureController.__init__
+      ~DigitalOutPressureController.blockUntilStatusStopped
+      ~DigitalOutPressureController.dispenseRunning
+      ~DigitalOutPressureController.ramp_dispense
+      ~DigitalOutPressureController.set_P
+      ~DigitalOutPressureController.stop
+      ~DigitalOutPressureController.timed_dispense
+   
+   
+
+   
+   
+   

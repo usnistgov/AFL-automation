@@ -1,0 +1,65 @@
+AFL.automation.shared.ServerDiscovery.AsyncServiceInfo
+======================================================
+
+.. currentmodule:: AFL.automation.shared.ServerDiscovery
+
+.. autoclass:: AsyncServiceInfo
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~AsyncServiceInfo.__init__
+      ~AsyncServiceInfo.addresses_by_version
+      ~AsyncServiceInfo.async_clear_cache
+      ~AsyncServiceInfo.async_request
+      ~AsyncServiceInfo.async_update_records
+      ~AsyncServiceInfo.async_update_records_complete
+      ~AsyncServiceInfo.async_wait
+      ~AsyncServiceInfo.dns_addresses
+      ~AsyncServiceInfo.dns_nsec
+      ~AsyncServiceInfo.dns_pointer
+      ~AsyncServiceInfo.dns_service
+      ~AsyncServiceInfo.dns_text
+      ~AsyncServiceInfo.get_address_and_nsec_records
+      ~AsyncServiceInfo.get_name
+      ~AsyncServiceInfo.ip_addresses_by_version
+      ~AsyncServiceInfo.load_from_cache
+      ~AsyncServiceInfo.parsed_addresses
+      ~AsyncServiceInfo.parsed_scoped_addresses
+      ~AsyncServiceInfo.request
+      ~AsyncServiceInfo.set_server_if_missing
+      ~AsyncServiceInfo.update_record
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~AsyncServiceInfo.text
+      ~AsyncServiceInfo.type
+      ~AsyncServiceInfo.key
+      ~AsyncServiceInfo.port
+      ~AsyncServiceInfo.weight
+      ~AsyncServiceInfo.priority
+      ~AsyncServiceInfo.server
+      ~AsyncServiceInfo.server_key
+      ~AsyncServiceInfo.host_ttl
+      ~AsyncServiceInfo.other_ttl
+      ~AsyncServiceInfo.interface_index
+      ~AsyncServiceInfo.addresses
+      ~AsyncServiceInfo.decoded_properties
+      ~AsyncServiceInfo.name
+      ~AsyncServiceInfo.properties
+   
+   

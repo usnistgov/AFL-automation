@@ -1,0 +1,33 @@
+AFL.automation.loading.PressureControllerAsPump.PressureControllerAsPump
+========================================================================
+
+.. currentmodule:: AFL.automation.loading.PressureControllerAsPump
+
+.. autoclass:: PressureControllerAsPump
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PressureControllerAsPump.__init__
+      ~PressureControllerAsPump.blockUntilStatusStopped
+      ~PressureControllerAsPump.dispense
+      ~PressureControllerAsPump.emptySyringe
+      ~PressureControllerAsPump.getRate
+      ~PressureControllerAsPump.getStatus
+      ~PressureControllerAsPump.setRate
+      ~PressureControllerAsPump.stop
+      ~PressureControllerAsPump.withdraw
+   
+   
+
+   
+   
+   

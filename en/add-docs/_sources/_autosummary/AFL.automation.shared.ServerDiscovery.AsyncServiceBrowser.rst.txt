@@ -1,0 +1,39 @@
+AFL.automation.shared.ServerDiscovery.AsyncServiceBrowser
+=========================================================
+
+.. currentmodule:: AFL.automation.shared.ServerDiscovery
+
+.. autoclass:: AsyncServiceBrowser
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~AsyncServiceBrowser.__init__
+      ~AsyncServiceBrowser.async_cancel
+      ~AsyncServiceBrowser.async_update_records
+      ~AsyncServiceBrowser.async_update_records_complete
+      ~AsyncServiceBrowser.update_record
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~AsyncServiceBrowser.types
+      ~AsyncServiceBrowser.zc
+      ~AsyncServiceBrowser.query_scheduler
+      ~AsyncServiceBrowser.done
+      ~AsyncServiceBrowser.service_state_changed
+   
+   

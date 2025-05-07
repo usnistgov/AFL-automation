@@ -1,0 +1,6 @@
+AFL.automation.shared.MutableQueue.Full
+=======================================
+
+.. currentmodule:: AFL.automation.shared.MutableQueue
+
+.. autoexception:: Full

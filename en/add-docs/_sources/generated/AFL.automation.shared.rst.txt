@@ -1,0 +1,28 @@
+AFL.automation.shared
+=====================
+
+.. automodule:: AFL.automation.shared
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   DataLabelerWidget
+   DatasetWidget
+   DiffractionLabeler
+   MutableQueue
+   PersistentConfig
+   ServerDiscovery
+   exceptions
+   launcher
+   nbutil-APS
+   nbutil-CHESS
+   nbutil-SINQ
+   nbutil
+   serialization
+   units
+   utilities
+   widgetui

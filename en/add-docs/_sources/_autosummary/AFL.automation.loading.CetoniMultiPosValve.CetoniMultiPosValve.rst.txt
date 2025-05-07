@@ -1,0 +1,27 @@
+AFL.automation.loading.CetoniMultiPosValve.CetoniMultiPosValve
+==============================================================
+
+.. currentmodule:: AFL.automation.loading.CetoniMultiPosValve
+
+.. autoclass:: CetoniMultiPosValve
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CetoniMultiPosValve.__init__
+      ~CetoniMultiPosValve.getPort
+      ~CetoniMultiPosValve.selectPort
+   
+   
+
+   
+   
+   

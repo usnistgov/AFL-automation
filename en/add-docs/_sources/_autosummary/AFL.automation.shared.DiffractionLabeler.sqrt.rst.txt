@@ -1,0 +1,6 @@
+AFL.automation.shared.DiffractionLabeler.sqrt
+=============================================
+
+.. currentmodule:: AFL.automation.shared.DiffractionLabeler
+
+.. autofunction:: sqrt

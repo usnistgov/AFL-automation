@@ -1,0 +1,33 @@
+AFL.automation.loading.ViciMultiposSelector
+===========================================
+
+.. automodule:: AFL.automation.loading.ViciMultiposSelector
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      FlowSelector
+      SerialDevice
+      ViciMultiposSelector
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,32 @@
+AFL.automation.loading.CetoniMultiPosValve
+==========================================
+
+.. automodule:: AFL.automation.loading.CetoniMultiPosValve
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      CetoniMultiPosValve
+      FlowSelector
+   
+   
+
+   
+   
+   
+
+
+

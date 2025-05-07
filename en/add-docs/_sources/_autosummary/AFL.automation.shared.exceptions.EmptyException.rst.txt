@@ -1,0 +1,6 @@
+AFL.automation.shared.exceptions.EmptyException
+===============================================
+
+.. currentmodule:: AFL.automation.shared.exceptions
+
+.. autoexception:: EmptyException

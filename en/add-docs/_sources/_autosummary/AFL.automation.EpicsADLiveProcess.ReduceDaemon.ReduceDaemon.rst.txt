@@ -1,0 +1,43 @@
+AFL.automation.EpicsADLiveProcess.ReduceDaemon.ReduceDaemon
+===========================================================
+
+.. currentmodule:: AFL.automation.EpicsADLiveProcess.ReduceDaemon
+
+.. autoclass:: ReduceDaemon
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ReduceDaemon.__init__
+      ~ReduceDaemon.getName
+      ~ReduceDaemon.isDaemon
+      ~ReduceDaemon.is_alive
+      ~ReduceDaemon.join
+      ~ReduceDaemon.run
+      ~ReduceDaemon.setDaemon
+      ~ReduceDaemon.setName
+      ~ReduceDaemon.start
+      ~ReduceDaemon.terminate
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ReduceDaemon.daemon
+      ~ReduceDaemon.ident
+      ~ReduceDaemon.name
+      ~ReduceDaemon.native_id
+   
+   

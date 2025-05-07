@@ -14,4 +14,4 @@ jobs:
             pdf
           pre-build-command: 'pip install -e .'
           pip-requirements: 'requirements-all.txt'
-          apt-requirements: 'gcc'
+          apt-packages: 'gcc'

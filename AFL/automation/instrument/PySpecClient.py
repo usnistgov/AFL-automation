@@ -1,4 +1,4 @@
-﻿import numpy as np
+import numpy as np
 from pyspec.client.SpecConnection import SpecConnection
 from pyspec.client.SpecCounter import SpecCounter
 from pyspec.client.SpecConnectionsManager import SpecConnectionsManager

@@ -338,10 +338,12 @@ class Solution(Context):
         return solution
 
     def copy(self, name=None):
-        #solution = copy.deepcopy(self)
-        solution = copy.copy(self)
-        if name is not None:
-            solution.name = name
+        # Create a new instance without copying the context
+        solution = Solution(name=name if name is not None else self.name)
+        solution.context_type = self.context_type
+        solution.location = self.location
+        solution.protocol = self.protocol
+        solution.components = {name: component.copy() for name, component in self.components.items()}
         return solution
 
     def contains(self, name: str) -> bool:
@@ -618,8 +620,8 @@ class Solution(Context):
             )
 
         if deplete:
-            if self.volume > solution.volume:
+            if self.volume >= solution.volume:
                 self.volume = self.volume - solution.volume
             else:
-                raise EmptyException()
+                raise EmptyException(f"Cannot measure out {solution.volume} from a solution with volume {self.volume}")
         return solution

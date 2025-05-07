@@ -163,7 +163,7 @@ class MassBalanceLocal(Context):
             are the masses to be transferred in grams.
         """
 
-        result = lsq_linear(self.mass_fraction_matrix, target_masses, bounds=self.bounds)
+        result = lsq_linear(self.mass_fraction_matrix(), target_masses, bounds=self.bounds)
         base_mass_transfer = {stock: f'{mass} g' for stock, mass in zip(self.stocks, result.x)}
         mass_transfers = [base_mass_transfer]
         negative_one_indices = [i for i, x in enumerate(result.active_mask) if x == -1]

@@ -142,8 +142,8 @@ def test_measure_out():
         warnings.simplefilter("error")
         solution = Solution(name="TestSolution", masses={"H2O": "10 g"})
     new_solution = solution.measure_out("5 g")
-    assert new_solution.mass == 5 * units.g
-    assert solution.mass == 10 * units.g
+    assert new_solution.mass.to('g') == 5 * units.g
+    assert solution.mass.to('g') == 10 * units.g
 
 
 @pytest.mark.usefixtures("mixdb")
@@ -152,8 +152,8 @@ def test_measure_out_deplete():
         warnings.simplefilter("error")
         solution = Solution(name="TestSolution", masses={"H2O": "10 g"})
     new_solution = solution.measure_out("5 g", deplete=True)
-    assert new_solution.mass == 5 * units.g
-    assert solution.mass == 5 * units.g
+    assert new_solution.mass.to('g') == 5 * units.g
+    assert solution.mass.to('g') == 5 * units.g
 
 
 @pytest.mark.usefixtures("mixdb")

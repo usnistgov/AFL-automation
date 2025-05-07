@@ -21,10 +21,9 @@ class BioSANS(ScatteringInstrument, Driver):
     defaults['eic_token'] = "1"
     defaults['ipts_number'] = '1234'
     defaults['beamline'] = 'CG3'
-    defaults['run_cycle'] = 'RC500'
+    defaults['run_cycle'] = 'RC511'
     defaults['use_subtracted_data'] = True
     defaults['config'] = 'Config0'
-    defaults['data_path'] = '/HFIR/CG3/IPTS-{IPTS}/shared/autoreduce/RC-{RUN_CYCLE}/Config{CONFIG_NUMBER}/1D' #path
 
 
     def __init__(self, overrides=None):
@@ -280,7 +279,6 @@ class BioSANS(ScatteringInstrument, Driver):
             self.data.add_array('q',data['q'])
             self.data['q'] = data['q']
             self.data['sample_transmission'] = transmission
-
 
 
         self.status_txt = 'Instrument Idle'

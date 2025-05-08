@@ -103,9 +103,6 @@ class OrchestratorDriver(Driver):
         self.grid_data = None
         self.stop_grid = False
 
-        # XXX need to make deck inside this object because of 'different registries error in Pint
-        self.reset_deck()
-
     def validate_config(self):
         required_keys = [
             'client',

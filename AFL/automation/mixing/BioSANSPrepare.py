@@ -36,23 +36,24 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         return status
             
 
-    def is_feasible(self, targets: dict |  list[dict]) -> list[bool]:
+    def is_feasible(self, targets: dict |  list[dict]) -> list[dict | None]:
         """
         Check if the target composition(s) is/are feasible for preparation using mass balance.
+        If feasible, returns the balanced target solution dictionary. Otherwise, returns None.
         
         This implementation creates a local MassBalance instance for each feasibility check
         to avoid modifying the driver's state.
         
         Parameters
         ----------
-        targets_input : Union[dict, List[dict]]
+        targets : Union[dict, List[dict]]
             Either a single target dictionary or a list of target dictionaries.
             
         Returns
         -------
-        Union[bool, List[bool]]
-            If input is a single target, returns a boolean indicating feasibility.
-            If input is a list of targets, returns a list of booleans with feasibility for each target.
+        List[Union[dict, None]]
+            A list containing the balanced target dictionary for each feasible target, 
+            or None for infeasible targets.
         """
 
         targets_to_check = listify(targets)
@@ -89,14 +90,14 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
                 if (mb.balanced and 
                     len(mb.balanced) > 0 and 
                     mb.balanced[0].get('balanced_target') is not None):
-                    results.append(True)
+                    results.append(mb.balanced[0]['balanced_target'].to_dict())
                 else:
-                    results.append(False)
+                    results.append(None)
                     
             except Exception as e:
                 # If an exception occurs, indicate failure
                 warnings.warn(f"Exception during feasibility check for target {target.get('name', 'Unnamed')}: {str(e)}", stacklevel=2)
-                results.append(False)
+                results.append(None)
                 
         return results
 
@@ -158,19 +159,24 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         target = self.apply_fixed_comps(target)
 
         # Check if the target is feasible before attempting preparation
-        if not all(self.is_feasible(target)):
+        feasibility_results = self.is_feasible(target)
+        if not feasibility_results or feasibility_results[0] is None:
             warnings.warn(f'Target composition {target.get("name", "Unnamed target")} is not feasible based on mass balance calculations', stacklevel=2)
             return None, None
 
+        balanced_target_dict_from_feasible = feasibility_results[0]
+
         self.reset_targets()
-        self.add_target(target)
+        # We need to re-add the original target, not the dict from is_feasible
+        self.add_target(target) 
         self.balance()
 
         if not self.balanced or not self.balanced[0].get('balanced_target'):
             warnings.warn(f'No suitable mass balance found for target: {target.get("name", "Unnamed target")}',stacklevel=2)
             return None, None
         
-        balanced_target = self.balanced[0]['balanced_target']
+        # This is the Solution object containing the protocol
+        balanced_target_solution_object = self.balanced[0]['balanced_target']
         
         self.make_stock_pv_map()
 
@@ -198,7 +204,7 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
             raise ValueError(f"Failed to set catch volume PV CG3:SE:URPI:MixFinalVolume to {catch_volume_value}: {e}")
 
         # Validate that all source stocks in the protocol have PVs mapped
-        for pipette_action in balanced_target.protocol:
+        for pipette_action in balanced_target_solution_object.protocol:
             source_stock_name = pipette_action.source
             if source_stock_name not in self.stock_pv_map:
                 raise ValueError(
@@ -225,7 +231,7 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
                 warnings.warn(f"Could not get busy status from CG3:SE:CMP:Busy (continuing to wait): {e}")
                 # Decide on retry strategy or eventually timing out if necessary
 
-        return balanced_target.to_dict(), destination
+        return balanced_target_dict_from_feasible, destination
         
 
     def transfer(self, src: str, dest: str, volume: str):

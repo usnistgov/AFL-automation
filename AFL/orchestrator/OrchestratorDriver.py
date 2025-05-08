@@ -19,7 +19,6 @@ from tiled.client import from_uri  # type: ignore
 from tiled.queries import Eq  # type: ignore
 from scipy.spatial.distance import cdist
 
-import AFL.automation.prepare  # type: ignore
 from AFL.automation.APIServer.Client import Client  # type: ignore
 from AFL.automation.APIServer.Driver import Driver  # type: ignore
 from AFL.automation.shared.units import units  # type: ignore
@@ -1257,6 +1256,8 @@ _DEFAULT_CUSTOM_CONFIG = {
     '_classname': 'AFL.orchestrator.OrchestratorDriver.OrchestratorDriver',
     'snapshot_directory': '/home/afl642/snaps'
 }
+
+_DEFAULT_PORT=5000
 
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *

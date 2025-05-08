@@ -188,7 +188,13 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         
         # Pop the PV name that will be used to select the specific mixing destination/station
         # Its value will be set to the actual target vial PV "CG3:SE:URMPI:143"
-        destination = dest or self.config['mixing_locations'].pop(0) 
+        if dest is None:
+            # need to pop and then resend the locations list so that the persistant config triggers a write
+            mixing_locations = self.config['mixing_locations']
+            destination = mixing_locations.pop(0)
+            self.config['mixing_locations'] = mixing_locations
+        else:
+            destination = dest
         try:
             self.set_pv("CG3:SE:URMPI:143",destination)
         except Exception as e:

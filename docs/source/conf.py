@@ -10,6 +10,9 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))  # Source code dir relative to this file
 
+# Import custom autodoc skip module
+import autodoc_skip
+
 
 project = 'AFL-automation'
 copyright = 'Contribution of the US Government.  Not subject to copyright in the United States.'
@@ -37,6 +40,10 @@ exclude_patterns = ['**/nbutil*.py', '**/nbutil-*.py']
 # Autosummary settings
 autosummary_generate = True
 autosummary_imported_members = True
+# Explicitly exclude nbutil modules from documentation
+autosummary_mock_imports = ["AFL.automation.shared.nbutil", "AFL.automation.shared.nbutil-APS", 
+                          "AFL.automation.shared.nbutil-CHESS", "AFL.automation.shared.nbutil-SINQ"]
+modparse_mock_imports = autosummary_mock_imports
 
 # Napoleon settings
 napoleon_google_docstring = True
@@ -60,6 +67,23 @@ autodoc_default_options = {
     'undoc-members': True,
     'exclude-members': '__weakref__'
 }
+
+# Explicitly exclude nbutil modules from autodoc
+modules_to_exclude = [
+    'AFL.automation.shared.nbutil',
+    'AFL.automation.shared.nbutil-APS',
+    'AFL.automation.shared.nbutil-CHESS',
+    'AFL.automation.shared.nbutil-SINQ'
+]
+
+# Create a custom handler to skip certain modules during autodoc
+def skip_modules_handler(app, what, name, obj, skip, options):
+    if any(name.startswith(module) for module in modules_to_exclude):
+        return True
+    return None
+
+def setup(app):
+    app.connect('autodoc-skip-member', skip_modules_handler)
 
 # Intersphinx mapping
 intersphinx_mapping = {

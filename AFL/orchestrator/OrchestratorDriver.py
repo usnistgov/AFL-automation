@@ -79,7 +79,6 @@ class OrchestratorDriver(Driver):
         Driver.__init__(self, name='OrchestratorDriver', defaults=self.gather_defaults(), overrides=overrides)
 
         self.AL_campaign_name = None
-        self.deck = None
         self.sample_name: Optional[str] = None
         self.app = None
         self.name = 'OrchestratorDriver'
@@ -268,7 +267,6 @@ class OrchestratorDriver(Driver):
         status = []
         status.append(f'Snapshots: {self.config["snapshot_directory"]}')
         status.append(f'Cameras: {self.config["camera_urls"]}')
-        status.append(f'{len(self.deck.stocks)} stocks loaded!')
         status.append(self.status_str)
         status.append(self.AL_status_str)
         if self.grid_data:

@@ -1,4 +1,6 @@
-import nice
+import lazy_loader as lazy
+# NIST NCNR NICE control system
+nice = lazy.load("nice", require="AFL-automation[nice-neutron-scattering]")
 import time
 
 class NICEConsole(nice.api.console.ConsoleMonitor):

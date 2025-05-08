@@ -1,11 +1,11 @@
-import numpy as np
-from pyspec.client.SpecConnection import SpecConnection
-from pyspec.client.SpecCounter import SpecCounter
-from pyspec.client.SpecConnectionsManager import SpecConnectionsManager
-from pyspec.client.SpecWaitObject import SpecWaitObject
-from pyspec.client.SpecVariable import SpecVariable
-from pyspec.client.SpecMotor import SpecMotor
-from pyspec.client.SpecCommand import SpecCommand
+import lazy_loader as lazy
+SpecConnection_mod = lazy.load("pyspec.client.SpecConnection", require="AFL-automation[pyspec]")
+SpecCounter_mod = lazy.load("pyspec.client.SpecCounter", require="AFL-automation[pyspec]")
+SpecConnectionsManager_mod = lazy.load("pyspec.client.SpecConnectionsManager", require="AFL-automation[pyspec]")
+SpecWaitObject_mod = lazy.load("pyspec.client.SpecWaitObject", require="AFL-automation[pyspec]")
+SpecVariable_mod = lazy.load("pyspec.client.SpecVariable", require="AFL-automation[pyspec]")
+SpecMotor_mod = lazy.load("pyspec.client.SpecMotor", require="AFL-automation[pyspec]")
+SpecCommand_mod = lazy.load("pyspec.client.SpecCommand", require="AFL-automation[pyspec]")
 
 import sys
 import time
@@ -42,9 +42,9 @@ class PySpecClient():
         self.conn = f'{self.address}:{self.port}'
         print('')
         print(self.conn)
-        # self.spec = SpecConnectionsManager().getConnection(self.conn)
+        # self.spec = SpecConnectionsManager_mod.SpecConnectionsManager().getConnection(self.conn)
 
-        self.spec = SpecConnection(self.conn) #hard coded connection
+        self.spec = SpecConnection_mod.SpecConnection(self.conn) #hard coded connection
         while not self.spec.is_connected():
             pass
 
@@ -63,7 +63,7 @@ class PySpecClient():
         return
 
     def run_cmd(self,cmd,block=True,timeout=1800):
-        cmd = SpecCommand(self.spec,cmd,timeout=timeout)
+        cmd = SpecCommand_mod.SpecCommand(self.spec,cmd,timeout=timeout)
         if not block:
             cmd.synchronous = False
         cmd()
@@ -79,7 +79,7 @@ class PySpecClient():
         self.spec.run_cmd(f'u mkdir {path}')
 
     def get_variable(self,name): 
-        return SpecVariable(self.spec,name)
+        return SpecVariable_mod.SpecVariable(self.spec,name)
 
     def get_motor(self,name): 
         return self.spec.get_motor(name)
@@ -92,11 +92,11 @@ class PySpecClient():
         if ready.read()==1:
             return
         else:
-            w = SpecWaitObject(self.spec)
+            w = SpecWaitObject_mod.SpecWaitObject(self.spec)
             w.waitChannelUpdate('status/ready', waitValue = 1,timeout=timeout*1000) 
 
     def block_for_count(self,timeout=300):
-        w = SpecWaitObject(self.spec)
+        w = SpecWaitObject_mod.SpecWaitObject(self.spec)
         w.waitChannelUpdate('scaler/.all./count', waitValue = 0,timeout=timeout*1000) 
 
     def count(self, name,time,wait_on_time=True):

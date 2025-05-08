@@ -1,6 +1,7 @@
-import opentrons.execute
-import opentrons
-from opentrons.protocol_api.labware import Labware
+import lazy_loader as lazy
+opentrons_execute = lazy.load("opentrons.execute", require="AFL-automation[opentrons]")
+opentrons = lazy.load("opentrons", require="AFL-automation[opentrons]")
+Labware = lazy.load("opentrons.protocol_api.labware", require="AFL-automation[opentrons]")
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 import warnings
@@ -23,7 +24,7 @@ class OT2_Driver(Driver):
         self.app = None
         Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
         self.name = 'OT2_Driver'
-        self.protocol = opentrons.execute.get_protocol_api('2.0')
+        self.protocol = opentrons_execute.get_protocol_api('2.0')
         self.max_transfer = None
         self.min_transfer = None
         self.prep_targets = []

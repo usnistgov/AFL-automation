@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "AFL-automation"
+version = "0.0.1"
+description = "Hardware interfacing code for the Autonomous Formulation Lab"
+authors = [
+  { name = "Tyler B. Martin" },
+  { name = "Peter A. Beaucage" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  # Web framework and related
+  "Flask<2.3",
+  "Flask_Cors",
+  "Flask_JWT_Extended>=4.0",
+  "Werkzeug",
+  "Requests",
+  "zeroconf",
+  
+  # Data processing core
+  "numpy<2",
+  "pandas",
+  "scipy",
+  "xarray",
+  "h5py",
+  "tiled",
+  
+  # Visualization core
+  "bokeh",
+  "matplotlib",
+  "plotly",
+  "ipywidgets",
+  
+  # Scientific utilities
+  "periodictable",
+  "Pillow",
+  "Pint",
+  "scikit_learn",
+  "scikit-image",
+  
+  # Development utilities
+  "pytest",
+  "tqdm",
+  "pyparsing",
+  "six",
+  "setuptools",
+  "ipython"
+]
+
+[project.optional-dependencies]
+labjack = ["labjack-ljm"]
+piplates = ["piplates"]
+rpi-gpio = ["RPi.GPIO"]
+serial = ["pyserial"]
+seabreeze = ["seabreeze"]
+opentrons = ["opentrons"]
+pyspec = ["certif-pyspec"]
+scattering-processing = ["fabio", "pyFAI"]
+sas-analysis = ["sasmodels", "sasdata"]
+ml = ["tensorflow", "gpflow"]
+geometry = ["alphashape", "shapely"]
+neutron-scattering = ["epics", "sans", "mantid"]
+remote-access = ["paramiko"]
+docs = [
+  "sphinx>=7.1.0",
+  "sphinx-rtd-theme>=2.0.0",
+  "sphinx-autodoc-typehints>=1.25.2",
+  "sphinx-copybutton>=0.5.2",
+  "myst-parser>=2.0.0",
+  "nbsphinx>=0.9.3"
+]
+
+# You can add more extras as needed for other hardware modules.

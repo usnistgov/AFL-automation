@@ -1,4 +1,5 @@
-import piplates.RELAYplate as RELAYplate
+import lazy_loader as lazy
+RELAYplate = lazy.load("piplates.RELAYplate", require="AFL-automation[piplates]")
 from AFL.automation.loading.MultiChannelRelay import MultiChannelRelay
 import atexit
 import warnings

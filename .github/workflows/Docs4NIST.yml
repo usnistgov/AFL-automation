@@ -13,6 +13,6 @@ jobs:
             epub
             pdf
           pre-build-command: 'pip install -e .'
-          pip-requirements: 'requirements-all.txt'
+          pip-requirements: 'requirements-docs.txt'
           apt-packages: 'gcc build-essential python3-dev'
           insert-header-footer: false

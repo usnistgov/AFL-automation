@@ -1,0 +1,6 @@
+AFL.automation.instrument.SpecScreen\_Driver.sqrt
+=================================================
+
+.. currentmodule:: AFL.automation.instrument.SpecScreen_Driver
+
+.. autofunction:: sqrt

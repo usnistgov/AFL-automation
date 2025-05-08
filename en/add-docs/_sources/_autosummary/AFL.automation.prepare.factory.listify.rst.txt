@@ -1,0 +1,6 @@
+AFL.automation.prepare.factory.listify
+======================================
+
+.. currentmodule:: AFL.automation.prepare.factory
+
+.. autofunction:: listify

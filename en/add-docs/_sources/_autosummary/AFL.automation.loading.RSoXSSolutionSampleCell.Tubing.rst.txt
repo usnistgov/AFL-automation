@@ -1,0 +1,32 @@
+AFL.automation.loading.RSoXSSolutionSampleCell.Tubing
+=====================================================
+
+.. currentmodule:: AFL.automation.loading.RSoXSSolutionSampleCell
+
+.. autoclass:: Tubing
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Tubing.__init__
+      ~Tubing.volume
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Tubing.tubing
+   
+   

@@ -1,0 +1,6 @@
+AFL.automation.shared.utilities.tprint
+======================================
+
+.. currentmodule:: AFL.automation.shared.utilities
+
+.. autofunction:: tprint

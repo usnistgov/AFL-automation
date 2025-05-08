@@ -1,0 +1,6 @@
+AFL.automation.shared.utilities.mpl\_plot\_to\_bytes
+====================================================
+
+.. currentmodule:: AFL.automation.shared.utilities
+
+.. autofunction:: mpl_plot_to_bytes

@@ -1,0 +1,6 @@
+AFL.automation.sample.CastingServer.listify
+===========================================
+
+.. currentmodule:: AFL.automation.sample.CastingServer
+
+.. autofunction:: listify

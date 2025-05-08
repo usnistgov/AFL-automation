@@ -1,0 +1,6 @@
+AFL.automation.APIServer.DummyDriver.ceil
+=========================================
+
+.. currentmodule:: AFL.automation.APIServer.DummyDriver
+
+.. autofunction:: ceil

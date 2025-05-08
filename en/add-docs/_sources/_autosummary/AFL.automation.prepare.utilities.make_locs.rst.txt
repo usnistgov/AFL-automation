@@ -1,0 +1,6 @@
+AFL.automation.prepare.utilities.make\_locs
+===========================================
+
+.. currentmodule:: AFL.automation.prepare.utilities
+
+.. autofunction:: make_locs

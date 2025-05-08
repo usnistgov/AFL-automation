@@ -46,17 +46,17 @@ AFL.automation.shared.ServerDiscovery.AsyncServiceInfo
 
    .. autosummary::
    
-      ~AsyncServiceInfo.text
-      ~AsyncServiceInfo.type
+      ~AsyncServiceInfo.host_ttl
+      ~AsyncServiceInfo.interface_index
       ~AsyncServiceInfo.key
+      ~AsyncServiceInfo.other_ttl
       ~AsyncServiceInfo.port
-      ~AsyncServiceInfo.weight
       ~AsyncServiceInfo.priority
       ~AsyncServiceInfo.server
       ~AsyncServiceInfo.server_key
-      ~AsyncServiceInfo.host_ttl
-      ~AsyncServiceInfo.other_ttl
-      ~AsyncServiceInfo.interface_index
+      ~AsyncServiceInfo.text
+      ~AsyncServiceInfo.type
+      ~AsyncServiceInfo.weight
       ~AsyncServiceInfo.addresses
       ~AsyncServiceInfo.decoded_properties
       ~AsyncServiceInfo.name

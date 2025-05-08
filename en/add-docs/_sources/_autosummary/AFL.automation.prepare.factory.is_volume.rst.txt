@@ -1,0 +1,6 @@
+AFL.automation.prepare.factory.is\_volume
+=========================================
+
+.. currentmodule:: AFL.automation.prepare.factory
+
+.. autofunction:: is_volume

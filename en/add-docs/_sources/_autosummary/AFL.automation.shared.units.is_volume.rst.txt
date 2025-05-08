@@ -1,0 +1,6 @@
+AFL.automation.shared.units.is\_volume
+======================================
+
+.. currentmodule:: AFL.automation.shared.units
+
+.. autofunction:: is_volume

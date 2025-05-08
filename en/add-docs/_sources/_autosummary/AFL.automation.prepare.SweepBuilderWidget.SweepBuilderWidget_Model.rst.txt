@@ -1,0 +1,27 @@
+AFL.automation.prepare.SweepBuilderWidget.SweepBuilderWidget\_Model
+===================================================================
+
+.. currentmodule:: AFL.automation.prepare.SweepBuilderWidget
+
+.. autoclass:: SweepBuilderWidget_Model
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SweepBuilderWidget_Model.__init__
+      ~SweepBuilderWidget_Model.calc_sweep
+      ~SweepBuilderWidget_Model.validate_sweep
+   
+   
+
+   
+   
+   

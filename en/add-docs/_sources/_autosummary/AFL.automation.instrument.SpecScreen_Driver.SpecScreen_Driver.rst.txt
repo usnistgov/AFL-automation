@@ -1,0 +1,44 @@
+AFL.automation.instrument.SpecScreen\_Driver.SpecScreen\_Driver
+===============================================================
+
+.. currentmodule:: AFL.automation.instrument.SpecScreen_Driver
+
+.. autoclass:: SpecScreen_Driver
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SpecScreen_Driver.__init__
+      ~SpecScreen_Driver.deposit_obj
+      ~SpecScreen_Driver.execute
+      ~SpecScreen_Driver.gather_defaults
+      ~SpecScreen_Driver.get_config
+      ~SpecScreen_Driver.get_configs
+      ~SpecScreen_Driver.get_object
+      ~SpecScreen_Driver.get_sample
+      ~SpecScreen_Driver.post_execute
+      ~SpecScreen_Driver.pre_execute
+      ~SpecScreen_Driver.queued
+      ~SpecScreen_Driver.quickbar
+      ~SpecScreen_Driver.reset_sample
+      ~SpecScreen_Driver.retrieve_obj
+      ~SpecScreen_Driver.set_config
+      ~SpecScreen_Driver.set_data
+      ~SpecScreen_Driver.set_object
+      ~SpecScreen_Driver.set_sample
+      ~SpecScreen_Driver.status
+      ~SpecScreen_Driver.unqueued
+   
+   
+
+   
+   
+   

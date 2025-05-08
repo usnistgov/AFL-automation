@@ -1,0 +1,81 @@
+AFL.automation.prepare.PrepareWidget.VBox
+=========================================
+
+.. currentmodule:: AFL.automation.prepare.PrepareWidget
+
+.. autoclass:: VBox
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~VBox.__init__
+      ~VBox.add_class
+      ~VBox.add_traits
+      ~VBox.blur
+      ~VBox.class_own_trait_events
+      ~VBox.class_own_traits
+      ~VBox.class_trait_names
+      ~VBox.class_traits
+      ~VBox.close
+      ~VBox.close_all
+      ~VBox.focus
+      ~VBox.get_manager_state
+      ~VBox.get_state
+      ~VBox.get_view_spec
+      ~VBox.handle_comm_opened
+      ~VBox.handle_control_comm_opened
+      ~VBox.has_trait
+      ~VBox.hold_sync
+      ~VBox.hold_trait_notifications
+      ~VBox.notify_change
+      ~VBox.observe
+      ~VBox.on_msg
+      ~VBox.on_trait_change
+      ~VBox.on_widget_constructed
+      ~VBox.open
+      ~VBox.remove_class
+      ~VBox.send
+      ~VBox.send_state
+      ~VBox.set_state
+      ~VBox.set_trait
+      ~VBox.setup_instance
+      ~VBox.trait_defaults
+      ~VBox.trait_events
+      ~VBox.trait_has_value
+      ~VBox.trait_metadata
+      ~VBox.trait_names
+      ~VBox.trait_values
+      ~VBox.traits
+      ~VBox.unobserve
+      ~VBox.unobserve_all
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~VBox.box_style
+      ~VBox.children
+      ~VBox.comm
+      ~VBox.cross_validation_lock
+      ~VBox.keys
+      ~VBox.layout
+      ~VBox.log
+      ~VBox.model_id
+      ~VBox.tabbable
+      ~VBox.tooltip
+      ~VBox.widget_types
+      ~VBox.widgets
+   
+   

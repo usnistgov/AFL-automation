@@ -1,0 +1,40 @@
+AFL.automation.prepare.StockBuilderWidget
+=========================================
+
+.. automodule:: AFL.automation.prepare.StockBuilderWidget
+  
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:                                     
+   
+      sqrt
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      StockBuilderWidget
+      StockBuilderWidget_Model
+      StockBuilderWidget_View
+   
+   
+
+   
+   
+   
+
+
+

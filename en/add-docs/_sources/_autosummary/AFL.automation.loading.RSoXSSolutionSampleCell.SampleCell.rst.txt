@@ -1,0 +1,26 @@
+AFL.automation.loading.RSoXSSolutionSampleCell.SampleCell
+=========================================================
+
+.. currentmodule:: AFL.automation.loading.RSoXSSolutionSampleCell
+
+.. autoclass:: SampleCell
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SampleCell.__init__
+      ~SampleCell.loadSample
+   
+   
+
+   
+   
+   

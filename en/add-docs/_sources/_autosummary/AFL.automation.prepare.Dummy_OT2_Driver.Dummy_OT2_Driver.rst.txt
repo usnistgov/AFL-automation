@@ -1,0 +1,75 @@
+AFL.automation.prepare.Dummy\_OT2\_Driver.Dummy\_OT2\_Driver
+============================================================
+
+.. currentmodule:: AFL.automation.prepare.Dummy_OT2_Driver
+
+.. autoclass:: Dummy_OT2_Driver
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Dummy_OT2_Driver.__init__
+      ~Dummy_OT2_Driver.add_prep_targets
+      ~Dummy_OT2_Driver.deactivate_temp
+      ~Dummy_OT2_Driver.deposit_obj
+      ~Dummy_OT2_Driver.execute
+      ~Dummy_OT2_Driver.gather_defaults
+      ~Dummy_OT2_Driver.get_config
+      ~Dummy_OT2_Driver.get_configs
+      ~Dummy_OT2_Driver.get_labware
+      ~Dummy_OT2_Driver.get_object
+      ~Dummy_OT2_Driver.get_prep_target
+      ~Dummy_OT2_Driver.get_sample
+      ~Dummy_OT2_Driver.get_shake_latch_status
+      ~Dummy_OT2_Driver.get_shake_rpm
+      ~Dummy_OT2_Driver.get_shaker_temp
+      ~Dummy_OT2_Driver.get_temp
+      ~Dummy_OT2_Driver.get_wells
+      ~Dummy_OT2_Driver.home
+      ~Dummy_OT2_Driver.latch_shaker
+      ~Dummy_OT2_Driver.load_instrument
+      ~Dummy_OT2_Driver.load_labware
+      ~Dummy_OT2_Driver.parse_well
+      ~Dummy_OT2_Driver.post_execute
+      ~Dummy_OT2_Driver.pre_execute
+      ~Dummy_OT2_Driver.queued
+      ~Dummy_OT2_Driver.quickbar
+      ~Dummy_OT2_Driver.reset_prep_targets
+      ~Dummy_OT2_Driver.reset_sample
+      ~Dummy_OT2_Driver.reset_tipracks
+      ~Dummy_OT2_Driver.retrieve_obj
+      ~Dummy_OT2_Driver.set_aspirate_rate
+      ~Dummy_OT2_Driver.set_config
+      ~Dummy_OT2_Driver.set_data
+      ~Dummy_OT2_Driver.set_dispense_rate
+      ~Dummy_OT2_Driver.set_gantry_speed
+      ~Dummy_OT2_Driver.set_object
+      ~Dummy_OT2_Driver.set_sample
+      ~Dummy_OT2_Driver.set_shake
+      ~Dummy_OT2_Driver.set_shaker_temp
+      ~Dummy_OT2_Driver.set_temp
+      ~Dummy_OT2_Driver.status
+      ~Dummy_OT2_Driver.stop_shake
+      ~Dummy_OT2_Driver.transfer
+      ~Dummy_OT2_Driver.unlatch_shaker
+      ~Dummy_OT2_Driver.unqueued
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Dummy_OT2_Driver.defaults
+   
+   

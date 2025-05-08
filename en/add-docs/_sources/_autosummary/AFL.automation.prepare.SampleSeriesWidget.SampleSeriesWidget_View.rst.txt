@@ -1,0 +1,29 @@
+AFL.automation.prepare.SampleSeriesWidget.SampleSeriesWidget\_View
+==================================================================
+
+.. currentmodule:: AFL.automation.prepare.SampleSeriesWidget
+
+.. autoclass:: SampleSeriesWidget_View
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SampleSeriesWidget_View.__init__
+      ~SampleSeriesWidget_View.make_component_grid
+      ~SampleSeriesWidget_View.make_mixing_wells
+      ~SampleSeriesWidget_View.make_pipette_params
+      ~SampleSeriesWidget_View.start
+   
+   
+
+   
+   
+   

@@ -1,0 +1,36 @@
+AFL.automation.prepare.PrepareWidget.StockBuilderWidget
+=======================================================
+
+.. currentmodule:: AFL.automation.prepare.PrepareWidget
+
+.. autoclass:: StockBuilderWidget
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~StockBuilderWidget.__init__
+      ~StockBuilderWidget.add_stocks_to_deck
+      ~StockBuilderWidget.analyze_stocks_cb
+      ~StockBuilderWidget.get_stock_objects
+      ~StockBuilderWidget.get_stock_values
+      ~StockBuilderWidget.load_cb
+      ~StockBuilderWidget.make_stock_cb
+      ~StockBuilderWidget.remove_stock_cb
+      ~StockBuilderWidget.save_cb
+      ~StockBuilderWidget.set_units_cb
+      ~StockBuilderWidget.start
+      ~StockBuilderWidget.update_location_check_cb
+   
+   
+
+   
+   
+   

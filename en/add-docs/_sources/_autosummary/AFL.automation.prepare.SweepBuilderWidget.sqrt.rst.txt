@@ -1,0 +1,6 @@
+AFL.automation.prepare.SweepBuilderWidget.sqrt
+==============================================
+
+.. currentmodule:: AFL.automation.prepare.SweepBuilderWidget
+
+.. autofunction:: sqrt

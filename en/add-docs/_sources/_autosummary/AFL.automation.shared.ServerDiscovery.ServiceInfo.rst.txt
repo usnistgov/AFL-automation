@@ -46,17 +46,17 @@ AFL.automation.shared.ServerDiscovery.ServiceInfo
 
    .. autosummary::
    
-      ~ServiceInfo.text
-      ~ServiceInfo.type
+      ~ServiceInfo.host_ttl
+      ~ServiceInfo.interface_index
       ~ServiceInfo.key
+      ~ServiceInfo.other_ttl
       ~ServiceInfo.port
-      ~ServiceInfo.weight
       ~ServiceInfo.priority
       ~ServiceInfo.server
       ~ServiceInfo.server_key
-      ~ServiceInfo.host_ttl
-      ~ServiceInfo.other_ttl
-      ~ServiceInfo.interface_index
+      ~ServiceInfo.text
+      ~ServiceInfo.type
+      ~ServiceInfo.weight
       ~ServiceInfo.addresses
       ~ServiceInfo.decoded_properties
       ~ServiceInfo.name

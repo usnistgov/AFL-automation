@@ -1,0 +1,28 @@
+AFL.automation.EpicsADLiveProcess.AreaDetectorLive.AreaDetectorLive
+===================================================================
+
+.. currentmodule:: AFL.automation.EpicsADLiveProcess.AreaDetectorLive
+
+.. autoclass:: AreaDetectorLive
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~AreaDetectorLive.__init__
+      ~AreaDetectorLive.cbfunc
+      ~AreaDetectorLive.queuehandler
+      ~AreaDetectorLive.status
+   
+   
+
+   
+   
+   

@@ -1,0 +1,26 @@
+AFL.automation.APIServer.APIServer.CORS
+=======================================
+
+.. currentmodule:: AFL.automation.APIServer.APIServer
+
+.. autoclass:: CORS
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CORS.__init__
+      ~CORS.init_app
+   
+   
+
+   
+   
+   

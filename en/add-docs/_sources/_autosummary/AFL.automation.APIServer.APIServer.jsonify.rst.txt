@@ -1,0 +1,6 @@
+AFL.automation.APIServer.APIServer.jsonify
+==========================================
+
+.. currentmodule:: AFL.automation.APIServer.APIServer
+
+.. autofunction:: jsonify

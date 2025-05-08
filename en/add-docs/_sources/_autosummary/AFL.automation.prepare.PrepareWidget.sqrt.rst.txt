@@ -1,0 +1,6 @@
+AFL.automation.prepare.PrepareWidget.sqrt
+=========================================
+
+.. currentmodule:: AFL.automation.prepare.PrepareWidget
+
+.. autofunction:: sqrt

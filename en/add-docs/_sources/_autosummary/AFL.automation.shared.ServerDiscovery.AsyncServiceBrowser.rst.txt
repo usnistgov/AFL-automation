@@ -30,10 +30,10 @@ AFL.automation.shared.ServerDiscovery.AsyncServiceBrowser
 
    .. autosummary::
    
+      ~AsyncServiceBrowser.done
+      ~AsyncServiceBrowser.query_scheduler
       ~AsyncServiceBrowser.types
       ~AsyncServiceBrowser.zc
-      ~AsyncServiceBrowser.query_scheduler
-      ~AsyncServiceBrowser.done
       ~AsyncServiceBrowser.service_state_changed
    
    

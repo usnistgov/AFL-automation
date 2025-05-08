@@ -1,0 +1,81 @@
+AFL.automation.prepare.DeckBuilderWidget.HBox
+=============================================
+
+.. currentmodule:: AFL.automation.prepare.DeckBuilderWidget
+
+.. autoclass:: HBox
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~HBox.__init__
+      ~HBox.add_class
+      ~HBox.add_traits
+      ~HBox.blur
+      ~HBox.class_own_trait_events
+      ~HBox.class_own_traits
+      ~HBox.class_trait_names
+      ~HBox.class_traits
+      ~HBox.close
+      ~HBox.close_all
+      ~HBox.focus
+      ~HBox.get_manager_state
+      ~HBox.get_state
+      ~HBox.get_view_spec
+      ~HBox.handle_comm_opened
+      ~HBox.handle_control_comm_opened
+      ~HBox.has_trait
+      ~HBox.hold_sync
+      ~HBox.hold_trait_notifications
+      ~HBox.notify_change
+      ~HBox.observe
+      ~HBox.on_msg
+      ~HBox.on_trait_change
+      ~HBox.on_widget_constructed
+      ~HBox.open
+      ~HBox.remove_class
+      ~HBox.send
+      ~HBox.send_state
+      ~HBox.set_state
+      ~HBox.set_trait
+      ~HBox.setup_instance
+      ~HBox.trait_defaults
+      ~HBox.trait_events
+      ~HBox.trait_has_value
+      ~HBox.trait_metadata
+      ~HBox.trait_names
+      ~HBox.trait_values
+      ~HBox.traits
+      ~HBox.unobserve
+      ~HBox.unobserve_all
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~HBox.box_style
+      ~HBox.children
+      ~HBox.comm
+      ~HBox.cross_validation_lock
+      ~HBox.keys
+      ~HBox.layout
+      ~HBox.log
+      ~HBox.model_id
+      ~HBox.tabbable
+      ~HBox.tooltip
+      ~HBox.widget_types
+      ~HBox.widgets
+   
+   

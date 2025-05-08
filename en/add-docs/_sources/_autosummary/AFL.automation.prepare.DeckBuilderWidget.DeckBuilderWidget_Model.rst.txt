@@ -1,0 +1,27 @@
+AFL.automation.prepare.DeckBuilderWidget.DeckBuilderWidget\_Model
+=================================================================
+
+.. currentmodule:: AFL.automation.prepare.DeckBuilderWidget
+
+.. autoclass:: DeckBuilderWidget_Model
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DeckBuilderWidget_Model.__init__
+      ~DeckBuilderWidget_Model.build_deck_object
+      ~DeckBuilderWidget_Model.send_deck_config
+   
+   
+
+   
+   
+   

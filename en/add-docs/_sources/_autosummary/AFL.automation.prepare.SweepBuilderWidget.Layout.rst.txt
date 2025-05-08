@@ -1,0 +1,112 @@
+AFL.automation.prepare.SweepBuilderWidget.Layout
+================================================
+
+.. currentmodule:: AFL.automation.prepare.SweepBuilderWidget
+
+.. autoclass:: Layout
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Layout.__init__
+      ~Layout.add_traits
+      ~Layout.class_own_trait_events
+      ~Layout.class_own_traits
+      ~Layout.class_trait_names
+      ~Layout.class_traits
+      ~Layout.close
+      ~Layout.close_all
+      ~Layout.get_manager_state
+      ~Layout.get_state
+      ~Layout.get_view_spec
+      ~Layout.handle_comm_opened
+      ~Layout.handle_control_comm_opened
+      ~Layout.has_trait
+      ~Layout.hold_sync
+      ~Layout.hold_trait_notifications
+      ~Layout.notify_change
+      ~Layout.observe
+      ~Layout.on_msg
+      ~Layout.on_trait_change
+      ~Layout.on_widget_constructed
+      ~Layout.open
+      ~Layout.send
+      ~Layout.send_state
+      ~Layout.set_state
+      ~Layout.set_trait
+      ~Layout.setup_instance
+      ~Layout.trait_defaults
+      ~Layout.trait_events
+      ~Layout.trait_has_value
+      ~Layout.trait_metadata
+      ~Layout.trait_names
+      ~Layout.trait_values
+      ~Layout.traits
+      ~Layout.unobserve
+      ~Layout.unobserve_all
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Layout.align_content
+      ~Layout.align_items
+      ~Layout.align_self
+      ~Layout.border
+      ~Layout.border_bottom
+      ~Layout.border_left
+      ~Layout.border_right
+      ~Layout.border_top
+      ~Layout.bottom
+      ~Layout.comm
+      ~Layout.cross_validation_lock
+      ~Layout.display
+      ~Layout.flex
+      ~Layout.flex_flow
+      ~Layout.grid_area
+      ~Layout.grid_auto_columns
+      ~Layout.grid_auto_flow
+      ~Layout.grid_auto_rows
+      ~Layout.grid_column
+      ~Layout.grid_gap
+      ~Layout.grid_row
+      ~Layout.grid_template_areas
+      ~Layout.grid_template_columns
+      ~Layout.grid_template_rows
+      ~Layout.height
+      ~Layout.justify_content
+      ~Layout.justify_items
+      ~Layout.keys
+      ~Layout.left
+      ~Layout.log
+      ~Layout.margin
+      ~Layout.max_height
+      ~Layout.max_width
+      ~Layout.min_height
+      ~Layout.min_width
+      ~Layout.model_id
+      ~Layout.object_fit
+      ~Layout.object_position
+      ~Layout.order
+      ~Layout.overflow
+      ~Layout.padding
+      ~Layout.right
+      ~Layout.top
+      ~Layout.visibility
+      ~Layout.widget_types
+      ~Layout.widgets
+      ~Layout.width
+   
+   

@@ -1,0 +1,64 @@
+AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis
+=======================================================
+
+.. currentmodule:: AFL.automation.instrument.SeabreezeUVVis
+
+.. autoclass:: SeabreezeUVVis
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SeabreezeUVVis.__init__
+      ~SeabreezeUVVis.collect
+      ~SeabreezeUVVis.collectContinuous
+      ~SeabreezeUVVis.collectSingleSpectrum
+      ~SeabreezeUVVis.deposit_obj
+      ~SeabreezeUVVis.execute
+      ~SeabreezeUVVis.gather_defaults
+      ~SeabreezeUVVis.getExposure
+      ~SeabreezeUVVis.getExposureDelay
+      ~SeabreezeUVVis.getFilename
+      ~SeabreezeUVVis.getFilepath
+      ~SeabreezeUVVis.getSaveSingleScan
+      ~SeabreezeUVVis.get_config
+      ~SeabreezeUVVis.get_configs
+      ~SeabreezeUVVis.get_object
+      ~SeabreezeUVVis.get_sample
+      ~SeabreezeUVVis.post_execute
+      ~SeabreezeUVVis.pre_execute
+      ~SeabreezeUVVis.queued
+      ~SeabreezeUVVis.quickbar
+      ~SeabreezeUVVis.reduced
+      ~SeabreezeUVVis.reset_sample
+      ~SeabreezeUVVis.retrieve_obj
+      ~SeabreezeUVVis.setExposure
+      ~SeabreezeUVVis.setExposureDelay
+      ~SeabreezeUVVis.setFilename
+      ~SeabreezeUVVis.setFilepath
+      ~SeabreezeUVVis.setSaveSingleScan
+      ~SeabreezeUVVis.set_config
+      ~SeabreezeUVVis.set_data
+      ~SeabreezeUVVis.set_object
+      ~SeabreezeUVVis.set_sample
+      ~SeabreezeUVVis.status
+      ~SeabreezeUVVis.unqueued
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SeabreezeUVVis.defaults
+   
+   

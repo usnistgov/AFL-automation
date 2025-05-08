@@ -1,0 +1,42 @@
+AFL.automation.loading.PneumaticPressureSampleCell.defaultdict
+==============================================================
+
+.. currentmodule:: AFL.automation.loading.PneumaticPressureSampleCell
+
+.. autoclass:: defaultdict
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~defaultdict.__init__
+      ~defaultdict.clear
+      ~defaultdict.copy
+      ~defaultdict.fromkeys
+      ~defaultdict.get
+      ~defaultdict.items
+      ~defaultdict.keys
+      ~defaultdict.pop
+      ~defaultdict.popitem
+      ~defaultdict.setdefault
+      ~defaultdict.update
+      ~defaultdict.values
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~defaultdict.default_factory
+   
+   

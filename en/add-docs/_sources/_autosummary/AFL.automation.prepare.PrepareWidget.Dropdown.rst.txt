@@ -1,0 +1,89 @@
+AFL.automation.prepare.PrepareWidget.Dropdown
+=============================================
+
+.. currentmodule:: AFL.automation.prepare.PrepareWidget
+
+.. autoclass:: Dropdown
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Dropdown.__init__
+      ~Dropdown.add_class
+      ~Dropdown.add_traits
+      ~Dropdown.blur
+      ~Dropdown.class_own_trait_events
+      ~Dropdown.class_own_traits
+      ~Dropdown.class_trait_names
+      ~Dropdown.class_traits
+      ~Dropdown.close
+      ~Dropdown.close_all
+      ~Dropdown.focus
+      ~Dropdown.get_interact_value
+      ~Dropdown.get_manager_state
+      ~Dropdown.get_state
+      ~Dropdown.get_view_spec
+      ~Dropdown.handle_comm_opened
+      ~Dropdown.handle_control_comm_opened
+      ~Dropdown.has_trait
+      ~Dropdown.hold_sync
+      ~Dropdown.hold_trait_notifications
+      ~Dropdown.notify_change
+      ~Dropdown.observe
+      ~Dropdown.on_msg
+      ~Dropdown.on_trait_change
+      ~Dropdown.on_widget_constructed
+      ~Dropdown.open
+      ~Dropdown.remove_class
+      ~Dropdown.send
+      ~Dropdown.send_state
+      ~Dropdown.set_state
+      ~Dropdown.set_trait
+      ~Dropdown.setup_instance
+      ~Dropdown.trait_defaults
+      ~Dropdown.trait_events
+      ~Dropdown.trait_has_value
+      ~Dropdown.trait_metadata
+      ~Dropdown.trait_names
+      ~Dropdown.trait_values
+      ~Dropdown.traits
+      ~Dropdown.unobserve
+      ~Dropdown.unobserve_all
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Dropdown.comm
+      ~Dropdown.cross_validation_lock
+      ~Dropdown.description
+      ~Dropdown.description_allow_html
+      ~Dropdown.description_tooltip
+      ~Dropdown.disabled
+      ~Dropdown.index
+      ~Dropdown.keys
+      ~Dropdown.label
+      ~Dropdown.layout
+      ~Dropdown.log
+      ~Dropdown.model_id
+      ~Dropdown.options
+      ~Dropdown.style
+      ~Dropdown.tabbable
+      ~Dropdown.tooltip
+      ~Dropdown.value
+      ~Dropdown.widget_types
+      ~Dropdown.widgets
+   
+   

@@ -36,10 +36,6 @@ AFL.automation.shared
    ServerDiscovery
    exceptions
    launcher
-   nbutil-APS
-   nbutil-CHESS
-   nbutil-SINQ
-   nbutil
    serialization
    units
    utilities

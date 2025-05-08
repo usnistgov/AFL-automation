@@ -1,0 +1,6 @@
+AFL.automation.shared.units.get\_unit\_type
+===========================================
+
+.. currentmodule:: AFL.automation.shared.units
+
+.. autofunction:: get_unit_type

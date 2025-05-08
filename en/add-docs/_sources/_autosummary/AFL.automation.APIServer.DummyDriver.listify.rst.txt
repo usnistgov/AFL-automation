@@ -1,0 +1,6 @@
+AFL.automation.APIServer.DummyDriver.listify
+============================================
+
+.. currentmodule:: AFL.automation.APIServer.DummyDriver
+
+.. autofunction:: listify

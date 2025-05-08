@@ -1,0 +1,67 @@
+AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell
+==============================================================
+
+.. currentmodule:: AFL.automation.loading.PneumaticSampleCell
+
+.. autoclass:: PneumaticSampleCell
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PneumaticSampleCell.__init__
+      ~PneumaticSampleCell.calibrate_sensor
+      ~PneumaticSampleCell.deposit_obj
+      ~PneumaticSampleCell.execute
+      ~PneumaticSampleCell.gather_defaults
+      ~PneumaticSampleCell.get_config
+      ~PneumaticSampleCell.get_configs
+      ~PneumaticSampleCell.get_object
+      ~PneumaticSampleCell.get_sample
+      ~PneumaticSampleCell.get_sensor_config
+      ~PneumaticSampleCell.loadSample
+      ~PneumaticSampleCell.post_execute
+      ~PneumaticSampleCell.pre_execute
+      ~PneumaticSampleCell.primeRinse
+      ~PneumaticSampleCell.queued
+      ~PneumaticSampleCell.quickbar
+      ~PneumaticSampleCell.read_sensor
+      ~PneumaticSampleCell.read_sensor_poll
+      ~PneumaticSampleCell.read_sensor_poll_load
+      ~PneumaticSampleCell.reset_pump
+      ~PneumaticSampleCell.reset_sample
+      ~PneumaticSampleCell.reset_tank_levels
+      ~PneumaticSampleCell.retrieve_obj
+      ~PneumaticSampleCell.rinseAll
+      ~PneumaticSampleCell.rinseCell
+      ~PneumaticSampleCell.sensor_reset
+      ~PneumaticSampleCell.setRinseLevel
+      ~PneumaticSampleCell.setWasteLevel
+      ~PneumaticSampleCell.set_config
+      ~PneumaticSampleCell.set_data
+      ~PneumaticSampleCell.set_object
+      ~PneumaticSampleCell.set_sample
+      ~PneumaticSampleCell.set_sensor_config
+      ~PneumaticSampleCell.status
+      ~PneumaticSampleCell.stopLoad
+      ~PneumaticSampleCell.unqueued
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PneumaticSampleCell.app
+      ~PneumaticSampleCell.defaults
+   
+   

@@ -1,0 +1,35 @@
+AFL.automation.shared.utilities
+===============================
+
+.. automodule:: AFL.automation.shared.utilities
+  
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:                                     
+   
+      has_units
+      listify
+      makeRegistar
+      mpl_plot_to_bytes
+      tprint
+      xarray_to_bytes
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

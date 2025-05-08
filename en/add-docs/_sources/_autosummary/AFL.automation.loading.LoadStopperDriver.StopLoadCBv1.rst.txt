@@ -1,0 +1,45 @@
+AFL.automation.loading.LoadStopperDriver.StopLoadCBv1
+=====================================================
+
+.. currentmodule:: AFL.automation.loading.LoadStopperDriver
+
+.. autoclass:: StopLoadCBv1
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~StopLoadCBv1.__init__
+      ~StopLoadCBv1.getName
+      ~StopLoadCBv1.isDaemon
+      ~StopLoadCBv1.is_alive
+      ~StopLoadCBv1.join
+      ~StopLoadCBv1.process_signal
+      ~StopLoadCBv1.run
+      ~StopLoadCBv1.setDaemon
+      ~StopLoadCBv1.setName
+      ~StopLoadCBv1.start
+      ~StopLoadCBv1.terminate
+      ~StopLoadCBv1.update_status
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~StopLoadCBv1.daemon
+      ~StopLoadCBv1.ident
+      ~StopLoadCBv1.name
+      ~StopLoadCBv1.native_id
+   
+   

@@ -1,0 +1,6 @@
+AFL.automation.APIServer.APIServer.set\_access\_cookies
+=======================================================
+
+.. currentmodule:: AFL.automation.APIServer.APIServer
+
+.. autofunction:: set_access_cookies

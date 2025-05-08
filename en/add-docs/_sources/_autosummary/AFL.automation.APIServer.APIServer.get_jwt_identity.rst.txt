@@ -1,0 +1,6 @@
+AFL.automation.APIServer.APIServer.get\_jwt\_identity
+=====================================================
+
+.. currentmodule:: AFL.automation.APIServer.APIServer
+
+.. autofunction:: get_jwt_identity

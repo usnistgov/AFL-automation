@@ -1,0 +1,36 @@
+AFL.automation.loading.LoadStopperDriver
+========================================
+
+.. automodule:: AFL.automation.loading.LoadStopperDriver
+  
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      Client
+      Driver
+      LoadStopperDriver
+      SensorPollingThread
+      StopLoadCBv1
+      StopLoadCBv2
+   
+   
+
+   
+   
+   
+
+
+

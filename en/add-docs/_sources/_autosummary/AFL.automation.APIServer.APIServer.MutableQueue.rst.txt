@@ -1,0 +1,32 @@
+AFL.automation.APIServer.APIServer.MutableQueue
+===============================================
+
+.. currentmodule:: AFL.automation.APIServer.APIServer
+
+.. autoclass:: MutableQueue
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MutableQueue.__init__
+      ~MutableQueue.empty
+      ~MutableQueue.get
+      ~MutableQueue.iterationid
+      ~MutableQueue.move
+      ~MutableQueue.put
+      ~MutableQueue.qsize
+      ~MutableQueue.remove
+   
+   
+
+   
+   
+   

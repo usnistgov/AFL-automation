@@ -1,0 +1,30 @@
+AFL.automation.prepare.SampleSeries
+===================================
+
+.. currentmodule:: AFL.automation.prepare
+
+.. autoclass:: SampleSeries
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SampleSeries.__init__
+      ~SampleSeries.add_sample
+      ~SampleSeries.mass_totals_component
+      ~SampleSeries.mass_totals_stock
+      ~SampleSeries.reset
+      ~SampleSeries.shuffle
+   
+   
+
+   
+   
+   

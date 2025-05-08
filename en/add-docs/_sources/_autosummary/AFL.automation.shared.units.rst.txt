@@ -1,0 +1,37 @@
+AFL.automation.shared.units
+===========================
+
+.. automodule:: AFL.automation.shared.units
+  
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:                                     
+   
+      enforce_units
+      get_unit_type
+      has_units
+      is_concentration
+      is_density
+      is_mass
+      is_molarity
+      is_volume
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

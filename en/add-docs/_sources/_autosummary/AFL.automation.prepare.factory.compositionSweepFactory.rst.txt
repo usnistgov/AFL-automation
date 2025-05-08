@@ -1,0 +1,6 @@
+AFL.automation.prepare.factory.compositionSweepFactory
+======================================================
+
+.. currentmodule:: AFL.automation.prepare.factory
+
+.. autofunction:: compositionSweepFactory

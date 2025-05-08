@@ -1,0 +1,43 @@
+AFL.automation.sample.CastingServer
+===================================
+
+.. automodule:: AFL.automation.sample.CastingServer
+  
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:                                     
+   
+      ceil
+      listify
+      sqrt
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      CastingServer
+      Client
+      Driver
+      OT2Client
+   
+   
+
+   
+   
+   
+
+
+

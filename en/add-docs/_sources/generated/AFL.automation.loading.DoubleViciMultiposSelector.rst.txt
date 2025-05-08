@@ -10,6 +10,5 @@ AFL.automation.loading.DoubleViciMultiposSelector
    
       DoubleViciMultiposSelector
       FlowSelector
-      SerialDevice
       ViciMultiposSelector
    

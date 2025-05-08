@@ -1,0 +1,6 @@
+AFL.automation.prepare.PrepType.makeRegistar
+============================================
+
+.. currentmodule:: AFL.automation.prepare.PrepType
+
+.. autofunction:: makeRegistar

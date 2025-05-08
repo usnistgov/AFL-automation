@@ -1,0 +1,66 @@
+AFL.automation.loading.PushPullSelectorSampleCell.PushPullSelectorSampleCell
+============================================================================
+
+.. currentmodule:: AFL.automation.loading.PushPullSelectorSampleCell
+
+.. autoclass:: PushPullSelectorSampleCell
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PushPullSelectorSampleCell.__init__
+      ~PushPullSelectorSampleCell.blowOutCell
+      ~PushPullSelectorSampleCell.blowOutCellForcedAir
+      ~PushPullSelectorSampleCell.catchToSyringe
+      ~PushPullSelectorSampleCell.catchToWaste
+      ~PushPullSelectorSampleCell.cellToWaste
+      ~PushPullSelectorSampleCell.deposit_obj
+      ~PushPullSelectorSampleCell.execute
+      ~PushPullSelectorSampleCell.gather_defaults
+      ~PushPullSelectorSampleCell.getParameters
+      ~PushPullSelectorSampleCell.get_config
+      ~PushPullSelectorSampleCell.get_configs
+      ~PushPullSelectorSampleCell.get_object
+      ~PushPullSelectorSampleCell.get_sample
+      ~PushPullSelectorSampleCell.loadSample
+      ~PushPullSelectorSampleCell.post_execute
+      ~PushPullSelectorSampleCell.pre_execute
+      ~PushPullSelectorSampleCell.queued
+      ~PushPullSelectorSampleCell.quickbar
+      ~PushPullSelectorSampleCell.reset_sample
+      ~PushPullSelectorSampleCell.retrieve_obj
+      ~PushPullSelectorSampleCell.rinseAll
+      ~PushPullSelectorSampleCell.rinseCatch
+      ~PushPullSelectorSampleCell.rinseCell
+      ~PushPullSelectorSampleCell.rinseCellFlood
+      ~PushPullSelectorSampleCell.rinseCellPull
+      ~PushPullSelectorSampleCell.rinseSyringe
+      ~PushPullSelectorSampleCell.setParameter
+      ~PushPullSelectorSampleCell.set_config
+      ~PushPullSelectorSampleCell.set_data
+      ~PushPullSelectorSampleCell.set_object
+      ~PushPullSelectorSampleCell.set_sample
+      ~PushPullSelectorSampleCell.status
+      ~PushPullSelectorSampleCell.swish
+      ~PushPullSelectorSampleCell.transfer
+      ~PushPullSelectorSampleCell.unqueued
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PushPullSelectorSampleCell.app
+   
+   

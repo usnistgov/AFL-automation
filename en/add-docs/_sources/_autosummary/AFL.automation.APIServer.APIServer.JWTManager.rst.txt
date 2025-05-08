@@ -1,0 +1,41 @@
+AFL.automation.APIServer.APIServer.JWTManager
+=============================================
+
+.. currentmodule:: AFL.automation.APIServer.APIServer
+
+.. autoclass:: JWTManager
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~JWTManager.__init__
+      ~JWTManager.additional_claims_loader
+      ~JWTManager.additional_headers_loader
+      ~JWTManager.decode_key_loader
+      ~JWTManager.encode_key_loader
+      ~JWTManager.expired_token_loader
+      ~JWTManager.init_app
+      ~JWTManager.invalid_token_loader
+      ~JWTManager.needs_fresh_token_loader
+      ~JWTManager.revoked_token_loader
+      ~JWTManager.token_in_blocklist_loader
+      ~JWTManager.token_verification_failed_loader
+      ~JWTManager.token_verification_loader
+      ~JWTManager.unauthorized_loader
+      ~JWTManager.user_identity_loader
+      ~JWTManager.user_lookup_error_loader
+      ~JWTManager.user_lookup_loader
+   
+   
+
+   
+   
+   

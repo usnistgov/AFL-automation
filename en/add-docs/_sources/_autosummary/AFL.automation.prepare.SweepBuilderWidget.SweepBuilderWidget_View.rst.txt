@@ -1,0 +1,29 @@
+AFL.automation.prepare.SweepBuilderWidget.SweepBuilderWidget\_View
+==================================================================
+
+.. currentmodule:: AFL.automation.prepare.SweepBuilderWidget
+
+.. autoclass:: SweepBuilderWidget_View
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SweepBuilderWidget_View.__init__
+      ~SweepBuilderWidget_View.make_binary_plot
+      ~SweepBuilderWidget_View.make_stock_grid
+      ~SweepBuilderWidget_View.make_ternary_plot
+      ~SweepBuilderWidget_View.start
+   
+   
+
+   
+   
+   

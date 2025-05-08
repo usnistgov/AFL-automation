@@ -1,0 +1,87 @@
+AFL.automation.prepare.SampleSeriesWidget.Checkbox
+==================================================
+
+.. currentmodule:: AFL.automation.prepare.SampleSeriesWidget
+
+.. autoclass:: Checkbox
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Checkbox.__init__
+      ~Checkbox.add_class
+      ~Checkbox.add_traits
+      ~Checkbox.blur
+      ~Checkbox.class_own_trait_events
+      ~Checkbox.class_own_traits
+      ~Checkbox.class_trait_names
+      ~Checkbox.class_traits
+      ~Checkbox.close
+      ~Checkbox.close_all
+      ~Checkbox.focus
+      ~Checkbox.get_interact_value
+      ~Checkbox.get_manager_state
+      ~Checkbox.get_state
+      ~Checkbox.get_view_spec
+      ~Checkbox.handle_comm_opened
+      ~Checkbox.handle_control_comm_opened
+      ~Checkbox.has_trait
+      ~Checkbox.hold_sync
+      ~Checkbox.hold_trait_notifications
+      ~Checkbox.notify_change
+      ~Checkbox.observe
+      ~Checkbox.on_msg
+      ~Checkbox.on_trait_change
+      ~Checkbox.on_widget_constructed
+      ~Checkbox.open
+      ~Checkbox.remove_class
+      ~Checkbox.send
+      ~Checkbox.send_state
+      ~Checkbox.set_state
+      ~Checkbox.set_trait
+      ~Checkbox.setup_instance
+      ~Checkbox.trait_defaults
+      ~Checkbox.trait_events
+      ~Checkbox.trait_has_value
+      ~Checkbox.trait_metadata
+      ~Checkbox.trait_names
+      ~Checkbox.trait_values
+      ~Checkbox.traits
+      ~Checkbox.unobserve
+      ~Checkbox.unobserve_all
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Checkbox.comm
+      ~Checkbox.cross_validation_lock
+      ~Checkbox.description
+      ~Checkbox.description_allow_html
+      ~Checkbox.description_tooltip
+      ~Checkbox.disabled
+      ~Checkbox.indent
+      ~Checkbox.keys
+      ~Checkbox.layout
+      ~Checkbox.log
+      ~Checkbox.model_id
+      ~Checkbox.style
+      ~Checkbox.tabbable
+      ~Checkbox.tooltip
+      ~Checkbox.value
+      ~Checkbox.widget_types
+      ~Checkbox.widgets
+   
+   

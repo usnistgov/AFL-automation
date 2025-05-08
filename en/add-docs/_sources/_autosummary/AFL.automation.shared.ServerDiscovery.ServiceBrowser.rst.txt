@@ -38,10 +38,10 @@ AFL.automation.shared.ServerDiscovery.ServiceBrowser
 
    .. autosummary::
    
+      ~ServiceBrowser.done
+      ~ServiceBrowser.query_scheduler
       ~ServiceBrowser.types
       ~ServiceBrowser.zc
-      ~ServiceBrowser.query_scheduler
-      ~ServiceBrowser.done
       ~ServiceBrowser.daemon
       ~ServiceBrowser.ident
       ~ServiceBrowser.name

@@ -1,0 +1,68 @@
+AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell
+==============================================================================
+
+.. currentmodule:: AFL.automation.loading.PneumaticPressureSampleCell
+
+.. autoclass:: PneumaticPressureSampleCell
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PneumaticPressureSampleCell.__init__
+      ~PneumaticPressureSampleCell.advanceSample
+      ~PneumaticPressureSampleCell.calibrate_sensor
+      ~PneumaticPressureSampleCell.deposit_obj
+      ~PneumaticPressureSampleCell.execute
+      ~PneumaticPressureSampleCell.gather_defaults
+      ~PneumaticPressureSampleCell.get_config
+      ~PneumaticPressureSampleCell.get_configs
+      ~PneumaticPressureSampleCell.get_object
+      ~PneumaticPressureSampleCell.get_sample
+      ~PneumaticPressureSampleCell.get_sensor_config
+      ~PneumaticPressureSampleCell.loadSample
+      ~PneumaticPressureSampleCell.post_execute
+      ~PneumaticPressureSampleCell.pre_execute
+      ~PneumaticPressureSampleCell.primeRinse
+      ~PneumaticPressureSampleCell.queued
+      ~PneumaticPressureSampleCell.quickbar
+      ~PneumaticPressureSampleCell.read_sensor
+      ~PneumaticPressureSampleCell.read_sensor_poll
+      ~PneumaticPressureSampleCell.read_sensor_poll_load
+      ~PneumaticPressureSampleCell.reset_sample
+      ~PneumaticPressureSampleCell.reset_tank_levels
+      ~PneumaticPressureSampleCell.retrieve_obj
+      ~PneumaticPressureSampleCell.rinseAll
+      ~PneumaticPressureSampleCell.rinseCell
+      ~PneumaticPressureSampleCell.sensor_reset
+      ~PneumaticPressureSampleCell.setRinseLevel
+      ~PneumaticPressureSampleCell.setWasteLevel
+      ~PneumaticPressureSampleCell.set_config
+      ~PneumaticPressureSampleCell.set_data
+      ~PneumaticPressureSampleCell.set_object
+      ~PneumaticPressureSampleCell.set_sample
+      ~PneumaticPressureSampleCell.set_sensor_config
+      ~PneumaticPressureSampleCell.status
+      ~PneumaticPressureSampleCell.stopLoad
+      ~PneumaticPressureSampleCell.unqueued
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PneumaticPressureSampleCell.app
+      ~PneumaticPressureSampleCell.data
+      ~PneumaticPressureSampleCell.defaults
+   
+   

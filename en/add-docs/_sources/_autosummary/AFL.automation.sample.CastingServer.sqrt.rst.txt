@@ -1,0 +1,6 @@
+AFL.automation.sample.CastingServer.sqrt
+========================================
+
+.. currentmodule:: AFL.automation.sample.CastingServer
+
+.. autofunction:: sqrt

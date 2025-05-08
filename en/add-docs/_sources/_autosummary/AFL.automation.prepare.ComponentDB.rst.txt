@@ -1,0 +1,30 @@
+AFL.automation.prepare.ComponentDB
+==================================
+
+.. currentmodule:: AFL.automation.prepare
+
+.. autoclass:: ComponentDB
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ComponentDB.__init__
+      ~ComponentDB.add
+      ~ComponentDB.add_interactive
+      ~ComponentDB.read
+      ~ComponentDB.remove
+      ~ComponentDB.write
+   
+   
+
+   
+   
+   

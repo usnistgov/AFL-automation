@@ -1,0 +1,46 @@
+AFL.automation.prepare.Component
+================================
+
+.. automodule:: AFL.automation.prepare.Component
+  
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:                                     
+   
+      enforce_units
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:                                      
+      :template: custom-class-template.rst            
+   
+      Component
+      PrepType
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:                                        
+   
+      ParseException
+   
+   
+
+
+

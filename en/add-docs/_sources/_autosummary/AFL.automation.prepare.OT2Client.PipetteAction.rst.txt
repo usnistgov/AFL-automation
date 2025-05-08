@@ -1,0 +1,27 @@
+AFL.automation.prepare.OT2Client.PipetteAction
+==============================================
+
+.. currentmodule:: AFL.automation.prepare.OT2Client
+
+.. autoclass:: PipetteAction
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PipetteAction.__init__
+      ~PipetteAction.emit_protocol
+      ~PipetteAction.get_kwargs
+   
+   
+
+   
+   
+   

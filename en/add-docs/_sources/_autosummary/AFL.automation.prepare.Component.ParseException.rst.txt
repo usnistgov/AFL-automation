@@ -1,0 +1,6 @@
+AFL.automation.prepare.Component.ParseException
+===============================================
+
+.. currentmodule:: AFL.automation.prepare.Component
+
+.. autoexception:: ParseException

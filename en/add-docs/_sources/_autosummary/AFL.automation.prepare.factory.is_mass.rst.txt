@@ -1,0 +1,6 @@
+AFL.automation.prepare.factory.is\_mass
+=======================================
+
+.. currentmodule:: AFL.automation.prepare.factory
+
+.. autofunction:: is_mass

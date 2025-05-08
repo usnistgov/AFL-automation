@@ -1,0 +1,25 @@
+AFL.automation.prepare.PrepareWidget.PrepareWidget\_Model
+=========================================================
+
+.. currentmodule:: AFL.automation.prepare.PrepareWidget
+
+.. autoclass:: PrepareWidget_Model
+   :members:              
+   :show-inheritance:    
+   :inherited-members:   
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PrepareWidget_Model.__init__
+   
+   
+
+   
+   
+   

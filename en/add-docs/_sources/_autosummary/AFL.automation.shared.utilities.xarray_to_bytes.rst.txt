@@ -1,0 +1,6 @@
+AFL.automation.shared.utilities.xarray\_to\_bytes
+=================================================
+
+.. currentmodule:: AFL.automation.shared.utilities
+
+.. autofunction:: xarray_to_bytes

@@ -24,6 +24,8 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         Driver.__init__(self, name='BioSANSPrepare', defaults=self.gather_defaults(), overrides=overrides)
         self._client = None
         self.stock_pv_map = {}
+        self.stocks = []
+        self.targets = []
     
     def status(self):
         """

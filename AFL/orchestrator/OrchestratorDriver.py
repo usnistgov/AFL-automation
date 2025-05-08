@@ -155,20 +155,10 @@ class OrchestratorDriver(Driver):
                     raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
 
         # Validate other list types
-        list_keys = ['components', 'AL_components', 'mix_order', 'camera_urls']
+        list_keys = ['components', 'AL_components', 'camera_urls']
         for key in list_keys:
             if not isinstance(self.config[key], list):
                 raise TypeError(f"self.config['{key}'] must be a list")
-        # Validate dicts
-
-        if not isinstance(self.config['custom_stock_settings'],dict):
-            raise TypeError("self.config['custom_stock_settings'] must be a dict")
-
-        # Validate other dict types
-        list_keys = ['custom_stock_settings']
-        for key in list_keys:
-            if not isinstance(self.config[key], dict):
-                raise TypeError(f"self.config['{key}'] must be a dict")
 
         # Validate types of other keys
         if not isinstance(self.config['ternary'], bool):
@@ -423,7 +413,7 @@ class OrchestratorDriver(Driver):
                 return False # update this
             
             # Extract the realized composition from feasibility result
-            sample_composition_realized = feasibility_result[0]]
+            sample_composition_realized = feasibility_result[0]
             
             # Update sample information with target and realized compositions
             self.data['sample_composition_target'] = composition

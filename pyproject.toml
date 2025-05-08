@@ -2,6 +2,9 @@
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = ["AFL"]
+
 [project]
 name = "AFL-automation"
 version = "0.0.1"
@@ -12,14 +15,7 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.8"
-license = {file = "LICENSE"}
-
-[project.scripts]
-roboctl = "AFL.automation.cli:main"
-
-[project.entry-points."tiled.special_client"]
-"afl.event_catalog" = "AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents:CatalogOfAFLEvents"
-"afl.driver_task" = "AFL.automation.APIServer.data.TiledClients.DriverTask:DriverTask"
+license = "NIST-PD-fallback"
 dependencies = [
   # Web framework and related
   "Flask<2.3",
@@ -58,6 +54,13 @@ dependencies = [
   "setuptools",
   "ipython"
 ]
+
+[project.scripts]
+roboctl = "AFL.automation.cli:main"
+
+[project.entry-points."tiled.special_client"]
+"afl.event_catalog" = "AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents:CatalogOfAFLEvents"
+"afl.driver_task" = "AFL.automation.APIServer.data.TiledClients.DriverTask:DriverTask"
 
 [project.optional-dependencies]
 labjack = ["labjack-ljm"]

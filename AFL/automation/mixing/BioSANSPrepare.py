@@ -3,7 +3,7 @@ import time
 from typing import List, Union, Dict, Any
 from AFL.automation.mixing.MassBalance import MassBalanceDriver, MassBalance
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.shared.utils import listify
+from AFL.automation.shared.utilities import listify
 from eic_client.EICClient import EICClient
 
 class BioSANSPrepare(MassBalanceDriver, Driver):

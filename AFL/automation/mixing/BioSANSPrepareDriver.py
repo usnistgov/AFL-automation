@@ -7,7 +7,6 @@ from eic_client.EICClient import EICClient
 class BioSANSPrepareDriver(MassBalanceDriver, Driver):
     defaults = {
         'mixing_locations': [],
-        'tip_locations': [],
         'prepare_volume': '100 ul',
         'catch_volume': '10 ul',
         'deck': {},
@@ -29,10 +28,9 @@ class BioSANSPrepareDriver(MassBalanceDriver, Driver):
         Get the status of the BioSANSPrepareDriver.
         """
         status = []
-        status.append(f'Stocks: {self.config["targets"]}')
-        status.append(f'Stock PV Map: {self.stock_pv_map}')
+        status.append(f'Stocks: {self.config["stocks"]}')
+        status.append(f'Stocks on BioSANS: {list(self.stock_pv_map.keys())}')
         status.append(f'{len(self.config["mixing_locations"])} mixing locations left')
-        status.append(f'{len(self.config["tip_locations"])} tip locations left')
         return status
             
 
@@ -57,10 +55,10 @@ class BioSANSPrepareDriver(MassBalanceDriver, Driver):
         self.make_stock_pv_map()
 
         for transfer in balanced['balanced_target'].protocol:
-            source = self.stock_pv_map[transfer['source']]
-            #dest = self.config['mixing_locations'].pop(0)
-            self.set_pv(source, transfer['volume'])
-        
+            source = self.stock_pv_map[transfer.source]
+            
+            dest = self.config['mixing_locations'].pop(0)
+            
         # self.config._update_history() # need to do this because we're popping from the list
         
 
@@ -115,7 +113,7 @@ class BioSANSPrepareDriver(MassBalanceDriver, Driver):
     def get_pv(self, pv_name, timeout=10):
         success_get, pv_value_read, response_data_get = self.client.get_pv(pv_name, timeout)
         if not success_get:
-            raise ValueError(f'Failed to get PV {pv_name}')
+            raise ValueError(f'Failed to get PV {pv_name}: {response_data_get}')
         return pv_value_read
 
 

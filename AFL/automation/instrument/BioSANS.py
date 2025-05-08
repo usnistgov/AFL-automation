@@ -130,14 +130,14 @@ class BioSANS(Driver):
                 )
 
         run_number = self.getLastRunNumber()
-        filename = f'r{run_number:d}_{run_number:d}_1D_combined.txt'
+        filename = f'r{run_number:d}_{run_number:d}_1D_main.txt'
         filepath = pathlib.Path(path) / filename
         return filepath
 
 
     def _readLastReducedFile(self):
         filepath = self.getLastFilePath()
-        q, I, dI, dQ = np.loadtxt(filepath, skiprows=2, delimiter='\s+').T
+        q, I, dI, dQ = np.loadtxt(filepath, skiprows=2).T
         return {'q': q, 'I': I, 'dI': dI, 'dQ': dQ}
 
     @Driver.unqueued(render_hint='2d_img', log_image=True)

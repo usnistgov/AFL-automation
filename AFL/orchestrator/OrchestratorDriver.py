@@ -423,7 +423,7 @@ class OrchestratorDriver(Driver):
                 return False # update this
             
             # Extract the realized composition from feasibility result
-            sample_composition_realized = feasibility_result[0]]
+            sample_composition_realized = feasibility_result[0]
             
             # Update sample information with target and realized compositions
             self.data['sample_composition_target'] = composition

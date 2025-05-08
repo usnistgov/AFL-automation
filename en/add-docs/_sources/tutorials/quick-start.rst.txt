@@ -45,8 +45,40 @@ Once you have a driver, you can turn it into a web service:
     server.create_queue(my_driver)
     server.run(host='0.0.0.0', port=5000)
 
-Accessing the Service
---------------------
+We usually run the server using a short-hand module called :mod:`AFL.automation.shared.launcher`. 
+This requires two lines of boilerplate code at the end of your driver, like so.  
+It also requires the module (i.e, the Python file your driver is in) to be named the same as the Driver name.
+
+.. code-block:: python
+    from AFL.automation.APIServer.Driver import Driver
+    
+    class SimpleDriver(Driver):
+        defaults = {}
+        defaults['greeting'] = 'Hello, World!'
+        
+        def __init__(self, overrides=None):
+            Driver.__init__(self, name='SimpleDriver', 
+                           defaults=self.gather_defaults(),
+                           overrides=overrides)
+        
+        def say_hello(self):
+            """Say a greeting based on configuration"""
+            return self.config['greeting']
+
+    if __name__ == '__main__':
+        from AFL.automation.shared.launcher import *
+
+Once you have these magic lines in your Driver, you can simply invoke the server as a Python module from the command line:
+ .. code-block:: bash
+    python -m SimpleDriver
+    
+or for a built-in driver, for instance SeabreezeUVVis:
+
+.. code-block:: bash
+    python -m AFL.automation.instrument.SeabreezeUVVis
+
+Accessing the Service (API)
+-------------------------------
 
 You can now access your service via HTTP requests or use the built-in client:
 
@@ -68,6 +100,14 @@ You can now access your service via HTTP requests or use the built-in client:
     # Get the result of the task
     result = client.get_result(response)
     print(result)  # Outputs: 'Hello, World!'
+
+Accessing the Service (Browser)
+--------------------------------
+
+You also get a browser-based user interface, accessible by simply pointing a browser to http://localhost:5000
+
+Using this interface, you can view the driver status, call methods that are labeled as quickbar methods, pause/unpause the queue, and set configuration items.
+
 
 Next Steps
 ---------

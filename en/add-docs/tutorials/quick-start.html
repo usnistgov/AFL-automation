@@ -14,7 +14,7 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -59,7 +59,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Start Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#creating-your-first-driver">Creating Your First Driver</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-as-a-microservice">Running as a Microservice</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#accessing-the-service">Accessing the Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#accessing-the-service-api">Accessing the Service (API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#accessing-the-service-browser">Accessing the Service (Browser)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
@@ -76,7 +77,8 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Quick Start Guide</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#creating-your-first-driver">Creating Your First Driver</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-as-a-microservice">Running as a Microservice</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#accessing-the-service">Accessing the Service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#accessing-the-service-api">Accessing the Service (API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#accessing-the-service-browser">Accessing the Service (Browser)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
@@ -4086,9 +4088,16 @@
 <span class="n">server</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>We usually run the server using a short-hand module called <code class="xref py py-mod docutils literal notranslate"><span class="pre">AFL.automation.shared.launcher</span></code>.
+This requires two lines of boilerplate code at the end of your driver, like so.
+It also requires the module (i.e, the Python file your driver is in) to be named the same as the Driver name.</p>
+<dl class="simple">
+<dt>Once you have these magic lines in your Driver, you can simply invoke the server as a Python module from the command line:</dt><dd></dd>
+</dl>
+<p>or for a built-in driver, for instance SeabreezeUVVis:</p>
 </section>
-<section id="accessing-the-service">
-<h2>Accessing the Service<a class="headerlink" href="#accessing-the-service" title="Link to this heading"></a></h2>
+<section id="accessing-the-service-api">
+<h2>Accessing the Service (API)<a class="headerlink" href="#accessing-the-service-api" title="Link to this heading"></a></h2>
 <p>You can now access your service via HTTP requests or use the built-in client:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Client</span> <span class="kn">import</span> <span class="n">Client</span>
 
@@ -4108,6 +4117,11 @@
 <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># Outputs: &#39;Hello, World!&#39;</span>
 </pre></div>
 </div>
+</section>
+<section id="accessing-the-service-browser">
+<h2>Accessing the Service (Browser)<a class="headerlink" href="#accessing-the-service-browser" title="Link to this heading"></a></h2>
+<p>You also get a browser-based user interface, accessible by simply pointing a browser to <a class="reference external" href="http://localhost:5000">http://localhost:5000</a></p>
+<p>Using this interface, you can view the driver status, call methods that are labeled as quickbar methods, pause/unpause the queue, and set configuration items.</p>
 </section>
 <section id="next-steps">
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>

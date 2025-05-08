@@ -1,5 +1,5 @@
 import pytest
-from AFL.automation.mixing.MassBalanceLocal import MassBalanceLocal
+from AFL.automation.mixing.MassBalance import MassBalance
 from AFL.automation.mixing.Solution import Solution
 from AFL.automation.mixing.TargetSolution import TargetSolution
 from AFL.automation.shared.units import units
@@ -7,7 +7,7 @@ from AFL.automation.shared.units import units
 
 @pytest.mark.usefixtures("mixdb")
 def test_mixed_solvents_mass():
-    with MassBalanceLocal() as mb:
+    with MassBalance() as mb:
         Solution(
             name="Stock1",
             masses={"H2O": f"20 g"},
@@ -39,8 +39,11 @@ def test_mixed_solvents_mass():
     mb.balance()
     assert len(mb.targets) == 5
     assert len(mb.stocks) == 3
+
+    none_count = 0
     for target,balanced in mb.balanced:
         if balanced is None:
+            none_count += 1
             continue
         assert balanced.mass.to('mg').magnitude == pytest.approx(500)
         assert balanced.concentration['NaCl'].to('mg/ml').magnitude == pytest.approx(25)
@@ -53,4 +56,4 @@ def test_mixed_solvents_mass():
         assert sub_balanced.mass_fraction['H2O'] == pytest.approx(sub_target.mass_fraction['H2O'])
         assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'])
 
-
+    assert none_count == 2

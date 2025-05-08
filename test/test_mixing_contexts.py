@@ -1,11 +1,11 @@
 import pytest
-from AFL.automation.mixing.MassBalanceLocal import MassBalanceLocal
+from AFL.automation.mixing.MassBalance import MassBalance
 from AFL.automation.mixing.Solution import Solution
 from AFL.automation.mixing.TargetSolution import TargetSolution
 
 @pytest.mark.usefixtures('mixdb')
 def test_massbalance_context_add_solution():
-    with MassBalanceLocal() as mb:
+    with MassBalance() as mb:
         solution1 = Solution(
             name='Solution1',
             volumes={'H2O': '10 ml', 'Hexanes': '2 ml'},
@@ -24,7 +24,7 @@ def test_massbalance_context_add_solution():
 
 @pytest.mark.usefixtures('mixdb')
 def test_massbalance_context_reset():
-    with MassBalanceLocal() as mb:
+    with MassBalance() as mb:
         solution1 = Solution(
             name='Solution1',
             volumes={'H2O': '10 ml', 'Hexanes': '2 ml'},
@@ -52,7 +52,7 @@ def test_massbalance_context_reset():
 
 @pytest.mark.usefixtures('mixdb')
 def test_nested_massbalance_contexts():
-    with MassBalanceLocal() as mb_outer:
+    with MassBalance() as mb_outer:
         solution_outer = Solution(
             name='OuterSolution',
             volumes={'H2O': '10 ml'},
@@ -60,7 +60,7 @@ def test_nested_massbalance_contexts():
             total_volume='10 ml'
         )
 
-        with MassBalanceLocal() as mb_inner:
+        with MassBalance() as mb_inner:
             solution_inner = Solution(
                 name='InnerSolution',
                 volumes={'H2O': '5 ml'},
@@ -77,7 +77,7 @@ def test_nested_massbalance_contexts():
 
 @pytest.mark.usefixtures('mixdb')
 def test_massbalance_context_solution_and_targetsolution():
-    with MassBalanceLocal() as mb:
+    with MassBalance() as mb:
         solution = Solution(
             name='TestSolution',
             volumes={'H2O': '10 ml'},

@@ -65,7 +65,7 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
             self.process_stocks()
             
         # Get the minimum volume configuration
-        minimum_volume = self.config.get('minimum_volume', '20 ul')
+        minimum_volume = self.config.get('minimum_volume', '100 ul')
         
         results = []
         for target in targets_to_check:
@@ -213,6 +213,7 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
                     f"Stock PV for '{source_stock_name}' not found in stock_pv_map. "
                     f"Available stocks in map: {list(self.stock_pv_map.keys())}"
                 )
+            self.set_pv(self.stock_pv_map[source_stock_name], pipette_action.volume)
 
         # Start the automated mixing process
         try:

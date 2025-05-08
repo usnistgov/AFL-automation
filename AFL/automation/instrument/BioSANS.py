@@ -6,13 +6,13 @@ import os
 import copy
 import numpy as np  # for return types in get data
 import h5py  # for Nexus file writing
+from epics import caget, caput, cainfo
 
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
 
 from eic_client.EICClient import EICClient
 
-class BioSANS(ScatteringInstrument, Driver):
+class BioSANS(Driver):
     '''
     Driver for Bio-SANS instrument ORNL.
     '''
@@ -30,14 +30,10 @@ class BioSANS(ScatteringInstrument, Driver):
 
         self.app = None
         Driver.__init__(self, name='BioSANS', defaults=self.gather_defaults(), overrides=overrides)
-        ScatteringInstrument.__init__(self)
 
         self._client = None
 
         self.last_scan_id = None
-
-        if self.config['reduced_data_dir'] is not None:
-            os.chdir(self.config['reduced_data_dir'])
 
         self.__instrument_name__ = 'ORNL Bio-SANS instrument'
 
@@ -72,6 +68,15 @@ class BioSANS(ScatteringInstrument, Driver):
         Reset the EICClient instance
         '''
         self._client = None
+
+    def getLastRunNumber(self):
+        return caget('CG3:CS:RunControl:LastRunNumber')
+        
+        # timeout = 120
+        # success_get, pv_value_read, response_data_get = self.client.get_pv(pv_name, timeout)
+        # if not success_get:
+        #     raise RuntimeError(f'Could not read pv {pv_name}. Response: {response_data_get}')
+        # return pv_value_read
     
     def lastMeasuredTransmission(self):
         return self.last_measured_transmission
@@ -79,13 +84,13 @@ class BioSANS(ScatteringInstrument, Driver):
     @Driver.unqueued()
     def getLastReductionLogFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/RC-{RUN_CYCLE}/{CONFIG}' #path
+        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}' #path
 
         path = pathlib.Path(
             data_path.format(
                 INST=self.config['beamline'],
                 IPTS=self.config['ipts_number'], 
-                RUN_CYCLE=self.config['run_cylce'], 
+                RUN_CYCLE=self.config['run_cycle'], 
                 CONFIG=self.config['config']
                 )
                 )
@@ -105,7 +110,6 @@ class BioSANS(ScatteringInstrument, Driver):
     def getLastTransmission(self, **kwargs):
         return self.readFileSafely(self._readLastTransmission)
 
-
     def setExposure(self, exposure):
         if self.app is not None:
             self.app.logger.debug(f'Setting exposure time to {exposure}')
@@ -114,13 +118,13 @@ class BioSANS(ScatteringInstrument, Driver):
     @Driver.unqueued()
     def getLastFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/RC-{RUN_CYCLE}/{CONFIG}/1D' #path
+        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D' #path
 
         path = pathlib.Path(
             data_path.format(
                 INST=self.config['beamline'],
                 IPTS=self.config['ipts_number'], 
-                RUN_CYCLE=self.config['run_cylce'], 
+                RUN_CYCLE=self.config['run_cycle'], 
                 CONFIG=self.config['config']
                 )
                 )
@@ -133,26 +137,25 @@ class BioSANS(ScatteringInstrument, Driver):
 
     def _readLastReducedFile(self):
         filepath = self.getLastFilePath()
-        q, I, dI, dQ = np.loadtxt(filepath, skiprows=2).T
-
+        q, I, dI, dQ = np.loadtxt(filepath, skiprows=2, delimiter='\s+').T
         return {'q': q, 'I': I, 'dI': dI, 'dQ': dQ}
 
     @Driver.unqueued(render_hint='2d_img', log_image=True)
-    def readFileSafely(self, file_read_function, **kwargs):
+    def readFileSafely(self, file_read_function, attempts_limit=300, attempts_pause_time=1.0, **kwargs):
         try:
             data = file_read_function()
         except (FileNotFoundError, OSError, KeyError):
             nattempts = 1
-            while nattempts < 31:
+            while nattempts < attempts_limit:
                 nattempts = nattempts + 1
-                time.sleep(1.0)
+                time.sleep(attempts_pause_time)
                 try:
                     data = file_read_function()
-                except (FileNotFoundError, OSError, KeyError):
-                    if nattempts == 30:
-                        raise FileNotFoundError(f'Could not locate file after {nattempts} tries')
+                except (FileNotFoundError, OSError, KeyError) as e:
+                    if nattempts == attempts_limit:
+                        raise FileNotFoundError(f'Could not locate file after {nattempts} tries: {e}')
                     else:
-                        warnings.warn(f'Failed to load file, trying again, this is try {nattempts}')
+                        warnings.warn(f'Failed to load file, trying again, this is try {nattempts}: {e}',stacklevel=2)
                 else:
                     break
 
@@ -210,12 +213,18 @@ class BioSANS(ScatteringInstrument, Driver):
             'desc': 'AFL submitted table scan'
         }
 
+        headers = ['Title','Wait For','Value']
+        row = [name,'seconds',exposure]
+        
+        # headers.append('CG3:CS:SANSQUser:SampleToMain')
+        # row.append(15.5)
+        
         if exposure_type == 'time':
             success, self.last_scan_id,response_data = self.client.submit_table_scan(
                 parms={
                     'run_mode': 0, #????
-                    'headers': ['Title','Wait For','Value'],
-                    'rows': [[name, 'seconds', exposure]]
+                    'headers': headers,
+                    'rows': [row],
                 },
                 desc=f'AFL submitted table scan named {name}',
                 simulate_only=False,
@@ -224,8 +233,13 @@ class BioSANS(ScatteringInstrument, Driver):
             raise NotImplementedError('Monitor exposure is not implemented for BioSANS')
         elif exposure_type == 'detector':
             raise NotImplementedError('Monitor exposure is not implemented for BioSANS')
-
-        if block:
+        else:
+            raise NotImplementedError(f"exposure_type not recognized: {exposure_type}")
+        
+        if not success:
+            raise RuntimeError(f'Error in EIC table scan: {response_data}')
+        
+        if success and block:
             self.blockForTableScan()
 
     @Driver.quickbar(qb={'button_text': 'Expose',
@@ -236,7 +250,7 @@ class BioSANS(ScatteringInstrument, Driver):
                              'measure_transmission': {'label': 'Measure Trans?', 'type': 'bool', 'default': True}
                          }})
     def expose(self, name=None, exposure=None, block=True,
-               save_reduced_data=True, save_nexus=True, exposure_type='detector'):
+               save_reduced_data=True, save_nexus=True, exposure_type='time'):
         """
         Perform an exposure with the specified parameters.
 
@@ -266,7 +280,7 @@ class BioSANS(ScatteringInstrument, Driver):
         """
         self._validateExposureType(exposure_type)
 
-        self._simple_expose(exposure=exposure, exposure_type=exposure_type, block=block)
+        self._simple_expose(exposure=exposure, name=name, exposure_type=exposure_type, block=block)
         time.sleep(15)
 
         if self.data is not None:

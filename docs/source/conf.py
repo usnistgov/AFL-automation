@@ -31,7 +31,8 @@ extensions = [
 	]
 
 templates_path = ['_templates']
-exclude_patterns = []
+# Exclude script files from documentation
+exclude_patterns = ['**/nbutil*.py', '**/nbutil-*.py']
 
 # Autosummary settings
 autosummary_generate = True

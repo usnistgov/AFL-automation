@@ -1,5 +1,6 @@
 from AFL.automation.APIServer.Driver import Driver
-import serial
+import lazy_loader as lazy
+serial = lazy.load("serial", require="AFL-automation[serial]")
 import time
 class TemperatureDeck(Driver):
 

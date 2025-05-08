@@ -4,7 +4,8 @@ import datetime
 from AFL.automation.APIServer.Driver import Driver
 import numpy as np # for return types in get data
 import h5py #for Nexus file reading
-import epics
+import lazy_loader as lazy
+epics = lazy.load("epics", require="AFL-automation[neutron-scattering]")
 import os
 import pathlib
 import warnings

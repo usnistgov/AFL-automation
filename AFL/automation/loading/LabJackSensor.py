@@ -1,9 +1,10 @@
-from labjack import ljm
+import lazy_loader as lazy
+# Lazy-load the labjack optional dependency
+ljm = lazy.load("labjack.ljm", require="AFL-automation[labjack]")
+LJMError = lazy.load("labjack.ljm.ljm.LJMError", require="AFL-automation[labjack]")
 
 from AFL.automation.loading.Sensor import Sensor
 import time
-
-from labjack.ljm.ljm import LJMError
 
 
 

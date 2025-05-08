@@ -7,7 +7,7 @@ from AFL.automation.shared.utilities import listify
 import warnings
 from math import ceil,sqrt
 import os,json,pathlib
-import serial
+serial = lazy.load("serial", require="AFL-automation[serial]")
 import numpy 
 
 '''

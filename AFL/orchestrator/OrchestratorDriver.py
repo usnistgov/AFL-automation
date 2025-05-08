@@ -316,40 +316,12 @@ class OrchestratorDriver(Driver):
                 output_str = f'take_snapshot failed with error: {error.__repr__()}\n\n' + traceback.format_exc() + '\n\n'
                 self.app.logger.warning(output_str)
 
-    def mfrac_to_mass(self, mass_fractions:Dict, fixed_conc: Dict, sample_volume, output_units:str='mg'):
-        """Convert ternary/Barycentric mass fractions to mass"""
-        if not (len(mass_fractions) == 3):
-            raise ValueError('Only ternaries are currently supported. Need to pass three mass fractions')
-
-        if len(fixed_conc) > 1:
-            raise ValueError('Only one concentration should be fixed!')
-        specified_component = list(fixed_conc.keys())[0]
-
-        components = list(mass_fractions.keys())
-        components.remove(specified_component)
-
-        xB = mass_fractions[components[0]] * units('')
-        xC = mass_fractions[components[1]] * units('')
-        XB = xB / (1 - xB)
-        XC = xC / (1 - xC)
-
-        mA = (fixed_conc[specified_component] * sample_volume)
-        mC = mA * (XC + XB * XC) / (1 - XB * XC)
-        mB = XB * (mA + mC)
-
-        mass_dict = {}
-        mass_dict[specified_component] = mA.to(output_units)
-        mass_dict[components[0]] = mB.to(output_units)
-        mass_dict[components[1]] = mC.to(output_units)
-        return mass_dict
-
     def process_sample(
             self,
             composition: Dict,
             sample_volume: Dict,
             fixed_concs: Dict,
             prepare_mfrac_split: Optional[Dict]=None,
-            predict_combine_comps: Optional[Dict]=None,
             predict_next: bool = False,
             enqueue_next: bool = False,
             calibrate_sensor: bool = False,
@@ -442,16 +414,16 @@ class OrchestratorDriver(Driver):
             # Check if the requested composition is feasible
             feasibility_result = self.get_client('prep').enqueue(
                 task_name='is_feasible',
-                target=composition,
+                targets=[composition],
                 interactive=True
             )['return_val']
             
-            if not feasibility_result.get('feasible', False):
+            if feasibility_result[0] is None:
                 self.update_status("Requested composition is not feasible with available stocks.")
-                return False
+                return False # update this
             
             # Extract the realized composition from feasibility result
-            sample_composition_realized = feasibility_result.get('composition', {})
+            sample_composition_realized = feasibility_result[0]]
             
             # Update sample information with target and realized compositions
             self.data['sample_composition_target'] = composition
@@ -550,7 +522,7 @@ class OrchestratorDriver(Driver):
             return False
             
         # Extract location of the prepared solution
-        solution_location = prepare_result.get('location')
+        solution_location = prepare_result[1]
         
         # Transfer sample from preparation unit to measurement system
         self.update_status(f'Transferring sample {name} to syringe loader')
@@ -568,9 +540,6 @@ class OrchestratorDriver(Driver):
             self.update_status(f"Waiting for sample prep/catch of {name} to finish: {self.uuid['catch'][-8:]}")
             self.get_client('prep').wait(self.uuid['catch'])
             self.take_snapshot(prefix=f'03-after-catch-{name}')
-
-        # homing robot to try to mitigate drift problems
-        self.get_client('prep').enqueue(task_name='home')
 
         # do the sample measurement train
         self.update_status(f"Measuring sample with all loaded instruments...")

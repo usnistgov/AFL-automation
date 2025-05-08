@@ -59,6 +59,7 @@ class OrchestratorDriver(Driver):
     defaults['sample_composition_tol'] = 0.0
     defaults['next_samples_variable'] = 'next_samples'
     defaults['camera_urls'] = []
+    defaults['tiled_exclusion_list'] = []
     defaults['snapshot_directory'] = []
     defaults['grid_file'] = None
     defaults['grid_blank_interval'] = None
@@ -155,7 +156,7 @@ class OrchestratorDriver(Driver):
                     raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
 
         # Validate other list types
-        list_keys = ['components', 'AL_components', 'camera_urls']
+        list_keys = ['components', 'AL_components', 'camera_urls', 'tiled_exclusion_list']
         for key in list_keys:
             if not isinstance(self.config[key], list):
                 raise TypeError(f"self.config['{key}'] must be a list")

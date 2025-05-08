@@ -119,5 +119,8 @@ class BioSANSPrepareDriver(MassBalanceDriver, Driver):
         return pv_value_read
 
 
+_DEFAULT_PORT=5002
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *
 
     

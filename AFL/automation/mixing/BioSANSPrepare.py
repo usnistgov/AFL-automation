@@ -245,7 +245,7 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
 
     def transfer(self, src: str, dest: str, volume: str):
         """Transfer a specified volume from src to dest."""
-        raise NotImplementedError("Transfer is not implemented for BioSANSPrepareDriver.")
+        pass
 
 
     def reset(self):

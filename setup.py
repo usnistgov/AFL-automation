@@ -1,5 +1,4 @@
 from setuptools import setup,Extension,find_packages
-import numpy as np
 
 setup(
     name='AFL-automation',

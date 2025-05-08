@@ -7,11 +7,19 @@ name = "AFL-automation"
 version = "0.0.1"
 description = "Hardware interfacing code for the Autonomous Formulation Lab"
 authors = [
-  { name = "Tyler B. Martin" },
+  { name = "Tyler B. Martin", email = "tyler.martin@nist.gov" },
   { name = "Peter A. Beaucage" }
 ]
 readme = "README.md"
 requires-python = ">=3.8"
+license = {file = "LICENSE"}
+
+[project.scripts]
+roboctl = "AFL.automation.cli:main"
+
+[project.entry-points."tiled.special_client"]
+"afl.event_catalog" = "AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents:CatalogOfAFLEvents"
+"afl.driver_task" = "AFL.automation.APIServer.data.TiledClients.DriverTask:DriverTask"
 dependencies = [
   # Web framework and related
   "Flask<2.3",

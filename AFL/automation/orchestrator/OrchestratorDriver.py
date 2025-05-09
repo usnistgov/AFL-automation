@@ -283,7 +283,7 @@ class OrchestratorDriver(Driver):
             refresh = True
 
         if refresh:
-            client.login("SampleServer")
+            client.login("Orchestrator")
             client.debug(False)
 
         return client

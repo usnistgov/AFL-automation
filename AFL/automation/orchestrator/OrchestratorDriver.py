@@ -578,6 +578,8 @@ class OrchestratorDriver(Driver):
 
             if empty:
                 measure_kw = instrument['empty_base_kw']
+                if not measure_kw: # if empty_base_kw is empty, skip the empty on this instrument
+                    continue
             else:
                 measure_kw = instrument['measure_base_kw']
             measure_kw['name'] = name

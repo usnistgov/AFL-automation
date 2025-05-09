@@ -739,7 +739,6 @@ class OrchestratorDriver(Driver):
                     accept = True
                 self.new_data[instrument_data['data_name']].attrs['accept'] = int(accept)
 
-        self.new_data['validated'] = self.validated
         self.new_data['sample_uuid'] = self.uuid['sample']
 
         sample_composition = {}

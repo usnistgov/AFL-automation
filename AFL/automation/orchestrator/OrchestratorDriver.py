@@ -313,6 +313,7 @@ class OrchestratorDriver(Driver):
             sample_volume: Dict,
             fixed_concs: Dict,
             prepare_mfrac_split: Optional[Dict]=None,
+            predict_combine_comps: Optional[Dict]=None,
             predict_next: bool = False,
             enqueue_next: bool = False,
             calibrate_sensor: bool = False,

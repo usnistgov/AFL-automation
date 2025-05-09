@@ -251,6 +251,10 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         """Load a sample into the driver."""
         pass
 
+    def rinseCell(self,*args,**kwargs):
+        """Load a sample into the driver."""
+        pass
+
 
     def reset(self):
         """Reset the driver state/configuration."""

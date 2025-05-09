@@ -243,8 +243,12 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         return balanced_target_dict_from_feasible, destination
         
 
-    def transfer(self, source: str, destination: str, volume: str):
+    def transfer(self,*args,**kwargs):
         """Transfer a specified volume from src to dest."""
+        pass
+
+    def loadSample(self,*args,**kwargs):
+        """Load a sample into the driver."""
         pass
 
 

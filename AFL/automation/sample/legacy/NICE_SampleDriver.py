@@ -2,6 +2,10 @@ from AFL.automation.APIServer.Client import Client
 from AFL.automation.prepare.OT2Client import OT2Client
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
+import lazy_loader as lazy
+
+# Lazy load nice module
+nice = lazy.load("nice", require="AFL-automation[neutron-scattering]")
 
 from math import ceil,sqrt
 import json
@@ -65,7 +69,7 @@ class NICE_SampleDriver(Driver):
     def init_nice(self,nice_url):
         self.nice_url = nice_url
         if nice_url is not None:
-            import nice
+            # Use the lazy-loaded nice module
             self.nice_client = nice.connect(host=nice_url)
 
             #this MUST be imported after the nice_client connects

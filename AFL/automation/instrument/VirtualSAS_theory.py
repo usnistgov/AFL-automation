@@ -7,12 +7,15 @@ import uuid
 import matplotlib
 import numpy as np
 import pandas as pd
+import lazy_loader as lazy
+# SAS modeling libraries only need lazy loading
 import h5py #for Nexus file writing
 
-import sasmodels.data
-import sasmodels.core
-import sasmodels.direct_model
-import sasmodels.bumps_model
+# SAS modeling libraries
+sasmodels_data = lazy.load("sasmodels.data", require="AFL-automation[sas-analysis]")
+sasmodels_core = lazy.load("sasmodels.core", require="AFL-automation[sas-analysis]")
+sasmodels_direct_model = lazy.load("sasmodels.direct_model", require="AFL-automation[sas-analysis]")
+sasmodels_bumps_model = lazy.load("sasmodels.bumps_model", require="AFL-automation[sas-analysis]")
 
 from shapely import MultiPoint
 from shapely.geometry import Point

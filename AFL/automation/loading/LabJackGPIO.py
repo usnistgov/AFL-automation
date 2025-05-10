@@ -1,4 +1,5 @@
-from labjack import ljm
+import lazy_loader as lazy
+ljm = lazy.load("labjack.ljm", require="AFL-automation[labjack]")
 import threading
 import time
 

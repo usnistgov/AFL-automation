@@ -5,13 +5,22 @@ from pathlib import Path
 
 from tiled.client import from_uri
 
-import epics as pye
-import sans.command_interface.ISISCommandInterface as ici
-# import mantid algorithms, numpy and matplotlib
-from mantid.simpleapi import *
 import numpy as np
+import lazy_loader as lazy
 
-from sasdata.dataloader.loader import Loader
+# Neutron scattering and control system dependencies
+pye = lazy.load("epics", require="AFL-automation[neutron-scattering]")
+ISISCommandInterface = lazy.load("sans.command_interface.ISISCommandInterface", require="AFL-automation[neutron-scattering]")
+# Alias to match original code
+ici = ISISCommandInterface
+
+# Mantid will be loaded as needed through the SimpleAPI
+mantid_simpleapi = lazy.load("mantid.simpleapi", require="AFL-automation[neutron-scattering]")
+# For functions previously imported with * from mantid.simpleapi
+# We'll use mantid_simpleapi.FunctionName instead
+
+# SAS data handling
+Loader = lazy.load("sasdata.dataloader.loader.Loader", require="AFL-automation[sas-analysis]")
 
 from AFL.automation.APIServer.Driver import Driver
 

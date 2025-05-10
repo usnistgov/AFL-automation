@@ -1,6 +1,6 @@
-from piplates import DAQC2plate
-
-import RPi.GPIO as GPIO 
+import lazy_loader as lazy
+DAQC2plate = lazy.load("piplates.DAQC2plate", require="AFL-automation[piplates]")
+GPIO = lazy.load("RPi.GPIO", require="AFL-automation[rpi-gpio]")
 
 from AFL.automation.loading.Sensor import Sensor
 

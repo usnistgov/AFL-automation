@@ -1,20 +1,28 @@
 import numpy as np
 import xarray as xr
-import tensorflow as tf
-import gpflow
-from numpy.polynomial import chebyshev, legendre, polynomial
-from gpflow import set_trainable
-from AFL.agent import HscedGaussianProcess as HGP
-from gpflow.optimizers import NaturalGradient
 import itertools
+from numpy.polynomial import chebyshev, legendre, polynomial
 
-# #tentative
-# import geopandas as gpd
-# from longsgis import voronoiDiagram4plg
+# Import lazy_loader for optional dependencies
+import lazy_loader as lazy
 
-from shapely import geometry, STRtree, unary_union, Point, distance, MultiPoint, Polygon
-from shapely.ops import nearest_points
-import alphashape
+# Machine learning dependencies
+tf = lazy.load("tensorflow", require="AFL-automation[ml]")
+gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
+set_trainable = lazy.load("gpflow.set_trainable", require="AFL-automation[ml]")
+HGP = lazy.load("AFL.agent.HscedGaussianProcess", require="AFL-automation[ml]")
+NaturalGradient = lazy.load("gpflow.optimizers.NaturalGradient", require="AFL-automation[ml]")
+
+# Geometry dependencies
+alphashape = lazy.load("alphashape", require="AFL-automation[geometry]")
+shapely_geometry = lazy.load("shapely.geometry", require="AFL-automation[geometry]")
+STRtree = lazy.load("shapely.STRtree", require="AFL-automation[geometry]")
+unary_union = lazy.load("shapely.unary_union", require="AFL-automation[geometry]")
+Point = lazy.load("shapely.Point", require="AFL-automation[geometry]")
+distance = lazy.load("shapely.distance", require="AFL-automation[geometry]")
+MultiPoint = lazy.load("shapely.MultiPoint", require="AFL-automation[geometry]")
+Polygon = lazy.load("shapely.Polygon", require="AFL-automation[geometry]")
+nearest_points = lazy.load("shapely.ops.nearest_points", require="AFL-automation[geometry]")
 
 class Interpolator():
     def __init__(self, dataset):

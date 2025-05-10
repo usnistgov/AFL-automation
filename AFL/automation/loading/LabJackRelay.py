@@ -3,8 +3,9 @@ import atexit
 import warnings
 import time
 import threading
-from labjack import ljm
-from labjack.ljm.ljm import LJMError
+import lazy_loader as lazy
+ljm = lazy.load("labjack.ljm", require="AFL-automation[labjack]")
+LJMError = lazy.load("labjack.ljm.ljm.LJMError", require="AFL-automation[labjack]")
 import numpy as np
 '''
 relaylabels = {

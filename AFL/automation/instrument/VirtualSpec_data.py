@@ -9,8 +9,10 @@ import PIL
 import uuid
 
 from AFL.automation.instrument.GPInterpolator import Interpolator, ClusteredGPs
-import gpflow
-import tensorflow as tf
+import lazy_loader as lazy
+# Lazy load ML dependencies
+gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
+tf = lazy.load("tensorflow", require="AFL-automation[ml]")
 # class DummySAS(ScatteringInstrument,Driver):
 class VirtualSpec_data(Driver):
     defaults = {}

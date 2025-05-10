@@ -1,7 +1,5 @@
 from AFL.automation.loading.FlowSelector import FlowSelector
-from AFL.automation.loading.SerialDevice import SerialDevice
 from AFL.automation.loading.ViciMultiposSelector import ViciMultiposSelector
-import serial
 
 class DoubleViciMultiposSelector(FlowSelector):
     def __init__(self,port1,port2,baudrate=9600,portlabels=None):

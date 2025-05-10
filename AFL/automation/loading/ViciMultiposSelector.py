@@ -1,6 +1,7 @@
 from AFL.automation.loading.FlowSelector import FlowSelector
 from AFL.automation.loading.SerialDevice import SerialDevice
-import serial
+import lazy_loader as lazy
+serial = lazy.load("serial", require="AFL-automation[serial]")
 import time
 
 class ViciMultiposSelector(SerialDevice,FlowSelector):

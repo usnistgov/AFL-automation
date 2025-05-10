@@ -1,11 +1,15 @@
 import numpy as np
 import xarray as xr
-import tensorflow as tf
-import gpflow
+import lazy_loader as lazy
+
+# Lazy load ML dependencies
+tf = lazy.load("tensorflow", require="AFL-automation[ml]")
+gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
+set_trainable = lazy.load("gpflow.set_trainable", require="AFL-automation[ml]")
+HGP = lazy.load("AFL.agent.HscedGaussianProcess", require="AFL-automation[ml]")
+NaturalGradient = lazy.load("gpflow.optimizers.NaturalGradient", require="AFL-automation[ml]")
+
 from numpy.polynomial import chebyshev, legendre, polynomial
-from gpflow import set_trainable
-from AFL.agent import HscedGaussianProcess as HGP
-from gpflow.optimizers import NaturalGradient
 
 
 class Scattering_generator():

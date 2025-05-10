@@ -9,8 +9,9 @@ from AFL.automation.loading.SyringePump import SyringePump
 
 import sys
 
-import serial
-import serial.tools.list_ports
+import lazy_loader as lazy
+serial = lazy.load("serial", require="AFL-automation[serial]")
+
 import sys
 import glob
 

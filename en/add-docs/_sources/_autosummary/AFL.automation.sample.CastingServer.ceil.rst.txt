@@ -1,6 +1,0 @@
-AFL.automation.sample.CastingServer.ceil
-========================================
-
-.. currentmodule:: AFL.automation.sample.CastingServer
-
-.. autofunction:: ceil

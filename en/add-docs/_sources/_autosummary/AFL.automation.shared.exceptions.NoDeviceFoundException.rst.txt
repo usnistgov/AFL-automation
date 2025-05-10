@@ -1,6 +1,0 @@
-AFL.automation.shared.exceptions.NoDeviceFoundException
-=======================================================
-
-.. currentmodule:: AFL.automation.shared.exceptions
-
-.. autoexception:: NoDeviceFoundException

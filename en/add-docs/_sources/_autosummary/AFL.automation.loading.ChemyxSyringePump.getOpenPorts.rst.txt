@@ -1,6 +1,0 @@
-AFL.automation.loading.ChemyxSyringePump.getOpenPorts
-=====================================================
-
-.. currentmodule:: AFL.automation.loading.ChemyxSyringePump
-
-.. autofunction:: getOpenPorts

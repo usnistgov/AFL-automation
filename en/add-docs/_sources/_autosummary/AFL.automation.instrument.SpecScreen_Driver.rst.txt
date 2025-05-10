@@ -2,40 +2,20 @@ AFL.automation.instrument.SpecScreen\_Driver
 ============================================
 
 .. automodule:: AFL.automation.instrument.SpecScreen_Driver
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       ceil
       listify
       sqrt
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       Driver
       SpecScreen_Driver
    
-   
-
-   
-   
-   
-
-
-

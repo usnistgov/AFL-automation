@@ -2,32 +2,13 @@ AFL.automation.loading.DoubleViciMultiposSelector
 =================================================
 
 .. automodule:: AFL.automation.loading.DoubleViciMultiposSelector
-  
-   
-   
-   
 
-   
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       DoubleViciMultiposSelector
       FlowSelector
       ViciMultiposSelector
    
-   
-
-   
-   
-   
-
-
-

@@ -2,40 +2,20 @@ AFL.automation.loading.ChemyxSyringePump
 ========================================
 
 .. automodule:: AFL.automation.loading.ChemyxSyringePump
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       getOpenPorts
       parsePortName
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       ChemyxConnection
       ChemyxSyringePump
       SyringePump
    
-   
-
-   
-   
-   
-
-
-

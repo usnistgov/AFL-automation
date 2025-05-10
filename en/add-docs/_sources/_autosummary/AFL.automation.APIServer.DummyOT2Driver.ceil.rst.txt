@@ -1,6 +1,0 @@
-AFL.automation.APIServer.DummyOT2Driver.ceil
-============================================
-
-.. currentmodule:: AFL.automation.APIServer.DummyOT2Driver
-
-.. autofunction:: ceil

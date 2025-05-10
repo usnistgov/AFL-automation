@@ -1,6 +1,0 @@
-AFL.automation.prepare.DeckBuilderWidget.sqrt
-=============================================
-
-.. currentmodule:: AFL.automation.prepare.DeckBuilderWidget
-
-.. autofunction:: sqrt

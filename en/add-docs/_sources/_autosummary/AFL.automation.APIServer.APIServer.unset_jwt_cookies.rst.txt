@@ -1,6 +1,0 @@
-AFL.automation.APIServer.APIServer.unset\_jwt\_cookies
-======================================================
-
-.. currentmodule:: AFL.automation.APIServer.APIServer
-
-.. autofunction:: unset_jwt_cookies

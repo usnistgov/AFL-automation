@@ -2,37 +2,18 @@
 ==============
 
 .. automodule:: AFL.automation
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       test
    
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-
 .. rubric:: Modules
 
 .. autosummary::
    :toctree:
-   :template: custom-module-template.rst               
    :recursive:
 
    APIServer
@@ -42,4 +23,3 @@
    prepare
    sample_env
    shared
-

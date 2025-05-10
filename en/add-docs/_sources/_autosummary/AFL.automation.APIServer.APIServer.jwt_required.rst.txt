@@ -1,6 +1,0 @@
-AFL.automation.APIServer.APIServer.jwt\_required
-================================================
-
-.. currentmodule:: AFL.automation.APIServer.APIServer
-
-.. autofunction:: jwt_required

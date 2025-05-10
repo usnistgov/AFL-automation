@@ -1,6 +1,0 @@
-AFL.automation.APIServer.QueueDaemon.is\_serialized
-===================================================
-
-.. currentmodule:: AFL.automation.APIServer.QueueDaemon
-
-.. autofunction:: is_serialized

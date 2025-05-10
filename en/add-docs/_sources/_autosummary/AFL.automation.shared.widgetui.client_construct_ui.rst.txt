@@ -1,6 +1,0 @@
-AFL.automation.shared.widgetui.client\_construct\_ui
-====================================================
-
-.. currentmodule:: AFL.automation.shared.widgetui
-
-.. autofunction:: client_construct_ui

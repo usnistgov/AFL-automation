@@ -1,6 +1,0 @@
-AFL.automation.shared.utilities.listify
-=======================================
-
-.. currentmodule:: AFL.automation.shared.utilities
-
-.. autofunction:: listify

@@ -1,6 +1,0 @@
-AFL.automation.prepare.SampleSeriesWidget.sqrt
-==============================================
-
-.. currentmodule:: AFL.automation.prepare.SampleSeriesWidget
-
-.. autofunction:: sqrt

@@ -1,6 +1,0 @@
-AFL.automation.prepare.HD2OFactory
-==================================
-
-.. currentmodule:: AFL.automation.prepare
-
-.. autofunction:: HD2OFactory

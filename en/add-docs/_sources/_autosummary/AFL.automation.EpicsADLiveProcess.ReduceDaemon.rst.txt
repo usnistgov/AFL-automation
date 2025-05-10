@@ -2,30 +2,11 @@ AFL.automation.EpicsADLiveProcess.ReduceDaemon
 ==============================================
 
 .. automodule:: AFL.automation.EpicsADLiveProcess.ReduceDaemon
-  
-   
-   
-   
 
-   
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       ReduceDaemon
    
-   
-
-   
-   
-   
-
-
-

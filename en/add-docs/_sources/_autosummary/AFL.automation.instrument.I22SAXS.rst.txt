@@ -2,31 +2,12 @@ AFL.automation.instrument.I22SAXS
 =================================
 
 .. automodule:: AFL.automation.instrument.I22SAXS
-  
-   
-   
-   
 
-   
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       Driver
       I22SAXS
    
-   
-
-   
-   
-   
-
-
-

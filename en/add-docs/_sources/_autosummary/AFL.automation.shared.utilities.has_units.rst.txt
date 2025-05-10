@@ -1,6 +1,0 @@
-AFL.automation.shared.utilities.has\_units
-==========================================
-
-.. currentmodule:: AFL.automation.shared.utilities
-
-.. autofunction:: has_units

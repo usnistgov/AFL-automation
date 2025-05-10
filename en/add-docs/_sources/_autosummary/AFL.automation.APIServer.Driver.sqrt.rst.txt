@@ -1,6 +1,0 @@
-AFL.automation.APIServer.Driver.sqrt
-====================================
-
-.. currentmodule:: AFL.automation.APIServer.Driver
-
-.. autofunction:: sqrt

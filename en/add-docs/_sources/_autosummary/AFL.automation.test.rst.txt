@@ -1,6 +1,0 @@
-AFL.automation.test
-===================
-
-.. currentmodule:: AFL.automation
-
-.. autofunction:: test

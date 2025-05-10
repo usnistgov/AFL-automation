@@ -1,6 +1,0 @@
-AFL.automation.APIServer.Driver.ceil
-====================================
-
-.. currentmodule:: AFL.automation.APIServer.Driver
-
-.. autofunction:: ceil

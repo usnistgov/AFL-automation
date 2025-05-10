@@ -2,39 +2,19 @@ AFL.automation.shared.widgetui
 ==============================
 
 .. automodule:: AFL.automation.shared.widgetui
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       clear_output
       client_construct_ui
       display
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       Markdown
    
-   
-
-   
-   
-   
-
-
-

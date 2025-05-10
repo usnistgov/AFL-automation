@@ -1,6 +1,0 @@
-AFL.automation.prepare.make\_wellplate\_locs
-============================================
-
-.. currentmodule:: AFL.automation.prepare
-
-.. autofunction:: make_wellplate_locs

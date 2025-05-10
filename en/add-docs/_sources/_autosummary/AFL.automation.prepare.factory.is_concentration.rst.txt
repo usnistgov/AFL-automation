@@ -1,6 +1,0 @@
-AFL.automation.prepare.factory.is\_concentration
-================================================
-
-.. currentmodule:: AFL.automation.prepare.factory
-
-.. autofunction:: is_concentration

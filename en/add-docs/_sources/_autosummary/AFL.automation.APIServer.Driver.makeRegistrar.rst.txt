@@ -1,6 +1,0 @@
-AFL.automation.APIServer.Driver.makeRegistrar
-=============================================
-
-.. currentmodule:: AFL.automation.APIServer.Driver
-
-.. autofunction:: makeRegistrar

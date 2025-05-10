@@ -2,31 +2,12 @@ AFL.automation.instrument.DummySAS
 ==================================
 
 .. automodule:: AFL.automation.instrument.DummySAS
-  
-   
-   
-   
 
-   
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       Driver
       DummySAS
    
-   
-
-   
-   
-   
-
-
-

@@ -2,30 +2,11 @@ AFL.automation.loading.SyringePump
 ==================================
 
 .. automodule:: AFL.automation.loading.SyringePump
-  
-   
-   
-   
 
-   
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       SyringePump
    
-   
-
-   
-   
-   
-
-
-

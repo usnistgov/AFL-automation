@@ -2,32 +2,20 @@ AFL.automation.prepare
 ======================
 
 .. automodule:: AFL.automation.prepare
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       HD2OFactory
       compositionSweepFactory
       make_locs
       make_wellplate_locs
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       ComponentDB
       Deck
@@ -39,19 +27,10 @@ AFL.automation.prepare
       Solution
       Solvent
    
-   
-
-   
-   
-   
-
-
-
 .. rubric:: Modules
 
 .. autosummary::
    :toctree:
-   :template: custom-module-template.rst               
    :recursive:
 
    Component
@@ -66,4 +45,3 @@ AFL.automation.prepare
    SweepBuilderWidget
    factory
    utilities
-

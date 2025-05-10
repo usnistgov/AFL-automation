@@ -2,40 +2,20 @@ AFL.automation.shared.DataLabelerWidget
 =======================================
 
 .. automodule:: AFL.automation.shared.DataLabelerWidget
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       sqrt
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       DataLabelerModel
       DataLabelerView
       DataLabelerWidget
       OrdinalEncoder
    
-   
-
-   
-   
-   
-
-
-

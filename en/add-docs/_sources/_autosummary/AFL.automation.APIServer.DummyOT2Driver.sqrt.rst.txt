@@ -1,6 +1,0 @@
-AFL.automation.APIServer.DummyOT2Driver.sqrt
-============================================
-
-.. currentmodule:: AFL.automation.APIServer.DummyOT2Driver
-
-.. autofunction:: sqrt

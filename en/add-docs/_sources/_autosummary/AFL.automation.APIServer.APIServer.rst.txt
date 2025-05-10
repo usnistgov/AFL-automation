@@ -2,17 +2,11 @@ AFL.automation.APIServer.APIServer
 ==================================
 
 .. automodule:: AFL.automation.APIServer.APIServer
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       create_access_token
       create_refresh_token
@@ -27,15 +21,9 @@ AFL.automation.APIServer.APIServer
       strtobool
       unset_jwt_cookies
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       APIServer
       CORS
@@ -50,11 +38,3 @@ AFL.automation.APIServer.APIServer
       ServiceInfo
       Zeroconf
    
-   
-
-   
-   
-   
-
-
-

@@ -1,6 +1,0 @@
-AFL.automation.shared.serialization.UnpicklingError
-===================================================
-
-.. currentmodule:: AFL.automation.shared.serialization
-
-.. autoexception:: UnpicklingError

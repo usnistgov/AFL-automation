@@ -2,17 +2,11 @@ AFL.automation.shared.units
 ===========================
 
 .. automodule:: AFL.automation.shared.units
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       enforce_units
       get_unit_type
@@ -23,15 +17,3 @@ AFL.automation.shared.units
       is_molarity
       is_volume
    
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-

@@ -1,6 +1,0 @@
-AFL.automation.APIServer.APIServer.create\_refresh\_token
-=========================================================
-
-.. currentmodule:: AFL.automation.APIServer.APIServer
-
-.. autofunction:: create_refresh_token

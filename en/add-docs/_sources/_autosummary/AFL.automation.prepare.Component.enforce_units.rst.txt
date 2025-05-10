@@ -1,6 +1,0 @@
-AFL.automation.prepare.Component.enforce\_units
-===============================================
-
-.. currentmodule:: AFL.automation.prepare.Component
-
-.. autofunction:: enforce_units

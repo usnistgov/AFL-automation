@@ -1,6 +1,0 @@
-AFL.automation.prepare.factory.has\_units
-=========================================
-
-.. currentmodule:: AFL.automation.prepare.factory
-
-.. autofunction:: has_units

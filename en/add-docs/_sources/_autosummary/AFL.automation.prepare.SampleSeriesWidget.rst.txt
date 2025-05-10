@@ -2,29 +2,17 @@ AFL.automation.prepare.SampleSeriesWidget
 =========================================
 
 .. automodule:: AFL.automation.prepare.SampleSeriesWidget
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       sqrt
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       Button
       Checkbox
@@ -40,11 +28,3 @@ AFL.automation.prepare.SampleSeriesWidget
       Text
       VBox
    
-   
-
-   
-   
-   
-
-
-

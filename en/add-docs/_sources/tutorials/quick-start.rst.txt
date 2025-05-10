@@ -50,6 +50,7 @@ This requires two lines of boilerplate code at the end of your driver, like so.
 It also requires the module (i.e, the Python file your driver is in) to be named the same as the Driver name.
 
 .. code-block:: python
+    
     from AFL.automation.APIServer.Driver import Driver
     
     class SimpleDriver(Driver):

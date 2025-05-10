@@ -2,37 +2,17 @@ AFL.automation.loading.SerialDevice
 ===================================
 
 .. automodule:: AFL.automation.loading.SerialDevice
-  
-   
-   
-   
 
-   
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       SerialDevice
-   
-   
-
-   
    
    .. rubric:: Exceptions
 
    .. autosummary::
-      :toctree:                                        
    
       SerialCommsException
    
-   
-
-
-

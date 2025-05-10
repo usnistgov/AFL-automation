@@ -1,6 +1,0 @@
-AFL.automation.shared.serialization.serialize
-=============================================
-
-.. currentmodule:: AFL.automation.shared.serialization
-
-.. autofunction:: serialize

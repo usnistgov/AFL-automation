@@ -1,6 +1,0 @@
-AFL.automation.shared.units.is\_concentration
-=============================================
-
-.. currentmodule:: AFL.automation.shared.units
-
-.. autofunction:: is_concentration

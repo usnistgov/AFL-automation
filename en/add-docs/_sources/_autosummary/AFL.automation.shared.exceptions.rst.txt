@@ -2,25 +2,11 @@ AFL.automation.shared.exceptions
 ================================
 
 .. automodule:: AFL.automation.shared.exceptions
-  
-   
-   
-   
 
-   
-   
-   
-
-   
-   
-   
-
-   
    
    .. rubric:: Exceptions
 
    .. autosummary::
-      :toctree:                                        
    
       EmptyException
       MixingException
@@ -28,7 +14,3 @@ AFL.automation.shared.exceptions
       NotFoundError
       SerialCommsException
    
-   
-
-
-

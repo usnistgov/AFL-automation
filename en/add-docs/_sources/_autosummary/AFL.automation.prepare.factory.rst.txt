@@ -2,17 +2,11 @@ AFL.automation.prepare.factory
 ==============================
 
 .. automodule:: AFL.automation.prepare.factory
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       HD2OFactory
       compositionSweepFactory
@@ -23,24 +17,10 @@ AFL.automation.prepare.factory
       is_volume
       listify
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       Solution
       product
    
-   
-
-   
-   
-   
-
-
-

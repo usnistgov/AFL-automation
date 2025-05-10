@@ -1,6 +1,0 @@
-AFL.automation.prepare.PrepType.prepRegistrar
-=============================================
-
-.. currentmodule:: AFL.automation.prepare.PrepType
-
-.. autofunction:: prepRegistrar

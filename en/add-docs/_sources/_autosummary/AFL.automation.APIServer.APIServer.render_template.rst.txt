@@ -1,6 +1,0 @@
-AFL.automation.APIServer.APIServer.render\_template
-===================================================
-
-.. currentmodule:: AFL.automation.APIServer.APIServer
-
-.. autofunction:: render_template

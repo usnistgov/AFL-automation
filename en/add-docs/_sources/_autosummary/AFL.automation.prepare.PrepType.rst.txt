@@ -2,40 +2,20 @@ AFL.automation.prepare.PrepType
 ===============================
 
 .. automodule:: AFL.automation.prepare.PrepType
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       makeRegistar
       prepRegistrar
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       Enum
       PrepType
       auto
    
-   
-
-   
-   
-   
-
-
-

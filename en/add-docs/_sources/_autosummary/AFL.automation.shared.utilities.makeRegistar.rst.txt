@@ -1,6 +1,0 @@
-AFL.automation.shared.utilities.makeRegistar
-============================================
-
-.. currentmodule:: AFL.automation.shared.utilities
-
-.. autofunction:: makeRegistar

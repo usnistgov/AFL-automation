@@ -3,9 +3,7 @@ Loading
 
 The Loading module provides functionality for loading and handling samples.
 
-.. autosummary::
-   :toctree: ../_autosummary
-   :template: custom-module-template.rst
-   :recursive:
+.. toctree::
+   :maxdepth: 1
 
-   AFL.automation.loading
+   ../_autosummary/AFL.automation.loading

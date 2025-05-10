@@ -1,6 +1,0 @@
-AFL.automation.prepare.StockBuilderWidget.sqrt
-==============================================
-
-.. currentmodule:: AFL.automation.prepare.StockBuilderWidget
-
-.. autofunction:: sqrt

@@ -1,6 +1,0 @@
-AFL.automation.APIServer.APIServer.send\_file
-=============================================
-
-.. currentmodule:: AFL.automation.APIServer.APIServer
-
-.. autofunction:: send_file

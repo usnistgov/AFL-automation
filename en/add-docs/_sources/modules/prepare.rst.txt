@@ -3,9 +3,7 @@ Prepare
 
 The Prepare module provides functionality for sample preparation and processing.
 
-.. autosummary::
-   :toctree: ../_autosummary
-   :template: custom-module-template.rst
-   :recursive:
+.. toctree::
+   :maxdepth: 1
 
-   AFL.automation.prepare
+   ../_autosummary/AFL.automation.prepare

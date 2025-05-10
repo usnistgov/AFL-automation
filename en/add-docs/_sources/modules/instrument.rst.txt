@@ -3,9 +3,7 @@ Instrument
 
 The Instrument module contains drivers and interfaces for various scientific instruments.
 
-.. autosummary::
-   :toctree: ../_autosummary
-   :template: custom-module-template.rst
-   :recursive:
+.. toctree::
+   :maxdepth: 1
 
-   AFL.automation.instrument
+   ../_autosummary/AFL.automation.instrument

@@ -2,31 +2,12 @@ AFL.automation.APIServer.Client
 ===============================
 
 .. automodule:: AFL.automation.APIServer.Client
-  
-   
-   
-   
 
-   
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       Client
       ServerDiscovery
    
-   
-
-   
-   
-   
-
-
-

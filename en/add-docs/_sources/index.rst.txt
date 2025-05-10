@@ -33,33 +33,22 @@ AFL-automation is a framework for instrument control and laboratory automation. 
    :caption: Explanation
    
    explanation/index
-   explanation/architecture
 
 .. toctree::
    :maxdepth: 1
    :caption: Reference
    
    reference/index
-   api
    modules
 
 
 Module Documentation
 ===================
 
-.. autosummary::
-   :toctree: _autosummary
-   :template: custom-module-template.rst
-   :recursive:
+.. toctree::
+   :maxdepth: 2
 
-   AFL.automation
-   AFL.automation.APIServer
-   AFL.automation.instrument
-   AFL.automation.loading
-   AFL.automation.prepare
-   AFL.automation.sample
-   AFL.automation.sample_env
-   AFL.automation.shared
+   api
 
 Indices and tables
 ==================

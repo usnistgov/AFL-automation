@@ -2,17 +2,11 @@ AFL.automation.shared.utilities
 ===============================
 
 .. automodule:: AFL.automation.shared.utilities
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       has_units
       listify
@@ -21,15 +15,3 @@ AFL.automation.shared.utilities
       tprint
       xarray_to_bytes
    
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-

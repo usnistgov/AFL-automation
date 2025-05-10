@@ -2,40 +2,20 @@ AFL.automation.shared.DiffractionLabeler
 ========================================
 
 .. automodule:: AFL.automation.shared.DiffractionLabeler
-  
-   
-   
-   
 
-   
    
    .. rubric:: Functions
 
    .. autosummary::
-      :toctree:                                     
    
       sqrt
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
-      :toctree:                                      
-      :template: custom-class-template.rst            
    
       DiffractionLabeler
       DiffractionLabelerModel
       DiffractionLabelerView
       OrdinalEncoder
    
-   
-
-   
-   
-   
-
-
-

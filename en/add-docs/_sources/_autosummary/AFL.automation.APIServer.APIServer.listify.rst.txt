@@ -1,6 +1,0 @@
-AFL.automation.APIServer.APIServer.listify
-==========================================
-
-.. currentmodule:: AFL.automation.APIServer.APIServer
-
-.. autofunction:: listify

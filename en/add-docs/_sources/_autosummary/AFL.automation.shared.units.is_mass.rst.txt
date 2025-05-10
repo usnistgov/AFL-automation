@@ -1,6 +1,0 @@
-AFL.automation.shared.units.is\_mass
-====================================
-
-.. currentmodule:: AFL.automation.shared.units
-
-.. autofunction:: is_mass

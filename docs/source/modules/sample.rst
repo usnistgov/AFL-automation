@@ -3,10 +3,8 @@ Sample
 
 The Sample module provides functionality for experiment orchestration 'Sample Servers'
 
-.. autosummary::
-   :toctree: ../_autosummary
-   :template: custom-module-template.rst
-   :recursive:
+.. toctree::
+   :maxdepth: 1
 
-   AFL.automation.sample
-   AFL.automation.sample_env
+   ../_autosummary/AFL.automation.sample
+   ../_autosummary/AFL.automation.sample_env

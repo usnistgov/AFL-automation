@@ -4,7 +4,7 @@ API Reference
 This page provides detailed API documentation for all modules in the AFL-automation framework.
 
 .. autosummary::
-    :toctree: generated
+    :toctree: _autosummary
     :recursive:
     
     AFL.automation

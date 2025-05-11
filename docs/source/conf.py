@@ -42,8 +42,22 @@ exclude_patterns = ['**/nbutil*.py', '**/nbutil-*.py']
 autosummary_generate = True
 autosummary_imported_members = True
 # Explicitly exclude nbutil modules from documentation
-autosummary_mock_imports = ["AFL.automation.shared.nbutil", "AFL.automation.shared.nbutil-APS", 
-                          "AFL.automation.shared.nbutil-CHESS", "AFL.automation.shared.nbutil-SINQ"]
+# Mock imports for dependencies that may not be available during documentation generation
+autosummary_mock_imports = [
+    # Notebook utility modules
+    "AFL.automation.shared.nbutil", "AFL.automation.shared.nbutil-APS",
+    "AFL.automation.shared.nbutil-CHESS", "AFL.automation.shared.nbutil-SINQ",
+    
+    # Exclude launcher because it will try to launch sphinx-build, lol
+    'AFL.automation.shared.launcher'
+    # NICE and nicos-related modules
+    "nice.api.console.ConsoleMonitor", "nice.api.data.DataMonitor", "nice.api.devices.DevicesMonitor",
+    "nicos.clients.base", "nicos.clients.base.NicosClient", "nicos.clients.base.ConnectionData",
+    "nicos.utils.loggers", "nicos.utils.loggers.ACTION", "nicos.utils.loggers.INPUT",
+    "nicos.protocols.daemon", "nicos.protocols.daemon.BREAK_AFTER_LINE", 
+    "nicos.protocols.daemon.BREAK_AFTER_STEP", "nicos.protocols.daemon.STATUS_IDLE", 
+    "nicos.protocols.daemon.STATUS_IDLEEXC",
+    ]
 modparse_mock_imports = autosummary_mock_imports
 
 # Napoleon settings
@@ -74,7 +88,7 @@ modules_to_exclude = [
     'AFL.automation.shared.nbutil',
     'AFL.automation.shared.nbutil-APS',
     'AFL.automation.shared.nbutil-CHESS',
-    'AFL.automation.shared.nbutil-SINQ'
+    'AFL.automation.shared.nbutil-SINQ',
 ]
 
 # Create a custom handler to skip certain modules during autodoc

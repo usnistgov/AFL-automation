@@ -1,6 +1,6 @@
 from AFL.automation.loading.SyringePump import SyringePump
 import lazy_loader as lazy
-qmixsdk = lazy.load("qmixsdk", require="qmixsdk")
+qmixsdk = lazy.load("qmixsdk")
 
 
 import time

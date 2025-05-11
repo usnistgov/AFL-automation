@@ -53,7 +53,8 @@ dependencies = [
   "six",
   "setuptools",
   "ipython",
-  "lazy_loader"
+  "lazy_loader",
+  "entrypoints"
 ]
 
 [project.scripts]

@@ -43,3 +43,4 @@ tiled/catalog*
 !AFL/automation/EpicsADLiveProcess/templates/static/logo.svg
 !AFL/automation/EpicsADLiveProcess/templates/static/ncnr.png
 docs/build_output.txt
+docs/build_log.txt

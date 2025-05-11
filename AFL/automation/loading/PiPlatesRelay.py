@@ -1,5 +1,4 @@
 import lazy_loader as lazy
-RELAYplate = lazy.load("piplates.RELAYplate", require="AFL-automation[piplates]")
 from AFL.automation.loading.MultiChannelRelay import MultiChannelRelay
 import atexit
 import warnings
@@ -19,11 +18,12 @@ class PiPlatesRelay(MultiChannelRelay):
             board ID to connect to, set via jumpers on the board.
         '''
         self.threadlock = threading.Lock()
+        self.RELAYplate = lazy.load("piplates.RELAYplate", require="AFL-automation[piplates]")
         with self.threadlock:
-            conn = RELAYplate.getID(board_id)
+            conn = self.RELAYplate.getID(board_id)
         print(f'Got connection response from board: {conn}')
         with self.threadlock:
-            RELAYplate.RESET(board_id)
+            self.RELAYplate.RESET(board_id)
         self.state = [False]*7
         self.board_id = board_id
         #Sanitize labels:
@@ -42,7 +42,7 @@ class PiPlatesRelay(MultiChannelRelay):
         
     def setAllChannelsOff(self):
         with self.threadlock:
-            RELAYplate.relayALL(self.board_id,0)
+            self.RELAYplate.relayALL(self.board_id,0)
         self.state = [False]*7
         
     def setChannels(self,channels,verify=True):
@@ -73,10 +73,10 @@ class PiPlatesRelay(MultiChannelRelay):
 
         '''
             if val==True:
-                RELAYplate.relayON(self.board_id,key)
+                self.RELAYplate.relayON(self.board_id,key)
                 print(f'SET RELAY # {key} ON')
             elif val==False:
-                RELAYplate.relayOFF(self.board_id,key)
+                self.RELAYplate.relayOFF(self.board_id,key)
                 print(f'SET RELAY # {key} OFF')
             else:
                 raise KeyError('Improper value for relay set.')
@@ -109,19 +109,19 @@ class PiPlatesRelay(MultiChannelRelay):
             if val:
                 val_to_send = val_to_send | 2**(pos)
         with self.threadlock:
-            RELAYplate.relayALL(self.board_id,val_to_send)
+            self.RELAYplate.relayALL(self.board_id,val_to_send)
 
         with self.threadlock:
-            readback =  RELAYplate.relaySTATE(self.board_id)
+            readback =  self.RELAYplate.relaySTATE(self.board_id)
         if readback != val_to_send:
             retries = 0
             warnings.warn(f'ERROR: attempted relay set to {val_to_send} but readback was {readback}.')
             while retries<60:
                 with self.threadlock:
-                    RELAYplate.relayALL(self.board_id,val_to_send)
+                    self.RELAYplate.relayALL(self.board_id,val_to_send)
                 time.sleep(0.01)
                 with self.threadlock:
-                    readback = RELAYplate.relaySTATE(self.board_id)
+                    readback = self.RELAYplate.relaySTATE(self.board_id)
                 if readback == val_to_send:
                     print(f'Success after {retries} tries.')
                     break
@@ -141,7 +141,7 @@ class PiPlatesRelay(MultiChannelRelay):
         (dict) key:value mappings of state.
         '''
         with self.threadlock:
-            allchannels = RELAYplate.relaySTATE(self.board_id)
+            allchannels = self.RELAYplate.relaySTATE(self.board_id)
 
         retval = {}
         for portid,name in self.labels.items():
@@ -162,6 +162,6 @@ class PiPlatesRelay(MultiChannelRelay):
 
         for port in ids:    
             with self.threadlock:
-                RELAYplate.relayTOGGLE(self.board_id,port)
+                self.RELAYplate.relayTOGGLE(self.board_id,port)
 
     

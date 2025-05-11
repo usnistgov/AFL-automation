@@ -1,5 +1,4 @@
 import lazy_loader as lazy
-ljm = lazy.load("labjack.ljm", require="AFL-automation[labjack]")
 
 from AFL.automation.loading.Sensor import Sensor
 import time
@@ -19,11 +18,13 @@ class LabJackDigitalOut():# xxx todo: generic digitalout class?Sensor):
         intermittent_device_handle (bool): if True, closes the device on each communication.  not compatible with shared_device
         
         '''
+        self.ljm = lazy.load("labjack.ljm", require="AFL-automation[labjack]")  
+
         #if not intermittent_device_handle:
         if shared_device is not None:
             self.device_handle = shared_device.device_handle
         else:
-            self.device_handle = ljm.openS(devicetype, connection, deviceident)
+            self.device_handle = self.ljm.openS(devicetype, connection, deviceident)
         self.devicetype = devicetype
         self.connection = connection
         self.deviceident = deviceident
@@ -36,18 +37,18 @@ class LabJackDigitalOut():# xxx todo: generic digitalout class?Sensor):
     #def __del__(self):
         
     def write(self,val):
-        numSkippedIntervals = ljm.waitForNextInterval(self.intervalHandle)
+        numSkippedIntervals = self.ljm.waitForNextInterval(self.intervalHandle)
         #if self.intermittent_device_handle:
         #    self.device_handle = ljm.openS(self.devicetype, self.connection, self.deviceident)
-        result = ljm.eWriteName(self.device_handle, self.port_to_write,val)
+        result = self.ljm.eWriteName(self.device_handle, self.port_to_write,val)
         #if self.intermittent_device_handle:
         #    ljm.close(self.device_handle)
         return result
     def __str__(self):
         #if self.intermittent_device_handle:
         #    self.device_handle = ljm.openS(self.devicetype, self.connection, self.deviceident)
-        info = ljm.getHandleInfo(self.device_handle)
+        info = self.ljm.getHandleInfo(self.device_handle)
         #if self.intermittent_device_handle:
         #    ljm.close(self.device_handle)
-        return f"LabJack with Device type: %{info[0]}, Connection type: {info[1]}, Serial number: {info[2]}, IP address: {ljm.numberToIP(info[3])}, Port: {info[4]}, Max bytes per MB: {info[5]}"
+        return f"LabJack with Device type: %{info[0]}, Connection type: {info[1]}, Serial number: {info[2]}, IP address: {self.ljm.numberToIP(info[3])}, Port: {info[4]}, Max bytes per MB: {info[5]}"
         

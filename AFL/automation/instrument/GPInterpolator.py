@@ -9,20 +9,10 @@ import lazy_loader as lazy
 # Machine learning dependencies
 tf = lazy.load("tensorflow", require="AFL-automation[ml]")
 gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
-set_trainable = lazy.load("gpflow.set_trainable", require="AFL-automation[ml]")
-HGP = lazy.load("AFL.agent.HscedGaussianProcess", require="AFL-automation[ml]")
-NaturalGradient = lazy.load("gpflow.optimizers.NaturalGradient", require="AFL-automation[ml]")
+from AFL.agent.HscedGaussianProcess import HGP
 
 # Geometry dependencies
 alphashape = lazy.load("alphashape", require="AFL-automation[geometry]")
-shapely_geometry = lazy.load("shapely.geometry", require="AFL-automation[geometry]")
-STRtree = lazy.load("shapely.STRtree", require="AFL-automation[geometry]")
-unary_union = lazy.load("shapely.unary_union", require="AFL-automation[geometry]")
-Point = lazy.load("shapely.Point", require="AFL-automation[geometry]")
-distance = lazy.load("shapely.distance", require="AFL-automation[geometry]")
-MultiPoint = lazy.load("shapely.MultiPoint", require="AFL-automation[geometry]")
-Polygon = lazy.load("shapely.Polygon", require="AFL-automation[geometry]")
-nearest_points = lazy.load("shapely.ops.nearest_points", require="AFL-automation[geometry]")
 
 class Interpolator():
     def __init__(self, dataset):
@@ -35,6 +25,11 @@ class Interpolator():
         
         self.dataset = dataset
         
+        self.set_trainable = lazy.load("gpflow.set_trainable", require="AFL-automation[ml]")
+        self.NaturalGradient = lazy.load("gpflow.optimizers.NaturalGradient", require="AFL-automation[ml]")
+        self.STRtree = lazy.load("shapely.STRtree", require="AFL-automation[geometry]")
+        self.unary_union = lazy.load("shapely.unary_union", require="AFL-automation[geometry]")
+        self.Point = lazy.load("shapely.Point", require="AFL-automation[geometry]")
         
         #construct a kernel for fitting a GP model
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
@@ -147,10 +142,10 @@ class Interpolator():
                 
             )
             
-            self.natgrad = NaturalGradient(gamma=0.5) 
+            self.natgrad = self.NaturalGradient(gamma=0.5) 
             self.adam = tf.optimizers.Adam()
-            set_trainable(self.model.q_mu, False)
-            set_trainable(self.model.q_sqrt, False)
+            self.set_trainable(self.model.q_mu, False)
+            self.set_trainable(self.model.q_sqrt, False)
 
         else:
             
@@ -166,7 +161,7 @@ class Interpolator():
                 # print("assuming noiseless data")
                 self.model.likelihood.variance = gpflow.likelihoods.Gaussian(variance=1.00001e-6).parameters[0]
                 # print(self.model.parameters)
-                set_trainable(self.model.likelihood.variance, False)
+                self.set_trainable(self.model.likelihood.variance, False)
         
         return self.model
     
@@ -349,12 +344,12 @@ class ClusteredGPs():
             dslist = self.datasets
         
         ### this finds the union between the list of shapely geometries and does the apapropriate tree search for all combinations
-        self.union = unary_union(geomlist).buffer(buffer)
-        tree = STRtree(list(self.union.geoms))
+        self.union = self.unary_union(geomlist).buffer(buffer)
+        tree = self.STRtree(list(self.union.geoms))
         common_indices = []
         for gpmodel in gplist:
             test_point = gpmodel.X_raw[0]
-            common_indices.append(tree.query(Point(test_point), predicate='intersects')[0])
+            common_indices.append(tree.query(self.Point(test_point), predicate='intersects')[0])
             
         ### this is to concatinate ovelapping datasets into one
         self.union_datasets = []
@@ -413,7 +408,7 @@ class ClusteredGPs():
                 domains = self.domain_geometries
 
             for idx, geom in enumerate(list(self.union_geometries.geoms)):
-                dist = geom.exterior.distance(Point(X_new))
+                dist = geom.exterior.distance(self.Point(X_new))
                 distances.append(dist)
             # print(distances)
             

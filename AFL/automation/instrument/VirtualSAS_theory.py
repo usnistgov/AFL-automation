@@ -12,10 +12,9 @@ import lazy_loader as lazy
 import h5py #for Nexus file writing
 
 # SAS modeling libraries
-sasmodels_data = lazy.load("sasmodels.data", require="AFL-automation[sas-analysis]")
-sasmodels_core = lazy.load("sasmodels.core", require="AFL-automation[sas-analysis]")
-sasmodels_direct_model = lazy.load("sasmodels.direct_model", require="AFL-automation[sas-analysis]")
-sasmodels_bumps_model = lazy.load("sasmodels.bumps_model", require="AFL-automation[sas-analysis]")
+sasmodels = lazy.load("sasmodels", require="AFL-automation[sas-analysis]")
+
+shapely = lazy.load("shapely", require="AFL-automation[geometry]")
 
 from shapely import MultiPoint
 from shapely.geometry import Point
@@ -42,6 +41,14 @@ class VirtualSAS_theory(Driver):
         self.app = None
         Driver.__init__(self,name='VirtualSAS_theory',defaults=self.gather_defaults(),overrides=overrides)
         
+        import sasmodels.data
+        import sasmodels.core
+        import sasmodels.direct_model
+        import sasmodels.bumps_model
+
+        import shapely.MultiPoint
+        import shapely.geometry.Point
+        import shapely.concave_hull
         
         self.hulls = {}
         self.reference_data = []
@@ -82,8 +89,8 @@ class VirtualSAS_theory(Driver):
                     f'''Need to be in ternary mode with three components, or non-ternary with two. '''
                     f'''You  have "xy.shape:{xy.shape}" and ternary={self.config["ternary"]}'''
                     )
-            mp = MultiPoint(xy)
-            hull = concave_hull(mp,ratio=hull_tracing_ratio)
+            mp = shapely.MultiPoint(xy)
+            hull = shapely.concave_hull(mp,ratio=hull_tracing_ratio)
             self.hulls[label] = hull
     
     def locate(self,composition):
@@ -95,7 +102,7 @@ class VirtualSAS_theory(Driver):
             xy = ternary_to_xy(composition)
         else:
             xy = composition
-        point = Point(*xy)
+        point = shapely.Point(*xy)
         locations = {}
         for phase,hull in self.hulls.items():
             if hull.contains(point):

@@ -52,7 +52,8 @@ dependencies = [
   "pyparsing",
   "six",
   "setuptools",
-  "ipython"
+  "ipython",
+  "lazy_loader"
 ]
 
 [project.scripts]
@@ -84,5 +85,7 @@ docs = [
   "myst-parser>=2.0.0",
   "nbsphinx>=0.9.3"
 ]
+win32 = ["pywin32"]
+vision = ["opencv-python"]
 
 # You can add more extras as needed for other hardware modules.

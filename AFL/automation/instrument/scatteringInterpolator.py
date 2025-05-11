@@ -5,9 +5,7 @@ import lazy_loader as lazy
 # Lazy load ML dependencies
 tf = lazy.load("tensorflow", require="AFL-automation[ml]")
 gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
-set_trainable = lazy.load("gpflow.set_trainable", require="AFL-automation[ml]")
-HGP = lazy.load("AFL.agent.HscedGaussianProcess", require="AFL-automation[ml]")
-NaturalGradient = lazy.load("gpflow.optimizers.NaturalGradient", require="AFL-automation[ml]")
+import AFL.agent.HscedGaussianProcess as HGP
 
 from numpy.polynomial import chebyshev, legendre, polynomial
 
@@ -122,10 +120,10 @@ class Scattering_generator():
                 
             )
             
-            self.natgrad = NaturalGradient(gamma=0.5) 
+            self.natgrad = gpflow.optimizers.NaturalGradient(gamma=0.5) 
             self.adam = tf.optimizers.Adam()
-            set_trainable(self.model.q_mu, False)
-            set_trainable(self.model.q_sqrt, False)
+            gpflow.set_trainable(self.model.q_mu, False)
+            gpflow.set_trainable(self.model.q_sqrt, False)
 
         else:
             self.model = gpflow.models.GPR(
@@ -138,7 +136,7 @@ class Scattering_generator():
                 # self.model.likelihood.variance =  gpflow.likelihoods.Gaussian(variance=noiseless).parameters[0]
                 self.model.likelihood.variance = gpflow.likelihoods.Gaussian(variance=1.00001e-6).parameters[0]
                 # print(self.model.parameters)
-                set_trainable(self.model.likelihood.variance, False)
+                gpflow.set_trainable(self.model.likelihood.variance, False)
         
         return self.model
         
@@ -163,10 +161,10 @@ class Scattering_generator():
                 num_latent_gps=1
                 
             )
-            self.natgrad = NaturalGradient(gamma=0.5) 
+            self.natgrad = gpflow.optimizers.NaturalGradient(gamma=0.5) 
             self.adam = tf.optimizers.Adam()
-            set_trainable(self.model.q_mu, False)
-            set_trainable(self.model.q_sqrt, False)
+            gpflow.set_trainable(self.model.q_mu, False)
+            gpflow.set_trainable(self.model.q_sqrt, False)
 
         else:
             self.model = gpflow.models.GPR(
@@ -179,7 +177,7 @@ class Scattering_generator():
                 # self.model.likelihood.variance =  gpflow.likelihoods.Gaussian(variance=noiseless).parameters[0]
                 self.model.likelihood.variance = gpflow.likelihoods.Gaussian(variance=1.00001e-6).parameters[0]
                 # print(self.model.parameters)
-                set_trainable(self.model.likelihood.variance, False)
+                gpflow.set_trainable(self.model.likelihood.variance, False)
         
         # print(self.kernel,self.optimizer)
         i = 0

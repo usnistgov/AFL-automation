@@ -1,7 +1,8 @@
 import pathlib,glob,os,datetime
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
+from lazy_loader import lazy
+cv2 = lazy.load("cv2", require="AFL-automation[vision]")
 from PIL import Image
 from skimage import data, color
 from skimage.transform import hough_circle, hough_circle_peaks,hough_ellipse

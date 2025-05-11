@@ -1,7 +1,5 @@
 import lazy_loader as lazy
-opentrons_execute = lazy.load("opentrons.execute", require="AFL-automation[opentrons]")
 opentrons = lazy.load("opentrons", require="AFL-automation[opentrons]")
-Labware = lazy.load("opentrons.protocol_api.labware", require="AFL-automation[opentrons]")
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 import warnings
@@ -24,7 +22,7 @@ class OT2_Driver(Driver):
         self.app = None
         Driver.__init__(self,name='OT2_Driver',defaults=self.gather_defaults(),overrides=overrides)
         self.name = 'OT2_Driver'
-        self.protocol = opentrons_execute.get_protocol_api('2.0')
+        self.protocol = opentrons.execute.get_protocol_api('2.0')
         self.max_transfer = None
         self.min_transfer = None
         self.prep_targets = []
@@ -120,7 +118,7 @@ class OT2_Driver(Driver):
             if type(contents) == opentrons.protocols.geometry.module_geometry.ModuleGeometry:
                 labware = contents.labware
             else:
-                labware = Labware(contents) #need Labware() to convert to public interface
+                labware = opentrons.protocol_api.labware.Labware(contents) #need Labware() to convert to public interface
             self.app.logger.debug(f'Found labware \'{labware}\'')
             return labware
         else:
@@ -222,7 +220,7 @@ class OT2_Driver(Driver):
             self.app.logger.debug(f'Loading pipette \'{name}\' into mount \'{mount}\' with tip_racks in slots {tip_rack_slots}')
             tip_racks = []
             for slot in listify(tip_rack_slots):
-                tip_rack = Labware(self.protocol.deck[slot]) #need Labware() to convert from LabwareImplementation to public interface
+                tip_rack = opentrons.protocol_api.labware.Labware(self.protocol.deck[slot]) #need Labware() to convert from LabwareImplementation to public interface
                 if not tip_rack.is_tiprack:
                     raise RuntimeError('Supplied slot doesn\'t contain a tip_rack!')
                 tip_racks.append(tip_rack)

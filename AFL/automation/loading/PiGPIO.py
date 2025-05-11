@@ -1,5 +1,4 @@
 import lazy_loader as lazy
-GPIO = lazy.load("RPi.GPIO", require="AFL-automation[rpi-gpio]")
 
 class PiGPIO():
 	def __init__(self,channels,mode='BCM',pull_dir='UP'):
@@ -17,12 +16,13 @@ class PiGPIO():
 
 		'''
 		self.channels = {int(key):val for key,val in channels.items()}
+		self.GPIO = lazy.load("RPi.GPIO", require="AFL-automation[rpi-gpio]")
 
 		self.state = {}
 		if mode == 'BCM':
-			GPIO.setmode(GPIO.BCM)
+			self.GPIO.setmode(self.GPIO.BCM)
 		elif mode == 'BOARD':
-			GPIO.setmode(GPIO.BOARD)
+			self.GPIO.setmode(self.GPIO.BOARD)
 		else:
 			raise ValueError('invalid mode in GPIORelay')
 
@@ -37,12 +37,12 @@ class PiGPIO():
 
 		for key,val in self.channels.items():
 			if pull_dir[key] == 'UP':
-				GPIO.setup(key,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+				self.GPIO.setup(key,self.GPIO.IN,pull_up_down=self.GPIO.PUD_UP)
 			elif pull_dir[key] == 'DOWN':
-				GPIO.setup(key,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
+				self.GPIO.setup(key,self.GPIO.IN,pull_up_down=self.GPIO.PUD_DOWN)
 			else:
 				raise ValueError('invalid pull_dir in GPIORelay')
-			GPIO.add_event_detect(key,GPIO.BOTH,callback=self.eventcb)#,bouncetime=200)
+			self.GPIO.add_event_detect(key,self.GPIO.BOTH,callback=self.eventcb)#,bouncetime=200)
 
 
 
@@ -50,11 +50,11 @@ class PiGPIO():
 
 		#do an initial read of all the pin state and create self.state which maps name to val
 		for key,val in self.channels.items():
-			self.state[val] = GPIO.input(key)
+			self.state[val] = self.GPIO.input(key)
 	def eventcb(self,channel):
 		'''
 		In response to an edge detect, read a channel and update the local state dict.
 
 		'''
-		self.state[self.channels[channel]] = GPIO.input(channel)
+		self.state[self.channels[channel]] = self.GPIO.input(channel)
 

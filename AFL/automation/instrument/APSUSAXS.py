@@ -9,10 +9,7 @@ epics = lazy.load("epics", require="AFL-automation[neutron-scattering]")
 import os
 import pathlib
 import warnings
-import Matilda
-import Matilda.convertUSAXS
-import Matilda.convertSAS
-import Matilda.readfromtiled
+Matilda = lazy.load("Matilda", require="AFL-automation[usaxs]")
 
 class APSUSAXS(Driver):
     defaults = {}
@@ -72,6 +69,10 @@ class APSUSAXS(Driver):
         connect to usaxs via EPICS
 
         '''
+
+        self.convertUSAXS = lazy.load("Matilda.convertUSAXS", require="AFL-automation[usaxs]")
+        self.convertSAS = lazy.load("Matilda.convertSAS", require="AFL-automation[usaxs]")
+        self.readfromtiled = lazy.load("Matilda.readfromtiled", require="AFL-automation[usaxs]")
 
         self.app = None
         Driver.__init__(self,name='APSUSAXS',defaults=self.gather_defaults(),overrides=overrides)
@@ -180,19 +181,19 @@ class APSUSAXS(Driver):
             
         if reduce_USAXS:
            # get last flyscan from Tiled and check that the set filename matches the found file
-           [last_scan_path, last_scan_file] = Matilda.readfromtiled.FindLastScanData('Flyscan',1)[0]
+           [last_scan_path, last_scan_file] = self.readfromtiled.FindLastScanData('Flyscan',1)[0]
            if name.replace('-','_') not in last_scan_file:
                    raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
 
            # reduce flyscan data
-           last_scan_results = Matilda.convertUSAXS.reduceFlyscanToQR(last_scan_path,last_scan_file)
-           results_ds = Matilda.supportFunctions.results_to_dataset(last_scan_results)
+           last_scan_results = self.convertUSAXS.reduceFlyscanToQR(last_scan_path,last_scan_file)
+           results_ds = self.convertUSAXS.results_to_dataset(last_scan_results)
            USAXS_int = results_ds['USAXS_int']
 
            # get empty flyscan, reduce it
-           [empty_path,empty_file] = Matilda.readfromtiled.FindScanDataByName('Flyscan',self.config['empty_scan_title'])[0]
-           empty_results = Matilda.convertUSAXS.reduceFlyscanToQR(empty_path,empty_file)
-           empty_ds = Matilda.supportFunctions.results_to_dataset(empty_results)
+           [empty_path,empty_file] = self.readfromtiled.FindScanDataByName('Flyscan',self.config['empty_scan_title'])[0]
+           empty_results = self.convertUSAXS.reduceFlyscanToQR(empty_path,empty_file)
+           empty_ds = self.convertUSAXS.results_to_dataset(empty_results)
            MT_USAXS_int = empty_ds['USAXS_int']
            MT_USAXS_int = MT_USAXS_int.interp_like(USAXS_int) #interpolate to match last scan
 
@@ -221,11 +222,11 @@ class APSUSAXS(Driver):
            
         if reduce_WAXS: 
            # get last WAXS from Tiled, reduce it
-           [last_scan_path, last_scan_file] = Matilda.readfromtiled.FindLastScanData('WAXS',1)[0]
+           [last_scan_path, last_scan_file] = self.readfromtiled.FindLastScanData('WAXS',1)[0]
            if name.replace('-','_') not in last_scan_file:
                    raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
            #reduce
-           last_scan_results = Matilda.convertSAS.ImportAndReduceAD(last_scan_path,last_scan_file)
+           last_scan_results = self.convertSAS.ImportAndReduceAD(last_scan_path,last_scan_file)
            
            # add data to tiled
            self.data.add_array('WAXS_q',last_scan_results['Q_array'])

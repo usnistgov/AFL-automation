@@ -1,6 +1,7 @@
 import requests, io
 import numpy as np
-import cv2
+from lazy_loader import lazy
+cv2 = lazy.load("cv2", require="AFL-automation[vision]")
 
 class USBCamera:
     
@@ -17,19 +18,3 @@ class USBCamera:
         collected, img = self.camera.read()
         
         return collected, img
-#         if collected:
-#             return np.array(img)
-
-#         else:
-#             print("camera client reconnecting")
-#             self.camera_reset()
-#             print("trying again")
-#             collected, img = self.camera.read()
-            
-#         if collected:
-#             print('retry successful!') 
-#             return np.array(img)
-#         else:
-#             print('retry failed :(')
-#             return None
-            

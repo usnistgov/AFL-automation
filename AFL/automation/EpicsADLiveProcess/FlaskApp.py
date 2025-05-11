@@ -1,12 +1,14 @@
 from flask import Flask, render_template
 from flask import request, jsonify, Markup, send_file
+import lazy_loader as lazy
 
 from PIL import Image
-import datetime,requests, subprocess,shlex,os,json,io,bokeh,pyFAI
+import datetime,requests, subprocess,shlex,os,json,io,bokeh
 import numpy as np
 from distutils.util import strtobool
-import bokeh.plotting,bokeh.models,pyFAI.azimuthalIntegrator
-from AreaDetectorLive import AreaDetectorLive
+import bokeh.plotting,bokeh.models
+pyFAI = lazy.load("pyFAI", require="AFL-automation[scattering-processing]")
+from .AreaDetectorLive import AreaDetectorLive
 import matplotlib as mpl
 from matplotlib import cm
 

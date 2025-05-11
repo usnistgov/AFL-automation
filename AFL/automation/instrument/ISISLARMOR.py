@@ -5,13 +5,12 @@ from pathlib import Path
 
 from tiled.client import from_uri
 
-import epics as pye
-import sans.command_interface.ISISCommandInterface as ici
-# import mantid algorithms, numpy and matplotlib
-from mantid.simpleapi import *
 import numpy as np
+import lazy_loader as lazy
 
-from sasdata.dataloader.loader import Loader
+# Neutron scattering and control system dependencies
+pye = lazy.load("epics", require="AFL-automation[neutron-scattering]")
+sasdata_module = lazy.load("sasdata", require="AFL-automation[neutron-scattering]")
 
 from AFL.automation.APIServer.Driver import Driver
 
@@ -62,6 +61,12 @@ class ISISLARMOR(Driver):
         """ """
         self.app = None
         Driver.__init__(self,name=name,defaults=self.gather_defaults(),overrides=overrides)
+
+
+        self.ici = lazy.load("sans.command_interface.ISISCommandInterface", require="AFL-automation[neutron-scattering]")
+
+        self.mantid_simpleapi = lazy.load("mantid.simpleapi", require="AFL-automation[neutron-scattering]")
+        self.Loader = sasdata_module.dataloader.loader.Loader
 
         self.status_str = "New Server"
 
@@ -183,7 +188,7 @@ class ISISLARMOR(Driver):
         start_time = time.time()
         while not fpath.exists():
             try:
-                loader = Loader()
+                loader = self.Loader()
                 sasdata = loader.load(str(filename.absolute()))
                 break
             except:
@@ -283,17 +288,17 @@ class ISISLARMOR(Driver):
             return self.data['transmission']
     def reduce(self, sampleSANS_rn: int, sampleTRANS_rn: Optional[int]=None, sample_thickness: Number=2, name:str=""):
         prefix = "//isis/inst$"
-        ConfigService.setDataSearchDirs(
+        self.mantid_simpleapiConfigService.setDataSearchDirs(
             prefix + "/NDXLARMOR/User/Masks/;" + \
             prefix + self.config['cycle_path'])
         #mask_file = prefix + '/NDXLARMOR/User/Masks/USER_Beaucage_235C_SampleChanger_r80447.TOML'
         mask_file = prefix + self.config['mask_file']
         self.status_str = f"Reducing run number {sampleSANS_rn}."
-        ici.Clean()
-        ici.LARMOR()
-        ici.Set1D()
+        self.ici.Clean()
+        self.ici.LARMOR()
+        self.ici.Set1D()
 
-        ici.MaskFile(mask_file)
+        self.ici.MaskFile(mask_file)
 
         DBTRANS = self.config['open_beam_trans_rn']
         canSANS = self.config['empty_cell_scatt_rn']
@@ -301,12 +306,12 @@ class ISISLARMOR(Driver):
 
         savedir = self.config['reduced_data_dir']
         
-        ici.AssignSample(str(sampleSANS_rn))
-        ici.AssignCan(str(canSANS))
-        ici.TransmissionSample(str(sampleTRANS_rn), str(DBTRANS))
-        ici.TransmissionCan(str(canTRANS), str(DBTRANS))
+        self.mantid_simpleapi.AssignSample(str(sampleSANS_rn))
+        self.mantid_simpleapi.AssignCan(str(canSANS))
+        self.mantid_simpleapi.TransmissionSample(str(sampleTRANS_rn), str(DBTRANS))
+        self.mantid_simpleapi.TransmissionCan(str(canTRANS), str(DBTRANS))
 
-        ici.WavRangeReduction(None, None)
+        self.mantid_simpleapi.WavRangeReduction(None, None)
         # SaveCanSAS1D(str(sampleSANS_rn) + '_rear_1D_0.9_13.5', savedir + str(sampleSANS_rn) + '_rear_1D_0.9_13.5.xml', \
         #              Geometry='Flat plate', SampleHeight='8', SampleWidth='6', SampleThickness=sample_thickness, \
         #              Append=False, Transmission=str(sampleSANS_rn) + '_trans_Sample_0.9_13.5',
@@ -314,7 +319,7 @@ class ISISLARMOR(Driver):
 
         filename = Path(savedir) / (str(sampleSANS_rn) + f"_{name}_" + '_rear_1D_0.9_13.5.h5')
         self.status_str = f"Writing the reduced data for run number {sampleSANS_rn} to {filename}."
-        SaveNXcanSAS(
+        self.mantid_simpleapiSaveNXcanSAS(
             str(sampleSANS_rn) + '_rear_1D_0.9_13.5',
             str(filename.absolute()),
             RadiationSource='Spallation Neutron Source',
@@ -322,15 +327,15 @@ class ISISLARMOR(Driver):
             TransmissionCan=str(sampleSANS_rn) + '_trans_Can_0.9_13.5'
         )
         
-        DeleteWorkspace(str(sampleSANS_rn)+'_trans_0.9_13.5')
-        DeleteWorkspace('optimization')
-        DeleteWorkspace('sans_interface_raw_data')
-        DeleteWorkspace(str(sampleSANS_rn)+'_rear_1D_0.9_13.5')
+        self.mantid_simpleapi.DeleteWorkspace(str(sampleSANS_rn)+'_trans_0.9_13.5')
+        self.mantid_simpleapi.DeleteWorkspace('optimization')
+        self.mantid_simpleapi.DeleteWorkspace('sans_interface_raw_data')
+        self.mantid_simpleapi.DeleteWorkspace(str(sampleSANS_rn)+'_rear_1D_0.9_13.5')
         
         self.waitforSASfile(filename)
         
         # load data from disk and send to tiled
-        loader = Loader()
+        loader = self.Loader()
         sasdata = loader.load(str(filename.absolute()))
         if len(sasdata)>1:
             warnings.warn("Loaded multiple data from file...taking the last one",stacklevel=2)

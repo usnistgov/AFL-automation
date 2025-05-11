@@ -1,4 +1,5 @@
-import epics
+import lazy_loader as lazy
+epics = lazy.load("epics", require="AFL-automation[neutron-scattering]")
 import numpy as np
 import queue
 

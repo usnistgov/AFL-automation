@@ -45,4 +45,3 @@ AFL.automation.loading
    TwoSelectorBlowoutSampleCell
    UltimusVPressureController
    ViciMultiposSelector
-   test_qmixpump

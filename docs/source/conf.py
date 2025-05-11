@@ -49,7 +49,7 @@ autosummary_mock_imports = [
     "AFL.automation.shared.nbutil-CHESS", "AFL.automation.shared.nbutil-SINQ",
     
     # Exclude launcher because it will try to launch sphinx-build, lol
-    'AFL.automation.shared.launcher'
+    'AFL.automation.shared.launcher',
     # NICE and nicos-related modules
     "nice", "nice.api.console.ConsoleMonitor", "nice.api.data.DataMonitor", "nice.api.devices.DevicesMonitor",
     "nicos", "nicos.clients.base", "nicos.clients.base.NicosClient", "nicos.clients.base.ConnectionData",

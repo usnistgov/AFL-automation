@@ -1,9 +1,11 @@
 import lazy_loader as lazy
 win32com = lazy.load("win32com", require="AFL-automation[win32]")
-import gc
-import pythoncom
+gc = lazy.load("gc", require="AFL-automation[win32]")
+pythoncom = lazy.load("pythoncom", require="AFL-automation[win32]")
+
 import time
 import datetime
+
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
 import numpy as np # for return types in get data

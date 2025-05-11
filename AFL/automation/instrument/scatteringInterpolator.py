@@ -5,7 +5,8 @@ import lazy_loader as lazy
 # Lazy load ML dependencies
 tf = lazy.load("tensorflow", require="AFL-automation[ml]")
 gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
-import AFL.agent.HscedGaussianProcess as HGP
+
+AFLagent = lazy.load("AFL.agent", require="AFL-agent")
 
 from numpy.polynomial import chebyshev, legendre, polynomial
 
@@ -109,7 +110,7 @@ class Scattering_generator():
             self.kernel = kernel
             
         if (heteroscedastic) & (self.Y_unct!=None):
-            likelihood = HGP.HeteroscedasticGaussian()
+            likelihood = AFLagent.HscedGaussianProcess.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
             print(data[0].shape,data[1].shape)
             self.model = gpflow.models.VGP(
@@ -150,7 +151,7 @@ class Scattering_generator():
             self.optimizer = optimizer
         
         if (heteroscedastic) & (self.Y_unct!=None):
-            likelihood = HGP.HeteroscedasticGaussian()
+            likelihood = AFLagent.HscedGaussianProcess.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
             #print(data[0].shape,data[1].shape)
             print("model has been made")

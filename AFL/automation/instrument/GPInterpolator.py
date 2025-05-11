@@ -9,7 +9,8 @@ import lazy_loader as lazy
 # Machine learning dependencies
 tf = lazy.load("tensorflow", require="AFL-automation[ml]")
 gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
-from AFL.agent.HscedGaussianProcess import HGP
+
+AFLagent = lazy.load("AFL.agent", require="AFL-agent")
 
 # Geometry dependencies
 alphashape = lazy.load("alphashape", require="AFL-automation[geometry]")
@@ -131,7 +132,7 @@ class Interpolator():
             
         ### Due to the difficulty of doing the heteroscedastic modeling, I would avoid this for now
         if (heteroscedastic):# & (self.Y_unct!=None):
-            likelihood = HGP.HeteroscedasticGaussian()
+            likelihood = AFLagent.HscedGaussianProcess.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
             # print(data[0].shape,data[1].shape)
             self.model = gpflow.models.VGP(

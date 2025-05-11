@@ -10,8 +10,8 @@ import lazy_loader as lazy
 
 # Neutron scattering and control system dependencies
 pye = lazy.load("epics", require="AFL-automation[neutron-scattering]")
+sasdata_module = lazy.load("sasdata", require="AFL-automation[neutron-scattering]")
 
-from sasdata.dataloader.loader import Loader
 from AFL.automation.APIServer.Driver import Driver
 
 """
@@ -66,7 +66,7 @@ class ISISLARMOR(Driver):
         self.ici = lazy.load("sans.command_interface.ISISCommandInterface", require="AFL-automation[neutron-scattering]")
 
         self.mantid_simpleapi = lazy.load("mantid.simpleapi", require="AFL-automation[neutron-scattering]")
-
+        self.Loader = sasdata_module.dataloader.loader.Loader
 
         self.status_str = "New Server"
 
@@ -188,7 +188,7 @@ class ISISLARMOR(Driver):
         start_time = time.time()
         while not fpath.exists():
             try:
-                loader = Loader()
+                loader = self.Loader()
                 sasdata = loader.load(str(filename.absolute()))
                 break
             except:
@@ -335,7 +335,7 @@ class ISISLARMOR(Driver):
         self.waitforSASfile(filename)
         
         # load data from disk and send to tiled
-        loader = Loader()
+        loader = self.Loader()
         sasdata = loader.load(str(filename.absolute()))
         if len(sasdata)>1:
             warnings.warn("Loaded multiple data from file...taking the last one",stacklevel=2)

@@ -1,7 +1,7 @@
 import pathlib,glob,os,datetime
 import matplotlib.pyplot as plt
 import numpy as np
-from lazy_loader import lazy
+import lazy_loader as lazy
 cv2 = lazy.load("cv2", require="AFL-automation[vision]")
 from PIL import Image
 from skimage import data, color

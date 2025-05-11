@@ -51,8 +51,8 @@ autosummary_mock_imports = [
     # Exclude launcher because it will try to launch sphinx-build, lol
     'AFL.automation.shared.launcher'
     # NICE and nicos-related modules
-    "nice.api.console.ConsoleMonitor", "nice.api.data.DataMonitor", "nice.api.devices.DevicesMonitor",
-    "nicos.clients.base", "nicos.clients.base.NicosClient", "nicos.clients.base.ConnectionData",
+    "nice", "nice.api.console.ConsoleMonitor", "nice.api.data.DataMonitor", "nice.api.devices.DevicesMonitor",
+    "nicos", "nicos.clients.base", "nicos.clients.base.NicosClient", "nicos.clients.base.ConnectionData",
     "nicos.utils.loggers", "nicos.utils.loggers.ACTION", "nicos.utils.loggers.INPUT",
     "nicos.protocols.daemon", "nicos.protocols.daemon.BREAK_AFTER_LINE", 
     "nicos.protocols.daemon.BREAK_AFTER_STEP", "nicos.protocols.daemon.STATUS_IDLE", 

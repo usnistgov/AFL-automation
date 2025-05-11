@@ -1,7 +1,9 @@
-import lazy_loader as lazy
-# NIST NCNR NICE control system
-nice = lazy.load("nice", require="AFL-automation[neutron-scattering]")
-
+import warnings
+try:
+    import nice
+except ImportError:
+    warnings.warn('NICE import failed- NICE instrument connections will not work.  Install nice.',stacklevel=2)
+   
 class NICEDevice(nice.api.devices.DevicesMonitor):
     def changed(self,changed,current):
         self.nodes.update(changed)

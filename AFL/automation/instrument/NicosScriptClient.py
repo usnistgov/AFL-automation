@@ -8,10 +8,16 @@ import time
 
 import numpy as np
 import copy
+import warnings
 
-import lazy_loader as lazy
-nicos = lazy.load("nicos")
-
+try:
+    from nicos.clients.base import ConnectionData, NicosClient
+    from nicos.utils.loggers import ACTION, INPUT
+    from nicos.protocols.daemon import BREAK_AFTER_LINE, BREAK_AFTER_STEP, \
+         STATUS_IDLE, STATUS_IDLEEXC
+except ImportError:
+    warnings.warn('NICOS import failed- NICOS instrument connections will not work.  Install nicos.',stacklevel=2)
+   
 #NICOS events to exclude from client
 EVENTMASK = ('watch', 'datapoint', 'datacurve', 'clientexec')
 
@@ -39,22 +45,10 @@ class NicosScriptClient(NicosClient):
         """
         Initialize the NicosScriptClient.
         """
-        from nicos.clients.base import ConnectionData, NicosClient
-        from nicos.utils.loggers import ACTION, INPUT
-        from nicos.protocols.daemon import BREAK_AFTER_LINE, BREAK_AFTER_STEP, \
-             STATUS_IDLE, STATUS_IDLEEXC
-        self.ConnectionData = ConnectionData
-        self.NicosClient = NicosClient
-        self.ACTION = ACTION
-        self.INPUT = INPUT
-        self.BREAK_AFTER_LINE = BREAK_AFTER_LINE
-        self.BREAK_AFTER_STEP = BREAK_AFTER_STEP
-        self.STATUS_IDLE = STATUS_IDLE
-        self.STATUS_IDLEEXC = STATUS_IDLEEXC
 
         self.log = logging.getLogger(__name__)
         
-        self.NicosClient.__init__(self, self.log)
+        NicosClient.__init__(self, self.log)
         self.messages = []
 
     def signal(self, name, data=None, exc=None):
@@ -82,7 +76,7 @@ class NicosScriptClient(NicosClient):
             self.livedata[data['det'] + '_live'] = converted_data
         elif name == 'status':
             status, _ = data
-            if status == self.STATUS_IDLE or status == self.STATUS_IDLEEXC:
+            if status == STATUS_IDLE or status == STATUS_IDLEEXC:
                 self.status = 'idle'
             else:
                 self.status = 'run'
@@ -138,9 +132,9 @@ class NicosScriptClient(NicosClient):
         RuntimeError
             If the NICOS server protocol version is incompatible.
         """
-        con = self.ConnectionData(host, port, user, password)
+        con = ConnectionData(host, port, user, password)
 
-        self.NicosClient.connect(self, con, EVENTMASK)
+        NicosClient.connect(self, con, EVENTMASK)
         if self.daemon_info.get('protocol_version') < 22:
             raise RuntimeError("incompatible nicos server")
 
@@ -189,7 +183,7 @@ class NicosScriptClient(NicosClient):
             The result of the command.
         """
         start_detected = False
-        ignore = [self.ACTION, self.INPUT]
+        ignore = [ACTION, INPUT]
         reqID = None
 
         if self.status == 'idle':
@@ -300,6 +294,6 @@ class NicosScriptClient(NicosClient):
         if emergency:
             self.estop()
         elif after_command:
-            self.tell('stop', self.BREAK_AFTER_LINE)
+            self.tell('stop', BREAK_AFTER_LINE)
         elif after_scan_point:
-            self.tell('stop', self.BREAK_AFTER_STEP)
+            self.tell('stop', BREAK_AFTER_STEP)

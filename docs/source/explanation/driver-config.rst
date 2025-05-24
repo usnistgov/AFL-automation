@@ -117,7 +117,7 @@ One powerful feature of the ``PersistentConfig`` class is its ability to track t
     dates, values = driver.config.get_historical_values("key1", convert_to_datetime=True)
 
 Best Practices
--------------
+--------------
 
 When working with the Driver.config system:
 

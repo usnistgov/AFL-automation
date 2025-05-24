@@ -3,26 +3,29 @@ import datetime
 import os
 import pathlib
 import uuid
+import warnings
 
 import matplotlib
 import numpy as np
 import pandas as pd
+import lazy_loader as lazy
+# SAS modeling libraries only need lazy loading
 import h5py #for Nexus file writing
 
-import sasmodels.data
-import sasmodels.core
-import sasmodels.direct_model
-import sasmodels.bumps_model
+# SAS modeling libraries
+sasmodels = lazy.load("sasmodels", require="AFL-automation[sas-analysis]")
 
-from shapely import MultiPoint
-from shapely.geometry import Point
-from shapely import concave_hull
+shapely = lazy.load("shapely", require="AFL-automation[geometry]")
+
 
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import mpl_plot_to_bytes
-from AFL.agent.util import ternary_to_xy
-from AFL.agent.xarray_extensions import *
+AFLagent = lazy.load("AFL.agent", require="AFL-agent")
 
+try:
+    from AFL.agent.xarray_extensions import *
+except ImportError:
+    warnings.warn('AFL-agent xarray_extensions import failed! Some functionality may not work.  Install afl-agent',stacklevel=2)
 
 class VirtualSAS_theory(Driver):
     defaults = {}
@@ -39,7 +42,17 @@ class VirtualSAS_theory(Driver):
         self.app = None
         Driver.__init__(self,name='VirtualSAS_theory',defaults=self.gather_defaults(),overrides=overrides)
         
+        import sasmodels.data
+        import sasmodels.core
+        import sasmodels.direct_model
+        import sasmodels.bumps_model
+
+        import shapely.MultiPoint
+        import shapely.geometry.Point
+        import shapely.concave_hull
         
+
+
         self.hulls = {}
         self.reference_data = []
         self.sasmodels = {}
@@ -72,15 +85,15 @@ class VirtualSAS_theory(Driver):
             else:
                 comps = sds[sds.attrs['components']].transpose(..., 'component')
             if self.config['ternary']:
-                xy = ternary_to_xy(comps.values[:,[2,0,1]]) #shapely uses a different coordinate system than we do
+                xy = AFLagent.util.ternary_to_xy(comps.values[:,[2,0,1]]) #shapely uses a different coordinate system than we do
             else:
                 xy = comps.values[:]
                 assert xy.shape[1]==2, (
                     f'''Need to be in ternary mode with three components, or non-ternary with two. '''
                     f'''You  have "xy.shape:{xy.shape}" and ternary={self.config["ternary"]}'''
                     )
-            mp = MultiPoint(xy)
-            hull = concave_hull(mp,ratio=hull_tracing_ratio)
+            mp = shapely.MultiPoint(xy)
+            hull = shapely.concave_hull(mp,ratio=hull_tracing_ratio)
             self.hulls[label] = hull
     
     def locate(self,composition):
@@ -89,10 +102,10 @@ class VirtualSAS_theory(Driver):
         if self.hulls is None:
             raise ValueError('Must call trace_boundaries before locate')
         if self.config['ternary']:
-            xy = ternary_to_xy(composition)
+            xy = AFLagent.util.ternary_to_xy(composition)
         else:
             xy = composition
-        point = Point(*xy)
+        point = shapely.Point(*xy)
         locations = {}
         for phase,hull in self.hulls.items():
             if hull.contains(point):

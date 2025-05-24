@@ -1,5 +1,6 @@
-import serial
 import time
+import lazy_loader as lazy
+serial = lazy.load("serial", require="AFL-automation[serial]")
 from AFL.automation.shared.exceptions import SerialCommsException
 
 class SerialDevice():

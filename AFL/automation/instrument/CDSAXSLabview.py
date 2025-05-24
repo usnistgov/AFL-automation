@@ -1,12 +1,11 @@
-import win32com
-import win32com.client
-from win32process import SetProcessWorkingSetSize
-from win32api import GetCurrentProcessId,OpenProcess
-from win32con import PROCESS_ALL_ACCESS
-import gc
-import pythoncom
+import lazy_loader as lazy
+win32com = lazy.load("win32com", require="AFL-automation[win32]")
+gc = lazy.load("gc", require="AFL-automation[win32]")
+pythoncom = lazy.load("pythoncom", require="AFL-automation[win32]")
+
 import time
 import datetime
+
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
 import numpy as np # for return types in get data
@@ -65,6 +64,15 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
             vi: (str) the path to the LabView virtual instrument file for the main interface
 
         '''
+        import win32com.client
+        from win32process import SetProcessWorkingSetSize
+        from win32api import GetCurrentProcessId,OpenProcess
+        from win32con import PROCESS_ALL_ACCESS
+        self.client = win32com.client
+        self.SetProcessWorkingSetSize = SetProcessWorkingSetSize
+        self.GetCurrentProcessId = GetCurrentProcessId
+        self.OpenProcess = OpenProcess
+        self.PROCESS_ALL_ACCESS = PROCESS_ALL_ACCESS
 
         self.app = None
         Driver.__init__(self,name='CDSAXSLabview',defaults=self.gather_defaults(),overrides=overrides)
@@ -518,7 +526,7 @@ class LabviewConnection():
         pythoncom.CoUninitialize()
         if(pythoncom._GetInterfaceCount()>0):
             print(f'Closed COM connection, but had remaining objects: {pythoncom._GetInterfaceCount()}')
-            SetProcessWorkingSetSize(OpenProcess(PROCESS_ALL_ACCESS,True,GetCurrentProcessId()),-1,-1)
+            self.SetProcessWorkingSetSize(self.OpenProcess(self.PROCESS_ALL_ACCESS,True,self.GetCurrentProcessId()),-1,-1)
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *
 

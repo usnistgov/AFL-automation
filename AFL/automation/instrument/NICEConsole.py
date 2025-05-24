@@ -1,4 +1,9 @@
-import nice
+import warnings
+try:
+    import nice
+except ImportError:
+    warnings.warn('NICE import failed- NICE instrument connections will not work.  Install nice.',stacklevel=2)
+
 import time
 
 class NICEConsole(nice.api.console.ConsoleMonitor):

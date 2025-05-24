@@ -1,6 +1,6 @@
 import threading
 import time
-from AreaDetectorLive import AreaDetectorLive
+from .AreaDetectorLive import AreaDetectorLive
 
 
 class CollateDaemon(threading.Thread):

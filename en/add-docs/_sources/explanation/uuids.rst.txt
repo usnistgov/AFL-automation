@@ -5,7 +5,7 @@ AFL-automation UUIDs
 This page explains the different kinds of UUIDs used in AFL-automation and an eccentric feature thereof.
 
 Kinds of UUIDs
-------------
+--------------
 
 UUIDs appear in at least four places in AFL-automation, and to distinguish the uses, we prepend two characters and a hyphen to the standard UUID:
 

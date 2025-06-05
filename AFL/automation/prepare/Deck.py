@@ -413,16 +413,16 @@ class Deck:
             for mount,(pipette,tip_rack_slots) in self.pipettes.items():
                 for i,action in enumerate(dummy_protocol):
                     f.write(' '*4 + f'pipette = pipette_{mount}\n')
-                    f.write(' '*4 + f'well_source = container_{action.source[0]}[\'{action.source[1:]}\']\n')
-                    f.write(' '*4 + f'well_dest = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')
-                    f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
+                    f.write(' '*4 + f'well_source = container_{action["source"][0]}[\'{action["source"][1:]}\']\n')
+                    f.write(' '*4 + f'well_dest = container_{action["dest"][0]}[\'{action["dest"][1:]}\']\n')
+                    f.write(' '*4 + f'pipette.transfer({action["volume"]},well_source,well_dest)\n')
                     f.write('\n')
 
                 for slot,catch in self.catches.items():
                     f.write(' '*4 + f'pipette = pipette_{mount}\n')
-                    f.write(' '*4 + f'well_source = container_{action.dest[0]}[\'{action.dest[1:]}\']\n')
+                    f.write(' '*4 + f'well_source = container_{action["dest"][0]}[\'{action["dest"][1:]}\']\n')
                     f.write(' '*4 + f'well_dest = catch_{slot}[\'A1\']\n')
-                    f.write(' '*4 + f'pipette.transfer({action.volume},well_source,well_dest)\n')
+                    f.write(' '*4 + f'pipette.transfer({action["volume"]},well_source,well_dest)\n')
                     f.write('\n')
 
     def make_script(self,filename,load_last_sample=True):

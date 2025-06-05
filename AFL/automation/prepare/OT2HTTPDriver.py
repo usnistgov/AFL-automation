@@ -82,7 +82,6 @@ class OT2HTTPDriver(Driver):
 
             # Get attached pipettes
             self._update_pipettes()
-
         except requests.exceptions.RequestException as e:
             self.log_error(f"Error connecting to robot: {str(e)}")
             raise ConnectionError(
@@ -97,85 +96,65 @@ class OT2HTTPDriver(Driver):
 
             # Get basic pipette information
             response = requests.get(
-                url=f"{self.base_url}/pipettes", headers=self.headers
+                url=f"{self.base_url}/instruments", headers=self.headers
             )
 
             if response.status_code != 200:
                 raise RuntimeError(f"Failed to get pipettes: {response.text}")
 
-            pipettes_data = response.json()
+            pipettes_data = response.json()['data']
             self.pipette_info = {}
 
             # Update min/max transfer values based on attached pipettes
             self.min_transfer = None
             self.max_transfer = None
 
-            for mount, pipette in pipettes_data.items():
-                if not pipette:
-                    # No pipette in this mount
-                    self.pipette_info[mount] = None
-                    continue
+            for pipette in pipettes_data:
+                mount = pipette['mount']
 
                 try:
-                    pipette_id = self.loaded_instruments[mount]["pipette_id"]
+                    pipette_id = self.loaded_instruments[mount]["pipette_id"] # the id from this run
                 except KeyError:
-                    pipette_id = pipette["id"]
+                    pipette_id = None
 
                 # Store basic pipette info
                 self.pipette_info[mount] = {
                     "id": pipette_id,
-                    "name": pipette["name"],
-                    "model": pipette["model"],
+                    "name": pipette["instrumentName"],
+                    "model": pipette["instrumentModel"],
+                    "serial": pipette["serialNumber"],
                     "mount": mount,
-                }
-
-                # Get detailed pipette settings
-                settings_response = requests.get(
-                    url=f"{self.base_url}/settings/pipettes/{pipette['id']}",
-                    headers=self.headers,
-                )
-
-                if settings_response.status_code == 200:
-                    settings = settings_response.json().get("data", {})
-
-                    # Store all settings in the pipette info
-                    self.pipette_info[mount].update(
-                        {
-                            "min_volume": settings.get("minVolume", 1),
-                            "max_volume": settings.get("maxVolume", 300),
-                            "aspirate_flow_rate": settings.get(
-                                "aspirateFlowRate", {}
-                            ).get("value"),
-                            "dispense_flow_rate": settings.get(
-                                "dispenseFlowRate", {}
-                            ).get("value"),
-                            "channels": pipette.get("channels", 1),
+                    "min_volume": pipette.get("data",{}).get("min_volume", None),
+                    "max_volume": pipette.get("data",{}).get("max_volume", None),
+                    "aspirate_flow_rate": pipette.get("data",{}).get(
+                        "aspirateFlowRate", {}
+                    ).get("value",150),
+                    "dispense_flow_rate": pipette.get("data",{}).get(
+                        "dispenseFlowRate", {}
+                    ).get("value",150),
+                    "channels": pipette.get("data",{}).get("channels", 1),
                         }
-                    )
+                if pipette_id is None:
+                    continue
+                    
+                # Update global min/max transfer values
+                min_volume = self.pipette_info[mount]['min_volume']
+                max_volume = self.pipette_info[mount]['max_volume']
 
-                    # Update global min/max transfer values
-                    min_volume = settings.get("minVolume", 1)
-                    max_volume = settings.get("maxVolume", 300)
-
-                    if (self.min_transfer is None) or (self.min_transfer > min_volume):
+                if (self.min_transfer is None) or (self.min_transfer > min_volume):
                         self.min_transfer = min_volume
                         if self.app is not None:
                             self.log_info(
                                 f"Setting minimum transfer to {self.min_transfer}"
                             )
 
-                    if (self.max_transfer is None) or (self.max_transfer < max_volume):
-                        self.max_transfer = max_volume
-                        if self.app is not None:
-                            self.log_info(
-                                f"Setting maximum transfer to {self.max_transfer}"
-                            )
-                else:
+                if (self.max_transfer is None) or (self.max_transfer < max_volume):
+                    self.max_transfer = max_volume
                     if self.app is not None:
-                        self.log_warning(
-                            f"Failed to get settings for pipette {pipette['id']}: {settings_response.status_code}"
+                        self.log_info(
+                            f"Setting maximum transfer to {self.max_transfer}"
                         )
-
+            
             if self.app is not None:
                 self.log_info(f"Pipette information updated: {self.pipette_info}")
 
@@ -375,7 +354,15 @@ class OT2HTTPDriver(Driver):
 
         self.log_debug(f"Created well objects: {wells}")
         return wells
-
+    def _check_cmd_success(self, response):
+        if response.status_code != 201 or response.json()['data']['status'] == 'failed':
+                    self.log_error(
+                        f"Failed to execute command : {response.status_code}"
+                    )
+                    self.log_error(f"Response: {response.text}")
+                    raise RuntimeError(
+                        f"Failed to execute command: {response.text}"
+                    )
     def load_labware(self, name, slot, module=None, **kwargs):
         """Load labware (containers, tipracks) into the protocol using HTTP API"""
         self.log_debug(f"Loading labware '{name}' into slot '{slot}'")
@@ -399,9 +386,7 @@ class OT2HTTPDriver(Driver):
                         "commandType": "moveLabware",
                         "params": {
                             "labwareId": existing_labware_id,
-                            "newLocation": {
-                                "addressableAreaName": "trashBin",  # this area must be configured as trash/waste chute
-                            },
+                            "newLocation": "offDeck", 
                             "strategy": "manualMoveWithoutPause",  # Allow user to manually move the labware
                         },
                         "intent": "setup",
@@ -415,17 +400,8 @@ class OT2HTTPDriver(Driver):
                     params={"waitUntilComplete": True},
                     json=move_command,
                 )
-                print("move_response")
-                print(move_response.json())
 
-                if move_response.status_code != 201:
-                    self.log_error(
-                        f"Failed to move existing labware off-deck: {move_response.status_code}"
-                    )
-                    self.log_error(f"Response: {move_response.text}")
-                    raise RuntimeError(
-                        f"Failed to move existing labware off-deck: {move_response.text}"
-                    )
+                self._check_cmd_success(move_response)
 
                 # Remove from our tracking
                 del self.loaded_labware[slot]
@@ -465,11 +441,8 @@ class OT2HTTPDriver(Driver):
                 json=command_dict,
             )
 
-            if response.status_code != 201:
-                self.log_error(f"Failed to load labware: {response.status_code}")
-                self.log_error(f"Response: {response.text}")
-                raise RuntimeError(f"Failed to load labware: {response.text}")
-
+            
+            self._check_cmd_success(response)
             # Get the labware ID from the response
             response_data = response.json()
 
@@ -533,6 +506,7 @@ class OT2HTTPDriver(Driver):
                     "params": {
                         "pipetteName": name,
                         "mount": mount,
+                        "tip_racks": [self.loaded_labware[str(slot)][0] for slot in tip_rack_slots],
                     },
                     "intent": "setup",
                 }
@@ -546,13 +520,12 @@ class OT2HTTPDriver(Driver):
                 json=command_dict,
             )
 
-            if response.status_code != 201:
-                self.log_error(f"Failed to load pipette: {response.status_code}")
-                self.log_error(f"Response: {response.text}")
-                raise RuntimeError(f"Failed to load pipette: {response.text}")
-
+            
+            self._check_cmd_success(response)
             # Get the pipette ID from the response
             response_data = response.json()
+            print(f'loadPipette response: {response_data}')
+
             pipette_id = response_data["data"]["result"]["pipetteId"]
 
             # Make sure we have the latest pipette information
@@ -877,6 +850,7 @@ class OT2HTTPDriver(Driver):
                                 "origin": source_position,
                                 "offset": {"x": 0, "y": 0, "z": 0},
                             },
+                            "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                         },
                     )
 
@@ -891,6 +865,7 @@ class OT2HTTPDriver(Driver):
                                 "origin": source_position,
                                 "offset": {"x": 0, "y": 0, "z": 0},
                             },
+                            "flowRate": self.pipette_info[pipette_mount]['dispense_flow_rate'],
                         },
                     )
 
@@ -914,6 +889,7 @@ class OT2HTTPDriver(Driver):
                         "origin": source_position,
                         "offset": {"x": 0, "y": 0, "z": 0},
                     },
+                    "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                 },
             )
 
@@ -953,6 +929,7 @@ class OT2HTTPDriver(Driver):
                     "labwareId": dest_well["labwareId"],
                     "wellName": dest_well["wellName"],
                     "wellLocation": {"origin": dest_position, "offset": offset},
+                    "flowRate": self.pipette_info[pipette_mount]['dispense_flow_rate'],
                 },
             )
 
@@ -985,6 +962,7 @@ class OT2HTTPDriver(Driver):
                                 "origin": dest_position,
                                 "offset": {"x": 0, "y": 0, "z": 0},
                             },
+                            "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                         },
                     )
 
@@ -999,6 +977,7 @@ class OT2HTTPDriver(Driver):
                                 "origin": dest_position,
                                 "offset": {"x": 0, "y": 0, "z": 0},
                             },
+                            "flowRate": self.pipette_info[pipette_mount]['dispense_flow_rate'],
                         },
                     )
 
@@ -1024,8 +1003,20 @@ class OT2HTTPDriver(Driver):
 
             # 11. Drop tip if specified
             if drop_tip:
-                self._execute_atomic_command("dropTip", {"pipetteId": pipette_id})
+                # see https://github.com/Opentrons/opentrons/issues/14590 for the absolute bullshit that led to this.
+                # in it: Opentrons incompetence
+                self._execute_atomic_command("moveToAddressableAreaForDropTip", {
+                        "pipetteId": pipette_id,
+                        "addressableAreaName": "fixedTrash",
+                        "offset": {
+                            "x": 0,
+                            "y": 0,
+                            "z": 10
+                        },
+                        "alternateDropLocation": False})
 
+                self._execute_atomic_command("dropTipInPlace", {"pipetteId": pipette_id, 
+                                                        })
             # Update last pipette
             self.last_pipette = pipette
 
@@ -1082,14 +1073,8 @@ class OT2HTTPDriver(Driver):
                 },
             )
 
-            if command_response.status_code != 201:
-                self.log_error(
-                    f"Failed to execute command: {command_response.status_code}"
-                )
-                self.log_error(f"Response: {command_response.text}")
-                raise RuntimeError(
-                    f"Failed to execute command: {command_response.text}"
-                )
+            
+            self._check_cmd_success(command_response)
 
             command_data = command_response.json()["data"]
             command_id = command_data["id"]
@@ -1118,56 +1103,19 @@ class OT2HTTPDriver(Driver):
         self.log_info(f"Setting aspirate rate to {rate} uL/s")
 
         # If no specific pipette is provided, update all pipettes
-        pipettes_to_update = []
-        if pipette is None:
-            for mount, pipette_data in self.pipette_info.items():
-                if pipette_data:
-                    pipettes_to_update.append((mount, pipette_data))
-        else:
-            for mount, pipette_data in self.pipette_info.items():
-                if mount == pipette and pipette_data:
-                    pipettes_to_update.append((mount, pipette_data))
-
-        # Update each pipette
-        for mount, pipette_data in pipettes_to_update:
-            try:
-                requests.patch(
-                    url=f"{self.base_url}/settings/pipettes/{pipette_data['id']}/fields/aspirateFlowRate",
-                    headers=self.headers,
-                    json={"data": {"value": rate}},
-                )
-            except requests.exceptions.RequestException as e:
-                self.log_error(
-                    f"Error setting aspirate rate for {mount} pipette: {str(e)}"
-                )
+        if pipette == 'left' or pipette is None:
+            self.pipette_info['left']['aspirate_flow_rate'] = rate
+        if pipette == 'right' or pipette is None:
+            self.pipette_info['right']['aspirate_flow_rate'] = rate
 
     def set_dispense_rate(self, rate=300, pipette=None):
         """Set dispense rate in uL/s. Default is 300 uL/s"""
         self.log_info(f"Setting dispense rate to {rate} uL/s")
-
         # If no specific pipette is provided, update all pipettes
-        pipettes_to_update = []
-        if pipette is None:
-            for mount, pipette_data in self.pipette_info.items():
-                if pipette_data:
-                    pipettes_to_update.append((mount, pipette_data))
-        else:
-            for mount, pipette_data in self.pipette_info.items():
-                if mount == pipette and pipette_data:
-                    pipettes_to_update.append((mount, pipette_data))
-
-        # Update each pipette
-        for mount, pipette_data in pipettes_to_update:
-            try:
-                requests.patch(
-                    url=f"{self.base_url}/settings/pipettes/{pipette_data['id']}/fields/dispenseFlowRate",
-                    headers=self.headers,
-                    json={"data": {"value": rate}},
-                )
-            except requests.exceptions.RequestException as e:
-                self.log_error(
-                    f"Error setting dispense rate for {mount} pipette: {str(e)}"
-                )
+        if pipette == 'left' or pipette is None:
+            self.pipette_info['left']['dispense_flow_rate'] = rate
+        if pipette == 'right' or pipette is None:
+            self.pipette_info['right']['dispense_flow_rate'] = rate
 
     def set_gantry_speed(self, speed=400):
         """Set movement speed of gantry. Default is 400 mm/s"""

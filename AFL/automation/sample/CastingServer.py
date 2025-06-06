@@ -17,6 +17,8 @@ import xarray as xr
 class CastingServer(Driver):
     defaults={}
     defaults['manifest'] = '/home/afl642/'
+    defaults['manifest_prep'] = '/home/afl642/'
+    defaults['manifest_cast'] = '/home/afl642/'
     def __init__(self,
             prep_url,
             overrides=None, 
@@ -46,20 +48,22 @@ class CastingServer(Driver):
         self.init_casting_manifest()
 
     def init_casting_manifest(self,attrs=None,overwrite=False):
-        print(f'Trying to load {self.config["manifest"]}')
-        if not overwrite:
-            try:
-                self.manifest = xr.load_dataset(self.config['manifest'])
-                print(f'Loaded!')
-            except (FileNotFoundError,ValueError):
-                self.manifest = xr.Dataset()
-                print(f'Not Found...starting new manifest')
-        else:
-            self.manifest = xr.Dataset()
-            print(f'Starting new manifest')
-            
-        if attrs is not None:
-            self.manifest.attrs.update(attrs)
+        self.manifests = {}
+        for manifest in ['manifest','manifest_prep','manifest_cast']:
+            print(f'Trying to load {self.config[manifest]}')
+            if not overwrite:
+                try:
+                    self.manifests[manifest] = xr.load_dataset(self.config[manifest])
+                    print(f'Loaded!')
+                except (FileNotFoundError,ValueError):
+                    self.manifests[manifest] = xr.Dataset()
+                    print(f'Not Found...starting new manifest')
+            else:
+                self.manifests[manifest] = xr.Dataset()
+                print(f'Starting new manifest')
+
+            if attrs is not None:
+                self.manifests[manifest].attrs.update(attrs)
 
     def status(self):
         status = []
@@ -70,21 +74,26 @@ class CastingServer(Driver):
         self.status_str = value
         self.app.logger.info(value)
     
-    def log_event(self,event,write=True):
-        event['started'] = datetime.datetime.strptime(event['started'],'%m/%d/%y %H:%M:%S-%f')
-        event['ended'] = datetime.datetime.strptime(event['ended'],'%m/%d/%y %H:%M:%S-%f')
+    def log_event(self,manifest_key,event,write=True):
+        #event['started'] = datetime.datetime.strptime(event['started'],'%m/%d/%y %H:%M:%S-%f')
+        #event['ended'] = datetime.datetime.strptime(event['ended'],'%m/%d/%y %H:%M:%S-%f')
         
         ds_event = xr.Dataset()
         for k,v in event.items():
-            ds_event[k] = v
+            ds_event[k] = ('event',v)
         
-        self.manifest = xr.concat([self.manifest,ds_event],dim='event')
+        self.manifests[manifest_key] = xr.concat([
+            self.manifests[manifest_key],
+            ds_event
+        ], 
+            dim='event'
+        )
         
         if write:
-            self.manifest.to_netcdf(self.config['manifest'])
-            self.manifest.to_pandas().to_csv(self.config['manifest'].replace('nc','csv'))
+            self.manifests[manifest_key].to_netcdf(self.config[manifest_key])
+            self.manifests[manifest_key].to_pandas().to_csv(self.config[manifest_key].replace('nc','csv'))
             
-    def assign_targets(protocols,target_map):
+    def assign_targets(self,protocols,target_map):
         if target_map is None:
             self.targets = set()
             for name,protocol in protocols.items():
@@ -111,6 +120,7 @@ class CastingServer(Driver):
     def prepare_casting_stocks(self,**spec):
         '''Spec should contain sample_name and a protocol'''
         self.init_casting_manifest()
+        manifest = self.manifests['manifest_prep']
         
         stock_name = spec['stock_name']
         sample_names = spec['sample_names']
@@ -124,13 +134,13 @@ class CastingServer(Driver):
             self.last_prep['event_type'] = 'prep'
             self.last_prep['sample_name'] = sample_name
             self.last_prep['stock_name'] = stock_name
-            self.last_prep['plate_name'] = 'None'
             self.last_prep.update(**task)
-            self.log_event(self.last_prep)
+            self.log_event('manifest_prep',self.last_prep)
             
     def bulk_cast_films(self,**spec):
         '''Spec should contain sample_name and a protocol'''
         self.init_casting_manifest()
+        manifest = self.manifests['manifest_cast']
         
         sample_names = spec['sample_names']
         plate_names = spec['plate_names']
@@ -145,17 +155,18 @@ class CastingServer(Driver):
             
             self.last_prep['event_type'] = 'cast'
             self.last_prep['sample_name'] = sample_name
-            self.last_prep['stock_name'] = 'None'
             self.last_prep['plate_name'] = plate_name
             self.last_prep.update(**task)
-            self.log_event(self.last_prep)
+            self.log_event('manifest_cast',self.last_prep)
 
     def prepare_and_cast(self,**sample):
         self.init_casting_manifest()
         
         sample_name = sample['sample_name']
-        plate_name = sample['plate_name']
-        protocols = self.assign_targets({k:sample[k] for k in ['prep_protocol','cast_protocol']})
+        plate_names = sample['plate_names']
+        #stock_name = sample['stock_name']
+        # protocols = self.assign_targets({k:sample[k] for k in ['prep_protocol','cast_protocol']})
+        protocols = {k:sample[k] for k in ['prep_protocol','cast_protocol']}
 
         self.update_status(f'Preparing sample: {sample_name}')
         for task in protocols['prep_protocol']:
@@ -163,48 +174,44 @@ class CastingServer(Driver):
             self.last_prep = self.prep_client.transfer(interactive=True,**task)
             self.last_prep_time = self.last_prep['ended'] 
             
+            self.last_prep['event_type'] = 'prep'
             self.last_prep['sample_name'] = sample_name
-            self.last_prep['plate_name'] = plate_name
-            self.last_prep['min_mix_time'] = datetime.timedelta(seconds=0)
-            self.last_prep['actual_mix_time'] = datetime.timedelta(seconds=0)
-            self.last_prep['event_type'] = 'transfer'
+            #self.last_prep['stock_name'] = stock_name
             self.last_prep.update(**task)
-            self.log_event(self.last_prep)
+            #self.log_event('manifest_prep',self.last_prep)
             
         # shouldn't have to wait, but let's do this for safety
         if self.prep_uuid is not None: 
             self.prep_client.wait(self.prep_uuid)
 
-        if 'min_mix_time' in sample:
-            try:
-                if not (len(sample['min_mix_time'])==len(sample['cast_protocol'])):
-                    raise ValueError(f'min_mix_time has multiple values, but does not match length of cast protocol len(sample["cast_protocol"]')
-            except TypeError:
-                #value is scalar, make vector
-                sample['min_mix_time'] = [sample['min_mix_time']]*len(sample['cast_protocol'])
-        else:
-            sample['min_mix_time'] = [0.0]*len(sample['cast_protocol'])
-            
+        # if 'min_mix_time' in sample:
+        #     try:
+        #         if not (len(sample['min_mix_time'])==len(sample['cast_protocol'])):
+        #             raise ValueError(f'min_mix_time has multiple values, but does not match length of cast protocol len(sample["cast_protocol"]')
+        #     except TypeError:
+        #         #value is scalar, make vector
+        #         sample['min_mix_time'] = [sample['min_mix_time']]*len(sample['cast_protocol'])
+        # else:
+        #     sample['min_mix_time'] = [0.0]*len(sample['cast_protocol'])
+        #     
 
         self.update_status(f'Casting sample: {sample_name}')
-        for task,min_mix_time in zip(protocols['cast_protocol'],sample['min_mix_time']):
+        for plate_name,task in zip(plate_names,protocols['cast_protocol']):
             
-            delta = datetime.timedelta(seconds=min_mix_time)
-            self.update_status(f'Waiting for min_mix_time to be satisfied: {min_mix_time} s')
-            while (datetime.datetime.now()-self.last_prep['ended'])<delta:
-                time.sleep(0.05)
-            actual_mix_time = datetime.datetime.now()-self.last_prep['ended']
+            # delta = datetime.timedelta(seconds=min_mix_time)
+            # self.update_status(f'Waiting for min_mix_time to be satisfied: {min_mix_time} s')
+            # while (datetime.datetime.now()-self.last_prep['ended'])<delta:
+            #     time.sleep(0.05)
+            # actual_mix_time = datetime.datetime.now()-self.last_prep['ended']
                 
             self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
             self.last_prep = self.prep_client.transfer(**task,interactive=True)
 
-            self.last_prep['sample_name'] = sample_name
-            self.last_prep['min_mix_time'] = min_mix_time
-            self.last_prep['actual_mix_time'] = actual_mix_time
-            self.last_prep['plate_name'] = plate_name
             self.last_prep['event_type'] = 'cast'
+            self.last_prep['sample_name'] = sample_name
+            self.last_prep['plate_name'] = plate_name
             self.last_prep.update(**task)
-            self.log_event(self.last_prep)
+            #self.log_event('manifest_cast',self.last_prep)
             self.update_status(f'Cast {self.last_prep["sample_name"]}!')
             
         

@@ -53,7 +53,7 @@ class Driver:
             self.name = name
 
         if useful_links is None:
-            self.useful_links = []
+            self.useful_links = {}
         else:
             self.useful_links = useful_links
         

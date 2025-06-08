@@ -334,19 +334,20 @@ class DatasetWidget_Model:
         self.dataset[var_name]  = self.dataset[extract_from_var].sel({dim:extract_from_coord})
 
     def get_composition(self, variable):
-        x = self.dataset[variable][:, 0].values
-        y = self.dataset[variable][:, 1].values
-        if self.dataset[variable].values.shape[1]>2:
-            z = self.dataset[variable][:, 2].values
+        dataset = self.dataset.transpose(self.sample_dim, ...)
+        x = dataset[variable][:, 0].values
+        y = dataset[variable][:, 1].values
+        if dataset[variable].values.shape[1]>2:
+            z = dataset[variable][:, 2].values
         else:
             z = None
 
-        component_dim = self.dataset[variable].transpose(self.sample_dim, ...).dims[1]
+        component_dim = dataset[variable].transpose(self.sample_dim, ...).dims[1]
         if z is None:
-            xname, yname = self.dataset[variable][component_dim].values[:2]
+            xname, yname = dataset[variable][component_dim].values[:2]
             zname = None
         else:
-            xname, yname, zname = self.dataset[variable][component_dim].values[:3]
+            xname, yname, zname = dataset[variable][component_dim].values[:3]
         return x, y, z, xname, yname, zname
 
     def get_scattering(self, variable, index):
@@ -563,10 +564,10 @@ class DatasetWidget_View:
                 yaxis_title="I",
                 height=300,
                 width=500,
-                margin=dict(t=10, b=10, l=10, r=0),
                 legend=dict(yanchor="top", xanchor="right", y=0.99, x=0.99),
             ),
         )
+        self.scatt_fig.update_layout(margin=dict(t=10, b=10, l=10, r=10))
         self.scatt_fig.update_yaxes(type="log")
         self.scatt_fig.update_xaxes(type="log")
         self.scatt_fig.update_xaxes(
@@ -583,9 +584,9 @@ class DatasetWidget_View:
             layout=dict(
                 height=300,
                 width=500,
-                margin=dict(t=25, b=35, l=10),
             ),
         )
+        self.comp_fig.update_layout(margin=dict(t=10, b=10, l=10, r=10))
 
     def init_buttons(self):
         self.button["prev"] = ipywidgets.Button(description="Previous")

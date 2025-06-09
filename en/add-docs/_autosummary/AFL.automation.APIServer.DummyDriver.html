@@ -269,6 +269,7 @@
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -425,6 +426,7 @@
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -562,6 +564,7 @@
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -904,6 +907,10 @@
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2Client.html#AFL.automation.prepare.OT2Client.OT2Client"><code class="docutils literal notranslate"><span class="pre">OT2Client</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver"><code class="docutils literal notranslate"><span class="pre">OT2_Driver</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.argmax"><code class="docutils literal notranslate"><span class="pre">argmax()</span></code></a></li>
@@ -1086,17 +1093,17 @@
 <p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code>(name[, defaults, overrides])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code>(name[, defaults, overrides, useful_links])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.APIServer.DummyDriver.DummyDriver" title="AFL.automation.APIServer.DummyDriver.DummyDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyDriver</span></code></a>([name, overrides])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.APIServer.DummyDriver.DummyDriver" title="AFL.automation.APIServer.DummyDriver.DummyDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyDriver</span></code></a>([name, overrides, useful_links])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.DummyDriver.DummyDriver">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.APIServer.DummyDriver.</span></span><span class="sig-name descname"><span class="pre">DummyDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DummyDriver.html#DummyDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DummyDriver.DummyDriver" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.APIServer.DummyDriver.</span></span><span class="sig-name descname"><span class="pre">DummyDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">useful_links</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DummyDriver.html#DummyDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DummyDriver.DummyDriver" title="Link to this definition"></a></dt>
 <dd><dl class="py attribute">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.DummyDriver.DummyDriver.defaults">
 <span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'density</span> <span class="pre">of</span> <span class="pre">water':</span> <span class="pre">1.0,</span> <span class="pre">'speed</span> <span class="pre">of</span> <span class="pre">light':</span> <span class="pre">300000000.0}</span></em><a class="headerlink" href="#AFL.automation.APIServer.DummyDriver.DummyDriver.defaults" title="Link to this definition"></a></dt>
@@ -1104,7 +1111,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.DummyDriver.DummyDriver.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DummyDriver.html#DummyDriver.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DummyDriver.DummyDriver.__init__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">useful_links</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DummyDriver.html#DummyDriver.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DummyDriver.DummyDriver.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

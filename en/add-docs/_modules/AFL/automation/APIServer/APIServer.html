@@ -266,6 +266,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -422,6 +423,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -559,6 +561,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -899,6 +902,10 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html#AFL.automation.prepare.OT2Client.OT2Client"><code class="docutils literal notranslate"><span class="pre">OT2Client</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a><ul>
@@ -1381,38 +1388,42 @@
 <div class="viewcode-block" id="APIServer.index">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.APIServer.html#AFL.automation.APIServer.APIServer.APIServer.index">[docs]</a>
     <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&#39;&#39;&#39;Live, status page of the robot&#39;&#39;&#39;</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Render the legacy status board</span>
+<span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Serving index page&#39;</span><span class="p">)</span>
 
         <span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue</span><span class="p">()</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;contact&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue_state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_state</span><span class="p">()</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;driver&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue</span><span class="p">()</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue_state&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_state</span><span class="p">()</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;driver&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;useful_links&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">useful_links</span>
         <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_template</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">),</span><span class="mi">200</span></div>
 
 <div class="viewcode-block" id="APIServer.index_new">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.APIServer.html#AFL.automation.APIServer.APIServer.APIServer.index_new">[docs]</a>
     <span class="k">def</span> <span class="nf">index_new</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&#39;&#39;&#39;Live, status page of the robot&#39;&#39;&#39;</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Render the new driver UI</span>
+<span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Serving index page&#39;</span><span class="p">)</span>
 
         <span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue</span><span class="p">()</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;contact&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue_state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_state</span><span class="p">()</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;driver&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue</span><span class="p">()</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue_state&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_state</span><span class="p">()</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;driver&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;useful_links&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">useful_links</span>
         <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_index_template</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">),</span><span class="mi">200</span></div>
 
 
 <div class="viewcode-block" id="APIServer.webapp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.APIServer.html#AFL.automation.APIServer.APIServer.APIServer.webapp">[docs]</a>
     <span class="k">def</span> <span class="nf">webapp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&#39;&#39;&#39;Live, status page of the robot&#39;&#39;&#39;</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Render the jquery webapp</span>
+<span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Serving WebApp&#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;webapp.html&#39;</span><span class="p">),</span><span class="mi">200</span></div>

@@ -266,6 +266,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -422,6 +423,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -559,6 +561,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
@@ -901,6 +904,10 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html#AFL.automation.prepare.OT2Client.OT2Client"><code class="docutils literal notranslate"><span class="pre">OT2Client</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver"><code class="docutils literal notranslate"><span class="pre">OT2_Driver</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.argmax"><code class="docutils literal notranslate"><span class="pre">argmax()</span></code></a></li>
@@ -1077,11 +1084,13 @@
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;density of water&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 <div class="viewcode-block" id="DummyDriver.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DummyDriver.html#AFL.automation.APIServer.DummyDriver.DummyDriver.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">useful_links</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;DummyDriver&#39;</span>
-        <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">useful_links</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">useful_links</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;How Many (5)&#39;</span><span class="p">:</span><span class="s1">&#39;/how_many?count=5&#39;</span><span class="p">}</span>
+        <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">,</span><span class="n">useful_links</span><span class="o">=</span><span class="n">useful_links</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DummyDriver.status">

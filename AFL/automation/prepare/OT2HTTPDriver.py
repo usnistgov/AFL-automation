@@ -13,6 +13,9 @@ class OT2HTTPDriver(Driver):
     defaults = {}
     defaults["robot_ip"] = "127.0.0.1"  # Default to localhost, should be overridden
     defaults["robot_port"] = "31950"  # Default Opentrons HTTP API port
+    defaults["loaded_labware"] = {}  # Persistent storage for loaded labware
+    defaults["loaded_instruments"] = {}  # Persistent storage for loaded instruments
+    defaults["loaded_modules"] = {}  # Persistent storage for loaded modules
 
     def __init__(self, overrides=None):
         self.app = None
@@ -33,9 +36,7 @@ class OT2HTTPDriver(Driver):
         self.has_tip = False
         self.last_pipette = None
         self.modules = {}
-        self.loaded_labware = {}
-        self.loaded_instruments = {}
-        self.loaded_modules = {}
+            
         self.pipette_info = {}
 
         # Base URL for HTTP requests
@@ -114,7 +115,7 @@ class OT2HTTPDriver(Driver):
                 mount = pipette['mount']
 
                 try:
-                    pipette_id = self.loaded_instruments[mount]["pipette_id"] # the id from this run
+                    pipette_id = self.config["loaded_instruments"][mount]["pipette_id"] # the id from this run
                 except KeyError:
                     pipette_id = None
 
@@ -207,7 +208,7 @@ class OT2HTTPDriver(Driver):
                 )
 
         # Get loaded labware information
-        for slot, (labware_id, name) in self.loaded_labware.items():
+        for slot, (labware_id, name) in self.config["loaded_labware"].items():
             status.append(f"Labware in slot {slot}: {name}")
 
         return status
@@ -230,15 +231,15 @@ class OT2HTTPDriver(Driver):
 
         mounts_to_reset = []
         if mount == "both":
-            mounts_to_reset = list(self.loaded_instruments.keys())
+            mounts_to_reset = list(self.config["loaded_instruments"].keys())
         else:
             mounts_to_reset = [mount]
 
         for m in mounts_to_reset:
-            if m in self.loaded_instruments:
+            if m in self.config["loaded_instruments"]:
                 # Reinitialize available tips for this mount
                 self.available_tips[m] = []
-                for tiprack in self.loaded_instruments[m]["tip_racks"]:
+                for tiprack in self.config["loaded_instruments"][m]["tip_racks"]:
                     for well in TIPRACK_WELLS:
                         self.available_tips[m].append((tiprack, well))
                 self.log_info(f"Reset {len(self.available_tips[m])} tips for {m} mount")
@@ -272,14 +273,23 @@ class OT2HTTPDriver(Driver):
         # Reset state variables
         self.session_id = None
         self.protocol_id = None
-        self.loaded_labware = {}
-        self.loaded_instruments = {}
-        self.loaded_modules = {}
         self.has_tip = False
         self.last_pipette = None
+        
+        # Reset deck configuration too
+        self.reset_deck()
 
         # Re-initialize robot connection
         self._initialize_robot()
+        
+    def reset_deck(self):
+        """Reset the deck configuration, clearing loaded labware, instruments, and modules"""
+        self.log_info("Resetting the deck configuration")
+        
+        # Clear the deck configuration 
+        self.config["loaded_labware"] = {}
+        self.config["loaded_instruments"] = {}
+        self.config["loaded_modules"] = {}
 
     @Driver.quickbar(qb={"button_text": "Home"})
     def home(self, **kwargs):
@@ -357,8 +367,8 @@ class OT2HTTPDriver(Driver):
         self.log_debug(f"Created well objects: {wells}")
         
         # Check well validity here
-        assert slot in self.loaded_labware.keys(), f"Slot {slot} does not have any loaded labware"
-        assert well in self.loaded_labware[slot][2]['definition']['wells'].keys(), f"Well {well} is not a valid well for slot {slot}, {self.loaded_labware[slot][2]['definition']['metadata']['displayName']}"
+        assert slot in self.config["loaded_labware"].keys(), f"Slot {slot} does not have any loaded labware"
+        assert well in self.config["loaded_labware"][slot][2]['definition']['wells'].keys(), f"Well {well} is not a valid well for slot {slot}, {self.config["loaded_labware"][slot][2]['definition']['metadata']['displayName']}"
         
         return wells
     def _check_cmd_success(self, response):
@@ -388,11 +398,11 @@ class OT2HTTPDriver(Driver):
 
         try:
             # Check if there's existing labware in the slot
-            if slot in self.loaded_labware:
+            if slot in self.config["loaded_labware"]:
                 self.log_info(
                     f"Found existing labware in slot {slot}, moving it off-deck first"
                 )
-                existing_labware_id = self.loaded_labware[slot][
+                existing_labware_id = self.config["loaded_labware"][slot][
                     0
                 ]  # Get the ID of existing labware
 
@@ -420,10 +430,10 @@ class OT2HTTPDriver(Driver):
                 self._check_cmd_success(move_response)
 
                 # Remove from our tracking
-                del self.loaded_labware[slot]
-            if str(slot) in self.loaded_modules.keys():
+                del self.config["loaded_labware"][slot]
+            if str(slot) in self.config["loaded_modules"].keys():
                 # we need to load into a module, not a slot
-                location = {"moduleId": self.loaded_modules[str(slot)][0]}
+                location = {"moduleId": self.config["loaded_modules"][str(slot)][0]}
             else:
                 location = {"slotName": str(slot)}
                 
@@ -494,8 +504,8 @@ class OT2HTTPDriver(Driver):
                     f"Failed to extract labware ID from response: {str(e)}"
                 )
             result = response_data["data"]["result"]
-            # Store the labware information
-            self.loaded_labware[slot] = (labware_id, name,result)
+            # Store the labware information directly in config
+            self.config["loaded_labware"][slot] = (labware_id, name, result)
 
             # If this is a module, store it
             if module:
@@ -518,9 +528,9 @@ class OT2HTTPDriver(Driver):
         run_id = self._ensure_run_exists()
 
         try:
-            if slot in self.loaded_modules.keys():
+            if slot in self.config["loaded_modules"].keys():
                 # todo: check if same module
-                raise RuntimeError(f"Module already loaded in slot {slot}: {self.loaded_modules['slot']}.  Overwrite not supported.")
+                raise RuntimeError(f"Module already loaded in slot {slot}: {self.config['loaded_modules']['slot']}.  Overwrite not supported.")
 
             # Prepare the loadLabware command
             command_dict = {
@@ -574,8 +584,8 @@ class OT2HTTPDriver(Driver):
                     f"Failed to extract module ID from response: {str(e)}"
                 )
 
-            # Store the labware information
-            self.loaded_modules[str(slot)] = (module_id, name)
+            # Store the module information directly in config
+            self.config["loaded_modules"][str(slot)] = (module_id, name)
 
             self.log_info(
                 f"Successfully loaded module '{name}' in slot {slot} with ID {module_id}"
@@ -603,7 +613,7 @@ class OT2HTTPDriver(Driver):
                     "params": {
                         "pipetteName": name,
                         "mount": mount,
-                        "tip_racks": [self.loaded_labware[str(slot)][0] for slot in tip_rack_slots],
+                        "tip_racks": [self.config["loaded_labware"][str(slot)][0] for slot in tip_rack_slots],
                     },
                     "intent": "setup",
                 }
@@ -634,7 +644,7 @@ class OT2HTTPDriver(Driver):
             # Get the tip rack IDs - note that loaded_labware now stores tuples of (id, name)
             tip_racks = []
             for slot in listify(tip_rack_slots):
-                labware_info = self.loaded_labware.get(slot)
+                labware_info = self.config["loaded_labware"].get(slot)
                 if (
                     labware_info
                     and isinstance(labware_info, tuple)
@@ -645,8 +655,8 @@ class OT2HTTPDriver(Driver):
             if not tip_racks:
                 self.log_warning(f"No valid tip racks found in slots {tip_rack_slots}")
 
-            # Store the instrument information including the pipette ID
-            self.loaded_instruments[mount] = {
+            # Store the instrument information 
+            self.config["loaded_instruments"][mount] = {
                 "name": name,
                 "pipette_id": pipette_id,
                 "tip_racks": tip_racks,
@@ -829,7 +839,7 @@ class OT2HTTPDriver(Driver):
         return transfers
 
     def _slot_by_labware_uuid(self,target_uuid):
-        for slot, (uuid,name) in self.loaded_labware.items():
+        for slot, (uuid,name) in self.config["loaded_labware"].items():
             if uuid == target_uuid:
                 return slot
         return None
@@ -934,7 +944,7 @@ class OT2HTTPDriver(Driver):
             dest_well_slot = self._slot_by_labware_uuid(dest_well['labwareId'])
             source_well_slot = self._slot_by_labware_uuid(source_well['labwareId'])
             
-            heater_shaker_slots = [slot for (slot,(uuid,name)) in self.loaded_modules.items() if "heaterShaker" in name]
+            heater_shaker_slots = [slot for (slot,(uuid,name)) in self.config["loaded_modules"].items() if "heaterShaker" in name]
             
             if dest_well_slot in heater_shaker_slots or source_well_slot in heater_shaker_slots:
                 # latch heater-shaker
@@ -1432,7 +1442,7 @@ class OT2HTTPDriver(Driver):
         
         module_id = None
         
-        for module in self.loaded_modules.values():
+        for module in self.config["loaded_modules"].values():
             if partial_name in module[1]:
                 module_id = module[0]
         return module_id
@@ -1552,12 +1562,93 @@ class OT2HTTPDriver(Driver):
 
             self.run_id = run_response.json()["data"]["id"]
             self.log_debug(f"Created run: {self.run_id}")
+            
+            # Reload previously configured labware, instruments, and modules
+            self._reload_deck_configuration()
+            
             return self.run_id
 
         except requests.exceptions.RequestException as e:
             self.log_error(f"Error creating run: {str(e)}")
             raise RuntimeError(f"Error creating run: {str(e)}")
 
+    def _reload_deck_configuration(self):
+        """Reload the deck configuration (modules, labware, instruments) from persistent storage"""
+        self.log_info("Reloading previously configured deck setup")
+        
+        # Store original configuration for recovery if needed
+        original_modules = self.config["loaded_modules"].copy()
+        original_labware = self.config["loaded_labware"].copy()
+        original_instruments = self.config["loaded_instruments"].copy()
+        
+        # Clear current state for reloading
+        self.config["loaded_modules"] = {}
+        self.config["loaded_labware"] = {}
+        self.config["loaded_instruments"] = {}
+        
+        try:
+            # Step 1: Load modules first
+            self.log_info("Reloading modules")
+            for slot, (_, module_name) in original_modules.items():
+                try:
+                    self.log_info(f"Reloading module {module_name} in slot {slot}")
+                    self.load_module(module_name, slot)
+                    # New module ID will be stored in config["loaded_modules"]
+                except Exception as e:
+                    self.log_error(f"Error reloading module {module_name} in slot {slot}: {str(e)}")
+                    raise
+                    
+            # Step 2: Load labware
+            self.log_info("Reloading labware")
+            for slot, (_, labware_name, labware_data) in original_labware.items():
+                # Check if this labware is on a module
+                module_id = None
+                if str(slot) in self.config["loaded_modules"]:
+                    module_id = self.config["loaded_modules"][str(slot)][0]  # Get new module ID
+                    
+                try:
+                    self.log_info(f"Reloading labware {labware_name} in slot {slot}")
+                    self.load_labware(labware_name, slot, module=module_id)
+                    # New labware ID will be stored in config["loaded_labware"]
+                except Exception as e:
+                    self.log_error(f"Error reloading labware {labware_name} in slot {slot}: {str(e)}")
+                    raise
+                    
+            # Step 3: Load instruments
+            self.log_info("Reloading instruments")
+            for mount, instrument_data in original_instruments.items():
+                instrument_name = instrument_data['name']
+                
+                # Find which slots contain the tip racks for this instrument
+                tip_rack_slots = []
+                for slot, (labware_id, labware_name, _) in self.config["loaded_labware"].items():
+                    # Check if labware is tiprack (simple check based on name)
+                    if "tiprack" in labware_name.lower():
+                        tip_rack_slots.append(slot)
+                        
+                if not tip_rack_slots:
+                    self.log_warning(f"No tipracks found for instrument {instrument_name} on {mount} mount")
+                    continue
+                    
+                try:
+                    self.log_info(f"Reloading instrument {instrument_name} on {mount} mount")
+                    self.load_instrument(instrument_name, mount, tip_rack_slots)
+                    # New instrument ID will be stored in config["loaded_instruments"]
+                except Exception as e:
+                    self.log_error(f"Error reloading instrument {instrument_name} on {mount} mount: {str(e)}")
+                    raise
+                    
+            self.log_info("Deck configuration successfully reloaded")
+            return True
+                
+        except Exception as e:
+            self.log_error(f"Failed to reload deck configuration: {str(e)}")
+            # Restore original configuration in config
+            self.config["loaded_modules"] = original_modules
+            self.config["loaded_labware"] = original_labware
+            self.config["loaded_instruments"] = original_instruments
+            return False
+    
     def _ensure_run_exists(self):
         """Ensure a run exists for executing commands, creating one if needed"""
         if not hasattr(self, "run_id") or not self.run_id:
@@ -1595,7 +1686,7 @@ class OT2HTTPDriver(Driver):
             if mount not in self.available_tips:
                 return f"No tipracks loaded for {mount} mount"
             total_tips = len(TIPRACK_WELLS) * len(
-                self.loaded_instruments[mount]["tip_racks"]
+                self.config["loaded_instruments"][mount]["tip_racks"]
             )
             available_tips = len(self.available_tips[mount])
             return f"{available_tips}/{total_tips} tips available on {mount} mount"
@@ -1748,10 +1839,10 @@ class OT2HTTPDriver(Driver):
                 'well_info': ''
             }
 
-            # Check if slot has labware
-            labware_on_slot = None
-            if slot_str in self.loaded_labware:
-                labware_id, labware_type, labware_data = self.loaded_labware[slot_str]
+            # Check for labware on this slot
+            labware_on_slot = False
+            if slot_str in self.config["loaded_labware"]:
+                labware_id, labware_type, labware_data = self.config["loaded_labware"][slot_str]
                 labware_on_slot = labware_data
                 definition = labware_data.get('definition', {})
                 metadata = definition.get('metadata', {})
@@ -1776,7 +1867,7 @@ class OT2HTTPDriver(Driver):
 
                 if labware_on_slot:
                     # Module with labware
-                    labware_id, labware_type, labware_data = self.loaded_labware[slot_str]
+                    labware_id, labware_type, labware_data = self.config["loaded_labware"][slot_str]
                     definition = labware_data.get('definition', {})
                     metadata = definition.get('metadata', {})
                     labware_name = metadata.get('displayName', labware_type)
@@ -1803,14 +1894,14 @@ class OT2HTTPDriver(Driver):
         # Get pipette information
         def get_pipette_info():
             pipettes = []
-            for mount, pipette_data in self.loaded_instruments.items():
+            for mount, pipette_data in self.config["loaded_instruments"].items():
                 pipette_name = pipette_data.get('name', 'Unknown Pipette')
                 pipette_id = pipette_data.get('pipette_id', 'Unknown ID')
                 tip_racks = pipette_data.get('tip_racks', [])
 
                 # Find which slots contain the tip racks
                 tip_rack_slots = []
-                for slot, (labware_id, _, _) in self.loaded_labware.items():
+                for slot, (labware_id, _, _) in self.config["loaded_labware"].items():
                     if labware_id in tip_racks:
                         tip_rack_slots.append(slot)
 
@@ -2163,8 +2254,8 @@ class OT2HTTPDriver(Driver):
             info = {"name": "Empty", "type": "empty", "color": "#f5f5f5", "svg": ""}
 
             # Check for labware
-            if slot_str in self.loaded_labware:
-                labware_id, labware_type, labware_data = self.loaded_labware[slot_str]
+            if slot_str in self.config["loaded_labware"]:
+                labware_id, labware_type, labware_data = self.config["loaded_labware"][slot_str]
                 definition = labware_data.get('definition', {})
                 display_name = definition.get('metadata', {}).get('displayName', labware_type)
 
@@ -2175,9 +2266,9 @@ class OT2HTTPDriver(Driver):
                     "svg": generate_mini_well_svg(labware_data, labware_uuid=labware_id)
                 })
 
-            # Check for modules
-            if slot_str in self.loaded_modules:
-                module_id, module_type = self.loaded_modules[slot_str]
+            # Check for module on this slot
+            if slot_str in self.config["loaded_modules"]:
+                module_id, module_type = self.config["loaded_modules"][slot_str]
                 module_name = module_type.replace('ModuleV1', '').replace('Module', ' Mod')
 
                 if info["type"] == "labware":
@@ -2229,9 +2320,9 @@ class OT2HTTPDriver(Driver):
         html += '</div>'
 
         # Add pipette summary
-        if hasattr(self, 'loaded_instruments') and self.loaded_instruments:
+        if "loaded_instruments" in self.config and self.config["loaded_instruments"]:
             pipette_summary = []
-            for mount, data in self.loaded_instruments.items():
+            for mount, data in self.config["loaded_instruments"].items():
                 name = data.get('name', 'Unknown').replace('_', ' ').title()
                 pipette_summary.append(f"{mount.title()}: {name}")
 

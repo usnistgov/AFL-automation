@@ -1,0 +1,1432 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AFL.automation.instrument.APSUSAXS &mdash; AFL-automation Documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=592263c6" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            AFL-automation
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/installation.html">Installing AFL-automation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/installation.html#basic-installation">Basic Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/installation.html#installation-with-hardware-support">Installation with Hardware Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/installation.html#development-installation">Development Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/quick-start.html">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/quick-start.html#creating-your-first-driver">Creating Your First Driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/quick-start.html#running-as-a-microservice">Running as a Microservice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/quick-start.html#accessing-the-service-api">Accessing the Service (API)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/quick-start.html#accessing-the-service-browser">Accessing the Service (Browser)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/quick-start.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/installation.html">Installing AFL-automation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../tutorials/installation.html#basic-installation">Basic Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../tutorials/installation.html#installation-with-hardware-support">Installation with Hardware Support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../tutorials/installation.html#development-installation">Development Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/quick-start.html">Quick Start Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../tutorials/quick-start.html#creating-your-first-driver">Creating Your First Driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../tutorials/quick-start.html#running-as-a-microservice">Running as a Microservice</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../tutorials/quick-start.html#accessing-the-service-api">Accessing the Service (API)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../tutorials/quick-start.html#accessing-the-service-browser">Accessing the Service (Browser)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../tutorials/quick-start.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../how-to/index.html">How-to Guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../how-to/dependencies.html">Managing Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#core-dependencies">Core Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#optional-dependencies-extras">Optional Dependencies (Extras)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#available-extras">Available Extras</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../how-to/dependencies.html#hardware-interfaces">Hardware Interfaces</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../how-to/dependencies.html#scientific-processing">Scientific Processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../how-to/dependencies.html#neutron-scattering">Neutron Scattering</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../how-to/dependencies.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#implementation-details">Implementation Details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#importing-multiple-hardware-packages">Importing Multiple Hardware Packages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../how-to/my-first-server.html">Managing Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/my-first-server.html#core-dependencies">Core Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/my-first-server.html#optional-dependencies-extras">Optional Dependencies (Extras)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/my-first-server.html#available-extras">Available Extras</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../how-to/my-first-server.html#hardware-interfaces">Hardware Interfaces</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../how-to/my-first-server.html#scientific-processing">Scientific Processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../how-to/my-first-server.html#neutron-scattering">Neutron Scattering</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../how-to/my-first-server.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/my-first-server.html#implementation-details">Implementation Details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/my-first-server.html#importing-multiple-hardware-packages">Importing Multiple Hardware Packages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../how-to/dependencies.html">Managing Dependencies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../how-to/dependencies.html#core-dependencies">Core Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../how-to/dependencies.html#optional-dependencies-extras">Optional Dependencies (Extras)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../how-to/dependencies.html#available-extras">Available Extras</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#hardware-interfaces">Hardware Interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#scientific-processing">Scientific Processing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#neutron-scattering">Neutron Scattering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../how-to/dependencies.html#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../how-to/dependencies.html#implementation-details">Implementation Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../how-to/dependencies.html#importing-multiple-hardware-packages">Importing Multiple Hardware Packages</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../explanation/index.html">Explanation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../explanation/architecture.html">AFL-automation Architecture</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/architecture.html#core-concepts">Core Concepts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/architecture.html#architecture-diagram">Architecture Diagram</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/architecture.html#driver-system">Driver System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/architecture.html#api-server">API Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/architecture.html#dependency-management">Dependency Management</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../explanation/data.html">AFL-automation Data System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/data.html#core-concepts">Core Concepts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/data.html#sample-metadata">Sample Metadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/data.html#system-metadata">System Metadata</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../explanation/driver-config.html">Driver.config</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#core-components">Core Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#how-it-works">How It Works</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#configuration-lifecycle">Configuration Lifecycle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#configuration-methods">Configuration Methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#browser-based-configuration-editor">Browser-Based Configuration Editor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#configuration-history">Configuration History</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#examples">Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/driver-config.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../explanation/user-interfaces.html">AFL-automation Autogenerated User Interfaces</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/user-interfaces.html#core-concepts">Core Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../explanation/uuids.html">AFL-automation UUIDs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../explanation/uuids.html#kinds-of-uuids">Kinds of UUIDs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/index.html">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../api.html">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.html">AFL.automation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.html#AFL.automation.test"><code class="docutils literal notranslate"><span class="pre">test()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.html">AFL.automation.APIServer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.EpicsADLiveProcess.html">AFL.automation.EpicsADLiveProcess</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.html">AFL.automation.instrument</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.html">AFL.automation.loading</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.html">AFL.automation.mixing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.html">AFL.automation.prepare</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.html">AFL.automation.sample_env</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.html">AFL.automation.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.html">AFL.automation.APIServer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.APIServer.html">AFL.automation.APIServer.APIServer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Client.html">AFL.automation.APIServer.Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html">AFL.automation.APIServer.Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyDriver.html">AFL.automation.APIServer.DummyDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyOT2Driver.html">AFL.automation.APIServer.DummyOT2Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.LoggerFilter.html">AFL.automation.APIServer.LoggerFilter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.QueueDaemon.html">AFL.automation.APIServer.QueueDaemon</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.html">AFL.automation.instrument</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSDNDCAT.html">AFL.automation.instrument.APSDNDCAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html">AFL.automation.instrument.APSUSAXS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html">AFL.automation.instrument.CDSAXSLabview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CHESSID3B.html">AFL.automation.instrument.CHESSID3B</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.DummySAS.html">AFL.automation.instrument.DummySAS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.FileCamera.html">AFL.automation.instrument.FileCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.GPInterpolator.html">AFL.automation.instrument.GPInterpolator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.I22SAXS.html">AFL.automation.instrument.I22SAXS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEConsole.html">AFL.automation.instrument.NICEConsole</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEData.html">AFL.automation.instrument.NICEData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEDevice.html">AFL.automation.instrument.NICEDevice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NetworkCamera.html">AFL.automation.instrument.NetworkCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NicosScriptClient.html">AFL.automation.instrument.NicosScriptClient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.OpticalTurbidity.html">AFL.automation.instrument.OpticalTurbidity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.PySpecClient.html">AFL.automation.instrument.PySpecClient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html">AFL.automation.instrument.SINQSANS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html">AFL.automation.instrument.SINQSANS_NICOS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.ScatteringInstrument.html">AFL.automation.instrument.ScatteringInstrument</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SeabreezeUVVis.html">AFL.automation.instrument.SeabreezeUVVis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SpecScreen_Driver.html">AFL.automation.instrument.SpecScreen_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.USBCamera.html">AFL.automation.instrument.USBCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSANS_data.html">AFL.automation.instrument.VirtualSANS_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSAS_theory.html">AFL.automation.instrument.VirtualSAS_theory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html">AFL.automation.instrument.VirtualSpec_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.scatteringInterpolator.html">AFL.automation.instrument.scatteringInterpolator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.html">AFL.automation.loading</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniMultiPosValve.html">AFL.automation.loading.CetoniMultiPosValve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniSyringePump.html">AFL.automation.loading.CetoniSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ChemyxSyringePump.html">AFL.automation.loading.ChemyxSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DAQC2Sensor.html">AFL.automation.loading.DAQC2Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DigitalOutPressureController.html">AFL.automation.loading.DigitalOutPressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DoubleViciMultiposSelector.html">AFL.automation.loading.DoubleViciMultiposSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DummyPump.html">AFL.automation.loading.DummyPump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.FlowSelector.html">AFL.automation.loading.FlowSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackDigitalOut.html">AFL.automation.loading.LabJackDigitalOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackGPIO.html">AFL.automation.loading.LabJackGPIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackRelay.html">AFL.automation.loading.LabJackRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackSensor.html">AFL.automation.loading.LabJackSensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LoadStopperDriver.html">AFL.automation.loading.LoadStopperDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.MultiChannelRelay.html">AFL.automation.loading.MultiChannelRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.NE1kSyringePump.html">AFL.automation.loading.NE1kSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.OneSelectorBlowoutSampleCell.html">AFL.automation.loading.OneSelectorBlowoutSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiGPIO.html">AFL.automation.loading.PiGPIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiPlatesRelay.html">AFL.automation.loading.PiPlatesRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html">AFL.automation.loading.PneumaticPressureSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html">AFL.automation.loading.PneumaticSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureController.html">AFL.automation.loading.PressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureControllerAsPump.html">AFL.automation.loading.PressureControllerAsPump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PushPullSelectorSampleCell.html">AFL.automation.loading.PushPullSelectorSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.RSoXSSolutionSampleCell.html">AFL.automation.loading.RSoXSSolutionSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SainSmartRelay.html">AFL.automation.loading.SainSmartRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SampleCell.html">AFL.automation.loading.SampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Sensor.html">AFL.automation.loading.Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html">AFL.automation.loading.SensorCallbackThread</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorPollingThread.html">AFL.automation.loading.SensorPollingThread</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SerialDevice.html">AFL.automation.loading.SerialDevice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SyringePump.html">AFL.automation.loading.SyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Tubing.html">AFL.automation.loading.Tubing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html">AFL.automation.loading.TwoSelectorBlowoutSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html">AFL.automation.loading.UltimusVPressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ViciMultiposSelector.html">AFL.automation.loading.ViciMultiposSelector</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.html">AFL.automation.prepare</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Component.html">AFL.automation.prepare.Component</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SampleSeriesWidget.html">AFL.automation.prepare.SampleSeriesWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.StockBuilderWidget.html">AFL.automation.prepare.StockBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SweepBuilderWidget.html">AFL.automation.prepare.SweepBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.factory.html">AFL.automation.prepare.factory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.utilities.html">AFL.automation.prepare.utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample.html">AFL.automation.sample</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample.CastingServer.html">AFL.automation.sample.CastingServer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.html">AFL.automation.sample_env</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.TemperatureDeck.html">AFL.automation.sample_env.TemperatureDeck</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.html">AFL.automation.shared</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html">AFL.automation.shared.DataLabelerWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DatasetWidget.html">AFL.automation.shared.DatasetWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html">AFL.automation.shared.DiffractionLabeler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.MutableQueue.html">AFL.automation.shared.MutableQueue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.PersistentConfig.html">AFL.automation.shared.PersistentConfig</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html">AFL.automation.shared.ServerDiscovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html">AFL.automation.shared.exceptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.serialization.html">AFL.automation.shared.serialization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html">AFL.automation.shared.units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html">AFL.automation.shared.utilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.warnings.html">AFL.automation.shared.warnings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.widgetui.html">AFL.automation.shared.widgetui</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules.html">Modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../modules/apiserver.html">API Server</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.html">AFL.automation.APIServer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../modules/instrument.html">Instrument</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.html">AFL.automation.instrument</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../modules/loading.html">Loading</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.html">AFL.automation.loading</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../modules/prepare.html">Prepare</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.html">AFL.automation.prepare</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../modules/sample.html">Sample</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample.html">AFL.automation.sample</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.html">AFL.automation.sample_env</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../modules/shared.html">Shared</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.html">AFL.automation.shared</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/apiserver.html">API Server</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.html">AFL.automation.APIServer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.APIServer.html">AFL.automation.APIServer.APIServer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Client.html">AFL.automation.APIServer.Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html">AFL.automation.APIServer.Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyDriver.html">AFL.automation.APIServer.DummyDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyOT2Driver.html">AFL.automation.APIServer.DummyOT2Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.LoggerFilter.html">AFL.automation.APIServer.LoggerFilter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.QueueDaemon.html">AFL.automation.APIServer.QueueDaemon</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/instrument.html">Instrument</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.html">AFL.automation.instrument</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSDNDCAT.html">AFL.automation.instrument.APSDNDCAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html">AFL.automation.instrument.APSUSAXS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html">AFL.automation.instrument.CDSAXSLabview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CHESSID3B.html">AFL.automation.instrument.CHESSID3B</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.DummySAS.html">AFL.automation.instrument.DummySAS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.FileCamera.html">AFL.automation.instrument.FileCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.GPInterpolator.html">AFL.automation.instrument.GPInterpolator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.I22SAXS.html">AFL.automation.instrument.I22SAXS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEConsole.html">AFL.automation.instrument.NICEConsole</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEData.html">AFL.automation.instrument.NICEData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEDevice.html">AFL.automation.instrument.NICEDevice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NetworkCamera.html">AFL.automation.instrument.NetworkCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NicosScriptClient.html">AFL.automation.instrument.NicosScriptClient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.OpticalTurbidity.html">AFL.automation.instrument.OpticalTurbidity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.PySpecClient.html">AFL.automation.instrument.PySpecClient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html">AFL.automation.instrument.SINQSANS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html">AFL.automation.instrument.SINQSANS_NICOS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.ScatteringInstrument.html">AFL.automation.instrument.ScatteringInstrument</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SeabreezeUVVis.html">AFL.automation.instrument.SeabreezeUVVis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SpecScreen_Driver.html">AFL.automation.instrument.SpecScreen_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.USBCamera.html">AFL.automation.instrument.USBCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSANS_data.html">AFL.automation.instrument.VirtualSANS_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSAS_theory.html">AFL.automation.instrument.VirtualSAS_theory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html">AFL.automation.instrument.VirtualSpec_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.scatteringInterpolator.html">AFL.automation.instrument.scatteringInterpolator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/loading.html">Loading</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.html">AFL.automation.loading</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniMultiPosValve.html">AFL.automation.loading.CetoniMultiPosValve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniSyringePump.html">AFL.automation.loading.CetoniSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ChemyxSyringePump.html">AFL.automation.loading.ChemyxSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DAQC2Sensor.html">AFL.automation.loading.DAQC2Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DigitalOutPressureController.html">AFL.automation.loading.DigitalOutPressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DoubleViciMultiposSelector.html">AFL.automation.loading.DoubleViciMultiposSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DummyPump.html">AFL.automation.loading.DummyPump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.FlowSelector.html">AFL.automation.loading.FlowSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackDigitalOut.html">AFL.automation.loading.LabJackDigitalOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackGPIO.html">AFL.automation.loading.LabJackGPIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackRelay.html">AFL.automation.loading.LabJackRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackSensor.html">AFL.automation.loading.LabJackSensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LoadStopperDriver.html">AFL.automation.loading.LoadStopperDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.MultiChannelRelay.html">AFL.automation.loading.MultiChannelRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.NE1kSyringePump.html">AFL.automation.loading.NE1kSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.OneSelectorBlowoutSampleCell.html">AFL.automation.loading.OneSelectorBlowoutSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiGPIO.html">AFL.automation.loading.PiGPIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiPlatesRelay.html">AFL.automation.loading.PiPlatesRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html">AFL.automation.loading.PneumaticPressureSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html">AFL.automation.loading.PneumaticSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureController.html">AFL.automation.loading.PressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureControllerAsPump.html">AFL.automation.loading.PressureControllerAsPump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PushPullSelectorSampleCell.html">AFL.automation.loading.PushPullSelectorSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.RSoXSSolutionSampleCell.html">AFL.automation.loading.RSoXSSolutionSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SainSmartRelay.html">AFL.automation.loading.SainSmartRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SampleCell.html">AFL.automation.loading.SampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Sensor.html">AFL.automation.loading.Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html">AFL.automation.loading.SensorCallbackThread</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorPollingThread.html">AFL.automation.loading.SensorPollingThread</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SerialDevice.html">AFL.automation.loading.SerialDevice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SyringePump.html">AFL.automation.loading.SyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Tubing.html">AFL.automation.loading.Tubing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html">AFL.automation.loading.TwoSelectorBlowoutSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html">AFL.automation.loading.UltimusVPressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ViciMultiposSelector.html">AFL.automation.loading.ViciMultiposSelector</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/prepare.html">Prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.html">AFL.automation.prepare</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Component.html">AFL.automation.prepare.Component</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SampleSeriesWidget.html">AFL.automation.prepare.SampleSeriesWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.StockBuilderWidget.html">AFL.automation.prepare.StockBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SweepBuilderWidget.html">AFL.automation.prepare.SweepBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.factory.html">AFL.automation.prepare.factory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.utilities.html">AFL.automation.prepare.utilities</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/sample.html">Sample</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample.html">AFL.automation.sample</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample.CastingServer.html">AFL.automation.sample.CastingServer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.html">AFL.automation.sample_env</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.TemperatureDeck.html">AFL.automation.sample_env.TemperatureDeck</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../modules/shared.html">Shared</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.html">AFL.automation.shared</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html">AFL.automation.shared.DataLabelerWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DatasetWidget.html">AFL.automation.shared.DatasetWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html">AFL.automation.shared.DiffractionLabeler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.MutableQueue.html">AFL.automation.shared.MutableQueue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.PersistentConfig.html">AFL.automation.shared.PersistentConfig</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html">AFL.automation.shared.ServerDiscovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html">AFL.automation.shared.exceptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.serialization.html">AFL.automation.shared.serialization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html">AFL.automation.shared.units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html">AFL.automation.shared.utilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.warnings.html">AFL.automation.shared.warnings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.widgetui.html">AFL.automation.shared.widgetui</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../_autosummary/AFL.automation.html">AFL.automation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.html#AFL.automation.test"><code class="docutils literal notranslate"><span class="pre">test()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.html">AFL.automation.APIServer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.APIServer.html">AFL.automation.APIServer.APIServer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Client.html">AFL.automation.APIServer.Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html">AFL.automation.APIServer.Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyDriver.html">AFL.automation.APIServer.DummyDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyOT2Driver.html">AFL.automation.APIServer.DummyOT2Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.LoggerFilter.html">AFL.automation.APIServer.LoggerFilter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.QueueDaemon.html">AFL.automation.APIServer.QueueDaemon</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.EpicsADLiveProcess.html">AFL.automation.EpicsADLiveProcess</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.EpicsADLiveProcess.AreaDetectorLive.html">AFL.automation.EpicsADLiveProcess.AreaDetectorLive</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.EpicsADLiveProcess.Client.html">AFL.automation.EpicsADLiveProcess.Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.EpicsADLiveProcess.CollateDaemon.html">AFL.automation.EpicsADLiveProcess.CollateDaemon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.EpicsADLiveProcess.EpicsADLiveProcessDaemon.html">AFL.automation.EpicsADLiveProcess.EpicsADLiveProcessDaemon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.EpicsADLiveProcess.FlaskApp.html">AFL.automation.EpicsADLiveProcess.FlaskApp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.EpicsADLiveProcess.ReduceDaemon.html">AFL.automation.EpicsADLiveProcess.ReduceDaemon</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.html">AFL.automation.instrument</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSDNDCAT.html">AFL.automation.instrument.APSDNDCAT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html">AFL.automation.instrument.APSUSAXS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html">AFL.automation.instrument.CDSAXSLabview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CHESSID3B.html">AFL.automation.instrument.CHESSID3B</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.DummySAS.html">AFL.automation.instrument.DummySAS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.FileCamera.html">AFL.automation.instrument.FileCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.GPInterpolator.html">AFL.automation.instrument.GPInterpolator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.I22SAXS.html">AFL.automation.instrument.I22SAXS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEConsole.html">AFL.automation.instrument.NICEConsole</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEData.html">AFL.automation.instrument.NICEData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEDevice.html">AFL.automation.instrument.NICEDevice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NetworkCamera.html">AFL.automation.instrument.NetworkCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NicosScriptClient.html">AFL.automation.instrument.NicosScriptClient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.OpticalTurbidity.html">AFL.automation.instrument.OpticalTurbidity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.PySpecClient.html">AFL.automation.instrument.PySpecClient</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html">AFL.automation.instrument.SINQSANS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html">AFL.automation.instrument.SINQSANS_NICOS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.ScatteringInstrument.html">AFL.automation.instrument.ScatteringInstrument</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SeabreezeUVVis.html">AFL.automation.instrument.SeabreezeUVVis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SpecScreen_Driver.html">AFL.automation.instrument.SpecScreen_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.USBCamera.html">AFL.automation.instrument.USBCamera</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSANS_data.html">AFL.automation.instrument.VirtualSANS_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSAS_theory.html">AFL.automation.instrument.VirtualSAS_theory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html">AFL.automation.instrument.VirtualSpec_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.scatteringInterpolator.html">AFL.automation.instrument.scatteringInterpolator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.html">AFL.automation.loading</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniMultiPosValve.html">AFL.automation.loading.CetoniMultiPosValve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniSyringePump.html">AFL.automation.loading.CetoniSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ChemyxSyringePump.html">AFL.automation.loading.ChemyxSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DAQC2Sensor.html">AFL.automation.loading.DAQC2Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DigitalOutPressureController.html">AFL.automation.loading.DigitalOutPressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DoubleViciMultiposSelector.html">AFL.automation.loading.DoubleViciMultiposSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DummyPump.html">AFL.automation.loading.DummyPump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.FlowSelector.html">AFL.automation.loading.FlowSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackDigitalOut.html">AFL.automation.loading.LabJackDigitalOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackGPIO.html">AFL.automation.loading.LabJackGPIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackRelay.html">AFL.automation.loading.LabJackRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackSensor.html">AFL.automation.loading.LabJackSensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LoadStopperDriver.html">AFL.automation.loading.LoadStopperDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.MultiChannelRelay.html">AFL.automation.loading.MultiChannelRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.NE1kSyringePump.html">AFL.automation.loading.NE1kSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.OneSelectorBlowoutSampleCell.html">AFL.automation.loading.OneSelectorBlowoutSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiGPIO.html">AFL.automation.loading.PiGPIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiPlatesRelay.html">AFL.automation.loading.PiPlatesRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html">AFL.automation.loading.PneumaticPressureSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html">AFL.automation.loading.PneumaticSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureController.html">AFL.automation.loading.PressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureControllerAsPump.html">AFL.automation.loading.PressureControllerAsPump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PushPullSelectorSampleCell.html">AFL.automation.loading.PushPullSelectorSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.RSoXSSolutionSampleCell.html">AFL.automation.loading.RSoXSSolutionSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SainSmartRelay.html">AFL.automation.loading.SainSmartRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SampleCell.html">AFL.automation.loading.SampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Sensor.html">AFL.automation.loading.Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html">AFL.automation.loading.SensorCallbackThread</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorPollingThread.html">AFL.automation.loading.SensorPollingThread</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SerialDevice.html">AFL.automation.loading.SerialDevice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SyringePump.html">AFL.automation.loading.SyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Tubing.html">AFL.automation.loading.Tubing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html">AFL.automation.loading.TwoSelectorBlowoutSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html">AFL.automation.loading.UltimusVPressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ViciMultiposSelector.html">AFL.automation.loading.ViciMultiposSelector</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.html">AFL.automation.mixing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.Component.html">AFL.automation.mixing.Component</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.Context.html">AFL.automation.mixing.Context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html">AFL.automation.mixing.MassBalance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.MixDB.html">AFL.automation.mixing.MixDB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html">AFL.automation.mixing.OT2Prepare</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.PipetteAction.html">AFL.automation.mixing.PipetteAction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.Solution.html">AFL.automation.mixing.Solution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.mixing.TargetSolution.html">AFL.automation.mixing.TargetSolution</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.html">AFL.automation.prepare</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Component.html">AFL.automation.prepare.Component</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SampleSeriesWidget.html">AFL.automation.prepare.SampleSeriesWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.StockBuilderWidget.html">AFL.automation.prepare.StockBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SweepBuilderWidget.html">AFL.automation.prepare.SweepBuilderWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.factory.html">AFL.automation.prepare.factory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.utilities.html">AFL.automation.prepare.utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.html">AFL.automation.sample_env</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.TemperatureDeck.html">AFL.automation.sample_env.TemperatureDeck</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.html">AFL.automation.shared</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html">AFL.automation.shared.DataLabelerWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DatasetWidget.html">AFL.automation.shared.DatasetWidget</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html">AFL.automation.shared.DiffractionLabeler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.MutableQueue.html">AFL.automation.shared.MutableQueue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.PersistentConfig.html">AFL.automation.shared.PersistentConfig</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html">AFL.automation.shared.ServerDiscovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html">AFL.automation.shared.exceptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.serialization.html">AFL.automation.shared.serialization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html">AFL.automation.shared.units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html">AFL.automation.shared.utilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.warnings.html">AFL.automation.shared.warnings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.widgetui.html">AFL.automation.shared.widgetui</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.html">AFL.automation.APIServer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.APIServer.html">AFL.automation.APIServer.APIServer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.APIServer.html#AFL.automation.APIServer.APIServer.APIServer"><code class="docutils literal notranslate"><span class="pre">APIServer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Client.html">AFL.automation.APIServer.Client</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client"><code class="docutils literal notranslate"><span class="pre">Client</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html">AFL.automation.APIServer.Driver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.makeRegistrar"><code class="docutils literal notranslate"><span class="pre">makeRegistrar()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver"><code class="docutils literal notranslate"><span class="pre">Driver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyDriver.html">AFL.automation.APIServer.DummyDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyDriver.html#AFL.automation.APIServer.DummyDriver.DummyDriver"><code class="docutils literal notranslate"><span class="pre">DummyDriver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyOT2Driver.html">AFL.automation.APIServer.DummyOT2Driver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.DummyOT2Driver.html#AFL.automation.APIServer.DummyOT2Driver.DummyDriver"><code class="docutils literal notranslate"><span class="pre">DummyDriver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.LoggerFilter.html">AFL.automation.APIServer.LoggerFilter</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.LoggerFilter.html#AFL.automation.APIServer.LoggerFilter.LoggerFilter"><code class="docutils literal notranslate"><span class="pre">LoggerFilter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.QueueDaemon.html">AFL.automation.APIServer.QueueDaemon</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.APIServer.QueueDaemon.html#AFL.automation.APIServer.QueueDaemon.QueueDaemon"><code class="docutils literal notranslate"><span class="pre">QueueDaemon</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.html">AFL.automation.instrument</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSDNDCAT.html">AFL.automation.instrument.APSDNDCAT</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSDNDCAT.html#AFL.automation.instrument.APSDNDCAT.APSDNDCAT"><code class="docutils literal notranslate"><span class="pre">APSDNDCAT</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html">AFL.automation.instrument.APSUSAXS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS"><code class="docutils literal notranslate"><span class="pre">APSUSAXS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html">AFL.automation.instrument.CDSAXSLabview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview"><code class="docutils literal notranslate"><span class="pre">CDSAXSLabview</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.LabviewConnection"><code class="docutils literal notranslate"><span class="pre">LabviewConnection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CHESSID3B.html">AFL.automation.instrument.CHESSID3B</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B"><code class="docutils literal notranslate"><span class="pre">CHESSID3B</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.DummySAS.html">AFL.automation.instrument.DummySAS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.DummySAS.html#AFL.automation.instrument.DummySAS.DummySAS"><code class="docutils literal notranslate"><span class="pre">DummySAS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.FileCamera.html">AFL.automation.instrument.FileCamera</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.FileCamera.html#AFL.automation.instrument.FileCamera.FileCamera"><code class="docutils literal notranslate"><span class="pre">FileCamera</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.GPInterpolator.html">AFL.automation.instrument.GPInterpolator</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.Interpolator"><code class="docutils literal notranslate"><span class="pre">Interpolator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.ClusteredGPs"><code class="docutils literal notranslate"><span class="pre">ClusteredGPs</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.I22SAXS.html">AFL.automation.instrument.I22SAXS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.I22SAXS.html#AFL.automation.instrument.I22SAXS.I22SAXS"><code class="docutils literal notranslate"><span class="pre">I22SAXS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEConsole.html">AFL.automation.instrument.NICEConsole</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEConsole.html#AFL.automation.instrument.NICEConsole.NICEConsole"><code class="docutils literal notranslate"><span class="pre">NICEConsole</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEData.html">AFL.automation.instrument.NICEData</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEData.html#AFL.automation.instrument.NICEData.NICEData"><code class="docutils literal notranslate"><span class="pre">NICEData</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEDevice.html">AFL.automation.instrument.NICEDevice</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NICEDevice.html#AFL.automation.instrument.NICEDevice.NICEDevice"><code class="docutils literal notranslate"><span class="pre">NICEDevice</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NetworkCamera.html">AFL.automation.instrument.NetworkCamera</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NetworkCamera.html#AFL.automation.instrument.NetworkCamera.NetworkCamera"><code class="docutils literal notranslate"><span class="pre">NetworkCamera</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NicosScriptClient.html">AFL.automation.instrument.NicosScriptClient</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.NicosScriptClient.html#AFL.automation.instrument.NicosScriptClient.NicosScriptClient"><code class="docutils literal notranslate"><span class="pre">NicosScriptClient</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.OpticalTurbidity.html">AFL.automation.instrument.OpticalTurbidity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.OpticalTurbidity.html#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity"><code class="docutils literal notranslate"><span class="pre">OpticalTurbidity</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.PySpecClient.html">AFL.automation.instrument.PySpecClient</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.PySpecClient.html#AFL.automation.instrument.PySpecClient.PySpecClient"><code class="docutils literal notranslate"><span class="pre">PySpecClient</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html">AFL.automation.instrument.SINQSANS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS"><code class="docutils literal notranslate"><span class="pre">SINQSANS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient"><code class="docutils literal notranslate"><span class="pre">SICSTelnetClient</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html">AFL.automation.instrument.SINQSANS_NICOS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS"><code class="docutils literal notranslate"><span class="pre">SINQSANS_NICOS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.ScatteringInstrument.html">AFL.automation.instrument.ScatteringInstrument</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.ScatteringInstrument.html#AFL.automation.instrument.ScatteringInstrument.ScatteringInstrument"><code class="docutils literal notranslate"><span class="pre">ScatteringInstrument</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SeabreezeUVVis.html">AFL.automation.instrument.SeabreezeUVVis</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SpecScreen_Driver.html">AFL.automation.instrument.SpecScreen_Driver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.SpecScreen_Driver.html#AFL.automation.instrument.SpecScreen_Driver.SpecScreen_Driver"><code class="docutils literal notranslate"><span class="pre">SpecScreen_Driver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.USBCamera.html">AFL.automation.instrument.USBCamera</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.USBCamera.html#AFL.automation.instrument.USBCamera.USBCamera"><code class="docutils literal notranslate"><span class="pre">USBCamera</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSANS_data.html">AFL.automation.instrument.VirtualSANS_data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSANS_data.html#AFL.automation.instrument.VirtualSANS_data.VirtualSANS_data"><code class="docutils literal notranslate"><span class="pre">VirtualSANS_data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSAS_theory.html">AFL.automation.instrument.VirtualSAS_theory</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSAS_theory.html#AFL.automation.instrument.VirtualSAS_theory.VirtualSAS_theory"><code class="docutils literal notranslate"><span class="pre">VirtualSAS_theory</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html">AFL.automation.instrument.VirtualSpec_data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data"><code class="docutils literal notranslate"><span class="pre">VirtualSpec_data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.scatteringInterpolator.html">AFL.automation.instrument.scatteringInterpolator</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.scatteringInterpolator.html#AFL.automation.instrument.scatteringInterpolator.Scattering_generator"><code class="docutils literal notranslate"><span class="pre">Scattering_generator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.instrument.scatteringInterpolator.html#AFL.automation.instrument.scatteringInterpolator.GenerateScattering"><code class="docutils literal notranslate"><span class="pre">GenerateScattering</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.html">AFL.automation.loading</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniMultiPosValve.html">AFL.automation.loading.CetoniMultiPosValve</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniMultiPosValve.html#AFL.automation.loading.CetoniMultiPosValve.CetoniMultiPosValve"><code class="docutils literal notranslate"><span class="pre">CetoniMultiPosValve</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniSyringePump.html">AFL.automation.loading.CetoniSyringePump</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.CetoniSyringePump.html#AFL.automation.loading.CetoniSyringePump.CetoniSyringePump"><code class="docutils literal notranslate"><span class="pre">CetoniSyringePump</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ChemyxSyringePump.html">AFL.automation.loading.ChemyxSyringePump</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.getOpenPorts"><code class="docutils literal notranslate"><span class="pre">getOpenPorts()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.parsePortName"><code class="docutils literal notranslate"><span class="pre">parsePortName()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DAQC2Sensor.html">AFL.automation.loading.DAQC2Sensor</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DAQC2Sensor.html#AFL.automation.loading.DAQC2Sensor.DACQC2Sensor"><code class="docutils literal notranslate"><span class="pre">DACQC2Sensor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DigitalOutPressureController.html">AFL.automation.loading.DigitalOutPressureController</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DigitalOutPressureController.html#AFL.automation.loading.DigitalOutPressureController.DigitalOutPressureController"><code class="docutils literal notranslate"><span class="pre">DigitalOutPressureController</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DoubleViciMultiposSelector.html">AFL.automation.loading.DoubleViciMultiposSelector</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DoubleViciMultiposSelector.html#AFL.automation.loading.DoubleViciMultiposSelector.DoubleViciMultiposSelector"><code class="docutils literal notranslate"><span class="pre">DoubleViciMultiposSelector</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DummyPump.html">AFL.automation.loading.DummyPump</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.DummyPump.html#AFL.automation.loading.DummyPump.DummyPump"><code class="docutils literal notranslate"><span class="pre">DummyPump</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.FlowSelector.html">AFL.automation.loading.FlowSelector</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.FlowSelector.html#AFL.automation.loading.FlowSelector.FlowSelector"><code class="docutils literal notranslate"><span class="pre">FlowSelector</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackDigitalOut.html">AFL.automation.loading.LabJackDigitalOut</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackDigitalOut.html#AFL.automation.loading.LabJackDigitalOut.LabJackDigitalOut"><code class="docutils literal notranslate"><span class="pre">LabJackDigitalOut</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackGPIO.html">AFL.automation.loading.LabJackGPIO</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackGPIO.html#AFL.automation.loading.LabJackGPIO.LabJackGPIO"><code class="docutils literal notranslate"><span class="pre">LabJackGPIO</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackRelay.html">AFL.automation.loading.LabJackRelay</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackRelay.html#AFL.automation.loading.LabJackRelay.LabJackRelay"><code class="docutils literal notranslate"><span class="pre">LabJackRelay</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackRelay.html#AFL.automation.loading.LabJackRelay.bitmask_to_dict"><code class="docutils literal notranslate"><span class="pre">bitmask_to_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackSensor.html">AFL.automation.loading.LabJackSensor</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LabJackSensor.html#AFL.automation.loading.LabJackSensor.LabJackSensor"><code class="docutils literal notranslate"><span class="pre">LabJackSensor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LoadStopperDriver.html">AFL.automation.loading.LoadStopperDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.LoadStopperDriver.html#AFL.automation.loading.LoadStopperDriver.LoadStopperDriver"><code class="docutils literal notranslate"><span class="pre">LoadStopperDriver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.MultiChannelRelay.html">AFL.automation.loading.MultiChannelRelay</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.MultiChannelRelay.html#AFL.automation.loading.MultiChannelRelay.MultiChannelRelay"><code class="docutils literal notranslate"><span class="pre">MultiChannelRelay</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.NE1kSyringePump.html">AFL.automation.loading.NE1kSyringePump</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.NE1kSyringePump.html#AFL.automation.loading.NE1kSyringePump.NE1kSyringePump"><code class="docutils literal notranslate"><span class="pre">NE1kSyringePump</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.OneSelectorBlowoutSampleCell.html">AFL.automation.loading.OneSelectorBlowoutSampleCell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.OneSelectorBlowoutSampleCell.html#AFL.automation.loading.OneSelectorBlowoutSampleCell.OneSelectorBlowoutSampleCell"><code class="docutils literal notranslate"><span class="pre">OneSelectorBlowoutSampleCell</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiGPIO.html">AFL.automation.loading.PiGPIO</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiGPIO.html#AFL.automation.loading.PiGPIO.PiGPIO"><code class="docutils literal notranslate"><span class="pre">PiGPIO</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiPlatesRelay.html">AFL.automation.loading.PiPlatesRelay</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PiPlatesRelay.html#AFL.automation.loading.PiPlatesRelay.PiPlatesRelay"><code class="docutils literal notranslate"><span class="pre">PiPlatesRelay</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html">AFL.automation.loading.PneumaticPressureSampleCell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell"><code class="docutils literal notranslate"><span class="pre">PneumaticPressureSampleCell</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html">AFL.automation.loading.PneumaticSampleCell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell"><code class="docutils literal notranslate"><span class="pre">PneumaticSampleCell</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureController.html">AFL.automation.loading.PressureController</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureController.html#AFL.automation.loading.PressureController.PressureController"><code class="docutils literal notranslate"><span class="pre">PressureController</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureControllerAsPump.html">AFL.automation.loading.PressureControllerAsPump</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PressureControllerAsPump.html#AFL.automation.loading.PressureControllerAsPump.PressureControllerAsPump"><code class="docutils literal notranslate"><span class="pre">PressureControllerAsPump</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PushPullSelectorSampleCell.html">AFL.automation.loading.PushPullSelectorSampleCell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.PushPullSelectorSampleCell.html#AFL.automation.loading.PushPullSelectorSampleCell.PushPullSelectorSampleCell"><code class="docutils literal notranslate"><span class="pre">PushPullSelectorSampleCell</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.RSoXSSolutionSampleCell.html">AFL.automation.loading.RSoXSSolutionSampleCell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.RSoXSSolutionSampleCell.html#AFL.automation.loading.RSoXSSolutionSampleCell.RSoXSSolutionSampleCell"><code class="docutils literal notranslate"><span class="pre">RSoXSSolutionSampleCell</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SainSmartRelay.html">AFL.automation.loading.SainSmartRelay</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SainSmartRelay.html#AFL.automation.loading.SainSmartRelay.SainSmartRelay"><code class="docutils literal notranslate"><span class="pre">SainSmartRelay</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SainSmartRelay.html#AFL.automation.loading.SainSmartRelay.usbrelay"><code class="docutils literal notranslate"><span class="pre">usbrelay</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SampleCell.html">AFL.automation.loading.SampleCell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SampleCell.html#AFL.automation.loading.SampleCell.SampleCell"><code class="docutils literal notranslate"><span class="pre">SampleCell</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Sensor.html">AFL.automation.loading.Sensor</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Sensor.html#AFL.automation.loading.Sensor.Sensor"><code class="docutils literal notranslate"><span class="pre">Sensor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Sensor.html#AFL.automation.loading.Sensor.DummySensor1"><code class="docutils literal notranslate"><span class="pre">DummySensor1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Sensor.html#AFL.automation.loading.Sensor.DummySensor2"><code class="docutils literal notranslate"><span class="pre">DummySensor2</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html">AFL.automation.loading.SensorCallbackThread</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html#AFL.automation.loading.SensorCallbackThread.SensorCallbackThread"><code class="docutils literal notranslate"><span class="pre">SensorCallbackThread</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html#AFL.automation.loading.SensorCallbackThread.StopLoadCBv1"><code class="docutils literal notranslate"><span class="pre">StopLoadCBv1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html#AFL.automation.loading.SensorCallbackThread.StopLoadCBv2"><code class="docutils literal notranslate"><span class="pre">StopLoadCBv2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html#AFL.automation.loading.SensorCallbackThread.SimpleThresholdCB"><code class="docutils literal notranslate"><span class="pre">SimpleThresholdCB</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorCallbackThread.html#AFL.automation.loading.SensorCallbackThread.LoaderCommunication"><code class="docutils literal notranslate"><span class="pre">LoaderCommunication</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorPollingThread.html">AFL.automation.loading.SensorPollingThread</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SensorPollingThread.html#AFL.automation.loading.SensorPollingThread.SensorPollingThread"><code class="docutils literal notranslate"><span class="pre">SensorPollingThread</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SerialDevice.html">AFL.automation.loading.SerialDevice</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SerialDevice.html#AFL.automation.loading.SerialDevice.SerialDevice"><code class="docutils literal notranslate"><span class="pre">SerialDevice</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SyringePump.html">AFL.automation.loading.SyringePump</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.SyringePump.html#AFL.automation.loading.SyringePump.SyringePump"><code class="docutils literal notranslate"><span class="pre">SyringePump</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Tubing.html">AFL.automation.loading.Tubing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.Tubing.html#AFL.automation.loading.Tubing.Tubing"><code class="docutils literal notranslate"><span class="pre">Tubing</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html">AFL.automation.loading.TwoSelectorBlowoutSampleCell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html#AFL.automation.loading.TwoSelectorBlowoutSampleCell.TwoSelectorBlowoutSampleCell"><code class="docutils literal notranslate"><span class="pre">TwoSelectorBlowoutSampleCell</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html">AFL.automation.loading.UltimusVPressureController</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ViciMultiposSelector.html">AFL.automation.loading.ViciMultiposSelector</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.loading.ViciMultiposSelector.html#AFL.automation.loading.ViciMultiposSelector.ViciMultiposSelector"><code class="docutils literal notranslate"><span class="pre">ViciMultiposSelector</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.html">AFL.automation.prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Component.html">AFL.automation.prepare.Component</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Component.html#AFL.automation.prepare.Component.Component"><code class="docutils literal notranslate"><span class="pre">Component</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html#AFL.automation.prepare.DeckBuilderWidget.DeckBuilderWidget"><code class="docutils literal notranslate"><span class="pre">DeckBuilderWidget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html#AFL.automation.prepare.DeckBuilderWidget.DeckBuilderWidget_Model"><code class="docutils literal notranslate"><span class="pre">DeckBuilderWidget_Model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.DeckBuilderWidget.html#AFL.automation.prepare.DeckBuilderWidget.DeckBuilderWidget_View"><code class="docutils literal notranslate"><span class="pre">DeckBuilderWidget_View</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver"><code class="docutils literal notranslate"><span class="pre">Dummy_OT2_Driver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2Client.html#AFL.automation.prepare.OT2Client.OT2Client"><code class="docutils literal notranslate"><span class="pre">OT2Client</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver"><code class="docutils literal notranslate"><span class="pre">OT2_Driver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.argmax"><code class="docutils literal notranslate"><span class="pre">argmax()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.argmin"><code class="docutils literal notranslate"><span class="pre">argmin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepType.html#AFL.automation.prepare.PrepType.PrepType"><code class="docutils literal notranslate"><span class="pre">PrepType</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html#AFL.automation.prepare.PrepareWidget.PrepareWidget"><code class="docutils literal notranslate"><span class="pre">PrepareWidget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html#AFL.automation.prepare.PrepareWidget.PrepareWidget_Model"><code class="docutils literal notranslate"><span class="pre">PrepareWidget_Model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.PrepareWidget.html#AFL.automation.prepare.PrepareWidget.PrepareWidget_View"><code class="docutils literal notranslate"><span class="pre">PrepareWidget_View</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SampleSeriesWidget.html">AFL.automation.prepare.SampleSeriesWidget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SampleSeriesWidget.html#AFL.automation.prepare.SampleSeriesWidget.SampleSeriesWidget"><code class="docutils literal notranslate"><span class="pre">SampleSeriesWidget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SampleSeriesWidget.html#AFL.automation.prepare.SampleSeriesWidget.SampleSeriesWidget_Model"><code class="docutils literal notranslate"><span class="pre">SampleSeriesWidget_Model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SampleSeriesWidget.html#AFL.automation.prepare.SampleSeriesWidget.SampleSeriesWidget_View"><code class="docutils literal notranslate"><span class="pre">SampleSeriesWidget_View</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.StockBuilderWidget.html">AFL.automation.prepare.StockBuilderWidget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.StockBuilderWidget.html#AFL.automation.prepare.StockBuilderWidget.StockBuilderWidget"><code class="docutils literal notranslate"><span class="pre">StockBuilderWidget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.StockBuilderWidget.html#AFL.automation.prepare.StockBuilderWidget.StockBuilderWidget_Model"><code class="docutils literal notranslate"><span class="pre">StockBuilderWidget_Model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.StockBuilderWidget.html#AFL.automation.prepare.StockBuilderWidget.StockBuilderWidget_View"><code class="docutils literal notranslate"><span class="pre">StockBuilderWidget_View</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SweepBuilderWidget.html">AFL.automation.prepare.SweepBuilderWidget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SweepBuilderWidget.html#AFL.automation.prepare.SweepBuilderWidget.SweepBuilderWidget"><code class="docutils literal notranslate"><span class="pre">SweepBuilderWidget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SweepBuilderWidget.html#AFL.automation.prepare.SweepBuilderWidget.SweepBuilderWidget_Model"><code class="docutils literal notranslate"><span class="pre">SweepBuilderWidget_Model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.SweepBuilderWidget.html#AFL.automation.prepare.SweepBuilderWidget.SweepBuilderWidget_View"><code class="docutils literal notranslate"><span class="pre">SweepBuilderWidget_View</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.factory.html">AFL.automation.prepare.factory</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.factory.html#AFL.automation.prepare.factory.HD2OFactory"><code class="docutils literal notranslate"><span class="pre">HD2OFactory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.factory.html#AFL.automation.prepare.factory.compositionSweepFactory"><code class="docutils literal notranslate"><span class="pre">compositionSweepFactory()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.utilities.html">AFL.automation.prepare.utilities</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.utilities.html#AFL.automation.prepare.utilities.make_locs"><code class="docutils literal notranslate"><span class="pre">make_locs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.prepare.utilities.html#AFL.automation.prepare.utilities.make_wellplate_locs"><code class="docutils literal notranslate"><span class="pre">make_wellplate_locs()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample.html">AFL.automation.sample</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample.CastingServer.html">AFL.automation.sample.CastingServer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample.CastingServer.html#AFL.automation.sample.CastingServer.CastingServer"><code class="docutils literal notranslate"><span class="pre">CastingServer</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.html">AFL.automation.sample_env</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.TemperatureDeck.html">AFL.automation.sample_env.TemperatureDeck</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.sample_env.TemperatureDeck.html#AFL.automation.sample_env.TemperatureDeck.TemperatureDeck"><code class="docutils literal notranslate"><span class="pre">TemperatureDeck</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.html">AFL.automation.shared</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html">AFL.automation.shared.DataLabelerWidget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget"><code class="docutils literal notranslate"><span class="pre">DataLabelerWidget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerModel"><code class="docutils literal notranslate"><span class="pre">DataLabelerModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerView"><code class="docutils literal notranslate"><span class="pre">DataLabelerView</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DatasetWidget.html">AFL.automation.shared.DatasetWidget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DatasetWidget.html#AFL.automation.shared.DatasetWidget.DatasetWidget"><code class="docutils literal notranslate"><span class="pre">DatasetWidget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DatasetWidget.html#AFL.automation.shared.DatasetWidget.DatasetWidget_Model"><code class="docutils literal notranslate"><span class="pre">DatasetWidget_Model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DatasetWidget.html#AFL.automation.shared.DatasetWidget.DatasetWidget_View"><code class="docutils literal notranslate"><span class="pre">DatasetWidget_View</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html">AFL.automation.shared.DiffractionLabeler</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler"><code class="docutils literal notranslate"><span class="pre">DiffractionLabeler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerModel"><code class="docutils literal notranslate"><span class="pre">DiffractionLabelerModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView"><code class="docutils literal notranslate"><span class="pre">DiffractionLabelerView</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.MutableQueue.html">AFL.automation.shared.MutableQueue</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.MutableQueue.html#AFL.automation.shared.MutableQueue.MutableQueue"><code class="docutils literal notranslate"><span class="pre">MutableQueue</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.PersistentConfig.html">AFL.automation.shared.PersistentConfig</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig"><code class="docutils literal notranslate"><span class="pre">PersistentConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html">AFL.automation.shared.ServerDiscovery</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.RunThread"><code class="docutils literal notranslate"><span class="pre">RunThread</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery"><code class="docutils literal notranslate"><span class="pre">ServerDiscovery</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html">AFL.automation.shared.exceptions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html#AFL.automation.shared.exceptions.EmptyException"><code class="docutils literal notranslate"><span class="pre">EmptyException</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html#AFL.automation.shared.exceptions.MixingException"><code class="docutils literal notranslate"><span class="pre">MixingException</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html#AFL.automation.shared.exceptions.SerialCommsException"><code class="docutils literal notranslate"><span class="pre">SerialCommsException</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html#AFL.automation.shared.exceptions.NoDeviceFoundException"><code class="docutils literal notranslate"><span class="pre">NoDeviceFoundException</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.exceptions.html#AFL.automation.shared.exceptions.NotFoundError"><code class="docutils literal notranslate"><span class="pre">NotFoundError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.serialization.html">AFL.automation.shared.serialization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.serialization.html#AFL.automation.shared.serialization.serialize"><code class="docutils literal notranslate"><span class="pre">serialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.serialization.html#AFL.automation.shared.serialization.is_serialized"><code class="docutils literal notranslate"><span class="pre">is_serialized()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.serialization.html#AFL.automation.shared.serialization.deserialize"><code class="docutils literal notranslate"><span class="pre">deserialize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html">AFL.automation.shared.units</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.has_units"><code class="docutils literal notranslate"><span class="pre">has_units()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_volume"><code class="docutils literal notranslate"><span class="pre">is_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_molarity"><code class="docutils literal notranslate"><span class="pre">is_molarity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_mass"><code class="docutils literal notranslate"><span class="pre">is_mass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_density"><code class="docutils literal notranslate"><span class="pre">is_density()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_concentration"><code class="docutils literal notranslate"><span class="pre">is_concentration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_dimensionless"><code class="docutils literal notranslate"><span class="pre">is_dimensionless()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.get_unit_type"><code class="docutils literal notranslate"><span class="pre">get_unit_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.to_quantity"><code class="docutils literal notranslate"><span class="pre">to_quantity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.enforce_units"><code class="docutils literal notranslate"><span class="pre">enforce_units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html">AFL.automation.shared.utilities</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html#AFL.automation.shared.utilities.listify"><code class="docutils literal notranslate"><span class="pre">listify()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html#AFL.automation.shared.utilities.tprint"><code class="docutils literal notranslate"><span class="pre">tprint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html#AFL.automation.shared.utilities.makeRegistar"><code class="docutils literal notranslate"><span class="pre">makeRegistar()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html#AFL.automation.shared.utilities.mpl_plot_to_bytes"><code class="docutils literal notranslate"><span class="pre">mpl_plot_to_bytes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.utilities.html#AFL.automation.shared.utilities.xarray_to_bytes"><code class="docutils literal notranslate"><span class="pre">xarray_to_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.warnings.html">AFL.automation.shared.warnings</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.warnings.html#AFL.automation.shared.warnings.warning_on_one_line"><code class="docutils literal notranslate"><span class="pre">warning_on_one_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.warnings.html#AFL.automation.shared.warnings.MixWarning"><code class="docutils literal notranslate"><span class="pre">MixWarning</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.widgetui.html">AFL.automation.shared.widgetui</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../_autosummary/AFL.automation.shared.widgetui.html#AFL.automation.shared.widgetui.client_construct_ui"><code class="docutils literal notranslate"><span class="pre">client_construct_ui()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">AFL-automation</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../automation.html">AFL.automation</a></li>
+      <li class="breadcrumb-item active">AFL.automation.instrument.APSUSAXS</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for AFL.automation.instrument.APSUSAXS</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> <span class="c1"># for return types in get data</span>
+<span class="kn">import</span> <span class="nn">h5py</span> <span class="c1">#for Nexus file reading</span>
+<span class="kn">import</span> <span class="nn">lazy_loader</span> <span class="k">as</span> <span class="nn">lazy</span>
+<span class="n">epics</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;epics&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[neutron-scattering]&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">Matilda</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;Matilda&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[usaxs]&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="APSUSAXS">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS">[docs]</a>
+<span class="k">class</span> <span class="nc">APSUSAXS</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;sample_thickness&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.58</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;run_initiate_pv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;9idcLAX:AutoCollectionStart&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;script_name_pv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;9idcLAX:AutoCollectionStrInput&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;instrument_status_pv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;9idcLAX:state&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;script_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/mnt/share1/USAXS_data/2022-06/&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;instrument_running_pv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;9idcLAX:dataColInProgress&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;script_template_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AFL-template.mac&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;script_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AFL.mac&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;magic_project_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;!!AFL-SETNAME!!&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;magic_filename_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;!!AFLREPLACEME!!&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;magic_xpos_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;!!AFLXPOS!!&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;magic_ypos_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;!!AFLYPOS!!&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;active_holder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;6A&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;script_write_cooldown&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> 
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;platemap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                         <span class="s1">&#39;6A&#39;</span><span class="p">:{</span>
+                     <span class="s1">&#39;SlotA&#39;</span><span class="p">:</span>
+                        <span class="p">{</span>
+                          <span class="s1">&#39;x0&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                          <span class="s1">&#39;y0&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                          <span class="s1">&#39;x_step&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+                          <span class="s1">&#39;y_step&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+                          <span class="s1">&#39;x_per_y_skew&#39;</span><span class="p">:</span> <span class="mf">.5</span><span class="p">,</span>
+                          <span class="s1">&#39;y_per_x_skew&#39;</span><span class="p">:</span> <span class="o">-</span><span class="p">(</span><span class="mi">8</span><span class="o">/</span><span class="mi">12</span><span class="p">)</span><span class="o">*</span><span class="mf">.5</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="s1">&#39;SlotB&#39;</span><span class="p">:</span>
+                        <span class="p">{</span>
+                          <span class="s1">&#39;x0&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">150</span><span class="p">,</span>
+                          <span class="s1">&#39;y0&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">150</span><span class="p">,</span>
+                          <span class="s1">&#39;x_step&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+                          <span class="s1">&#39;y_step&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+                          <span class="s1">&#39;x_per_y_skew&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                          <span class="s1">&#39;y_per_x_skew&#39;</span><span class="p">:</span> <span class="o">-</span><span class="p">(</span><span class="mi">8</span><span class="o">/</span><span class="mi">12</span><span class="p">)</span><span class="o">*</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="s1">&#39;SlotC&#39;</span><span class="p">:</span>
+                        <span class="p">{</span>
+                          <span class="s1">&#39;x0&#39;</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+                          <span class="s1">&#39;y0&#39;</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+                          <span class="s1">&#39;x_step&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+                          <span class="s1">&#39;y_step&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+                          <span class="s1">&#39;x_per_y_skew&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">8</span><span class="p">,</span>
+                          <span class="s1">&#39;y_per_x_skew&#39;</span><span class="p">:</span> <span class="o">-</span><span class="p">(</span><span class="mi">8</span><span class="o">/</span><span class="mi">12</span><span class="p">)</span><span class="o">*-</span><span class="mi">8</span><span class="p">,</span>
+                        <span class="p">},</span>
+
+                    <span class="p">}</span>
+                    <span class="p">}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;empty_scan_title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;USAXS_mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Flyscan&#39;</span> <span class="c1">#Flyscane or uascan</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;USAXS_npts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;USAXS_signal_cutoff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.05</span>
+
+<div class="viewcode-block" id="APSUSAXS.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        connect to usaxs via EPICS</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;Matilda.convertUSAXS&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[usaxs]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convertSAS</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;Matilda.convertSAS&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[usaxs]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readfromtiled</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;Matilda.readfromtiled&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[usaxs]&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;APSUSAXS&#39;</span><span class="p">,</span><span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">__instrument_name__</span> <span class="o">=</span> <span class="s1">&#39;APS USAXS instrument&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Just started...&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="s1">&#39;AFL&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="APSUSAXS.pre_execute">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.pre_execute">[docs]</a>
+    <span class="k">def</span> <span class="nf">pre_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+
+        
+<div class="viewcode-block" id="APSUSAXS.getFilename">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.getFilename">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getFilename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            get the currently set file name</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span></div>
+
+
+
+<div class="viewcode-block" id="APSUSAXS.setFilename">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.setFilename">[docs]</a>
+    <span class="k">def</span> <span class="nf">setFilename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting filename to </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">name</span></div>
+
+<div class="viewcode-block" id="APSUSAXS.getProject">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.getProject">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getProject</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">           get the currently set file name</span>
+<span class="sd">        </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_coords_from_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">slot</span><span class="p">,</span><span class="n">row</span><span class="p">,</span><span class="n">col</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;row must be a single letter&#39;</span><span class="p">)</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">31</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+
+        <span class="n">geom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;platemap&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;active_holder&#39;</span><span class="p">]][</span><span class="n">slot</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">geom</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">row</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">geom</span><span class="p">[</span><span class="s1">&#39;x_step&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">geom</span><span class="p">[</span><span class="s1">&#39;x_per_y_skew&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">col</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">geom</span><span class="p">[</span><span class="s1">&#39;y0&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">col</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">geom</span><span class="p">[</span><span class="s1">&#39;y_step&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">geom</span><span class="p">[</span><span class="s1">&#39;y_per_x_skew&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">row</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    
+<div class="viewcode-block" id="APSUSAXS.setProject">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.setProject">[docs]</a>
+    <span class="k">def</span> <span class="nf">setProject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting filename to </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">name</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_writeUSAXSScript</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        burn the current filename and project name into a USAXS script</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;script_path&#39;</span><span class="p">])</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;script_template_file&#39;</span><span class="p">],</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;magic_project_key&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">)</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;magic_filename_key&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;magic_xpos_key&#39;</span><span class="p">],</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="p">))</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;magic_ypos_key&#39;</span><span class="p">],</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="p">))</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;script_path&#39;</span><span class="p">])</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;script_file&#39;</span><span class="p">],</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="APSUSAXS.expose">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.expose">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Expose&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;params&#39;</span><span class="p">:{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="s1">&#39;test_exposure&#39;</span><span class="p">},</span>
+        <span class="s1">&#39;exposure&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Exposure (s)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">},</span>
+        <span class="s1">&#39;reduce_data&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Reduce?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span>
+        <span class="s1">&#39;measure_transmission&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Measure Trans?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
+        <span class="p">}})</span>
+    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">block</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">reduce_USAXS</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">reduce_WAXS</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getFilename</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setFilename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Starting USAXS/SAXS/WAXS scan named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting USAXS/SAXS/WAXS exposure with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Writing script...&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_writeUSAXSScript</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Waiting for script save...&#39;</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;script_write_cooldown&#39;</span><span class="p">])</span>
+        <span class="n">epics</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;script_name_pv&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;script_file&#39;</span><span class="p">])</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">epics</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;run_initiate_pv&#39;</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Run started!&#39;</span>
+
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span> <span class="ow">or</span> <span class="n">reduce_data</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">block_for_run_finish</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Instrument Idle&#39;</span>
+            
+        <span class="k">if</span> <span class="n">reduce_USAXS</span><span class="p">:</span>
+           <span class="c1"># get last flyscan from Tiled and check that the set filename matches the found file</span>
+           <span class="p">[</span><span class="n">last_scan_path</span><span class="p">,</span> <span class="n">last_scan_file</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readfromtiled</span><span class="o">.</span><span class="n">FindLastScanData</span><span class="p">(</span><span class="s1">&#39;Flyscan&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+           <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">last_scan_file</span><span class="p">:</span>
+                   <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Did not get data that seemed to match, you collected </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, we got </span><span class="si">{</span><span class="n">last_scan_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+           <span class="c1"># reduce flyscan data</span>
+           <span class="n">last_scan_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span><span class="o">.</span><span class="n">reduceFlyscanToQR</span><span class="p">(</span><span class="n">last_scan_path</span><span class="p">,</span><span class="n">last_scan_file</span><span class="p">)</span>
+           <span class="n">results_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span><span class="o">.</span><span class="n">results_to_dataset</span><span class="p">(</span><span class="n">last_scan_results</span><span class="p">)</span>
+           <span class="n">USAXS_int</span> <span class="o">=</span> <span class="n">results_ds</span><span class="p">[</span><span class="s1">&#39;USAXS_int&#39;</span><span class="p">]</span>
+
+           <span class="c1"># get empty flyscan, reduce it</span>
+           <span class="p">[</span><span class="n">empty_path</span><span class="p">,</span><span class="n">empty_file</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readfromtiled</span><span class="o">.</span><span class="n">FindScanDataByName</span><span class="p">(</span><span class="s1">&#39;Flyscan&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty_scan_title&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+           <span class="n">empty_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span><span class="o">.</span><span class="n">reduceFlyscanToQR</span><span class="p">(</span><span class="n">empty_path</span><span class="p">,</span><span class="n">empty_file</span><span class="p">)</span>
+           <span class="n">empty_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span><span class="o">.</span><span class="n">results_to_dataset</span><span class="p">(</span><span class="n">empty_results</span><span class="p">)</span>
+           <span class="n">MT_USAXS_int</span> <span class="o">=</span> <span class="n">empty_ds</span><span class="p">[</span><span class="s1">&#39;USAXS_int&#39;</span><span class="p">]</span>
+           <span class="n">MT_USAXS_int</span> <span class="o">=</span> <span class="n">MT_USAXS_int</span><span class="o">.</span><span class="n">interp_like</span><span class="p">(</span><span class="n">USAXS_int</span><span class="p">)</span> <span class="c1">#interpolate to match last scan</span>
+
+           <span class="c1"># determine minimum q; argmax because we&#39;re looking for the first True (which is cast to be 1)</span>
+           <span class="n">qmin_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">((</span><span class="n">USAXS_int</span><span class="o">.</span><span class="n">values</span><span class="o">/</span><span class="n">MT_USAXS_int</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">&gt;</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;USAXS_signal_cutoff&#39;</span><span class="p">]))</span>
+           <span class="n">qmin</span> <span class="o">=</span> <span class="n">USAXS_int</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">qmin_index</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+           
+           <span class="c1">#interpolate</span>
+           <span class="n">new_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">qmin</span><span class="p">,</span><span class="n">USAXS_int</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;USAXS_npts&#39;</span><span class="p">])</span>
+           <span class="n">USAXS_int</span> <span class="o">=</span> <span class="n">USAXS_int</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">new_q</span><span class="p">)</span>
+           <span class="n">MT_USAXS_int</span> <span class="o">=</span> <span class="n">MT_USAXS_int</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">new_q</span><span class="p">)</span>
+
+           <span class="c1"># background subtraction</span>
+           <span class="n">peaktopeak_T</span> <span class="o">=</span> <span class="p">(</span><span class="n">results_ds</span><span class="o">.</span><span class="n">Maximum</span> <span class="o">/</span> <span class="n">empty_ds</span><span class="o">.</span><span class="n">Maximum</span><span class="p">)</span>
+           <span class="n">USAXS_sub</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">peaktopeak_T</span> <span class="o">*</span> <span class="n">USAXS_int</span> <span class="o">-</span> <span class="n">MT_USAXS_int</span>
+
+           <span class="c1"># add data to tiled</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_q&#39;</span><span class="p">,</span><span class="n">USAXS_int</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_int&#39;</span><span class="p">,</span><span class="n">USAXS_int</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_sub&#39;</span><span class="p">,</span><span class="n">USAXS_sub</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;MT_USAXS_q&#39;</span><span class="p">,</span><span class="n">MT_USAXS_int</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;MT_USAXS_int&#39;</span><span class="p">,</span><span class="n">MT_USAXS_int</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scan_path</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scan_file</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">peaktopeak_T</span>
+           
+        <span class="k">if</span> <span class="n">reduce_WAXS</span><span class="p">:</span> 
+           <span class="c1"># get last WAXS from Tiled, reduce it</span>
+           <span class="p">[</span><span class="n">last_scan_path</span><span class="p">,</span> <span class="n">last_scan_file</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readfromtiled</span><span class="o">.</span><span class="n">FindLastScanData</span><span class="p">(</span><span class="s1">&#39;WAXS&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+           <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">last_scan_file</span><span class="p">:</span>
+                   <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Did not get data that seemed to match, you collected </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, we got </span><span class="si">{</span><span class="n">last_scan_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+           <span class="c1">#reduce</span>
+           <span class="n">last_scan_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertSAS</span><span class="o">.</span><span class="n">ImportAndReduceAD</span><span class="p">(</span><span class="n">last_scan_path</span><span class="p">,</span><span class="n">last_scan_file</span><span class="p">)</span>
+           
+           <span class="c1"># add data to tiled</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;WAXS_q&#39;</span><span class="p">,</span><span class="n">last_scan_results</span><span class="p">[</span><span class="s1">&#39;Q_array&#39;</span><span class="p">])</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;WAXS_int&#39;</span><span class="p">,</span><span class="n">last_scan_results</span><span class="p">[</span><span class="s1">&#39;Intensity&#39;</span><span class="p">])</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;WAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scan_path</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;WAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scan_file</span></div>
+
+
+<div class="viewcode-block" id="APSUSAXS.block_for_run_finish">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.block_for_run_finish">[docs]</a>
+    <span class="k">def</span> <span class="nf">block_for_run_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRunInProgress</span><span class="p">():</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="APSUSAXS.getRunStatus">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.getRunStatus">[docs]</a>
+    <span class="k">def</span> <span class="nf">getRunStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">epics</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;instrument_status_pv&#39;</span><span class="p">],</span><span class="n">as_string</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="APSUSAXS.setPosition">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.setPosition">[docs]</a>
+    <span class="k">def</span> <span class="nf">setPosition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">plate</span><span class="p">,</span><span class="n">row</span><span class="p">,</span><span class="n">col</span><span class="p">,</span><span class="n">x_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coords_from_tuple</span><span class="p">(</span><span class="n">plate</span><span class="p">,</span><span class="n">row</span><span class="p">,</span><span class="n">col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="o">+=</span><span class="n">x_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="o">+=</span><span class="n">y_offset</span></div>
+
+        
+<div class="viewcode-block" id="APSUSAXS.getRunInProgress">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.getRunInProgress">[docs]</a>
+    <span class="k">def</span> <span class="nf">getRunInProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">epics</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;instrument_running_pv&#39;</span><span class="p">])</span> </div>
+
+    
+               
+<div class="viewcode-block" id="APSUSAXS.status">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.status">[docs]</a>
+    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Status: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;EPICS status: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">getRunStatus</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Next X: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Next Y: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Next filename: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Next project: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span></div>
+</div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Contribution of the US Government.  Not subject to copyright in the United States..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+   
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../../../../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+
+</body>
+</html>

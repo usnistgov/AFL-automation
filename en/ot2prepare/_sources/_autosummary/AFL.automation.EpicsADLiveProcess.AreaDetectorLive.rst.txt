@@ -1,0 +1,12 @@
+AFL.automation.EpicsADLiveProcess.AreaDetectorLive
+==================================================
+
+.. automodule:: AFL.automation.EpicsADLiveProcess.AreaDetectorLive
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AreaDetectorLive
+   

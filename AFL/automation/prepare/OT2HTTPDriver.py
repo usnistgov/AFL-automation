@@ -49,7 +49,7 @@ class OT2HTTPDriver(Driver):
         # Add tip tracking state
         self.available_tips = {}  # Format: {mount: [(tiprack_id, well_name), ...]}
 
-        self.useful_links['View Deck'] = '/visualize-deck'
+        self.useful_links['View Deck'] = '/visualize_deck'
 
     def _log(self, level, message):
         """Safe logging that checks if app exists before logging"""
@@ -210,9 +210,11 @@ class OT2HTTPDriver(Driver):
                 )
 
         # Get loaded labware information
-        for slot, (labware_id, name) in self.config["loaded_labware"].items():
-            status.append(f"Labware in slot {slot}: {name}")
-
+        try:
+            for slot, (labware_id, name, _) in self.config["loaded_labware"].items():
+                status.append(f"Labware in slot {slot}: {name}")
+        except Exception:
+            print(self.config["loaded_labware"])
         return status
 
     @Driver.quickbar(
@@ -355,7 +357,7 @@ class OT2HTTPDriver(Driver):
             slot, well = self.parse_well(loc)
 
             # Get labware info from the slot
-            labware_info = self.loaded_labware.get(slot)
+            labware_info = self.config['loaded_labware'].get(slot)
 
             if not labware_info:
                 raise ValueError(f"No labware found in slot {slot}")
@@ -370,7 +372,7 @@ class OT2HTTPDriver(Driver):
         
         # Check well validity here
         assert slot in self.config["loaded_labware"].keys(), f"Slot {slot} does not have any loaded labware"
-        assert well in self.config["loaded_labware"][slot][2]['definition']['wells'].keys(), f"Well {well} is not a valid well for slot {slot}, {self.config["loaded_labware"][slot][2]['definition']['metadata']['displayName']}"
+        assert well in self.config["loaded_labware"][slot][2]['definition']['wells'].keys(), f"Well {well} is not a valid well for slot {slot}, {self.config['loaded_labware'][slot][2]['definition']['metadata']['displayName']}"
         
         return wells
     def _check_cmd_success(self, response):
@@ -841,7 +843,7 @@ class OT2HTTPDriver(Driver):
         return transfers
 
     def _slot_by_labware_uuid(self,target_uuid):
-        for slot, (uuid,name) in self.config["loaded_labware"].items():
+        for slot, (uuid,name,_) in self.config["loaded_labware"].items():
             if uuid == target_uuid:
                 return slot
         return None
@@ -882,7 +884,9 @@ class OT2HTTPDriver(Driver):
     ):
         """Transfer fluid from one location to another using atomic HTTP API commands"""
         self.log_info(f"Transferring {volume}uL from {source} to {dest}")
-
+        
+        self._ensure_run_exists()
+        
         # Set flow rates if specified
         if aspirate_rate is not None:
             self.set_aspirate_rate(aspirate_rate)

@@ -31,6 +31,9 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         # Initialize additional attributes
         self.stocks = []
         self.targets = []
+        
+        self.useful_links['View Deck'] = '/visualize_deck'
+
     
     def status(self):
         """

@@ -268,32 +268,36 @@ class APIServer:
 
 
     def index(self):
-        '''Live, status page of the robot'''
+        '''
+        Render the legacy status board
+        '''
         self.app.logger.info('Serving index page')
 
         kw = {}
-        kw['queue']       = self.get_queue()
-        kw['contact']     = self.contact
-        kw['experiment']  = self.experiment
-        kw['queue_state'] = self.queue_state()
-        kw['name']        = self.name
-        kw['driver']    = self.queue_daemon.driver.name
+        kw['queue']        = self.get_queue()
+        kw['queue_state']  = self.queue_state()
+        kw['name']         = self.name
+        kw['driver']       = self.queue_daemon.driver.name
+        kw['useful_links'] = self.queue_daemon.driver.useful_links
         return render_template(self.index_template,**kw),200
     def index_new(self):
-        '''Live, status page of the robot'''
+        '''
+        Render the new driver UI
+        '''
         self.app.logger.info('Serving index page')
 
         kw = {}
-        kw['queue']       = self.get_queue()
-        kw['contact']     = self.contact
-        kw['experiment']  = self.experiment
-        kw['queue_state'] = self.queue_state()
-        kw['name']        = self.name
-        kw['driver']    = self.queue_daemon.driver.name
+        kw['queue']        = self.get_queue()
+        kw['queue_state']  = self.queue_state()
+        kw['name']         = self.name
+        kw['driver']       = self.queue_daemon.driver.name
+        kw['useful_links'] = self.queue_daemon.driver.useful_links
         return render_template(self.new_index_template,**kw),200
 
     def webapp(self):
-        '''Live, status page of the robot'''
+        '''
+        Render the jquery webapp
+        '''
         self.app.logger.info('Serving WebApp')
 
         return render_template('webapp.html'),200

@@ -42,7 +42,7 @@ class Driver:
     unqueued = makeRegistrar()
     queued = makeRegistrar()
     quickbar = makeRegistrar()
-    def __init__(self,name,defaults=None,overrides=None):
+    def __init__(self,name,defaults=None,overrides=None,useful_links=None):
         self.app = None
         self.data = None
         self.dropbox = None
@@ -51,6 +51,11 @@ class Driver:
             self.name = 'Driver'
         else:
             self.name = name
+
+        if useful_links is None:
+            self.useful_links = {}
+        else:
+            self.useful_links = useful_links
         
         self.path = pathlib.Path.home() / '.afl' 
         self.path.mkdir(exist_ok=True,parents=True)

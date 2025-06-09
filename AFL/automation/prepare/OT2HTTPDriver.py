@@ -49,6 +49,8 @@ class OT2HTTPDriver(Driver):
         # Add tip tracking state
         self.available_tips = {}  # Format: {mount: [(tiprack_id, well_name), ...]}
 
+        self.useful_links['View Deck'] = '/visualize-deck'
+
     def _log(self, level, message):
         """Safe logging that checks if app exists before logging"""
         if self.app is not None and hasattr(self.app, "logger"):

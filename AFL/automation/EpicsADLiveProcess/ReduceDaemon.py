@@ -1,7 +1,8 @@
 import threading
 import time
 import datetime
-import pyFAI
+import lazy_loader as lazy
+pyFAI = lazy.load("pyFAI", require="AFL-automation[scattering-processing]")
 import numpy as np
 
 class ReduceDaemon(threading.Thread):

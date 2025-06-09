@@ -1,11 +1,11 @@
 from AFL.automation.APIServer.Driver import Driver
-import pyFAI, pyFAI.azimuthalIntegrator
-import numpy as np
-from PIL import Image
-import datetime
-import fabio
-import h5py,six
+import lazy_loader as lazy
+pyFAI = lazy.load("pyFAI", require="AFL-automation[scattering-processing]")
+fabio = lazy.load("fabio", require="AFL-automation[scattering-processing]")
 
+import numpy as np
+import datetime
+import h5py,six
 
 class ScatteringInstrument():
     defaults = {}

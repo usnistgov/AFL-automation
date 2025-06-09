@@ -1863,8 +1863,8 @@ class OT2HTTPDriver(Driver):
                     content['color'] = '#fff3e0'
 
             # Check if slot has a module
-            if slot_str in self.loaded_modules:
-                module_id, module_type = self.loaded_modules[slot_str]
+            if slot_str in self.config["loaded_modules"]:
+                module_id, module_type = self.config["loaded_modules"][slot_str]
                 module_name = module_type.replace('ModuleV1', ' Module V1').replace('V1', ' V1')
 
                 if labware_on_slot:

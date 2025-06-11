@@ -7,7 +7,7 @@ except:
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 from AFL.automation.APIServer.APIServer import APIServer
-from AFL.automation.instrument.CDSAXSLabview import CDSAXSLabview
+from AFL.automation.instrument.cdsaxslabview import CDSAXSLabview
 from AFL.automation.APIServer.data.DataTiled import DataTiled
 
 data = DataTiled('http://192.168.0.250:8000',api_key = os.environ['TILED_API_KEY'],backup_path='/home/afl642/.afl/json-backup')

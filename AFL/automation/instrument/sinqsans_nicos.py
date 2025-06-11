@@ -8,8 +8,8 @@ import numpy as np  # for return types in get data
 import h5py  # for Nexus file writing
 
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
-from AFL.automation.instrument.NicosScriptClient import NicosScriptClient
+from AFL.automation.instrument.scattering_instrument import ScatteringInstrument
+from AFL.automation.instrument.nicos_script_client import NicosScriptClient
 
 
 class SINQSANS_NICOS(ScatteringInstrument, Driver):

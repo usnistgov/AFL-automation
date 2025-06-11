@@ -7,7 +7,7 @@ except:
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 
 from AFL.automation.APIServer.APIServer import APIServer
-from AFL.automation.APIServer.SpecScreen_Driver import SpecScreen_Driver
+from AFL.automation.instrument.spec_screen_driver import SpecScreen_Driver
 
 server_port=5000
 

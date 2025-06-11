@@ -2,7 +2,7 @@ import gc
 import time
 import datetime
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.instrument.PySpecClient import PySpecClient
+from AFL.automation.instrument.py_spec_client import PySpecClient
 import numpy as np # for return types in get data
 import os
 import pathlib

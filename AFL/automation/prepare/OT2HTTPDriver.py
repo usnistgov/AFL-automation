@@ -1,5 +1,6 @@
 import requests
 import time
+import logging
 
 from math import ceil
 from AFL.automation.APIServer.Driver import Driver
@@ -47,31 +48,6 @@ class OT2HTTPDriver(Driver):
 
         # Add tip tracking state
         self.available_tips = {}  # Format: {mount: [(tiprack_id, well_name), ...]}
-
-    def _log(self, level, message):
-        """Safe logging that checks if app exists before logging"""
-        if self.app is not None and hasattr(self.app, "logger"):
-            log_method = getattr(self.app.logger, level, None)
-            if log_method:
-                log_method(message)
-        else:
-            print(f"[{level.upper()}] {message}")
-
-    def log_info(self, message):
-        """Log info message safely"""
-        self._log("info", message)
-
-    def log_error(self, message):
-        """Log error message safely"""
-        self._log("error", message)
-
-    def log_debug(self, message):
-        """Log debug message safely"""
-        self._log("debug", message)
-
-    def log_warning(self, message):
-        """Log warning message safely"""
-        self._log("warning", message)
 
     def _initialize_robot(self):
         """Initialize the connection to the robot and get basic information"""
@@ -621,7 +597,7 @@ class OT2HTTPDriver(Driver):
             self._check_cmd_success(response)
             # Get the pipette ID from the response
             response_data = response.json()
-            print(f'loadPipette response: {response_data}')
+            logging.debug(f'loadPipette response: {response_data}')
 
             pipette_id = response_data["data"]["result"]["pipetteId"]
 
@@ -1460,7 +1436,7 @@ class OT2HTTPDriver(Driver):
             if not heater_shaker_module:
                 self.log_error("No heater-shaker module found")
                 return "No heater-shaker module found"
-            print(heater_shaker_module)
+            logging.debug(heater_shaker_module)
             current_temp = heater_shaker_module.get("data", {}).get("currentTemp")
             target_temp = heater_shaker_module.get("data", {}).get("targetTemp")
             self.log_info(

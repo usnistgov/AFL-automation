@@ -1,5 +1,6 @@
-import numpy 
+import numpy
 import time
+import logging
 from AFL.automation.APIServer.Driver import Driver
 
 
@@ -36,13 +37,13 @@ class Dummy_OT2_Driver(Driver):
         'mount':{'label':'Which Pipet left/right/both','type':'text','default':'both'},
         }})
     def reset_tipracks(self,mount='both'):
-        print(f'Called reset tipracks')
+        logging.info('Called reset tipracks')
                 
 
     @Driver.quickbar(qb={'button_text':'Home',
         })
     def home(self,**kwargs):
-        print(f'Homing robot')
+        logging.info('Homing robot')
 
     def parse_well(self,loc):
         for i,loc_part in enumerate(list(loc)):
@@ -63,49 +64,49 @@ class Dummy_OT2_Driver(Driver):
         return wells
 
     def get_labware(self,slot):
-        print(f'Getting labware from slot \'{slot}\'')
+        logging.info(f'Getting labware from slot {slot}')
 
     def load_labware(self,name,slot,module=None,**kwargs):
-        print(f'Loading labware {name} into slot {slot}')
+        logging.info(f'Loading labware {name} into slot {slot}')
         
     def set_temp(self,slot,temp):
         '''Set the temperature of a tempdeck in slot slot'''
-        print(f'Called set_temp with slot={slot} and temp={temp}')
+        logging.info(f'Called set_temp with slot={slot} and temp={temp}')
     
     def get_temp(self,slot):
         '''Get the temperature of a tempdeck in slot slot'''
-        print(f'Called get_temp with slot={slot}')
+        logging.info(f'Called get_temp with slot={slot}')
 
     def deactivate_temp(self,slot):
         '''Disablea tempdeck in slot slot'''
-        print(f'Called deactivate_temp')
+        logging.info('Called deactivate_temp')
 
     def set_shake(self,rpm):
-        print(f'Called set_shake with rpm={rpm}')
+        logging.info(f'Called set_shake with rpm={rpm}')
 
     def stop_shake(self):
-        print(f'Called stop_shake')
+        logging.info('Called stop_shake')
 
     def set_shaker_temp(self,temp):
-        print(f'Called set_shaker_temp with temp={temp}')
+        logging.info(f'Called set_shaker_temp with temp={temp}')
 
     def unlatch_shaker(self):
-        print(f'Called latch_shaker')
+        logging.info('Called latch_shaker')
 
     def latch_shaker(self):
-        print(f'Called latch_shaker')
+        logging.info('Called latch_shaker')
 
     def get_shaker_temp(self):
-        print(f'Called get_shake_temp')
+        logging.info('Called get_shake_temp')
 
     def get_shake_rpm(self):
-        print(f'Called get_shake_rpm')
+        logging.info('Called get_shake_rpm')
 
     def get_shake_latch_status(self):
-        print(f'Called get_shake_latch_status')
+        logging.info('Called get_shake_latch_status')
 
     def load_instrument(self,name,mount,tip_rack_slots,**kwargs):
-        print(f'Loading instrument {name} into {mount} with tip_racks={tip_rack_slots}')
+        logging.info(f'Loading instrument {name} into {mount} with tip_racks={tip_rack_slots}')
 
     @Driver.quickbar(qb={'button_text':'Transfer',
         'params':{
@@ -114,17 +115,17 @@ class Dummy_OT2_Driver(Driver):
         'volume':{'label':'Volume (uL)','type':'float','default':300}
         }})
     def transfer(self,source,dest,volume,*args,**kwargs):
-        print(f'Transferring from {volume} uL from {source} to {dest} with kwargs: {kwargs}')
+        logging.info(f'Transferring {volume} uL from {source} to {dest} with kwargs: {kwargs}')
     
 
     def set_aspirate_rate(self,rate=150):
-        print(f'Setting aspirate rate to {rate}')
+        logging.info(f'Setting aspirate rate to {rate}')
 
     def set_dispense_rate(self,rate=300):
-        print(f'Setting dispense rate to {rate}')
+        logging.info(f'Setting dispense rate to {rate}')
 
     def set_gantry_speed(self,speed=400):
-        print(f'Setting gantry speed to {speed}')
+        logging.info(f'Setting gantry speed to {speed}')
 
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *

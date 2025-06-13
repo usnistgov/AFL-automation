@@ -76,7 +76,7 @@ class Interpolator():
             # print('The set Y_coords')
             # print(self.Y_coord)
         except:
-            raise ValueError("One or more of the inputs X or Y are not correct. Check the defaluts")
+            raise ValueError("One or more of the inputs X or Y are not correct. Check the defaults")
        # print(self.X_raw.shape, self.Y_raw.shape)
         
         

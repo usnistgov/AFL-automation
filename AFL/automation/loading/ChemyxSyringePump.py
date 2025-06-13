@@ -149,9 +149,9 @@ class ChemyxSyringePump(SyringePump):
 
     def blockUntilStatusStopped(self,pollingdelay=0.2):
         '''
-        This is a deprecated function from old serial logic.  It should work, but do not use.  
+        This is a deprecated function from old serial logic.  It should work, but do not use.
         '''
-        self.wait_dosage_finished(self.pump,30)
+        self.wait_dosage_finished(30)
 
 
     def getStatus(self): #@TODO

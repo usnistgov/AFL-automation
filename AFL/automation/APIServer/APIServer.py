@@ -127,6 +127,9 @@ class APIServer:
                 self.advertise_zeroconf(**kwargs)
             except Exception as e:
                 print(f'failed while trying to start zeroconf {e}, continuing')
+        # before_first_request was removed in Flask >=3.0, so run init here
+        # to start the queue daemon before the server begins serving.
+        self.init()
         try:
             self.app.run(**kwargs)
         finally:
@@ -139,8 +142,10 @@ class APIServer:
             raise ValueError('create_queue must be called before running server')
         if _ADVERTISE_ZEROCONF:
             self.advertise_zeroconf(**kwargs)
-        
-        
+        # before_first_request was removed in Flask >=3.0, so run init here
+        # to start the queue daemon before the server begins serving.
+        self.init()
+
         thread = threading.Thread(target=self.app.run,daemon=True,kwargs=kwargs)
         if start_thread:
             thread.start()
@@ -184,7 +189,8 @@ class APIServer:
         self.app.add_url_rule('/retrieve_obj', 'retrieve_obj', self.retrieve_obj,
                               methods=['POST', 'GET'])
 
-        self.app.before_first_request(self.init)
+        # self.init is now called from run()/run_threaded due to Flask 3 removal
+        # of the before_first_request hook
 
     def get_info(self):
         '''Live, status page of the robot'''

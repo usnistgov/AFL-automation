@@ -8,11 +8,11 @@ import pathlib
 import PIL
 import uuid
 
-from AFL.automation.instrument.GPInterpolator import Interpolator, ClusteredGPs
+from AFL.automation.instrument.gp_interpolator import Interpolator, ClusteredGPs
 import gpflow
 import tensorflow as tf
 # class DummySAS(ScatteringInstrument,Driver):
-class VirtualSANS_data(Driver):
+class VirtualSpec_data(Driver):
     defaults = {}
     defaults['save_path'] = '/home/afl642/2305_SINQ_SANS_path'
     def __init__(self,overrides=None, clustered=False):
@@ -21,7 +21,7 @@ class VirtualSANS_data(Driver):
         '''
 
         self.app = None
-        Driver.__init__(self,name='VirtualSANS_data',defaults=self.gather_defaults(),overrides=overrides)
+        Driver.__init__(self,name='VirtualSpec_data',defaults=self.gather_defaults(),overrides=overrides)
         # ScatteringInstrument.__init__(self)
         if clustered:
             self.clustered=True
@@ -54,7 +54,7 @@ class VirtualSANS_data(Driver):
         else:
             self.sg.load_data()
         
-    def load_model_dataset(self,params_dict=None):
+    def load_model_dataset(self):
         # this class uses the information in dataset, specifically 'SAS_savgol_xlo' and 'SAS_savgol_xhi' to determine the q range
         # it also points to the 'components' attribute of the dataset to get the composition range and dimensions
         # the dataset is stored in the scattering generator object
@@ -70,7 +70,7 @@ class VirtualSANS_data(Driver):
         self.kernel = gpflow.kernels.Matern52(lengthscales=0.1,variance=1.)
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
 
-    def expose(self,name=None,exposure=None,nexp=1,block=True,write_data=True,return_data=True,measure_transmission=True,save_nexus=True):
+    def measure(self,name=None,exposure=None,nexp=1,block=True,write_data=False,return_data=True,save_nexus=True):
         ## sample_data is a protected key in the self.data dictionary from Driver.py
         ## composition, which is required to reproduce scattering data, has to be a parameter in the composition dictionary
         if 'sample_composition' not in self.data:
@@ -89,7 +89,6 @@ class VirtualSANS_data(Driver):
                 
             print('New Data point requested')
             print(X, X.shape)
-            # print(X)
         elif isinstance(self.data['sample_composition'],list):
             X = np.array(self.data['sample_composition'])
         else:
@@ -98,47 +97,43 @@ class VirtualSANS_data(Driver):
         
         ### predict from the model and add to the self.data dictionary
         print("X input dimeions should be D points representing the dimensionality of the space (2-many) by N columns (typically 1 point being predicted)")
-        print("X input is the following ",X, X.shape)
+        print("X input is the following ",X, X.shape,type(X))
         ### scattering output is MxD where M is the number of points to evaluate the model over and D is the number of dimensions
         if self.clustered:
             if isinstance(self.sg.concat_GPs, type(None)):
                 gplist = self.sg.independentGPs
             else:
                 gplist = self.sg.concat_GPs
-            print('clustered prediction')
             mean, var, idx = self.sg.predict(X_new=X, gplist=gplist)
         else:
             mean, var = self.sg.predict(X_new=X)
-        self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
+        self.data['model_mu'], self.data['model_var'] = mean.squeeze(), var.squeeze()  
         data_pointers = self.sg.get_defaults()
-        qmin = self.dataset.attrs[data_pointers['Y_data_filter'][0]]
-        qmax = self.dataset.attrs[data_pointers['Y_data_filter'][1]]
-        print(qmin,qmax)
+        print(data_pointers['Y_data_coord'])
         if self.clustered:
-            print(len(self.sg.independentGPs[0].Y_coord.sel({'q':slice(qmin,qmax)}).values))
-            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord.sel({'q':slice(qmin,qmax)}).values
+            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord.values
         else:
-            print(len(self.sg.Y_coord.sel({'q':slice(qmin,qmax)}).values))
-            self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord.sel({'q':slice(qmin, qmax)}).values
+            try:
+                self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord.values
+            except:
+                pass
         self.data['X_*'] = X
         self.data['components'] = components
         
         ### store just the predicted mean for now...
-        data = self.data['scattering_mu'] 
+        data = self.data['model_mu'] 
         
-        self.data['main_array'] = self.data['scattering_mu']
-        self.data['q']
+        self.data['main_array'] = self.data['model_mu']
         print(self.data['main_array'].shape)
 
         
         ### write out the data to disk as a csv or h5?
         if write_data:
             self._writedata(data)
-        
 
 
     def status(self):
-        status = ['Dummy SAS data']
+        status = ['Dummy SPECTROSCOPY data']
         return status
 
     def train_model(self, kernel=None, niter=1000, optimizer=None, noiseless=True, tol=1e-6, heteroscedastic=False):
@@ -150,10 +145,9 @@ class VirtualSANS_data(Driver):
             self.optimizer = optimizer 
         
         if self.clustered:
-            print('you made it here!!!')
-#             for gpmodel in self.sg.concat_GPs:
-#                 print('attrs: ', list(gpmodel.__dict__))
-                
+            # print('you made it here!!!')
+            # for gpmodel in self.sg.concat_GPs:
+            #     print('attrs: ', list(gpmodel.__dict__))
             self.sg.train_all(
                 kernel          =  self.kernel,
                 niter           =  niter,
@@ -164,6 +158,7 @@ class VirtualSANS_data(Driver):
                 gplist          = self.sg.concat_GPs
             ) 
         else:
+            print('not clustered')
             self.sg.train_model(
                 kernel          =  self.kernel,
                 niter           =  niter,
@@ -179,5 +174,3 @@ class VirtualSANS_data(Driver):
         print(f'writing data to {filepath/filename}')
         with h5py.File(filepath/filename, 'w') as f:
             f.create_dataset(str(uuid.uuid1()), data=data)
-        
-        

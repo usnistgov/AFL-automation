@@ -7,7 +7,7 @@ except:
         print(f'Could not find NistoRoboto on system path, adding {os.path.abspath(Path(__file__).parent.parent)} to PYTHONPATH')
 import xarray as xr
 from AFL.automation.APIServer.APIServer import APIServer
-from AFL.automation.instrument.VirtualSANS_data import VirtualSANS_data
+from AFL.automation.instrument.virtual_sans_data import VirtualSANS_data
 from AFL.automation.APIServer.data.DataTiled import DataTiled
 
 ### local tiled server here

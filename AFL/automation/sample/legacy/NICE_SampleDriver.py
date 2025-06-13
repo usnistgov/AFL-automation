@@ -69,7 +69,7 @@ class NICE_SampleDriver(Driver):
             self.nice_client = nice.connect(host=nice_url)
 
             #this MUST be imported after the nice_client connects
-            from AFL.automation.instrument.NICEDevice import NICEDevice
+            from AFL.automation.instrument.nice_device import NICEDevice
             self.nice_device = NICEDevice()
             self.nice_client.subscribe('devices',self.nice_device)
         else:

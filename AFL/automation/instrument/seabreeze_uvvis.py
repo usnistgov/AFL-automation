@@ -255,7 +255,7 @@ class SeabreezeUVVis(Driver):
         return data_mean,data_std
 
 _DEFAULT_CUSTOM_CONFIG = {
-        '_classname': 'AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis',
+        '_classname': 'AFL.automation.instrument.seabreeze_uvvis.SeabreezeUVVis',
         'backend': 'pyseabreeze'
 }
 _DEFAULT_PORT=5051

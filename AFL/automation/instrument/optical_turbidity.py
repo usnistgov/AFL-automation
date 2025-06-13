@@ -177,9 +177,9 @@ class OpticalTurbidity(Driver):
 
 
 _DEFAULT_CUSTOM_CONFIG = {
-        '_classname': 'AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity',
+        '_classname': 'AFL.automation.instrument.optical_turbidity.OpticalTurbidity',
         '_args': [
-            {'_classname': 'AFL.automation.instrument.NetworkCamera.NetworkCamera',
+            {'_classname': 'AFL.automation.instrument.network_camera.NetworkCamera',
              '_args' : [
                  'http://afl-video:8081/103/current'
              ]

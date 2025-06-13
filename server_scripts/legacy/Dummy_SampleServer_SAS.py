@@ -9,7 +9,7 @@ except:
 
 from AFL.automation.APIServer.APIServer import APIServer
 from AFL.automation.APIServer.driver.SAS_LoaderV2_SampleDriver import SAS_LoaderV2_SampleDriver
-from AFL.automation.instrument.DummySAS import DummySAS
+from AFL.automation.instrument.dummy_sas import DummySAS
 
 server = APIServer('Dummy_SAS_Instrument')
 server.add_standard_routes()

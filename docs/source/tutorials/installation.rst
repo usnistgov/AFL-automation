@@ -1,6 +1,5 @@
-=========================
-Installing AFL-automation
-=========================
+Setup
+=====
 
 This tutorial will guide you through the process of installing AFL-automation and its dependencies.
 

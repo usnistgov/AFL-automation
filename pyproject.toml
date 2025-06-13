@@ -87,7 +87,11 @@ docs = [
   "sphinx-autodoc-typehints>=1.25.2",
   "sphinx-copybutton>=0.5.2",
   "myst-parser>=2.0.0",
-  "nbsphinx>=0.9.3"
+  "nbsphinx>=0.9.3",
+  "sphinxcontrib-apidoc",
+  "sphinxcontrib-napoleon",
+  "pydata-sphinx-theme",
+  "sphinx-autosummary-accessors",
 ]
 win32 = ["pywin32"]
 vision = ["opencv-python"]

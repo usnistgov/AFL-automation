@@ -4,55 +4,28 @@
    contain the root `toctree` directive.
 
 AFL-automation: Instrument Control Framework
-===========================================
+=============================================
 
 AFL-automation is a framework for instrument control and laboratory automation. It powers the NIST AFL (Autonomous Formulation Laboratory), but is designed to be versatile for many scientific instrumentation needs. It enables the easy conversion of Python classes - drivers - into robust HTTP microservices with authentication, task queueing, UI generation, data management, and more.
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Getting Started
-   
-   tutorials/installation
-   tutorials/quick-start
+Documentation Structure
+------------------------
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Tutorials
-   
-   tutorials/index
+This documentation is organized according to the philosphy described by Daniele Procida at `diataxis.fr <https://diataxis.fr>`_. It is organized into four sections:
 
-.. toctree::
-   :maxdepth: 1
-   :caption: How-to Guides
-   
-   how-to/index
-   how-to/dependencies
+* :doc:`Tutorials <tutorials/index>`: Step-by-step guides for beginners
+* :doc:`How-to <how-to/index>`: Guides for specific tasks
+* :doc:`Explanations <explanations/index>`: Discussions of underlying principles and concepts
+* :doc:`Reference <reference/index>`: Detailed technical reference 
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Explanation
-   
-   explanation/index
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Reference
-   
-   reference/index
-   modules
-
-
-Module Documentation
-===================
-
+Table of Contents
+------------------
 .. toctree::
    :maxdepth: 2
 
-   api
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   tutorials/installation
+   tutorials/index
+   how-to/index
+   explanation/index
+   reference/index
+   modules

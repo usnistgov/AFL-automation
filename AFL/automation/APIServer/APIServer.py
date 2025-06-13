@@ -15,6 +15,12 @@ from flask_jwt_extended import (
 import datetime,requests,subprocess,shlex,os,time
 import threading,queue,logging,json,pathlib,uuid
 
+try:
+    from waitress import serve as wsgi_serve
+    _HAVE_WAITRESS = True
+except ImportError:
+    _HAVE_WAITRESS = False
+
 from logging.handlers import SMTPHandler
 from logging import FileHandler
 
@@ -119,7 +125,7 @@ class APIServer:
         self.zeroconf = Zeroconf(ip_version=IPVersion.All)
         self.zeroconf.register_service(self.zeroconf_info)
         print("Started mDNS service advertisement.")
-    def run(self,**kwargs):
+    def run(self, use_waitress=None, **kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
         if _ADVERTISE_ZEROCONF:
@@ -128,20 +134,43 @@ class APIServer:
             except Exception as e:
                 print(f'failed while trying to start zeroconf {e}, continuing')
         try:
-            self.app.run(**kwargs)
+            if use_waitress is None:
+                use_waitress = _HAVE_WAITRESS
+
+            if use_waitress:
+                if not _HAVE_WAITRESS:
+                    raise RuntimeError("waitress is not installed")
+                kwargs.setdefault('threads', 1)
+                wsgi_serve(self.app, **kwargs)
+            else:
+                kwargs.setdefault('use_debugger', False)
+                kwargs.setdefault('use_reloader', False)
+                self.app.run(**kwargs)
         finally:
             if _ADVERTISE_ZEROCONF:
                 self.zeroconf.unregister_service(self.zeroconf_info)
                 self.zeroconf.close()
 
-    def run_threaded(self,start_thread=True,**kwargs):
+    def run_threaded(self, start_thread=True, use_waitress=None, **kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
         if _ADVERTISE_ZEROCONF:
             self.advertise_zeroconf(**kwargs)
-        
-        
-        thread = threading.Thread(target=self.app.run,daemon=True,kwargs=kwargs)
+
+        if use_waitress is None:
+            use_waitress = _HAVE_WAITRESS
+
+        if use_waitress:
+            if not _HAVE_WAITRESS:
+                raise RuntimeError("waitress is not installed")
+            kwargs.setdefault('threads', 1)
+            target = wsgi_serve
+        else:
+            kwargs.setdefault('use_debugger', False)
+            kwargs.setdefault('use_reloader', False)
+            target = self.app.run
+
+        thread = threading.Thread(target=target,daemon=True,kwargs=kwargs)
         if start_thread:
             thread.start()
         else:

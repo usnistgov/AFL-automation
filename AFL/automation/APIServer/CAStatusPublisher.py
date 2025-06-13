@@ -63,4 +63,9 @@ class CAStatusPublisher(threading.Thread):
     def run(self):
         os.environ['EPICS_CA_SERVER_PORT'] = str(self.port)
         ioc = QueueStatusGroup(self.queue_daemon, prefix=self.prefix)
-        run(ioc.pvdb, interfaces=self.interfaces, log_pv_names=False)
+        run(
+            ioc.pvdb,
+            interfaces=self.interfaces,
+            log_pv_names=False,
+            reuse=True,
+        )

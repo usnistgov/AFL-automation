@@ -41,7 +41,9 @@ AFL_GLOBAL_CONFIG = PersistentConfig(
         'tiled_api_key': '',
         'bind_address': '0.0.0.0',
         'ports': {},
-        'driver_custom_configs': {}
+        'driver_custom_configs': {},
+        'ca_status_enabled': False,
+        'ca_status_ports': {}
         },
         max_history=100,
 )
@@ -78,6 +80,11 @@ if main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
         print(f'Found configured non-default port {server_port}, starting there')
 else:
         server_port=5000
+
+if main_module_name in AFL_GLOBAL_CONFIG.get('ca_status_ports', {}):
+        ca_status_port = AFL_GLOBAL_CONFIG['ca_status_ports'][main_module_name]
+else:
+        ca_status_port = 5064
 
 if len(AFL_GLOBAL_CONFIG['tiled_server'])>0:
         data = DataTiled(AFL_GLOBAL_CONFIG['tiled_server'],
@@ -146,7 +153,14 @@ else:
 server = APIServer(main_module_name,data=data,contact=AFL_GLOBAL_CONFIG['owner_email'])
 server.add_standard_routes()
 
-server.create_queue(driver)
+# optionally publish queue status over CA
+start_ca = AFL_GLOBAL_CONFIG.get('ca_status_enabled', False)
+server.create_queue(
+        driver,
+        start_ca=start_ca,
+        ca_prefix=f"{main_module_name}:",
+        ca_port=ca_status_port,
+)
 #server.add_unqueued_routes()
 server.init_logging(toaddrs=AFL_GLOBAL_CONFIG['owner_email'])
 

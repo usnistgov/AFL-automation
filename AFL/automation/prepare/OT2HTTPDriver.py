@@ -16,6 +16,7 @@ class OT2HTTPDriver(Driver):
     defaults["loaded_labware"] = {}  # Persistent storage for loaded labware
     defaults["loaded_instruments"] = {}  # Persistent storage for loaded instruments
     defaults["loaded_modules"] = {}  # Persistent storage for loaded modules
+    defaults["available_tips"] = {} # Persistent storage for available tips, Format: {mount: [(tiprack_id, well_name), ...]}
 
     def __init__(self, overrides=None):
         self.app = None
@@ -46,8 +47,6 @@ class OT2HTTPDriver(Driver):
         # Initialize the robot connection
         self._initialize_robot()
 
-        # Add tip tracking state
-        self.available_tips = {}  # Format: {mount: [(tiprack_id, well_name), ...]}
 
         self.useful_links['View Deck'] = '/visualize_deck'
 
@@ -242,11 +241,11 @@ class OT2HTTPDriver(Driver):
         for m in mounts_to_reset:
             if m in self.config["loaded_instruments"]:
                 # Reinitialize available tips for this mount
-                self.available_tips[m] = []
+                self.config["available_tips"][m] = []
                 for tiprack in self.config["loaded_instruments"][m]["tip_racks"]:
                     for well in TIPRACK_WELLS:
-                        self.available_tips[m].append((tiprack, well))
-                self.log_info(f"Reset {len(self.available_tips[m])} tips for {m} mount")
+                        self.config["available_tips"][m].append((tiprack, well))
+                self.log_info(f"Reset {len(self.config['available_tips'][m])} tips for {m} mount")
 
         # Reset tip status
         self.has_tip = False
@@ -282,7 +281,7 @@ class OT2HTTPDriver(Driver):
         
         # Reset deck configuration too
         self.reset_deck()
-
+        
         # Re-initialize robot connection
         self._initialize_robot()
         
@@ -294,6 +293,7 @@ class OT2HTTPDriver(Driver):
         self.config["loaded_labware"] = {}
         self.config["loaded_instruments"] = {}
         self.config["loaded_modules"] = {}
+        self.config["available_tips"] = {}
 
     @Driver.quickbar(qb={"button_text": "Home"})
     def home(self, **kwargs):
@@ -518,6 +518,7 @@ class OT2HTTPDriver(Driver):
             self.log_info(
                 f"Successfully loaded labware '{name}' in slot {slot} with ID {labware_id}"
             )
+            self.config._update_history()
             return labware_id
 
         except (requests.exceptions.RequestException, KeyError) as e:
@@ -594,13 +595,14 @@ class OT2HTTPDriver(Driver):
             self.log_info(
                 f"Successfully loaded module '{name}' in slot {slot} with ID {module_id}"
             )
+            self.config._update_history()
             return module_id
 
         except (requests.exceptions.RequestException, KeyError) as e:
             self.log_error(f"Error loading module: {str(e)}")
             raise RuntimeError(f"Error loading module: {str(e)}")
 
-    def load_instrument(self, name, mount, tip_rack_slots, **kwargs):
+    def load_instrument(self, name, mount, tip_rack_slots, reload=False, **kwargs):
         """Load pipette and store tiprack information using HTTP API."""
         self.log_debug(
             f"Loading pipette '{name}' on '{mount}' mount with tip_racks in slots {tip_rack_slots}"
@@ -666,12 +668,13 @@ class OT2HTTPDriver(Driver):
                 "tip_racks": tip_racks,
             }
 
-            # Initialize available tips for this mount
-            self.available_tips[mount] = []
-            for tiprack in tip_racks:
-                for well in TIPRACK_WELLS:
-                    self.available_tips[mount].append((tiprack, well))
-
+            # If not reloading, initialize available tips for this mount
+            if not reload:
+                self.config["available_tips"][mount] = []
+                for tiprack in tip_racks:
+                    for well in TIPRACK_WELLS:
+                        self.config["available_tips"][mount].append((tiprack, well))
+    
             # Verify that there's actually a pipette in this mount
             if mount not in self.pipette_info or self.pipette_info[mount] is None:
                 self.log_warning(
@@ -684,6 +687,7 @@ class OT2HTTPDriver(Driver):
             self.log_info(
                 f"Successfully loaded pipette '{name}' on {mount} mount with ID {pipette_id}"
             )
+            self.config._update_history()
             return pipette_id
 
         except (requests.exceptions.RequestException, KeyError) as e:
@@ -1174,7 +1178,7 @@ class OT2HTTPDriver(Driver):
         # Track tip usage for pick up and drop commands
         if command_type == "pickUpTip":
             mount = params.get("pipetteMount")
-            if mount and mount in self.available_tips and self.available_tips[mount]:
+            if mount and mount in self.config["available_tips"] and self.config["available_tips"][mount]:
                 tiprack_id, well = self.get_tip(mount)
                 self.log_debug(
                     f"Using tip from {tiprack_id} well {well} for {mount} mount"
@@ -1586,6 +1590,10 @@ class OT2HTTPDriver(Driver):
         original_modules = self.config["loaded_modules"].copy()
         original_labware = self.config["loaded_labware"].copy()
         original_instruments = self.config["loaded_instruments"].copy()
+        tiprack_slots = {}
+        for (mount,instrument) in original_instruments.items():
+            tiprack_slots[mount] = [self._slot_by_labware_uuid(uuid) for uuid in instrument['tip_racks']] 
+            # TODO: also need to rewrite self.available_tips to use the new (reloaded) labware uuids from the reloaded tipracks.!!!
         
         # Clear current state for reloading
         self.config["loaded_modules"] = {}
@@ -1625,20 +1633,9 @@ class OT2HTTPDriver(Driver):
             for mount, instrument_data in original_instruments.items():
                 instrument_name = instrument_data['name']
                 
-                # Find which slots contain the tip racks for this instrument
-                tip_rack_slots = []
-                for slot, (labware_id, labware_name, _) in self.config["loaded_labware"].items():
-                    # Check if labware is tiprack (simple check based on name)
-                    if "tiprack" in labware_name.lower():
-                        tip_rack_slots.append(slot)
-                        
-                if not tip_rack_slots:
-                    self.log_warning(f"No tipracks found for instrument {instrument_name} on {mount} mount")
-                    continue
-                    
                 try:
                     self.log_info(f"Reloading instrument {instrument_name} on {mount} mount")
-                    self.load_instrument(instrument_name, mount, tip_rack_slots)
+                    self.load_instrument(instrument_name, mount, tiprack_slots[mount],reload=True)
                     # New instrument ID will be stored in config["loaded_instruments"]
                 except Exception as e:
                     self.log_error(f"Error reloading instrument {instrument_name} on {mount} mount: {str(e)}")
@@ -1684,22 +1681,24 @@ class OT2HTTPDriver(Driver):
             return self._create_run()
 
     def get_tip(self, mount):
-        return self.available_tips[mount].pop(0)
+        tip = self.config["available_tips"][mount].pop(0)
+        self.config._update_history()
+        return tip
 
     def get_tip_status(self, mount=None):
         """Get the current tip usage status"""
         if mount:
-            if mount not in self.available_tips:
+            if mount not in self.config["available_tips"]:
                 return f"No tipracks loaded for {mount} mount"
             total_tips = len(TIPRACK_WELLS) * len(
                 self.config["loaded_instruments"][mount]["tip_racks"]
             )
-            available_tips = len(self.available_tips[mount])
+            available_tips = len(self.config["available_tips"][mount])
             return f"{available_tips}/{total_tips} tips available on {mount} mount"
 
         # Return status for all mounts
         status = []
-        for m in self.available_tips:
+        for m in self.config["available_tips"]:
             status.append(self.get_tip_status(m))
         return "\n".join(status)
     
@@ -1748,8 +1747,8 @@ class OT2HTTPDriver(Driver):
 
             # Get all available tips for this labware if it's a tiprack
             available_tips_for_labware = set()
-            if is_tiprack and labware_uuid and hasattr(self, 'available_tips'):
-                for mount_tips in self.available_tips.values():
+            if is_tiprack and labware_uuid and hasattr(self.config, 'available_tips'):
+                for mount_tips in self.config["available_tips"].values():
                     for tip_labware_uuid, well_name in mount_tips:
                         if tip_labware_uuid == labware_uuid:
                             available_tips_for_labware.add(well_name)
@@ -2185,8 +2184,8 @@ class OT2HTTPDriver(Driver):
 
             # Get all available tips for this labware if it's a tiprack
             available_tips_for_labware = set()
-            if is_tiprack and labware_uuid and hasattr(self, 'available_tips'):
-                for mount_tips in self.available_tips.values():
+            if is_tiprack and labware_uuid and hasattr(self.config, 'available_tips'):
+                for mount_tips in self.config["available_tips"].values():
                     for tip_labware_uuid, well_name in mount_tips:
                         if tip_labware_uuid == labware_uuid:
                             available_tips_for_labware.add(well_name)

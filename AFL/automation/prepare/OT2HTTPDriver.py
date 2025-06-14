@@ -18,7 +18,7 @@ LABWARE_OPTIONS = {
     "custom_beta/nist_pneumatic_loader": "NIST Pneumatic Loader (slot 10 only)",
     "custom_beta/nist_6_20ml_vials": "NIST 6 x 20mL vial carrier",
     "custom_beta/nist_2_100ml_bottles": "NIST 2 x 100mL bottle carrier",
-    "module/HeaterShaker": "HeaterShaker Module (still needs labware atop it!)"
+    "heaterShakerModuleV1": "HeaterShaker Module (still needs labware atop it!)"
 }
 
 
@@ -2028,7 +2028,7 @@ class OT2HTTPDriver(Driver):
                 buttons: {{
                     'Load': function() {{
                         var lw = select.val();
-                        var isHeaterShaker = (lw === 'module/HeaterShaker');
+                        var isHeaterShaker = (lw === 'heaterShakerModuleV1');
                         var task = isHeaterShaker ? 'load_module' : 'load_labware';
                         login().then(function(tok) {{
                             $.ajax({{
@@ -2051,7 +2051,6 @@ class OT2HTTPDriver(Driver):
             login().then(function(tok) {{
                 $.ajax({{
                     type:"POST",
-{{ ... }}
                     url:"/enqueue",
                     headers:{{"Content-Type":"application/json","Authorization":"Bearer "+tok}},
                     data: JSON.stringify({{task_name:"reset_tipracks", mount: mount}}),

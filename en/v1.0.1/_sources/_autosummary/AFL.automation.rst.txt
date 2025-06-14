@@ -1,0 +1,25 @@
+﻿AFL.automation
+==============
+
+.. automodule:: AFL.automation
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      test
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   APIServer
+   EpicsADLiveProcess
+   instrument
+   loading
+   prepare
+   sample_env
+   shared

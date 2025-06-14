@@ -1,0 +1,1114 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFL.automation.instrument.CDSAXSLabview &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/instrument/CDSAXSLabview';</script>
+    <link rel="icon" href="../../../../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../../../../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../automation.html" class="nav-link">AFL.automation</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.instrument.CDSAXSLabview</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for AFL.automation.instrument.CDSAXSLabview</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">lazy_loader</span> <span class="k">as</span> <span class="nn">lazy</span>
+<span class="n">win32com</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;win32com&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[win32]&quot;</span><span class="p">)</span>
+<span class="n">gc</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;gc&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[win32]&quot;</span><span class="p">)</span>
+<span class="n">pythoncom</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;pythoncom&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[win32]&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.instrument.ScatteringInstrument</span> <span class="kn">import</span> <span class="n">ScatteringInstrument</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> <span class="c1"># for return types in get data</span>
+<span class="kn">import</span> <span class="nn">h5py</span> <span class="c1">#for Nexus file writing</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">scipy.ndimage</span> <span class="k">as</span> <span class="nn">ndi</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="CDSAXSLabview">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview">[docs]</a>
+<span class="k">class</span> <span class="nc">CDSAXSLabview</span><span class="p">(</span><span class="n">ScatteringInstrument</span><span class="p">,</span><span class="n">Driver</span><span class="p">):</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;beamstop axis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Beamstop-z&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;beamstop in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">12.5</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;beamstop out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;sample axis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Z-stage&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;sample in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">26.5</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;sample out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">25.0</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;use_new_motion_conventions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;nmc_beamstop_in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Beamstop-z&#39;</span><span class="p">:</span><span class="mf">12.5</span><span class="p">}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;nmc_beamstop_out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Beamstop-z&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;nmc_sample_out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Z-stage&#39;</span><span class="p">:</span><span class="mf">20.0</span><span class="p">,</span><span class="s1">&#39;X-stage&#39;</span><span class="p">:</span><span class="mf">18.0</span><span class="p">}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;nmc_sample_in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Z-stage&#39;</span><span class="p">:</span><span class="mf">26.5</span><span class="p">,</span><span class="s1">&#39;X-stage&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;transmission strategy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sum&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;vi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;C:\saxs_control\GIXD controls.vi&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;reduced_data_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Y:</span><span class="se">\\</span><span class="s1">CDSAXS data</span><span class="se">\\</span><span class="s1">autoreduce</span><span class="se">\\</span><span class="s1">&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;absolute_pressure_limit&#39;</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;relative_pressure_ratio_limit&#39;</span><span class="p">]</span><span class="o">=</span><span class="mi">10</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;sample_thickness&#39;</span><span class="p">]</span><span class="o">=</span><span class="mf">0.18</span> <span class="c1">#cm</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;absolute_calibration_factor&#39;</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;empty_filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="n">axis_name_to_id_lut</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;X-stage&#39;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;Z-stage&#39;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;Z-gonio&#39;</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s1">&#39;Phi&#39;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s1">&#39;Theta&#39;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="s1">&#39;Y-gonio&#39;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="s1">&#39;Y-stage&#39;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="s1">&#39;Beamstop-z&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+        <span class="s1">&#39;Beamstop-y&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="s1">&#39;Tungsten-y&#39;</span><span class="p">:</span> <span class="mi">9</span> <span class="p">,</span>
+        <span class="s1">&#39;Detector-z&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="s1">&#39;Temperature&#39;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span>
+        <span class="s1">&#39;None&#39;</span><span class="p">:</span> <span class="mi">12</span>
+    <span class="p">}</span>
+    
+    <span class="n">axis_id_to_name_lut</span> <span class="o">=</span> <span class="p">{</span><span class="n">value</span><span class="p">:</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">axis_name_to_id_lut</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    
+<div class="viewcode-block" id="CDSAXSLabview.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        connect to locally running labview vi with win32com and </span>
+
+<span class="sd">        parameters:</span>
+<span class="sd">            vi: (str) the path to the LabView virtual instrument file for the main interface</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">import</span> <span class="nn">win32com.client</span>
+        <span class="kn">from</span> <span class="nn">win32process</span> <span class="kn">import</span> <span class="n">SetProcessWorkingSetSize</span>
+        <span class="kn">from</span> <span class="nn">win32api</span> <span class="kn">import</span> <span class="n">GetCurrentProcessId</span><span class="p">,</span><span class="n">OpenProcess</span>
+        <span class="kn">from</span> <span class="nn">win32con</span> <span class="kn">import</span> <span class="n">PROCESS_ALL_ACCESS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">win32com</span><span class="o">.</span><span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetProcessWorkingSetSize</span> <span class="o">=</span> <span class="n">SetProcessWorkingSetSize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetCurrentProcessId</span> <span class="o">=</span> <span class="n">GetCurrentProcessId</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OpenProcess</span> <span class="o">=</span> <span class="n">OpenProcess</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PROCESS_ALL_ACCESS</span> <span class="o">=</span> <span class="n">PROCESS_ALL_ACCESS</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;CDSAXSLabview&#39;</span><span class="p">,</span><span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+        <span class="n">ScatteringInstrument</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;reduced_data_dir&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;reduced_data_dir&#39;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__instrument_name__</span> <span class="o">=</span> <span class="s1">&#39;NIST CDSAXS instrument&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Just started...&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span></div>
+
+        
+
+<div class="viewcode-block" id="CDSAXSLabview.pre_execute">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.pre_execute">[docs]</a>
+    <span class="k">def</span> <span class="nf">pre_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">pressure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s2">&quot;Pressure (mbar)&quot;</span><span class="p">)</span>
+        <span class="c1">#historical_pressure = self._getLabviewValue(&quot;Pressure Level Chart&quot;,lv=lv)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Pressure: </span><span class="si">{</span><span class="n">pressure</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1">#print(f&#39;Hist Press: {historical_pressure}&#39;)</span>
+        <span class="n">abs_trip</span> <span class="o">=</span> <span class="n">pressure</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;absolute_pressure_limit&#39;</span><span class="p">]</span>
+        <span class="c1">#rel_trip = (pressure/historical_pressure.mean())&gt;self.config[&#39;relative_pressure_ratio_limit&#39;]</span>
+        <span class="k">if</span> <span class="n">abs_trip</span><span class="p">:</span><span class="c1"># or rel_trip:</span>
+            <span class="c1">#something has gone wrong -- vacuum excursion.  raise an exception so the queue pauses.</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Vacuum excursion!!  Trip reason </span><span class="si">{</span><span class="s2">&quot;abs_trip&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">abs_trip</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;rel_trip&quot;</span><span class="si">}</span><span class="s1"> Current pressure is </span><span class="si">{</span><span class="n">pressure</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span><span class="c1">#, historical average{historical_pressure.mean()}.&#39;)</span></div>
+
+
+<div class="viewcode-block" id="CDSAXSLabview.setReducedDataDir">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.setReducedDataDir">[docs]</a>
+    <span class="k">def</span> <span class="nf">setReducedDataDir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;reduced_data_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CDSAXSLabview.measureTransmission">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.measureTransmission">[docs]</a>
+    <span class="k">def</span> <span class="nf">measureTransmission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">exp</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">fn</span><span class="o">=</span><span class="s1">&#39;trans&#39;</span><span class="p">,</span><span class="n">set_empty_transmission</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">return_full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">update_beam_center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            Perform a transmission measurement on the currently loaded sample.</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            -------------</span>
+<span class="sd">            exp: float, default=5</span>
+<span class="sd">                exposure time</span>
+<span class="sd">            fn: string, default=&#39;trans&#39;</span>
+<span class="sd">                file name to save the measurement in</span>
+<span class="sd">            set_empty_transmission: bool, default=False</span>
+<span class="sd">                set the currently-held empty transmission to the outcome of this measurement</span>
+<span class="sd">            return_full: bool, default=False</span>
+<span class="sd">                return more data.  breaks some old API parts.</span>
+<span class="sd">            update_beam_center: bool, default=True</span>
+<span class="sd">                fit and update the beam center based on this measurement</span>
+<span class="sd">            lv: LabViewConnection, default=None</span>
+<span class="sd">                use this labview connection rather than making a new one if given</span>
+<span class="sd"> </span>
+
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">LabviewConnection</span><span class="p">()</span> <span class="k">if</span> <span class="n">lv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lv</span><span class="p">)</span> <span class="k">as</span> <span class="n">lv</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Moving beamstop out for transmission...&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_beamstop_out&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_sample_out&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Measuring open beam intensity...&#39;</span>
+            <span class="n">open_beam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simple_expose</span><span class="p">(</span><span class="n">exposure</span><span class="o">=</span><span class="n">exp</span><span class="p">,</span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;t-open-beam-&#39;</span><span class="o">+</span><span class="n">fn</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Measuring sample direct beam intensity...&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_sample_in&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sample_transmission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simple_expose</span><span class="p">(</span><span class="n">exposure</span><span class="o">=</span><span class="n">exp</span><span class="p">,</span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;t-&#39;</span><span class="o">+</span><span class="n">fn</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Moving beamstop back in...&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_beamstop_in&#39;</span><span class="p">],</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Processing transmission measurement...&#39;</span>
+            <span class="n">trans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">sample_transmission</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">open_beam</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Measured raw transmission of </span><span class="si">{</span><span class="n">trans</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s1">%, with </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">sample_transmission</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s1"> counts on samp and </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">open_beam</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s1"> in open beam.&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">set_empty_transmission</span><span class="p">:</span>
+                <span class="c1">#XXX! Should this be stored in config?</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trans</span>
+                 
+                <span class="n">retval</span> <span class="o">=</span> <span class="p">(</span><span class="n">trans</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">open_beam</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">sample_transmission</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">return_full</span><span class="p">:</span>
+                    <span class="c1"># sample transmission, open flux, sample flux, empty transmission      </span>
+                    <span class="n">retval</span> <span class="o">=</span> <span class="p">(</span><span class="n">trans</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">],</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">open_beam</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">sample_transmission</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">retval</span> <span class="o">=</span> <span class="n">trans</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Scaling raw transmission of </span><span class="si">{</span><span class="n">trans</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s1">% using empty transmission of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;empty transmission&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s1"> % for reported sample transmission of </span><span class="si">{</span><span class="n">trans</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;empty transmission&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s1">%&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">return_full</span><span class="p">:</span>
+                    <span class="n">retval</span><span class="o">=</span><span class="p">(</span><span class="n">trans</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">open_beam</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">sample_transmission</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">retval</span> <span class="o">=</span> <span class="n">trans</span>
+            
+            <span class="n">com</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">open_beam</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Fit center of mass </span><span class="si">{</span><span class="n">com</span><span class="si">}</span><span class="s1"> in open beam&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;That converts to poni1 = </span><span class="si">{</span><span class="mf">1.72e-4</span><span class="o">*</span><span class="n">com</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> and poni2 = </span><span class="si">{</span><span class="mf">1.72e-4</span><span class="o">*</span><span class="n">com</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;poni1 should be </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;poni1&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> and poni2 </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;poni2&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">update_beam_center</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;poni1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.72e-4</span><span class="o">*</span><span class="n">com</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;poni2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.72e-4</span><span class="o">*</span><span class="n">com</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span> <span class="o">=</span> <span class="n">retval</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Idle&#39;</span>
+            <span class="k">return</span> <span class="n">retval</span></div>
+
+    
+<div class="viewcode-block" id="CDSAXSLabview.measureTransmissionQuick">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.measureTransmissionQuick">[docs]</a>
+    <span class="k">def</span> <span class="nf">measureTransmissionQuick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">exp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">fn</span><span class="o">=</span><span class="s1">&#39;trans&#39;</span><span class="p">,</span><span class="n">setup</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">restore</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">LabviewConnection</span><span class="p">()</span> <span class="k">if</span> <span class="n">lv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lv</span><span class="p">)</span> <span class="k">as</span> <span class="n">lv</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">setup</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_beamstop_out&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_sample_out&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+                <span class="n">open_beam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simple_expose</span><span class="p">(</span><span class="n">exposure</span><span class="o">=</span><span class="n">exp</span><span class="p">,</span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;t-open-beam-&#39;</span><span class="o">+</span><span class="n">fn</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;open beam intensity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">open_beam</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="c1">#self.config[&#39;open beam intensity updated&#39;] = datetime.datetime.now()</span>
+                
+                <span class="bp">self</span><span class="o">.</span><span class="n">moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_sample_in&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Staged for rapid transmission measurement&#39;</span>
+            <span class="n">sample_transmission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simple_expose</span><span class="p">(</span><span class="n">exposure</span><span class="o">=</span><span class="n">exp</span><span class="p">,</span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;t-&#39;</span><span class="o">+</span><span class="n">fn</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">sample_transmission</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;open beam intensity&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">retval</span> <span class="o">=</span> <span class="n">retval</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;open beam intensity&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">restore</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_beamstop_in&#39;</span><span class="p">],</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Idle&#39;</span>
+            <span class="k">return</span> <span class="n">retval</span>          </div>
+
+
+    
+
+<div class="viewcode-block" id="CDSAXSLabview.getExposure">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getExposure">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>        
+    <span class="k">def</span> <span class="nf">getExposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            get the currently set exposure time</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Single Pilatus Parameters&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+        
+<div class="viewcode-block" id="CDSAXSLabview.getFilename">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getFilename">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getFilename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            get the currently set file name</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Single Pilatus Parameters&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+   
+<div class="viewcode-block" id="CDSAXSLabview.setExposure">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.setExposure">[docs]</a>
+    <span class="k">def</span> <span class="nf">setExposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">exposure</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting exposure time to </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                
+        <span class="n">fileName</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFilename</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;Single Pilatus Parameters&#39;</span><span class="p">,(</span><span class="n">exposure</span><span class="p">,</span><span class="n">fileName</span><span class="p">),</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CDSAXSLabview.setFilename">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.setFilename">[docs]</a>
+    <span class="k">def</span> <span class="nf">setFilename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting filename to </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            
+        <span class="n">exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getExposure</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;Single Pilatus Parameters&#39;</span><span class="p">,(</span><span class="n">exposure</span><span class="p">,</span><span class="n">name</span><span class="p">),</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+
+    
+<div class="viewcode-block" id="CDSAXSLabview.getData">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getData">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;2d_img&#39;</span><span class="p">,</span><span class="n">log_image</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">getData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Pilatus Data&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="CDSAXSLabview.setPath">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.setPath">[docs]</a>
+    <span class="k">def</span> <span class="nf">setPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">path</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting file path to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;FilePath&#39;</span><span class="p">,</span><span class="n">path</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="CDSAXSLabview.getStatus">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getStatus">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Process Status Message&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+   
+<div class="viewcode-block" id="CDSAXSLabview.getNScans">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getNScans">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getNScans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;# of Scans&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="CDSAXSLabview.setNScans">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.setNScans">[docs]</a>
+    <span class="k">def</span> <span class="nf">setNScans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">nscans</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;# of Scans&#39;</span><span class="p">,</span><span class="n">nscans</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="CDSAXSLabview.getSweepAxis">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getSweepAxis">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getSweepAxis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_id_to_name_lut</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Sweep Axis&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="CDSAXSLabview.setSweepAxis">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.setSweepAxis">[docs]</a>
+    <span class="k">def</span> <span class="nf">setSweepAxis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;setting sweep axis to </span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_name_to_id_lut</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;Sweep Axis&#39;</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span> <span class="c1"># this is an enum, 6 is Y-stage</span></div>
+
+    
+<div class="viewcode-block" id="CDSAXSLabview.getYStagePos">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getYStagePos">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getYStagePos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Y-stage&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CDSAXSLabview.getZStagePos">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getZStagePos">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getZStagePos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Z-stage&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CDSAXSLabview.getXStagePos">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getXStagePos">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getXStagePos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;X-Stage&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+    
+<span class="c1">#    def moveAxis(self,axis,value,exposure=0.001,filename = &#39;axis-move&#39;,return_data=False,block=True,lv=None):</span>
+<span class="c1">#        #this is very hacky, I apologize.  The strategy is simply to set a sweep and do an exposure.  This is because of  labview-COM issue where we can&#39;t click the &#39;move axis&#39; button.</span>
+<span class="c1">#        </span>
+<span class="c1">#        with (LabviewConnection() if lv is None else lv) as lv:</span>
+<span class="c1">#            self.setSweepAxis(axis,lv=lv)</span>
+<span class="c1">#            self.setSweepStart(value,lv=lv)</span>
+<span class="c1">#            self.setExposure(exposure,lv=lv)</span>
+<span class="c1">#            self.setFilename(filename,lv=lv)</span>
+<span class="c1">#            self.setNScans(1,lv=lv)</span>
+<span class="c1">#            self._setLabviewValue(&#39;Expose Pilatus&#39;,True,lv=lv)</span>
+<span class="c1">#            if block or return_data:</span>
+<span class="c1">#                while(self.getStatus(lv=lv) != &#39;Loading Image&#39;):</span>
+<span class="c1">#                    time.sleep(0.1)</span>
+<span class="c1">#                while(self.getStatus(lv=lv) != &#39;Success&#39; and self.getStatus(lv=lv) != &#39;Collection Aborted&#39;):</span>
+<span class="c1">#                    time.sleep(0.1)</span>
+<span class="c1">#            if return_data:</span>
+<span class="c1">#                return self.getData(lv=lv)</span>
+    <span class="k">def</span> <span class="nf">__moveAxis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Moves a single axis using a connection to a labview vi.</span>
+<span class="sd">        @param axis: the axis id or name of the motor to move</span>
+<span class="sd">        @param value: the position of the motor to move to</span>
+<span class="sd">        @param block: if True, this function will not return until the move is complete.</span>
+<span class="sd">        @param lv: a LabviewConnection object for use in integration with broader functions.  If None (default) will make a new connection.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">with</span> <span class="n">LabviewConnection</span><span class="p">(</span><span class="n">vi</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;C:\saxs_control\Move for Peter.vi&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lvm</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_name_to_id_lut</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span><span class="c1">#this converts the axis name to an ID number used by labview</span>
+            <span class="n">lvm</span><span class="o">.</span><span class="n">main_vi</span><span class="o">.</span><span class="n">setcontrolvalue</span><span class="p">(</span><span class="s1">&#39;Axis&#39;</span><span class="p">,</span><span class="n">axis</span><span class="p">)</span> <span class="c1">#set the ‘axis’ drop-down box to the right axis</span>
+            <span class="n">lvm</span><span class="o">.</span><span class="n">main_vi</span><span class="o">.</span><span class="n">setcontrolvalue</span><span class="p">(</span><span class="s1">&#39;New Position&#39;</span><span class="p">,</span><span class="n">value</span><span class="p">)</span> <span class="c1"># type the position into the destination position box</span>
+            <span class="n">lvm</span><span class="o">.</span><span class="n">main_vi</span><span class="o">.</span><span class="n">setcontrolvalue</span><span class="p">(</span><span class="s1">&#39;Motor Move&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># click the motor move button</span>
+            
+            <span class="k">if</span> <span class="n">block</span><span class="p">:</span>
+                <span class="k">with</span> <span class="p">(</span><span class="n">LabviewConnection</span><span class="p">()</span> <span class="k">if</span> <span class="n">lv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lv</span><span class="p">)</span> <span class="k">as</span> <span class="n">lv</span><span class="p">:</span> <span class="c1"># this makes a connection to the main vi or uses an existing one if passed in</span>
+                    <span class="k">while</span><span class="p">(</span><span class="s1">&#39;Moving&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)):</span> <span class="c1"># wait for the instrument status to actually go to ‘moving’</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span> <span class="c1">#this just keeps the traffic down on the labview interface by only checking every 100 ms</span>
+                    <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;Finished&#39;</span><span class="p">):</span> <span class="c1"># wait for the instrument status to change to ‘finished’</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="viewcode-block" id="CDSAXSLabview.moveAxis">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.moveAxis">[docs]</a>
+    <span class="k">def</span> <span class="nf">moveAxis</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nmcMoveAxis</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__moveAxis</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+            
+<div class="viewcode-block" id="CDSAXSLabview.nmcMoveAxis">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.nmcMoveAxis">[docs]</a>
+    <span class="k">def</span> <span class="nf">nmcMoveAxis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dest</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">motor</span><span class="p">,</span><span class="n">pos</span> <span class="ow">in</span> <span class="n">dest</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__moveAxis</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span><span class="n">pos</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
+
+            
+<div class="viewcode-block" id="CDSAXSLabview.setSweepStart">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.setSweepStart">[docs]</a>
+    <span class="k">def</span> <span class="nf">setSweepStart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">start</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;Start Value&#39;</span><span class="p">,</span><span class="n">start</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="CDSAXSLabview.getSweepStart">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getSweepStart">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getSweepStart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Start Value&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="CDSAXSLabview.setSweepStep">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.setSweepStep">[docs]</a>
+    <span class="k">def</span> <span class="nf">setSweepStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">step</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;Step&#39;</span><span class="p">,</span><span class="n">step</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="CDSAXSLabview.getSweepStep">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getSweepStep">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getSweepStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Step&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CDSAXSLabview.getElapsedTime">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getElapsedTime">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>  
+    <span class="k">def</span> <span class="nf">getElapsedTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLabviewValue</span><span class="p">(</span><span class="s1">&#39;Elapsed Time&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_getLabviewValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">val_name</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">LabviewConnection</span><span class="p">()</span> <span class="k">if</span> <span class="n">lv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lv</span><span class="p">)</span> <span class="k">as</span> <span class="n">lv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">lv</span><span class="o">.</span><span class="n">main_vi</span><span class="o">.</span><span class="n">getcontrolvalue</span><span class="p">(</span><span class="n">val_name</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_setLabviewValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">val_name</span><span class="p">,</span><span class="n">val_val</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">LabviewConnection</span><span class="p">()</span> <span class="k">if</span> <span class="n">lv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lv</span><span class="p">)</span> <span class="k">as</span> <span class="n">lv</span><span class="p">:</span>
+            <span class="n">lv</span><span class="o">.</span><span class="n">main_vi</span><span class="o">.</span><span class="n">setcontrolvalue</span><span class="p">(</span><span class="n">val_name</span><span class="p">,</span><span class="n">val_val</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_simple_expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">exposure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">LabviewConnection</span><span class="p">()</span> <span class="k">if</span> <span class="n">lv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lv</span><span class="p">)</span> <span class="k">as</span> <span class="n">lv</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getFilename</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">exposure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getExposure</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Starting </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> s count named </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">setFilename</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setExposure</span><span class="p">(</span><span class="n">exposure</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setNScans</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setSweepAxis</span><span class="p">(</span><span class="s1">&#39;None&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            
+                
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting exposure with name </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> s&#39;</span><span class="p">)</span>
+
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;Expose Pilatus&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="c1">#time.sleep(0.5)</span>
+            <span class="k">if</span> <span class="n">block</span><span class="p">:</span>
+                <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;Loading Image&#39;</span><span class="p">):</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="c1">#name = self._getLabviewValue(&#39;Displayed Image P&#39;) # read back the actual name, including sequence number, for later steps.</span>
+                <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;Success&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;Collection Aborted&#39;</span><span class="p">):</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Accessing Image&#39;</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getData</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CDSAXSLabview.expose">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.expose">[docs]</a>
+    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">exposure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">reduce_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">measure_transmission</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">save_nexus</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">sample_position</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">sample_thickness</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">subtract_empty</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">LabviewConnection</span><span class="p">()</span> <span class="k">if</span> <span class="n">lv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lv</span><span class="p">)</span> <span class="k">as</span> <span class="n">lv</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getFilename</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">exposure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getExposure</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">sample_position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cached_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_sample_in&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_sample_in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_position</span>
+
+            <span class="k">if</span> <span class="n">sample_thickness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cached_thickness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sample_thickness&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sample_thickness&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_thickness</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Starting </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> s count named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span>
+            
+            <span class="k">if</span> <span class="n">measure_transmission</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Measuring transmission...&#39;</span>
+                <span class="n">transmission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measureTransmission</span><span class="p">(</span><span class="n">return_full</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Starting </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> s count named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> with transmission </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">transmission</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">transmission</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setFilename</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setExposure</span><span class="p">(</span><span class="n">exposure</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setNScans</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setSweepAxis</span><span class="p">(</span><span class="s1">&#39;None&#39;</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            
+                
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting exposure with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> s&#39;</span><span class="p">)</span>
+
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setLabviewValue</span><span class="p">(</span><span class="s1">&#39;Expose Pilatus&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+            <span class="c1">#time.sleep(0.5)</span>
+            <span class="k">if</span> <span class="n">block</span> <span class="ow">or</span> <span class="n">reduce_data</span> <span class="ow">or</span> <span class="n">save_nexus</span><span class="p">:</span>
+                <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;Loading Image&#39;</span><span class="p">):</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="c1">#name = self._getLabviewValue(&#39;Displayed Image P&#39;) # read back the actual name, including sequence number, for later steps.</span>
+                <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;Success&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;Collection Aborted&#39;</span><span class="p">):</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Accessing Image&#39;</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getData</span><span class="p">(</span><span class="n">lv</span><span class="o">=</span><span class="n">lv</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">save_nexus</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Writing Nexus&#39;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_writeNexus</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">transmission</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">reduce_data</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Reducing Data&#39;</span>
+                    <span class="n">reduced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getReducedData</span><span class="p">(</span><span class="n">write_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="n">filename_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;lv&#39;</span><span class="p">:</span><span class="n">lv</span><span class="p">})</span>
+                    <span class="c1">#if save_nexus:</span>
+                        <span class="c1">#self._appendReducedToNexus(reduced,name,name)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Instrument Idle&#39;</span>
+            <span class="k">if</span> <span class="n">sample_position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;nmc_sample_in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cached_pos</span>
+            <span class="k">if</span> <span class="n">sample_thickness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sample_thickness&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cached_thickness</span>
+            <span class="k">if</span> <span class="n">subtract_empty</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty_filename&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">empty_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty_filename&#39;</span><span class="p">],</span><span class="n">comment</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">empty_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">,</span><span class="s1">&#39;I&#39;</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;raw_I&#39;</span><span class="p">,</span><span class="n">reduced</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">reduced</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduced</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">empty_data</span><span class="o">.</span><span class="n">I</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Asked for subtracted data, but no empty filename set.  Returning UNSUBTRACTED DATA.&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">reduced</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">transmission</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;open_direct_beam_cts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">transmission</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;sample_direct_beam_cts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">transmission</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;empty_cell_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">transmission</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span><span class="n">reduced</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;I&#39;</span><span class="p">,</span><span class="n">reduced</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="c1">#self.data.add_array(&#39;dI&#39;,reduced[2])</span>
+            
+            <span class="k">return</span> <span class="n">transmission</span></div>
+
+            
+<div class="viewcode-block" id="CDSAXSLabview.scan">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.scan">[docs]</a>
+    <span class="k">def</span> <span class="nf">scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">npts</span><span class="p">,</span><span class="n">start</span><span class="p">,</span><span class="n">step</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">exposure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setFilename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getFilename</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setExposure</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exposure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getExposure</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setNScans</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setSweepAxis</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setSweepStart</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setSweepStep</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting exposure with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> s&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">LabviewConnection</span><span class="p">()</span> <span class="k">as</span> <span class="n">lv</span><span class="p">:</span>
+            <span class="n">lv</span><span class="o">.</span><span class="n">main_vi</span><span class="o">.</span><span class="n">setcontrolvalue</span><span class="p">(</span><span class="s1">&#39;Expose Pilatus&#39;</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span><span class="p">:</span>
+            <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;Success&#39;</span><span class="p">):</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span></div>
+
+                
+               
+<div class="viewcode-block" id="CDSAXSLabview.status">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.status">[docs]</a>
+    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Last Measured Transmission: scaled=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> using empty cell trans of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s1"> with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s1"> raw counts in open/sample&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Status: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1">#lmj = self._getLabviewValue(&quot;LMJ Status&quot;)</span>
+        
+        <span class="c1">#status.append(f&#39;LMJ status: {&quot;running, power on target = &quot;+str(lmj[0]*lmj[1])+&quot;W&quot; if lmj[6]==1 else &quot;not running&quot;}&#39;)</span>
+        <span class="c1">#status.append(f&#39;Vacuum (mbar): {self._getLabviewValue(&quot;Pressure (mbar)&quot;)}&#39;)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;getData&quot; target=&quot;_blank&quot;&gt;Live Data (2D)&lt;/a&gt;&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;getReducedData&quot; target=&quot;_blank&quot;&gt;Live Data (1D)&lt;/a&gt;&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;getReducedData?render_hint=2d_img&amp;reduce_type=2d&quot;&gt;Live Data (2D, reduced)&lt;/a&gt;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span></div>
+</div>
+
+<div class="viewcode-block" id="LabviewConnection">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.LabviewConnection">[docs]</a>
+<span class="k">class</span> <span class="nc">LabviewConnection</span><span class="p">():</span>
+
+<div class="viewcode-block" id="LabviewConnection.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.LabviewConnection.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vi</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;C:\saxs_control\GIXD controls.vi&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        connect to locally running labview vi with win32com and </span>
+
+<span class="sd">        parameters:</span>
+<span class="sd">            vi: (str) the path to the LabView virtual instrument file for the main interface</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1">#print(f&#39;init labview context...&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vi</span> <span class="o">=</span> <span class="n">vi</span>
+        <span class="c1">#print(f&#39;Entering Labview context...&#39;)</span>
+        <span class="n">pythoncom</span><span class="o">.</span><span class="n">CoInitialize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labview</span> <span class="o">=</span> <span class="n">win32com</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">dynamic</span><span class="o">.</span><span class="n">Dispatch</span><span class="p">(</span><span class="s2">&quot;Labview.Application&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_vi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labview</span><span class="o">.</span><span class="n">getvireference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vi</span><span class="p">)</span></div>
+
+        <span class="c1">#self.main_vi.setcontrolvalue(&#39;Measurement&#39;,3) # 3 should bring the single Pilatus tab to the front</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">exittype</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">traceback</span><span class="p">):</span>
+        <span class="k">pass</span> <span class="c1">#print(f&#39;Exiting LabView context...&#39;)</span>
+        
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#print(f&#39;Deleting Labview object...&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_vi</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labview</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="n">pythoncom</span><span class="o">.</span><span class="n">CoUninitialize</span><span class="p">()</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">pythoncom</span><span class="o">.</span><span class="n">_GetInterfaceCount</span><span class="p">()</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Closed COM connection, but had remaining objects: </span><span class="si">{</span><span class="n">pythoncom</span><span class="o">.</span><span class="n">_GetInterfaceCount</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SetProcessWorkingSetSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">OpenProcess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PROCESS_ALL_ACCESS</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">GetCurrentProcessId</span><span class="p">()),</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../../../../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

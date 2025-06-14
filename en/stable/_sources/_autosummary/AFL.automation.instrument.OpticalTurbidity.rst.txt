@@ -1,0 +1,25 @@
+AFL.automation.instrument.OpticalTurbidity
+==========================================
+
+.. automodule:: AFL.automation.instrument.OpticalTurbidity
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      canny
+      circle_perimeter
+      hough_circle
+      hough_circle_peaks
+      hough_ellipse
+      img_as_ubyte
+      rgb2gray
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      OpticalTurbidity
+   

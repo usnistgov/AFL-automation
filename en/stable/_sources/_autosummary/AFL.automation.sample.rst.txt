@@ -1,0 +1,14 @@
+﻿AFL.automation.sample
+=====================
+
+.. automodule:: AFL.automation.sample
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   CastingServer
+   SampleDriver

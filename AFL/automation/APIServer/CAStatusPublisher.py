@@ -67,5 +67,4 @@ class CAStatusPublisher(threading.Thread):
             ioc.pvdb,
             interfaces=self.interfaces,
             log_pv_names=False,
-            reuse=True,
         )

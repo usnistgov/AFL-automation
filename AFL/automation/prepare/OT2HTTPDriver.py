@@ -1752,7 +1752,8 @@ class OT2HTTPDriver(Driver):
         for m in self.config["available_tips"]:
             status.append(self.get_tip_status(m))
         return "\n".join(status)
-     @Driver.unqueued(render_hint='html')
+    
+    @Driver.unqueued(render_hint='html')
     def visualize_deck(self, mode='full', **kwargs):
         """
         Generate HTML visualization of OT-2 deck layout with detailed or compact well layouts.

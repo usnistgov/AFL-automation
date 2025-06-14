@@ -2316,7 +2316,7 @@ class OT2HTTPDriver(Driver):
                 )
                 mounts = []
                 if is_tiprack:
-                    for m, d in self.loaded_instruments.items():
+                    for m, d in self.config['loaded_instruments'].items():
                         if labware_id in d.get('tip_racks', []):
                             mounts.append(m)
 
@@ -2360,6 +2360,7 @@ class OT2HTTPDriver(Driver):
                 if info["type"] == "empty":
                     click_attr = f" onclick=\"showLabwareOptions('{slot}')\" style=\"cursor:pointer;\""
 
+                buttons = ''.join([f"""<button style="margin-top:4px;font-size:10px;" onclick="resetTipracks({m}')">Reset</button>'""" for m in info.get('mounts', [])])
                 html += f"""
                 <div {click_attr} style="
                     background: {info['color']};
@@ -2382,7 +2383,7 @@ class OT2HTTPDriver(Driver):
                         {info['name']}
                     </div>
                     {svg_display}
-                    {''.join([f'<button style="margin-top:4px;font-size:10px;" onclick="resetTipracks(\'{m}\')">Reset</button>' for m in info.get('mounts', [])])}
+                    {buttons}
                 </div>
                 """
 
@@ -2443,23 +2444,24 @@ class OT2HTTPDriver(Driver):
                             }});
                         }});
                         $(this).dialog('destroy').remove();
+                        setTimeout(() => {{location.reload()}},500);
                     }},
                     'Cancel': function() {{ $(this).dialog('destroy').remove(); }}
                 }}
             }});
         }}
-        function resetTipracks(mount) {
-            login().then(function(tok) {
-                $.ajax({
+        function resetTipracks(mount) {{
+            login().then(function(tok) {{
+                $.ajax({{
                     type:"POST",
                     url:"/enqueue",
-                    headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
-                    data: JSON.stringify({task_name:"reset_tipracks", mount: mount}),
-                    success: function() { location.reload(); },
-                    error: function(xhr) { alert("Error: "+xhr.responseText); }
-                });
-            });
-        }
+                    headers:{{"Content-Type":"application/json","Authorization":"Bearer "+tok}},
+                    data: JSON.stringify({{task_name:"reset_tipracks", mount: mount}}),
+                    success: function() {{ location.reload(); }},
+                    error: function(xhr) {{ alert("Error: "+xhr.responseText); }}
+                }});
+            }});
+        }}
         </script>
         """
 

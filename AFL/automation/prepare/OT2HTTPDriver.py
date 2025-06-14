@@ -12,8 +12,13 @@ TIPRACK_WELLS = [f"{row}{col}" for col in range(1, 13) for row in "ABCDEFGH"]
 # Limited set of labware options for quick loading via the dashboard
 LABWARE_OPTIONS = {
     "opentrons/opentrons_96_tiprack_300ul": "Opentrons 96 Tiprack 300µL",
+    "opentrons/opentrons_96_tiprack_1000ul": "Opentrons 96 Tiprack 1000µL",
     "opentrons/corning_96_wellplate_360ul_flat": "Corning 96 Well Plate",
-    "opentrons/opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap": "Eppendorf 24 Tube Rack",
+    "opentrons/nest_96_wellplate_2ml_deep": "Corning 96 Well Plate",
+    "custom_beta/nist_pneumatic_loader": "NIST Pneumatic Loader (slot 10 only)",
+    "custom_beta/nist_6_20ml_vials": "NIST 6 x 20mL vial carrier",
+    "custom_beta/nist_2_100ml_bottles": "NIST 2 x 100mL bottle carrier",
+    "module/HeaterShaker": "HeaterShaker Module (still needs labware atop it!)"
 }
 
 

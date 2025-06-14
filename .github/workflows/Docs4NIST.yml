@@ -2,6 +2,10 @@ name: "Build Documentation"
 
 on: [push, pull_request, delete]
 
+concurrency:
+   group: ${{ github.workflow }}
+   cancel-in-progress: false
+   
 jobs:
   docs:
     runs-on: ubuntu-latest

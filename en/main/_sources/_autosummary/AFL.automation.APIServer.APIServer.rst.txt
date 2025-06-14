@@ -20,6 +20,7 @@ AFL.automation.APIServer.APIServer
       set_refresh_cookies
       strtobool
       unset_jwt_cookies
+      wsgi_serve
    
    .. rubric:: Classes
 

@@ -3,8 +3,7 @@ import atexit
 import warnings
 import time
 import threading
-from labjack import ljm
-from labjack.ljm.ljm import LJMError
+import lazy_loader as lazy
 import numpy as np
 '''
 relaylabels = {
@@ -33,11 +32,13 @@ class LabJackRelay(MultiChannelRelay):
         self.connection = connection
         self.deviceident = deviceident
         self.shared_device = shared_device
+        self.ljm = lazy.load("labjack.ljm", require="AFL-automation[labjack]")
+        self.LJMError = lazy.load("labjack.ljm.ljm.LJMError", require="AFL-automation[labjack]")
 
         if shared_device is not None:
             self.device_handle = shared_device.device_handle
         else:
-            self.device_handle = ljm.openS(devicetype, connection, deviceident)
+            self.device_handle = self.ljm.openS(devicetype, connection, deviceident)
         self.num_relays = len(relaylabels)
 
         self.channel_to_label_map = self.labels = relaylabels
@@ -54,8 +55,8 @@ class LabJackRelay(MultiChannelRelay):
         self.state = {channel: False for channel in self.channel_to_label_map.keys()}
         try:
             self._refresh_board_state()
-        except LJMError:
-            self.device_handle = ljm.openS(self.devicetype, self.connection, self.deviceident)
+        except self.LJMError:
+            self.device_handle = self.ljm.openS(self.devicetype, self.connection, self.deviceident)
             self._refresh_board_state()
 
 
@@ -83,7 +84,7 @@ class LabJackRelay(MultiChannelRelay):
         names = list(self.state.keys())
         a_values = [int(not x) for x in self.state.values()]
         #~x is required to inverted logic since 0 = Channel is On = False
-        ljm.eWriteNames(self.device_handle, self.num_relays, names, a_values)
+        self.ljm.eWriteNames(self.device_handle, self.num_relays, names, a_values)
 
         time.sleep(0.01)
         readback = [int(not x) for x in self.getChannels().values()]
@@ -92,7 +93,7 @@ class LabJackRelay(MultiChannelRelay):
             warnings.warn(f'ERROR: attempted relay set to {a_values} but readback was {readback}.')
 
             while retries < 60:
-                ljm.eWriteNames(self.device_handle, self.num_relays, names, a_values)
+                self.ljm.eWriteNames(self.device_handle, self.num_relays, names, a_values)
                 time.sleep(0.01)
                 readback = [int(not x) for x in self.getChannels().values()]
 
@@ -121,8 +122,8 @@ class LabJackRelay(MultiChannelRelay):
 
         CIO_names = ["CIO" + str(i) for i in range(4)]
         EIO_names = ["EIO" + str(i) for i in range(8)]
-        CIO_results = ljm.eReadName(self.device_handle, "CIO_STATE")
-        EIO_results = ljm.eReadName(self.device_handle, "EIO_STATE")
+        CIO_results = self.ljm.eReadName(self.device_handle, "CIO_STATE")
+        EIO_results = self.ljm.eReadName(self.device_handle, "EIO_STATE")
         CIO_dict = bitmask_to_dict(int(CIO_results), CIO_names)
         EIO_dict = bitmask_to_dict(int(EIO_results), EIO_names)
 

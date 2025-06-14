@@ -65,6 +65,7 @@ class APIServer:
         #allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
         self.app = Flask(name,root_path=root_path)
+        self.init_logging()
 
         self.queue_daemon = None
         self.app.config['JWT_SECRET_KEY'] = '03570' #hide the secret?
@@ -118,7 +119,7 @@ class APIServer:
          )
         self.zeroconf = Zeroconf(ip_version=IPVersion.All)
         self.zeroconf.register_service(self.zeroconf_info)
-        print("Started mDNS service advertisement.")
+        self.app.logger.info("Started mDNS service advertisement.")
     def run(self,**kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
@@ -126,7 +127,7 @@ class APIServer:
             try:
                 self.advertise_zeroconf(**kwargs)
             except Exception as e:
-                print(f'failed while trying to start zeroconf {e}, continuing')
+                self.app.logger.warning(f'failed while trying to start zeroconf {e}, continuing')
         try:
             self.app.run(**kwargs)
         finally:
@@ -215,14 +216,14 @@ class APIServer:
         return jsonify(self.driver.queued.function_info),200
 
     def add_unqueued_routes(self):
-        print('Adding unqueued routes')
+        self.app.logger.info('Adding unqueued routes')
         for fn in self.driver.unqueued.functions:
             route = '/' + fn
             name = fn
             kwarg_add = self.driver.unqueued.decorator_kwargs[fn]
             response_function = None
             response_function = lambda fn=fn,kwarg_add=kwarg_add: self.render_unqueued(getattr(self.driver,fn),kwarg_add)
-            print(f'Adding route {route} for function named {name} with baked-in kwargs {kwarg_add}')
+            self.app.logger.debug(f'Adding route {route} for function named {name} with baked-in kwargs {kwarg_add}')
             self.app.add_url_rule(route,name,response_function,methods=['GET'])
 
     def query_driver(self):
@@ -470,7 +471,7 @@ class APIServer:
         task = request.json
         user = get_jwt_identity()
         obj = request.json['obj']
-        print(f'')
+        self.app.logger.debug('deposit_obj called')
         if 'uuid' in request.json.keys():
             uid = request.json['uuid']
         else:
@@ -555,7 +556,7 @@ class APIServer:
         reordered_queue = data['queue']
         matches = True
         
-        print(prior_state)
+        self.app.logger.debug(prior_state)
         if prior_state != 'Paused':
             self.app.logger.info(f'Setting queue paused state to true')
             self.queue_daemon.paused = True
@@ -569,15 +570,15 @@ class APIServer:
                 if rq_task['uuid'] == str(q_task['uuid']):
                     task_found = True
                     temp_queue.insert(i, q_task)
-                    print('found', rq_task)
+                    self.app.logger.debug(f'found {rq_task}')
             if task_found == False:
                 matches = False
-                print('failed')
+                self.app.logger.debug('failed')
                 return 'Failed',400
         if matches:
-            print('matched')
+            self.app.logger.debug('matched')
             self.task_queue.queue = temp_queue
-            print(self.task_queue.queue)
+            self.app.logger.debug(self.task_queue.queue)
             
         if prior_state != 'Paused':
             self.app.logger.info(f'Setting queue paused state to false')
@@ -589,7 +590,7 @@ class APIServer:
     def remove_items(self):
         items = request.json
         for i in range(len(items)):
-            print('remove', items[i])
+            self.app.logger.debug(f'remove {items[i]}')
             uuid = items[i]['uuid']
             self.task_queue.remove(self._uuid_to_qpos(uuid))
         return 'Success',200

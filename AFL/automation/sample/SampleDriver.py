@@ -8,6 +8,7 @@ from typing import Optional, Dict, List
 import warnings
 import os
 import time
+import logging
 import copy
 import pandas as pd
 
@@ -193,7 +194,7 @@ class SampleDriver(Driver):
         if not isinstance(self.config['sample_composition_tol'], (int, float)):
             raise TypeError("self.config['sample_composition_tol'] must be a number")
 
-        print("Configuration validation passed successfully.")
+        logging.info("Configuration validation passed successfully.")
 
     def validate_config_grid(self):
         """Validate configuration specific to grid-based sample processing."""
@@ -259,7 +260,7 @@ class SampleDriver(Driver):
                 if missing_data_keys:
                     raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
             
-        print("Grid configuration validation passed successfully.")
+        logging.info("Grid configuration validation passed successfully.")
 
     @property
     def tiled_client(self):
@@ -492,7 +493,7 @@ class SampleDriver(Driver):
             self.AL_campaign_name = AL_campaign_name
        
 
-        print(f'Composition: {composition}')
+        logging.info(f'Composition: {composition}')
         if composition: # composition is not empty
             prep_protocol, catch_protocol = self.compute_prep_protocol(
                 composition = composition,
@@ -629,7 +630,7 @@ class SampleDriver(Driver):
             for name, comp in fixed_concs.items():
                 mass_dict[name] = (comp['value'] * units(comp['units']) * sample_volume).to('mg')
 
-            print(mass_dict)
+            logging.info(mass_dict)
 
             if mfrac_split is not None:
                 for split_component, split_def in mfrac_split.items():
@@ -924,8 +925,8 @@ class SampleDriver(Driver):
                     for key,values in instrument['sample_env']['move_swept_kw'].items():
                         measurement[key] = (instrument['sample_dim'],values)
                     self.new_data[instrument_data['data_name']] = measurement
-                    print(self.new_data)
-                    print(self.new_data)
+                    logging.debug(self.new_data)
+                    logging.debug(self.new_data)
                 else:
 
                     tiled_data = tiled_result.items()[-1][-1]

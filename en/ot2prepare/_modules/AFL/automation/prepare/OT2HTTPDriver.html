@@ -1524,7 +1524,8 @@
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;Failed to execute command: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
-        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;failed&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;status&#39;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;failed&#39;</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;Command returned error : </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
@@ -1532,7 +1533,44 @@
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;Command returned error: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
-                    
+<div class="viewcode-block" id="OT2HTTPDriver.send_labware">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware">[docs]</a>
+    <span class="k">def</span> <span class="nf">send_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">labware_def</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a custom labware definition to the current run.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sending custom labware definition: </span><span class="si">{</span><span class="n">labware_def</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Ensure we have a valid run</span>
+        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Prepare the loadLabware command</span>
+            <span class="n">command_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">labware_def</span>
+            <span class="p">}</span>
+
+            <span class="c1"># Execute the command</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/runs/</span><span class="si">{</span><span class="n">run_id</span><span class="si">}</span><span class="s2">/labware_definitions&quot;</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
+                <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;waitUntilComplete&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="n">json</span><span class="o">=</span><span class="n">command_dict</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_cmd_success</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+            <span class="c1"># Get the labware ID from the response</span>
+            <span class="n">response_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="n">labware_name</span> <span class="o">=</span> <span class="n">response_data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;definitionUri&quot;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully sent custom labware with name/URI </span><span class="si">{</span><span class="n">labware_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">labware_name</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error sending custom labware: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error sending custom labware: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+                        
 <div class="viewcode-block" id="OT2HTTPDriver.load_labware">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware">[docs]</a>
     <span class="k">def</span> <span class="nf">load_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2188,13 +2226,15 @@
 
             <span class="c1"># 4. Post-aspirate delay</span>
             <span class="k">if</span> <span class="n">post_aspirate_delay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span><span class="s2">&quot;delay&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;seconds&quot;</span><span class="p">:</span> <span class="n">post_aspirate_delay</span><span class="p">})</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">post_aspirate_delay</span><span class="p">)</span>
+                <span class="c1"># self._execute_atomic_command(&quot;delay&quot;, {&quot;seconds&quot;: post_aspirate_delay})</span>
 
             <span class="c1"># 5. Aspirate equilibration delay</span>
             <span class="k">if</span> <span class="n">aspirate_equilibration_delay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
-                    <span class="s2">&quot;delay&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;seconds&quot;</span><span class="p">:</span> <span class="n">aspirate_equilibration_delay</span><span class="p">}</span>
-                <span class="p">)</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">aspirate_equilibration_delay</span><span class="p">)</span>
+                <span class="c1">#self._execute_atomic_command(</span>
+                <span class="c1">#    &quot;delay&quot;, {&quot;seconds&quot;: aspirate_equilibration_delay}</span>
+                <span class="c1">#)</span>
 
             <span class="c1"># 6. Air gap if specified</span>
             <span class="k">if</span> <span class="n">air_gap</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -2228,7 +2268,8 @@
 
             <span class="c1"># 8. Post-dispense delay</span>
             <span class="k">if</span> <span class="n">post_dispense_delay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span><span class="s2">&quot;delay&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;seconds&quot;</span><span class="p">:</span> <span class="n">post_dispense_delay</span><span class="p">})</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">post_dispense_delay</span><span class="p">)</span>
+                <span class="c1"># self._execute_atomic_command(&quot;delay&quot;, {&quot;seconds&quot;: post_dispense_delay})</span>
 
             <span class="c1"># 9. Mix after if specified</span>
             <span class="k">if</span> <span class="n">mix_after</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

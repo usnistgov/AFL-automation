@@ -21,6 +21,7 @@ pyserial
 caproto
 requests
 flask_cors
+waitress
 zeroconf
 #pyFAI
 #certif-pyspec==1.1.12

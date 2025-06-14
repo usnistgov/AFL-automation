@@ -3,8 +3,6 @@ import gc
 import time
 import datetime
 from AFL.automation.APIServer.Driver import Driver
-# from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
-# from AFL.automation.instrument.PySpecClient import PySpecClient
 import numpy as np # for return types in get data
 import h5py #for Nexus file writing
 import os

@@ -1,4 +1,5 @@
-import serial
+import lazy_loader as lazy
+serial = lazy.load("serial", require="AFL-automation[serial]")
 from AFL.automation.loading.PressureController import PressureController
 
 class UltimusVPressureController(PressureController):

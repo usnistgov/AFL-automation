@@ -384,7 +384,8 @@ class OT2HTTPDriver(Driver):
                     raise RuntimeError(
                         f"Failed to execute command: {response.text}"
                     )
-        if response.json()['data']['status'] == 'failed':
+        if 'status' in response.json()['data'].keys():
+            if response.json()['data']['status'] == 'failed':
                     self.log_error(
                         f"Command returned error : {response.status_code}"
                     )
@@ -392,7 +393,41 @@ class OT2HTTPDriver(Driver):
                     raise RuntimeError(
                         f"Command returned error: {response.text}"
                     )
-                    
+    def send_labware(self,labware_def):
+        """Send a custom labware definition to the current run."""
+
+        self.log_debug(f"Sending custom labware definition: {labware_def}")
+
+        # Ensure we have a valid run
+        run_id = self._ensure_run_exists()
+
+        try:
+            # Prepare the loadLabware command
+            command_dict = {
+                "data": labware_def
+            }
+
+            # Execute the command
+            response = requests.post(
+                url=f"{self.base_url}/runs/{run_id}/labware_definitions",
+                headers=self.headers,
+                params={"waitUntilComplete": True},
+                json=command_dict,
+            )
+
+            self._check_cmd_success(response)
+
+            # Get the labware ID from the response
+            response_data = response.json()
+            labware_name = response_data["data"]["definitionUri"]
+
+            self.log_info(f"Successfully sent custom labware with name/URI {labware_name}")
+            return labware_name
+
+        except (requests.exceptions.RequestException, KeyError) as e:
+            self.log_error(f"Error sending custom labware: {str(e)}")
+            raise RuntimeError(f"Error sending custom labware: {str(e)}")
+                        
     def load_labware(self, name, slot, module=None, **kwargs):
         """Load labware (containers, tipracks) into the protocol using HTTP API"""
         self.log_debug(f"Loading labware '{name}' into slot '{slot}'")
@@ -1034,13 +1069,15 @@ class OT2HTTPDriver(Driver):
 
             # 4. Post-aspirate delay
             if post_aspirate_delay > 0:
-                self._execute_atomic_command("delay", {"seconds": post_aspirate_delay})
+                time.sleep(post_aspirate_delay)
+                # self._execute_atomic_command("delay", {"seconds": post_aspirate_delay})
 
             # 5. Aspirate equilibration delay
             if aspirate_equilibration_delay > 0:
-                self._execute_atomic_command(
-                    "delay", {"seconds": aspirate_equilibration_delay}
-                )
+                time.sleep(aspirate_equilibration_delay)
+                #self._execute_atomic_command(
+                #    "delay", {"seconds": aspirate_equilibration_delay}
+                #)
 
             # 6. Air gap if specified
             if air_gap > 0:
@@ -1074,7 +1111,8 @@ class OT2HTTPDriver(Driver):
 
             # 8. Post-dispense delay
             if post_dispense_delay > 0:
-                self._execute_atomic_command("delay", {"seconds": post_dispense_delay})
+                time.sleep(post_dispense_delay)
+                # self._execute_atomic_command("delay", {"seconds": post_dispense_delay})
 
             # 9. Mix after if specified
             if mix_after is not None:

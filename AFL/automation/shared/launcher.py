@@ -47,6 +47,7 @@ AFL_GLOBAL_CONFIG = PersistentConfig(
         },
         max_history=100,
 )
+print(AFL_GLOBAL_CONFIG['ca_status_enabled'])
 try:
         _DEFAULT_CUSTOM_CONFIG = driver_module._DEFAULT_CUSTOM_CONFIG
         # if this driver has not provided a default custom config, we simply throw a NameError
@@ -141,10 +142,11 @@ def _reconstitute_objects(obj_dict,data=None):
 
 parser = argparse.ArgumentParser(prog = f'AFL // {main_module_name}',
                                 description = f'AFL APIServer launcher for {main_module_name}')
-        ca_prefix=f"AFL:{driver.name}:",
 parser.add_argument('--no-waitress', action='store_true',
                     help='Disable the waitress WSGI server')
 
+parser.add_argument('-i', '--interactive', action='store_true',
+                    help='Start in interactive mode')
 args = parser.parse_args()
 
 if main_module_name in AFL_GLOBAL_CONFIG['driver_custom_configs']:
@@ -160,7 +162,7 @@ start_ca = AFL_GLOBAL_CONFIG.get('ca_status_enabled', False)
 server.create_queue(
         driver,
         start_ca=start_ca,
-        ca_prefix=f"{main_module_name}:",
+        ca_prefix=f"AFL:{AFL_GLOBAL_CONFIG['system_serial']}:{main_module_name}:",
         ca_port=ca_status_port,
 )
 #server.add_unqueued_routes()

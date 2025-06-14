@@ -64,7 +64,7 @@ class APIServer:
         self.experiment = experiment
         self.contact = contact
         self.index_template = index_template
-                ca_prefix = f"AFL:{self.driver.name}:"
+        self.new_index_template = new_index_template
         self.plot_template = plot_template
         self.data = data
 
@@ -96,7 +96,7 @@ class APIServer:
 
         if start_ca:
             if ca_prefix is None:
-                ca_prefix = f"{self.name}:"
+                ca_prefix = f"AFL:{self.name}:"
             self.ca_publisher = CAStatusPublisher(self.queue_daemon, prefix=ca_prefix, port=ca_port)
             self.ca_publisher.start()
 
@@ -177,7 +177,6 @@ class APIServer:
                 raise RuntimeError("waitress is not installed")
             kwargs.setdefault('threads', 1)
             target = functools.partial(wsgi_serve,self.app)
-            print(f'using waitress, kwargs = {kwargs}')
         else:
             kwargs.setdefault('use_debugger', False)
             kwargs.setdefault('debug', False)

@@ -70,9 +70,10 @@ class APSUSAXS(Driver):
 
         '''
 
-        self.convertUSAXS = lazy.load("Matilda.convertUSAXS", require="AFL-automation[usaxs]")
-        self.convertSAS = lazy.load("Matilda.convertSAS", require="AFL-automation[usaxs]")
-        self.readfromtiled = lazy.load("Matilda.readfromtiled", require="AFL-automation[usaxs]")
+        self.convertUSAXS = lazy.load("matilda.convertUSAXS", require="AFL-automation[usaxs]")
+        self.convertSAS = lazy.load("matilda.convertSAS", require="AFL-automation[usaxs]")
+        self.readfromtiled = lazy.load("matilda.readfromtiled", require="AFL-automation[usaxs]")
+        self.developNewFlyscan = lazy.load("matilda.developNewFlyscan", require="AFL-automation[usaxs]")
 
         self.app = None
         Driver.__init__(self,name='APSUSAXS',defaults=self.gather_defaults(),overrides=overrides)
@@ -182,43 +183,31 @@ class APSUSAXS(Driver):
         if reduce_USAXS:
            # get last flyscan from Tiled and check that the set filename matches the found file
            [last_scan_path, last_scan_file] = self.readfromtiled.FindLastScanData('Flyscan',1)[0]
-           if name.replace('-','_') not in last_scan_file:
+           if name.replace('-','_').replace('.','_').replace('?','_') not in last_scan_file:
                    raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
 
            # reduce flyscan data
-           last_scan_results = self.convertUSAXS.reduceFlyscanToQR(last_scan_path,last_scan_file)
-           results_ds = self.convertUSAXS.results_to_dataset(last_scan_results)
-           USAXS_int = results_ds['USAXS_int']
+           # last_scan_results = self.convertUSAXS.reduceFlyscanToQR(last_scan_path,last_scan_file)
+           # results_ds = self.convertUSAXS.results_to_dataset(last_scan_results)
+           # USAXS_int = results_ds['USAXS_int']
 
            # get empty flyscan, reduce it
            [empty_path,empty_file] = self.readfromtiled.FindScanDataByName('Flyscan',self.config['empty_scan_title'])[0]
-           empty_results = self.convertUSAXS.reduceFlyscanToQR(empty_path,empty_file)
-           empty_ds = self.convertUSAXS.results_to_dataset(empty_results)
-           MT_USAXS_int = empty_ds['USAXS_int']
-           MT_USAXS_int = MT_USAXS_int.interp_like(USAXS_int) #interpolate to match last scan
+           #empty_results = self.convertUSAXS.reduceFlyscanToQR(empty_path,empty_file)
+           #empty_ds = self.convertUSAXS.results_to_dataset(empty_results)
+           #MT_USAXS_int = empty_ds['USAXS_int']
+           #MT_USAXS_int = MT_USAXS_int.interp_like(USAXS_int) #interpolate to match last scan
 
-           # determine minimum q; argmax because we're looking for the first True (which is cast to be 1)
-           qmin_index = np.argmax((USAXS_int.values/MT_USAXS_int.values)>float(self.config['USAXS_signal_cutoff']))
-           qmin = USAXS_int['q'].isel(q=qmin_index).item()
-           
-           #interpolate
-           new_q = np.geomspace(qmin,USAXS_int['q'].max(),self.config['USAXS_npts'])
-           USAXS_int = USAXS_int.interp(q=new_q)
-           MT_USAXS_int = MT_USAXS_int.interp(q=new_q)
-
-           # background subtraction
-           peaktopeak_T = (results_ds.Maximum / empty_ds.Maximum)
-           USAXS_sub = 1/peaktopeak_T * USAXS_int - MT_USAXS_int
+           usaxs_data = self.developNewFlyscan.processFlyscan(last_scan_path,last_scan_file,blankPath=empty_path, blankFilename=empty_file)
 
            # add data to tiled
-           self.data.add_array('USAXS_q',USAXS_int['q'].values)
-           self.data.add_array('USAXS_int',USAXS_int.values)
-           self.data.add_array('USAXS_sub',USAXS_sub.values)
-           self.data.add_array('MT_USAXS_q',MT_USAXS_int['q'].values)
-           self.data.add_array('MT_USAXS_int',MT_USAXS_int.values)
+           self.data['USAXS_q'] = usaxs_data["reducedData"]["Q"]
+           self.data.add_array('USAXS_q',usaxs_data["reducedData"]["Q"])
+           self.data.add_array('USAXS_int',usaxs_data["reducedData"]["Intensity"])
+           self.data.add_array('USAXS_err',usaxs_data["reducedData"]["Error"])
            self.data['USAXS_Filepath'] = last_scan_path
            self.data['USAXS_Filename'] = last_scan_file
-           self.data['USAXS_transmission'] = peaktopeak_T
+           self.data['USAXS_transmission'] = usaxs_data["reducedData"]["PeakToPeakTransmission"]
            
         if reduce_WAXS: 
            # get last WAXS from Tiled, reduce it

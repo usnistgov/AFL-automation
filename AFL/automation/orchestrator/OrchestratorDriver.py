@@ -19,13 +19,12 @@ from tiled.client import from_uri  # type: ignore
 from tiled.queries import Eq  # type: ignore
 from scipy.spatial.distance import cdist
 
-import AFL.automation.prepare  # type: ignore
 from AFL.automation.APIServer.Client import Client  # type: ignore
 from AFL.automation.APIServer.Driver import Driver  # type: ignore
 from AFL.automation.shared.units import units  # type: ignore
 
 
-class SampleDriver(Driver):
+class OrchestratorDriver(Driver):
     """
 
     PersistentConfig Values
@@ -60,6 +59,7 @@ class SampleDriver(Driver):
     defaults['sample_composition_tol'] = 0.0
     defaults['next_samples_variable'] = 'next_samples'
     defaults['camera_urls'] = []
+    defaults['tiled_exclusion_list'] = []
     defaults['snapshot_directory'] = []
     defaults['grid_file'] = None
     defaults['grid_blank_interval'] = None
@@ -77,13 +77,12 @@ class SampleDriver(Driver):
         -----------
         """
 
-        Driver.__init__(self, name='SampleDriver', defaults=self.gather_defaults(), overrides=overrides)
+        Driver.__init__(self, name='OrchestratorDriver', defaults=self.gather_defaults(), overrides=overrides)
 
         self.AL_campaign_name = None
-        self.deck = None
         self.sample_name: Optional[str] = None
         self.app = None
-        self.name = 'SampleDriver'
+        self.name = 'OrchestratorDriver'
 
         if camera_urls is not None:
             self.config['camera_urls'] = camera_urls
@@ -103,9 +102,6 @@ class SampleDriver(Driver):
         self.grid_sample_count = 0
         self.grid_data = None
         self.stop_grid = False
-
-        # XXX need to make deck inside this object because of 'different registries error in Pint
-        self.reset_deck()
 
     def validate_config(self):
         required_keys = [
@@ -160,20 +156,10 @@ class SampleDriver(Driver):
                     raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
 
         # Validate other list types
-        list_keys = ['components', 'AL_components', 'mix_order', 'camera_urls']
+        list_keys = ['components', 'AL_components', 'camera_urls', 'tiled_exclusion_list']
         for key in list_keys:
             if not isinstance(self.config[key], list):
                 raise TypeError(f"self.config['{key}'] must be a list")
-        # Validate dicts
-
-        if not isinstance(self.config['custom_stock_settings'],dict):
-            raise TypeError("self.config['custom_stock_settings'] must be a dict")
-
-        # Validate other dict types
-        list_keys = ['custom_stock_settings']
-        for key in list_keys:
-            if not isinstance(self.config[key], dict):
-                raise TypeError(f"self.config['{key}'] must be a dict")
 
         # Validate types of other keys
         if not isinstance(self.config['ternary'], bool):
@@ -272,7 +258,6 @@ class SampleDriver(Driver):
         status = []
         status.append(f'Snapshots: {self.config["snapshot_directory"]}')
         status.append(f'Cameras: {self.config["camera_urls"]}')
-        status.append(f'{len(self.deck.stocks)} stocks loaded!')
         status.append(self.status_str)
         status.append(self.AL_status_str)
         if self.grid_data:
@@ -298,7 +283,7 @@ class SampleDriver(Driver):
             refresh = True
 
         if refresh:
-            client.login("SampleServer")
+            client.login("Orchestrator")
             client.debug(False)
 
         return client
@@ -321,82 +306,6 @@ class SampleDriver(Driver):
             except Exception as error:
                 output_str = f'take_snapshot failed with error: {error.__repr__()}\n\n' + traceback.format_exc() + '\n\n'
                 self.app.logger.warning(output_str)
-
-    ########################
-    ## DECK CONFIGURATION ##
-    ########################
-    def reset_deck(self):
-        self.deck = AFL.automation.prepare.Deck()
-
-    def add_container(self, name, slot):
-        self.deck.add_container(name, slot)
-
-    def add_catch(self, name, slot):
-        self.deck.add_catch(name, slot)
-        self.catch_loc = f"{slot}A1"
-
-    def add_pipette(self, name, mount, tipracks):
-        self.deck.add_pipette(name, mount, tipracks=tipracks)
-
-    def send_deck_config(self, home=True):
-        self.deck.init_remote_connection(
-            self.get_client('prep').ip,
-            home=home
-        )
-        self.deck.send_deck_config()
-
-    def add_stock(self, stock_dict, loc):
-        soln = AFL.automation.prepare.Solution.from_dict(stock_dict)
-        self.deck.add_stock(soln, loc)
-
-
-    def set_catch_protocol(self, **kwargs):
-        self.catch_protocol = AFL.automation.prepare.PipetteAction(**kwargs)
-
-    def fix_protocol_order(self, mix_order: List, custom_stock_settings: Dict):
-        mix_order = [self.deck.get_stock(i) for i in mix_order]
-        mix_order_map = {loc: new_index for new_index, (stock, loc) in enumerate(mix_order)}
-        for sample, validated in self.deck.sample_series:
-            # if not validated:
-            #     continue
-            old_protocol = sample.protocol
-            ordered_indices = list(map(lambda x: mix_order_map.get(x.source), sample.protocol))
-            argsort = np.argsort(ordered_indices)
-            new_protocol = list(map(sample.protocol.__getitem__, argsort))
-            time_patched_protocol = []
-            for entry in new_protocol:
-                if entry.source in custom_stock_settings:
-                    for setting, value in custom_stock_settings[entry.source].items():
-                        entry.kwargs[setting] = value
-                time_patched_protocol.append(entry)
-            sample.protocol = time_patched_protocol
-
-    def mfrac_to_mass(self, mass_fractions:Dict, fixed_conc: Dict, sample_volume, output_units:str='mg'):
-        """Convert ternary/Barycentric mass fractions to mass"""
-        if not (len(mass_fractions) == 3):
-            raise ValueError('Only ternaries are currently supported. Need to pass three mass fractions')
-
-        if len(fixed_conc) > 1:
-            raise ValueError('Only one concentration should be fixed!')
-        specified_component = list(fixed_conc.keys())[0]
-
-        components = list(mass_fractions.keys())
-        components.remove(specified_component)
-
-        xB = mass_fractions[components[0]] * units('')
-        xC = mass_fractions[components[1]] * units('')
-        XB = xB / (1 - xB)
-        XC = xC / (1 - xC)
-
-        mA = (fixed_conc[specified_component] * sample_volume)
-        mC = mA * (XC + XB * XC) / (1 - XB * XC)
-        mB = XB * (mA + mC)
-
-        mass_dict = {}
-        mass_dict[specified_component] = mA.to(output_units)
-        mass_dict[components[0]] = mB.to(output_units)
-        mass_dict[components[1]] = mC.to(output_units)
-        return mass_dict
 
     def process_sample(
             self,
@@ -494,60 +403,47 @@ class SampleDriver(Driver):
 
         print(f'Composition: {composition}')
         if composition: # composition is not empty
-            prep_protocol, catch_protocol = self.compute_prep_protocol(
-                composition = composition,
-                fixed_concs = fixed_concs,
-                mfrac_split = prepare_mfrac_split,
-                sample_volume = sample_volume
-            )
-
-            # configure all servers to this sample name and uuid
-            sample_composition_realized = {
-                k:{'value':v.magnitude ,'units':str(v.units)} for k,v in self.sample.target_check.concentration.items()
-            }
+            # Check if the requested composition is feasible
+            feasibility_result = self.get_client('prep').enqueue(
+                task_name='is_feasible',
+                targets=[composition],
+                interactive=True
+            )['return_val']
+            
+            if feasibility_result[0] is None:
+                self.update_status("Requested composition is not feasible with available stocks.")
+                return False # update this
+            
+            # Extract the realized composition from feasibility result
+            sample_composition_realized = feasibility_result[0]
+            
+            # Update sample information with target and realized compositions
             self.data['sample_composition_target'] = composition
             self.data['sample_composition_realized'] = sample_composition_realized
+            
+            # Set sample info for all servers with realized composition
             sample_data = self.set_sample(
-                sample_name = self.sample_name,
-                sample_uuid = self.uuid['sample'],
-                AL_campaign_name = self.AL_campaign_name,
-                AL_uuid = self.uuid['AL'],
-                AL_components = self.config['AL_components'],
-                sample_composition = sample_composition_realized,
+                sample_name=self.sample_name,
+                sample_uuid=self.uuid['sample'],
+                AL_campaign_name=self.AL_campaign_name,
+                AL_uuid=self.uuid['AL'],
+                AL_components=self.config['AL_components'],
+                sample_composition=sample_composition_realized,
             )
+            
             for client_name in self.config['client'].keys():
                 if client_name not in self.config['tiled_exclusion_list']:
                     self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
-
-            # START NEW INDENT 
-            prep_protocol, catch_protocol = self.compute_prep_protocol(
-                composition = composition,
-                fixed_concs = fixed_concs,
-                mfrac_split = prepare_mfrac_split,
-                sample_volume = sample_volume
+            
+            # Pass the composition and sample_volume to make_and_measure
+            # which will handle the actual preparation and measurements
+            self.make_and_measure(
+                name=self.sample_name, 
+                composition=composition,
+                sample_volume=sample_volume,
+                calibrate_sensor=calibrate_sensor
             )
-
-            # configure all servers to this sample name and uuid
-            sample_composition_realized = {
-                k:{'value':v.magnitude ,'units':str(v.units)} for k,v in self.sample.target_check.concentration.items()
-            }
-            self.data['sample_composition_target'] = composition
-            self.data['sample_composition_realized'] = sample_composition_realized
-            sample_data = self.set_sample(
-                sample_name = self.sample_name,
-                sample_uuid = self.uuid['sample'],
-                AL_campaign_name = self.AL_campaign_name,
-                AL_uuid = self.uuid['AL'],
-                AL_components = self.config['AL_components'],
-                sample_composition = sample_composition_realized,
-            )
-            for client_name in self.config['client'].keys():
-                if client_name not in self.config['tiled_exclusion_list']:
-                    self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
-
-            self.make_and_measure(name=self.sample_name, prep_protocol=prep_protocol, catch_protocol=catch_protocol, calibrate_sensor=calibrate_sensor)
             self.construct_datasets(combine_comps=predict_combine_comps)
-            # END NEW INDENT 
 
         if enqueue_next or predict_next:
             if composition:#assume we made/measured a sample and append
@@ -582,167 +478,60 @@ class SampleDriver(Driver):
             queue_loc = self._queue.qsize() #append at end of queue
             self._queue.put(package,queue_loc)
 
-
-
-
-    def compute_prep_protocol(self,composition: Dict, sample_volume: Dict, fixed_concs: Dict, mfrac_split:Optional[Dict]=None):
-        """
-        Parameters
-        ----------
-        composition: Dict
-            Dict should be of the form composition["component_name"] = {"value":value, "units":units}
-
-        sample_volume: Dict
-            Dict should be of the form sample_volume =  {"value":value, "units":units}
-
-        mfrac_split: Dict
-            Dict should be of the form mfrac_split = {'component_to_split':{'component_A':'mfrac_A','component_B':'mfrac_B'}}
-
-        """
-
-        sample_volume = sample_volume['value'] * units(sample_volume['units'])
-
-        if self.config['ternary']:
-            assert len(composition)==3, (
-                f"Number of composition variables should be 3! You have composition = {composition}"
-            )
-
-            fixed_concs_units = {}
-            for name, value in fixed_concs.items():
-                fixed_concs_units[name] = value['value'] * units(value['units'])
-
-            mass_dict = self.mfrac_to_mass(
-                mass_fractions=composition,
-                fixed_conc=fixed_concs_units,
-                sample_volume=sample_volume,
-                output_units='mg'
-            )
-        else:
-            # assume concs for now...
-            if len(composition) < (len(self.config['components']) - len(fixed_concs) - 1):
-                raise ValueError('System under specified...')
-
-            mass_dict = {}
-            for name, comp in composition.items():
-                mass_dict[name] = (comp['value'] * units(comp['units']) * sample_volume).to('mg')
-
-            for name, comp in fixed_concs.items():
-                mass_dict[name] = (comp['value'] * units(comp['units']) * sample_volume).to('mg')
-
-            print(mass_dict)
-
-            if mfrac_split is not None:
-                for split_component, split_def in mfrac_split.items():
-                    target_mass = mass_dict[split_component]
-                    for component,mfrac in split_def.items():
-                        mass_dict[component] =  target_mass*mfrac
-                    del mass_dict[split_component]
-
-
-            # for component in self.config['components']:
-            #     if component not in mass_dict:
-            #         mass_dict[component] = 0.0*units('mg')
-
-
-        self.target = AFL.automation.prepare.Solution('target', self.config['components'])
-        #self.target = AFL.automation.prepare.Solution('target', list(composition.keys()))
-
-        self.target.volume = sample_volume
-        for k, v in mass_dict.items():
-            self.target[k].mass = v
-        self.target.volume = sample_volume
-
-        self.deck.reset_targets()
-        self.deck.add_target(self.target, name='target')
-        self.deck.make_sample_series(reset_sample_series=True)
-        self.deck.validate_sample_series(tolerance=self.config['sample_composition_tol'])
-        self.deck.make_protocol(only_validated=False)
-        self.fix_protocol_order(self.config['mix_order'], self.config['custom_stock_settings'])
-        self.sample, self.validated = self.deck.sample_series[0]
-        self.app.logger.info(self.deck.validation_report)
-
-        if self.validated:
-            self.app.logger.info(f'Validation PASSED')
-            self.AL_status_str = 'Last sample validation PASSED'
-        else:
-            self.app.logger.info(f'Validation FAILED')
-            self.AL_status_str = 'Last sample validation FAILED'
-        self.app.logger.info(f'Making next sample with mass fraction: {self.sample.target_check.mass_fraction}')
-
-        self.catch_protocol.source = self.sample.target_loc
-
-        self.protocol = self.sample.emit_protocol()
-
-        return self.sample.emit_protocol(), [self.catch_protocol.emit_protocol()]
-
-
     def make_and_measure(
             self,
             name: str,
-            prep_protocol: dict,
-            catch_protocol: dict,
+            composition: Dict,
+            sample_volume: Dict,
             calibrate_sensor: bool = False,
     ):
         self.update_status(f'starting make and measure for {name}')
-        targets = set()
-        for task in prep_protocol:
-            if 'target' in task['source'].lower():
-                targets.add(task['source'])
-            if 'target' in task['dest'].lower():
-                targets.add(task['dest'])
-
-        for task in catch_protocol:
-            if 'target' in task['source'].lower():
-                targets.add(task['source'])
-            if 'target' in task['dest'].lower():
-                targets.add(task['dest'])
-
-        target_map = {}
-        for t in targets:
-            prep_target = self.get_client('prep').enqueue(task_name='get_prep_target', interactive=True)['return_val']
-            target_map[t] = prep_target
-
-        for i, task in enumerate(prep_protocol):
-            # if the well isn't in the map, just use the well
-            task['source'] = target_map.get(task['source'], task['source'])
-            task['dest'] = target_map.get(task['dest'], task['dest'])
-            if i == 0:
-                task['force_new_tip'] = True
-            if i == (len(prep_protocol) - 1):  # last prepare
-                task['drop_tip'] = True# false to conserve tips, not working with OT2HTTP False
-            self.uuid['prep'] = self.get_client('prep').enqueue(task_name='transfer',**task)
-
+        
         if self.uuid['rinse'] is not None:
             self.update_status(f'Waiting for rinse...')
-            self.get_client('load').wait(self.uuid['rinse'],for_history=False)
+            self.get_client('load').wait(self.uuid['rinse'], for_history=False)
             self.update_status(f'Rinse done!')
 
         if calibrate_sensor:
-                # calibrate sensor to avoid drift
-                self.get_client('load').enqueue(task_name='calibrate_sensor')
+            # calibrate sensor to avoid drift
+            self.get_client('load').enqueue(task_name='calibrate_sensor')
 
-        #XXX need to work out measure loop
+        # Measure empty cell first
         self.update_status(f'Cell is clean, measuring empty cell scattering...')
-        self.measure(name=name, empty=True,wait=True)
-
-        if self.uuid['prep'] is not None:
-            self.get_client('prep').wait(self.uuid['prep'],for_history=False)
-            self.take_snapshot(prefix=f'02-after-prep-{name}')
-
-        self.update_status(f'Queueing sample {name} load into syringe loader')
-        for task in catch_protocol:
-            # if the well isn't in the map, just use the well
-            task['source'] = target_map.get(task['source'], task['source'])
-            task['dest'] = target_map.get(task['dest'], task['dest'])
-            self.uuid['catch'] = self.get_client('prep').enqueue(task_name='transfer',**task)
+        self.measure(name=name, empty=True, wait=True)
+        
+        # Now prepare the sample - we already know it's feasible from earlier check
+        self.update_status(f'Preparing sample {name}...')
+        prepare_result = self.get_client('prep').enqueue(
+            task_name='prepare',
+            target=composition,
+            dest=None,  # Let the prepare server assign a location
+            interactive=True
+        )['return_val']
+        
+        if not prepare_result:
+            self.update_status(f'Failed to prepare sample {name}')
+            return False
+            
+        # Extract location of the prepared solution
+        solution_location = prepare_result[1]
+        
+        # Transfer sample from preparation unit to measurement system
+        self.update_status(f'Transferring sample {name} to syringe loader')
+        
+        # Create transfer task
+        transfer_task = {
+            'source': solution_location,
+            'dest': 'syringe',  # or whatever your destination is
+            'volume': sample_volume
+        }
+        
+        self.uuid['catch'] = self.get_client('prep').enqueue(task_name='transfer', **transfer_task)
 
         if self.uuid['catch'] is not None:
             self.update_status(f"Waiting for sample prep/catch of {name} to finish: {self.uuid['catch'][-8:]}")
             self.get_client('prep').wait(self.uuid['catch'])
             self.take_snapshot(prefix=f'03-after-catch-{name}')
-
-        # homing robot to try to mitigate drift problems
-        self.get_client('prep').enqueue(task_name='home')
 
         # do the sample measurement train
         self.update_status(f"Measuring sample with all loaded instruments...")
@@ -790,6 +579,8 @@ class SampleDriver(Driver):
 
             if empty:
                 measure_kw = instrument['empty_base_kw']
+                if not measure_kw: # if empty_base_kw is empty, skip the empty on this instrument
+                    continue
             else:
                 measure_kw = instrument['measure_base_kw']
             measure_kw['name'] = name
@@ -948,7 +739,6 @@ class SampleDriver(Driver):
                     accept = True
                 self.new_data[instrument_data['data_name']].attrs['accept'] = int(accept)
 
-        self.new_data['validated'] = self.validated
         self.new_data['sample_uuid'] = self.uuid['sample']
 
         sample_composition = {}
@@ -1420,9 +1210,11 @@ class SampleDriver(Driver):
 
 _DEFAULT_CUSTOM_CONFIG = {
 
-    '_classname': 'AFL.automation.sample.SampleDriver.SampleDriver',
+    '_classname': 'AFL.orchestrator.OrchestratorDriver.OrchestratorDriver',
     'snapshot_directory': '/home/afl642/snaps'
 }
+
+_DEFAULT_PORT=5000
 
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *

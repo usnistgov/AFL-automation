@@ -26,6 +26,7 @@ from logging import FileHandler
 
 from AFL.automation.APIServer.QueueDaemon import QueueDaemon
 from AFL.automation.APIServer.LoggerFilter import LoggerFilter
+from AFL.automation.APIServer.CAStatusPublisher import CAStatusPublisher
 
 from AFL.automation.shared.MutableQueue import MutableQueue
 from AFL.automation.shared.utilities import listify
@@ -82,7 +83,7 @@ class APIServer:
         self.cors = CORS(self.app)
 
 
-    def create_queue(self,driver,add_unqueued=True):
+    def create_queue(self,driver,add_unqueued=True, start_ca=False, ca_prefix=None, ca_port=5064):
         self.history = []
         self.task_queue = MutableQueue()
         self.driver     = driver
@@ -92,6 +93,12 @@ class APIServer:
             self.driver.dropbox = {}
         self.driver._queue = self.task_queue
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
+
+        if start_ca:
+            if ca_prefix is None:
+                ca_prefix = f"AFL:{self.name}:"
+            self.ca_publisher = CAStatusPublisher(self.queue_daemon, prefix=ca_prefix, port=ca_port)
+            self.ca_publisher.start()
 
         if add_unqueued:
             self.add_unqueued_routes()
@@ -170,7 +177,6 @@ class APIServer:
                 raise RuntimeError("waitress is not installed")
             kwargs.setdefault('threads', 1)
             target = functools.partial(wsgi_serve,self.app)
-            print(f'using waitress, kwargs = {kwargs}')
         else:
             kwargs.setdefault('use_debugger', False)
             kwargs.setdefault('debug', False)

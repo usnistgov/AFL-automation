@@ -28,7 +28,8 @@ dependencies = [
   "Requests",
   "zeroconf",
   "waitress",
-  
+  "caproto", 
+ 
   # Data processing core
   "numpy",
   "pandas",

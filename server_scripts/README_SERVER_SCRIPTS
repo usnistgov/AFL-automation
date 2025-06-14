@@ -4,6 +4,10 @@ In new versions of AFL-automation, the "server script" model is removed.  Instea
 
 this will use configuration from a new global config file created in `~/.afl/config.json`: a Tiled server, system serial, port bindings, and driver configs.
 
+To publish queue status via EPICS Channel Access, enable `ca_status_enabled` in
+this config and optionally set a port in `ca_status_ports`. The PV prefix will
+default to `AFL:{driver name}:`.
+
 Running a module for the first time will create this file and/or add any custom defaults from the module; it thus can make sense to run the module once,
 then edit the file to set your defaults.
 

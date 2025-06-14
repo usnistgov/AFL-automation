@@ -32,6 +32,7 @@ from AFL.automation.shared.utilities import listify
 from AFL.automation.shared import serialization
 
 import warnings
+import functools
 
 try:
 #this import block is all for the web-ui unqueued rendering code
@@ -147,6 +148,7 @@ class APIServer:
                 wsgi_serve(self.app, **kwargs)
             else:
                 kwargs.setdefault('use_debugger', False)
+                kwargs.setdefault('debug', False)
                 kwargs.setdefault('use_reloader', False)
                 self.app.run(**kwargs)
         finally:
@@ -167,9 +169,11 @@ class APIServer:
             if not _HAVE_WAITRESS:
                 raise RuntimeError("waitress is not installed")
             kwargs.setdefault('threads', 1)
-            target = wsgi_serve
+            target = functools.partial(wsgi_serve,self.app)
+            print(f'using waitress, kwargs = {kwargs}')
         else:
             kwargs.setdefault('use_debugger', False)
+            kwargs.setdefault('debug', False)
             kwargs.setdefault('use_reloader', False)
             target = self.app.run
 
@@ -177,7 +181,7 @@ class APIServer:
         # to start the queue daemon before the server begins serving.
         self.init()
 
-        thread = threading.Thread(target=self.app.run,daemon=True,kwargs=kwargs)
+        thread = threading.Thread(target=target,daemon=True,kwargs=kwargs)
         
         if start_thread:
             thread.start()

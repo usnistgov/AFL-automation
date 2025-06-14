@@ -21,15 +21,16 @@ requires-python = ">=3.8"
 license = "NIST-PD-fallback"
 dependencies = [
   # Web framework and related
-  "Flask<2.3",
+  "Flask",
   "Flask_Cors",
   "Flask_JWT_Extended>=4.0",
   "Werkzeug",
   "Requests",
   "zeroconf",
+  "waitress",
   
   # Data processing core
-  "numpy<2",
+  "numpy",
   "pandas",
   "scipy",
   "xarray",

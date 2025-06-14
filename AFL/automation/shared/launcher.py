@@ -156,7 +156,6 @@ server.init_logging(toaddrs=AFL_GLOBAL_CONFIG['owner_email'])
 if args.interactive:
         server.run_threaded(host=AFL_GLOBAL_CONFIG['bind_address'],
                             port=server_port,
-                            debug=False,
                             use_waitress=None if not args.no_waitress else False)
         import code,time
         time.sleep(1) # this is mostly cosmetic, to let the server spin up.
@@ -165,7 +164,6 @@ if args.interactive:
 else:
         server.run(host=AFL_GLOBAL_CONFIG['bind_address'],
                    port=server_port,
-                   debug=False,
                    use_waitress=None if not args.no_waitress else False)
 
 #process.wait()

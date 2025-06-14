@@ -134,7 +134,9 @@ def _reconstitute_objects(obj_dict,data=None):
 
 parser = argparse.ArgumentParser(prog = f'AFL // {main_module_name}',
                                 description = f'AFL APIServer launcher for {main_module_name}')
-parser.add_argument('-i', '--interactive', action= 'store_true')
+parser.add_argument('-i', '--interactive', action='store_true')
+parser.add_argument('--no-waitress', action='store_true',
+                    help='Disable the waitress WSGI server')
 
 args = parser.parse_args()
 
@@ -152,13 +154,17 @@ server.init_logging(toaddrs=AFL_GLOBAL_CONFIG['owner_email'])
 
 #process = subprocess.Popen(['/bin/bash','-c',f'chromium-browser --start-fullscreen http://localhost:{server_port}'])#, shell=True, stdout=subprocess.PIPE)
 if args.interactive:
-        server.run_threaded(host=AFL_GLOBAL_CONFIG['bind_address'], port=server_port, debug=False)#,threaded=False)
+        server.run_threaded(host=AFL_GLOBAL_CONFIG['bind_address'],
+                            port=server_port,
+                            use_waitress=None if not args.no_waitress else False)
         import code,time
         time.sleep(1) # this is mostly cosmetic, to let the server spin up.
         code.interact(local=globals(), banner = 'AFL APIServer started.  Access driver in "driver" global object, APIServer in "server".  Exit with ctrl-D or exit().  Have a lot of fun...')
 
 else:
-        server.run(host=AFL_GLOBAL_CONFIG['bind_address'], port=server_port, debug=False)#,threaded=False)
+        server.run(host=AFL_GLOBAL_CONFIG['bind_address'],
+                   port=server_port,
+                   use_waitress=None if not args.no_waitress else False)
 
 #process.wait()
 

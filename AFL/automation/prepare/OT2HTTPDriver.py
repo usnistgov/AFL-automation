@@ -1644,8 +1644,7 @@ class OT2HTTPDriver(Driver):
         tiprack_slots = {}
         for (mount,instrument) in original_instruments.items():
             tiprack_slots[mount] = [self._slot_by_labware_uuid(uuid) for uuid in instrument['tip_racks']] 
-            # TODO: also need to rewrite self.available_tips to use the new (reloaded) labware uuids from the reloaded tipracks.!!!
-        
+
         # Clear current state for reloading
         self.config["loaded_modules"] = {}
         self.config["loaded_labware"] = {}
@@ -1693,6 +1692,36 @@ class OT2HTTPDriver(Driver):
                     raise
                     
             self.log_info("Deck configuration successfully reloaded")
+
+            # Remap available_tips to use new tiprack UUIDs, preserving tip usage
+            # Step 1: Build old_uuid->slot mapping from original_instruments
+            old_tiprack_uuid_to_slot = {}
+            for instrument in original_instruments.values():
+                for old_uuid in instrument.get('tip_racks', []):
+                    slot = self._slot_by_labware_uuid(old_uuid)
+                    old_tiprack_uuid_to_slot[old_uuid] = slot
+
+            # Step 2: Build slot->new_uuid mapping from new loaded_instruments
+            slot_to_new_tiprack_uuid = {}
+            for instrument in self.config["loaded_instruments"].values():
+                for new_uuid in instrument.get('tip_racks', []):
+                    slot = self._slot_by_labware_uuid(new_uuid)
+                    slot_to_new_tiprack_uuid[slot] = new_uuid
+
+            # Step 3: Remap available tips
+            old_available_tips = self.config.get("available_tips", {})
+            new_available_tips = {}
+            for mount in self.config["loaded_instruments"]:
+                new_available_tips[mount] = []
+                for tiprack_uuid, well in old_available_tips.get(mount, []):
+                    slot = old_tiprack_uuid_to_slot.get(tiprack_uuid)
+                    new_uuid = slot_to_new_tiprack_uuid.get(slot)
+                    if new_uuid is not None:
+                        new_available_tips[mount].append((new_uuid, well))
+                self.log_info(f"Remapped {len(new_available_tips[mount])} available tips for {mount} mount after reload.")
+            self.config["available_tips"] = new_available_tips
+
+
             return True
                 
         except Exception as e:

@@ -1,13 +1,16 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.setuptools]
-packages = ["AFL"]
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "AFL/automation/_version.py"
 
 [project]
 name = "AFL-automation"
-version = "0.0.1"
+dynamic = ["version"]
 description = "Hardware interfacing code for the Autonomous Formulation Lab"
 authors = [
   { name = "Tyler B. Martin", email = "tyler.martin@nist.gov" },
@@ -84,9 +87,22 @@ docs = [
   "sphinx-autodoc-typehints>=1.25.2",
   "sphinx-copybutton>=0.5.2",
   "myst-parser>=2.0.0",
-  "nbsphinx>=0.9.3"
+  "nbsphinx>=0.9.3",
+  "sphinxcontrib-apidoc",
+  "sphinxcontrib-napoleon",
+  "pydata-sphinx-theme",
+  "sphinx-autosummary-accessors",
 ]
 win32 = ["pywin32"]
 vision = ["opencv-python"]
 
 # You can add more extras as needed for other hardware modules.
+[tool.hatch.build]
+packages = ["AFL"]
+include-package-data = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["AFL"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["AFL"]

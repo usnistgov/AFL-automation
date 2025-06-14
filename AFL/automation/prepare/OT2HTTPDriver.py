@@ -1,5 +1,6 @@
 import requests
 import time
+import json
 
 from math import ceil
 from AFL.automation.APIServer.Driver import Driver
@@ -7,6 +8,13 @@ from AFL.automation.shared.utilities import listify
 
 # Add this constant at the top of the file, after the imports
 TIPRACK_WELLS = [f"{row}{col}" for col in range(1, 13) for row in "ABCDEFGH"]
+
+# Limited set of labware options for quick loading via the dashboard
+LABWARE_OPTIONS = {
+    "opentrons/opentrons_96_tiprack_300ul": "Opentrons 96 Tiprack 300µL",
+    "opentrons/corning_96_wellplate_360ul_flat": "Corning 96 Well Plate",
+    "opentrons/opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap": "Eppendorf 24 Tube Rack",
+}
 
 
 class OT2HTTPDriver(Driver):
@@ -2302,6 +2310,15 @@ class OT2HTTPDriver(Driver):
                 labware_id, labware_type, labware_data = self.config["loaded_labware"][slot_str]
                 definition = labware_data.get('definition', {})
                 display_name = definition.get('metadata', {}).get('displayName', labware_type)
+                is_tiprack = (
+                    'tiprack' in labware_type.lower() or
+                    definition.get('metadata', {}).get('displayCategory') == 'tipRack'
+                )
+                mounts = []
+                if is_tiprack:
+                    for m, d in self.loaded_instruments.items():
+                        if labware_id in d.get('tip_racks', []):
+                            mounts.append(m)
 
                 info.update({
                     "name": display_name[:20] + ("..." if len(display_name) > 20 else ""),
@@ -2309,6 +2326,10 @@ class OT2HTTPDriver(Driver):
                     "color": "#bbdefb",
                     "svg": generate_mini_well_svg(labware_data, labware_uuid=labware_id)
                 })
+                if is_tiprack:
+                    info['tiprack'] = True
+                    info['mounts'] = mounts
+                    info['color'] = '#fff3e0'
 
             # Check for module on this slot
             if slot_str in self.config["loaded_modules"]:
@@ -2335,9 +2356,12 @@ class OT2HTTPDriver(Driver):
                 slot_label = "T" if slot == "Trash" else str(slot)
 
                 svg_display = f'<div style="margin: 5px 0;">{info["svg"]}</div>' if info["svg"] else ""
+                click_attr = ''
+                if info["type"] == "empty":
+                    click_attr = f" onclick=\"showLabwareOptions('{slot}')\" style=\"cursor:pointer;\""
 
                 html += f"""
-                <div style="
+                <div {click_attr} style="
                     background: {info['color']};
                     border: 1px solid #ccc;
                     border-radius: 6px;
@@ -2358,6 +2382,7 @@ class OT2HTTPDriver(Driver):
                         {info['name']}
                     </div>
                     {svg_display}
+                    {''.join([f'<button style="margin-top:4px;font-size:10px;" onclick="resetTipracks(\'{m}\')">Reset</button>' for m in info.get('mounts', [])])}
                 </div>
                 """
 
@@ -2368,13 +2393,75 @@ class OT2HTTPDriver(Driver):
             pipette_summary = []
             for mount, data in self.config["loaded_instruments"].items():
                 name = data.get('name', 'Unknown').replace('_', ' ').title()
-                pipette_summary.append(f"{mount.title()}: {name}")
+                pipette_summary.append(
+                    f"{mount.title()}: {name} <button style='font-size:10px;' onclick=\"resetTipracks('{mount}')\">Reset Tips</button>"
+                )
 
             html += f"""
             <div style="margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;">
                 <strong>Pipettes:</strong> {' | '.join(pipette_summary)}
             </div>
             """
+
+        # Add javascript for interactive loading of labware
+        html += f"""
+        <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
+        <script src='https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'></script>
+        <script>
+        var token = null;
+        async function login() {{
+            if (token) return token;
+            const response = await fetch('/login', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{username:'dashboard', password:'domo_arigato'}})
+            }});
+            if (!response.ok) {{ alert('Login failed'); throw new Error('login'); }}
+            const data = await response.json();
+            token = data.token; return token;
+        }}
+        const labwareChoices = {json.dumps(LABWARE_OPTIONS)};
+        function showLabwareOptions(slot) {{
+            var select = $('<select></select>');
+            Object.entries(labwareChoices).forEach(function([k,v]) {{
+                select.append($('<option>').attr('value',k).text(v));
+            }});
+            $('<div></div>').append(select).dialog({{
+                title: 'Load labware in slot ' + slot,
+                modal: true,
+                buttons: {{
+                    'Load': function() {{
+                        var lw = select.val();
+                        login().then(function(tok) {{
+                            $.ajax({{
+                                type:'POST',
+                                url:'/enqueue',
+                                headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
+                                data: JSON.stringify({{task_name:'load_labware', name: lw, slot: slot}}),
+                                success: function() {{ location.reload(); }},
+                                error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
+                            }});
+                        }});
+                        $(this).dialog('destroy').remove();
+                    }},
+                    'Cancel': function() {{ $(this).dialog('destroy').remove(); }}
+                }}
+            }});
+        }}
+        function resetTipracks(mount) {
+            login().then(function(tok) {
+                $.ajax({
+                    type:"POST",
+                    url:"/enqueue",
+                    headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+                    data: JSON.stringify({task_name:"reset_tipracks", mount: mount}),
+                    success: function() { location.reload(); },
+                    error: function(xhr) { alert("Error: "+xhr.responseText); }
+                });
+            });
+        }
+        </script>
+        """
 
         return html
 

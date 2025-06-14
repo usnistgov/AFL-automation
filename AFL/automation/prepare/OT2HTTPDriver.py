@@ -1988,6 +1988,17 @@ class OT2HTTPDriver(Driver):
                     pipette_summary.append(f"{mount.title()}: {name} <button style='font-size:10px;' onclick=\"resetTipracks('{mount}')\">Reset Tips</button>")
                 html += f"<div style='margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;'><strong>Pipettes:</strong> {' | '.join(pipette_summary)}</div>"
 
+        # Add instrument loader and deck reset controls
+        html += '''<div style="margin-top:30px; display:flex; flex-direction:column; align-items:center; gap:20px;">
+            <div style="background:#f5f5f5; border-radius:8px; padding:16px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.05); display:inline-block;">
+                <label><b>Mount:</b> <select id="mount-select"><option value="left">Left</option><option value="right">Right</option></select></label>
+                &nbsp; <label><b>Pipette:</b> <select id="pipette-select"><option value="p1000_single">P1000</option><option value="p300_single">P300</option></select></label>
+                &nbsp; <label><b>Tiprack Slots:</b> <input id="tiprack-slots" type="text" placeholder="e.g. 1,2,4" style="width:90px;"/></label>
+                &nbsp; <button id="load-instrument-btn" style="font-weight:bold;">Load Instrument</button>
+            </div>
+            <button id="reset-deck-btn" style="margin-top:10px; background:#e53935; color:white; font-weight:bold; border:none; border-radius:6px; padding:10px 24px; font-size:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);">Reset Deck</button>
+        </div>'''
+
         # Add JS for interactive loading
         html += f"""
         <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
@@ -2493,9 +2504,64 @@ class OT2HTTPDriver(Driver):
                 <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px; font-size: 11px; color: #1565c0;">
                     💡 <strong>Tip:</strong> Hover over wells to see names. For tipracks: 🟢 = Available tips, 🔴 = Used tips
                 </div>
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333;">🔧 Instrument Loader</div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select id="mount-select" style="padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="">Select Mount</option>
+                            <option value="left">Left Mount</option>
+                            <option value="right">Right Mount</option>
+                        </select>
+                        <select id="pipette-select" style="padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="">Select Pipette</option>
+                            <option value="p300">P300 Pipette</option>
+                            <option value="p20">P20 Pipette</option>
+                        </select>
+                        <input id="tiprack-slots" type="text" placeholder="Tiprack Slots (e.g. A1, B2, C3)" style="padding: 5px; border: 1px solid #ddd; border-radius: 5px;">
+                    </div>
+                    <button id="load-instrument-btn" style="padding: 5px; border: none; border-radius: 5px; background: #2196f3; color: white; cursor: pointer;">Load Instrument</button>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333;">🔄 Deck Reset</div>
+                    <button id="reset-deck-btn" style="padding: 5px; border: none; border-radius: 5px; background: #e57373; color: white; cursor: pointer;">Reset Deck</button>
+                </div>
             </div>
         </body>
         </html>
+        <script>
+            $(document).ready(function() {
+                $('#load-instrument-btn').click(function() {
+                    var mount = $('#mount-select').val();
+                    var pipette = $('#pipette-select').val();
+                    var tipracks = $('#tiprack-slots').val().split(',').map(function(x){return x.trim();}).filter(Boolean);
+                    if (!mount || !pipette) { alert('Select mount and pipette.'); return; }
+                    login().then(function(tok) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '/enqueue',
+                            headers: {'Content-Type':'application/json','Authorization':'Bearer '+tok},
+                            data: JSON.stringify({task_name:'load_instrument', mount: mount, name: pipette, tipracks: tipracks}),
+                            success: function() { location.reload(); },
+                            error: function(xhr) { alert('Error: '+xhr.responseText); }
+                        });
+                    });
+                });
+                // Deck reset button
+                $('#reset-deck-btn').click(function() {
+                    if (!confirm('Are you sure you want to reset the entire deck?')) return;
+                    login().then(function(tok) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '/enqueue',
+                            headers: {'Content-Type':'application/json','Authorization':'Bearer '+tok},
+                            data: JSON.stringify({task_name:'reset_deck'}),
+                            success: function() { location.reload(); },
+                            error: function(xhr) { alert('Error: '+xhr.responseText); }
+                        });
+                    });
+                });
+            });
+        </script>
         """
 
         return html

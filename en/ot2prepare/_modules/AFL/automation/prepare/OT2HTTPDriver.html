@@ -2275,7 +2275,301 @@
 <div class="viewcode-block" id="OT2HTTPDriver.visualize_deck">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.visualize_deck">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">visualize_deck</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">visualize_deck</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate HTML visualization of OT-2 deck layout with detailed or compact well layouts.</span>
+<span class="sd">        mode: &#39;full&#39; for detailed, &#39;simple&#39; for compact</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: HTML string for deck visualization</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">json</span>
+        <span class="n">slot_layout</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;Trash&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Shared SVG generator</span>
+        <span class="k">def</span> <span class="nf">generate_well_svg</span><span class="p">(</span><span class="n">labware_data</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">labware_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">labware_data</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">definition</span> <span class="o">=</span> <span class="n">labware_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;definition&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">wells</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;wells&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">wells</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">labware_type</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayCategory&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">)</span>
+            <span class="n">is_tiprack</span> <span class="o">=</span> <span class="n">labware_type</span> <span class="o">==</span> <span class="s1">&#39;tipRack&#39;</span> <span class="ow">or</span> <span class="s1">&#39;tiprack&#39;</span> <span class="ow">in</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parameters&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;loadName&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">available_tips_for_labware</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">is_tiprack</span> <span class="ow">and</span> <span class="n">labware_uuid</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;available_tips&#39;</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">mount_tips</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_tips</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">tip_labware_uuid</span><span class="p">,</span> <span class="n">well_name</span> <span class="ow">in</span> <span class="n">mount_tips</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">tip_labware_uuid</span> <span class="o">==</span> <span class="n">labware_uuid</span><span class="p">:</span>
+                            <span class="n">available_tips_for_labware</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">well_name</span><span class="p">)</span>
+            <span class="n">well_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wells</span><span class="p">)</span>
+            <span class="c1"># Compact grid</span>
+            <span class="k">if</span> <span class="n">compact</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">well_count</span> <span class="o">&lt;=</span> <span class="mi">8</span><span class="p">:</span>
+                    <span class="n">cols</span> <span class="o">=</span> <span class="n">well_count</span><span class="p">;</span> <span class="n">rows</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">well_count</span> <span class="o">&lt;=</span> <span class="mi">24</span><span class="p">:</span>
+                    <span class="n">cols</span> <span class="o">=</span> <span class="mi">6</span><span class="p">;</span> <span class="n">rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">well_count</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="o">//</span> <span class="mi">6</span>
+                <span class="k">elif</span> <span class="n">well_count</span> <span class="o">&lt;=</span> <span class="mi">96</span><span class="p">:</span>
+                    <span class="n">cols</span> <span class="o">=</span> <span class="mi">12</span><span class="p">;</span> <span class="n">rows</span> <span class="o">=</span> <span class="mi">8</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cols</span> <span class="o">=</span> <span class="mi">12</span><span class="p">;</span> <span class="n">rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">well_count</span> <span class="o">+</span> <span class="mi">11</span><span class="p">)</span> <span class="o">//</span> <span class="mi">12</span>
+                <span class="n">cell_width</span> <span class="o">=</span> <span class="n">size</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+                <span class="n">cell_height</span> <span class="o">=</span> <span class="n">size</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+                <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;tipRack_available&#39;</span><span class="p">:</span> <span class="s1">&#39;#4caf50&#39;</span><span class="p">,</span> <span class="s1">&#39;tipRack_used&#39;</span><span class="p">:</span> <span class="s1">&#39;#f44336&#39;</span><span class="p">,</span> <span class="s1">&#39;tipRack&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffa726&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;wellPlate&#39;</span><span class="p">:</span> <span class="s1">&#39;#42a5f5&#39;</span><span class="p">,</span> <span class="s1">&#39;reservoir&#39;</span><span class="p">:</span> <span class="s1">&#39;#66bb6a&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;#90a4ae&#39;</span>
+                <span class="p">}</span>
+                <span class="n">svg_elements</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">well_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wells</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">well_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">well_names</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="n">well_count</span><span class="p">,</span> <span class="n">rows</span> <span class="o">*</span> <span class="n">cols</span><span class="p">)]):</span>
+                    <span class="n">row</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="n">rows</span>
+                    <span class="n">col</span> <span class="o">=</span> <span class="n">i</span> <span class="o">//</span> <span class="n">rows</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">col</span> <span class="o">*</span> <span class="n">cell_width</span> <span class="o">+</span> <span class="n">cell_width</span><span class="o">/</span><span class="mi">4</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="n">row</span> <span class="o">*</span> <span class="n">cell_height</span> <span class="o">+</span> <span class="n">cell_height</span><span class="o">/</span><span class="mi">4</span>
+                    <span class="k">if</span> <span class="n">is_tiprack</span> <span class="ow">and</span> <span class="n">labware_uuid</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">well_name</span> <span class="ow">in</span> <span class="n">available_tips_for_labware</span><span class="p">:</span>
+                            <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="s1">&#39;tipRack_available&#39;</span><span class="p">];</span> <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Available&quot;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="s1">&#39;tipRack_used&#39;</span><span class="p">];</span> <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Used&quot;</span>
+                        <span class="n">tooltip</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">well_name</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">labware_type</span><span class="p">,</span> <span class="s1">&#39;#90a4ae&#39;</span><span class="p">)</span>
+                        <span class="n">tooltip</span> <span class="o">=</span> <span class="n">well_name</span>
+                    <span class="n">svg_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;&lt;circle cx=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; cy=&quot;</span><span class="si">{</span><span class="n">y</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; r=&quot;</span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">cell_width</span><span class="p">,</span><span class="w"> </span><span class="n">cell_height</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;fill=&quot;</span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s1">&quot; stroke=&quot;#333&quot; stroke-width=&quot;0.3&quot;&gt;&#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;&lt;title&gt;</span><span class="si">{</span><span class="n">tooltip</span><span class="si">}</span><span class="s1">&lt;/title&gt;&lt;/circle&gt;&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;svg width=&quot;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">&quot; height=&quot;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">&quot; style=&quot;border: 1px solid #ddd; border-radius: 3px;&quot;&gt;</span><span class="si">{</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">svg_elements</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/svg&gt;&#39;</span>
+            <span class="c1"># Full SVG</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">labware_width</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dimensions&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xDimension&#39;</span><span class="p">,</span> <span class="mf">127.76</span><span class="p">)</span>
+                <span class="n">labware_height</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dimensions&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;yDimension&#39;</span><span class="p">,</span> <span class="mf">85.48</span><span class="p">)</span>
+                <span class="n">scale_x</span> <span class="o">=</span> <span class="n">size</span> <span class="o">/</span> <span class="n">labware_width</span>
+                <span class="n">scale_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">0.75</span><span class="p">)</span> <span class="o">/</span> <span class="n">labware_height</span>
+                <span class="n">svg_elements</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">well_colors</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;tipRack_available&#39;</span><span class="p">:</span> <span class="s1">&#39;#4caf50&#39;</span><span class="p">,</span> <span class="s1">&#39;tipRack_used&#39;</span><span class="p">:</span> <span class="s1">&#39;#f44336&#39;</span><span class="p">,</span> <span class="s1">&#39;tipRack_default&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffa726&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;wellPlate&#39;</span><span class="p">:</span> <span class="s1">&#39;#42a5f5&#39;</span><span class="p">,</span> <span class="s1">&#39;reservoir&#39;</span><span class="p">:</span> <span class="s1">&#39;#66bb6a&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;#90a4ae&#39;</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">well_name</span><span class="p">,</span> <span class="n">well_info</span> <span class="ow">in</span> <span class="n">wells</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">well_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_x</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">labware_height</span> <span class="o">-</span> <span class="n">well_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">*</span> <span class="n">scale_y</span>
+                    <span class="n">shape</span> <span class="o">=</span> <span class="n">well_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="s1">&#39;circular&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">is_tiprack</span> <span class="ow">and</span> <span class="n">labware_uuid</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">well_name</span> <span class="ow">in</span> <span class="n">available_tips_for_labware</span><span class="p">:</span>
+                            <span class="n">well_color</span> <span class="o">=</span> <span class="n">well_colors</span><span class="p">[</span><span class="s1">&#39;tipRack_available&#39;</span><span class="p">];</span> <span class="n">tip_status</span> <span class="o">=</span> <span class="s2">&quot;Available&quot;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">well_color</span> <span class="o">=</span> <span class="n">well_colors</span><span class="p">[</span><span class="s1">&#39;tipRack_used&#39;</span><span class="p">];</span> <span class="n">tip_status</span> <span class="o">=</span> <span class="s2">&quot;Used&quot;</span>
+                        <span class="n">tooltip</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">well_name</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">tip_status</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">well_color</span> <span class="o">=</span> <span class="n">well_colors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">labware_type</span><span class="p">,</span> <span class="n">well_colors</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">])</span>
+                        <span class="n">tooltip</span> <span class="o">=</span> <span class="n">well_name</span>
+                    <span class="k">if</span> <span class="n">shape</span> <span class="o">==</span> <span class="s1">&#39;circular&#39;</span><span class="p">:</span>
+                        <span class="n">diameter</span> <span class="o">=</span> <span class="n">well_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;diameter&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">scale_x</span><span class="p">,</span> <span class="n">scale_y</span><span class="p">)</span>
+                        <span class="n">radius</span> <span class="o">=</span> <span class="n">diameter</span> <span class="o">/</span> <span class="mi">2</span>
+                        <span class="n">svg_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;&lt;circle cx=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; cy=&quot;</span><span class="si">{</span><span class="n">y</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; r=&quot;</span><span class="si">{</span><span class="n">radius</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;fill=&quot;</span><span class="si">{</span><span class="n">well_color</span><span class="si">}</span><span class="s1">&quot; stroke=&quot;#333&quot; stroke-width=&quot;0.5&quot; opacity=&quot;0.8&quot;&gt;&#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;&lt;title&gt;</span><span class="si">{</span><span class="n">tooltip</span><span class="si">}</span><span class="s1">&lt;/title&gt;&lt;/circle&gt;&#39;</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">shape</span> <span class="o">==</span> <span class="s1">&#39;rectangular&#39;</span><span class="p">:</span>
+                        <span class="n">well_width</span> <span class="o">=</span> <span class="n">well_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xDimension&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_x</span>
+                        <span class="n">well_height</span> <span class="o">=</span> <span class="n">well_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;yDimension&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_y</span>
+                        <span class="n">rect_x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">well_width</span><span class="o">/</span><span class="mi">2</span>
+                        <span class="n">rect_y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">well_height</span><span class="o">/</span><span class="mi">2</span>
+                        <span class="n">svg_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;&lt;rect x=&quot;</span><span class="si">{</span><span class="n">rect_x</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; y=&quot;</span><span class="si">{</span><span class="n">rect_y</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;width=&quot;</span><span class="si">{</span><span class="n">well_width</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; height=&quot;</span><span class="si">{</span><span class="n">well_height</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;fill=&quot;</span><span class="si">{</span><span class="n">well_color</span><span class="si">}</span><span class="s1">&quot; stroke=&quot;#333&quot; stroke-width=&quot;0.5&quot; opacity=&quot;0.8&quot;&gt;&#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;&lt;title&gt;</span><span class="si">{</span><span class="n">tooltip</span><span class="si">}</span><span class="s1">&lt;/title&gt;&lt;/rect&gt;&#39;</span>
+                        <span class="p">)</span>
+                <span class="k">if</span> <span class="n">svg_elements</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;svg width=&quot;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">&quot; height=&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="o">*</span><span class="mf">0.75</span><span class="p">)</span><span class="si">}</span><span class="s1">&quot; style=&quot;margin: 5px 0;&quot;&gt;</span><span class="si">{</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">svg_elements</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/svg&gt;&#39;</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="c1"># Slot info helper</span>
+        <span class="k">def</span> <span class="nf">get_slot_info</span><span class="p">(</span><span class="n">slot_num</span><span class="p">,</span> <span class="n">compact</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">slot_num</span> <span class="o">==</span> <span class="s2">&quot;Trash&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Trash&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;trash&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#ffcdd2&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
+            <span class="n">slot_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">slot_num</span><span class="p">)</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Empty&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;empty&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#f5f5f5&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
+            <span class="k">if</span> <span class="n">slot_str</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">]:</span>
+                <span class="n">labware_id</span><span class="p">,</span> <span class="n">labware_type</span><span class="p">,</span> <span class="n">labware_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">][</span><span class="n">slot_str</span><span class="p">]</span>
+                <span class="n">definition</span> <span class="o">=</span> <span class="n">labware_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;definition&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">display_name</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayName&#39;</span><span class="p">,</span> <span class="n">labware_type</span><span class="p">)</span>
+                <span class="n">is_tiprack</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s1">&#39;tiprack&#39;</span> <span class="ow">in</span> <span class="n">labware_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span>
+                    <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayCategory&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;tipRack&#39;</span>
+                <span class="p">)</span>
+                <span class="n">mounts</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="n">is_tiprack</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;loaded_instruments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">labware_id</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tip_racks&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+                            <span class="n">mounts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                <span class="n">info</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">display_name</span><span class="p">[:</span><span class="mi">20</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;labware&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#bbdefb&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;svg&quot;</span><span class="p">:</span> <span class="n">generate_well_svg</span><span class="p">(</span><span class="n">labware_data</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">50</span> <span class="k">if</span> <span class="n">compact</span> <span class="k">else</span> <span class="mi">90</span><span class="p">,</span> <span class="n">labware_uuid</span><span class="o">=</span><span class="n">labware_id</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="n">compact</span><span class="p">)</span>
+                <span class="p">})</span>
+                <span class="k">if</span> <span class="n">is_tiprack</span><span class="p">:</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s1">&#39;tiprack&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s1">&#39;mounts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mounts</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#fff3e0&#39;</span>
+            <span class="k">if</span> <span class="n">slot_str</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">]:</span>
+                <span class="n">module_id</span><span class="p">,</span> <span class="n">module_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">][</span><span class="n">slot_str</span><span class="p">]</span>
+                <span class="n">module_name</span> <span class="o">=</span> <span class="n">module_type</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;ModuleV1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Module&#39;</span><span class="p">,</span> <span class="s1">&#39; Mod&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;labware&quot;</span><span class="p">:</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&lt;br&gt;&lt;small&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/small&gt;&quot;</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;#c8e6c9&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">info</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">module_name</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;module&quot;</span><span class="p">,</span> 
+                        <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#e1bee7&quot;</span>
+                    <span class="p">})</span>
+            <span class="k">return</span> <span class="n">info</span>
+
+        <span class="n">html</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
+            <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">            &lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;</span>
+<span class="s1">            body { font-family: Arial, sans-serif; margin: 20px; background-color: #fafafa; }</span>
+<span class="s1">            .deck-container { max-width: 900px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }</span>
+<span class="s1">            .deck-title { text-align: center; color: #333; margin-bottom: 20px; font-size: 24px; font-weight: bold; }</span>
+<span class="s1">            .deck-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }</span>
+<span class="s1">            .deck-slot { border: 2px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: relative; transition: transform 0.2s; min-height: 180px; }</span>
+<span class="s1">            .deck-slot:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }</span>
+<span class="s1">            .slot-number { position: absolute; top: 5px; left: 8px; font-weight: bold; font-size: 14px; color: #666; background: rgba(255,255,255,0.8); padding: 2px 4px; border-radius: 3px; }</span>
+<span class="s1">            .slot-content { font-size: 13px; font-weight: bold; margin: 15px 0 8px 0; text-align: center; line-height: 1.2; }</span>
+<span class="s1">            .well-layout { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin: 5px 0; }</span>
+<span class="s1">            .slot-details { font-size: 9px; color: #666; text-align: center; margin-top: auto; padding-top: 5px; border-top: 1px solid rgba(0,0,0,0.1); width: 100%; }</span>
+<span class="s1">            .pipettes-section { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }</span>
+<span class="s1">            .pipettes-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333; }</span>
+<span class="s1">            .pipette-item { background: white; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #2196f3; }</span>
+<span class="s1">            .trash-slot { background: #ffebee !important; border-color: #e57373 !important; }</span>
+<span class="s1">            .legend { display: flex; justify-content: center; gap: 20px; margin: 15px 0; font-size: 12px; }</span>
+<span class="s1">            .legend-item { display: flex; align-items: center; gap: 5px; }</span>
+<span class="s1">            .legend-color { width: 12px; height: 12px; border-radius: 2px; }</span>
+<span class="s1">            svg circle:hover, svg rect:hover { stroke-width: 2 !important; stroke: #ff5722 !important; }</span>
+<span class="s1">            &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;deck-container&quot;&gt;&lt;div class=&quot;deck-title&quot;&gt;🧪 Opentrons OT-2 Deck Layout&lt;/div&gt;&lt;div class=&quot;legend&quot;&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #4caf50;&quot;&gt;&lt;/div&gt;&lt;span&gt;Available Tips&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #f44336;&quot;&gt;&lt;/div&gt;&lt;span&gt;Used Tips&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #42a5f5;&quot;&gt;&lt;/div&gt;&lt;span&gt;Plate Wells&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #66bb6a;&quot;&gt;&lt;/div&gt;&lt;span&gt;Reservoir Wells&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;deck-grid&quot;&gt;&#39;&#39;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div style=&quot;display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;&quot;&gt;&#39;</span>
+
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">slot_layout</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">get_slot_info</span><span class="p">(</span><span class="n">slot</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="p">(</span><span class="n">mode</span><span class="o">==</span><span class="s1">&#39;simple&#39;</span><span class="p">))</span>
+                <span class="n">slot_label</span> <span class="o">=</span> <span class="s2">&quot;T&quot;</span> <span class="k">if</span> <span class="n">slot</span> <span class="o">==</span> <span class="s2">&quot;Trash&quot;</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span>
+                <span class="n">svg_display</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;div style=&quot;margin: 5px 0;&quot;&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/div&gt;&#39;</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">click_attr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;empty&quot;</span><span class="p">:</span>
+                    <span class="n">click_attr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; onclick=</span><span class="se">\&quot;</span><span class="s2">showLabwareOptions(&#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2"> style=</span><span class="se">\&quot;</span><span class="s2">cursor:pointer;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+                <span class="n">buttons</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;&lt;button style=&#39;margin-top:4px;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset&lt;/button&gt;&quot;</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mounts&#39;</span><span class="p">,</span> <span class="p">[])])</span>
+                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
+                    <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    &lt;div class=&#39;deck-slot</span><span class="si">{</span><span class="s1">&#39; trash-slot&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">slot</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;Trash&#39;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&#39; </span><span class="si">{</span><span class="n">click_attr</span><span class="si">}</span><span class="s2">&gt;</span>
+<span class="s2">                        &lt;div class=&#39;slot-number&#39;&gt;</span><span class="si">{</span><span class="n">slot_label</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">                        &lt;div class=&#39;slot-content&#39;&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">                        &lt;div class=&#39;well-layout&#39;&gt;</span><span class="si">{</span><span class="n">svg_display</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">                        &lt;div class=&#39;slot-details&#39;&gt;</span><span class="si">{</span><span class="n">buttons</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">                    &lt;/div&gt;</span>
+<span class="s2">                    &quot;&quot;&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    &lt;div </span><span class="si">{</span><span class="n">click_attr</span><span class="si">}</span><span class="s2"> style=&quot;background: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">; border: 1px solid #ccc; border-radius: 6px; padding: 8px; text-align: center; min-height: 100px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: relative; font-size: 11px;&quot;&gt;</span>
+<span class="s2">                        &lt;div style=&quot;position: absolute; top: 2px; left: 4px; font-weight: bold; font-size: 10px; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px;&quot;&gt;</span><span class="si">{</span><span class="n">slot_label</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">                        &lt;div style=&quot;margin: 12px 0 5px 0; font-weight: 500; line-height: 1.1;&quot;&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">                        </span><span class="si">{</span><span class="n">svg_display</span><span class="si">}</span>
+<span class="s2">                        </span><span class="si">{</span><span class="n">buttons</span><span class="si">}</span>
+<span class="s2">                    &lt;/div&gt;</span>
+<span class="s2">                    &quot;&quot;&quot;</span>
+        <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/div&gt;&#39;</span>
+
+        <span class="c1"># Pipette section</span>
+        <span class="k">if</span> <span class="s2">&quot;loaded_instruments&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
+                <span class="n">html</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;pipettes-section&#39;&gt;&lt;div class=&#39;pipettes-title&#39;&gt;🔧 Loaded Pipettes&lt;/div&gt;&quot;</span>
+                <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+                    <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;pipette-item&#39;&gt;&lt;strong&gt;</span><span class="si">{</span><span class="n">mount</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2"> Mount:&lt;/strong&gt; </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;button style=&#39;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset Tips&lt;/button&gt;&lt;/div&gt;&quot;</span>
+                <span class="n">html</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pipette_summary</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+                    <span class="n">pipette_summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mount</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;button style=&#39;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset Tips&lt;/button&gt;&quot;</span><span class="p">)</span>
+                <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&lt;div style=&#39;margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;&#39;&gt;&lt;strong&gt;Pipettes:&lt;/strong&gt; </span><span class="si">{</span><span class="s1">&#39; | &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pipette_summary</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span>
+
+        <span class="c1"># Add JS for interactive loading</span>
+        <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        &lt;script src=&#39;https://code.jquery.com/jquery-3.6.0.min.js&#39;&gt;&lt;/script&gt;</span>
+<span class="s2">        &lt;script src=&#39;https://code.jquery.com/ui/1.12.1/jquery-ui.min.js&#39;&gt;&lt;/script&gt;</span>
+<span class="s2">        &lt;script&gt;</span>
+<span class="s2">        var token = null;</span>
+<span class="s2">        async function login() </span><span class="se">{{</span>
+<span class="s2">            if (token) return token;</span>
+<span class="s2">            const response = await fetch(&#39;/login&#39;, </span><span class="se">{{</span>
+<span class="s2">                method: &#39;POST&#39;,</span>
+<span class="s2">                headers: </span><span class="se">{{</span><span class="s2">&#39;Content-Type&#39;: &#39;application/json&#39;</span><span class="se">}}</span><span class="s2">,</span>
+<span class="s2">                body: JSON.stringify(</span><span class="se">{{</span><span class="s2">username:&#39;dashboard&#39;, password:&#39;domo_arigato&#39;</span><span class="se">}}</span><span class="s2">)</span>
+<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
+<span class="s2">            if (!response.ok) </span><span class="se">{{</span><span class="s2"> alert(&#39;Login failed&#39;); throw new Error(&#39;login&#39;); </span><span class="se">}}</span>
+<span class="s2">            const data = await response.json();</span>
+<span class="s2">            token = data.token; return token;</span>
+<span class="s2">        </span><span class="se">}}</span>
+<span class="s2">        const labwareChoices = </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">LABWARE_OPTIONS</span><span class="p">)</span><span class="si">}</span><span class="s2">;</span>
+<span class="s2">        function showLabwareOptions(slot) </span><span class="se">{{</span>
+<span class="s2">            var select = $(&#39;&lt;select&gt;&lt;/select&gt;&#39;);</span>
+<span class="s2">            Object.entries(labwareChoices).forEach(function([k,v]) </span><span class="se">{{</span>
+<span class="s2">                select.append($(&#39;&lt;option&gt;&#39;).attr(&#39;value&#39;,k).text(v));</span>
+<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
+<span class="s2">            $(&#39;&lt;div&gt;&lt;/div&gt;&#39;).append(select).dialog(</span><span class="se">{{</span>
+<span class="s2">                title: &#39;Load labware in slot &#39; + slot,</span>
+<span class="s2">                modal: true,</span>
+<span class="s2">                buttons: </span><span class="se">{{</span>
+<span class="s2">                    &#39;Load&#39;: function() </span><span class="se">{{</span>
+<span class="s2">                        var lw = select.val();</span>
+<span class="s2">                        login().then(function(tok) </span><span class="se">{{</span>
+<span class="s2">                            $.ajax(</span><span class="se">{{</span>
+<span class="s2">                                type:&#39;POST&#39;,</span>
+<span class="s2">                                url:&#39;/enqueue&#39;,</span>
+<span class="s2">                                headers: </span><span class="se">{{</span><span class="s2">&#39;Content-Type&#39;:&#39;application/json&#39;,&#39;Authorization&#39;:&#39;Bearer &#39;+tok</span><span class="se">}}</span><span class="s2">,</span>
+<span class="s2">                                data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:&#39;load_labware&#39;, name: lw, slot: slot</span><span class="se">}}</span><span class="s2">),</span>
+<span class="s2">                                success: function() </span><span class="se">{{</span><span class="s2"> location.reload(); </span><span class="se">}}</span><span class="s2">,</span>
+<span class="s2">                                error: function(xhr) </span><span class="se">{{</span><span class="s2"> alert(&#39;Error: &#39;+xhr.responseText); </span><span class="se">}}</span>
+<span class="s2">                            </span><span class="se">}}</span><span class="s2">);</span>
+<span class="s2">                        </span><span class="se">}}</span><span class="s2">);</span>
+<span class="s2">                        $(this).dialog(&#39;destroy&#39;).remove();</span>
+<span class="s2">                        setTimeout(() =&gt; </span><span class="se">{{</span><span class="s2">location.reload()</span><span class="se">}}</span><span class="s2">,500);</span>
+<span class="s2">                    </span><span class="se">}}</span><span class="s2">,</span>
+<span class="s2">                    &#39;Cancel&#39;: function() </span><span class="se">{{</span><span class="s2"> $(this).dialog(&#39;destroy&#39;).remove(); </span><span class="se">}}</span>
+<span class="s2">                </span><span class="se">}}</span>
+<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
+<span class="s2">        </span><span class="se">}}</span>
+<span class="s2">        function resetTipracks(mount) </span><span class="se">{{</span>
+<span class="s2">            login().then(function(tok) </span><span class="se">{{</span>
+<span class="s2">                $.ajax(</span><span class="se">{{</span>
+<span class="s2">                    type:&quot;POST&quot;,</span>
+<span class="s2">                    url:&quot;/enqueue&quot;,</span>
+<span class="s2">                    headers:</span><span class="se">{{</span><span class="s2">&quot;Content-Type&quot;:&quot;application/json&quot;,&quot;Authorization&quot;:&quot;Bearer &quot;+tok</span><span class="se">}}</span><span class="s2">,</span>
+<span class="s2">                    data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:&quot;reset_tipracks&quot;, mount: mount</span><span class="se">}}</span><span class="s2">),</span>
+<span class="s2">                    success: function() </span><span class="se">{{</span><span class="s2"> location.reload(); </span><span class="se">}}</span><span class="s2">,</span>
+<span class="s2">                    error: function(xhr) </span><span class="se">{{</span><span class="s2"> alert(&quot;Error: &quot;+xhr.responseText); </span><span class="se">}}</span>
+<span class="s2">                </span><span class="se">}}</span><span class="s2">);</span>
+<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
+<span class="s2">        </span><span class="se">}}</span>
+<span class="s2">        &lt;/script&gt;</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
+            <span class="n">html</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;&quot;</span>
+        <span class="k">return</span> <span class="n">html</span>
+
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate HTML visualization of OT-2 deck layout with detailed well layouts.</span>
 
@@ -2720,281 +3014,9 @@
 <span class="s2">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">html</span></div>
-
-
-
-    <span class="c1"># Alternative compact version with well layouts</span>
-<div class="viewcode-block" id="OT2HTTPDriver.visualize_deck_simple">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.visualize_deck_simple">[docs]</a>
-    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">visualize_deck_simple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generate a simple HTML snippet for OT-2 deck visualization with well layouts.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            str: HTML snippet for deck visualization</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">slot_layout</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;Trash&quot;</span><span class="p">],</span>
-            <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> 
-            <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
-            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-        <span class="p">]</span>
-
-        <span class="k">def</span> <span class="nf">generate_mini_well_svg</span><span class="p">(</span><span class="n">labware_data</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">labware_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Generate compact SVG for well layout.&quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">labware_data</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-
-            <span class="n">definition</span> <span class="o">=</span> <span class="n">labware_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;definition&#39;</span><span class="p">,</span> <span class="p">{})</span>
-            <span class="n">wells</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;wells&#39;</span><span class="p">,</span> <span class="p">{})</span>
-
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">wells</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-
-            <span class="c1"># Check if this is a tiprack and get available tips</span>
-            <span class="n">labware_type</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayCategory&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">)</span>
-            <span class="n">is_tiprack</span> <span class="o">=</span> <span class="n">labware_type</span> <span class="o">==</span> <span class="s1">&#39;tipRack&#39;</span> <span class="ow">or</span> <span class="s1">&#39;tiprack&#39;</span> <span class="ow">in</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parameters&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;loadName&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-
-            <span class="c1"># Get all available tips for this labware if it&#39;s a tiprack</span>
-            <span class="n">available_tips_for_labware</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">is_tiprack</span> <span class="ow">and</span> <span class="n">labware_uuid</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;available_tips&#39;</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">mount_tips</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_tips</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                    <span class="k">for</span> <span class="n">tip_labware_uuid</span><span class="p">,</span> <span class="n">well_name</span> <span class="ow">in</span> <span class="n">mount_tips</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">tip_labware_uuid</span> <span class="o">==</span> <span class="n">labware_uuid</span><span class="p">:</span>
-                            <span class="n">available_tips_for_labware</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">well_name</span><span class="p">)</span>
-
-            <span class="c1"># Simple grid representation for compact view</span>
-            <span class="n">well_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wells</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">well_count</span> <span class="o">&lt;=</span> <span class="mi">8</span><span class="p">:</span>
-                <span class="c1"># Single row</span>
-                <span class="n">cols</span> <span class="o">=</span> <span class="n">well_count</span>
-                <span class="n">rows</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">elif</span> <span class="n">well_count</span> <span class="o">&lt;=</span> <span class="mi">24</span><span class="p">:</span>
-                <span class="c1"># 2-4 rows</span>
-                <span class="n">cols</span> <span class="o">=</span> <span class="mi">6</span>
-                <span class="n">rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">well_count</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="o">//</span> <span class="mi">6</span>
-            <span class="k">elif</span> <span class="n">well_count</span> <span class="o">&lt;=</span> <span class="mi">96</span><span class="p">:</span>
-                <span class="c1"># Standard 96-well format</span>
-                <span class="n">cols</span> <span class="o">=</span> <span class="mi">12</span>
-                <span class="n">rows</span> <span class="o">=</span> <span class="mi">8</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">cols</span> <span class="o">=</span> <span class="mi">12</span>
-                <span class="n">rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">well_count</span> <span class="o">+</span> <span class="mi">11</span><span class="p">)</span> <span class="o">//</span> <span class="mi">12</span>
-
-            <span class="n">cell_width</span> <span class="o">=</span> <span class="n">size</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-            <span class="n">cell_height</span> <span class="o">=</span> <span class="n">size</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-
-            <span class="c1"># Color based on labware type and tip availability</span>
-            <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;tipRack_available&#39;</span><span class="p">:</span> <span class="s1">&#39;#4caf50&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;tipRack_used&#39;</span><span class="p">:</span> <span class="s1">&#39;#f44336&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;tipRack&#39;</span><span class="p">:</span> <span class="s1">&#39;#ffa726&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;wellPlate&#39;</span><span class="p">:</span> <span class="s1">&#39;#42a5f5&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;reservoir&#39;</span><span class="p">:</span> <span class="s1">&#39;#66bb6a&#39;</span>
-            <span class="p">}</span>
-
-            <span class="n">svg_elements</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">well_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wells</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">well_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">well_names</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="n">well_count</span><span class="p">,</span> <span class="n">rows</span> <span class="o">*</span> <span class="n">cols</span><span class="p">)]):</span>
-                <span class="n">row</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="n">rows</span>
-                <span class="n">col</span> <span class="o">=</span> <span class="n">i</span> <span class="o">//</span> <span class="n">rows</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="n">col</span> <span class="o">*</span> <span class="n">cell_width</span> <span class="o">+</span> <span class="n">cell_width</span><span class="o">/</span><span class="mi">4</span>
-                <span class="n">y</span> <span class="o">=</span> <span class="n">row</span> <span class="o">*</span> <span class="n">cell_height</span> <span class="o">+</span> <span class="n">cell_height</span><span class="o">/</span><span class="mi">4</span>
-
-                <span class="c1"># Determine color for tipracks based on availability</span>
-                <span class="k">if</span> <span class="n">is_tiprack</span> <span class="ow">and</span> <span class="n">labware_uuid</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">well_name</span> <span class="ow">in</span> <span class="n">available_tips_for_labware</span><span class="p">:</span>
-                        <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="s1">&#39;tipRack_available&#39;</span><span class="p">]</span>
-                        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Available&quot;</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="s1">&#39;tipRack_used&#39;</span><span class="p">]</span> 
-                        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Used&quot;</span>
-                    <span class="n">tooltip</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">well_name</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">labware_type</span><span class="p">,</span> <span class="s1">&#39;#90a4ae&#39;</span><span class="p">)</span>
-                    <span class="n">tooltip</span> <span class="o">=</span> <span class="n">well_name</span>
-
-                <span class="n">svg_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;&lt;circle cx=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; cy=&quot;</span><span class="si">{</span><span class="n">y</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; r=&quot;</span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">cell_width</span><span class="p">,</span><span class="w"> </span><span class="n">cell_height</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;fill=&quot;</span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s1">&quot; stroke=&quot;#333&quot; stroke-width=&quot;0.3&quot;&gt;&#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;&lt;title&gt;</span><span class="si">{</span><span class="n">tooltip</span><span class="si">}</span><span class="s1">&lt;/title&gt;&lt;/circle&gt;&#39;</span>
-                <span class="p">)</span>
-
-            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;svg width=&quot;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">&quot; height=&quot;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">&quot; style=&quot;border: 1px solid #ddd; border-radius: 3px;&quot;&gt;</span><span class="si">{</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">svg_elements</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/svg&gt;&#39;</span>
-
-        <span class="k">def</span> <span class="nf">get_slot_info</span><span class="p">(</span><span class="n">slot_num</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">slot_num</span> <span class="o">==</span> <span class="s2">&quot;Trash&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Trash&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;trash&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#ffcdd2&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
-
-            <span class="n">slot_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">slot_num</span><span class="p">)</span>
-            <span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Empty&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;empty&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#f5f5f5&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
-
-            <span class="c1"># Check for labware</span>
-            <span class="k">if</span> <span class="n">slot_str</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">]:</span>
-                <span class="n">labware_id</span><span class="p">,</span> <span class="n">labware_type</span><span class="p">,</span> <span class="n">labware_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">][</span><span class="n">slot_str</span><span class="p">]</span>
-                <span class="n">definition</span> <span class="o">=</span> <span class="n">labware_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;definition&#39;</span><span class="p">,</span> <span class="p">{})</span>
-                <span class="n">display_name</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayName&#39;</span><span class="p">,</span> <span class="n">labware_type</span><span class="p">)</span>
-                <span class="n">is_tiprack</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s1">&#39;tiprack&#39;</span> <span class="ow">in</span> <span class="n">labware_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span>
-                    <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayCategory&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;tipRack&#39;</span>
-                <span class="p">)</span>
-                <span class="n">mounts</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">if</span> <span class="n">is_tiprack</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;loaded_instruments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="n">labware_id</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tip_racks&#39;</span><span class="p">,</span> <span class="p">[]):</span>
-                            <span class="n">mounts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-
-                <span class="n">info</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">display_name</span><span class="p">[:</span><span class="mi">20</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;labware&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#bbdefb&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;svg&quot;</span><span class="p">:</span> <span class="n">generate_mini_well_svg</span><span class="p">(</span><span class="n">labware_data</span><span class="p">,</span> <span class="n">labware_uuid</span><span class="o">=</span><span class="n">labware_id</span><span class="p">)</span>
-                <span class="p">})</span>
-                <span class="k">if</span> <span class="n">is_tiprack</span><span class="p">:</span>
-                    <span class="n">info</span><span class="p">[</span><span class="s1">&#39;tiprack&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">info</span><span class="p">[</span><span class="s1">&#39;mounts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mounts</span>
-                    <span class="n">info</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#fff3e0&#39;</span>
-
-            <span class="c1"># Check for module on this slot</span>
-            <span class="k">if</span> <span class="n">slot_str</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">]:</span>
-                <span class="n">module_id</span><span class="p">,</span> <span class="n">module_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">][</span><span class="n">slot_str</span><span class="p">]</span>
-                <span class="n">module_name</span> <span class="o">=</span> <span class="n">module_type</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;ModuleV1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Module&#39;</span><span class="p">,</span> <span class="s1">&#39; Mod&#39;</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;labware&quot;</span><span class="p">:</span>
-                    <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&lt;br&gt;&lt;small&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/small&gt;&quot;</span>
-                    <span class="n">info</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;#c8e6c9&quot;</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">info</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">module_name</span><span class="p">,</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;module&quot;</span><span class="p">,</span> 
-                        <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#e1bee7&quot;</span>
-                    <span class="p">})</span>
-
-            <span class="k">return</span> <span class="n">info</span>
-
-        <span class="n">html</span> <span class="o">=</span> <span class="s1">&#39;&lt;div style=&quot;display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;&quot;&gt;&#39;</span>
-
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">slot_layout</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
-                <span class="n">info</span> <span class="o">=</span> <span class="n">get_slot_info</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span>
-                <span class="n">slot_label</span> <span class="o">=</span> <span class="s2">&quot;T&quot;</span> <span class="k">if</span> <span class="n">slot</span> <span class="o">==</span> <span class="s2">&quot;Trash&quot;</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span>
-
-                <span class="n">svg_display</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;div style=&quot;margin: 5px 0;&quot;&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/div&gt;&#39;</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                <span class="n">click_attr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-                <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;empty&quot;</span><span class="p">:</span>
-                    <span class="n">click_attr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; onclick=</span><span class="se">\&quot;</span><span class="s2">showLabwareOptions(&#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2"> style=</span><span class="se">\&quot;</span><span class="s2">cursor:pointer;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
-
-                <span class="n">buttons</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;button style=&quot;margin-top:4px;font-size:10px;&quot; onclick=&quot;resetTipracks(</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">&#39;)&quot;&gt;Reset&lt;/button&gt;&#39;&quot;&quot;&quot;</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mounts&#39;</span><span class="p">,</span> <span class="p">[])])</span>
-                <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">                &lt;div </span><span class="si">{</span><span class="n">click_attr</span><span class="si">}</span><span class="s2"> style=&quot;</span>
-<span class="s2">                    background: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">;</span>
-<span class="s2">                    border: 1px solid #ccc;</span>
-<span class="s2">                    border-radius: 6px;</span>
-<span class="s2">                    padding: 8px;</span>
-<span class="s2">                    text-align: center;</span>
-<span class="s2">                    min-height: 100px;</span>
-<span class="s2">                    display: flex;</span>
-<span class="s2">                    flex-direction: column;</span>
-<span class="s2">                    justify-content: flex-start;</span>
-<span class="s2">                    align-items: center;</span>
-<span class="s2">                    position: relative;</span>
-<span class="s2">                    font-size: 11px;</span>
-<span class="s2">                &quot;&gt;</span>
-<span class="s2">                    &lt;div style=&quot;position: absolute; top: 2px; left: 4px; font-weight: bold; font-size: 10px; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px;&quot;&gt;</span>
-<span class="s2">                        </span><span class="si">{</span><span class="n">slot_label</span><span class="si">}</span>
-<span class="s2">                    &lt;/div&gt;</span>
-<span class="s2">                    &lt;div style=&quot;margin: 12px 0 5px 0; font-weight: 500; line-height: 1.1;&quot;&gt;</span>
-<span class="s2">                        </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span>
-<span class="s2">                    &lt;/div&gt;</span>
-<span class="s2">                    </span><span class="si">{</span><span class="n">svg_display</span><span class="si">}</span>
-<span class="s2">                    </span><span class="si">{</span><span class="n">buttons</span><span class="si">}</span>
-<span class="s2">                &lt;/div&gt;</span>
-<span class="s2">                &quot;&quot;&quot;</span>
-
-        <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/div&gt;&#39;</span>
-
-        <span class="c1"># Add pipette summary</span>
-        <span class="k">if</span> <span class="s2">&quot;loaded_instruments&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]:</span>
-            <span class="n">pipette_summary</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
-                <span class="n">pipette_summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mount</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;button style=&#39;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset Tips&lt;/button&gt;&quot;</span>
-                <span class="p">)</span>
-
-            <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">            &lt;div style=&quot;margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;&quot;&gt;</span>
-<span class="s2">                &lt;strong&gt;Pipettes:&lt;/strong&gt; </span><span class="si">{</span><span class="s1">&#39; | &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pipette_summary</span><span class="p">)</span><span class="si">}</span>
-<span class="s2">            &lt;/div&gt;</span>
-<span class="s2">            &quot;&quot;&quot;</span>
-
-        <span class="c1"># Add javascript for interactive loading of labware</span>
-        <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">        &lt;script src=&#39;https://code.jquery.com/jquery-3.6.0.min.js&#39;&gt;&lt;/script&gt;</span>
-<span class="s2">        &lt;script src=&#39;https://code.jquery.com/ui/1.12.1/jquery-ui.min.js&#39;&gt;&lt;/script&gt;</span>
-<span class="s2">        &lt;script&gt;</span>
-<span class="s2">        var token = null;</span>
-<span class="s2">        async function login() </span><span class="se">{{</span>
-<span class="s2">            if (token) return token;</span>
-<span class="s2">            const response = await fetch(&#39;/login&#39;, </span><span class="se">{{</span>
-<span class="s2">                method: &#39;POST&#39;,</span>
-<span class="s2">                headers: </span><span class="se">{{</span><span class="s2">&#39;Content-Type&#39;: &#39;application/json&#39;</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                body: JSON.stringify(</span><span class="se">{{</span><span class="s2">username:&#39;dashboard&#39;, password:&#39;domo_arigato&#39;</span><span class="se">}}</span><span class="s2">)</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">            if (!response.ok) </span><span class="se">{{</span><span class="s2"> alert(&#39;Login failed&#39;); throw new Error(&#39;login&#39;); </span><span class="se">}}</span>
-<span class="s2">            const data = await response.json();</span>
-<span class="s2">            token = data.token; return token;</span>
-<span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        const labwareChoices = </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">LABWARE_OPTIONS</span><span class="p">)</span><span class="si">}</span><span class="s2">;</span>
-<span class="s2">        function showLabwareOptions(slot) </span><span class="se">{{</span>
-<span class="s2">            var select = $(&#39;&lt;select&gt;&lt;/select&gt;&#39;);</span>
-<span class="s2">            Object.entries(labwareChoices).forEach(function([k,v]) </span><span class="se">{{</span>
-<span class="s2">                select.append($(&#39;&lt;option&gt;&#39;).attr(&#39;value&#39;,k).text(v));</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">            $(&#39;&lt;div&gt;&lt;/div&gt;&#39;).append(select).dialog(</span><span class="se">{{</span>
-<span class="s2">                title: &#39;Load labware in slot &#39; + slot,</span>
-<span class="s2">                modal: true,</span>
-<span class="s2">                buttons: </span><span class="se">{{</span>
-<span class="s2">                    &#39;Load&#39;: function() </span><span class="se">{{</span>
-<span class="s2">                        var lw = select.val();</span>
-<span class="s2">                        login().then(function(tok) </span><span class="se">{{</span>
-<span class="s2">                            $.ajax(</span><span class="se">{{</span>
-<span class="s2">                                type:&#39;POST&#39;,</span>
-<span class="s2">                                url:&#39;/enqueue&#39;,</span>
-<span class="s2">                                headers: </span><span class="se">{{</span><span class="s2">&#39;Content-Type&#39;:&#39;application/json&#39;,&#39;Authorization&#39;:&#39;Bearer &#39;+tok</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                                data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:&#39;load_labware&#39;, name: lw, slot: slot</span><span class="se">}}</span><span class="s2">),</span>
-<span class="s2">                                success: function() </span><span class="se">{{</span><span class="s2"> location.reload(); </span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                                error: function(xhr) </span><span class="se">{{</span><span class="s2"> alert(&#39;Error: &#39;+xhr.responseText); </span><span class="se">}}</span>
-<span class="s2">                            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">                        </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">                        $(this).dialog(&#39;destroy&#39;).remove();</span>
-<span class="s2">                        setTimeout(() =&gt; </span><span class="se">{{</span><span class="s2">location.reload()</span><span class="se">}}</span><span class="s2">,500);</span>
-<span class="s2">                    </span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                    &#39;Cancel&#39;: function() </span><span class="se">{{</span><span class="s2"> $(this).dialog(&#39;destroy&#39;).remove(); </span><span class="se">}}</span>
-<span class="s2">                </span><span class="se">}}</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        function resetTipracks(mount) </span><span class="se">{{</span>
-<span class="s2">            login().then(function(tok) </span><span class="se">{{</span>
-<span class="s2">                $.ajax(</span><span class="se">{{</span>
-<span class="s2">                    type:&quot;POST&quot;,</span>
-<span class="s2">                    url:&quot;/enqueue&quot;,</span>
-<span class="s2">                    headers:</span><span class="se">{{</span><span class="s2">&quot;Content-Type&quot;:&quot;application/json&quot;,&quot;Authorization&quot;:&quot;Bearer &quot;+tok</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                    data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:&quot;reset_tipracks&quot;, mount: mount</span><span class="se">}}</span><span class="s2">),</span>
-<span class="s2">                    success: function() </span><span class="se">{{</span><span class="s2"> location.reload(); </span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                    error: function(xhr) </span><span class="se">{{</span><span class="s2"> alert(&quot;Error: &quot;+xhr.responseText); </span><span class="se">}}</span>
-<span class="s2">                </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        &lt;/script&gt;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="n">html</span></div>
 </div>
+
+
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>

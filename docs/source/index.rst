@@ -15,7 +15,7 @@ This documentation is organized according to the philosphy described by Daniele 
 
 * :doc:`Tutorials <tutorials/index>`: Step-by-step guides for beginners
 * :doc:`How-to <how-to/index>`: Guides for specific tasks
-* :doc:`Explanations <explanations/index>`: Discussions of underlying principles and concepts
+* :doc:`Explanations <explanation/index>`: Discussions of underlying principles and concepts
 * :doc:`Reference <reference/index>`: Detailed technical reference 
 
 Table of Contents

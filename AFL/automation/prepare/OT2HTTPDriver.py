@@ -2036,12 +2036,11 @@ class OT2HTTPDriver(Driver):
                                 url:'/enqueue',
                                 headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
                                 data: JSON.stringify({{task_name:task, name: lw, slot: slot}}),
-                                success: function() {{ location.reload(); }},
+                                success: function() {{ setTimeout(() => {{location.reload()}},500);}},
                                 error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
                             }});
                         }});
                         $(this).dialog('destroy').remove();
-                        setTimeout(() => {{location.reload()}},500);
                     }},
                     'Cancel': function() {{ $(this).dialog('destroy').remove(); }}
                 }}

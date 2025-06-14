@@ -1940,6 +1940,7 @@ class OT2HTTPDriver(Driver):
             .legend-item { display: flex; align-items: center; gap: 5px; }
             .legend-color { width: 12px; height: 12px; border-radius: 2px; }
             svg circle:hover, svg rect:hover { stroke-width: 2 !important; stroke: #ff5722 !important; }
+            .ui-dialog-content, .ui-dialog { background: #fff !important; }
             </style></head><body><div class="deck-container"><div class="deck-title">🧪 Opentrons OT-2 Deck Layout</div><div class="legend"><div class="legend-item"><div class="legend-color" style="background: #4caf50;"></div><span>Available Tips</span></div><div class="legend-item"><div class="legend-color" style="background: #f44336;"></div><span>Used Tips</span></div><div class="legend-item"><div class="legend-color" style="background: #42a5f5;"></div><span>Plate Wells</span></div><div class="legend-item"><div class="legend-color" style="background: #66bb6a;"></div><span>Reservoir Wells</span></div></div><div class="deck-grid">'''
         else:
             html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;">'

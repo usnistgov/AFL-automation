@@ -183,7 +183,7 @@ class APSUSAXS(Driver):
         if reduce_USAXS:
            # get last flyscan from Tiled and check that the set filename matches the found file
            [last_scan_path, last_scan_file] = self.readfromtiled.FindLastScanData('Flyscan',1)[0]
-           if name.replace('-','_') not in last_scan_file:
+           if name.replace('-','_').replace('.','_').replace('?','_') not in last_scan_file:
                    raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
 
            # reduce flyscan data

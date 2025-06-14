@@ -1810,7 +1810,7 @@ class OT2HTTPDriver(Driver):
             is_tiprack = labware_type == 'tipRack' or 'tiprack' in definition.get('parameters', {}).get('loadName', '').lower()
             available_tips_for_labware = set()
             if is_tiprack and labware_uuid and hasattr(self, 'available_tips'):
-                for mount_tips in self.available_tips.values():
+                for mount_tips in self.config["available_tips"].values():
                     for tip_labware_uuid, well_name in mount_tips:
                         if tip_labware_uuid == labware_uuid:
                             available_tips_for_labware.add(well_name)

@@ -1,0 +1,30 @@
+AFL.automation.prepare.SampleSeriesWidget
+=========================================
+
+.. automodule:: AFL.automation.prepare.SampleSeriesWidget
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      sqrt
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Button
+      Checkbox
+      Client
+      FloatText
+      HBox
+      IntText
+      Label
+      Layout
+      SampleSeriesWidget
+      SampleSeriesWidget_Model
+      SampleSeriesWidget_View
+      Text
+      VBox
+   

@@ -1,0 +1,13 @@
+AFL.automation.EpicsADLiveProcess.CollateDaemon
+===============================================
+
+.. automodule:: AFL.automation.EpicsADLiveProcess.CollateDaemon
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AreaDetectorLive
+      CollateDaemon
+   

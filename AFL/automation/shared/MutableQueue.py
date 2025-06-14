@@ -84,4 +84,10 @@ class MutableQueue:
             elif old_index>new_index:
                 self.queue.insert(new_index,self.queue[old_index])
                 del self.queue[old_index+1]
+
+    def clear(self):
+        '''Remove all items from the queue'''
+        with self.lock:
+            self.queue.clear()
+            self.iteration_id = time.time()
             

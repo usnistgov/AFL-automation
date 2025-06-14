@@ -200,6 +200,8 @@ function closeDiv(div) {
     // updates the div's onScreen attribute
     var div2 = getDiv(serverKey, divType);
     div2.setOnScreen(false);
+
+    saveLayout();
 }
 
 /**
@@ -244,6 +246,69 @@ function setColCount(count) {
       $('#column2').show();
       $('#column3').show();
     }
+    saveLayout();
+}
+
+function saveLayout() {
+    const layout = {
+        columnCount: $(".container-column:visible").length,
+        columns: [],
+        servers: servers.map(s => ({ address: s.address, key: s.key, name: s.name }))
+    };
+    $(".container-column").each(function(){
+        const column = [];
+        $(this).children('.container').each(function(){
+            column.push({
+                serverKey: $(this).attr('serverKey'),
+                divType: $(this).attr('divType')
+            });
+        });
+        layout.columns.push(column);
+    });
+    setCookie('layout', layout, 30);
+    // keep cachedServers cookie in sync
+    setCookie('cachedServers', layout.servers, 30);
+}
+
+function loadLayout() {
+    const layout = getCookie('layout');
+    if(!layout) {
+        // If no layout cached, add default divs for each server
+        servers.forEach(function(server){
+            addQuickbarDiv(server.key);
+            addStatusDiv(server.key);
+            addControlsDiv(server.key);
+            addQueueDiv(server.key);
+        });
+        return false;
+    }
+    if(layout.servers && layout.servers.length){
+        layout.servers.forEach(function(info){
+            if(!getServer(info.key)){
+                let server = new Server(info.address, info.key);
+                // server.name will be fetched in constructor
+                addServerToMenu(server);
+            }
+        });
+        setCookie('cachedServers', layout.servers, 30);
+    }
+    setColCount(layout.columnCount || 1);
+    // Remove existing containers
+    $(".container").remove();
+    layout.columns.forEach(function(column, idx){
+        column.forEach(function(item){
+            const addFunc = {
+                'status': addStatusDiv,
+                'controls': addControlsDiv,
+                'queue': addQueueDiv,
+                'quickbar': addQuickbarDiv
+            }[item.divType];
+            if(addFunc){
+                addFunc(item.serverKey, idx+1);
+            }
+        });
+    });
+    return true;
 }
 
 function distributeContainers() {
@@ -258,6 +323,7 @@ function distributeContainers() {
       }
     }
 
+    saveLayout();
 }
 
 $(function() {
@@ -267,11 +333,14 @@ $(function() {
     });
 
     // Makes the divs sortable with the header class
-    $("#column1, #column2, #column3").sortable({ 
-      handle: '.header', 
+    $("#column1, #column2, #column3").sortable({
+      handle: '.header',
       connectWith:".container-column",
       cancel: '',
-      placeholder: "container-placeholder"
+      placeholder: "container-placeholder",
+      update: function(event, ui){
+          saveLayout();
+      }
     });
 
 });
@@ -281,22 +350,16 @@ $(function() {
 function loadCachedServers() {
     const cachedServers = getCookie('cachedServers') || [];
     cachedServers.forEach(serverInfo => {
-        let server = new Server(serverInfo.address);
-        // Restore the key if it was saved
-        if (serverInfo.key) {
-            server.key = serverInfo.key;
-        }
+        let server = new Server(serverInfo.address, serverInfo.key);
         addServerToMenu(server);
-        addQuickbarDiv(server.key);
-        addStatusDiv(server.key);
-        addControlsDiv(server.key);
-        addQueueDiv(server.key);
     });
 }
 
 $(document).ready(function() {
     loadCachedServers();
+    loadLayout();
     // ... other initialization code ...
+    $(window).on('beforeunload', saveLayout);
 });
 
 // check robot status every 5 seconds and adjust background color accordingly

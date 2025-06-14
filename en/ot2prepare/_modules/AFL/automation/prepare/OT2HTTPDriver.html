@@ -2513,6 +2513,17 @@
                     <span class="n">pipette_summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mount</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;button style=&#39;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset Tips&lt;/button&gt;&quot;</span><span class="p">)</span>
                 <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&lt;div style=&#39;margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;&#39;&gt;&lt;strong&gt;Pipettes:&lt;/strong&gt; </span><span class="si">{</span><span class="s1">&#39; | &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pipette_summary</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span>
 
+        <span class="c1"># Add instrument loader and deck reset controls</span>
+        <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&#39;&#39;&lt;div style=&quot;margin-top:30px; display:flex; flex-direction:column; align-items:center; gap:20px;&quot;&gt;</span>
+<span class="s1">            &lt;div style=&quot;background:#f5f5f5; border-radius:8px; padding:16px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.05); display:inline-block;&quot;&gt;</span>
+<span class="s1">                &lt;label&gt;&lt;b&gt;Mount:&lt;/b&gt; &lt;select id=&quot;mount-select&quot;&gt;&lt;option value=&quot;left&quot;&gt;Left&lt;/option&gt;&lt;option value=&quot;right&quot;&gt;Right&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;</span>
+<span class="s1">                &amp;nbsp; &lt;label&gt;&lt;b&gt;Pipette:&lt;/b&gt; &lt;select id=&quot;pipette-select&quot;&gt;&lt;option value=&quot;p1000_single&quot;&gt;P1000&lt;/option&gt;&lt;option value=&quot;p300_single&quot;&gt;P300&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;</span>
+<span class="s1">                &amp;nbsp; &lt;label&gt;&lt;b&gt;Tiprack Slots:&lt;/b&gt; &lt;input id=&quot;tiprack-slots&quot; type=&quot;text&quot; placeholder=&quot;e.g. 1,2,4&quot; style=&quot;width:90px;&quot;/&gt;&lt;/label&gt;</span>
+<span class="s1">                &amp;nbsp; &lt;button id=&quot;load-instrument-btn&quot; style=&quot;font-weight:bold;&quot;&gt;Load Instrument&lt;/button&gt;</span>
+<span class="s1">            &lt;/div&gt;</span>
+<span class="s1">            &lt;button id=&quot;reset-deck-btn&quot; style=&quot;margin-top:10px; background:#e53935; color:white; font-weight:bold; border:none; border-radius:6px; padding:10px 24px; font-size:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);&quot;&gt;Reset Deck&lt;/button&gt;</span>
+<span class="s1">        &lt;/div&gt;&#39;&#39;&#39;</span>
+
         <span class="c1"># Add JS for interactive loading</span>
         <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">        &lt;script src=&#39;https://code.jquery.com/jquery-3.6.0.min.js&#39;&gt;&lt;/script&gt;</span>
@@ -3017,9 +3028,64 @@
 <span class="s2">                &lt;div style=&quot;margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px; font-size: 11px; color: #1565c0;&quot;&gt;</span>
 <span class="s2">                    💡 &lt;strong&gt;Tip:&lt;/strong&gt; Hover over wells to see names. For tipracks: 🟢 = Available tips, 🔴 = Used tips</span>
 <span class="s2">                &lt;/div&gt;</span>
+<span class="s2">                &lt;div style=&quot;margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;&quot;&gt;</span>
+<span class="s2">                    &lt;div style=&quot;font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333;&quot;&gt;🔧 Instrument Loader&lt;/div&gt;</span>
+<span class="s2">                    &lt;div style=&quot;display: flex; gap: 10px; margin-bottom: 10px;&quot;&gt;</span>
+<span class="s2">                        &lt;select id=&quot;mount-select&quot; style=&quot;padding: 5px; border: 1px solid #ddd; border-radius: 5px;&quot;&gt;</span>
+<span class="s2">                            &lt;option value=&quot;&quot;&gt;Select Mount&lt;/option&gt;</span>
+<span class="s2">                            &lt;option value=&quot;left&quot;&gt;Left Mount&lt;/option&gt;</span>
+<span class="s2">                            &lt;option value=&quot;right&quot;&gt;Right Mount&lt;/option&gt;</span>
+<span class="s2">                        &lt;/select&gt;</span>
+<span class="s2">                        &lt;select id=&quot;pipette-select&quot; style=&quot;padding: 5px; border: 1px solid #ddd; border-radius: 5px;&quot;&gt;</span>
+<span class="s2">                            &lt;option value=&quot;&quot;&gt;Select Pipette&lt;/option&gt;</span>
+<span class="s2">                            &lt;option value=&quot;p300&quot;&gt;P300 Pipette&lt;/option&gt;</span>
+<span class="s2">                            &lt;option value=&quot;p20&quot;&gt;P20 Pipette&lt;/option&gt;</span>
+<span class="s2">                        &lt;/select&gt;</span>
+<span class="s2">                        &lt;input id=&quot;tiprack-slots&quot; type=&quot;text&quot; placeholder=&quot;Tiprack Slots (e.g. A1, B2, C3)&quot; style=&quot;padding: 5px; border: 1px solid #ddd; border-radius: 5px;&quot;&gt;</span>
+<span class="s2">                    &lt;/div&gt;</span>
+<span class="s2">                    &lt;button id=&quot;load-instrument-btn&quot; style=&quot;padding: 5px; border: none; border-radius: 5px; background: #2196f3; color: white; cursor: pointer;&quot;&gt;Load Instrument&lt;/button&gt;</span>
+<span class="s2">                &lt;/div&gt;</span>
+<span class="s2">                &lt;div style=&quot;margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;&quot;&gt;</span>
+<span class="s2">                    &lt;div style=&quot;font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333;&quot;&gt;🔄 Deck Reset&lt;/div&gt;</span>
+<span class="s2">                    &lt;button id=&quot;reset-deck-btn&quot; style=&quot;padding: 5px; border: none; border-radius: 5px; background: #e57373; color: white; cursor: pointer;&quot;&gt;Reset Deck&lt;/button&gt;</span>
+<span class="s2">                &lt;/div&gt;</span>
 <span class="s2">            &lt;/div&gt;</span>
 <span class="s2">        &lt;/body&gt;</span>
 <span class="s2">        &lt;/html&gt;</span>
+<span class="s2">        &lt;script&gt;</span>
+<span class="s2">            $(document).ready(function() {</span>
+<span class="s2">                $(&#39;#load-instrument-btn&#39;).click(function() {</span>
+<span class="s2">                    var mount = $(&#39;#mount-select&#39;).val();</span>
+<span class="s2">                    var pipette = $(&#39;#pipette-select&#39;).val();</span>
+<span class="s2">                    var tipracks = $(&#39;#tiprack-slots&#39;).val().split(&#39;,&#39;).map(function(x){return x.trim();}).filter(Boolean);</span>
+<span class="s2">                    if (!mount || !pipette) { alert(&#39;Select mount and pipette.&#39;); return; }</span>
+<span class="s2">                    login().then(function(tok) {</span>
+<span class="s2">                        $.ajax({</span>
+<span class="s2">                            type: &#39;POST&#39;,</span>
+<span class="s2">                            url: &#39;/enqueue&#39;,</span>
+<span class="s2">                            headers: {&#39;Content-Type&#39;:&#39;application/json&#39;,&#39;Authorization&#39;:&#39;Bearer &#39;+tok},</span>
+<span class="s2">                            data: JSON.stringify({task_name:&#39;load_instrument&#39;, mount: mount, name: pipette, tipracks: tipracks}),</span>
+<span class="s2">                            success: function() { location.reload(); },</span>
+<span class="s2">                            error: function(xhr) { alert(&#39;Error: &#39;+xhr.responseText); }</span>
+<span class="s2">                        });</span>
+<span class="s2">                    });</span>
+<span class="s2">                });</span>
+<span class="s2">                // Deck reset button</span>
+<span class="s2">                $(&#39;#reset-deck-btn&#39;).click(function() {</span>
+<span class="s2">                    if (!confirm(&#39;Are you sure you want to reset the entire deck?&#39;)) return;</span>
+<span class="s2">                    login().then(function(tok) {</span>
+<span class="s2">                        $.ajax({</span>
+<span class="s2">                            type: &#39;POST&#39;,</span>
+<span class="s2">                            url: &#39;/enqueue&#39;,</span>
+<span class="s2">                            headers: {&#39;Content-Type&#39;:&#39;application/json&#39;,&#39;Authorization&#39;:&#39;Bearer &#39;+tok},</span>
+<span class="s2">                            data: JSON.stringify({task_name:&#39;reset_deck&#39;}),</span>
+<span class="s2">                            success: function() { location.reload(); },</span>
+<span class="s2">                            error: function(xhr) { alert(&#39;Error: &#39;+xhr.responseText); }</span>
+<span class="s2">                        });</span>
+<span class="s2">                    });</span>
+<span class="s2">                });</span>
+<span class="s2">            });</span>
+<span class="s2">        &lt;/script&gt;</span>
 <span class="s2">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">html</span></div>

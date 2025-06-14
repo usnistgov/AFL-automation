@@ -11,7 +11,9 @@ import datetime
 import xarray as xr
 import numpy as np
 
-import paramiko #general ssh connection client
+import lazy_loader as lazy
+# SSH client for remote instrument connections
+paramiko = lazy.load("paramiko", require="AFL-automation[remote-access]") #general ssh connection client
 
 class I22SAXS(Driver):
     defaults = {}

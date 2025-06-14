@@ -1,20 +1,19 @@
 import numpy as np
 import xarray as xr
-import tensorflow as tf
-import gpflow
-from numpy.polynomial import chebyshev, legendre, polynomial
-from gpflow import set_trainable
-from AFL.agent import HscedGaussianProcess as HGP
-from gpflow.optimizers import NaturalGradient
 import itertools
+from numpy.polynomial import chebyshev, legendre, polynomial
 
-# #tentative
-# import geopandas as gpd
-# from longsgis import voronoiDiagram4plg
+# Import lazy_loader for optional dependencies
+import lazy_loader as lazy
 
-from shapely import geometry, STRtree, unary_union, Point, distance, MultiPoint, Polygon
-from shapely.ops import nearest_points
-import alphashape
+# Machine learning dependencies
+tf = lazy.load("tensorflow", require="AFL-automation[ml]")
+gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
+
+AFLagent = lazy.load("AFL.agent", require="AFL-agent")
+
+# Geometry dependencies
+alphashape = lazy.load("alphashape", require="AFL-automation[geometry]")
 
 class Interpolator():
     def __init__(self, dataset):
@@ -27,6 +26,11 @@ class Interpolator():
         
         self.dataset = dataset
         
+        self.set_trainable = lazy.load("gpflow.set_trainable", require="AFL-automation[ml]")
+        self.NaturalGradient = lazy.load("gpflow.optimizers.NaturalGradient", require="AFL-automation[ml]")
+        self.STRtree = lazy.load("shapely.STRtree", require="AFL-automation[geometry]")
+        self.unary_union = lazy.load("shapely.unary_union", require="AFL-automation[geometry]")
+        self.Point = lazy.load("shapely.Point", require="AFL-automation[geometry]")
         
         #construct a kernel for fitting a GP model
         self.optimizer = tf.optimizers.Adam(learning_rate=0.005)
@@ -128,7 +132,7 @@ class Interpolator():
             
         ### Due to the difficulty of doing the heteroscedastic modeling, I would avoid this for now
         if (heteroscedastic):# & (self.Y_unct!=None):
-            likelihood = HGP.HeteroscedasticGaussian()
+            likelihood = AFLagent.HscedGaussianProcess.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
             # print(data[0].shape,data[1].shape)
             self.model = gpflow.models.VGP(
@@ -139,10 +143,10 @@ class Interpolator():
                 
             )
             
-            self.natgrad = NaturalGradient(gamma=0.5) 
+            self.natgrad = self.NaturalGradient(gamma=0.5) 
             self.adam = tf.optimizers.Adam()
-            set_trainable(self.model.q_mu, False)
-            set_trainable(self.model.q_sqrt, False)
+            self.set_trainable(self.model.q_mu, False)
+            self.set_trainable(self.model.q_sqrt, False)
 
         else:
             
@@ -158,7 +162,7 @@ class Interpolator():
                 # print("assuming noiseless data")
                 self.model.likelihood.variance = gpflow.likelihoods.Gaussian(variance=1.00001e-6).parameters[0]
                 # print(self.model.parameters)
-                set_trainable(self.model.likelihood.variance, False)
+                self.set_trainable(self.model.likelihood.variance, False)
         
         return self.model
     
@@ -341,12 +345,12 @@ class ClusteredGPs():
             dslist = self.datasets
         
         ### this finds the union between the list of shapely geometries and does the apapropriate tree search for all combinations
-        self.union = unary_union(geomlist).buffer(buffer)
-        tree = STRtree(list(self.union.geoms))
+        self.union = self.unary_union(geomlist).buffer(buffer)
+        tree = self.STRtree(list(self.union.geoms))
         common_indices = []
         for gpmodel in gplist:
             test_point = gpmodel.X_raw[0]
-            common_indices.append(tree.query(Point(test_point), predicate='intersects')[0])
+            common_indices.append(tree.query(self.Point(test_point), predicate='intersects')[0])
             
         ### this is to concatinate ovelapping datasets into one
         self.union_datasets = []
@@ -405,7 +409,7 @@ class ClusteredGPs():
                 domains = self.domain_geometries
 
             for idx, geom in enumerate(list(self.union_geometries.geoms)):
-                dist = geom.exterior.distance(Point(X_new))
+                dist = geom.exterior.distance(self.Point(X_new))
                 distances.append(dist)
             # print(distances)
             

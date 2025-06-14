@@ -1,5 +1,9 @@
-import nice
-
+import warnings
+try:
+    import nice
+except ImportError:
+    warnings.warn('NICE import failed- NICE instrument connections will not work.  Install nice.',stacklevel=2)
+   
 class NICEDevice(nice.api.devices.DevicesMonitor):
     def changed(self,changed,current):
         self.nodes.update(changed)

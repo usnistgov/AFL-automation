@@ -64,7 +64,7 @@ class APIServer:
         self.experiment = experiment
         self.contact = contact
         self.index_template = index_template
-        self.new_index_template = new_index_template
+                ca_prefix = f"AFL:{self.driver.name}:"
         self.plot_template = plot_template
         self.data = data
 

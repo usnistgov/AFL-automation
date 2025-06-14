@@ -141,7 +141,7 @@ def _reconstitute_objects(obj_dict,data=None):
 
 parser = argparse.ArgumentParser(prog = f'AFL // {main_module_name}',
                                 description = f'AFL APIServer launcher for {main_module_name}')
-parser.add_argument('-i', '--interactive', action='store_true')
+        ca_prefix=f"AFL:{driver.name}:",
 parser.add_argument('--no-waitress', action='store_true',
                     help='Disable the waitress WSGI server')
 

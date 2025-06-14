@@ -50,7 +50,7 @@
     <link rel="icon" href="../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="AFL.automation.APIServer.APIServer" href="AFL.automation.APIServer.APIServer.html" />
+    <link rel="next" title="AFL.automation.APIServer.Client" href="AFL.automation.APIServer.Client.html" />
     <link rel="prev" title="AFL.automation" href="AFL.automation.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -361,7 +361,6 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../modules.html">Modules</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../modules/apiserver.html">API Server</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 current active has-children"><a class="current reference internal" href="#">AFL.automation.APIServer</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.APIServer.html">AFL.automation.APIServer.APIServer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.Client.html">AFL.automation.APIServer.Client</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.Driver.html">AFL.automation.APIServer.Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.DummyDriver.html">AFL.automation.APIServer.DummyDriver</a></li>
@@ -447,28 +446,304 @@
                   
   <section id="module-AFL.automation.APIServer">
 <span id="afl-automation-apiserver"></span><h1>AFL.automation.APIServer<a class="headerlink" href="#module-AFL.automation.APIServer" title="Link to this heading">#</a></h1>
+<p class="rubric">Classes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.APIServer.APIServer" title="AFL.automation.APIServer.APIServer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">APIServer</span></code></a>(name[, data, experiment, contact, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.APIServer.CAStatusPublisher" title="AFL.automation.APIServer.CAStatusPublisher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CAStatusPublisher</span></code></a>(queue_daemon[, prefix, ...])</p></td>
+<td><p>Thread running a caproto server to publish queue status PVs.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.APIServer.</span></span><span class="sig-name descname"><span class="pre">APIServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Development'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tbm&#64;nist.gov'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'index.html'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_index_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'index-new.html'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple-bokeh.html'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer" title="Link to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Development'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tbm&#64;nist.gov'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'index.html'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_index_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'index-new.html'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple-bokeh.html'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.__init__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.create_queue">
+<span class="sig-name descname"><span class="pre">create_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_unqueued</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_ca</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ca_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ca_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5064</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.create_queue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.create_queue" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.reset_queue_daemon">
+<span class="sig-name descname"><span class="pre">reset_queue_daemon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.reset_queue_daemon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.reset_queue_daemon" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.advertise_zeroconf">
+<span class="sig-name descname"><span class="pre">advertise_zeroconf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.advertise_zeroconf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.advertise_zeroconf" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_waitress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.run" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.run_threaded">
+<span class="sig-name descname"><span class="pre">run_threaded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_thread</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_waitress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.run_threaded"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.run_threaded" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.add_standard_routes">
+<span class="sig-name descname"><span class="pre">add_standard_routes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.add_standard_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.add_standard_routes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.get_info">
+<span class="sig-name descname"><span class="pre">get_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.get_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.get_info" title="Link to this definition">#</a></dt>
+<dd><p>Live, status page of the robot</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.get_quickbar">
+<span class="sig-name descname"><span class="pre">get_quickbar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.get_quickbar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.get_quickbar" title="Link to this definition">#</a></dt>
+<dd><p>Return the functions, params, and defaults to be shown in this server’s quickbar</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.is_server_live">
+<span class="sig-name descname"><span class="pre">is_server_live</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.is_server_live"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.is_server_live" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.get_unqueued_commands">
+<span class="sig-name descname"><span class="pre">get_unqueued_commands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.get_unqueued_commands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.get_unqueued_commands" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.get_queued_commands">
+<span class="sig-name descname"><span class="pre">get_queued_commands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.get_queued_commands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.get_queued_commands" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.add_unqueued_routes">
+<span class="sig-name descname"><span class="pre">add_unqueued_routes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.add_unqueued_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.add_unqueued_routes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.query_driver">
+<span class="sig-name descname"><span class="pre">query_driver</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.query_driver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.query_driver" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.init_logging">
+<span class="sig-name descname"><span class="pre">init_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">toaddrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.init_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.init_logging" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.index">
+<span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.index" title="Link to this definition">#</a></dt>
+<dd><p>Render the legacy status board</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.index_new">
+<span class="sig-name descname"><span class="pre">index_new</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.index_new"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.index_new" title="Link to this definition">#</a></dt>
+<dd><p>Render the new driver UI</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.webapp">
+<span class="sig-name descname"><span class="pre">webapp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.webapp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.webapp" title="Link to this definition">#</a></dt>
+<dd><p>Render the jquery webapp</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.render_unqueued">
+<span class="sig-name descname"><span class="pre">render_unqueued</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs_add</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.render_unqueued"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.render_unqueued" title="Link to this definition">#</a></dt>
+<dd><p>Convert an unqueued return item into web-suitable output</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.send_1d_plot">
+<span class="sig-name descname"><span class="pre">send_1d_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.send_1d_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.send_1d_plot" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.send_array_as_jpg">
+<span class="sig-name descname"><span class="pre">send_array_as_jpg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.send_array_as_jpg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.send_array_as_jpg" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.queue_state">
+<span class="sig-name descname"><span class="pre">queue_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.queue_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.queue_state" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.driver_status">
+<span class="sig-name descname"><span class="pre">driver_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.driver_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.driver_status" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.get_queue">
+<span class="sig-name descname"><span class="pre">get_queue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.get_queue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.get_queue" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.get_queue_iteration">
+<span class="sig-name descname"><span class="pre">get_queue_iteration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.get_queue_iteration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.get_queue_iteration" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.deposit_obj">
+<span class="sig-name descname"><span class="pre">deposit_obj</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.deposit_obj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.deposit_obj" title="Link to this definition">#</a></dt>
+<dd><p>Store an object named obj in the driver’s dropbox
+If a uuid is provided, the object will be stored with that uuid
+Otherwise, a new uuid will be generated.
+In either case, the uuid will be returned to the client.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.retrieve_obj">
+<span class="sig-name descname"><span class="pre">retrieve_obj</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.retrieve_obj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.retrieve_obj" title="Link to this definition">#</a></dt>
+<dd><p>Retrieve an object from the driver’s dropbox
+uuid specifies the object to retrieve
+delete specifies whether to delete the object after retrieval</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.set_driver_object">
+<span class="sig-name descname"><span class="pre">set_driver_object</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.set_driver_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.set_driver_object" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.get_driver_object">
+<span class="sig-name descname"><span class="pre">get_driver_object</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.get_driver_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.get_driver_object" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.enqueue">
+<span class="sig-name descname"><span class="pre">enqueue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.enqueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.enqueue" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.reorder_queue">
+<span class="sig-name descname"><span class="pre">reorder_queue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.reorder_queue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.reorder_queue" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.remove_items">
+<span class="sig-name descname"><span class="pre">remove_items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.remove_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.remove_items" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.remove_item">
+<span class="sig-name descname"><span class="pre">remove_item</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.remove_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.remove_item" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.move_item">
+<span class="sig-name descname"><span class="pre">move_item</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.move_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.move_item" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.clear_queue">
+<span class="sig-name descname"><span class="pre">clear_queue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.clear_queue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.clear_queue" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.clear_history">
+<span class="sig-name descname"><span class="pre">clear_history</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.clear_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.clear_history" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.debug">
+<span class="sig-name descname"><span class="pre">debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.debug" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.pause">
+<span class="sig-name descname"><span class="pre">pause</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.pause"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.pause" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.halt">
+<span class="sig-name descname"><span class="pre">halt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.halt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.halt" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.init" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.login">
+<span class="sig-name descname"><span class="pre">login</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.login"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.login" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.get_server_time">
+<span class="sig-name descname"><span class="pre">get_server_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.get_server_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.get_server_time" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.APIServer.login_test">
+<span class="sig-name descname"><span class="pre">login_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/APIServer.html#APIServer.login_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.APIServer.login_test" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.CAStatusPublisher">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.APIServer.</span></span><span class="sig-name descname"><span class="pre">CAStatusPublisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue_daemon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'AFL:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5064</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interfaces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/CAStatusPublisher.html#CAStatusPublisher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.CAStatusPublisher" title="Link to this definition">#</a></dt>
+<dd><p>Thread running a caproto server to publish queue status PVs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.CAStatusPublisher.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue_daemon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'AFL:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5064</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interfaces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/CAStatusPublisher.html#CAStatusPublisher.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.CAStatusPublisher.__init__" title="Link to this definition">#</a></dt>
+<dd><p>This constructor should always be called with keyword arguments. Arguments are:</p>
+<p><em>group</em> should be None; reserved for future extension when a ThreadGroup
+class is implemented.</p>
+<p><em>target</em> is the callable object to be invoked by the run()
+method. Defaults to None, meaning nothing is called.</p>
+<p><em>name</em> is the thread name. By default, a unique name is constructed of
+the form “Thread-N” where N is a small decimal number.</p>
+<p><em>args</em> is a list or tuple of arguments for the target invocation. Defaults to ().</p>
+<p><em>kwargs</em> is a dictionary of keyword arguments for the target
+invocation. Defaults to {}.</p>
+<p>If a subclass overrides the constructor, it must make sure to invoke
+the base class constructor (Thread.__init__()) before doing anything
+else to the thread.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.CAStatusPublisher.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/CAStatusPublisher.html#CAStatusPublisher.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.CAStatusPublisher.run" title="Link to this definition">#</a></dt>
+<dd><p>Method representing the thread’s activity.</p>
+<p>You may override this method in a subclass. The standard run() method
+invokes the callable object passed to the object’s constructor as the
+target argument, if any, with sequential and keyword arguments taken
+from the args and kwargs arguments, respectively.</p>
+</dd></dl>
+
+</dd></dl>
+
 <p class="rubric">Modules</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="AFL.automation.APIServer.APIServer.html#module-AFL.automation.APIServer.APIServer" title="AFL.automation.APIServer.APIServer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">APIServer</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="AFL.automation.APIServer.Client.html#module-AFL.automation.APIServer.Client" title="AFL.automation.APIServer.Client"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Client</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="AFL.automation.APIServer.Client.html#module-AFL.automation.APIServer.Client" title="AFL.automation.APIServer.Client"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Client</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="AFL.automation.APIServer.Driver.html#module-AFL.automation.APIServer.Driver" title="AFL.automation.APIServer.Driver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="AFL.automation.APIServer.Driver.html#module-AFL.automation.APIServer.Driver" title="AFL.automation.APIServer.Driver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="AFL.automation.APIServer.DummyDriver.html#module-AFL.automation.APIServer.DummyDriver" title="AFL.automation.APIServer.DummyDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyDriver</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="AFL.automation.APIServer.DummyDriver.html#module-AFL.automation.APIServer.DummyDriver" title="AFL.automation.APIServer.DummyDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyDriver</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="AFL.automation.APIServer.DummyOT2Driver.html#module-AFL.automation.APIServer.DummyOT2Driver" title="AFL.automation.APIServer.DummyOT2Driver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyOT2Driver</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="AFL.automation.APIServer.DummyOT2Driver.html#module-AFL.automation.APIServer.DummyOT2Driver" title="AFL.automation.APIServer.DummyOT2Driver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyOT2Driver</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="AFL.automation.APIServer.LoggerFilter.html#module-AFL.automation.APIServer.LoggerFilter" title="AFL.automation.APIServer.LoggerFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LoggerFilter</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="AFL.automation.APIServer.LoggerFilter.html#module-AFL.automation.APIServer.LoggerFilter" title="AFL.automation.APIServer.LoggerFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LoggerFilter</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="AFL.automation.APIServer.QueueDaemon.html#module-AFL.automation.APIServer.QueueDaemon" title="AFL.automation.APIServer.QueueDaemon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueueDaemon</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="AFL.automation.APIServer.QueueDaemon.html#module-AFL.automation.APIServer.QueueDaemon" title="AFL.automation.APIServer.QueueDaemon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueueDaemon</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -496,11 +771,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="AFL.automation.APIServer.APIServer.html"
+       href="AFL.automation.APIServer.Client.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">AFL.automation.APIServer.APIServer</p>
+        <p class="prev-next-title">AFL.automation.APIServer.Client</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -514,6 +789,68 @@
                 <dialog id="pst-secondary-sidebar-modal"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer"><code class="docutils literal notranslate"><span class="pre">APIServer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.__init__"><code class="docutils literal notranslate"><span class="pre">APIServer.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.create_queue"><code class="docutils literal notranslate"><span class="pre">APIServer.create_queue()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.reset_queue_daemon"><code class="docutils literal notranslate"><span class="pre">APIServer.reset_queue_daemon()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.advertise_zeroconf"><code class="docutils literal notranslate"><span class="pre">APIServer.advertise_zeroconf()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.run"><code class="docutils literal notranslate"><span class="pre">APIServer.run()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.run_threaded"><code class="docutils literal notranslate"><span class="pre">APIServer.run_threaded()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.add_standard_routes"><code class="docutils literal notranslate"><span class="pre">APIServer.add_standard_routes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.get_info"><code class="docutils literal notranslate"><span class="pre">APIServer.get_info()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.get_quickbar"><code class="docutils literal notranslate"><span class="pre">APIServer.get_quickbar()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.is_server_live"><code class="docutils literal notranslate"><span class="pre">APIServer.is_server_live()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.get_unqueued_commands"><code class="docutils literal notranslate"><span class="pre">APIServer.get_unqueued_commands()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.get_queued_commands"><code class="docutils literal notranslate"><span class="pre">APIServer.get_queued_commands()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.add_unqueued_routes"><code class="docutils literal notranslate"><span class="pre">APIServer.add_unqueued_routes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.query_driver"><code class="docutils literal notranslate"><span class="pre">APIServer.query_driver()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.init_logging"><code class="docutils literal notranslate"><span class="pre">APIServer.init_logging()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.index"><code class="docutils literal notranslate"><span class="pre">APIServer.index()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.index_new"><code class="docutils literal notranslate"><span class="pre">APIServer.index_new()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.webapp"><code class="docutils literal notranslate"><span class="pre">APIServer.webapp()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.render_unqueued"><code class="docutils literal notranslate"><span class="pre">APIServer.render_unqueued()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.send_1d_plot"><code class="docutils literal notranslate"><span class="pre">APIServer.send_1d_plot()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.send_array_as_jpg"><code class="docutils literal notranslate"><span class="pre">APIServer.send_array_as_jpg()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.queue_state"><code class="docutils literal notranslate"><span class="pre">APIServer.queue_state()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.driver_status"><code class="docutils literal notranslate"><span class="pre">APIServer.driver_status()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.get_queue"><code class="docutils literal notranslate"><span class="pre">APIServer.get_queue()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.get_queue_iteration"><code class="docutils literal notranslate"><span class="pre">APIServer.get_queue_iteration()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.deposit_obj"><code class="docutils literal notranslate"><span class="pre">APIServer.deposit_obj()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.retrieve_obj"><code class="docutils literal notranslate"><span class="pre">APIServer.retrieve_obj()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.set_driver_object"><code class="docutils literal notranslate"><span class="pre">APIServer.set_driver_object()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.get_driver_object"><code class="docutils literal notranslate"><span class="pre">APIServer.get_driver_object()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.enqueue"><code class="docutils literal notranslate"><span class="pre">APIServer.enqueue()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.reorder_queue"><code class="docutils literal notranslate"><span class="pre">APIServer.reorder_queue()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.remove_items"><code class="docutils literal notranslate"><span class="pre">APIServer.remove_items()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.remove_item"><code class="docutils literal notranslate"><span class="pre">APIServer.remove_item()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.move_item"><code class="docutils literal notranslate"><span class="pre">APIServer.move_item()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.clear_queue"><code class="docutils literal notranslate"><span class="pre">APIServer.clear_queue()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.clear_history"><code class="docutils literal notranslate"><span class="pre">APIServer.clear_history()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.debug"><code class="docutils literal notranslate"><span class="pre">APIServer.debug()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.pause"><code class="docutils literal notranslate"><span class="pre">APIServer.pause()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.halt"><code class="docutils literal notranslate"><span class="pre">APIServer.halt()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.init"><code class="docutils literal notranslate"><span class="pre">APIServer.init()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.login"><code class="docutils literal notranslate"><span class="pre">APIServer.login()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.get_server_time"><code class="docutils literal notranslate"><span class="pre">APIServer.get_server_time()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.APIServer.login_test"><code class="docutils literal notranslate"><span class="pre">APIServer.login_test()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.CAStatusPublisher"><code class="docutils literal notranslate"><span class="pre">CAStatusPublisher</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.CAStatusPublisher.__init__"><code class="docutils literal notranslate"><span class="pre">CAStatusPublisher.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.CAStatusPublisher.run"><code class="docutils literal notranslate"><span class="pre">CAStatusPublisher.run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
 
   <div class="sidebar-secondary-item">
   <div role="note" aria-label="source link">

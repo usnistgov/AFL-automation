@@ -4,13 +4,19 @@ AFL.automation.APIServer
 .. automodule:: AFL.automation.APIServer
 
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      APIServer
+      CAStatusPublisher
+   
 .. rubric:: Modules
 
 .. autosummary::
    :toctree:
    :recursive:
 
-   APIServer
    Client
    Driver
    DummyDriver

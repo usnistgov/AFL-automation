@@ -1084,20 +1084,26 @@ class OT2HTTPDriver(Driver):
                 },
             )
 
-            # 4. Post-aspirate delay
+            # 4. Aspirate equilibration delay (while tip is in liquid)
+            if aspirate_equilibration_delay > 0:
+                time.sleep(aspirate_equilibration_delay)
+                # self._execute_atomic_command("delay", {"seconds": aspirate_equilibration_delay})
+
+            # 5. Move tip above liquid and post-aspirate delay (tip above liquid)
+            self._execute_atomic_command(
+                "moveToWellTop",
+                {
+                    "pipetteId": pipette_id,
+                    "labwareId": source_well["labwareId"],
+                    "wellName": source_well["wellName"],
+                },
+            )
             if post_aspirate_delay > 0:
                 time.sleep(post_aspirate_delay)
                 # self._execute_atomic_command("delay", {"seconds": post_aspirate_delay})
 
-            # 5. Aspirate equilibration delay
-            if aspirate_equilibration_delay > 0:
-                time.sleep(aspirate_equilibration_delay)
-                #self._execute_atomic_command(
-                #    "delay", {"seconds": aspirate_equilibration_delay}
-                #)
-
             # 6. Air gap if specified
-            if air_gap > 0:
+            if air_gap > 0: 
                 self._execute_atomic_command(
                     "airGap", {"pipetteId": pipette_id, "volume": air_gap}
                 )

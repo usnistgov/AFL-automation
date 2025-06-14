@@ -425,7 +425,7 @@
     <span class="s2">&quot;custom_beta/nist_pneumatic_loader&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST Pneumatic Loader (slot 10 only)&quot;</span><span class="p">,</span>
     <span class="s2">&quot;custom_beta/nist_6_20ml_vials&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST 6 x 20mL vial carrier&quot;</span><span class="p">,</span>
     <span class="s2">&quot;custom_beta/nist_2_100ml_bottles&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST 2 x 100mL bottle carrier&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;module/HeaterShaker&quot;</span><span class="p">:</span> <span class="s2">&quot;HeaterShaker Module (still needs labware atop it!)&quot;</span>
+    <span class="s2">&quot;heaterShakerModuleV1&quot;</span><span class="p">:</span> <span class="s2">&quot;HeaterShaker Module (still needs labware atop it!)&quot;</span>
 <span class="p">}</span>
 
 
@@ -2542,7 +2542,7 @@
 <span class="s2">                buttons: </span><span class="se">{{</span>
 <span class="s2">                    &#39;Load&#39;: function() </span><span class="se">{{</span>
 <span class="s2">                        var lw = select.val();</span>
-<span class="s2">                        var isHeaterShaker = (lw === &#39;module/HeaterShaker&#39;);</span>
+<span class="s2">                        var isHeaterShaker = (lw === &#39;heaterShakerModuleV1&#39;);</span>
 <span class="s2">                        var task = isHeaterShaker ? &#39;load_module&#39; : &#39;load_labware&#39;;</span>
 <span class="s2">                        login().then(function(tok) </span><span class="se">{{</span>
 <span class="s2">                            $.ajax(</span><span class="se">{{</span>
@@ -2565,7 +2565,6 @@
 <span class="s2">            login().then(function(tok) </span><span class="se">{{</span>
 <span class="s2">                $.ajax(</span><span class="se">{{</span>
 <span class="s2">                    type:&quot;POST&quot;,</span>
-<span class="se">{{</span><span class="s2"> ... </span><span class="se">}}</span>
 <span class="s2">                    url:&quot;/enqueue&quot;,</span>
 <span class="s2">                    headers:</span><span class="se">{{</span><span class="s2">&quot;Content-Type&quot;:&quot;application/json&quot;,&quot;Authorization&quot;:&quot;Bearer &quot;+tok</span><span class="se">}}</span><span class="s2">,</span>
 <span class="s2">                    data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:&quot;reset_tipracks&quot;, mount: mount</span><span class="se">}}</span><span class="s2">),</span>

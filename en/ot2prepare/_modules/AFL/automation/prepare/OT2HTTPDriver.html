@@ -421,7 +421,7 @@
     <span class="s2">&quot;opentrons/opentrons_96_tiprack_300ul&quot;</span><span class="p">:</span> <span class="s2">&quot;Opentrons 96 Tiprack 300µL&quot;</span><span class="p">,</span>
     <span class="s2">&quot;opentrons/opentrons_96_tiprack_1000ul&quot;</span><span class="p">:</span> <span class="s2">&quot;Opentrons 96 Tiprack 1000µL&quot;</span><span class="p">,</span>
     <span class="s2">&quot;opentrons/corning_96_wellplate_360ul_flat&quot;</span><span class="p">:</span> <span class="s2">&quot;Corning 96 Well Plate&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;opentrons/nest_96_wellplate_2ml_deep&quot;</span><span class="p">:</span> <span class="s2">&quot;Corning 96 Well Plate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;opentrons/nest_96_wellplate_2ml_deep&quot;</span><span class="p">:</span> <span class="s2">&quot;NEST 2mL 96 Deep Well Plate&quot;</span><span class="p">,</span>
     <span class="s2">&quot;custom_beta/nist_pneumatic_loader&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST Pneumatic Loader (slot 10 only)&quot;</span><span class="p">,</span>
     <span class="s2">&quot;custom_beta/nist_6_20ml_vials&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST 6 x 20mL vial carrier&quot;</span><span class="p">,</span>
     <span class="s2">&quot;custom_beta/nist_2_100ml_bottles&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST 2 x 100mL bottle carrier&quot;</span><span class="p">,</span>
@@ -2465,7 +2465,8 @@
 <span class="s1">            .legend-item { display: flex; align-items: center; gap: 5px; }</span>
 <span class="s1">            .legend-color { width: 12px; height: 12px; border-radius: 2px; }</span>
 <span class="s1">            svg circle:hover, svg rect:hover { stroke-width: 2 !important; stroke: #ff5722 !important; }</span>
-<span class="s1">            .ui-dialog-content, .ui-dialog { background: #fff !important; }</span>
+<span class="s1">            .ui-dialog {border: solid black;}</span>
+<span class="s1">            .ui-dialog-content, .ui-dialog { background: #fff !important; border-radius: 2px; }</span>
 <span class="s1">            &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;deck-container&quot;&gt;&lt;div class=&quot;deck-title&quot;&gt;🧪 Opentrons OT-2 Deck Layout&lt;/div&gt;&lt;div class=&quot;legend&quot;&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #4caf50;&quot;&gt;&lt;/div&gt;&lt;span&gt;Available Tips&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #f44336;&quot;&gt;&lt;/div&gt;&lt;span&gt;Used Tips&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #42a5f5;&quot;&gt;&lt;/div&gt;&lt;span&gt;Plate Wells&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #66bb6a;&quot;&gt;&lt;/div&gt;&lt;span&gt;Reservoir Wells&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;deck-grid&quot;&gt;&#39;&#39;&#39;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div style=&quot;display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;&quot;&gt;&#39;</span>

@@ -16,7 +16,7 @@ import autodoc_skip
 
 
 project = 'AFL-automation'
-copyright = 'Contribution of the US Government.  Not subject to copyright in the United States.'
+copyright = ': Contribution of the US Government.  Not subject to copyright in the United States.'
 author = 'NIST AFL Team'
 
 
@@ -32,7 +32,15 @@ extensions = [
 	'sphinx.ext.viewcode',
 	'sphinx.ext.napoleon',
 	'sphinx.ext.intersphinx',
+    "sphinx.ext.coverage",
+    "sphinx_copybutton",
+    "nbsphinx",
 	]
+nbsphinx_requirejs_path = "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
+
+# Ignore annoying type exception warnings which often come from newlines
+nitpick_ignore = [("py:class", "type")]
+
 
 templates_path = ['_templates']
 # Exclude script files from documentation
@@ -111,20 +119,73 @@ intersphinx_mapping = {
 
 
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
-html_title = 'AFL-automation Documentation'
-html_logo = None  # Add a logo path here if you have one
-html_favicon = None  # Add a favicon path if you have one
+# The theme to use for HTML and HTML Help pages.  See the documentation for
+# a list of builtin themes.
+#
+import os
+from importlib import import_module
 
-# Theme options
+html_theme = "pydata_sphinx_theme"
+theme_module = import_module(html_theme.replace("-", "_"))
+html_theme_path = [os.path.dirname(os.path.abspath(theme_module.__file__))]
+
+# Add the favicon
+html_favicon = "_static/logo_light.svg"
+
+# Add the logo to replace the title text
+html_logo = "_static/logo_text_large_light.svg"
+
 html_theme_options = {
-    'navigation_depth': 4,
-    'collapse_navigation': False,
-    'sticky_navigation': True,
-    'includehidden': True,
-    'titles_only': False,
-    'display_version': True,
+    "github_url": "https://github.com/usnistgov/AFL-automation",
+    "collapse_navigation": True,
+    "header_links_before_dropdown": 6,
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "logo": {
+        "image_light": "_static/logo_text_large_light.svg",
+        "image_dark": "_static/logo_text_large_dark.svg",
+    },
 }
+
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path = ["_static"]
+
+
+# Copy the iframe_figures directories to the build output
+# This is a workaround to allow the iframe_figures from plotly 
+# to be displayed in the build output
+def copy_iframe_figures_dirs(app, exception):
+    """
+    After the build, walk through the source directory, find all directories
+    named "iframe_figures", and copy them (with their contents) to the corresponding
+    location in the build output.
+    """
+    if exception is not None:
+        return
+
+    src_root = app.srcdir
+    out_dir = app.builder.outdir
+
+    # Walk through the source directory.
+    for root, dirs, _ in os.walk(src_root):
+        for dirname in dirs:
+            if dirname == "iframe_figures":
+                # Full path to the found iframe_figures directory in the source.
+                src_iframe_dir = os.path.join(root, dirname)
+                # Determine relative path from the source root.
+                rel_path = os.path.relpath(src_iframe_dir, src_root)
+                # Determine the target path in the build directory.
+                target_dir = os.path.join(out_dir, rel_path)
+
+                # If a directory already exists at the target, remove it.
+                if os.path.exists(target_dir):
+                    shutil.rmtree(target_dir)
+
+                # Now copy the entire directory tree.
+                shutil.copytree(src_iframe_dir, target_dir)
+
+def setup(app):
+    app.connect("build-finished", copy_iframe_figures_dirs)
+

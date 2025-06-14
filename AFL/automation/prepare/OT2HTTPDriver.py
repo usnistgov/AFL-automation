@@ -1,5 +1,6 @@
 import requests
 import time
+import json
 
 from math import ceil
 from AFL.automation.APIServer.Driver import Driver
@@ -7,6 +8,18 @@ from AFL.automation.shared.utilities import listify
 
 # Add this constant at the top of the file, after the imports
 TIPRACK_WELLS = [f"{row}{col}" for col in range(1, 13) for row in "ABCDEFGH"]
+
+# Limited set of labware options for quick loading via the dashboard
+LABWARE_OPTIONS = {
+    "opentrons/opentrons_96_tiprack_300ul": "Opentrons 96 Tiprack 300µL",
+    "opentrons/opentrons_96_tiprack_1000ul": "Opentrons 96 Tiprack 1000µL",
+    "opentrons/corning_96_wellplate_360ul_flat": "Corning 96 Well Plate",
+    "opentrons/nest_96_wellplate_2ml_deep": "NEST 2mL 96 Deep Well Plate",
+    "custom_beta/nist_pneumatic_loader": "NIST Pneumatic Loader (slot 10 only)",
+    "custom_beta/nist_6_20ml_vials": "NIST 6 x 20mL vial carrier",
+    "custom_beta/nist_2_100ml_bottles": "NIST 2 x 100mL bottle carrier",
+    "heaterShakerModuleV1": "HeaterShaker Module (still needs labware atop it!)"
+}
 
 
 class OT2HTTPDriver(Driver):
@@ -384,7 +397,8 @@ class OT2HTTPDriver(Driver):
                     raise RuntimeError(
                         f"Failed to execute command: {response.text}"
                     )
-        if response.json()['data']['status'] == 'failed':
+        if 'status' in response.json()['data'].keys():
+            if response.json()['data']['status'] == 'failed':
                     self.log_error(
                         f"Command returned error : {response.status_code}"
                     )
@@ -392,7 +406,41 @@ class OT2HTTPDriver(Driver):
                     raise RuntimeError(
                         f"Command returned error: {response.text}"
                     )
-                    
+    def send_labware(self,labware_def):
+        """Send a custom labware definition to the current run."""
+
+        self.log_debug(f"Sending custom labware definition: {labware_def}")
+
+        # Ensure we have a valid run
+        run_id = self._ensure_run_exists()
+
+        try:
+            # Prepare the loadLabware command
+            command_dict = {
+                "data": labware_def
+            }
+
+            # Execute the command
+            response = requests.post(
+                url=f"{self.base_url}/runs/{run_id}/labware_definitions",
+                headers=self.headers,
+                params={"waitUntilComplete": True},
+                json=command_dict,
+            )
+
+            self._check_cmd_success(response)
+
+            # Get the labware ID from the response
+            response_data = response.json()
+            labware_name = response_data["data"]["definitionUri"]
+
+            self.log_info(f"Successfully sent custom labware with name/URI {labware_name}")
+            return labware_name
+
+        except (requests.exceptions.RequestException, KeyError) as e:
+            self.log_error(f"Error sending custom labware: {str(e)}")
+            raise RuntimeError(f"Error sending custom labware: {str(e)}")
+                        
     def load_labware(self, name, slot, module=None, **kwargs):
         """Load labware (containers, tipracks) into the protocol using HTTP API"""
         self.log_debug(f"Loading labware '{name}' into slot '{slot}'")
@@ -1038,13 +1086,15 @@ class OT2HTTPDriver(Driver):
 
             # 4. Post-aspirate delay
             if post_aspirate_delay > 0:
-                self._execute_atomic_command("delay", {"seconds": post_aspirate_delay})
+                time.sleep(post_aspirate_delay)
+                # self._execute_atomic_command("delay", {"seconds": post_aspirate_delay})
 
             # 5. Aspirate equilibration delay
             if aspirate_equilibration_delay > 0:
-                self._execute_atomic_command(
-                    "delay", {"seconds": aspirate_equilibration_delay}
-                )
+                time.sleep(aspirate_equilibration_delay)
+                #self._execute_atomic_command(
+                #    "delay", {"seconds": aspirate_equilibration_delay}
+                #)
 
             # 6. Air gap if specified
             if air_gap > 0:
@@ -1078,7 +1128,8 @@ class OT2HTTPDriver(Driver):
 
             # 8. Post-dispense delay
             if post_dispense_delay > 0:
-                self._execute_atomic_command("delay", {"seconds": post_dispense_delay})
+                time.sleep(post_dispense_delay)
+                # self._execute_atomic_command("delay", {"seconds": post_dispense_delay})
 
             # 9. Mix after if specified
             if mix_after is not None:
@@ -1703,15 +1754,15 @@ class OT2HTTPDriver(Driver):
         return "\n".join(status)
     
     @Driver.unqueued(render_hint='html')
-    def visualize_deck(self,**kwargs):
+    @Driver.unqueued(render_hint='html')
+    def visualize_deck(self, mode='full', **kwargs):
         """
-        Generate HTML visualization of OT-2 deck layout with detailed well layouts.
-
+        Generate HTML visualization of OT-2 deck layout with detailed or compact well layouts.
+        mode: 'full' for detailed, 'simple' for compact
         Returns:
             str: HTML string for deck visualization
         """
-
-        # OT-2 deck slot layout (11 slots + trash)
+        import json
         slot_layout = [
             [10, 11, "Trash"],
             [7, 8, 9],
@@ -1719,74 +1770,58 @@ class OT2HTTPDriver(Driver):
             [1, 2, 3]
         ]
 
-        def generate_well_layout_svg(labware_data, width=120, height=90, labware_uuid=None):
-            """Generate SVG representation of well layout for labware."""
+        # Shared SVG generator
+        def generate_well_svg(labware_data, size=90, labware_uuid=None, compact=False):
             if not labware_data:
                 return ""
-
             definition = labware_data.get('definition', {})
             wells = definition.get('wells', {})
-            ordering = definition.get('ordering', [])
-            dimensions = definition.get('dimensions', {})
-
             if not wells:
                 return ""
-
-            # Calculate scaling factors based on labware dimensions
-            labware_width = dimensions.get('xDimension', 127.76)
-            labware_height = dimensions.get('yDimension', 85.48)
-
-            scale_x = width / labware_width
-            scale_y = height / labware_height
-
-            svg_elements = []
-
-            # Check if this is a tiprack and get available tips
             labware_type = definition.get('metadata', {}).get('displayCategory', 'default')
             is_tiprack = labware_type == 'tipRack' or 'tiprack' in definition.get('parameters', {}).get('loadName', '').lower()
-
-            # Get all available tips for this labware if it's a tiprack
             available_tips_for_labware = set()
             if is_tiprack and labware_uuid and hasattr(self.config, 'available_tips'):
                 for mount_tips in self.config["available_tips"].values():
                     for tip_labware_uuid, well_name in mount_tips:
                         if tip_labware_uuid == labware_uuid:
                             available_tips_for_labware.add(well_name)
-
-            # Group wells by type for coloring
-            well_colors = {
-                'tipRack_available': '#4caf50',    # Green for available tips
-                'tipRack_used': '#f44336',         # Red for used tips
-                'tipRack_default': '#ffa726',      # Orange fallback
-                'wellPlate': '#42a5f5', 
-                'reservoir': '#66bb6a',
-                'default': '#90a4ae'
-            }
-
-            for well_name, well_info in wells.items():
-                x = well_info.get('x', 0) * scale_x
-                y = (labware_height - well_info.get('y', 0)) * scale_y  # Flip Y coordinate
-                shape = well_info.get('shape', 'circular')
-
-                # Determine color based on tip availability for tipracks
-                if is_tiprack and labware_uuid:
-                    if well_name in available_tips_for_labware:
-                        well_color = well_colors['tipRack_available']  # Available tip
-                        tip_status = "Available"
-                    else:
-                        well_color = well_colors['tipRack_used']  # Used tip
-                        tip_status = "Used"
-                    tooltip = f"{well_name} - {tip_status}"
+            well_count = len(wells)
+            # Compact grid
+            if compact:
+                if well_count <= 8:
+                    cols = well_count; rows = 1
+                elif well_count <= 24:
+                    cols = 6; rows = (well_count + 5) // 6
+                elif well_count <= 96:
+                    cols = 12; rows = 8
                 else:
-                    well_color = well_colors.get(labware_type, well_colors['default'])
-                    tooltip = well_name
-
-                if shape == 'circular':
-                    diameter = well_info.get('diameter', 5) * min(scale_x, scale_y)
-                    radius = diameter / 2
+                    cols = 12; rows = (well_count + 11) // 12
+                cell_width = size / max(cols, 6)
+                cell_height = size / max(rows, 4)
+                colors = {
+                    'tipRack_available': '#4caf50', 'tipRack_used': '#f44336', 'tipRack': '#ffa726',
+                    'wellPlate': '#42a5f5', 'reservoir': '#66bb6a', 'default': '#90a4ae'
+                }
+                svg_elements = []
+                well_names = list(wells.keys())
+                for i, well_name in enumerate(well_names[:min(well_count, rows * cols)]):
+                    row = i % rows
+                    col = i // rows
+                    x = col * cell_width + cell_width/4
+                    y = row * cell_height + cell_height/4
+                    if is_tiprack and labware_uuid:
+                        if well_name in available_tips_for_labware:
+                            color = colors['tipRack_available']; status = "Available"
+                        else:
+                            color = colors['tipRack_used']; status = "Used"
+                        tooltip = f"{well_name} - {status}"
+                    else:
+                        color = colors.get(labware_type, '#90a4ae')
+                        tooltip = well_name
                     svg_elements.append(
-                        f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{radius:.1f}" '
-                        f'fill="{well_color}" stroke="#333" stroke-width="0.5" opacity="0.8">'
+                        f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{min(cell_width, cell_height)/3:.1f}" '
+                        f'fill="{color}" stroke="#333" stroke-width="0.3">'
                         f'<title>{tooltip}</title></circle>'
                     )
                 elif shape == 'rectangular':
@@ -2206,137 +2241,275 @@ class OT2HTTPDriver(Driver):
                 cols = 12
                 rows = 8
             else:
-                cols = 12
-                rows = (well_count + 11) // 12
-
-            cell_width = size / max(cols, 6)
-            cell_height = size / max(rows, 4)
-
-            # Color based on labware type and tip availability
-            colors = {
-                'tipRack_available': '#4caf50',
-                'tipRack_used': '#f44336',
-                'tipRack': '#ffa726',
-                'wellPlate': '#42a5f5',
-                'reservoir': '#66bb6a'
-            }
-
-            svg_elements = []
-            well_names = list(wells.keys())
-
-            for i, well_name in enumerate(well_names[:min(well_count, rows * cols)]):
-                row = i % rows
-                col = i // rows
-                x = col * cell_width + cell_width/4
-                y = row * cell_height + cell_height/4
-
-                # Determine color for tipracks based on availability
-                if is_tiprack and labware_uuid:
-                    if well_name in available_tips_for_labware:
-                        color = colors['tipRack_available']
-                        status = "Available"
+                labware_width = definition.get('dimensions', {}).get('xDimension', 127.76)
+                labware_height = definition.get('dimensions', {}).get('yDimension', 85.48)
+                scale_x = size / labware_width
+                scale_y = (size * 0.75) / labware_height
+                svg_elements = []
+                well_colors = {
+                    'tipRack_available': '#4caf50', 'tipRack_used': '#f44336', 'tipRack_default': '#ffa726',
+                    'wellPlate': '#42a5f5', 'reservoir': '#66bb6a', 'default': '#90a4ae'
+                }
+                for well_name, well_info in wells.items():
+                    x = well_info.get('x', 0) * scale_x
+                    y = (labware_height - well_info.get('y', 0)) * scale_y
+                    shape = well_info.get('shape', 'circular')
+                    if is_tiprack and labware_uuid:
+                        if well_name in available_tips_for_labware:
+                            well_color = well_colors['tipRack_available']; tip_status = "Available"
+                        else:
+                            well_color = well_colors['tipRack_used']; tip_status = "Used"
+                        tooltip = f"{well_name} - {tip_status}"
                     else:
-                        color = colors['tipRack_used'] 
-                        status = "Used"
-                    tooltip = f"{well_name} - {status}"
-                else:
-                    color = colors.get(labware_type, '#90a4ae')
-                    tooltip = well_name
+                        well_color = well_colors.get(labware_type, well_colors['default'])
+                        tooltip = well_name
+                    if shape == 'circular':
+                        diameter = well_info.get('diameter', 5) * min(scale_x, scale_y)
+                        radius = diameter / 2
+                        svg_elements.append(
+                            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{radius:.1f}" '
+                            f'fill="{well_color}" stroke="#333" stroke-width="0.5" opacity="0.8">'
+                            f'<title>{tooltip}</title></circle>'
+                        )
+                    elif shape == 'rectangular':
+                        well_width = well_info.get('xDimension', 8) * scale_x
+                        well_height = well_info.get('yDimension', 8) * scale_y
+                        rect_x = x - well_width/2
+                        rect_y = y - well_height/2
+                        svg_elements.append(
+                            f'<rect x="{rect_x:.1f}" y="{rect_y:.1f}" '
+                            f'width="{well_width:.1f}" height="{well_height:.1f}" '
+                            f'fill="{well_color}" stroke="#333" stroke-width="0.5" opacity="0.8">'
+                            f'<title>{tooltip}</title></rect>'
+                        )
+                if svg_elements:
+                    return f'<svg width="{size}" height="{int(size*0.75)}" style="margin: 5px 0;">{"".join(svg_elements)}</svg>'
+                return ""
 
-                svg_elements.append(
-                    f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{min(cell_width, cell_height)/3:.1f}" '
-                    f'fill="{color}" stroke="#333" stroke-width="0.3">'
-                    f'<title>{tooltip}</title></circle>'
-                )
-
-            return f'<svg width="{size}" height="{size}" style="border: 1px solid #ddd; border-radius: 3px;">{"".join(svg_elements)}</svg>'
-
-        def get_slot_info(slot_num):
+        # Slot info helper
+        def get_slot_info(slot_num, compact):
             if slot_num == "Trash":
                 return {"name": "Trash", "type": "trash", "color": "#ffcdd2", "svg": ""}
-
             slot_str = str(slot_num)
             info = {"name": "Empty", "type": "empty", "color": "#f5f5f5", "svg": ""}
-
-            # Check for labware
-            if slot_str in self.config["loaded_labware"]:
+            has_labware = slot_str in self.config["loaded_labware"]
+            has_module = slot_str in self.config["loaded_modules"]
+            if has_labware:
                 labware_id, labware_type, labware_data = self.config["loaded_labware"][slot_str]
                 definition = labware_data.get('definition', {})
                 display_name = definition.get('metadata', {}).get('displayName', labware_type)
-
+                is_tiprack = (
+                    'tiprack' in labware_type.lower() or
+                    definition.get('metadata', {}).get('displayCategory') == 'tipRack'
+                )
+                mounts = []
+                if is_tiprack:
+                    for m, d in self.config['loaded_instruments'].items():
+                        if labware_id in d.get('tip_racks', []):
+                            mounts.append(m)
                 info.update({
                     "name": display_name[:20] + ("..." if len(display_name) > 20 else ""),
                     "type": "labware",
                     "color": "#bbdefb",
-                    "svg": generate_mini_well_svg(labware_data, labware_uuid=labware_id)
+                    "svg": generate_well_svg(labware_data, size=50 if compact else 90, labware_uuid=labware_id, compact=compact)
                 })
-
-            # Check for module on this slot
-            if slot_str in self.config["loaded_modules"]:
+                if is_tiprack:
+                    info['tiprack'] = True
+                    info['mounts'] = mounts
+                    info['color'] = '#fff3e0'
+            if has_module:
                 module_id, module_type = self.config["loaded_modules"][slot_str]
                 module_name = module_type.replace('ModuleV1', '').replace('Module', ' Mod')
-
-                if info["type"] == "labware":
+                if has_labware:
                     info["name"] = f"{module_name}<br><small>{info['name']}</small>"
                     info["color"] = "#c8e6c9"
                 else:
                     info.update({
                         "name": module_name,
-                        "type": "module", 
+                        "type": "module_only",  # distinguish module with no labware
                         "color": "#e1bee7"
                     })
-
             return info
 
-        html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;">'
+        html = ''
+        if mode == 'full':
+            html += '''
+            <!DOCTYPE html><html><head><style>
+            body { font-family: Arial, sans-serif; margin: 20px; background-color: #fafafa; }
+            .deck-container { max-width: 900px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .deck-title { text-align: center; color: #333; margin-bottom: 20px; font-size: 24px; font-weight: bold; }
+            .deck-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+            .deck-slot { border: 2px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: relative; transition: transform 0.2s; min-height: 180px; }
+            .deck-slot:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+            .slot-number { position: absolute; top: 5px; left: 8px; font-weight: bold; font-size: 14px; color: #666; background: rgba(255,255,255,0.8); padding: 2px 4px; border-radius: 3px; }
+            .slot-content { font-size: 13px; font-weight: bold; margin: 15px 0 8px 0; text-align: center; line-height: 1.2; }
+            .well-layout { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin: 5px 0; }
+            .slot-details { font-size: 9px; color: #666; text-align: center; margin-top: auto; padding-top: 5px; border-top: 1px solid rgba(0,0,0,0.1); width: 100%; }
+            .pipettes-section { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+            .pipettes-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333; }
+            .pipette-item { background: white; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #2196f3; }
+            .trash-slot { background: #ffebee !important; border-color: #e57373 !important; }
+            .legend { display: flex; justify-content: center; gap: 20px; margin: 15px 0; font-size: 12px; }
+            .legend-item { display: flex; align-items: center; gap: 5px; }
+            .legend-color { width: 12px; height: 12px; border-radius: 2px; }
+            svg circle:hover, svg rect:hover { stroke-width: 2 !important; stroke: #ff5722 !important; }
+            .ui-dialog {border: solid black;}
+            .ui-dialog-content, .ui-dialog { background: #fff !important; border-radius: 2px; }
+            </style></head><body><div class="deck-container"><div class="deck-title">🧪 Opentrons OT-2 Deck Layout</div><div class="legend"><div class="legend-item"><div class="legend-color" style="background: #4caf50;"></div><span>Available Tips</span></div><div class="legend-item"><div class="legend-color" style="background: #f44336;"></div><span>Used Tips</span></div><div class="legend-item"><div class="legend-color" style="background: #42a5f5;"></div><span>Plate Wells</span></div><div class="legend-item"><div class="legend-color" style="background: #66bb6a;"></div><span>Reservoir Wells</span></div></div><div class="deck-grid">'''
+        else:
+            html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;">'
 
         for row in slot_layout:
             for slot in row:
-                info = get_slot_info(slot)
+                info = get_slot_info(slot, compact=(mode=='simple'))
                 slot_label = "T" if slot == "Trash" else str(slot)
-
                 svg_display = f'<div style="margin: 5px 0;">{info["svg"]}</div>' if info["svg"] else ""
-
-                html += f"""
-                <div style="
-                    background: {info['color']};
-                    border: 1px solid #ccc;
-                    border-radius: 6px;
-                    padding: 8px;
-                    text-align: center;
-                    min-height: 100px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: flex-start;
-                    align-items: center;
-                    position: relative;
-                    font-size: 11px;
-                ">
-                    <div style="position: absolute; top: 2px; left: 4px; font-weight: bold; font-size: 10px; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px;">
-                        {slot_label}
+                click_attr = ''
+                if info["type"] in ["empty", "module_only"]:
+                    click_attr = f" onclick=\"showLabwareOptions('{slot}')\" style=\"cursor:pointer;\""
+                buttons = ''.join([f"<button style='margin-top:4px;font-size:10px;' onclick=\"resetTipracks('{m}')\">Reset</button>" for m in info.get('mounts', [])])
+                if mode == 'full':
+                    html += f"""
+                    <div class='deck-slot{' trash-slot' if slot == 'Trash' else ''}' {click_attr}>
+                        <div class='slot-number'>{slot_label}</div>
+                        <div class='slot-content'>{info['name']}</div>
+                        <div class='well-layout'>{svg_display}</div>
+                        <div class='slot-details'>{buttons}</div>
                     </div>
-                    <div style="margin: 12px 0 5px 0; font-weight: 500; line-height: 1.1;">
-                        {info['name']}
+                    """
+                else:
+                    html += f"""
+                    <div {click_attr} style="background: {info['color']}; border: 1px solid #ccc; border-radius: 6px; padding: 8px; text-align: center; min-height: 100px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: relative; font-size: 11px;">
+                        <div style="position: absolute; top: 2px; left: 4px; font-weight: bold; font-size: 10px; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px;">{slot_label}</div>
+                        <div style="margin: 12px 0 5px 0; font-weight: 500; line-height: 1.1;">{info['name']}</div>
+                        {svg_display}
+                        {buttons}
                     </div>
-                    {svg_display}
-                </div>
-                """
-
+                    """
         html += '</div>'
 
-        # Add pipette summary
+        # Pipette section
         if "loaded_instruments" in self.config and self.config["loaded_instruments"]:
-            pipette_summary = []
-            for mount, data in self.config["loaded_instruments"].items():
-                name = data.get('name', 'Unknown').replace('_', ' ').title()
-                pipette_summary.append(f"{mount.title()}: {name}")
+            if mode == 'full':
+                html += "<div class='pipettes-section'><div class='pipettes-title'>🔧 Loaded Pipettes</div>"
+                for mount, data in self.config["loaded_instruments"].items():
+                    name = data.get('name', 'Unknown').replace('_', ' ').title()
+                    html += f"<div class='pipette-item'><strong>{mount.title()} Mount:</strong> {name} <button style='font-size:10px;' onclick=\"resetTipracks('{mount}')\">Reset Tips</button></div>"
+                html += "</div>"
+            else:
+                pipette_summary = []
+                for mount, data in self.config["loaded_instruments"].items():
+                    name = data.get('name', 'Unknown').replace('_', ' ').title()
+                    pipette_summary.append(f"{mount.title()}: {name} <button style='font-size:10px;' onclick=\"resetTipracks('{mount}')\">Reset Tips</button>")
+                html += f"<div style='margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;'><strong>Pipettes:</strong> {' | '.join(pipette_summary)}</div>"
 
-            html += f"""
-            <div style="margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;">
-                <strong>Pipettes:</strong> {' | '.join(pipette_summary)}
+        # Add instrument loader and deck reset controls
+        html += '''<div style="margin-top:30px; display:flex; flex-direction:column; align-items:center; gap:20px;">
+            <div style="background:#f5f5f5; border-radius:8px; padding:16px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.05); display:inline-block;">
+                <label><b>Mount:</b> <select id="mount-select"><option value="left">Left</option><option value="right">Right</option></select></label>
+                &nbsp; <label><b>Pipette:</b> <select id="pipette-select"><option value="p1000_single">P1000</option><option value="p300_single">P300</option></select></label>
+                &nbsp; <label><b>Tiprack Slots:</b> <input id="tiprack-slots" type="text" placeholder="e.g. 1,2,4" style="width:90px;"/></label>
+                &nbsp; <button id="load-instrument-btn" style="font-weight:bold;">Load Instrument</button>
             </div>
-            """
+            <button id="reset-deck-btn" style="margin-top:10px; background:#e53935; color:white; font-weight:bold; border:none; border-radius:6px; padding:10px 24px; font-size:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);">Reset Deck</button>
+        </div>'''
 
+        # Add JS for interactive loading
+        html += f"""
+        <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
+        <script src='https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'></script>
+        <script>
+        var token = null;
+        async function login() {{
+            if (token) return token;
+            const response = await fetch('/login', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{username:'dashboard', password:'domo_arigato'}})
+            }});
+            if (!response.ok) {{ alert('Login failed'); throw new Error('login'); }}
+            const data = await response.json();
+            token = data.token; return token;
+        }}
+        const labwareChoices = {json.dumps(LABWARE_OPTIONS)};
+        function showLabwareOptions(slot) {{
+            var select = $('<select></select>');
+            Object.entries(labwareChoices).forEach(function([k,v]) {{
+                select.append($('<option>').attr('value',k).text(v));
+            }});
+            $('<div></div>').append(select).dialog({{
+                title: 'Load labware or module in slot ' + slot,
+                modal: true,
+                buttons: {{
+                    'Load': function() {{
+                        var lw = select.val();
+                        var isHeaterShaker = (lw === 'heaterShakerModuleV1');
+                        var task = isHeaterShaker ? 'load_module' : 'load_labware';
+                        login().then(function(tok) {{
+                            $.ajax({{
+                                type:'POST',
+                                url:'/enqueue',
+                                headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
+                                data: JSON.stringify({{task_name:task, name: lw, slot: slot}}),
+                                success: function() {{ location.reload(); }},
+                                error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
+                            }});
+                        }});
+                        $(this).dialog('destroy').remove();
+                        setTimeout(() => {{location.reload()}},500);
+                    }},
+                    'Cancel': function() {{ $(this).dialog('destroy').remove(); }}
+                }}
+            }});
+        }}
+        function resetTipracks(mount) {{
+            login().then(function(tok) {{
+                $.ajax({{
+                    type:"POST",
+                    url:"/enqueue",
+                    headers:{{"Content-Type":"application/json","Authorization":"Bearer "+tok}},
+                    data: JSON.stringify({{task_name:"reset_tipracks", mount: mount}}),
+                    success: function() {{ location.reload(); }},
+                    error: function(xhr) {{ alert("Error: "+xhr.responseText); }}
+                }});
+            }});
+        }}
+        $(document).ready(function() {{
+                $('#load-instrument-btn').click(function() {{
+                    var mount = $('#mount-select').val();
+                    var pipette = $('#pipette-select').val();
+                    var tipracks = $('#tiprack-slots').val().split(',').map(function(x){{return x.trim();}}).filter(Boolean);
+                    if (!mount || !pipette) {{ alert('Select mount and pipette.'); return; }}
+                    login().then(function(tok) {{
+                        $.ajax({{
+                            type: 'POST',
+                            url: '/enqueue',
+                            headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
+                            data: JSON.stringify({{task_name:'load_instrument', mount: mount, name: pipette, tip_rack_slots: tipracks}}),
+                            success: function() {{ location.reload(); }},
+                            error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
+                        }});
+                    }});
+                }});
+         // Deck reset button
+         $('#reset-deck-btn').click(function() {{
+                    if (!confirm('Are you sure you want to reset the entire deck?')) return;
+                    login().then(function(tok) {{
+                        $.ajax({{
+                            type: 'POST',
+                            url: '/enqueue',
+                            headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
+                            data: JSON.stringify({{task_name:'reset_deck'}}),
+                            success: function() {{ location.reload(); }},
+                            error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
+                        }});
+                    }});
+                }});
+            }});
+        </script>
+        """
+        if mode == 'full':
+            html += "</div></body></html>"
         return html
 
 if __name__ == "__main__":

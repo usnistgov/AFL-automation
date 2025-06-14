@@ -1879,7 +1879,9 @@ class OT2HTTPDriver(Driver):
                 return {"name": "Trash", "type": "trash", "color": "#ffcdd2", "svg": ""}
             slot_str = str(slot_num)
             info = {"name": "Empty", "type": "empty", "color": "#f5f5f5", "svg": ""}
-            if slot_str in self.config["loaded_labware"]:
+            has_labware = slot_str in self.config["loaded_labware"]
+            has_module = slot_str in self.config["loaded_modules"]
+            if has_labware:
                 labware_id, labware_type, labware_data = self.config["loaded_labware"][slot_str]
                 definition = labware_data.get('definition', {})
                 display_name = definition.get('metadata', {}).get('displayName', labware_type)
@@ -1902,16 +1904,16 @@ class OT2HTTPDriver(Driver):
                     info['tiprack'] = True
                     info['mounts'] = mounts
                     info['color'] = '#fff3e0'
-            if slot_str in self.config["loaded_modules"]:
+            if has_module:
                 module_id, module_type = self.config["loaded_modules"][slot_str]
                 module_name = module_type.replace('ModuleV1', '').replace('Module', ' Mod')
-                if info["type"] == "labware":
+                if has_labware:
                     info["name"] = f"{module_name}<br><small>{info['name']}</small>"
                     info["color"] = "#c8e6c9"
                 else:
                     info.update({
                         "name": module_name,
-                        "type": "module", 
+                        "type": "module_only",  # distinguish module with no labware
                         "color": "#e1bee7"
                     })
             return info
@@ -1948,7 +1950,7 @@ class OT2HTTPDriver(Driver):
                 slot_label = "T" if slot == "Trash" else str(slot)
                 svg_display = f'<div style="margin: 5px 0;">{info["svg"]}</div>' if info["svg"] else ""
                 click_attr = ''
-                if info["type"] == "empty":
+                if info["type"] in ["empty", "module_only"]:
                     click_attr = f" onclick=\"showLabwareOptions('{slot}')\" style=\"cursor:pointer;\""
                 buttons = ''.join([f"<button style='margin-top:4px;font-size:10px;' onclick=\"resetTipracks('{m}')\">Reset</button>" for m in info.get('mounts', [])])
                 if mode == 'full':
@@ -2010,17 +2012,19 @@ class OT2HTTPDriver(Driver):
                 select.append($('<option>').attr('value',k).text(v));
             }});
             $('<div></div>').append(select).dialog({{
-                title: 'Load labware in slot ' + slot,
+                title: 'Load labware or module in slot ' + slot,
                 modal: true,
                 buttons: {{
                     'Load': function() {{
                         var lw = select.val();
+                        var isHeaterShaker = (lw === 'module/HeaterShaker');
+                        var task = isHeaterShaker ? 'load_module' : 'load_labware';
                         login().then(function(tok) {{
                             $.ajax({{
                                 type:'POST',
                                 url:'/enqueue',
                                 headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
-                                data: JSON.stringify({{task_name:'load_labware', name: lw, slot: slot}}),
+                                data: JSON.stringify({{task_name:task, name: lw, slot: slot}}),
                                 success: function() {{ location.reload(); }},
                                 error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
                             }});
@@ -2036,6 +2040,7 @@ class OT2HTTPDriver(Driver):
             login().then(function(tok) {{
                 $.ajax({{
                     type:"POST",
+{{ ... }}
                     url:"/enqueue",
                     headers:{{"Content-Type":"application/json","Authorization":"Bearer "+tok}},
                     data: JSON.stringify({{task_name:"reset_tipracks", mount: mount}}),

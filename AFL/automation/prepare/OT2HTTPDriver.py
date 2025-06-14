@@ -14,7 +14,7 @@ LABWARE_OPTIONS = {
     "opentrons/opentrons_96_tiprack_300ul": "Opentrons 96 Tiprack 300µL",
     "opentrons/opentrons_96_tiprack_1000ul": "Opentrons 96 Tiprack 1000µL",
     "opentrons/corning_96_wellplate_360ul_flat": "Corning 96 Well Plate",
-    "opentrons/nest_96_wellplate_2ml_deep": "Corning 96 Well Plate",
+    "opentrons/nest_96_wellplate_2ml_deep": "NEST 2mL 96 Deep Well Plate",
     "custom_beta/nist_pneumatic_loader": "NIST Pneumatic Loader (slot 10 only)",
     "custom_beta/nist_6_20ml_vials": "NIST 6 x 20mL vial carrier",
     "custom_beta/nist_2_100ml_bottles": "NIST 2 x 100mL bottle carrier",
@@ -1940,7 +1940,8 @@ class OT2HTTPDriver(Driver):
             .legend-item { display: flex; align-items: center; gap: 5px; }
             .legend-color { width: 12px; height: 12px; border-radius: 2px; }
             svg circle:hover, svg rect:hover { stroke-width: 2 !important; stroke: #ff5722 !important; }
-            .ui-dialog-content, .ui-dialog { background: #fff !important; }
+            .ui-dialog {border: solid black;}
+            .ui-dialog-content, .ui-dialog { background: #fff !important; border-radius: 2px; }
             </style></head><body><div class="deck-container"><div class="deck-title">🧪 Opentrons OT-2 Deck Layout</div><div class="legend"><div class="legend-item"><div class="legend-color" style="background: #4caf50;"></div><span>Available Tips</span></div><div class="legend-item"><div class="legend-color" style="background: #f44336;"></div><span>Used Tips</span></div><div class="legend-item"><div class="legend-color" style="background: #42a5f5;"></div><span>Plate Wells</span></div><div class="legend-item"><div class="legend-color" style="background: #66bb6a;"></div><span>Reservoir Wells</span></div></div><div class="deck-grid">'''
         else:
             html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;">'

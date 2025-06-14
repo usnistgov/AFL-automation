@@ -5,6 +5,11 @@
      ansible.builtin.git:
        repo: 'https://github.com/usnistgov/AFL-automation.git'
        dest: /home/pi/AFL-automation  
+   - name: update apt
+     become: true
+     ansible.builtin.apt:
+       update_cache: yes
+       cache_valid_time: 3600
    - name: install hdf5 with apt
      become: true
      ansible.builtin.apt:

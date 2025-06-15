@@ -663,7 +663,7 @@ class APIServer:
         return 'Success',200
 
     def clear_queue(self):
-        self.task_queue.queue.clear()
+        self.task_queue.clear()
         return 'Success',200
 
     def clear_history(self):

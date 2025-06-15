@@ -307,15 +307,6 @@
                 updateTaskList("#queued", result[2], "queued");
             });
 
-            // Retrieve unqueued commands
-            $.get("/get_quickbar", function (data) {
-                displayCommands("#quickbar-commands", data);
-            });
-
-            // Retrieve queued commands
-            $.get("/get_queued_commands", function (data) {
-                displayCommands("#queued-commands", data);
-            });
         }
 
  // Function to display commands and handle command execution
@@ -386,7 +377,17 @@ function displayCommands(containerId, commands) {
 }
 
         // Initial update
+
         update();
+        // Retrieve unqueued commands
+        $.get("/get_quickbar", function (data) {
+            displayCommands("#quickbar-commands", data);
+        });
+
+        // Retrieve queued commands
+        $.get("/get_queued_commands", function (data) {
+                displayCommands("#queued-commands", data);
+            });
         setInterval(update, 500); // Update every 0.5 seconds
         setTimeout(function () {
             $('#running')[0].scrollIntoView();

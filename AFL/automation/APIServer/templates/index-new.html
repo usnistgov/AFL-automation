@@ -307,11 +307,6 @@
                 updateTaskList("#queued", result[2], "queued");
             });
 
-            // Retrieve unqueued commands
-            $.get("/get_quickbar", function (data) {
-                displayCommands("#quickbar-commands", data);
-            });
-
             // Retrieve queued commands
             $.get("/get_queued_commands", function (data) {
                 displayCommands("#queued-commands", data);
@@ -385,7 +380,12 @@ function displayCommands(containerId, commands) {
     }
 }
 
-        // Initial update
+        // Populate quickbar controls once on page load
+        $.get("/get_quickbar", function (data) {
+            displayCommands("#quickbar-commands", data);
+        });
+
+        // Initial update of status information
         update();
         setInterval(update, 500); // Update every 0.5 seconds
         setTimeout(function () {

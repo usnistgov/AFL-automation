@@ -1,0 +1,110 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "AFL/automation/_version.py"
+
+[project]
+name = "AFL-automation"
+dynamic = ["version"]
+description = "Hardware interfacing code for the Autonomous Formulation Lab"
+authors = [
+  { name = "Tyler B. Martin", email = "tyler.martin@nist.gov" },
+  { name = "Peter A. Beaucage" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+license = "NIST-PD-fallback"
+dependencies = [
+  # Web framework and related
+  "Flask",
+  "Flask_Cors",
+  "Flask_JWT_Extended>=4.0",
+  "Werkzeug",
+  "Requests",
+  "zeroconf",
+  "waitress",
+  "caproto", 
+ 
+  # Data processing core
+  "numpy",
+  "pandas",
+  "scipy",
+  "xarray",
+  "h5py",
+  "tiled",
+  
+  # Visualization core
+  "bokeh",
+  "matplotlib",
+  "plotly",
+  "ipywidgets",
+  
+  # Scientific utilities
+  "periodictable",
+  "Pillow",
+  "Pint",
+  "scikit_learn",
+  "scikit-image",
+  
+  # Development utilities
+  "pytest",
+  "tqdm",
+  "pyparsing",
+  "six",
+  "setuptools",
+  "ipython",
+  "lazy_loader",
+  "entrypoints"
+]
+
+[project.scripts]
+roboctl = "AFL.automation.cli:main"
+
+[project.entry-points."tiled.special_client"]
+"afl.event_catalog" = "AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents:CatalogOfAFLEvents"
+"afl.driver_task" = "AFL.automation.APIServer.data.TiledClients.DriverTask:DriverTask"
+
+[project.optional-dependencies]
+labjack = ["labjack-ljm"]
+piplates = ["piplates"]
+rpi-gpio = ["RPi.GPIO"]
+serial = ["pyserial"]
+seabreeze = ["seabreeze"]
+opentrons = ["opentrons"]
+pyspec = ["certif-pyspec"]
+scattering-processing = ["fabio", "pyFAI"]
+sas-analysis = ["sasmodels", "sasdata"]
+ml = ["tensorflow", "gpflow"]
+geometry = ["alphashape", "shapely"]
+neutron-scattering = ["epics", "sans", "mantid"]
+remote-access = ["paramiko"]
+docs = [
+  "sphinx>=7.1.0",
+  "sphinx-rtd-theme>=2.0.0",
+  "sphinx-autodoc-typehints>=1.25.2",
+  "sphinx-copybutton>=0.5.2",
+  "myst-parser>=2.0.0",
+  "nbsphinx>=0.9.3",
+  "sphinxcontrib-apidoc",
+  "sphinxcontrib-napoleon",
+  "pydata-sphinx-theme",
+  "sphinx-autosummary-accessors",
+]
+win32 = ["pywin32"]
+vision = ["opencv-python"]
+
+# You can add more extras as needed for other hardware modules.
+[tool.hatch.build]
+packages = ["AFL"]
+include-package-data = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["AFL"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["AFL"]

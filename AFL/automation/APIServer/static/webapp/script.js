@@ -104,6 +104,72 @@ function addServerToMenu(server) {
     });
 }
 
+
+// Local storage helper functions
+function setCookie(name, value, days) {
+    try {
+        // Convert value to string if it's not already
+        const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+        localStorage.setItem(name, stringValue);
+        
+        // If days are specified, set an expiration
+        if (days) {
+            const expiration = new Date();
+            expiration.setDate(expiration.getDate() + days);
+            localStorage.setItem(name + '_expiration', expiration.toISOString());
+        }
+    } catch (e) {
+        console.error('Error saving to localStorage', e);
+    }
+}
+
+function getCookie(name) {
+    try {
+        // Check for expiration
+        const expiration = localStorage.getItem(name + '_expiration');
+        if (expiration && new Date() > new Date(expiration)) {
+            // If expired, remove the item and return null
+            localStorage.removeItem(name);
+            localStorage.removeItem(name + '_expiration');
+            return null;
+        }
+
+        const value = localStorage.getItem(name);
+        if (value === null) {
+            return null;
+        }
+
+        // Try to parse the value as JSON, if it fails, return the string value
+        try {
+            return JSON.parse(value);
+        } catch {
+            return value;
+        }
+    } catch (e) {
+        console.error('Error reading from localStorage', e);
+        return null;
+    }
+}
+
+// Function to remove an item from local storage
+function removeCookie(name) {
+    try {
+        localStorage.removeItem(name);
+        localStorage.removeItem(name + '_expiration');
+    } catch (e) {
+        console.error('Error removing item from localStorage', e);
+    }
+}
+
+// Function to clear all items from local storage
+function clearAllCookies() {
+    try {
+        localStorage.clear();
+    } catch (e) {
+        console.error('Error clearing localStorage', e);
+    }
+}
+
 /**
  * Removes the div element and re-enables the button to re-add
  * @param {Div Element} div 
@@ -134,6 +200,8 @@ function closeDiv(div) {
     // updates the div's onScreen attribute
     var div2 = getDiv(serverKey, divType);
     div2.setOnScreen(false);
+
+    saveLayout();
 }
 
 /**
@@ -178,6 +246,69 @@ function setColCount(count) {
       $('#column2').show();
       $('#column3').show();
     }
+    saveLayout();
+}
+
+function saveLayout() {
+    const layout = {
+        columnCount: $(".container-column:visible").length,
+        columns: [],
+        servers: servers.map(s => ({ address: s.address, key: s.key, name: s.name }))
+    };
+    $(".container-column").each(function(){
+        const column = [];
+        $(this).children('.container').each(function(){
+            column.push({
+                serverKey: $(this).attr('serverKey'),
+                divType: $(this).attr('divType')
+            });
+        });
+        layout.columns.push(column);
+    });
+    setCookie('layout', layout, 30);
+    // keep cachedServers cookie in sync
+    setCookie('cachedServers', layout.servers, 30);
+}
+
+function loadLayout() {
+    const layout = getCookie('layout');
+    if(!layout) {
+        // If no layout cached, add default divs for each server
+        servers.forEach(function(server){
+            addQuickbarDiv(server.key);
+            addStatusDiv(server.key);
+            addControlsDiv(server.key);
+            addQueueDiv(server.key);
+        });
+        return false;
+    }
+    if(layout.servers && layout.servers.length){
+        layout.servers.forEach(function(info){
+            if(!getServer(info.key)){
+                let server = new Server(info.address, info.key);
+                // server.name will be fetched in constructor
+                addServerToMenu(server);
+            }
+        });
+        setCookie('cachedServers', layout.servers, 30);
+    }
+    setColCount(layout.columnCount || 1);
+    // Remove existing containers
+    $(".container").remove();
+    layout.columns.forEach(function(column, idx){
+        column.forEach(function(item){
+            const addFunc = {
+                'status': addStatusDiv,
+                'controls': addControlsDiv,
+                'queue': addQueueDiv,
+                'quickbar': addQuickbarDiv
+            }[item.divType];
+            if(addFunc){
+                addFunc(item.serverKey, idx+1);
+            }
+        });
+    });
+    return true;
 }
 
 function distributeContainers() {
@@ -192,6 +323,7 @@ function distributeContainers() {
       }
     }
 
+    saveLayout();
 }
 
 $(function() {
@@ -201,18 +333,38 @@ $(function() {
     });
 
     // Makes the divs sortable with the header class
-    $("#column1, #column2, #column3").sortable({ 
-      handle: '.header', 
+    $("#column1, #column2, #column3").sortable({
+      handle: '.header',
       connectWith:".container-column",
       cancel: '',
-      placeholder: "container-placeholder"
+      placeholder: "container-placeholder",
+      update: function(event, ui){
+          saveLayout();
+      }
     });
 
+});
+
+
+// Function to load cached servers on page load
+function loadCachedServers() {
+    const cachedServers = getCookie('cachedServers') || [];
+    cachedServers.forEach(serverInfo => {
+        let server = new Server(serverInfo.address, serverInfo.key);
+        addServerToMenu(server);
+    });
+}
+
+$(document).ready(function() {
+    loadCachedServers();
+    loadLayout();
+    // ... other initialization code ...
+    $(window).on('beforeunload', saveLayout);
 });
 
 // check robot status every 5 seconds and adjust background color accordingly
 setInterval(function(){ 
     for(let s in servers){
-        servers[s].update();
+        servers[s].debouncedUpdate();
     }
-}, 500);
+}, 1000);

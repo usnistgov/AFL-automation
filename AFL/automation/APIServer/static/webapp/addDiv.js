@@ -19,8 +19,8 @@ class Div {
     /**
      * Adds the div to the html and fills it in accordance to the div type
      */
-    display() {
-        $("#column1").append(this.div);
+    display(column=1) {
+        $("#column" + column).append(this.div);
         this.#addDivControls();
         this.#addHeader();
 
@@ -147,49 +147,55 @@ class Div {
         return content;
     }
 
-    /**
+/**
      * Updates the content of a status div
      * @param {Server} server 
      */
     #updateStatusContent(server) {
-        var driverID = '#' + this.serverKey + '_driver';
-        var stateID = '#' + this.serverKey + '_state';
-        var experimentID = '#' + this.serverKey + '_experiment';
-        var numCompletedID = '#' + this.serverKey + '_numCompleted';
-        var numQueuedID = '#' + this.serverKey + '_numQueued';
-        var driverStatusID = '#' + this.serverKey + '_driverStatus';
-        var dateTimeID = '#' + this.serverKey + '_dateTime';
+        const driverID = '#' + this.serverKey + '_driver';
+        const stateID = '#' + this.serverKey + '_state';
+        const experimentID = '#' + this.serverKey + '_experiment';
+        const numCompletedID = '#' + this.serverKey + '_numCompleted';
+        const numQueuedID = '#' + this.serverKey + '_numQueued';
 
-        server.getInfo(function(result) {
-            var r = JSON.parse(result);
+        // Update driver and experiment info (these don't change often)
+        $(driverID).text(server.name);
+        $(experimentID).text(server.experiment);
 
-            $(driverID).text(r["driver"]);
-            $(stateID).text(r["queue_state"]);
-            $(experimentID).text(r["experiment"]);
-
-            var completed = r.queue[0].length;
-            $(numCompletedID).text(completed);
-
-            var queued = r.queue[2].length + r.queue[1].length;
-            $(numQueuedID).text(queued);
+        // Fetch current queue state
+        server.getQueueState((queueState) => {
+            $(stateID).text(queueState);
         });
 
-        server.getDriverStatus(function(result) {
-            var r = JSON.parse(result);
-            var status = '';
+        // Use the cached queue information for completed and queued counts
+        server.getQueue((result) => {
+            const [completed, current, queued] = result;
+            $(numCompletedID).text(completed.length);
+            $(numQueuedID).text(queued.length);
+        });
 
+        // Update other status information
+        this.#updateDriverStatus(server);
+        this.#updateServerTime(server);
+    }
+    #updateDriverStatus(server) {
+        const driverStatusID = '#' + this.serverKey + '_driverStatus';
+        server.getDriverStatus((result) => {
+            const r = JSON.parse(result);
+            let status = '';
             for(let i in r) {
                 status += r[i] + ' | ';
             }
-            
             $(driverStatusID).text(status);
         });
-
-        server.getServerTime(function(result) {
-            $(dateTimeID).text(result);
-        })
     }
 
+    #updateServerTime(server) {
+        const dateTimeID = '#' + this.serverKey + '_dateTime';
+        server.getServerTime((result) => {
+            $(dateTimeID).text(result);
+        });
+    }
     /**
      * Creates and returns the controls div content
      * @returns String of html content for controls div
@@ -267,46 +273,43 @@ class Div {
         // return content;
     }
 
-    /**
+ /**
      * Updates the content of a queue div
      * @param {Server} server 
      */
     #updateQueueContent(server) {
-        var completedID = '#' + this.serverKey + '_history';
-        var uncompletedID = '#' + this.serverKey + '_queued';
-        var currentID = '#' + this.serverKey + '_current';
-        var key = this.serverKey;
+        const completedID = '#' + this.serverKey + '_history';
+        const uncompletedID = '#' + this.serverKey + '_queued';
+        const currentID = '#' + this.serverKey + '_current';
+        const key = this.serverKey;
 
         server.getQueue(function(result) {
-            var len_completed = $(completedID).children().length;
-            var len_current = $(currentID).children().length;
-            var len_queue = $(uncompletedID).children().length;
+            const [completed, current, queued] = result;
+            
+            // Check if completed tasks have changed
+            if (!arraysEqual(completed, $(completedID).children().map((i, el) => $(el).text()).get())) {
+                const items = completed.map((t, i) => `<li onclick="addTaskPopup('${key}',0,${i})">${t.task.task_name}</li>`).join('');
+                $(completedID).html(items);
+            }
 
-
-            if(len_completed != result[0].length || len_current != result[1].length || len_queue != result[2].length) {
-                // console.log('Redrew divs')
-                $(completedID).empty();
-                for(let i in result[0]) {
-                    var task = '<li onclick="addTaskPopup(\''+key+'\',0,'+i+')">'+result[0][i].task.task_name+'</li>';
-                    $(completedID).append(task);
+            // Check if current task has changed
+            if (current.length > 0) {
+                const currentTask = '<li onclick="addTaskPopup(\'' + key + '\',1,0)" class="currentTask">' + current[0].task.task_name + '</li>';
+                if ($(currentID).html() !== currentTask) {
+                    $(currentID).html(currentTask);
                 }
-
+            } else if ($(currentID).children().length > 0) {
                 $(currentID).empty();
-                if(result[1].length > 0) {
-                    var currentTask = '<li onclick="addTaskPopup(\''+key+'\',1,0)" class="currentTask">'+result[1][0].task.task_name+'</li>';
-                    $(currentID).append(currentTask);
-                }
+            }
 
-                $(uncompletedID).empty();
-                for(let i in result[2]) {
-                    var task = '<li onclick="addTaskPopup(\''+key+'\',2,'+i+')">'+result[2][i].task.task_name+'</li>';
-                    $(uncompletedID).append(task);
-                }
-        } else {
-            //console.log('Nothing changed, skip div redraw')
-	}
+            // Check if queued tasks have changed
+            if (!arraysEqual(queued, $(uncompletedID).children().map((i, el) => $(el).text()).get())) {
+                const items = queued.map((t, i) => `<li onclick="addTaskPopup('${key}',2,${i})">${t.task.task_name}</li>`).join('');
+                $(uncompletedID).html(items);
+            }
         });
     }
+
 }
 
 /**
@@ -379,46 +382,59 @@ function getDiv(serverKey, divType) {
  * Creates and adds a status div for the corresponding server
  * @param {String} key
  */
-function addStatusDiv(key) {
+function addStatusDiv(key, column=1) {
     var server = getServer(key);
-    server.statusDiv.display();
+    server.statusDiv.display(column);
 
     var id = '#'+server.statusDiv.addBtnID;
     disableBtn($(id));
+    saveLayout();
 }
 
 /**
  * Creates and adds a controls div for the corresponding server
  * @param {String} key
  */
-function addControlsDiv(key) {
+function addControlsDiv(key, column=1) {
     var server = getServer(key);
-    server.controlsDiv.display();
+    server.controlsDiv.display(column);
 
     var id = '#'+server.controlsDiv.addBtnID;
     disableBtn($(id));
+    saveLayout();
 }
 
 /**
  * Creates and adds a queue div for the corresponding server
  * @param {String} key
  */
-function addQueueDiv(key) {
+function addQueueDiv(key, column=1) {
     var server = getServer(key);
-    server.queueDiv.display();
+    server.queueDiv.display(column);
 
     var id = '#'+server.queueDiv.addBtnID;
     disableBtn($(id));
+    saveLayout();
 }
 
 /**
  * Creates and adds a quickbar div for the corresponding server
  * @param {String} key
  */
-function addQuickbarDiv(key) {
+function addQuickbarDiv(key, column=1) {
     var server = getServer(key);
-    server.quickbarDiv.display();
+    server.quickbarDiv.display(column);
 
     var id = '#'+server.quickbarDiv.addBtnID;
     disableBtn($(id));
+    saveLayout();
+}
+
+// Helper function to compare arrays
+function arraysEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
 }

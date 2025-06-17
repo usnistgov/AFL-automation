@@ -89,7 +89,8 @@ class ServerDiscovery():
         '''
         Does a zeroconf request to find a named AFL-automation server on the network.
 
-        Returns a tuple of (hostname:port string,ServiceInfo object) if found, None if not found.
+        Returns a tuple of ``(hostname:port, ServiceInfo)`` when the service is
+        found.  If the service cannot be located an ``Exception`` is raised.
         '''
         return self._run_async(self.aio_find_server_by_name(service_name))
     
@@ -98,7 +99,8 @@ class ServerDiscovery():
         '''
         Does a zeroconf request to find a named AFL-automation server on the network.
 
-        Returns a tuple of (hostname:port string,ServiceInfo object) if found, None if not found.
+        Returns a tuple of ``(hostname:port, ServiceInfo)`` when the service is
+        found.  If the service cannot be located an ``Exception`` is raised.
         '''
         sd = ServiceDiscovery()
         return await sd.aio_find_server_by_name(service_name)

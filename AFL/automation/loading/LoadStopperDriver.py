@@ -22,11 +22,11 @@ class LoadStopperDriver(Driver):
     defaults['stopper_threshold_npts'] = 50
     defaults['stopper_threshold_v_step'] = 1
     defaults['stopper_threshold_std'] = 3.0
-    defaults['stopper_min_load_time'] = 30
+    defaults['stopper_min_load_time'] = 3
     defaults['stopper_timeout'] = 120
     defaults['stopper_loadstop_cooldown'] = 2
     defaults['stopper_post_detection_sleep'] = 1 
-    defaults['stopper_baseline_duration'] = 10
+    defaults['stopper_baseline_duration'] = 2
     defaults['stopper_filepath'] = str(pathlib.Path.home()/'.afl/loadstopper_data/')
     defaults['sensorlabel'] = ''
 

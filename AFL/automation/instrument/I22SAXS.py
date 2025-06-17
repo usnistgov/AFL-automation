@@ -11,13 +11,16 @@ import datetime
 import xarray as xr
 import numpy as np
 
-import paramiko #general ssh connection client
+import lazy_loader as lazy
+# SSH client for remote instrument connections
+paramiko = lazy.load("paramiko", require="AFL-automation[remote-access]") #general ssh connection client
 
 class I22SAXS(Driver):
     defaults = {}
     defaults['username'] = ''
     defaults['address'] = ''
     defaults['port'] = 2222
+    defaults['ssh_key_path'] = ''
     defaults['processed_base_path'] = '/mnt/i22_processed/i22-'
     defaults['reduced_data_suffix'] = '_saxs_Transmission_Averaged_Subtracted_IvsQ_processed.nxs'
     defaults['nframes'] = 1
@@ -37,7 +40,7 @@ class I22SAXS(Driver):
         self.I22_client.load_system_host_keys()
     
         try:
-            self.I22_client.connect(self.config['address'],username=self.config['username'],port=self.config['port'])
+            self.I22_client.connect(self.config['address'],username=self.config['username'],port=self.config['port'],key_filename=self.config['ssh_key_path'])
 
         except:
             raise ValueError("cannot connect to host. check the username and address")
@@ -122,11 +125,16 @@ class I22SAXS(Driver):
         self.data['scan_ids'] = scan_id_list
         self.data['counters'] = counters_list
         self.data['transmissions'] = transmission_list
-        
+
         if empty and set_empty:
             self.config['empty_scan_id'] = scan_id_list[selected_run]
+        self.data['scan_id'] = scan_id_list[selected_run]
+        self.data['counter'] = counters_list[selected_run]
+        self.data['transmission'] = transmission_list[selected_run]
+    
+        self.read_integrated(scan_id_list[selected_run])
 
-        return self.read_integrated(scan_id_list[selected_run])
+        return transmission_list[selected_run]
 
     def read_integrated(self,scanid):
         """ 
@@ -162,6 +170,6 @@ class I22SAXS(Driver):
         return scanid
 
 
-_DEFAULT_CUSTOM_PORT = 5001
+_DEFAULT__PORT = 5001
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *

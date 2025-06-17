@@ -1,7 +1,9 @@
 import requests,uuid,time,copy,inspect
 from AFL.automation.shared import serialization
-from AFL.automation.shared.ServerDiscovery import ServerDiscovery
-
+try:
+    from AFL.automation.shared.ServerDiscovery import ServerDiscovery
+except ModuleNotFoundError:
+    pass
 class Client:
     '''
     Communicate with APIServer 
@@ -24,6 +26,7 @@ class Client:
         self.cached_queue = None
         self.queue_iteration = None
         self.supports_queue_iteration = False
+        self.headers = {}
         try:
             import AFL.automation.shared.widgetui
             import IPython
@@ -61,8 +64,8 @@ class Client:
         self.token  = response.json()['token']
         self.headers = {'Authorization':'Bearer {}'.format(self.token)}
         if populate_commands:
-            self.get_queued_commmands()
-            self.get_unqueued_commmands()
+            self.get_queued_commands()
+            self.get_unqueued_commands()
         try:
             response = requests.post(self.url + '/get_queue_iteration',headers=self.headers)
             self.supports_queue_iteration = True
@@ -135,7 +138,7 @@ class Client:
             raise RuntimeError(f'API call to set_queue_mode command failed with status_code {response.status_code}\n{response.text}')
         return response.json()
 
-    def get_unqueued_commmands(self,inherit_commands=True):
+    def get_unqueued_commands(self,inherit_commands=True):
         response = requests.get(self.url+'/get_unqueued_commands',headers=self.headers)
         if response.status_code != 200:
             raise RuntimeError(f'API call to get_queued_commands command failed with status_code {response.status_code}\n{response.text}')
@@ -156,7 +159,7 @@ class Client:
                 
         return response.json()
         
-    def get_queued_commmands(self,inherit_commands=True):
+    def get_queued_commands(self,inherit_commands=True):
         response = requests.get(self.url+'/get_queued_commands',headers=self.headers)
         if response.status_code != 200:
             raise RuntimeError(f'API call to get_queued_commands command failed with status_code {response.status_code}\n{response.text}')

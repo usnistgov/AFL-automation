@@ -9,11 +9,13 @@ class DummyDriver(Driver):
     defaults = {}
     defaults['speed of light'] = 3.0e8
     defaults['density of water'] = 1.0
-    def __init__(self,name=None,overrides=None):
+    def __init__(self,name=None,overrides=None,useful_links=None):
         self.app = None
         if name is None:
             name = 'DummyDriver'
-        Driver.__init__(self,name=name,defaults=self.gather_defaults(),overrides=overrides)
+        if useful_links is None:
+            useful_links = {'How Many (5)':'/how_many?count=5'}
+        Driver.__init__(self,name=name,defaults=self.gather_defaults(),overrides=overrides,useful_links=useful_links)
 
     def status(self):
         status = []
@@ -98,3 +100,6 @@ class DummyDriver(Driver):
         'params':{'sampleVolume':{'label':'Sample Volume (mL)','type':'float','default':0.3}}})
     def loadSample(self,cellname='cell',sampleVolume=0):
         pass
+
+if __name__ == '__main__':
+    from AFL.automation.shared.launcher import *

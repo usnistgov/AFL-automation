@@ -1,0 +1,9 @@
+jupyterlite-core
+jupyterlite-pyodide-kernel
+jupyterlab-open-url-parameter
+jupyterlab-night
+jupyter_server
+ipywidgets
+bqplot
+plotly
+bokeh

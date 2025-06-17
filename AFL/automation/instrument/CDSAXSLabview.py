@@ -1,18 +1,18 @@
-import win32com
-import win32com.client
-from win32process import SetProcessWorkingSetSize
-from win32api import GetCurrentProcessId,OpenProcess
-from win32con import PROCESS_ALL_ACCESS
-import gc
-import pythoncom
+import lazy_loader as lazy
+win32com = lazy.load("win32com", require="AFL-automation[win32]")
+gc = lazy.load("gc", require="AFL-automation[win32]")
+pythoncom = lazy.load("pythoncom", require="AFL-automation[win32]")
+
 import time
 import datetime
+
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
 import numpy as np # for return types in get data
 import h5py #for Nexus file writing
 import os
 import scipy.ndimage as ndi
+import pandas as pd
 
 
 class CDSAXSLabview(ScatteringInstrument,Driver):
@@ -36,6 +36,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
     defaults['relative_pressure_ratio_limit']=10
     defaults['sample_thickness']=0.18 #cm
     defaults['absolute_calibration_factor']=1.0
+    defaults['empty_filename'] = None
     
     axis_name_to_id_lut = {
         'X-stage' : 0,
@@ -63,6 +64,15 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
             vi: (str) the path to the LabView virtual instrument file for the main interface
 
         '''
+        import win32com.client
+        from win32process import SetProcessWorkingSetSize
+        from win32api import GetCurrentProcessId,OpenProcess
+        from win32con import PROCESS_ALL_ACCESS
+        self.client = win32com.client
+        self.SetProcessWorkingSetSize = SetProcessWorkingSetSize
+        self.GetCurrentProcessId = GetCurrentProcessId
+        self.OpenProcess = OpenProcess
+        self.PROCESS_ALL_ACCESS = PROCESS_ALL_ACCESS
 
         self.app = None
         Driver.__init__(self,name='CDSAXSLabview',defaults=self.gather_defaults(),overrides=overrides)
@@ -113,7 +123,8 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
  
 
 
-        '''with (LabviewConnection() if lv is None else lv) as lv:
+        '''
+        with (LabviewConnection() if lv is None else lv) as lv:
             self.status_txt = 'Moving beamstop out for transmission...'
             self.moveAxis(self.config['nmc_beamstop_out'],block=True,lv=lv)
             self.moveAxis(self.config['nmc_sample_out'],block=True,lv=lv)
@@ -365,7 +376,7 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 self.status_txt = 'Accessing Image'
                 return self.getData(lv=lv)
 
-    def expose(self,name=None,exposure=None,block=True,reduce_data=True,measure_transmission=True,save_nexus=True,sample_position=None,sample_thickness=None,lv=None):
+    def expose(self,name=None,exposure=None,block=True,reduce_data=True,measure_transmission=True,save_nexus=True,sample_position=None,sample_thickness=None,subtract_empty=False,lv=None):
         with (LabviewConnection() if lv is None else lv) as lv:
             if name is None:
                 name=self.getFilename(lv=lv)
@@ -422,6 +433,26 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 self.config['nmc_sample_in'] = cached_pos
             if sample_thickness is not None:
                 self.config['sample_thickness'] = cached_thickness
+            if subtract_empty:
+                if self.config['empty_filename'] is not None:
+                    empty_data = pd.read_csv(self.config['empty_filename'],comment='#',header=None,delim_whitespace=True)
+                    empty_data.columns = ['q','I']
+                    self.data.add_array('raw_I',reduced[1])
+                    reduced[1] = reduced[1] - empty_data.I
+                else:
+                    self.app.logger.error('Asked for subtracted data, but no empty filename set.  Returning UNSUBTRACTED DATA.')
+            print(np.shape(reduced))
+            self.data['q'] = reduced[0]
+            self.data['filename'] = name
+            self.data['transmission'] = transmission[0]
+            self.data['open_direct_beam_cts'] = transmission[1]
+            self.data['sample_direct_beam_cts'] = transmission[2]
+            self.data['empty_cell_transmission'] = transmission[3]
+            self.data.add_array('q',reduced[0])
+            self.data.add_array('I',reduced[1])
+            #self.data.add_array('dI',reduced[2])
+            
+            return transmission
             
     def scan(self,axis,npts,start,step,name=None,exposure=None,block=False):
         if name is not None:
@@ -495,7 +526,7 @@ class LabviewConnection():
         pythoncom.CoUninitialize()
         if(pythoncom._GetInterfaceCount()>0):
             print(f'Closed COM connection, but had remaining objects: {pythoncom._GetInterfaceCount()}')
-            SetProcessWorkingSetSize(OpenProcess(PROCESS_ALL_ACCESS,True,GetCurrentProcessId()),-1,-1)
+            self.SetProcessWorkingSetSize(self.OpenProcess(self.PROCESS_ALL_ACCESS,True,self.GetCurrentProcessId()),-1,-1)
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *
 

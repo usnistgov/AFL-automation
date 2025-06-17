@@ -1,0 +1,1005 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFL.automation.instrument.SINQSANS &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/instrument/SINQSANS';</script>
+    <link rel="icon" href="../../../../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../../../../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../automation.html" class="nav-link">AFL.automation</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.instrument.SINQSANS</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for AFL.automation.instrument.SINQSANS</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.instrument.ScatteringInstrument</span> <span class="kn">import</span> <span class="n">ScatteringInstrument</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> <span class="c1"># for return types in get data</span>
+<span class="kn">import</span> <span class="nn">h5py</span> <span class="c1">#for Nexus file writing</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">PIL</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">re</span><span class="o">,</span><span class="nn">telnetlib</span> <span class="c1">#for sics telnet comms</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+
+<div class="viewcode-block" id="SINQSANS">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS">[docs]</a>
+<span class="k">class</span> <span class="nc">SINQSANS</span><span class="p">(</span><span class="n">ScatteringInstrument</span><span class="p">,</span><span class="n">Driver</span><span class="p">):</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;sics_host&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sans.psi.ch&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;sics_port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1301</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;user_login&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;User 22lns1&#39;</span>  <span class="c1">#User  23lns1</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;transmission strategy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sum&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;reduced_data_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/mnt/home/chess_id3b/beaucage/211012-data&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;exposure&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;absolute_calibration_factor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;data_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/home/afl642&#39;</span>
+
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;pixel1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.075</span> <span class="c1">#pixel y size in m</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;pixel2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.075</span> <span class="c1">#pixel x size in m</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;num_pixel1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">128</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;num_pixel2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">128</span>
+<div class="viewcode-block" id="SINQSANS.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        connect to spec</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SINQSANS&#39;</span><span class="p">,</span><span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+        <span class="n">ScatteringInstrument</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">SICSTelnetClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sics_host&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sics_port&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;user_login&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_monitor_client</span> <span class="o">=</span>  <span class="n">SICSTelnetClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sics_host&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sics_port&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;user_login&#39;</span><span class="p">])</span>
+       
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;reduced_data_dir&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;reduced_data_dir&#39;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__instrument_name__</span> <span class="o">=</span> <span class="s1">&#39;PSI SINQ SANS instrument&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Just started...&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span></div>
+
+        
+
+<div class="viewcode-block" id="SINQSANS.pre_execute">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.pre_execute">[docs]</a>
+    <span class="k">def</span> <span class="nf">pre_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.setReducedDataDir">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.setReducedDataDir">[docs]</a>
+    <span class="k">def</span> <span class="nf">setReducedDataDir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;reduced_data_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.measureTransmission">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.measureTransmission">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Measure Transmission&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;params&#39;</span><span class="p">:{</span>
+        <span class="s1">&#39;set_empty_transmission&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Set Empty Trans?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;boolean&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
+        <span class="p">}})</span>
+    <span class="k">def</span> <span class="nf">measureTransmission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">set_empty_transmission</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">return_full</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_simple_expose</span><span class="p">(</span><span class="n">exposure</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;trans&#39;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;banana sum 40 80 40 80&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">cts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;banana sum 40 80 40 80&#39;</span><span class="p">))</span>
+
+        <span class="n">monitor_cts</span> <span class="o">=</span> <span class="mi">10</span> 
+        <span class="n">trans</span> <span class="o">=</span> <span class="n">cts</span><span class="o">/</span><span class="n">monitor_cts</span>
+        
+        <span class="k">if</span> <span class="n">set_empty_transmission</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trans</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span> <span class="o">=</span> <span class="p">(</span><span class="n">trans</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">],</span><span class="n">monitor_cts</span><span class="p">,</span><span class="n">cts</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">return_full</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">trans</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty transmission&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.lastMeasuredTransmission">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.lastMeasuredTransmission">[docs]</a>
+    <span class="k">def</span> <span class="nf">lastMeasuredTransmission</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span></div>
+
+        
+<div class="viewcode-block" id="SINQSANS.getExposure">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getExposure">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>        
+    <span class="k">def</span> <span class="nf">getExposure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            get the currently set exposure time</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;exposure&#39;</span><span class="p">]</span></div>
+
+
+        
+<div class="viewcode-block" id="SINQSANS.getFilename">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getFilename">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getFilename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            get the currently set file name</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.getLastFilePath">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getLastFilePath">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getLastFilePath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            get the currently set file name</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">sicsdatanumber</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;sicsdatanumber&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">sicsdatanumber</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> 
+                <span class="k">if</span> <span class="n">count</span><span class="o">&gt;</span><span class="mi">10</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Could not read sicsdatanumber!&#39;</span><span class="p">)</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">count</span><span class="o">+=</span><span class="mi">1</span>
+
+        <span class="c1"># filepath = pathlib.Path(self.config[&#39;data_path&#39;])/f&#39;sans2023n000{sicsdatanumber}.hdf&#39;</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;data_path&#39;</span><span class="p">])</span><span class="o">/</span><span class="sa">f</span><span class="s1">&#39;sans2023n</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">sicsdatanumber</span><span class="p">)</span><span class="si">:</span><span class="s1">06d</span><span class="si">}</span><span class="s1">.hdf&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Last file found to be </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Last file found to be </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filepath</span></div>
+
+
+   
+<div class="viewcode-block" id="SINQSANS.setExposure">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.setExposure">[docs]</a>
+    <span class="k">def</span> <span class="nf">setExposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">exposure</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting exposure time to </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;exposure&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exposure</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.setFilename">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.setFilename">[docs]</a>
+    <span class="k">def</span> <span class="nf">setFilename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting filename to </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span><span class="n">name</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SINQSANS.getElapsedTime">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getElapsedTime">[docs]</a>
+    <span class="k">def</span> <span class="nf">getElapsedTime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span> </div>
+
+
+<div class="viewcode-block" id="SINQSANS.readH5">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.readH5">[docs]</a>
+    <span class="k">def</span> <span class="nf">readH5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span><span class="n">update_config</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">out_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5</span><span class="p">:</span>
+            <span class="n">out_dict</span><span class="p">[</span><span class="s1">&#39;counts&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="n">h5</span><span class="p">[</span><span class="s1">&#39;entry1/data1/counts&#39;</span><span class="p">][()]</span>
+            <span class="c1"># out_dict[&#39;name&#39;]           = h5[&#39;entry1/sample/name&#39;][()]</span>
+            <span class="c1"># out_dict[&#39;dist&#39;]           = h5[&#39;entry1/SANS/detector/x_position&#39;][()]/1000</span>
+            <span class="c1"># out_dict[&#39;wavelength&#39;]     = h5[&#39;entry1/data1/lambda&#39;][()]*1e-9,</span>
+            <span class="c1"># out_dict[&#39;beam_center_x&#39;]  = h5[&#39;entry1/SANS/detector/beam_center_x&#39;][()]</span>
+            <span class="c1"># out_dict[&#39;beam_center_y&#39;]  = h5[&#39;entry1/SANS/detector/beam_center_y&#39;][()]</span>
+            <span class="c1"># out_dict[&#39;poni2&#39;]          = h5[&#39;entry1/SANS/detector/beam_center_x&#39;][()]*self.config[&#39;pixel1&#39;]</span>
+            <span class="c1"># out_dict[&#39;poni1 &#39;]         = h5[&#39;entry1/SANS/detector/beam_center_y&#39;][()]*self.config[&#39;pixel2&#39;]</span>
+
+        <span class="c1"># if update_config:</span>
+        <span class="c1">#     self.config[&#39;wavelength&#39;] = out_dict[&#39;wavelength&#39;]</span>
+        <span class="c1">#     self.config[&#39;dist&#39;]       = out_dict[&#39;dist&#39;]</span>
+        <span class="c1">#     self.config[&#39;poni1&#39;]      = out_dict[&#39;poni1&#39;]</span>
+        <span class="c1">#     self.config[&#39;poni2&#39;]      = out_dict[&#39;poni2&#39;]</span>
+
+        <span class="k">return</span> <span class="n">out_dict</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.getData">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getData">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;2d_img&#39;</span><span class="p">,</span><span class="n">log_image</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">getData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLastFilePath</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readH5</span><span class="p">(</span><span class="n">filepath</span><span class="p">)[</span><span class="s1">&#39;counts&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span><span class="ne">OSError</span><span class="p">,</span><span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">nattempts</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">nattempts</span><span class="o">&lt;</span><span class="mi">31</span><span class="p">:</span>
+                <span class="n">nattempts</span> <span class="o">=</span> <span class="n">nattempts</span> <span class="o">+</span><span class="mi">1</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLastFilePath</span><span class="p">()</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readH5</span><span class="p">(</span><span class="n">filepath</span><span class="p">)[</span><span class="s1">&#39;counts&#39;</span><span class="p">]</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span><span class="ne">OSError</span><span class="p">,</span><span class="ne">KeyError</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">nattempts</span> <span class="o">==</span> <span class="mi">30</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;could not locate file after </span><span class="si">{</span><span class="n">nattempts</span><span class="si">}</span><span class="s1"> tries&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;failed to load file, trying again, this is try </span><span class="si">{</span><span class="n">nattempts</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+                
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+
+    <span class="k">def</span> <span class="nf">_simple_expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">exposure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;scatt&#39;</span><span class="p">,</span><span class="n">aects</span><span class="o">=</span><span class="mf">1e6</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getFilename</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setFilename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exposure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getAutoExposure</span><span class="p">(</span><span class="n">desired_counts</span> <span class="o">=</span> <span class="n">aects</span><span class="p">)</span>
+        
+        <span class="c1">#self.setExposure(exposure)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Starting </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> moni count named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting exposure with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> moni cts&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;scatt&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_cmd</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MLscatt </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_cmd</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MLtrans </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blockForCompleted</span><span class="p">()</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">flush_buffer</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="SINQSANS.getAutoExposure">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getAutoExposure">[docs]</a>
+    <span class="k">def</span> <span class="nf">getAutoExposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">short_count_dur</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">desired_counts</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_cmd</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;count moni </span><span class="si">{</span><span class="n">short_count_dur</span><span class="si">}</span><span class="s1"> n&#39;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blockForIdle</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_lazy</span><span class="p">()</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;banana sum 0 127 0 127&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status_monitor_client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;banana sum 0 127 0 127&#39;</span><span class="p">))</span>
+        <span class="n">count_rate</span> <span class="o">=</span> <span class="n">counts</span> <span class="o">/</span> <span class="n">short_count_dur</span>
+        <span class="n">proposed_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">desired_counts</span> <span class="o">/</span> <span class="n">count_rate</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">proposed_time</span><span class="o">&gt;</span><span class="mi">500</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;with </span><span class="si">{</span><span class="n">counts</span><span class="si">}</span><span class="s1"> in a </span><span class="si">{</span><span class="n">short_count_dur</span><span class="si">}</span><span class="s1"> exposure, I would like to measure </span><span class="si">{</span><span class="n">proposed_time</span><span class="si">}</span><span class="s1">, but that seems too high.&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;setting to 500 instead.&#39;</span><span class="p">)</span>
+            <span class="n">proposed_time</span> <span class="o">=</span> <span class="mi">500</span>
+        <span class="k">if</span> <span class="n">proposed_time</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;with </span><span class="si">{</span><span class="n">counts</span><span class="si">}</span><span class="s1"> in a </span><span class="si">{</span><span class="n">short_count_dur</span><span class="si">}</span><span class="s1"> exposure, I would like to measure </span><span class="si">{</span><span class="n">proposed_time</span><span class="si">}</span><span class="s1">, but that seems too low.&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;setting to 5 instead.&#39;</span><span class="p">)</span>
+            <span class="n">proposed_time</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="k">return</span> <span class="n">proposed_time</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.expose">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.expose">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Expose&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;params&#39;</span><span class="p">:{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="s1">&#39;test_exposure&#39;</span><span class="p">},</span>
+        <span class="s1">&#39;exposure&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Exposure (s)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">},</span>
+        <span class="s1">&#39;reduce_data&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Reduce?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span>
+        <span class="s1">&#39;measure_transmission&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Measure Trans?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
+        <span class="p">}})</span>
+    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">exposure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">reduce_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">measure_transmission</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">save_nexus</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getFilename</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setFilename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+      
+        <span class="k">if</span> <span class="n">measure_transmission</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">measureTransmission</span><span class="p">()</span> 
+       
+        <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1">#time.sleep(5)</span>
+            <span class="c1">#print(&#39;finding auto exposure counts..:&#39;)</span>
+            <span class="c1">#exposure=self.getAutoExposure()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setExposure</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
+        
+        
+        <span class="n">pre_sicsdatanumber</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;sicsdatanumber&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;pre_sicsdatanumber&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pre_sicsdatanumber</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Starting </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> moni count named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting exposure with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> moni cts&#39;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_cmd</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MLscatt </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span> <span class="ow">or</span> <span class="n">reduce_data</span> <span class="ow">or</span> <span class="n">save_nexus</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blockForCompleted</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">flush_buffer</span><span class="p">()</span>
+
+            
+            <span class="k">try</span><span class="p">:</span>
+                 <span class="n">trash</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;banana sum 40 80 40 80&#39;</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">flush_buffer</span><span class="p">()</span>
+                    <span class="n">trash</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;banana sum 40 80 40 80&#39;</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">flush_buffer</span><span class="p">()</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getData</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">save_nexus</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Writing Nexus&#39;</span>
+                <span class="n">normalized_sample_transmission</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;raw_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;normalized_sample_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized_sample_transmission</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_writeNexus</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">reduce_data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Reducing Data&#39;</span>
+                <span class="n">reduced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getReducedData</span><span class="p">(</span><span class="n">write_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;reduced_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduced</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_chosen_r1d.csv&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">reduced</span><span class="p">),</span><span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+                <span class="n">normalized_sample_transmission</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">open_flux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">sample_flux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">empty_cell_transmission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">sample_transmission</span> <span class="o">=</span> <span class="n">normalized_sample_transmission</span><span class="o">*</span><span class="n">empty_cell_transmission</span>
+                
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;normalized_sample_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized_sample_transmission</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;open_flux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">open_flux</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;sample_flux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_flux</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;empty_cell_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">empty_cell_transmission</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;sample_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_transmission</span>
+
+
+                <span class="k">if</span> <span class="n">save_nexus</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_appendReducedToNexus</span><span class="p">(</span><span class="n">reduced</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+
+                <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">out</span><span class="p">[</span><span class="s1">&#39;normalized_sample_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized_sample_transmission</span>
+                <span class="n">out</span><span class="p">[</span><span class="s1">&#39;open_flux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">open_flux</span>
+                <span class="n">out</span><span class="p">[</span><span class="s1">&#39;sample_flux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_flux</span>
+                <span class="n">out</span><span class="p">[</span><span class="s1">&#39;empty_cell_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">empty_cell_transmission</span>
+                <span class="n">out</span><span class="p">[</span><span class="s1">&#39;sample_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_transmission</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_trans.json&#39;</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Instrument Idle&#39;</span></div>
+
+         
+<div class="viewcode-block" id="SINQSANS.blockForIdle">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.blockForIdle">[docs]</a>
+    <span class="k">def</span> <span class="nf">blockForIdle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_monitor_client</span><span class="o">.</span><span class="n">success</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.blockForCompleted">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.blockForCompleted">[docs]</a>
+    <span class="k">def</span> <span class="nf">blockForCompleted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1800</span><span class="p">):</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">timedout</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">delta</span>
+        <span class="k">while</span> <span class="n">flag</span> <span class="ow">and</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">&lt;</span><span class="n">timedout</span><span class="p">):</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_until</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;ML completed&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">resp</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.getStatus">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getStatus">[docs]</a>
+    <span class="k">def</span> <span class="nf">getStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_monitor_client</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="s1">&#39;el737 RS&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span></div>
+
+
+<div class="viewcode-block" id="SINQSANS.isCounting">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.isCounting">[docs]</a>
+    <span class="k">def</span> <span class="nf">isCounting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getStatus</span><span class="p">()))</span></div>
+
+
+
+               
+<div class="viewcode-block" id="SINQSANS.status">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.status">[docs]</a>
+    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Last Measured Transmission: scaled=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> using empty cell trans of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s1"> with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1"> raw counts in open/ </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s1"> sample&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Status: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1">#lmj = self._getLabviewValue(&quot;LMJ Status&quot;)</span>
+        
+        <span class="c1">#status.append(f&#39;LMJ status: {&quot;running, power on target = &quot;+str(lmj[0]*lmj[1])+&quot;W&quot; if lmj[6]==1 else &quot;not running&quot;}&#39;)</span>
+        <span class="c1">#status.append(f&#39;Vacuum (mbar): {self._getLabviewValue(&quot;Pressure (mbar)&quot;)}&#39;)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;getData&quot; target=&quot;_blank&quot;&gt;Live Data (2D)&lt;/a&gt;&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;getReducedData&quot; target=&quot;_blank&quot;&gt;Live Data (1D)&lt;/a&gt;&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;a href=&quot;getReducedData?render_hint=2d_img&amp;reduce_type=2d&quot;&gt;Live Data (2D, reduced)&lt;/a&gt;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SICSTelnetClient">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient">[docs]</a>
+<span class="k">class</span> <span class="nc">SICSTelnetClient</span><span class="p">():</span>
+
+<div class="viewcode-block" id="SICSTelnetClient.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">login</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">telnetlib</span><span class="o">.</span><span class="n">Telnet</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sicslogin </span><span class="si">{</span><span class="n">login</span><span class="si">}</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_very_eager</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;OK&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;received unexpected answer from SICS: </span><span class="si">{</span><span class="n">resp</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SICSTelnetClient.ask_param">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.ask_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">ask_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">param</span><span class="p">,</span><span class="n">tries</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sending </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s1"> to server&#39;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_very_eager</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;ERROR: Busy&#39;</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rcvd busy response; retrying&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">regexsplit</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(.*?) = (.*?)\r\n&#39;</span><span class="p">,</span><span class="n">response</span><span class="p">)</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">regexsplit</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_lazy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">tries</span><span class="o">&gt;</span><span class="mi">4</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weird answer from server: </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s1">, cannot parse after 4 tries.&#39;</span><span class="p">)</span> 
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#cool down incase you were just too fast</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ask_param</span><span class="p">(</span><span class="n">param</span><span class="p">,</span><span class="n">tries</span> <span class="o">=</span> <span class="n">tries</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>    
+        <span class="k">return</span> <span class="n">retval</span></div>
+
+
+<div class="viewcode-block" id="SICSTelnetClient.set_param">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.set_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">param</span><span class="p">,</span><span class="n">val</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sending </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s1"> to server&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_very_eager</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\r\n&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SICSTelnetClient.send_cmd">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.send_cmd">[docs]</a>
+    <span class="k">def</span> <span class="nf">send_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cmd</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sending </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s1"> to server&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_very_eager</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;head back: </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="SICSTelnetClient.success">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.success">[docs]</a>
+    <span class="k">def</span> <span class="nf">success</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;success</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sending </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s1"> to server&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_until</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<div class="viewcode-block" id="SICSTelnetClient.flush_buffer">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.flush_buffer">[docs]</a>
+    <span class="k">def</span> <span class="nf">flush_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">while</span> <span class="n">flag</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">read_lazy</span><span class="p">()</span> 
+            <span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="p">(</span><span class="n">resp</span> <span class="o">!=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span></div>
+</div>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">if __name__ == &#39;__main__&#39;:</span>
+<span class="sd">    import matplotlib.pyplot as plt</span>
+<span class="sd">    sans = SINQSANS()</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../../../../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

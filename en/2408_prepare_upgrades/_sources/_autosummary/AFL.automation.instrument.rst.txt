@@ -1,0 +1,38 @@
+AFL.automation.instrument
+=========================
+
+.. automodule:: AFL.automation.instrument
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   APSDNDCAT
+   APSUSAXS
+   CDSAXSLabview
+   CHESSID3B
+   DummySAS
+   FileCamera
+   GPInterpolator
+   I22SAXS
+   ISISLARMOR
+   NICEConsole
+   NICEData
+   NICEDevice
+   NetworkCamera
+   NicosScriptClient
+   OpticalTurbidity
+   PySpecClient
+   SINQSANS
+   SINQSANS_NICOS
+   ScatteringInstrument
+   SeabreezeUVVis
+   SpecScreen_Driver
+   USBCamera
+   VirtualSANS_data
+   VirtualSAS_theory
+   VirtualSpec_data
+   scatteringInterpolator

@@ -1,0 +1,13 @@
+AFL.automation.mixing.TargetSolution
+====================================
+
+.. automodule:: AFL.automation.mixing.TargetSolution
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Solution
+      TargetSolution
+   

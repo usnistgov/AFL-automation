@@ -11,11 +11,17 @@ Specific deviceserver instances are provided for a variety of hardware used in t
 By default the APIServer will use the [waitress](https://docs.pylonsproject.org/projects/waitress/en/stable/) WSGI server if it is installed. To fall back to Flask's built-in server pass `--no-waitress` to `AFL.automation.shared.launcher`.
 
 ### Running tests
-This repository uses `pytest` for unit tests. A GitHub Actions workflow runs the tests automatically on every push and pull request using `.github/workflows/test.yaml`.
+This repository uses `pytest` for unit tests. A GitHub Actions workflow runs the
+tests automatically on every push and pull request using
+`.github/workflows/test.yaml`. The workflow installs the package along with the
+dependencies listed in `pyproject.toml`.
 
-To execute the tests locally, install the package in editable mode with its dependencies and run `pytest`:
+To execute the tests locally, install the package in editable mode and run
+`pytest`. If the installation fails because the package version cannot be
+determined from Git tags, set `SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0` as in the
+CI workflow:
 
 ```bash
-pip install -e .
+SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0 pip install -e .
 pytest
 ```

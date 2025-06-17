@@ -560,14 +560,16 @@ from the args and kwargs arguments, respectively.</p>
 <dt class="sig sig-object py" id="AFL.automation.shared.ServerDiscovery.ServerDiscovery.discover_server_by_name">
 <span class="sig-name descname"><span class="pre">discover_server_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/shared/ServerDiscovery.html#ServerDiscovery.discover_server_by_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.shared.ServerDiscovery.ServerDiscovery.discover_server_by_name" title="Link to this definition">#</a></dt>
 <dd><p>Does a zeroconf request to find a named AFL-automation server on the network.</p>
-<p>Returns a tuple of (hostname:port string,ServiceInfo object) if found, None if not found.</p>
+<p>Returns a tuple of <code class="docutils literal notranslate"><span class="pre">(hostname:port,</span> <span class="pre">ServiceInfo)</span></code> when the service is
+found.  If the service cannot be located an <code class="docutils literal notranslate"><span class="pre">Exception</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.shared.ServerDiscovery.ServerDiscovery.sa_aio_discover_server_by_name">
 <em class="property"><span class="pre">async</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sa_aio_discover_server_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/shared/ServerDiscovery.html#ServerDiscovery.sa_aio_discover_server_by_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.shared.ServerDiscovery.ServerDiscovery.sa_aio_discover_server_by_name" title="Link to this definition">#</a></dt>
 <dd><p>Does a zeroconf request to find a named AFL-automation server on the network.</p>
-<p>Returns a tuple of (hostname:port string,ServiceInfo object) if found, None if not found.</p>
+<p>Returns a tuple of <code class="docutils literal notranslate"><span class="pre">(hostname:port,</span> <span class="pre">ServiceInfo)</span></code> when the service is
+found.  If the service cannot be located an <code class="docutils literal notranslate"><span class="pre">Exception</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="py method">

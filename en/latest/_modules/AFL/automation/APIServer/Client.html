@@ -484,8 +484,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">token</span>  <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;token&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Authorization&#39;</span><span class="p">:</span><span class="s1">&#39;Bearer </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)}</span>
         <span class="k">if</span> <span class="n">populate_commands</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_queued_commmands</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_unqueued_commmands</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_queued_commands</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_unqueued_commands</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">+</span> <span class="s1">&#39;/get_queue_iteration&#39;</span><span class="p">,</span><span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">supports_queue_iteration</span> <span class="o">=</span> <span class="kc">True</span>
@@ -580,9 +580,9 @@
         <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="Client.get_unqueued_commmands">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.get_unqueued_commmands">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_unqueued_commmands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inherit_commands</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Client.get_unqueued_commands">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.get_unqueued_commands">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_unqueued_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inherit_commands</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">+</span><span class="s1">&#39;/get_unqueued_commands&#39;</span><span class="p">,</span><span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;API call to get_queued_commands command failed with status_code </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -604,9 +604,9 @@
         <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
 
         
-<div class="viewcode-block" id="Client.get_queued_commmands">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.get_queued_commmands">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queued_commmands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inherit_commands</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Client.get_queued_commands">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.get_queued_commands">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_queued_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inherit_commands</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">+</span><span class="s1">&#39;/get_queued_commands&#39;</span><span class="p">,</span><span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;API call to get_queued_commands command failed with status_code </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>

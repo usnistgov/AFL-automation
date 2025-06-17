@@ -10,6 +10,7 @@ AFL.automation.mixing
    :toctree:
    :recursive:
 
+   BioSANSPrepare
    Component
    Context
    MassBalance

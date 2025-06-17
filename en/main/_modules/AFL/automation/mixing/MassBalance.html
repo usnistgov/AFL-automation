@@ -429,6 +429,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
+
 <span class="k">def</span> <span class="nf">_extract_mass_fractions</span><span class="p">(</span><span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span> <span class="n">components</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">stock</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stocks</span><span class="p">):</span>
@@ -541,13 +542,26 @@
                 <span class="n">_extract_masses</span><span class="p">(</span><span class="n">balanced_target</span><span class="p">,</span> <span class="n">components</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">balanced_masses</span><span class="p">)</span>
                 <span class="n">difference</span> <span class="o">=</span> <span class="p">(</span><span class="n">balanced_masses</span> <span class="o">-</span> <span class="n">target_masses</span><span class="p">)</span> <span class="o">/</span> <span class="n">target_masses</span>
                 <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">difference</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">):</span>
-                    <span class="n">balanced_targets</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">balanced_target</span><span class="p">,</span> <span class="n">difference</span><span class="p">])</span>
+                    <span class="n">balanced_targets</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;target&#39;</span><span class="p">:</span><span class="n">balanced_target</span><span class="p">,</span> 
+                        <span class="s1">&#39;difference&#39;</span><span class="p">:</span><span class="n">difference</span><span class="p">,</span>
+                        <span class="s1">&#39;transfers&#39;</span><span class="p">:</span><span class="n">transfers</span><span class="p">,</span>
+                    <span class="p">})</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">balanced_targets</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No suitable mass balance found for </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;target&#39;</span><span class="p">:</span><span class="n">target</span><span class="p">,</span> 
+                    <span class="s1">&#39;balanced_target&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> 
+                    <span class="s1">&#39;transfers&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="p">})</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">balanced_target</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">balanced_targets</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></div>
+                <span class="n">balanced_target</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">balanced_targets</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;difference&#39;</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;target&#39;</span><span class="p">:</span><span class="n">target</span><span class="p">,</span> 
+                    <span class="s1">&#39;balanced_target&#39;</span><span class="p">:</span><span class="n">balanced_target</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">],</span> 
+                    <span class="s1">&#39;transfers&#39;</span><span class="p">:</span><span class="n">balanced_target</span><span class="p">[</span><span class="s1">&#39;transfers&#39;</span><span class="p">],</span>
+                    <span class="p">})</span></div>
+
 
 
     <span class="k">def</span> <span class="nf">_set_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -599,7 +613,8 @@
 <div class="viewcode-block" id="MassBalanceDriver">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver">[docs]</a>
 <span class="k">class</span> <span class="nc">MassBalanceDriver</span><span class="p">(</span><span class="n">MassBalanceBase</span><span class="p">,</span> <span class="n">Driver</span><span class="p">):</span>
-    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;minimum_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;20 ul&#39;</span><span class="p">,</span> <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;targets&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;minimum_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;20 ul&#39;</span><span class="p">,</span> <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;targets&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;tol&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">}</span>
+
 
 <div class="viewcode-block" id="MassBalanceDriver.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver.__init__">[docs]</a>
@@ -679,11 +694,12 @@
     
 <div class="viewcode-block" id="MassBalanceDriver.balance">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver.balance">[docs]</a>
-    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_targets</span><span class="p">()</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;tol&#39;</span><span class="p">])</span></div>
 </div>
+
 
 
     

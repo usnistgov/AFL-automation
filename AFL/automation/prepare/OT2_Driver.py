@@ -286,6 +286,7 @@ class OT2_Driver(Driver):
             to_center=False,
             to_top_z_offset=0,
             fast_mixing=False,
+            touch_tip=False,
             **kwargs):
         '''Transfer fluid from one location to another
 
@@ -414,7 +415,8 @@ class OT2_Driver(Driver):
                     drop_tip=drop_tip,
                     force_new_tip=force_new_tip,
                     mix_aspirate_rate=mix_aspirate_rate,
-                    mix_dispense_rate=mix_dispense_rate)
+                    mix_dispense_rate=mix_dispense_rate,
+                    touch_tip=touch_tip)
 
             self.last_pipette = pipette
 
@@ -452,8 +454,15 @@ class OT2_Driver(Driver):
             drop_tip=True,
             force_new_tip=False,
             mix_aspirate_rate=None,
-            mix_dispense_rate=None):
-                      
+            mix_dispense_rate=None,
+            touch_tip=False):
+
+        #does a touch tip call at the current location but at -2 mm below the top of the location
+        if touch_tip and self.has_tip:
+            if source_well:
+                pipette.touch_tip(location=source_well.top(),v_offset=-2)
+            elif dest_well:
+                pipette.touch_tip(location=dest_well.top(),v_offset=-2)
     
         if force_new_tip and self.has_tip:
             pipette.drop_tip(self.protocol.deck[12]['A1'])

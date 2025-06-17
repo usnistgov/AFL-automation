@@ -16,3 +16,4 @@ requests
 flask_cors
 waitress
 tiled[client]
+caproto

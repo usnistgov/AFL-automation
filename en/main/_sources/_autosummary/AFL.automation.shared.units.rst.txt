@@ -13,7 +13,9 @@ AFL.automation.shared.units
       has_units
       is_concentration
       is_density
+      is_dimensionless
       is_mass
       is_molarity
       is_volume
+      to_quantity
    

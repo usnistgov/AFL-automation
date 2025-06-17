@@ -418,26 +418,26 @@
 <span class="n">DEFAULT_UNITS</span><span class="p">[</span><span class="s1">&#39;density&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;g/ml&#39;</span>
 <span class="n">DEFAULT_UNITS</span><span class="p">[</span><span class="s1">&#39;molarity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;millimolar&#39;</span>
 
-<span class="n">SUPPORTED_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;density&#39;</span><span class="p">,</span> <span class="s1">&#39;molarity&#39;</span><span class="p">,</span> <span class="s1">&#39;concentration&#39;</span><span class="p">]</span>
+<span class="n">SUPPORTED_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;density&#39;</span><span class="p">,</span> <span class="s1">&#39;molarity&#39;</span><span class="p">,</span> <span class="s1">&#39;concentration&#39;</span><span class="p">,</span><span class="s1">&#39;dimensionless&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="has_units">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.has_units">[docs]</a>
-<span class="k">def</span> <span class="nf">has_units</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">has_units</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;units&#39;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="is_volume">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_volume">[docs]</a>
-<span class="k">def</span> <span class="nf">is_volume</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">is_volume</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[length]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="is_molarity">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_molarity">[docs]</a>
-<span class="k">def</span> <span class="nf">is_molarity</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">is_molarity</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[length]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
             <span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[substance]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span></div>
 
@@ -445,30 +445,34 @@
 
 <div class="viewcode-block" id="is_mass">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_mass">[docs]</a>
-<span class="k">def</span> <span class="nf">is_mass</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">is_mass</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[mass]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="is_density">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_density">[docs]</a>
-<span class="k">def</span> <span class="nf">is_density</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">is_density</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[mass]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
             <span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[length]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">3</span><span class="p">))</span></div>
-
 
 
 <div class="viewcode-block" id="is_concentration">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_concentration">[docs]</a>
-<span class="k">def</span> <span class="nf">is_concentration</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">is_concentration</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[mass]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
             <span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[length]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">3</span><span class="p">))</span></div>
 
 
+<div class="viewcode-block" id="is_dimensionless">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_dimensionless">[docs]</a>
+<span class="k">def</span> <span class="nf">is_dimensionless</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
+
 
 <div class="viewcode-block" id="get_unit_type">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.get_unit_type">[docs]</a>
-<span class="k">def</span> <span class="nf">get_unit_type</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_unit_type</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">is_volume</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;volume&#39;</span>
     <span class="k">elif</span> <span class="n">is_molarity</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
@@ -479,26 +483,43 @@
         <span class="k">return</span> <span class="s1">&#39;density&#39;</span>
     <span class="k">elif</span> <span class="n">is_concentration</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;concentration&#39;</span>
+    <span class="k">elif</span> <span class="n">is_dimensionless</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;dimensionless&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unit system (</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">) not recognized as one of: </span><span class="si">{</span><span class="n">SUPPORTED_TYPES</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_quantity">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.to_quantity">[docs]</a>
+<span class="k">def</span> <span class="nf">to_quantity</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a string to a pint quantity&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">units</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
 
 
 
 <div class="viewcode-block" id="enforce_units">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.enforce_units">[docs]</a>
-<span class="k">def</span> <span class="nf">enforce_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">unit_type</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">enforce_units</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">unit_type</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that a number has units and convert to the default_units&quot;&quot;&quot;</span>
     <span class="c1"># None bypasses all unit testing</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">to_quantity</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">unit_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SUPPORTED_TYPES</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Not configured to enforce unit_type: </span><span class="si">{</span><span class="n">unit_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">unit_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">:</span>
+        <span class="c1"># this should return the value as an int/float; pint converts strings to pure numerical types if no unit is provided</span>
+        <span class="k">return</span> <span class="n">value</span>
+
     <span class="k">if</span> <span class="ow">not</span> <span class="n">has_units</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Supplied value must have units!&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">unit_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;volume&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">unit_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;volume&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_volume</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Supplied value must be a volume not </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>

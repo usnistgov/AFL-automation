@@ -20,4 +20,5 @@ AFL.automation.shared
    serialization
    units
    utilities
+   warnings
    widgetui

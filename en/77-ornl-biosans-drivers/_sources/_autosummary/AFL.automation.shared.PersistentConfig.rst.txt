@@ -1,0 +1,13 @@
+AFL.automation.shared.PersistentConfig
+======================================
+
+.. automodule:: AFL.automation.shared.PersistentConfig
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MutableMapping
+      PersistentConfig
+   

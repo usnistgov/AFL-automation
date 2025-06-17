@@ -20,5 +20,6 @@ scikit-image
 pyserial
 requests
 flask_cors
+waitress
 zeroconf
 

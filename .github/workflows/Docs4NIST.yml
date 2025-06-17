@@ -1,0 +1,19 @@
+name: "Build Documentation"
+
+on: [push, pull_request, delete]
+
+concurrency:
+   group: ${{ github.workflow }}
+   cancel-in-progress: false
+   
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: usnistgov/Docs4NIST@0.7.2
+        with:
+          docs-folder: docs/
+          pre-build-command: 'pip install -e .'
+          pip-requirements: 'requirements-docs.txt'
+          apt-packages: 'gcc build-essential python3-dev'
+          insert-header-footer: false

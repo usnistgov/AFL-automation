@@ -124,6 +124,11 @@
             margin-bottom: 20px;
         }
 
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
     </style>
     <title>{{ name }}</title>
 </head>
@@ -210,9 +215,11 @@
                 var newState = metaDiv.is(':visible') ? 'visible' : 'hidden';
                 localStorage.setItem(metaDiv[0].id, newState);
             });
+            var taskText = JSON.stringify(task, undefined, 2);
+            taskText = taskText.replace(/\\n/g, '\n');
             ul.append(
                 "<div class='meta' id='" + meta_str + "'><pre>" +
-                JSON.stringify(task, undefined, 2) + // Display full task JSON
+                taskText +
                 "</pre></div>"
             );
 

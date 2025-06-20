@@ -133,6 +133,32 @@ function resetTipracks(mount) {
         });
     });
 }
+function appendPrepTargets(targets) {
+    var t = targets.split(',');
+    login().then(function(tok) {
+        $.ajax({
+            type:"POST",
+            url:"/enqueue",
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+            data: JSON.stringify({task_name:"add_prep_targets", targets: t, reset:false}),
+            success: function() { location.reload(); },
+            error: function(xhr) { alert("Error: "+xhr.responseText); }
+        });
+    });
+}
+function setPrepTargets(targets) {
+    var t = targets.split(',');
+    login().then(function(tok) {
+        $.ajax({
+            type:"POST",
+            url:"/enqueue",
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok},
+            data: JSON.stringify({task_name:"add_prep_targets", targets: t, reset:true}),
+            success: function() { location.reload(); },
+            error: function(xhr) { alert("Error: "+xhr.responseText); }
+        });
+    });
+}
 $(document).ready(function() {
     $('#load-instrument-btn').click(function() {
         var mount = $('#mount-select').val();

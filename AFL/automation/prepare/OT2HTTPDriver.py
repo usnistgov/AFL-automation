@@ -31,7 +31,8 @@ class OT2HTTPDriver(Driver):
     defaults["loaded_labware"] = {}  # Persistent storage for loaded labware
     defaults["loaded_instruments"] = {}  # Persistent storage for loaded instruments
     defaults["loaded_modules"] = {}  # Persistent storage for loaded modules
-    defaults["available_tips"] = {} # Persistent storage for available tips, Format: {mount: [(tiprack_id, well_name), ...]}
+    defaults["available_tips"] = {}  # Persistent storage for available tips, Format: {mount: [(tiprack_id, well_name), ...]}
+    defaults["prep_targets"] = []  # Persistent storage for prep target well locations
 
     def __init__(self, overrides=None):
         self.app = None
@@ -48,7 +49,6 @@ class OT2HTTPDriver(Driver):
         self.protocol_id = None
         self.max_transfer = None
         self.min_transfer = None
-        self.prep_targets = []
         self.has_tip = False
         self.last_pipette = None
         self.modules = {}
@@ -180,21 +180,27 @@ class OT2HTTPDriver(Driver):
             raise RuntimeError(f"Error getting pipettes: {str(e)}")
 
     def reset_prep_targets(self):
-        self.prep_targets = []
+        """Clear the list of preparation targets stored in the config."""
+        self.config["prep_targets"] = []
+
 
     def add_prep_targets(self, targets, reset=False):
+        """Add well locations to the preparation target list."""
         if reset:
             self.reset_prep_targets()
-        self.prep_targets.extend(targets)
+        self.config.setdefault("prep_targets", [])
+        self.config["prep_targets"].extend(listify(targets))
+        self.config._update_history()
 
     def get_prep_target(self):
-        return self.prep_targets.pop(0)
+        return self.config["prep_targets"].pop(0)
 
     def status(self):
         status = []
-        if len(self.prep_targets) > 0:
-            status.append(f"Next prep target: {self.prep_targets[0]}")
-            status.append(f"Remaining prep targets: {len(self.prep_targets)}")
+        prep_targets = self.config.get("prep_targets", [])
+        if len(prep_targets) > 0:
+            status.append(f"Next prep target: {prep_targets[0]}")
+            status.append(f"Remaining prep targets: {len(prep_targets)}")
         else:
             status.append("No prep targets loaded")
 
@@ -309,6 +315,7 @@ class OT2HTTPDriver(Driver):
         self.config["loaded_instruments"] = {}
         self.config["loaded_modules"] = {}
         self.config["available_tips"] = {}
+        self.config["prep_targets"] = []
 
     @Driver.quickbar(qb={"button_text": "Home"})
     def home(self, **kwargs):
@@ -1921,6 +1928,17 @@ class OT2HTTPDriver(Driver):
                     'tiprack' in labware_type.lower() or
                     definition.get('metadata', {}).get('displayCategory') == 'tipRack'
                 )
+                wells = list(definition.get('wells', {}).keys())
+                # sort wells in row-major order (A1, A2, B1, B2, ...)
+                def _well_key(w):
+                    import re
+                    m = re.match(r"([A-Za-z]+)(\d+)", w)
+                    if m:
+                        row = m.group(1)
+                        col = int(m.group(2))
+                        return (row, col)
+                    return (w, 0)
+                wells = sorted(wells, key=_well_key)
                 mounts = []
                 if is_tiprack:
                     for m, d in self.config['loaded_instruments'].items():
@@ -1936,6 +1954,8 @@ class OT2HTTPDriver(Driver):
                     info['tiprack'] = True
                     info['mounts'] = mounts
                     info['color'] = '#fff3e0'
+                info['target_count'] = len(wells)
+                info['targets'] = ','.join([f"{slot_str}{w}" for w in wells])
             if has_module:
                 module_id, module_type = self.config["loaded_modules"][slot_str]
                 module_name = module_type.replace('ModuleV1', '').replace('Module', ' Mod')
@@ -1963,6 +1983,14 @@ class OT2HTTPDriver(Driver):
                     f"<button style='margin-top:4px;font-size:10px;' onclick=\"resetTipracks('{m}')\">Reset</button>"
                     for m in info.get('mounts', [])
                 ])
+                if info.get('target_count', 0) > 10:
+                    target_str = info.get('targets', '')
+                    slot_id = str(slot)
+                    info["buttons"] += (
+                        f"<button style='margin-top:4px;font-size:10px;' "
+                        f"onclick=\"openPrepTargetDialog('{slot_id}','{target_str}')\">"
+                        "Manage Targets</button>"
+                    )
                 slot_infos[str(slot)] = info
 
         template_path = files('AFL.automation.driver_templates').joinpath('ot2_deck.html')

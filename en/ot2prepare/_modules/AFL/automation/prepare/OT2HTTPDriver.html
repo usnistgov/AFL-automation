@@ -408,6 +408,8 @@
 <span></span><span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">importlib.resources</span> <span class="kn">import</span> <span class="n">files</span>
+<span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">Template</span>
 
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
@@ -2473,184 +2475,30 @@
                     <span class="p">})</span>
             <span class="k">return</span> <span class="n">info</span>
 
-        <span class="n">html</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
-            <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&#39;&#39;</span>
-<span class="s1">            &lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;</span>
-<span class="s1">            body { font-family: Arial, sans-serif; margin: 20px; background-color: #fafafa; }</span>
-<span class="s1">            .deck-container { max-width: 900px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }</span>
-<span class="s1">            .deck-title { text-align: center; color: #333; margin-bottom: 20px; font-size: 24px; font-weight: bold; }</span>
-<span class="s1">            .deck-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }</span>
-<span class="s1">            .deck-slot { border: 2px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: relative; transition: transform 0.2s; min-height: 180px; }</span>
-<span class="s1">            .deck-slot:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }</span>
-<span class="s1">            .slot-number { position: absolute; top: 5px; left: 8px; font-weight: bold; font-size: 14px; color: #666; background: rgba(255,255,255,0.8); padding: 2px 4px; border-radius: 3px; }</span>
-<span class="s1">            .slot-content { font-size: 13px; font-weight: bold; margin: 15px 0 8px 0; text-align: center; line-height: 1.2; }</span>
-<span class="s1">            .well-layout { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin: 5px 0; }</span>
-<span class="s1">            .slot-details { font-size: 9px; color: #666; text-align: center; margin-top: auto; padding-top: 5px; border-top: 1px solid rgba(0,0,0,0.1); width: 100%; }</span>
-<span class="s1">            .pipettes-section { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }</span>
-<span class="s1">            .pipettes-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333; }</span>
-<span class="s1">            .pipette-item { background: white; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #2196f3; }</span>
-<span class="s1">            .trash-slot { background: #ffebee !important; border-color: #e57373 !important; }</span>
-<span class="s1">            .legend { display: flex; justify-content: center; gap: 20px; margin: 15px 0; font-size: 12px; }</span>
-<span class="s1">            .legend-item { display: flex; align-items: center; gap: 5px; }</span>
-<span class="s1">            .legend-color { width: 12px; height: 12px; border-radius: 2px; }</span>
-<span class="s1">            svg circle:hover, svg rect:hover { stroke-width: 2 !important; stroke: #ff5722 !important; }</span>
-<span class="s1">            .ui-dialog {border: solid black;}</span>
-<span class="s1">            .ui-dialog-content, .ui-dialog { background: #fff !important; border-radius: 2px; }</span>
-<span class="s1">            &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;deck-container&quot;&gt;&lt;div class=&quot;deck-title&quot;&gt;🧪 Opentrons OT-2 Deck Layout&lt;/div&gt;&lt;div class=&quot;legend&quot;&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #4caf50;&quot;&gt;&lt;/div&gt;&lt;span&gt;Available Tips&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #f44336;&quot;&gt;&lt;/div&gt;&lt;span&gt;Used Tips&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #42a5f5;&quot;&gt;&lt;/div&gt;&lt;span&gt;Plate Wells&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;legend-item&quot;&gt;&lt;div class=&quot;legend-color&quot; style=&quot;background: #66bb6a;&quot;&gt;&lt;/div&gt;&lt;span&gt;Reservoir Wells&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;deck-grid&quot;&gt;&#39;&#39;&#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div style=&quot;display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;&quot;&gt;&#39;</span>
-
+        <span class="n">slot_infos</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">slot_layout</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
-                <span class="n">info</span> <span class="o">=</span> <span class="n">get_slot_info</span><span class="p">(</span><span class="n">slot</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="p">(</span><span class="n">mode</span><span class="o">==</span><span class="s1">&#39;simple&#39;</span><span class="p">))</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">get_slot_info</span><span class="p">(</span><span class="n">slot</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;simple&#39;</span><span class="p">))</span>
                 <span class="n">slot_label</span> <span class="o">=</span> <span class="s2">&quot;T&quot;</span> <span class="k">if</span> <span class="n">slot</span> <span class="o">==</span> <span class="s2">&quot;Trash&quot;</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span>
-                <span class="n">svg_display</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;div style=&quot;margin: 5px 0;&quot;&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/div&gt;&#39;</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;svg&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                <span class="n">click_attr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">&quot;slot_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">slot_label</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">&quot;click_attr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                 <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;empty&quot;</span><span class="p">,</span> <span class="s2">&quot;module_only&quot;</span><span class="p">]:</span>
-                    <span class="n">click_attr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; onclick=</span><span class="se">\&quot;</span><span class="s2">showLabwareOptions(&#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2"> style=</span><span class="se">\&quot;</span><span class="s2">cursor:pointer;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
-                <span class="n">buttons</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;&lt;button style=&#39;margin-top:4px;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset&lt;/button&gt;&quot;</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mounts&#39;</span><span class="p">,</span> <span class="p">[])])</span>
-                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
-                    <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">                    &lt;div class=&#39;deck-slot</span><span class="si">{</span><span class="s1">&#39; trash-slot&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">slot</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;Trash&#39;</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&#39; </span><span class="si">{</span><span class="n">click_attr</span><span class="si">}</span><span class="s2">&gt;</span>
-<span class="s2">                        &lt;div class=&#39;slot-number&#39;&gt;</span><span class="si">{</span><span class="n">slot_label</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">                        &lt;div class=&#39;slot-content&#39;&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">                        &lt;div class=&#39;well-layout&#39;&gt;</span><span class="si">{</span><span class="n">svg_display</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">                        &lt;div class=&#39;slot-details&#39;&gt;</span><span class="si">{</span><span class="n">buttons</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">                    &lt;/div&gt;</span>
-<span class="s2">                    &quot;&quot;&quot;</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">                    &lt;div </span><span class="si">{</span><span class="n">click_attr</span><span class="si">}</span><span class="s2"> style=&quot;background: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">; border: 1px solid #ccc; border-radius: 6px; padding: 8px; text-align: center; min-height: 100px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: relative; font-size: 11px;&quot;&gt;</span>
-<span class="s2">                        &lt;div style=&quot;position: absolute; top: 2px; left: 4px; font-weight: bold; font-size: 10px; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px;&quot;&gt;</span><span class="si">{</span><span class="n">slot_label</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">                        &lt;div style=&quot;margin: 12px 0 5px 0; font-weight: 500; line-height: 1.1;&quot;&gt;</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">                        </span><span class="si">{</span><span class="n">svg_display</span><span class="si">}</span>
-<span class="s2">                        </span><span class="si">{</span><span class="n">buttons</span><span class="si">}</span>
-<span class="s2">                    &lt;/div&gt;</span>
-<span class="s2">                    &quot;&quot;&quot;</span>
-        <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/div&gt;&#39;</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s2">&quot;click_attr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;onclick=</span><span class="se">\&quot;</span><span class="s2">showLabwareOptions(&#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2"> style=</span><span class="se">\&quot;</span><span class="s2">cursor:pointer;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">&quot;buttons&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+                    <span class="sa">f</span><span class="s2">&quot;&lt;button style=&#39;margin-top:4px;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset&lt;/button&gt;&quot;</span>
+                    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mounts&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="p">])</span>
+                <span class="n">slot_infos</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)]</span> <span class="o">=</span> <span class="n">info</span>
 
-        <span class="c1"># Pipette section</span>
-        <span class="k">if</span> <span class="s2">&quot;loaded_instruments&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
-                <span class="n">html</span> <span class="o">+=</span> <span class="s2">&quot;&lt;div class=&#39;pipettes-section&#39;&gt;&lt;div class=&#39;pipettes-title&#39;&gt;🔧 Loaded Pipettes&lt;/div&gt;&quot;</span>
-                <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
-                    <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;pipette-item&#39;&gt;&lt;strong&gt;</span><span class="si">{</span><span class="n">mount</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2"> Mount:&lt;/strong&gt; </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;button style=&#39;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset Tips&lt;/button&gt;&lt;/div&gt;&quot;</span>
-                <span class="n">html</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">pipette_summary</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
-                    <span class="n">pipette_summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mount</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;button style=&#39;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset Tips&lt;/button&gt;&quot;</span><span class="p">)</span>
-                <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&lt;div style=&#39;margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;&#39;&gt;&lt;strong&gt;Pipettes:&lt;/strong&gt; </span><span class="si">{</span><span class="s1">&#39; | &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pipette_summary</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span>
-
-        <span class="c1"># Add instrument loader and deck reset controls</span>
-        <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&#39;&#39;&lt;div style=&quot;margin-top:30px; display:flex; flex-direction:column; align-items:center; gap:20px;&quot;&gt;</span>
-<span class="s1">            &lt;div style=&quot;background:#f5f5f5; border-radius:8px; padding:16px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.05); display:inline-block;&quot;&gt;</span>
-<span class="s1">                &lt;label&gt;&lt;b&gt;Mount:&lt;/b&gt; &lt;select id=&quot;mount-select&quot;&gt;&lt;option value=&quot;left&quot;&gt;Left&lt;/option&gt;&lt;option value=&quot;right&quot;&gt;Right&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;</span>
-<span class="s1">                &amp;nbsp; &lt;label&gt;&lt;b&gt;Pipette:&lt;/b&gt; &lt;select id=&quot;pipette-select&quot;&gt;&lt;option value=&quot;p1000_single&quot;&gt;P1000&lt;/option&gt;&lt;option value=&quot;p300_single&quot;&gt;P300&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;</span>
-<span class="s1">                &amp;nbsp; &lt;label&gt;&lt;b&gt;Tiprack Slots:&lt;/b&gt; &lt;input id=&quot;tiprack-slots&quot; type=&quot;text&quot; placeholder=&quot;e.g. 1,2,4&quot; style=&quot;width:90px;&quot;/&gt;&lt;/label&gt;</span>
-<span class="s1">                &amp;nbsp; &lt;button id=&quot;load-instrument-btn&quot; style=&quot;font-weight:bold;&quot;&gt;Load Instrument&lt;/button&gt;</span>
-<span class="s1">            &lt;/div&gt;</span>
-<span class="s1">            &lt;button id=&quot;reset-deck-btn&quot; style=&quot;margin-top:10px; background:#e53935; color:white; font-weight:bold; border:none; border-radius:6px; padding:10px 24px; font-size:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);&quot;&gt;Reset Deck&lt;/button&gt;</span>
-<span class="s1">        &lt;/div&gt;&#39;&#39;&#39;</span>
-
-        <span class="c1"># Add JS for interactive loading</span>
-        <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">        &lt;script src=&#39;https://code.jquery.com/jquery-3.6.0.min.js&#39;&gt;&lt;/script&gt;</span>
-<span class="s2">        &lt;script src=&#39;https://code.jquery.com/ui/1.12.1/jquery-ui.min.js&#39;&gt;&lt;/script&gt;</span>
-<span class="s2">        &lt;script&gt;</span>
-<span class="s2">        var token = null;</span>
-<span class="s2">        async function login() </span><span class="se">{{</span>
-<span class="s2">            if (token) return token;</span>
-<span class="s2">            const response = await fetch(&#39;/login&#39;, </span><span class="se">{{</span>
-<span class="s2">                method: &#39;POST&#39;,</span>
-<span class="s2">                headers: </span><span class="se">{{</span><span class="s2">&#39;Content-Type&#39;: &#39;application/json&#39;</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                body: JSON.stringify(</span><span class="se">{{</span><span class="s2">username:&#39;dashboard&#39;, password:&#39;domo_arigato&#39;</span><span class="se">}}</span><span class="s2">)</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">            if (!response.ok) </span><span class="se">{{</span><span class="s2"> alert(&#39;Login failed&#39;); throw new Error(&#39;login&#39;); </span><span class="se">}}</span>
-<span class="s2">            const data = await response.json();</span>
-<span class="s2">            token = data.token; return token;</span>
-<span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        const labwareChoices = </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">LABWARE_OPTIONS</span><span class="p">)</span><span class="si">}</span><span class="s2">;</span>
-<span class="s2">        function showLabwareOptions(slot) </span><span class="se">{{</span>
-<span class="s2">            var select = $(&#39;&lt;select&gt;&lt;/select&gt;&#39;);</span>
-<span class="s2">            Object.entries(labwareChoices).forEach(function([k,v]) </span><span class="se">{{</span>
-<span class="s2">                select.append($(&#39;&lt;option&gt;&#39;).attr(&#39;value&#39;,k).text(v));</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">            $(&#39;&lt;div&gt;&lt;/div&gt;&#39;).append(select).dialog(</span><span class="se">{{</span>
-<span class="s2">                title: &#39;Load labware or module in slot &#39; + slot,</span>
-<span class="s2">                modal: true,</span>
-<span class="s2">                buttons: </span><span class="se">{{</span>
-<span class="s2">                    &#39;Load&#39;: function() </span><span class="se">{{</span>
-<span class="s2">                        var lw = select.val();</span>
-<span class="s2">                        var isHeaterShaker = (lw === &#39;heaterShakerModuleV1&#39;);</span>
-<span class="s2">                        var task = isHeaterShaker ? &#39;load_module&#39; : &#39;load_labware&#39;;</span>
-<span class="s2">                        login().then(function(tok) </span><span class="se">{{</span>
-<span class="s2">                            $.ajax(</span><span class="se">{{</span>
-<span class="s2">                                type:&#39;POST&#39;,</span>
-<span class="s2">                                url:&#39;/enqueue&#39;,</span>
-<span class="s2">                                headers: </span><span class="se">{{</span><span class="s2">&#39;Content-Type&#39;:&#39;application/json&#39;,&#39;Authorization&#39;:&#39;Bearer &#39;+tok</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                                data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:task, name: lw, slot: slot</span><span class="se">}}</span><span class="s2">),</span>
-<span class="s2">                                success: function() </span><span class="se">{{</span><span class="s2"> setTimeout(() =&gt; </span><span class="se">{{</span><span class="s2">location.reload()</span><span class="se">}}</span><span class="s2">,500);</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                                error: function(xhr) </span><span class="se">{{</span><span class="s2"> alert(&#39;Error: &#39;+xhr.responseText); </span><span class="se">}}</span>
-<span class="s2">                            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">                        </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">                        $(this).dialog(&#39;destroy&#39;).remove();</span>
-<span class="s2">                    </span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                    &#39;Cancel&#39;: function() </span><span class="se">{{</span><span class="s2"> $(this).dialog(&#39;destroy&#39;).remove(); </span><span class="se">}}</span>
-<span class="s2">                </span><span class="se">}}</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        function resetTipracks(mount) </span><span class="se">{{</span>
-<span class="s2">            login().then(function(tok) </span><span class="se">{{</span>
-<span class="s2">                $.ajax(</span><span class="se">{{</span>
-<span class="s2">                    type:&quot;POST&quot;,</span>
-<span class="s2">                    url:&quot;/enqueue&quot;,</span>
-<span class="s2">                    headers:</span><span class="se">{{</span><span class="s2">&quot;Content-Type&quot;:&quot;application/json&quot;,&quot;Authorization&quot;:&quot;Bearer &quot;+tok</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                    data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:&quot;reset_tipracks&quot;, mount: mount</span><span class="se">}}</span><span class="s2">),</span>
-<span class="s2">                    success: function() </span><span class="se">{{</span><span class="s2"> location.reload(); </span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                    error: function(xhr) </span><span class="se">{{</span><span class="s2"> alert(&quot;Error: &quot;+xhr.responseText); </span><span class="se">}}</span>
-<span class="s2">                </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">        </span><span class="se">}}</span>
-<span class="s2">        $(document).ready(function() </span><span class="se">{{</span>
-<span class="s2">                $(&#39;#load-instrument-btn&#39;).click(function() </span><span class="se">{{</span>
-<span class="s2">                    var mount = $(&#39;#mount-select&#39;).val();</span>
-<span class="s2">                    var pipette = $(&#39;#pipette-select&#39;).val();</span>
-<span class="s2">                    var tipracks = $(&#39;#tiprack-slots&#39;).val().split(&#39;,&#39;).map(function(x)</span><span class="se">{{</span><span class="s2">return x.trim();</span><span class="se">}}</span><span class="s2">).filter(Boolean);</span>
-<span class="s2">                    if (!mount || !pipette) </span><span class="se">{{</span><span class="s2"> alert(&#39;Select mount and pipette.&#39;); return; </span><span class="se">}}</span>
-<span class="s2">                    login().then(function(tok) </span><span class="se">{{</span>
-<span class="s2">                        $.ajax(</span><span class="se">{{</span>
-<span class="s2">                            type: &#39;POST&#39;,</span>
-<span class="s2">                            url: &#39;/enqueue&#39;,</span>
-<span class="s2">                            headers: </span><span class="se">{{</span><span class="s2">&#39;Content-Type&#39;:&#39;application/json&#39;,&#39;Authorization&#39;:&#39;Bearer &#39;+tok</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                            data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:&#39;load_instrument&#39;, mount: mount, name: pipette, tip_rack_slots: tipracks</span><span class="se">}}</span><span class="s2">),</span>
-<span class="s2">                            success: function() </span><span class="se">{{</span><span class="s2"> location.reload(); </span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                            error: function(xhr) </span><span class="se">{{</span><span class="s2"> alert(&#39;Error: &#39;+xhr.responseText); </span><span class="se">}}</span>
-<span class="s2">                        </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">                    </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">                </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">         // Deck reset button</span>
-<span class="s2">         $(&#39;#reset-deck-btn&#39;).click(function() </span><span class="se">{{</span>
-<span class="s2">                    if (!confirm(&#39;Are you sure you want to reset the entire deck?&#39;)) return;</span>
-<span class="s2">                    login().then(function(tok) </span><span class="se">{{</span>
-<span class="s2">                        $.ajax(</span><span class="se">{{</span>
-<span class="s2">                            type: &#39;POST&#39;,</span>
-<span class="s2">                            url: &#39;/enqueue&#39;,</span>
-<span class="s2">                            headers: </span><span class="se">{{</span><span class="s2">&#39;Content-Type&#39;:&#39;application/json&#39;,&#39;Authorization&#39;:&#39;Bearer &#39;+tok</span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                            data: JSON.stringify(</span><span class="se">{{</span><span class="s2">task_name:&#39;reset_deck&#39;</span><span class="se">}}</span><span class="s2">),</span>
-<span class="s2">                            success: function() </span><span class="se">{{</span><span class="s2"> location.reload(); </span><span class="se">}}</span><span class="s2">,</span>
-<span class="s2">                            error: function(xhr) </span><span class="se">{{</span><span class="s2"> alert(&#39;Error: &#39;+xhr.responseText); </span><span class="se">}}</span>
-<span class="s2">                        </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">                    </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">                </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">            </span><span class="se">}}</span><span class="s2">);</span>
-<span class="s2">        &lt;/script&gt;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;full&#39;</span><span class="p">:</span>
-            <span class="n">html</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;&quot;</span>
+        <span class="n">template_path</span> <span class="o">=</span> <span class="n">files</span><span class="p">(</span><span class="s1">&#39;AFL.automation.driver_templates&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;ot2_deck.html&#39;</span><span class="p">)</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="n">template_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+            <span class="n">slot_layout</span><span class="o">=</span><span class="n">slot_layout</span><span class="p">,</span>
+            <span class="n">slot_infos</span><span class="o">=</span><span class="n">slot_infos</span><span class="p">,</span>
+            <span class="n">loaded_instruments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;loaded_instruments&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">labware_choices_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">LABWARE_OPTIONS</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">html</span></div>
 </div>
 

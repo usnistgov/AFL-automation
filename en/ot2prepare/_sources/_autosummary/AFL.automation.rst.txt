@@ -17,6 +17,7 @@
    :recursive:
 
    APIServer
+   driver_templates
    instrument
    loading
    mixing

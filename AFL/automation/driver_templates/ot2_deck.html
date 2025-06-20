@@ -137,7 +137,7 @@ function resetTipracks(mount) {
         });
     });
 }
-function openPrepTargetDialog(slot, targets, mode) {
+function openPrepTargetDialog(slot, targets) {
     var wells = targets.split(',').map(function(t){ return t.replace(/^\d+/, ''); });
     var rows = [];
     var cols = [];
@@ -176,16 +176,29 @@ function openPrepTargetDialog(slot, targets, mode) {
         var sel=cells.filter('.selected').length===cells.length;
         cells.toggleClass('selected', !sel);
     });
-    var dialog = $('<div></div>').append(table).dialog({
-        title: (mode==='append'?'Append':'Redefine')+' Prep Targets',
+    var controls = $('<div style="text-align:center;margin-bottom:6px;"></div>');
+    var selectAll = $('<button>Select All</button>').click(function(){
+        table.find('.well-cell').addClass('selected');
+    });
+    var deselectAll = $('<button>Deselect All</button>').click(function(){
+        table.find('.well-cell').removeClass('selected');
+    });
+    controls.append(selectAll).append(' ').append(deselectAll);
+    var dialog = $('<div></div>').append(controls).append(table).dialog({
+        title: 'Manage Prep Targets',
         modal:true,
         width:'auto',
         buttons:{
-            'Confirm': function(){
+            'Append': function(){
                 var list=table.find('.well-cell.selected').map(function(){return $(this).data('well');}).get();
                 if(list.length===0){ alert('Select at least one well'); return; }
-                var str=list.join(',');
-                if(mode==='append'){ appendPrepTargets(str); } else { setPrepTargets(str); }
+                appendPrepTargets(list.join(','));
+                dialog.dialog('destroy').remove();
+            },
+            'Redefine': function(){
+                var list=table.find('.well-cell.selected').map(function(){return $(this).data('well');}).get();
+                if(list.length===0){ alert('Select at least one well'); return; }
+                setPrepTargets(list.join(','));
                 dialog.dialog('destroy').remove();
             },
             'Cancel': function(){ dialog.dialog('destroy').remove(); }

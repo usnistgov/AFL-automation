@@ -1988,13 +1988,8 @@ class OT2HTTPDriver(Driver):
                     slot_id = str(slot)
                     info["buttons"] += (
                         f"<button style='margin-top:4px;font-size:10px;' "
-                        f"onclick=\"openPrepTargetDialog('{slot_id}','{target_str}','append')\">"
-                        "Append Targets</button>"
-                    )
-                    info["buttons"] += (
-                        f"<button style='margin-top:4px;font-size:10px;' "
-                        f"onclick=\"openPrepTargetDialog('{slot_id}','{target_str}','set')\">"
-                        "Redefine Targets</button>"
+                        f"onclick=\"openPrepTargetDialog('{slot_id}','{target_str}')\">"
+                        "Manage Targets</button>"
                     )
                 slot_infos[str(slot)] = info
 

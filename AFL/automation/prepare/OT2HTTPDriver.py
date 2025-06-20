@@ -1,6 +1,8 @@
 import requests
 import time
 import json
+import tomllib
+from pathlib import Path
 
 from math import ceil
 from AFL.automation.APIServer.Driver import Driver
@@ -53,6 +55,12 @@ class OT2HTTPDriver(Driver):
             
         self.pipette_info = {}
 
+        # Custom labware handling
+        self.custom_labware_files = {}
+        self.sent_custom_labware = set()
+        self.custom_labware_dir = self._get_custom_labware_dir()
+        self._load_custom_labware_defs()
+
         # Base URL for HTTP requests
         self.base_url = f"http://{self.config['robot_ip']}:{self.config['robot_port']}"
         self.headers = {"Opentrons-Version": "2"}
@@ -87,6 +95,42 @@ class OT2HTTPDriver(Driver):
     def log_warning(self, message):
         """Log warning message safely"""
         self._log("warning", message)
+
+    def _get_custom_labware_dir(self) -> Path:
+        """Return the path to the custom labware directory."""
+        current = Path(__file__).resolve()
+        for parent in current.parents:
+            if (parent / "pyproject.toml").exists():
+                pyproject = parent / "pyproject.toml"
+                try:
+                    with open(pyproject, "rb") as f:
+                        data = tomllib.load(f)
+                    custom_dir = (
+                        data.get("tool", {})
+                        .get("afl", {})
+                        .get("custom_labware_dir")
+                    )
+                    if custom_dir:
+                        return (parent / custom_dir).expanduser()
+                except Exception:
+                    pass
+                return parent / "support" / "labware"
+        return Path.cwd() / "support" / "labware"
+
+    def _load_custom_labware_defs(self):
+        """Record available custom labware definitions in the support directory."""
+        self.custom_labware_dir.mkdir(parents=True, exist_ok=True)
+        for json_file in self.custom_labware_dir.glob("*.json"):
+            try:
+                with open(json_file, "r") as f:
+                    definition = json.load(f)
+                ns = definition.get("namespace", "custom_beta")
+                load = definition.get("parameters", {}).get("loadName")
+                if ns and load:
+                    key = f"{ns}/{load}"
+                    self.custom_labware_files[key] = json_file
+            except Exception:
+                continue
 
     def _initialize_robot(self):
         """Initialize the connection to the robot and get basic information"""
@@ -406,21 +450,36 @@ class OT2HTTPDriver(Driver):
                     raise RuntimeError(
                         f"Command returned error: {response.text}"
                     )
-    def send_labware(self,labware_def):
-        """Send a custom labware definition to the current run."""
+    def send_labware(self, labware_def):
+        """Send a custom labware definition to the current run and persist it."""
 
         self.log_debug(f"Sending custom labware definition: {labware_def}")
+
+        ns = labware_def.get("namespace", "custom_beta")
+        load_name = labware_def.get("parameters", {}).get("loadName")
+        if not load_name:
+            raise ValueError("labware_def missing parameters.loadName")
+
+        key = f"{ns}/{load_name}"
+
+        # Persist the definition for future use
+        self.custom_labware_dir.mkdir(parents=True, exist_ok=True)
+        file_path = self.custom_labware_dir / f"{ns}_{load_name}.json"
+        with open(file_path, "w") as f:
+            json.dump(labware_def, f, indent=2)
+        self.custom_labware_files[key] = file_path
+
+        # Avoid re-sending if already uploaded
+        if key in self.sent_custom_labware:
+            self.log_debug(f"Labware {key} already sent to robot")
+            return key
 
         # Ensure we have a valid run
         run_id = self._ensure_run_exists()
 
         try:
-            # Prepare the loadLabware command
-            command_dict = {
-                "data": labware_def
-            }
+            command_dict = {"data": labware_def}
 
-            # Execute the command
             response = requests.post(
                 url=f"{self.base_url}/runs/{run_id}/labware_definitions",
                 headers=self.headers,
@@ -430,11 +489,14 @@ class OT2HTTPDriver(Driver):
 
             self._check_cmd_success(response)
 
-            # Get the labware ID from the response
             response_data = response.json()
             labware_name = response_data["data"]["definitionUri"]
 
-            self.log_info(f"Successfully sent custom labware with name/URI {labware_name}")
+            self.sent_custom_labware.add(key)
+
+            self.log_info(
+                f"Successfully sent custom labware with name/URI {labware_name}"
+            )
             return labware_name
 
         except (requests.exceptions.RequestException, KeyError) as e:
@@ -447,6 +509,39 @@ class OT2HTTPDriver(Driver):
 
         # Ensure we have a valid run
         run_id = self._ensure_run_exists()
+
+        labware_json = kwargs.pop("labware_json", None)
+
+        version = 1
+
+        if labware_json is not None:
+            namespace = labware_json.get("namespace", "custom_beta")
+            load_name = labware_json.get("parameters", {}).get("loadName")
+            if not load_name:
+                raise ValueError("labware_json missing parameters.loadName")
+            name = load_name
+            self.send_labware(labware_json)
+        else:
+            if "/" in name:
+                namespace, load_name = name.split("/", 1)
+                name = load_name
+            else:
+                load_name = name
+                if f"custom_beta/{load_name}" in self.custom_labware_files:
+                    namespace = "custom_beta"
+                elif f"opentrons/{load_name}" in self.custom_labware_files:
+                    namespace = "opentrons"
+                else:
+                    namespace = "opentrons"
+            key = f"{namespace}/{load_name}"
+            if namespace != "opentrons" and key not in self.sent_custom_labware:
+                path = self.custom_labware_files.get(key)
+                if path and Path(path).exists():
+                    with open(path, "r") as f:
+                        definition = json.load(f)
+                    self.send_labware(definition)
+                else:
+                    self.log_warning(f"Custom labware definition not found for {key}")
 
         try:
             # Check if there's existing labware in the slot
@@ -490,13 +585,7 @@ class OT2HTTPDriver(Driver):
                 location = {"slotName": str(slot)}
                 
             # Determine namespace and version
-            # For custom labware, the name might include namespace info
-            namespace = "opentrons"  # default namespace
             version = 1  # default version
-
-            # Check if name includes namespace info (e.g. "custom/my_plate")
-            if "/" in name:
-                namespace, name = name.split("/", 1)
 
             # Prepare the loadLabware command
             command_dict = {

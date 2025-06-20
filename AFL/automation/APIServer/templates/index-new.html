@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="static/jquery/jquery-ui-1.13.0/jquery-ui.min.css">
 
     <style>
 
@@ -124,6 +124,11 @@
             margin-bottom: 20px;
         }
 
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
     </style>
     <title>{{ name }}</title>
 </head>
@@ -173,8 +178,8 @@
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script src="static/jquery/jquery-3.4.1.min.js"></script>
+<script src="static/jquery/jquery-ui-1.13.0/jquery-ui.min.js"></script>
 <script>
    // Global variable to store the JWT token
     var token = null;
@@ -210,9 +215,11 @@
                 var newState = metaDiv.is(':visible') ? 'visible' : 'hidden';
                 localStorage.setItem(metaDiv[0].id, newState);
             });
+            var taskText = JSON.stringify(task, undefined, 2);
+            taskText = taskText.replace(/\\n/g, '\n');
             ul.append(
                 "<div class='meta' id='" + meta_str + "'><pre>" +
-                JSON.stringify(task, undefined, 2) + // Display full task JSON
+                taskText +
                 "</pre></div>"
             );
 

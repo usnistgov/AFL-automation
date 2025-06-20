@@ -1985,14 +1985,15 @@ class OT2HTTPDriver(Driver):
                 ])
                 if info.get('target_count', 0) > 10:
                     target_str = info.get('targets', '')
+                    slot_id = str(slot)
                     info["buttons"] += (
                         f"<button style='margin-top:4px;font-size:10px;' "
-                        f"onclick=\"openPrepTargetDialog('{slot_str}','{target_str}','append')\">"
+                        f"onclick=\"openPrepTargetDialog('{slot_id}','{target_str}','append')\">"
                         "Append Targets</button>"
                     )
                     info["buttons"] += (
                         f"<button style='margin-top:4px;font-size:10px;' "
-                        f"onclick=\"openPrepTargetDialog('{slot_str}','{target_str}','set')\">"
+                        f"onclick=\"openPrepTargetDialog('{slot_id}','{target_str}','set')\">"
                         "Redefine Targets</button>"
                     )
                 slot_infos[str(slot)] = info

@@ -1929,6 +1929,16 @@ class OT2HTTPDriver(Driver):
                     definition.get('metadata', {}).get('displayCategory') == 'tipRack'
                 )
                 wells = list(definition.get('wells', {}).keys())
+                # sort wells in row-major order (A1, A2, B1, B2, ...)
+                def _well_key(w):
+                    import re
+                    m = re.match(r"([A-Za-z]+)(\d+)", w)
+                    if m:
+                        row = m.group(1)
+                        col = int(m.group(2))
+                        return (row, col)
+                    return (w, 0)
+                wells = sorted(wells, key=_well_key)
                 mounts = []
                 if is_tiprack:
                     for m, d in self.config['loaded_instruments'].items():

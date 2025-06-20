@@ -18,8 +18,10 @@ bokeh
 pillow
 scikit-image<0.20
 pyserial
+caproto
 requests
 flask_cors
+waitress
 zeroconf
 #pyFAI
 #certif-pyspec==1.1.12

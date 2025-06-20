@@ -2,9 +2,9 @@ var numOfServers = 0; // counter for the number of Server objects made
 var servers = []; // array for the Server objects
 
 class Server {
-    constructor(address) {
+    constructor(address, key=null) {
         this.address = address;
-        this.key = 'S'+(++numOfServers);
+        this.key = key || 'S'+(++numOfServers);
         
         this.queueIterationId = null;
         this.cachedQueue = null;
@@ -425,6 +425,7 @@ function addServer(popup) {
         addStatusDiv(server.key);
         addControlsDiv(server.key);
         addQueueDiv(server.key);
+        saveLayout();
 
         // // adds divs to the page if checked by user
         // var input;

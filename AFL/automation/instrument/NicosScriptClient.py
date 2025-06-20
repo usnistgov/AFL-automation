@@ -8,12 +8,16 @@ import time
 
 import numpy as np
 import copy
+import warnings
 
-from nicos.clients.base import ConnectionData, NicosClient
-from nicos.utils.loggers import ACTION, INPUT
-from nicos.protocols.daemon import BREAK_AFTER_LINE, BREAK_AFTER_STEP, \
-     STATUS_IDLE, STATUS_IDLEEXC
-
+try:
+    from nicos.clients.base import ConnectionData, NicosClient
+    from nicos.utils.loggers import ACTION, INPUT
+    from nicos.protocols.daemon import BREAK_AFTER_LINE, BREAK_AFTER_STEP, \
+         STATUS_IDLE, STATUS_IDLEEXC
+except ImportError:
+    warnings.warn('NICOS import failed- NICOS instrument connections will not work.  Install nicos.',stacklevel=2)
+   
 #NICOS events to exclude from client
 EVENTMASK = ('watch', 'datapoint', 'datacurve', 'clientexec')
 
@@ -41,6 +45,9 @@ class NicosScriptClient(NicosClient):
         """
         Initialize the NicosScriptClient.
         """
+
+        self.log = logging.getLogger(__name__)
+        
         NicosClient.__init__(self, self.log)
         self.messages = []
 

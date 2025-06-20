@@ -51,7 +51,7 @@ class SampleDriver(Driver):
     defaults['data_path'] = './'
     defaults['components'] = []
     defaults['AL_components'] = []
-    defaults['snapshot_directory'] = '/home/nistoroboto'
+    defaults['snapshot_directory'] = str(pathlib.Path.home() / 'snaps')
     defaults['max_sample_transmission'] = 0.6
     defaults['mix_order'] = []
     defaults['custom_stock_settings'] = []
@@ -60,7 +60,6 @@ class SampleDriver(Driver):
     defaults['sample_composition_tol'] = 0.0
     defaults['next_samples_variable'] = 'next_samples'
     defaults['camera_urls'] = []
-    defaults['snapshot_directory'] = []
     defaults['grid_file'] = None
     defaults['grid_blank_interval'] = None
     defaults['grid_blank_sample'] = None
@@ -306,11 +305,9 @@ class SampleDriver(Driver):
     def take_snapshot(self, prefix):
         now = datetime.datetime.now().strftime('%y%m%d-%H:%M:%S')
         for i, cam_url in enumerate(self.config['camera_urls']):
-            fname = self.config['snapshot_directory'] + '/'
-            fname += prefix
-            fname += f'-{i}-'
-            fname += now
-            fname += '.jpg'
+            fname = pathlib.Path(self.config['snapshot_directory']) / (
+                f"{prefix}-{i}-{now}.jpg"
+            )
 
             try:
                 r = requests.get(cam_url, stream=True)
@@ -1421,7 +1418,6 @@ class SampleDriver(Driver):
 _DEFAULT_CUSTOM_CONFIG = {
 
     '_classname': 'AFL.automation.sample.SampleDriver.SampleDriver',
-    'snapshot_directory': '/home/afl642/snaps'
 }
 
 if __name__ == '__main__':

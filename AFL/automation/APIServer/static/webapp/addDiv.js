@@ -19,8 +19,8 @@ class Div {
     /**
      * Adds the div to the html and fills it in accordance to the div type
      */
-    display() {
-        $("#column1").append(this.div);
+    display(column=1) {
+        $("#column" + column).append(this.div);
         this.#addDivControls();
         this.#addHeader();
 
@@ -288,11 +288,8 @@ class Div {
             
             // Check if completed tasks have changed
             if (!arraysEqual(completed, $(completedID).children().map((i, el) => $(el).text()).get())) {
-                $(completedID).empty();
-                for (let i in completed) {
-                    const task = '<li onclick="addTaskPopup(\'' + key + '\',0,' + i + ')">' + completed[i].task.task_name + '</li>';
-                    $(completedID).append(task);
-                }
+                const items = completed.map((t, i) => `<li onclick="addTaskPopup('${key}',0,${i})">${t.task.task_name}</li>`).join('');
+                $(completedID).html(items);
             }
 
             // Check if current task has changed
@@ -307,11 +304,8 @@ class Div {
 
             // Check if queued tasks have changed
             if (!arraysEqual(queued, $(uncompletedID).children().map((i, el) => $(el).text()).get())) {
-                $(uncompletedID).empty();
-                for (let i in queued) {
-                    const task = '<li onclick="addTaskPopup(\'' + key + '\',2,' + i + ')">' + queued[i].task.task_name + '</li>';
-                    $(uncompletedID).append(task);
-                }
+                const items = queued.map((t, i) => `<li onclick="addTaskPopup('${key}',2,${i})">${t.task.task_name}</li>`).join('');
+                $(uncompletedID).html(items);
             }
         });
     }
@@ -388,48 +382,52 @@ function getDiv(serverKey, divType) {
  * Creates and adds a status div for the corresponding server
  * @param {String} key
  */
-function addStatusDiv(key) {
+function addStatusDiv(key, column=1) {
     var server = getServer(key);
-    server.statusDiv.display();
+    server.statusDiv.display(column);
 
     var id = '#'+server.statusDiv.addBtnID;
     disableBtn($(id));
+    saveLayout();
 }
 
 /**
  * Creates and adds a controls div for the corresponding server
  * @param {String} key
  */
-function addControlsDiv(key) {
+function addControlsDiv(key, column=1) {
     var server = getServer(key);
-    server.controlsDiv.display();
+    server.controlsDiv.display(column);
 
     var id = '#'+server.controlsDiv.addBtnID;
     disableBtn($(id));
+    saveLayout();
 }
 
 /**
  * Creates and adds a queue div for the corresponding server
  * @param {String} key
  */
-function addQueueDiv(key) {
+function addQueueDiv(key, column=1) {
     var server = getServer(key);
-    server.queueDiv.display();
+    server.queueDiv.display(column);
 
     var id = '#'+server.queueDiv.addBtnID;
     disableBtn($(id));
+    saveLayout();
 }
 
 /**
  * Creates and adds a quickbar div for the corresponding server
  * @param {String} key
  */
-function addQuickbarDiv(key) {
+function addQuickbarDiv(key, column=1) {
     var server = getServer(key);
-    server.quickbarDiv.display();
+    server.quickbarDiv.display(column);
 
     var id = '#'+server.quickbarDiv.addBtnID;
     disableBtn($(id));
+    saveLayout();
 }
 
 // Helper function to compare arrays

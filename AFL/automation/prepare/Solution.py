@@ -4,7 +4,7 @@ import warnings
 
 from AFL.automation.prepare.Component import Component
 from AFL.automation.prepare.PrepType import PrepType,prepRegistrar
-from AFL.automation.prepare.ComponentDB import componentFactory
+from AFL.automation.prepare.PrepareDB import componentFactory
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.exceptions import EmptyException,NotFoundError
 from AFL.automation.shared.units import units,enforce_units,has_units,is_volume,is_mass,AVOGADROS_NUMBER

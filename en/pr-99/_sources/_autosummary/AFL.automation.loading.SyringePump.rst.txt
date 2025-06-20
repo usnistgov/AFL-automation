@@ -1,0 +1,12 @@
+AFL.automation.loading.SyringePump
+==================================
+
+.. automodule:: AFL.automation.loading.SyringePump
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SyringePump
+   

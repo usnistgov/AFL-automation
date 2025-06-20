@@ -1,0 +1,24 @@
+AFL.automation.mixing.OT2Prepare
+================================
+
+.. automodule:: AFL.automation.mixing.OT2Prepare
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      listify
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Any
+      MassBalance
+      MassBalanceDriver
+      OT2HTTPDriver
+      OT2Prepare
+      PipetteAction
+      Solution
+   

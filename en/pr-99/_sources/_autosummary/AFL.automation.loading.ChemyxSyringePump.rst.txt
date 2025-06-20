@@ -1,0 +1,21 @@
+AFL.automation.loading.ChemyxSyringePump
+========================================
+
+.. automodule:: AFL.automation.loading.ChemyxSyringePump
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      getOpenPorts
+      parsePortName
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ChemyxConnection
+      ChemyxSyringePump
+      SyringePump
+   

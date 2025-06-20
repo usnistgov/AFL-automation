@@ -1,6 +1,8 @@
 import requests
 import time
 import json
+from importlib.resources import files
+from jinja2 import Template
 
 from math import ceil
 from AFL.automation.APIServer.Driver import Driver
@@ -1948,184 +1950,30 @@ class OT2HTTPDriver(Driver):
                     })
             return info
 
-        html = ''
-        if mode == 'full':
-            html += '''
-            <!DOCTYPE html><html><head><style>
-            body { font-family: Arial, sans-serif; margin: 20px; background-color: #fafafa; }
-            .deck-container { max-width: 900px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            .deck-title { text-align: center; color: #333; margin-bottom: 20px; font-size: 24px; font-weight: bold; }
-            .deck-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-            .deck-slot { border: 2px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: relative; transition: transform 0.2s; min-height: 180px; }
-            .deck-slot:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-            .slot-number { position: absolute; top: 5px; left: 8px; font-weight: bold; font-size: 14px; color: #666; background: rgba(255,255,255,0.8); padding: 2px 4px; border-radius: 3px; }
-            .slot-content { font-size: 13px; font-weight: bold; margin: 15px 0 8px 0; text-align: center; line-height: 1.2; }
-            .well-layout { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin: 5px 0; }
-            .slot-details { font-size: 9px; color: #666; text-align: center; margin-top: auto; padding-top: 5px; border-top: 1px solid rgba(0,0,0,0.1); width: 100%; }
-            .pipettes-section { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
-            .pipettes-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333; }
-            .pipette-item { background: white; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #2196f3; }
-            .trash-slot { background: #ffebee !important; border-color: #e57373 !important; }
-            .legend { display: flex; justify-content: center; gap: 20px; margin: 15px 0; font-size: 12px; }
-            .legend-item { display: flex; align-items: center; gap: 5px; }
-            .legend-color { width: 12px; height: 12px; border-radius: 2px; }
-            svg circle:hover, svg rect:hover { stroke-width: 2 !important; stroke: #ff5722 !important; }
-            .ui-dialog {border: solid black;}
-            .ui-dialog-content, .ui-dialog { background: #fff !important; border-radius: 2px; }
-            </style></head><body><div class="deck-container"><div class="deck-title">🧪 Opentrons OT-2 Deck Layout</div><div class="legend"><div class="legend-item"><div class="legend-color" style="background: #4caf50;"></div><span>Available Tips</span></div><div class="legend-item"><div class="legend-color" style="background: #f44336;"></div><span>Used Tips</span></div><div class="legend-item"><div class="legend-color" style="background: #42a5f5;"></div><span>Plate Wells</span></div><div class="legend-item"><div class="legend-color" style="background: #66bb6a;"></div><span>Reservoir Wells</span></div></div><div class="deck-grid">'''
-        else:
-            html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; font-family: Arial, sans-serif;">'
-
+        slot_infos = {}
         for row in slot_layout:
             for slot in row:
-                info = get_slot_info(slot, compact=(mode=='simple'))
+                info = get_slot_info(slot, compact=(mode == 'simple'))
                 slot_label = "T" if slot == "Trash" else str(slot)
-                svg_display = f'<div style="margin: 5px 0;">{info["svg"]}</div>' if info["svg"] else ""
-                click_attr = ''
+                info["slot_label"] = slot_label
+                info["click_attr"] = ""
                 if info["type"] in ["empty", "module_only"]:
-                    click_attr = f" onclick=\"showLabwareOptions('{slot}')\" style=\"cursor:pointer;\""
-                buttons = ''.join([f"<button style='margin-top:4px;font-size:10px;' onclick=\"resetTipracks('{m}')\">Reset</button>" for m in info.get('mounts', [])])
-                if mode == 'full':
-                    html += f"""
-                    <div class='deck-slot{' trash-slot' if slot == 'Trash' else ''}' {click_attr}>
-                        <div class='slot-number'>{slot_label}</div>
-                        <div class='slot-content'>{info['name']}</div>
-                        <div class='well-layout'>{svg_display}</div>
-                        <div class='slot-details'>{buttons}</div>
-                    </div>
-                    """
-                else:
-                    html += f"""
-                    <div {click_attr} style="background: {info['color']}; border: 1px solid #ccc; border-radius: 6px; padding: 8px; text-align: center; min-height: 100px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: relative; font-size: 11px;">
-                        <div style="position: absolute; top: 2px; left: 4px; font-weight: bold; font-size: 10px; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px;">{slot_label}</div>
-                        <div style="margin: 12px 0 5px 0; font-weight: 500; line-height: 1.1;">{info['name']}</div>
-                        {svg_display}
-                        {buttons}
-                    </div>
-                    """
-        html += '</div>'
+                    info["click_attr"] = f"onclick=\"showLabwareOptions('{slot}')\" style=\"cursor:pointer;\""
+                info["buttons"] = ''.join([
+                    f"<button style='margin-top:4px;font-size:10px;' onclick=\"resetTipracks('{m}')\">Reset</button>"
+                    for m in info.get('mounts', [])
+                ])
+                slot_infos[str(slot)] = info
 
-        # Pipette section
-        if "loaded_instruments" in self.config and self.config["loaded_instruments"]:
-            if mode == 'full':
-                html += "<div class='pipettes-section'><div class='pipettes-title'>🔧 Loaded Pipettes</div>"
-                for mount, data in self.config["loaded_instruments"].items():
-                    name = data.get('name', 'Unknown').replace('_', ' ').title()
-                    html += f"<div class='pipette-item'><strong>{mount.title()} Mount:</strong> {name} <button style='font-size:10px;' onclick=\"resetTipracks('{mount}')\">Reset Tips</button></div>"
-                html += "</div>"
-            else:
-                pipette_summary = []
-                for mount, data in self.config["loaded_instruments"].items():
-                    name = data.get('name', 'Unknown').replace('_', ' ').title()
-                    pipette_summary.append(f"{mount.title()}: {name} <button style='font-size:10px;' onclick=\"resetTipracks('{mount}')\">Reset Tips</button>")
-                html += f"<div style='margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;'><strong>Pipettes:</strong> {' | '.join(pipette_summary)}</div>"
-
-        # Add instrument loader and deck reset controls
-        html += '''<div style="margin-top:30px; display:flex; flex-direction:column; align-items:center; gap:20px;">
-            <div style="background:#f5f5f5; border-radius:8px; padding:16px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.05); display:inline-block;">
-                <label><b>Mount:</b> <select id="mount-select"><option value="left">Left</option><option value="right">Right</option></select></label>
-                &nbsp; <label><b>Pipette:</b> <select id="pipette-select"><option value="p1000_single">P1000</option><option value="p300_single">P300</option></select></label>
-                &nbsp; <label><b>Tiprack Slots:</b> <input id="tiprack-slots" type="text" placeholder="e.g. 1,2,4" style="width:90px;"/></label>
-                &nbsp; <button id="load-instrument-btn" style="font-weight:bold;">Load Instrument</button>
-            </div>
-            <button id="reset-deck-btn" style="margin-top:10px; background:#e53935; color:white; font-weight:bold; border:none; border-radius:6px; padding:10px 24px; font-size:15px; box-shadow:0 2px 6px rgba(0,0,0,0.08);">Reset Deck</button>
-        </div>'''
-
-        # Add JS for interactive loading
-        html += f"""
-        <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
-        <script src='https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'></script>
-        <script>
-        var token = null;
-        async function login() {{
-            if (token) return token;
-            const response = await fetch('/login', {{
-                method: 'POST',
-                headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{username:'dashboard', password:'domo_arigato'}})
-            }});
-            if (!response.ok) {{ alert('Login failed'); throw new Error('login'); }}
-            const data = await response.json();
-            token = data.token; return token;
-        }}
-        const labwareChoices = {json.dumps(LABWARE_OPTIONS)};
-        function showLabwareOptions(slot) {{
-            var select = $('<select></select>');
-            Object.entries(labwareChoices).forEach(function([k,v]) {{
-                select.append($('<option>').attr('value',k).text(v));
-            }});
-            $('<div></div>').append(select).dialog({{
-                title: 'Load labware or module in slot ' + slot,
-                modal: true,
-                buttons: {{
-                    'Load': function() {{
-                        var lw = select.val();
-                        var isHeaterShaker = (lw === 'heaterShakerModuleV1');
-                        var task = isHeaterShaker ? 'load_module' : 'load_labware';
-                        login().then(function(tok) {{
-                            $.ajax({{
-                                type:'POST',
-                                url:'/enqueue',
-                                headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
-                                data: JSON.stringify({{task_name:task, name: lw, slot: slot}}),
-                                success: function() {{ setTimeout(() => {{location.reload()}},500);}},
-                                error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
-                            }});
-                        }});
-                        $(this).dialog('destroy').remove();
-                    }},
-                    'Cancel': function() {{ $(this).dialog('destroy').remove(); }}
-                }}
-            }});
-        }}
-        function resetTipracks(mount) {{
-            login().then(function(tok) {{
-                $.ajax({{
-                    type:"POST",
-                    url:"/enqueue",
-                    headers:{{"Content-Type":"application/json","Authorization":"Bearer "+tok}},
-                    data: JSON.stringify({{task_name:"reset_tipracks", mount: mount}}),
-                    success: function() {{ location.reload(); }},
-                    error: function(xhr) {{ alert("Error: "+xhr.responseText); }}
-                }});
-            }});
-        }}
-        $(document).ready(function() {{
-                $('#load-instrument-btn').click(function() {{
-                    var mount = $('#mount-select').val();
-                    var pipette = $('#pipette-select').val();
-                    var tipracks = $('#tiprack-slots').val().split(',').map(function(x){{return x.trim();}}).filter(Boolean);
-                    if (!mount || !pipette) {{ alert('Select mount and pipette.'); return; }}
-                    login().then(function(tok) {{
-                        $.ajax({{
-                            type: 'POST',
-                            url: '/enqueue',
-                            headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
-                            data: JSON.stringify({{task_name:'load_instrument', mount: mount, name: pipette, tip_rack_slots: tipracks}}),
-                            success: function() {{ location.reload(); }},
-                            error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
-                        }});
-                    }});
-                }});
-         // Deck reset button
-         $('#reset-deck-btn').click(function() {{
-                    if (!confirm('Are you sure you want to reset the entire deck?')) return;
-                    login().then(function(tok) {{
-                        $.ajax({{
-                            type: 'POST',
-                            url: '/enqueue',
-                            headers: {{'Content-Type':'application/json','Authorization':'Bearer '+tok}},
-                            data: JSON.stringify({{task_name:'reset_deck'}}),
-                            success: function() {{ location.reload(); }},
-                            error: function(xhr) {{ alert('Error: '+xhr.responseText); }}
-                        }});
-                    }});
-                }});
-            }});
-        </script>
-        """
-        if mode == 'full':
-            html += "</div></body></html>"
+        template_path = files('AFL.automation.driver_templates').joinpath('ot2_deck.html')
+        template = Template(template_path.read_text())
+        html = template.render(
+            slot_layout=slot_layout,
+            slot_infos=slot_infos,
+            loaded_instruments=self.config.get('loaded_instruments', {}),
+            mode=mode,
+            labware_choices_json=json.dumps(LABWARE_OPTIONS)
+        )
         return html
 
 if __name__ == "__main__":

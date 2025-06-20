@@ -108,3 +108,6 @@ packages = ["AFL"]
 
 [tool.hatch.build.targets.sdist]
 packages = ["AFL"]
+
+[tool.setuptools]
+package-data = { "AFL.automation.driver_templates" = ["*.html"] }

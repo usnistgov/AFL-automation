@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background-color: #fafafa; }
+#stock-table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+#stock-table th, #stock-table td { border: 1px solid #ddd; padding: 8px; }
+#stock-table th { background: #f0f0f0; }
+.add-btn { padding: 8px 16px; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.add-btn:hover { background: #1976d2; }
+</style>
+</head>
+<body>
+<h2>OT2Prepare Stock Configuration</h2>
+<table id="stock-table">
+ <thead>
+  <tr><th>Name</th><th>Location</th><th>Components</th></tr>
+ </thead>
+ <tbody>
+ {% for stock in stocks %}
+  <tr>
+   <td>{{ stock.name }}</td>
+   <td>{{ stock_locations.get(stock.name, '') }}</td>
+   <td>
+    <ul style="margin:0; padding-left:16px;">
+    {% for comp,val in (stock.masses|default({})).items() %}
+     <li>{{ comp }}: {{ val }}</li>
+    {% endfor %}
+    {% for comp,val in (stock.volumes|default({})).items() %}
+     <li>{{ comp }}: {{ val }}</li>
+    {% endfor %}
+    </ul>
+   </td>
+  </tr>
+ {% endfor %}
+ </tbody>
+</table>
+<button id="add-stock-btn" class="add-btn">Add Stock</button>
+<div id="stock-dialog" style="display:none;" title="Add Stock">
+  <div style="margin-bottom:8px;"><label>Name: <input type="text" id="stock-name"></label></div>
+  <div style="margin-bottom:8px;"><label>Location: <input type="text" id="stock-location" placeholder="e.g. 1A1"></label></div>
+  <h4>Components</h4>
+  <table id="components-table" style="width:100%;">
+   <thead><tr><th>Name</th><th>Amount</th><th>Units</th><th></th></tr></thead>
+   <tbody></tbody>
+  </table>
+  <button id="add-comp-btn" type="button">Add Component</button>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+var token = null;
+function login(){
+    if(token) return Promise.resolve(token);
+    return fetch('/login',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:'dashboard', password:'domo_arigato'})})
+        .then(r=>{if(!r.ok) throw 'login'; return r.json();})
+        .then(d=>{token=d.token; return token;});
+}
+function addComponentRow(name,amount,units){
+    $('#components-table tbody').append('<tr>'+
+        '<td><input class="comp-name" value="'+(name||'')+'"/></td>'+
+        '<td><input class="comp-amount" value="'+(amount||'')+'" style="width:60px;"/></td>'+
+        '<td><input class="comp-units" value="'+(units||'')+'" style="width:60px;"/></td>'+
+        '<td><button class="remove-comp">X</button></td>'+
+        '</tr>');
+}
+$(document).on('click','.remove-comp',function(){ $(this).closest('tr').remove(); });
+$('#add-comp-btn').on('click',function(){ addComponentRow(); });
+$('#add-stock-btn').on('click',function(){
+    $('#stock-name').val('');
+    $('#stock-location').val('');
+    $('#components-table tbody').empty();
+    addComponentRow();
+    $('#stock-dialog').dialog({ modal:true, width:500, buttons:{
+        'Add': function(){
+            var stock={name:$('#stock-name').val(), masses:{}, volumes:{}, location:$('#stock-location').val()};
+            $('#components-table tbody tr').each(function(){
+                var n=$(this).find('.comp-name').val();
+                var a=$(this).find('.comp-amount').val();
+                var u=$(this).find('.comp-units').val();
+                if(!n || !a || !u) return;
+                if(/ul$|ml$|l$/i.test(u)) stock.volumes[n]=a+' '+u; else stock.masses[n]=a+' '+u;
+            });
+            login().then(function(tok){
+                $.ajax({type:'POST', url:'/enqueue', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok}, data: JSON.stringify({task_name:'add_stock', stock: stock}), success:function(){location.reload();}, error:function(xhr){alert('Error: '+xhr.responseText);}});
+            });
+            $(this).dialog('destroy');
+        },
+        'Cancel': function(){ $(this).dialog('destroy'); }
+    }});
+});
+</script>
+</body>
+</html>

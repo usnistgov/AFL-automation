@@ -440,7 +440,8 @@
     <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Persistent storage for loaded labware</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Persistent storage for loaded instruments</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Persistent storage for loaded modules</span>
-    <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;available_tips&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># Persistent storage for available tips, Format: {mount: [(tiprack_id, well_name), ...]}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;available_tips&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Persistent storage for available tips, Format: {mount: [(tiprack_id, well_name), ...]}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Persistent storage for prep target well locations</span>
 
 <div class="viewcode-block" id="OT2HTTPDriver.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.__init__">[docs]</a>
@@ -459,7 +460,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">protocol_id</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_transfer</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_transfer</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prep_targets</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">modules</span> <span class="o">=</span> <span class="p">{}</span>
@@ -606,30 +606,36 @@
 <div class="viewcode-block" id="OT2HTTPDriver.reset_prep_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_prep_targets">[docs]</a>
     <span class="k">def</span> <span class="nf">reset_prep_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prep_targets</span> <span class="o">=</span> <span class="p">[]</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear the list of preparation targets stored in the config.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
+
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.add_prep_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.add_prep_targets">[docs]</a>
     <span class="k">def</span> <span class="nf">add_prep_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add well locations to the preparation target list.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_prep_targets</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prep_targets</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">listify</span><span class="p">(</span><span class="n">targets</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_prep_target">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_prep_target">[docs]</a>
     <span class="k">def</span> <span class="nf">get_prep_target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prep_targets</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.status">[docs]</a>
     <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prep_targets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Next prep target: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prep_targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Remaining prep targets: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prep_targets</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">prep_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prep_targets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Next prep target: </span><span class="si">{</span><span class="n">prep_targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Remaining prep targets: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">prep_targets</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;No prep targets loaded&quot;</span><span class="p">)</span>
 
@@ -752,7 +758,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;available_tips&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;available_tips&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.home">
@@ -2446,6 +2453,17 @@
                     <span class="s1">&#39;tiprack&#39;</span> <span class="ow">in</span> <span class="n">labware_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span>
                     <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayCategory&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;tipRack&#39;</span>
                 <span class="p">)</span>
+                <span class="n">wells</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;wells&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="c1"># sort wells in row-major order (A1, A2, B1, B2, ...)</span>
+                <span class="k">def</span> <span class="nf">_well_key</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+                    <span class="kn">import</span> <span class="nn">re</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([A-Za-z]+)(\d+)&quot;</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                        <span class="n">row</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="n">col</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+                        <span class="k">return</span> <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">wells</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">wells</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">_well_key</span><span class="p">)</span>
                 <span class="n">mounts</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">if</span> <span class="n">is_tiprack</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;loaded_instruments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -2461,6 +2479,8 @@
                     <span class="n">info</span><span class="p">[</span><span class="s1">&#39;tiprack&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="n">info</span><span class="p">[</span><span class="s1">&#39;mounts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mounts</span>
                     <span class="n">info</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#fff3e0&#39;</span>
+                <span class="n">info</span><span class="p">[</span><span class="s1">&#39;target_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wells</span><span class="p">)</span>
+                <span class="n">info</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">slot_str</span><span class="si">}{</span><span class="n">w</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wells</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">has_module</span><span class="p">:</span>
                 <span class="n">module_id</span><span class="p">,</span> <span class="n">module_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">][</span><span class="n">slot_str</span><span class="p">]</span>
                 <span class="n">module_name</span> <span class="o">=</span> <span class="n">module_type</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;ModuleV1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Module&#39;</span><span class="p">,</span> <span class="s1">&#39; Mod&#39;</span><span class="p">)</span>
@@ -2488,6 +2508,14 @@
                     <span class="sa">f</span><span class="s2">&quot;&lt;button style=&#39;margin-top:4px;font-size:10px;&#39; onclick=</span><span class="se">\&quot;</span><span class="s2">resetTipracks(&#39;</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;Reset&lt;/button&gt;&quot;</span>
                     <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mounts&#39;</span><span class="p">,</span> <span class="p">[])</span>
                 <span class="p">])</span>
+                <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;target_count&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                    <span class="n">target_str</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">slot_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s2">&quot;buttons&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;&lt;button style=&#39;margin-top:4px;font-size:10px;&#39; &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;onclick=</span><span class="se">\&quot;</span><span class="s2">openPrepTargetDialog(&#39;</span><span class="si">{</span><span class="n">slot_id</span><span class="si">}</span><span class="s2">&#39;,&#39;</span><span class="si">{</span><span class="n">target_str</span><span class="si">}</span><span class="s2">&#39;)</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span>
+                        <span class="s2">&quot;Manage Targets&lt;/button&gt;&quot;</span>
+                    <span class="p">)</span>
                 <span class="n">slot_infos</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)]</span> <span class="o">=</span> <span class="n">info</span>
 
         <span class="n">template_path</span> <span class="o">=</span> <span class="n">files</span><span class="p">(</span><span class="s1">&#39;AFL.automation.driver_templates&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;ot2_deck.html&#39;</span><span class="p">)</span>

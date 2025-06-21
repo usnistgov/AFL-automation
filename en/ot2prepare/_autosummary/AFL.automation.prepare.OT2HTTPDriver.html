@@ -491,7 +491,7 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.prepare.OT2HTTPDriver.</span></span><span class="sig-name descname"><span class="pre">OT2HTTPDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver" title="Link to this definition">#</a></dt>
 <dd><dl class="py attribute">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'available_tips':</span> <span class="pre">{},</span> <span class="pre">'loaded_instruments':</span> <span class="pre">{},</span> <span class="pre">'loaded_labware':</span> <span class="pre">{},</span> <span class="pre">'loaded_modules':</span> <span class="pre">{},</span> <span class="pre">'robot_ip':</span> <span class="pre">'127.0.0.1',</span> <span class="pre">'robot_port':</span> <span class="pre">'31950'}</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.defaults" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'available_tips':</span> <span class="pre">{},</span> <span class="pre">'loaded_instruments':</span> <span class="pre">{},</span> <span class="pre">'loaded_labware':</span> <span class="pre">{},</span> <span class="pre">'loaded_modules':</span> <span class="pre">{},</span> <span class="pre">'prep_targets':</span> <span class="pre">[],</span> <span class="pre">'robot_ip':</span> <span class="pre">'127.0.0.1',</span> <span class="pre">'robot_port':</span> <span class="pre">'31950'}</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.defaults" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -526,12 +526,14 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_prep_targets">
 <span class="sig-name descname"><span class="pre">reset_prep_targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.reset_prep_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_prep_targets" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Clear the list of preparation targets stored in the config.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.add_prep_targets">
 <span class="sig-name descname"><span class="pre">add_prep_targets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.add_prep_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.add_prep_targets" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Add well locations to the preparation target list.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_prep_target">

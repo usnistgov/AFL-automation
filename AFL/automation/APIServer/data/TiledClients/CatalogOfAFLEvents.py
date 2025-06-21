@@ -129,9 +129,9 @@ class CatalogOfAFLEvents(Container):
                 array_client[0].metadata
                 )
 
-        for var in data_vars:
-            if var[0] not in data_vars.keys():
-                try:
+        # for var in data_vars:
+        #     if var[0] not in data_vars.keys():
+        #         try:
                     
         return xr.Dataset(data_vars, attrs = task.values()[0].metadata)
         #return data_vars

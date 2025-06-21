@@ -435,8 +435,13 @@ class APIServer:
             p.scatter(result[0],result[1],marker='circle', size=2,
                     line_color='navy', fill_color='orange', alpha=0.5)
             if len(result)>2:
-                errors = bokeh.models.Band(base=result[1],upper=result[1]+result[2],lower=result[1]-result[2], level='underlay',
-                fill_alpha=1.0, line_width=1, line_color='black')
+                band = bokeh.models.Band(base=result[1],
+                                         upper=result[1]+result[2],
+                                         lower=result[1]-result[2],
+                                         level='underlay',
+                                         fill_alpha=1.0,
+                                         line_width=1,
+                                         line_color='black')
                 p.add_layout(band)
 
         bokeh_js = JS_RESOURCES.render(

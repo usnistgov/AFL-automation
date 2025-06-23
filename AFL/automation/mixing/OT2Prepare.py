@@ -320,6 +320,15 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
             stock = json.loads(stock)
 
         location = stock.pop("location", None)
+
+        # ensure a minimal volume if concentrations are given without any
+        # volume information. This allows specifications like "20 mg/ml NaCl,
+        # balance H2O" to be valid inputs.
+        has_conc = bool(stock.get("concentrations"))
+        has_volume = bool(stock.get("volumes")) or stock.get("total_volume")
+        if has_conc and not has_volume:
+            stock["total_volume"] = "1 ml"
+
         MassBalanceDriver.add_stock(self, stock)
 
         name = stock.get("name")

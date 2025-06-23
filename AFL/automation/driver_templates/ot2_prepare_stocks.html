@@ -12,6 +12,7 @@ body { font-family: Arial, sans-serif; margin: 20px; background-color: #fafafa; 
 </head>
 <body>
 <h2>OT2Prepare Stock Configuration</h2>
+<p style="font-size:0.9em;color:#555;">Use units like <em>mg, g, ml, mg/ml, m%, v%</em> or <em>balance</em> for the remaining solvent.</p>
 <table id="stock-table">
  <thead>
   <tr><th>Name</th><th>Location</th><th>Components</th></tr>
@@ -60,7 +61,7 @@ function addComponentRow(name,amount,units){
     $('#components-table tbody').append('<tr>'+
         '<td><input class="comp-name" value="'+(name||'')+'"/></td>'+
         '<td><input class="comp-amount" value="'+(amount||'')+'" style="width:60px;"/></td>'+
-        '<td><input class="comp-units" value="'+(units||'')+'" style="width:60px;"/></td>'+
+        '<td><input class="comp-units" value="'+(units||'')+'" style="width:70px;"/></td>'+
         '<td><button class="remove-comp">X</button></td>'+
         '</tr>');
 }
@@ -73,13 +74,30 @@ $('#add-stock-btn').on('click',function(){
     addComponentRow();
     $('#stock-dialog').dialog({ modal:true, width:500, buttons:{
         'Add': function(){
-            var stock={name:$('#stock-name').val(), masses:{}, volumes:{}, location:$('#stock-location').val()};
+            var stock={name:$('#stock-name').val(), location:$('#stock-location').val(), masses:{}, volumes:{}, concentrations:{}, mass_fractions:{}, volume_fractions:{}};
             $('#components-table tbody tr').each(function(){
-                var n=$(this).find('.comp-name').val();
-                var a=$(this).find('.comp-amount').val();
-                var u=$(this).find('.comp-units').val();
-                if(!n || !a || !u) return;
-                if(/ul$|ml$|l$/i.test(u)) stock.volumes[n]=a+' '+u; else stock.masses[n]=a+' '+u;
+                var n=$(this).find('.comp-name').val().trim();
+                var a=$(this).find('.comp-amount').val().trim();
+                var u=$(this).find('.comp-units').val().trim();
+                if(!n || !u) return;
+                u=u.toLowerCase();
+                if(/balance/.test(u)){
+                    stock.volume_fractions[n]=1.0;
+                }else if(!a){
+                    return;
+                }else if(/^(ul|ml|l)$/.test(u)){
+                    stock.volumes[n]=a+' '+u;
+                }else if(/^(mg|ug|g)$/.test(u)){
+                    stock.masses[n]=a+' '+u;
+                }else if(/^(mg\/ml|g\/ml|mg\/l|g\/l)$/.test(u)){
+                    if(!stock.concentrations[n]) stock.concentrations[n]=a+' '+u;
+                }else if(/^(m%|mass%)$/.test(u)){
+                    stock.mass_fractions[n]=parseFloat(a)/100.0;
+                }else if(/^(v%|vol%)$/.test(u)){
+                    stock.volume_fractions[n]=parseFloat(a)/100.0;
+                }else{
+                    stock.masses[n]=a+' '+u;
+                }
             });
             login().then(function(tok){
                 $.ajax({type:'POST', url:'/enqueue', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok}, data: JSON.stringify({task_name:'add_stock', stock: stock}), success:function(){location.reload();}, error:function(xhr){alert('Error: '+xhr.responseText);}});

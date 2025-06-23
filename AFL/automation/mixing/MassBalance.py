@@ -185,8 +185,9 @@ class MassBalance(MassBalanceBase, Context):
         Context.__init__(self, name=name)
         MassBalanceBase.__init__(self)
         self.context_type = "MassBalance"
-        self.config = {"stocks": [], "targets": [], "minimum_volume": minimum_volume}
+        self.config = {"stocks": [], "minimum_volume": minimum_volume}
         self.targets = []
+        self.target_configs = []
         self.minimum_volume = enforce_units(minimum_volume, "volume")
 
     def __call__(self, reset=False, reset_stocks=False, reset_targets=False):
@@ -194,7 +195,7 @@ class MassBalance(MassBalanceBase, Context):
             self.config["stocks"] = []
         if reset or reset_targets:
             self.targets.clear()
-            self.config["targets"] = []
+            self.target_configs.clear()
         return self
 
     @property
@@ -221,7 +222,7 @@ class MassBalance(MassBalanceBase, Context):
 
 # --- MassBalanceDriver ---
 class MassBalanceDriver(MassBalanceBase, Driver):
-    defaults = {"minimum_volume": "20 ul", "stocks": [], "targets": [], "tol": 1e-3}
+    defaults = {"minimum_volume": "20 ul", "stocks": [], "tol": 1e-3}
 
     def __init__(self, overrides=None):
         MassBalance.__init__(self)
@@ -233,6 +234,7 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         )
         self.minimum_transfer_volume = None
         self.targets = []
+        self.target_configs = []
 
     @property
     def stock_components(self) -> Set[str]:
@@ -256,10 +258,9 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         return self._stock_objs()
 
     def process_targets(self):
-        self.targets = []
-        for target_config in self.config["targets"]:
-            target = Solution(**target_config)
-            self.targets.append(target)
+        self.targets = [
+            t if isinstance(t, Solution) else Solution(**t) for t in self.targets
+        ]
 
     def add_stock(self, solution: Dict, reset: bool = False):
         if reset:
@@ -269,13 +270,15 @@ class MassBalanceDriver(MassBalanceBase, Driver):
     def add_target(self, target: Dict, reset: bool = False):
         if reset:
             self.reset_targets()
-        self.config["targets"] = self.config["targets"] + [target]
+        self.targets.append(target)
+        self.target_configs.append(target)
 
     def reset_stocks(self):
         self.config["stocks"] = []
 
     def reset_targets(self):
-        self.config["targets"] = []
+        self.targets = []
+        self.target_configs = []
 
     def _set_bounds(self, stocks: Optional[List[Solution]] = None):
         self.minimum_transfer_volume = enforce_units(

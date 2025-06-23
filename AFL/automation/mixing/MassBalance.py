@@ -264,9 +264,39 @@ class MassBalanceDriver(MassBalanceBase, Driver):
             t if isinstance(t, Solution) else Solution(**t) for t in self.targets
         ]
 
+    def _process_stock_dict(self, stock: Dict) -> Dict:
+        """Convert a stock dictionary into valid :class:`Solution` kwargs."""
+
+        processed = dict(stock)
+
+        # Convert any volume fractions into explicit volumes
+        volume_fractions = processed.pop("volume_fractions", None)
+        if volume_fractions:
+            total_volume = processed.get("total_volume")
+            if total_volume is None:
+                total_volume = "1 ml"
+                processed["total_volume"] = total_volume
+            total_volume_qty = enforce_units(total_volume, "volume")
+            volumes = processed.setdefault("volumes", {})
+            for comp, frac in volume_fractions.items():
+                vol_qty = enforce_units(frac, "dimensionless") * total_volume_qty
+                volumes[comp] = str(vol_qty)
+
+        # Ensure a minimal volume when only concentrations are given
+        has_conc = bool(processed.get("concentrations"))
+        has_volume = bool(processed.get("volumes")) or processed.get("total_volume")
+        if has_conc and not has_volume:
+            processed["total_volume"] = "1 ml"
+
+        # Validate by creating a Solution (ignore location key)
+        Solution(**{k: v for k, v in processed.items() if k != "location"})
+
+        return processed
+
     def add_stock(self, solution: Dict, reset: bool = False):
         if reset:
             self.reset_stocks()
+        solution = self._process_stock_dict(solution)
         self.config["stocks"] = self.config["stocks"] + [solution]
 
     def add_target(self, target: Dict, reset: bool = False):

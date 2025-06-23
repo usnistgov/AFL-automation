@@ -31,7 +31,6 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         self.name = "OT2Prepare"
 
         # Initialize additional attributes
-        self.stocks = []
         self.targets = []
 
         self.useful_links["View Deck"] = "/visualize_deck"
@@ -46,7 +45,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
 
         # Add our own status information
         status = []
-        status.append(f"Stocks: {len(self.stocks)} configured")
+        status.append(f"Stocks: {len(self.config['stocks'])} configured")
         status.append(f'Stock locations: {self.config["stock_locations"]}')
         status.append(
             f'{len(self.config["mixing_locations"])} mixing locations available'
@@ -77,9 +76,8 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
 
         targets_to_check = listify(targets)
 
-        # Process stocks from the driver if not already processed
-        if not self.stocks:
-            self.process_stocks()
+        # Convert configured stocks to Solution objects
+        stocks = self._stock_objs()
 
         # Get the minimum volume configuration
         minimum_volume = self.config.get("minimum_volume", "100 ul")
@@ -91,7 +89,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
                 mb = MassBalance(minimum_volume=minimum_volume)
 
                 # Configure the same stocks as in the driver
-                for stock in self.stocks:
+                for stock in stocks:
                     mb.stocks.append(stock)
 
                 # Apply any fixed compositions from config

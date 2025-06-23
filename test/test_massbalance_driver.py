@@ -33,10 +33,12 @@ def test_massbalance_driver_mixed_solvents_mass():
         )
     mb.balance()
     assert len(mb.targets) == 5
-    assert len(mb.stocks) == 3
+    assert len(mb.config["stocks"]) == 3
 
     none_count = 0
-    for i, (target, balanced) in enumerate(mb.balanced):
+    for i, result in enumerate(mb.balanced):
+        target = result["target"]
+        balanced = result["balanced_target"]
         if balanced is None:
             none_count += 1
             continue
@@ -44,7 +46,7 @@ def test_massbalance_driver_mixed_solvents_mass():
         assert balanced.concentration["NaCl"].to("mg/ml").magnitude == pytest.approx(25)
 
         sub_balanced = balanced.copy()
-        sub_target = Solution(**mb.target_configs[i])
+        sub_target = mb.targets[i].copy()
         del sub_balanced.components["NaCl"]
         del sub_target.components["NaCl"]
 

@@ -22,6 +22,15 @@ def _extract_masses(solution: Solution, components: List[str], array: np.ndarray
         else:
             array[i] = 0
 
+
+def _extract_mass_fractions(stocks: List[Solution], components: List[str], matrix: np.ndarray) -> None:
+    for i, component in enumerate(components):
+        for j, stock in enumerate(stocks):
+            if stock.contains(component):
+                matrix[i, j] = stock.mass_fraction[component].to('').magnitude
+            else:
+                matrix[i, j] = 0
+
 def _make_balanced_target(mass_transfers, target):
     balanced_target = Solution(name="")
     balanced_target.protocol = []
@@ -133,6 +142,7 @@ class MassBalanceBase:
                     'transfers':balanced_target['transfers'],
                     })
 
+
     def _set_bounds(self):
         raise NotImplementedError
 
@@ -174,6 +184,7 @@ class MassBalance(MassBalanceBase, Context):
 # --- MassBalanceDriver ---
 class MassBalanceDriver(MassBalanceBase, Driver):
     defaults = {'minimum_volume': '20 ul', 'stocks': [], 'targets': [], 'tol': 1e-3}
+
 
     def __init__(self, overrides=None):
         MassBalance.__init__(self)
@@ -234,5 +245,6 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         self.process_stocks()
         self.process_targets()
         super().balance(tol=self.config['tol'])
+
 
     

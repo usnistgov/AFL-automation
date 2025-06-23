@@ -39,7 +39,9 @@ def test_massbalance_driver_mixed_solvents_mass():
     assert len(mb.stocks) == 3
 
     none_count = 0
-    for i, (target, balanced) in enumerate(mb.balanced):
+    for i, result in enumerate(mb.balanced):
+        balanced = result['balanced_target']
+
         if balanced is None:
             none_count += 1
             continue

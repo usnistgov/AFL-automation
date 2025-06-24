@@ -18,6 +18,8 @@ import threading,queue,logging,json,pathlib,uuid
 try:
     from waitress import serve as wsgi_serve
     _HAVE_WAITRESS = True
+    # Silence verbose logging from waitress which can flood the console
+    logging.getLogger("waitress").setLevel(logging.ERROR)
 except ImportError:
     _HAVE_WAITRESS = False
 

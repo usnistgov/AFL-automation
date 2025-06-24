@@ -1,0 +1,117 @@
+{
+    "ordering": [
+        [
+            "A1",
+            "B1"
+        ],
+        [
+            "A2",
+            "B2"
+        ],
+        [
+            "A3",
+            "B3"
+        ]
+    ],
+    "brand": {
+        "brand": "NIST",
+        "brandId": []
+    },
+    "metadata": {
+        "displayName": "NIST 6 20ml Vial with Stirrer",
+        "displayCategory": "wellPlate",
+        "displayVolumeUnits": "µL",
+        "tags": []
+    },
+    "dimensions": {
+        "xDimension": 127.76,
+        "yDimension": 85.47,
+        "zDimension": 77.75
+    },
+    "wells": {
+        "A1": {
+            "depth": 56.4,
+            "totalLiquidVolume": 10000,
+            "shape": "circular",
+            "diameter": 30,
+            "x": 24,
+            "y": 57.47,
+            "z": 21.35
+        },
+        "B1": {
+            "depth": 56.4,
+            "totalLiquidVolume": 10000,
+            "shape": "circular",
+            "diameter": 30,
+            "x": 24,
+            "y": 17.47,
+            "z": 21.35
+        },
+        "A2": {
+            "depth": 56.4,
+            "totalLiquidVolume": 10000,
+            "shape": "circular",
+            "diameter": 30,
+            "x": 64,
+            "y": 57.47,
+            "z": 21.35
+        },
+        "B2": {
+            "depth": 56.4,
+            "totalLiquidVolume": 10000,
+            "shape": "circular",
+            "diameter": 30,
+            "x": 64,
+            "y": 17.47,
+            "z": 21.35
+        },
+        "A3": {
+            "depth": 56.4,
+            "totalLiquidVolume": 10000,
+            "shape": "circular",
+            "diameter": 30,
+            "x": 104,
+            "y": 57.47,
+            "z": 21.35
+        },
+        "B3": {
+            "depth": 56.4,
+            "totalLiquidVolume": 10000,
+            "shape": "circular",
+            "diameter": 30,
+            "x": 104,
+            "y": 17.47,
+            "z": 21.35
+        }
+    },
+    "groups": [
+        {
+            "metadata": {
+                "wellBottomShape": "flat"
+            },
+            "wells": [
+                "A1",
+                "B1",
+                "A2",
+                "B2",
+                "A3",
+                "B3"
+            ]
+        }
+    ],
+    "parameters": {
+        "format": "irregular",
+        "quirks": [],
+        "isTiprack": false,
+        "isMagneticModuleCompatible": false,
+        "loadName": "nist_6_20ml_vials_stirplate"
+    },
+    "namespace": "custom_beta",
+    "version": 1,
+    "schemaVersion": 2,
+    "cornerOffsetFromSlot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+    }
+}

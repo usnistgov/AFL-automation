@@ -193,6 +193,10 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         self.minimum_transfer_volume = None
         self.stocks = []
         self.targets = []
+        try:
+            self.mixdb = MixDB.get_db()
+        except ValueError:
+            self.mixdb = MixDB()
         self.useful_links['Edit Components DB'] = 'static/components.html'
 
     @property
@@ -252,28 +256,24 @@ class MassBalanceDriver(MassBalanceBase, Driver):
 
     @Driver.unqueued()
     def list_components(self):
-        mixdb = MixDB.get_db()
-        return mixdb.list_components()
+        return self.mixdb.list_components()
 
     @Driver.unqueued()
     def add_component(self, **component):
-        mixdb = MixDB.get_db()
-        uid = mixdb.add_component(component)
-        mixdb.write()
+        uid = self.mixdb.add_component(component)
+        self.mixdb.write()
         return uid
 
     @Driver.unqueued()
     def update_component(self, **component):
-        mixdb = MixDB.get_db()
-        uid = mixdb.add_component(component)
-        mixdb.write()
+        uid = self.mixdb.add_component(component)
+        self.mixdb.write()
         return uid
 
     @Driver.unqueued()
     def remove_component(self, name=None, uid=None):
-        mixdb = MixDB.get_db()
-        mixdb.remove_component(name=name, uid=uid)
-        mixdb.write()
+        self.mixdb.remove_component(name=name, uid=uid)
+        self.mixdb.write()
         return 'OK'
 
 

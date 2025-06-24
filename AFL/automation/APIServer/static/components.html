@@ -4,125 +4,161 @@
   <meta charset="UTF-8" />
   <title>Component Database Editor</title>
 
-  <!-- ag-Grid Community (v33+) assets -->
+  <!-- ag-Grid Community (v33+) -->
   <link rel="stylesheet" href="ag-grid-community/styles/ag-grid.css" />
   <link rel="stylesheet" href="ag-grid-community/styles/ag-theme-alpine.css" />
   <script src="ag-grid-community/dist/ag-grid-community.min.js"></script>
 
   <style>
     html, body { height: 100%; margin: 0; padding: 0; }
-    #myGrid    { height: calc(100% - 38px); width: 100%; }
+    #toolbar   { padding: 4px; }
+    #myGrid    { height: calc(100% - 46px); width: 100%; }
   </style>
 </head>
 <body>
-  <button id="add-row">Add Row</button>
-  <button id="delete-row">Delete Selected</button>
+  <div id="toolbar">
+    <button id="add-row">Add&nbsp;Row</button>
+    <button id="delete-row">Delete&nbsp;Selected</button>
+    <button id="refresh-grid">Refresh&nbsp;Grid</button>
+  </div>
 
   <div id="myGrid" class="ag-theme-alpine"></div>
 
   <script type="module">
+    /* ---------------- auth helpers ---------------- */
     let jwtToken = null;
 
-    /* ---------- helpers that hit your Flask endpoints ---------- */
     async function login() {
       if (jwtToken) return jwtToken;
-      const response = await fetch('/login', {
+      const r = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: 'your_username', password: 'domo_arigato' })
       });
-      if (!response.ok) {
-        throw new Error('Failed to login');
-      }
-      const data = await response.json();
-      jwtToken = data.token;
+      if (!r.ok) throw new Error('Login failed');
+      ({ token: jwtToken } = await r.json());
       return jwtToken;
     }
 
-    const fetchComponents = async () => {
-      const r = await fetch('/query_driver?r=list_components');
-      return r.ok ? r.json() : [];
-    };
+    /* ---------------- queue polling helper you supplied ---------------- */
+    async function getTaskResult(token, taskUUID) {
+      const start = Date.now();
+      while (Date.now() - start < 10_000) {           // 10-s timeout
+        await new Promise(r => setTimeout(r, 200));   // 200 ms poll
 
-    async function enqueueTask(task) {
+        const resp = await fetch('/get_queue', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!resp.ok) throw new Error(`queue check failed: ${resp.statusText}`);
+
+        const q = await resp.json();                  // assume [[…tasks…], …]
+        const hit = q[0]?.find(t => t.uuid === taskUUID);
+        if (hit) return hit.meta?.return_val;
+      }
+      throw new Error('Timeout while waiting for task result');
+    }
+
+    /* ---------------- unified enqueue + wait helper ---------------- */
+    async function enqueueTaskAndWait(payload) {
       const token = await login();
+
       const r = await fetch('/enqueue', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(task)
+        body: JSON.stringify(payload)
       });
-      if (!r.ok) {
-        console.error('Failed to enqueue', task);
-      }
+      if (!r.ok) throw new Error('enqueue failed');
+      const uuid  = await r.text();                // server returns task UUID
+
+      await getTaskResult(token, uuid);               // wait until done
     }
 
-    const sendUpdate = (rec) =>
-      enqueueTask({ task_name: 'update_component', ...rec });
+    /* ---------------- server data fetch ---------------- */
+    const fetchComponents = async () => {
+      const r = await fetch('/list_components');
+      return r.ok ? r.json() : [];
+    };
 
-    function sendAdd(rec) {
-      enqueueTask({ task_name: 'add_component', ...rec }).then(() => refreshGrid());
-    }
-
-    const sendDelete = (rows) => {
-      rows.forEach((r) =>
-        enqueueTask({ task_name: 'remove_component', uid: r.uid })
-      );
-      refreshGrid();
-    }
+    /* ---------------- smarter refresh ---------------- */
+    let gridApi;      // set onGridReady
 
     async function refreshGrid() {
       if (!gridApi) return;
-      const rows = await fetchComponents();
-      gridApi.setRowData(rows);
+
+      const fresh = await fetchComponents();
+      const map   = Object.fromEntries(fresh.map(r => [r.uid, r]));
+
+      const add    = [];
+      const update = [];
+      const remove = [];
+
+      gridApi.forEachNode(n => {
+        const id = n.data.uid;
+        const newer = map[id];
+        if (!newer) {
+          remove.push(n.data);
+        } else {
+          if (JSON.stringify(n.data) !== JSON.stringify(newer)) update.push(newer);
+          delete map[id];           // processed
+        }
+      });
+      for (const id in map) add.push(map[id]);        // leftover = new rows
+
+      if (add.length || update.length || remove.length) {
+        gridApi.applyTransaction({ add, update, remove });
+      }
     }
 
-    /* ---------- ag-Grid setup ---------- */
-    let gridApi;   // filled once the grid is ready
-
+    /* ---------------- ag-Grid config ---------------- */
     const gridOptions = {
       columnDefs: [
-        { field: 'uid',     headerName: 'UID',     editable: false },
-        { field: 'name',    headerName: 'Name',    editable: true },
-        { field: 'density', headerName: 'Density', editable: true },
-        { field: 'formula', headerName: 'Formula', editable: true },
+        { field: 'uid',     headerName: 'UID',         editable: false, filter: 'agTextColumnFilter'  },
+        { field: 'name',    headerName: 'Name',        editable: true ,   filter: 'agTextColumnFilter'  },
+        { field: 'density', headerName: 'Density',     editable: true ,  filter: 'agNumberColumnFilter'   },
+        { field: 'formula', headerName: 'Formula',     editable: true , filter: 'agTextColumnFilter'   },
+        { field: 'sld',     headerName: 'Neutron SLD', editable: true ,  filter: 'agNumberColumnFilter'   }
       ],
       defaultColDef: { flex: 1, resizable: true },
-      rowData: [],               // start empty
       rowSelection: 'single',
+      getRowId: p => p.data.uid,
 
-      /* all data changes handled with applyTransaction ------------------- */
-      onCellValueChanged: (e) => sendUpdate(e.data),
-
-      onGridReady: async (params) => {
-        gridApi = params.api;
-        const rows = await fetchComponents();
-        if (rows.length) {
-          gridApi.applyTransaction({ add: rows });  // initial load
-        }
+      onCellValueChanged: async e => {
+        await enqueueTaskAndWait({ task_name: 'update_component', ...e.data });
+        refreshGrid();
       },
+
+      onGridReady: async p => {
+        gridApi = p.api;
+        await refreshGrid();        // initial fill
+      }
     };
 
-    /* create the grid */
     agGrid.createGrid(document.querySelector('#myGrid'), gridOptions);
 
-    /* ---------- toolbar ---------- */
-    document.getElementById('add-row').addEventListener('click', () => {
-      if (!gridApi) return;
-      const blank = { name: '', density: '', formula: '' };
-      gridApi.applyTransaction({ add: [blank], addIndex: 0 });
-      sendAdd(blank);
+    /* ---------------- toolbar actions ---------------- */
+    document.getElementById('add-row').addEventListener('click', async () => {
+      await enqueueTaskAndWait({ task_name: 'add_component' });
+      refreshGrid();
     });
 
-    document.getElementById('delete-row').addEventListener('click', () => {
+    document.getElementById('delete-row').addEventListener('click', async () => {
       if (!gridApi) return;
       const sel = gridApi.getSelectedRows();
       if (!sel.length) return;
-      gridApi.applyTransaction({ remove: sel });
-      sendDelete(sel);
+      await Promise.all(sel.map(r =>
+        enqueueTaskAndWait({ task_name: 'remove_component', uid: r.uid })
+      ));
+      refreshGrid();
     });
+
+    document.getElementById('refresh-grid').addEventListener('click', refreshGrid);
   </script>
 </body>
 </html>

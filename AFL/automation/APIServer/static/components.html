@@ -35,13 +35,14 @@ function sendAdd(data) {
         .then(uid => {
             console.log('Server returned uid', uid);
             data.uid = uid;
-            gridOptions.api.refreshCells();
+            gridApi.refreshCells();
         });
 }
 function sendDelete(rows) {
     console.log('Deleting rows', rows);
     rows.forEach(r => fetch('/remove_component', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({uid:r.uid})}));
 }
+let gridApi;
 var gridOptions = {
     columnDefs: [
         {field:'uid', editable:false},
@@ -52,10 +53,11 @@ var gridOptions = {
     rowData: [],
     rowSelection: 'single',
     onCellValueChanged: params => sendUpdate(params.data),
-    onGridReady: () => {
+    onGridReady: params => {
+        gridApi = params.api;
         console.log('Grid ready, loading data');
         fetchComponents().then(data => {
-            gridOptions.api.setRowData(data);
+            params.api.setRowData(data);
         });
     }
 };
@@ -69,17 +71,17 @@ if (agGrid.createGrid) {
 }
 
 document.getElementById('add-row').addEventListener('click', ()=>{
-    if (!gridOptions.api) return;
+    if (!gridApi) return;
     const newRow = {name:'', density:'', formula:''};
-    gridOptions.api.applyTransaction({add:[newRow]});
+    gridApi.applyTransaction({add:[newRow]});
     sendAdd(newRow);
 });
 
 document.getElementById('delete-row').addEventListener('click', ()=>{
-    if (!gridOptions.api) return;
-    const selected = gridOptions.api.getSelectedRows();
+    if (!gridApi) return;
+    const selected = gridApi.getSelectedRows();
     if (selected.length){
-        gridOptions.api.applyTransaction({remove:selected});
+        gridApi.applyTransaction({remove:selected});
         sendDelete(selected);
     }
 });

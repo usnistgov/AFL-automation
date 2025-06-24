@@ -18,10 +18,11 @@ import threading,queue,logging,json,pathlib,uuid
 try:
     from waitress import serve as wsgi_serve
     _HAVE_WAITRESS = True
+    # Silence verbose logging from waitress which can flood the console
+    logging.getLogger("waitress").setLevel(logging.ERROR)
 except ImportError:
     _HAVE_WAITRESS = False
 
-from logging.handlers import SMTPHandler
 from logging import FileHandler
 
 from AFL.automation.APIServer.QueueDaemon import QueueDaemon
@@ -295,17 +296,8 @@ class APIServer:
     def init_logging(self,toaddrs=None):
         self.app.logger.setLevel(level=logging.DEBUG)
 
-        if toaddrs is not None:
-            # setup error emails
-            mail_handler = SMTPHandler(mailhost=('smtp.nist.gov',25),
-                               fromaddr=f'{self.name}@pg903001.ncnr.nist.gov',
-                               toaddrs=toaddrs,
-                               subject='Driver Error')
-            mail_handler.setLevel(logging.ERROR)
-            self.app.logger.addHandler(mail_handler)
-
-
-
+        # SMTP email handling has been removed. The `toaddrs` argument is now
+        # ignored and retained only for backwards compatibility.
         path = pathlib.Path.home() / '.afl'
         path.mkdir(exist_ok=True,parents=True)
         filepath = path / f'{self.name}.log'

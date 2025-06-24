@@ -417,6 +417,7 @@
 <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.mixing.PipetteAction</span> <span class="kn">import</span> <span class="n">PipetteAction</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.mixing.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.mixing.MixDB</span> <span class="kn">import</span> <span class="n">MixDB</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared.units</span> <span class="kn">import</span> <span class="n">enforce_units</span>
 
 <span class="c1"># --- Shared utility functions ---</span>
@@ -623,7 +624,12 @@
         <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MassBalance&#39;</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transfer_volume</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span> <span class="o">=</span> <span class="n">MixDB</span><span class="o">.</span><span class="n">get_db</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span> <span class="o">=</span> <span class="n">MixDB</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span><span class="p">[</span><span class="s1">&#39;Edit Components DB&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;static/components.html&#39;</span></div>
 
 
     <span class="nd">@property</span>
@@ -698,6 +704,42 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_targets</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;tol&#39;</span><span class="p">])</span></div>
+
+
+    <span class="c1"># --- Component database management ---</span>
+
+<div class="viewcode-block" id="MassBalanceDriver.list_components">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver.list_components">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">list_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">list_components</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MassBalanceDriver.add_component">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_component">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">add_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">component</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">uid</span></div>
+
+
+<div class="viewcode-block" id="MassBalanceDriver.update_component">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver.update_component">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">update_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">component</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">update_component</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">uid</span></div>
+
+
+<div class="viewcode-block" id="MassBalanceDriver.remove_component">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver.remove_component">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">remove_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">remove_component</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="n">uid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s1">&#39;OK&#39;</span></div>
 </div>
 
 

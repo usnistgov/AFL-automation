@@ -266,7 +266,7 @@ class MassBalanceDriver(MassBalanceBase, Driver):
 
     @Driver.unqueued()
     def update_component(self, **component):
-        uid = self.mixdb.add_component(component)
+        uid = self.mixdb.update_component(component)
         self.mixdb.write()
         return uid
 

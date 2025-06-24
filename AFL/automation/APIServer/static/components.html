@@ -40,21 +40,27 @@ var gridOptions = {
     rowSelection: 'single',
     onCellValueChanged: params => sendUpdate(params.data)
 };
-fetchComponents().then(data => {gridOptions.api && gridOptions.api.setRowData(data);});
 var eGridDiv = document.querySelector('#myGrid');
 if (agGrid.createGrid) {
     agGrid.createGrid(eGridDiv, gridOptions);
 } else {
     new agGrid.Grid(eGridDiv, gridOptions);
 }
+fetchComponents().then(data => {
+    if (gridOptions.api) {
+        gridOptions.api.setRowData(data);
+    }
+});
 
 document.getElementById('add-row').addEventListener('click', ()=>{
+    if (!gridOptions.api) return;
     const newRow = {name:'', density:'', formula:''};
     gridOptions.api.applyTransaction({add:[newRow]});
     sendAdd(newRow);
 });
 
 document.getElementById('delete-row').addEventListener('click', ()=>{
+    if (!gridOptions.api) return;
     const selected = gridOptions.api.getSelectedRows();
     if (selected.length){
         gridOptions.api.applyTransaction({remove:selected});

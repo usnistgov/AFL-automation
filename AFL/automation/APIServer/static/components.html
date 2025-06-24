@@ -52,12 +52,12 @@ var gridOptions = {
     ],
     rowData: [],
     rowSelection: 'single',
-    onCellValueChanged: params => sendUpdate(params.data),
-    onGridReady: params => {
-        gridApi = params.api;
+    onCellValueChanged: event => sendUpdate(event.data),
+    onGridReady: event => {
+        gridApi = event.api;
         console.log('Grid ready, loading data');
         fetchComponents().then(data => {
-            params.api.setRowData(data);
+            gridApi.setRowData(data);
         });
     }
 };

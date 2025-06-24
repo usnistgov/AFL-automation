@@ -460,6 +460,15 @@ If the function just fetches data from hardware non-destructively, or reports st
 <p>You can provide a <cite>render_hint</cite> that will tell the APIServer to prepare the data in a certain way, for instance serving a Bokeh plot or a jpg image.</p>
 <p>Valid values of <cite>render_hint</cite> are [‘raw’,’precomposed_svg’,’precomposed_jpg’,’1d_plot’,’2d_img’]</p>
 <p>The other kwargs can be provided in the function decorator, but will be overridden with URL arguments, so the user can change the plot from log to lin (say) from the client.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unqueued functions are served via HTTP <code class="docutils literal notranslate"><span class="pre">GET</span></code> routes and are intended for
+read-only queries.  Any action that modifies state must be submitted to the
+server’s <code class="docutils literal notranslate"><span class="pre">/enqueue</span></code> endpoint using a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request with a valid JWT
+token obtained from <code class="docutils literal notranslate"><span class="pre">/login</span></code>.  A common pattern is for a user interface to
+stage changes locally and then send them as one queued task, rather than
+calling unqueued endpoints with <code class="docutils literal notranslate"><span class="pre">POST</span></code>.</p>
+</div>
 <ol class="arabic simple" start="2">
 <li><p><strong>Quickbar Decorator</strong></p></li>
 </ol>

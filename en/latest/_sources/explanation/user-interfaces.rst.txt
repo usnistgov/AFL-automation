@@ -50,6 +50,15 @@ Valid values of `render_hint` are ['raw','precomposed_svg','precomposed_jpg','1d
 
 The other kwargs can be provided in the function decorator, but will be overridden with URL arguments, so the user can change the plot from log to lin (say) from the client.
 
+.. note::
+
+   Unqueued functions are served via HTTP ``GET`` routes and are intended for
+   read-only queries.  Any action that modifies state must be submitted to the
+   server's ``/enqueue`` endpoint using a ``POST`` request with a valid JWT
+   token obtained from ``/login``.  A common pattern is for a user interface to
+   stage changes locally and then send them as one queued task, rather than
+   calling unqueued endpoints with ``POST``.
+
 
 
 2. **Quickbar Decorator**

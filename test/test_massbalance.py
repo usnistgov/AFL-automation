@@ -41,7 +41,10 @@ def test_mixed_solvents_mass():
     assert len(mb.stocks) == 3
 
     none_count = 0
-    for target,balanced in mb.balanced:
+    for result in mb.balanced:
+        target = result['target']
+        balanced = result['balanced_target']
+
         if balanced is None:
             none_count += 1
             continue

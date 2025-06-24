@@ -10,6 +10,7 @@ from AFL.automation.mixing.Context import Context
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.mixing.PipetteAction import PipetteAction
 from AFL.automation.mixing.Solution import Solution
+from AFL.automation.mixing.MixDB import MixDB
 from AFL.automation.shared.units import enforce_units
 
 # --- Shared utility functions ---
@@ -192,6 +193,11 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         self.minimum_transfer_volume = None
         self.stocks = []
         self.targets = []
+        try:
+            self.mixdb = MixDB.get_db()
+        except ValueError:
+            self.mixdb = MixDB()
+        self.useful_links['Edit Components DB'] = 'static/components.html'
 
     @property
     def stock_components(self) -> Set[str]:
@@ -245,6 +251,30 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         self.process_stocks()
         self.process_targets()
         super().balance(tol=self.config['tol'])
+
+    # --- Component database management ---
+
+    @Driver.unqueued()
+    def list_components(self):
+        return self.mixdb.list_components()
+
+    @Driver.unqueued()
+    def add_component(self, **component):
+        uid = self.mixdb.add_component(component)
+        self.mixdb.write()
+        return uid
+
+    @Driver.unqueued()
+    def update_component(self, **component):
+        uid = self.mixdb.update_component(component)
+        self.mixdb.write()
+        return uid
+
+    @Driver.unqueued()
+    def remove_component(self, name=None, uid=None):
+        self.mixdb.remove_component(name=name, uid=uid)
+        self.mixdb.write()
+        return 'OK'
 
 
     

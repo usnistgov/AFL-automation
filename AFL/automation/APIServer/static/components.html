@@ -16,17 +16,30 @@
 <div id="myGrid" class="ag-theme-alpine"></div>
 <script>
 async function fetchComponents() {
+    console.log('Fetching components...');
     const resp = await fetch('/list_components');
+    console.log('Fetch status:', resp.status);
     if (!resp.ok) { return []; }
-    return await resp.json();
+    const data = await resp.json();
+    console.log('Received components:', data);
+    return data;
 }
 function sendUpdate(data) {
+    console.log('Updating component', data);
     fetch('/update_component', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
 }
 function sendAdd(data) {
-    fetch('/add_component', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}).then(res=>res.text()).then(uid=>{data.uid = uid; gridOptions.api.refreshCells();});
+    console.log('Adding component', data);
+    fetch('/add_component', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)})
+        .then(res => res.text())
+        .then(uid => {
+            console.log('Server returned uid', uid);
+            data.uid = uid;
+            gridOptions.api.refreshCells();
+        });
 }
 function sendDelete(rows) {
+    console.log('Deleting rows', rows);
     rows.forEach(r => fetch('/remove_component', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({uid:r.uid})}));
 }
 var gridOptions = {
@@ -38,19 +51,22 @@ var gridOptions = {
     ],
     rowData: [],
     rowSelection: 'single',
-    onCellValueChanged: params => sendUpdate(params.data)
+    onCellValueChanged: params => sendUpdate(params.data),
+    onGridReady: () => {
+        console.log('Grid ready, loading data');
+        fetchComponents().then(data => {
+            gridOptions.api.setRowData(data);
+        });
+    }
 };
 var eGridDiv = document.querySelector('#myGrid');
 if (agGrid.createGrid) {
+    console.log('Initializing grid using createGrid');
     agGrid.createGrid(eGridDiv, gridOptions);
 } else {
+    console.log('Initializing grid using new agGrid.Grid');
     new agGrid.Grid(eGridDiv, gridOptions);
 }
-fetchComponents().then(data => {
-    if (gridOptions.api) {
-        gridOptions.api.setRowData(data);
-    }
-});
 
 document.getElementById('add-row').addEventListener('click', ()=>{
     if (!gridOptions.api) return;

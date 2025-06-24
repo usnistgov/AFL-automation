@@ -48,6 +48,12 @@ class MixDB:
         self.engine.add_component(component_dict)
         return component_dict['uid']
 
+    def remove_component(self, name=None, uid=None):
+        self.engine.remove_component(name=name, uid=uid)
+
+    def list_components(self):
+        return self.engine.list_components()
+
     def get_component(self,name=None,uid=None,interactive=True):
         if (name is None) == (uid is None): # XOR
             raise ValueError(
@@ -116,6 +122,14 @@ class DBEngine(ABC):
         raise NotImplementedError("Must be implemented by subclass")
 
     @abstractmethod
+    def remove_component(self,name=None,uid=None):
+        raise NotImplementedError("Must be implemented by subclass")
+
+    @abstractmethod
+    def list_components(self):
+        raise NotImplementedError("Must be implemented by subclass")
+
+    @abstractmethod
     def get_component(self,name=None,uid=None):
         raise NotImplementedError("Must be implemented by subclass")
 
@@ -150,6 +164,17 @@ class Pandas_DBEngine(DBEngine):
         self.dataframe = pd.concat([self.dataframe,pd.DataFrame(component_dict,index=[0])], ignore_index=True,axis=0)
         return component_dict['uid']
 
+    def remove_component(self,name=None,uid=None):
+        if (name is None) == (uid is None):
+            raise ValueError("Must specify either name or uid")
+        if uid is not None:
+            self.dataframe = self.dataframe[self.dataframe['uid'] != uid]
+        else:
+            self.dataframe = self.dataframe[self.dataframe['name'] != name]
+
+    def list_components(self):
+        return self.dataframe.fillna('').to_dict('records')
+
     def get_component(self, name=None, uid=None) -> Dict:
         try:
             if name is not None:
@@ -171,6 +196,20 @@ class PersistentConfig_DBEngine(DBEngine):
         uid = component_dict.get('uid', str(uuid.uuid4()))
         self.config[uid] = component_dict
         return uid
+
+    def remove_component(self,name=None,uid=None):
+        if (name is None) == (uid is None):
+            raise ValueError("Must specify either name or uid")
+        if uid is not None:
+            del self.config[uid]
+        else:
+            keys = [k for k,v in self.config.config.items() if v['name']==name]
+            if not keys:
+                raise NotFoundError(f"Component not found: name={name}")
+            del self.config[keys[-1]]
+
+    def list_components(self):
+        return list(self.config.config.values())
 
     def get_component(self, name=None, uid=None) -> Dict:
         if (name is None) == (uid is None):  # XOR

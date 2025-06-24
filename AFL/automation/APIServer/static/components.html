@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Component Database Editor</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/styles/ag-grid.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/styles/ag-theme-alpine.css">
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+<style>
+  html, body, #myGrid {height:100%; width:100%; margin:0; padding:0;}
+</style>
+</head>
+<body>
+<button id="add-row">Add Row</button>
+<button id="delete-row">Delete Selected</button>
+<div id="myGrid" class="ag-theme-alpine"></div>
+<script>
+async function fetchComponents() {
+    const resp = await fetch('/list_components');
+    if (!resp.ok) { return []; }
+    return await resp.json();
+}
+function sendUpdate(data) {
+    fetch('/update_component', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+}
+function sendAdd(data) {
+    fetch('/add_component', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}).then(res=>res.text()).then(uid=>{data.uid = uid; gridOptions.api.refreshCells();});
+}
+function sendDelete(rows) {
+    rows.forEach(r => fetch('/remove_component', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({uid:r.uid})}));
+}
+var gridOptions = {
+    columnDefs: [
+        {field:'uid', editable:false},
+        {field:'name', editable:true},
+        {field:'density', editable:true},
+        {field:'formula', editable:true}
+    ],
+    rowData: [],
+    rowSelection: 'single',
+    onCellValueChanged: params => sendUpdate(params.data)
+};
+fetchComponents().then(data => {gridOptions.api && gridOptions.api.setRowData(data);});
+var eGridDiv = document.querySelector('#myGrid');
+new agGrid.Grid(eGridDiv, gridOptions);
+
+document.getElementById('add-row').addEventListener('click', ()=>{
+    const newRow = {name:'', density:'', formula:''};
+    gridOptions.api.applyTransaction({add:[newRow]});
+    sendAdd(newRow);
+});
+
+document.getElementById('delete-row').addEventListener('click', ()=>{
+    const selected = gridOptions.api.getSelectedRows();
+    if (selected.length){
+        gridOptions.api.applyTransaction({remove:selected});
+        sendDelete(selected);
+    }
+});
+</script>
+</body>
+</html>

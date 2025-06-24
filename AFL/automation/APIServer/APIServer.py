@@ -115,19 +115,21 @@ class APIServer:
             port = 5000
         else:
             port = kwargs['port']
+        properties = {
+                        'system_info': 'AFL',
+                        'driver_name': self.queue_daemon.driver.name,
+                        'server_name': self.name,
+                        'contact': self.contact,
+                        'driver_parents': repr(self.queue_daemon.driver.__class__.__mro__).encode('utf-8')[:150].decode('utf-8',errors='ignore')
+                        # other stuff here, AFL system serial, etc.
+                        }
+        print(properties)
         self.zeroconf_info = ServiceInfo(
             "_aflhttp._tcp.local.",
             f"{self.queue_daemon.driver.name}._aflhttp._tcp.local.",
             addresses=[socket.inet_aton("127.0.0.1")],
             port=port,
-            properties= {
-                        'system_info': 'AFL',
-                        'driver_name': self.queue_daemon.driver.name,
-                        'server_name': self.name,
-                        'contact': self.contact,
-                        'driver_parents': repr(self.queue_daemon.driver.__class__.__mro__)
-                        # other stuff here, AFL system serial, etc.
-                        },
+            properties= properties,
             server=f"{socket.gethostname()}.local.",
          )
         self.zeroconf = Zeroconf(ip_version=IPVersion.All)

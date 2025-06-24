@@ -1,0 +1,127 @@
+{
+  "ordering": [
+    [
+      "A1",
+      "B1"
+    ],
+    [
+      "A2",
+      "B2"
+    ],
+    [
+      "A3",
+      "B3"
+    ]
+  ],
+  "brand": {
+    "brand": "NIST",
+    "brandId": [
+      "gvh2"
+    ]
+  },
+  "metadata": {
+    "displayName": "NIST 6 x 20 mL vial holder",
+    "displayCategory": "wellPlate",
+    "displayVolumeUnits": "\u00b5L",
+    "tags": []
+  },
+  "dimensions": {
+    "xDimension": 127.75,
+    "yDimension": 85.5,
+    "zDimension": 61.6
+  },
+  "wells": {
+    "A1": {
+      "depth": 56.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 23,
+      "y": 62.5,
+      "z": 6.1
+    },
+    "B1": {
+      "depth": 56.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 23,
+      "y": 22.37,
+      "z": 6.1
+    },
+    "A2": {
+      "depth": 56.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 63.13,
+      "y": 62.5,
+      "z": 6.1
+    },
+    "B2": {
+      "depth": 56.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 63.13,
+      "y": 22.37,
+      "z": 6.1
+    },
+    "A3": {
+      "depth": 56.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 103.26,
+      "y": 62.5,
+      "z": 6.1
+    },
+    "B3": {
+      "depth": 56.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 103.26,
+      "y": 22.37,
+      "z": 6.1
+    }
+  },
+  "groups": [
+    {
+      "metadata": {
+        "displayName": "NIST 6 x 20 mL vial holder",
+        "displayCategory": "wellPlate",
+        "wellBottomShape": "flat"
+      },
+      "brand": {
+        "brand": "NIST",
+        "brandId": [
+          "gvh2"
+        ]
+      },
+      "wells": [
+        "A1",
+        "B1",
+        "A2",
+        "B2",
+        "A3",
+        "B3"
+      ]
+    }
+  ],
+  "parameters": {
+    "format": "irregular",
+    "quirks": [],
+    "isTiprack": false,
+    "isMagneticModuleCompatible": false,
+    "loadName": "nist_6_20ml_vials"
+  },
+  "namespace": "custom_beta",
+  "version": 1,
+  "schemaVersion": 2,
+  "cornerOffsetFromSlot": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  }
+}

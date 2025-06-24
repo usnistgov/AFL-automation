@@ -1,0 +1,12 @@
+{
+  "namespace": "custom_beta",
+  "parameters": {"loadName": "example_labware"},
+  "version": 1,
+  "schemaVersion": 2,
+  "metadata": {
+    "displayName": "Example Labware",
+    "displayCategory": "wellPlate"
+  },
+  "wells": {},
+  "ordering": []
+}

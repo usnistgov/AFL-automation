@@ -1,0 +1,81 @@
+{
+    "ordering": [
+        [
+            "A1"
+        ],
+        [
+            "A2"
+        ]
+    ],
+    "brand": {
+        "brand": "NIST",
+        "brandId": [
+            "2 100 mL bottle holder"
+        ]
+    },
+    "metadata": {
+        "displayName": "nist_2_100ml_poly_bottle",
+        "displayCategory": "wellPlate",
+        "displayVolumeUnits": "µL",
+        "tags": []
+    },
+    "dimensions": {
+        "xDimension": 127,
+        "yDimension": 86,
+        "zDimension": 100
+    },
+    "wells": {
+        "A1": {
+            "depth": 92,
+            "totalLiquidVolume": 100000,
+            "shape": "circular",
+            "diameter": 28,
+            "x": 36,
+            "y": 43,
+            "z": 8
+        },
+        "A2": {
+            "depth": 92,
+            "totalLiquidVolume": 100000,
+            "shape": "circular",
+            "diameter": 28,
+            "x": 96,
+            "y": 43,
+            "z": 8
+        }
+    },
+    "groups": [
+        {
+            "metadata": {
+                "displayName": "nist_2_100ml_poly_bottle",
+                "displayCategory": "wellPlate",
+                "wellBottomShape": "flat"
+            },
+            "brand": {
+                "brand": "NIST",
+                "brandId": [
+                    "2 100 mL bottle holder"
+                ]
+            },
+            "wells": [
+                "A1",
+                "A2"
+            ]
+        }
+    ],
+    "parameters": {
+        "format": "irregular",
+        "quirks": [],
+        "isTiprack": false,
+        "isMagneticModuleCompatible": false,
+        "loadName": "nist_2_100ml_poly_bottle"
+    },
+    "namespace": "custom_beta",
+    "version": 1,
+    "schemaVersion": 2,
+    "cornerOffsetFromSlot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+    }
+}

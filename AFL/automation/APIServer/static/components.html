@@ -21,40 +21,63 @@
   <div id="myGrid" class="ag-theme-alpine"></div>
 
   <script type="module">
+    let jwtToken = null;
+
     /* ---------- helpers that hit your Flask endpoints ---------- */
+    async function login() {
+      if (jwtToken) return jwtToken;
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'your_username', password: 'domo_arigato' })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to login');
+      }
+      const data = await response.json();
+      jwtToken = data.token;
+      return jwtToken;
+    }
+
     const fetchComponents = async () => {
-      const r = await fetch('/list_components');
+      const r = await fetch('/query_driver?r=list_components');
       return r.ok ? r.json() : [];
     };
 
-    const sendUpdate = (rec) =>
-      fetch('/update_component', {
+    async function enqueueTask(task) {
+      const token = await login();
+      const r = await fetch('/enqueue', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rec),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(task)
       });
-
-    function sendAdd(rec) {
-      fetch('/add_component', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rec),
-      })
-        .then((r) => r.text())
-        .then((uid) => {
-          rec.uid = uid;
-          gridApi.applyTransaction({ update: [rec] });   // update row in-place
-        });
+      if (!r.ok) {
+        console.error('Failed to enqueue', task);
+      }
     }
 
-    const sendDelete = (rows) =>
+    const sendUpdate = (rec) =>
+      enqueueTask({ task_name: 'update_component', ...rec });
+
+    function sendAdd(rec) {
+      enqueueTask({ task_name: 'add_component', ...rec }).then(() => refreshGrid());
+    }
+
+    const sendDelete = (rows) => {
       rows.forEach((r) =>
-        fetch('/remove_component', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uid: r.uid }),
-        })
+        enqueueTask({ task_name: 'remove_component', uid: r.uid })
       );
+      refreshGrid();
+    }
+
+    async function refreshGrid() {
+      if (!gridApi) return;
+      const rows = await fetchComponents();
+      gridApi.setRowData(rows);
+    }
 
     /* ---------- ag-Grid setup ---------- */
     let gridApi;   // filled once the grid is ready

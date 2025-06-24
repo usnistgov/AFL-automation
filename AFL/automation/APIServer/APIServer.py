@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify,send_file
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 
 from flask_cors import CORS
 
@@ -92,6 +92,7 @@ class APIServer:
         if self.driver.dropbox is None:
             self.driver.dropbox = {}
         self.driver._queue = self.task_queue
+        self._add_driver_static_routes()
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
 
         if start_ca:
@@ -261,6 +262,16 @@ class APIServer:
 
     def get_queued_commands(self):
         return jsonify(self.driver.queued.function_info),200
+
+    def _add_driver_static_routes(self):
+        '''Serve any extra static directories defined by the driver.'''
+        for subpath, directory in getattr(self.driver, 'static_dirs', {}).items():
+            directory = pathlib.Path(directory)
+            if directory.exists():
+                route = f'/static/{subpath}/<path:filename>'
+                endpoint = f'static_{subpath}'
+                handler = functools.partial(send_from_directory, directory)
+                self.app.add_url_rule(route, endpoint, handler)
 
     def add_unqueued_routes(self):
         print('Adding unqueued routes')

@@ -74,3 +74,18 @@ A bit long-winded? Sure.
 But this syntax tells a client that this function can be called, using a button labeled "Load Sample", and takes a parameter as described, with a default value.
 
 Quickbar functions appear on the html status page of the server, and can be ingested by other user interfaces such as ipywidgets in a notebook.
+
+Serving Additional Static Files
+-------------------------------
+
+If your driver requires custom JavaScript or images, define a ``static_dirs``
+class attribute mapping subpaths to directories::
+
+    class MyDriver(Driver):
+        static_dirs = {
+            'js': pathlib.Path(__file__).parent / 'js',
+            'img': pathlib.Path(__file__).parent / 'images',
+        }
+
+The APIServer will automatically serve files from these directories at
+``/static/js`` and ``/static/img``.

@@ -1,8 +1,8 @@
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.PersistentConfig import PersistentConfig
 from AFL.automation.shared import serialization
-from math import ceil,sqrt
-import inspect 
+from math import ceil, sqrt
+import inspect
 import pathlib
 import uuid
 
@@ -42,7 +42,10 @@ class Driver:
     unqueued = makeRegistrar()
     queued = makeRegistrar()
     quickbar = makeRegistrar()
-    def __init__(self,name,defaults=None,overrides=None,useful_links=None):
+    # Mapping of url subpaths to filesystem directories containing static assets
+    static_dirs = {}
+
+    def __init__(self, name, defaults=None, overrides=None, useful_links=None):
         self.app = None
         self.data = None
         self.dropbox = None
@@ -67,6 +70,9 @@ class Driver:
             overrides= overrides,
             )
 
+        # collect inherited static directories
+        self.static_dirs = self.gather_static_dirs()
+
     @classmethod
     def gather_defaults(cls):
         '''Gather all inherited static class-level dictionaries called default.'''
@@ -76,6 +82,16 @@ class Driver:
             if hasattr(parent,'defaults'):
                 defaults.update(parent.defaults)
         return defaults
+
+    @classmethod
+    def gather_static_dirs(cls):
+        '''Gather all inherited class-level dictionaries named static_dirs.'''
+
+        dirs = {}
+        for parent in cls.__mro__:
+            if hasattr(parent, 'static_dirs'):
+                dirs.update({k: pathlib.Path(v) for k, v in getattr(parent, 'static_dirs').items()})
+        return dirs
     
     def set_config(self,**kwargs):
         self.config.update(kwargs)

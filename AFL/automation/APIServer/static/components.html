@@ -42,7 +42,11 @@ var gridOptions = {
 };
 fetchComponents().then(data => {gridOptions.api && gridOptions.api.setRowData(data);});
 var eGridDiv = document.querySelector('#myGrid');
-new agGrid.Grid(eGridDiv, gridOptions);
+if (agGrid.createGrid) {
+    agGrid.createGrid(eGridDiv, gridOptions);
+} else {
+    new agGrid.Grid(eGridDiv, gridOptions);
+}
 
 document.getElementById('add-row').addEventListener('click', ()=>{
     const newRow = {name:'', density:'', formula:''};

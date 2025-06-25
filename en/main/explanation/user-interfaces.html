@@ -489,6 +489,20 @@ calling unqueued endpoints with <code class="docutils literal notranslate"><span
 But this syntax tells a client that this function can be called, using a button labeled “Load Sample”, and takes a parameter as described, with a default value.</p>
 <p>Quickbar functions appear on the html status page of the server, and can be ingested by other user interfaces such as ipywidgets in a notebook.</p>
 </section>
+<section id="serving-additional-static-files">
+<h2>Serving Additional Static Files<a class="headerlink" href="#serving-additional-static-files" title="Link to this heading">#</a></h2>
+<p>If your driver requires custom JavaScript or images, define a <code class="docutils literal notranslate"><span class="pre">static_dirs</span></code>
+class attribute mapping subpaths to directories:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyDriver</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
+    <span class="n">static_dirs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;js&#39;</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;js&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;img&#39;</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;images&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+<p>The APIServer will automatically serve files from these directories at
+<code class="docutils literal notranslate"><span class="pre">/static/js</span></code> and <code class="docutils literal notranslate"><span class="pre">/static/img</span></code>.</p>
+</section>
 </section>
 
 
@@ -539,6 +553,7 @@ But this syntax tells a client that this function can be called, using a button 
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-concepts">Core Concepts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serving-additional-static-files">Serving Additional Static Files</a></li>
 </ul>
   </nav></div>
 

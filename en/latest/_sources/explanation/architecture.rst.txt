@@ -46,6 +46,7 @@ The driver system is the core of AFL-automation. Drivers:
 - Define configuration parameters with defaults
 - Provide methods for interacting with hardware
 - Support lazy loading of hardware-specific dependencies
+- Can serve static files for custom web interfaces via `static_dirs`
 
 API Server
 ---------
@@ -56,6 +57,7 @@ The API server:
 - Provides authentication and authorization
 - Manages a task queue for asynchronous operations
 - Offers a web UI for monitoring and control
+- Serves static files defined by drivers for custom web interfaces
 
 Dependency Management
 -------------------

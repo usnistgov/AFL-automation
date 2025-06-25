@@ -270,7 +270,7 @@ class APIServer:
             if directory.exists():
                 route = f'/static/{subpath}/<path:filename>'
                 endpoint = f'static_{subpath}'
-                handler = functools.partial(send_from_directory, directory)
+                handler = lambda filename, directory=directory: send_from_directory(directory, filename)
                 self.app.add_url_rule(route, endpoint, handler)
 
     def add_unqueued_routes(self):

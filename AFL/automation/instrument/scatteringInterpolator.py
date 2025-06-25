@@ -1,11 +1,14 @@
 import numpy as np
 import xarray as xr
-import tensorflow as tf
-import gpflow
+import lazy_loader as lazy
+
+# Lazy load ML dependencies
+tf = lazy.load("tensorflow", require="AFL-automation[ml]")
+gpflow = lazy.load("gpflow", require="AFL-automation[ml]")
+
+AFLagent = lazy.load("AFL.agent", require="AFL-agent")
+
 from numpy.polynomial import chebyshev, legendre, polynomial
-from gpflow import set_trainable
-from AFL.agent import HscedGaussianProcess as HGP
-from gpflow.optimizers import NaturalGradient
 
 
 class Scattering_generator():
@@ -107,7 +110,7 @@ class Scattering_generator():
             self.kernel = kernel
             
         if (heteroscedastic) & (self.Y_unct!=None):
-            likelihood = HGP.HeteroscedasticGaussian()
+            likelihood = AFLagent.HscedGaussianProcess.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
             print(data[0].shape,data[1].shape)
             self.model = gpflow.models.VGP(
@@ -118,10 +121,10 @@ class Scattering_generator():
                 
             )
             
-            self.natgrad = NaturalGradient(gamma=0.5) 
+            self.natgrad = gpflow.optimizers.NaturalGradient(gamma=0.5) 
             self.adam = tf.optimizers.Adam()
-            set_trainable(self.model.q_mu, False)
-            set_trainable(self.model.q_sqrt, False)
+            gpflow.set_trainable(self.model.q_mu, False)
+            gpflow.set_trainable(self.model.q_sqrt, False)
 
         else:
             self.model = gpflow.models.GPR(
@@ -134,7 +137,7 @@ class Scattering_generator():
                 # self.model.likelihood.variance =  gpflow.likelihoods.Gaussian(variance=noiseless).parameters[0]
                 self.model.likelihood.variance = gpflow.likelihoods.Gaussian(variance=1.00001e-6).parameters[0]
                 # print(self.model.parameters)
-                set_trainable(self.model.likelihood.variance, False)
+                gpflow.set_trainable(self.model.likelihood.variance, False)
         
         return self.model
         
@@ -148,7 +151,7 @@ class Scattering_generator():
             self.optimizer = optimizer
         
         if (heteroscedastic) & (self.Y_unct!=None):
-            likelihood = HGP.HeteroscedasticGaussian()
+            likelihood = AFLagent.HscedGaussianProcess.HeteroscedasticGaussian()
             data = (self.X_train,np.stack((self.Y_train,self.Y_unct),axis=1))
             #print(data[0].shape,data[1].shape)
             print("model has been made")
@@ -159,10 +162,10 @@ class Scattering_generator():
                 num_latent_gps=1
                 
             )
-            self.natgrad = NaturalGradient(gamma=0.5) 
+            self.natgrad = gpflow.optimizers.NaturalGradient(gamma=0.5) 
             self.adam = tf.optimizers.Adam()
-            set_trainable(self.model.q_mu, False)
-            set_trainable(self.model.q_sqrt, False)
+            gpflow.set_trainable(self.model.q_mu, False)
+            gpflow.set_trainable(self.model.q_sqrt, False)
 
         else:
             self.model = gpflow.models.GPR(
@@ -175,7 +178,7 @@ class Scattering_generator():
                 # self.model.likelihood.variance =  gpflow.likelihoods.Gaussian(variance=noiseless).parameters[0]
                 self.model.likelihood.variance = gpflow.likelihoods.Gaussian(variance=1.00001e-6).parameters[0]
                 # print(self.model.parameters)
-                set_trainable(self.model.likelihood.variance, False)
+                gpflow.set_trainable(self.model.likelihood.variance, False)
         
         # print(self.kernel,self.optimizer)
         i = 0

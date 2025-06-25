@@ -9,8 +9,9 @@ from AFL.automation.loading.SyringePump import SyringePump
 
 import sys
 
-import serial
-import serial.tools.list_ports
+import lazy_loader as lazy
+serial = lazy.load("serial", require="AFL-automation[serial]")
+
 import sys
 import glob
 
@@ -149,9 +150,9 @@ class ChemyxSyringePump(SyringePump):
 
     def blockUntilStatusStopped(self,pollingdelay=0.2):
         '''
-        This is a deprecated function from old serial logic.  It should work, but do not use.  
+        This is a deprecated function from old serial logic.  It should work, but do not use.
         '''
-        self.wait_dosage_finished(self.pump,30)
+        self.wait_dosage_finished(30)
 
 
     def getStatus(self): #@TODO

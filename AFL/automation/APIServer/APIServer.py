@@ -15,17 +15,26 @@ from flask_jwt_extended import (
 import datetime,requests,subprocess,shlex,os,time
 import threading,queue,logging,json,pathlib,uuid
 
-from logging.handlers import SMTPHandler
+try:
+    from waitress import serve as wsgi_serve
+    _HAVE_WAITRESS = True
+    # Silence verbose logging from waitress which can flood the console
+    logging.getLogger("waitress").setLevel(logging.ERROR)
+except ImportError:
+    _HAVE_WAITRESS = False
+
 from logging import FileHandler
 
 from AFL.automation.APIServer.QueueDaemon import QueueDaemon
 from AFL.automation.APIServer.LoggerFilter import LoggerFilter
+from AFL.automation.APIServer.CAStatusPublisher import CAStatusPublisher
 
 from AFL.automation.shared.MutableQueue import MutableQueue
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared import serialization
 
 import warnings
+import functools
 
 try:
 #this import block is all for the web-ui unqueued rendering code
@@ -75,7 +84,7 @@ class APIServer:
         self.cors = CORS(self.app)
 
 
-    def create_queue(self,driver,add_unqueued=True):
+    def create_queue(self,driver,add_unqueued=True, start_ca=False, ca_prefix=None, ca_port=5064):
         self.history = []
         self.task_queue = MutableQueue()
         self.driver     = driver
@@ -85,6 +94,12 @@ class APIServer:
             self.driver.dropbox = {}
         self.driver._queue = self.task_queue
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
+
+        if start_ca:
+            if ca_prefix is None:
+                ca_prefix = f"AFL:{self.name}:"
+            self.ca_publisher = CAStatusPublisher(self.queue_daemon, prefix=ca_prefix, port=ca_port)
+            self.ca_publisher.start()
 
         if add_unqueued:
             self.add_unqueued_routes()
@@ -119,7 +134,7 @@ class APIServer:
         self.zeroconf = Zeroconf(ip_version=IPVersion.All)
         self.zeroconf.register_service(self.zeroconf_info)
         print("Started mDNS service advertisement.")
-    def run(self,**kwargs):
+    def run(self, use_waitress=None, **kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
         if _ADVERTISE_ZEROCONF:
@@ -127,21 +142,54 @@ class APIServer:
                 self.advertise_zeroconf(**kwargs)
             except Exception as e:
                 print(f'failed while trying to start zeroconf {e}, continuing')
+        # before_first_request was removed in Flask >=3.0, so run init here
+        # to start the queue daemon before the server begins serving.
+        self.init()
         try:
-            self.app.run(**kwargs)
+            if use_waitress is None:
+                use_waitress = _HAVE_WAITRESS
+
+            if use_waitress:
+                if not _HAVE_WAITRESS:
+                    raise RuntimeError("waitress is not installed")
+                kwargs.setdefault('threads', 1)
+                wsgi_serve(self.app, **kwargs)
+            else:
+                kwargs.setdefault('use_debugger', False)
+                kwargs.setdefault('debug', False)
+                kwargs.setdefault('use_reloader', False)
+                self.app.run(**kwargs)
         finally:
             if _ADVERTISE_ZEROCONF:
                 self.zeroconf.unregister_service(self.zeroconf_info)
                 self.zeroconf.close()
 
-    def run_threaded(self,start_thread=True,**kwargs):
+    def run_threaded(self, start_thread=True, use_waitress=None, **kwargs):
         if self.queue_daemon is None:
             raise ValueError('create_queue must be called before running server')
         if _ADVERTISE_ZEROCONF:
             self.advertise_zeroconf(**kwargs)
+
+        if use_waitress is None:
+            use_waitress = _HAVE_WAITRESS
+
+        if use_waitress:
+            if not _HAVE_WAITRESS:
+                raise RuntimeError("waitress is not installed")
+            kwargs.setdefault('threads', 1)
+            target = functools.partial(wsgi_serve,self.app)
+        else:
+            kwargs.setdefault('use_debugger', False)
+            kwargs.setdefault('debug', False)
+            kwargs.setdefault('use_reloader', False)
+            target = self.app.run
+
+        # before_first_request was removed in Flask >=3.0, so run init here
+        # to start the queue daemon before the server begins serving.
+        self.init()
+
+        thread = threading.Thread(target=target,daemon=True,kwargs=kwargs)
         
-        
-        thread = threading.Thread(target=self.app.run,daemon=True,kwargs=kwargs)
         if start_thread:
             thread.start()
         else:
@@ -184,7 +232,8 @@ class APIServer:
         self.app.add_url_rule('/retrieve_obj', 'retrieve_obj', self.retrieve_obj,
                               methods=['POST', 'GET'])
 
-        self.app.before_first_request(self.init)
+        # self.init is now called from run()/run_threaded due to Flask 3 removal
+        # of the before_first_request hook
 
     def get_info(self):
         '''Live, status page of the robot'''
@@ -245,17 +294,8 @@ class APIServer:
     def init_logging(self,toaddrs=None):
         self.app.logger.setLevel(level=logging.DEBUG)
 
-        if toaddrs is not None:
-            # setup error emails
-            mail_handler = SMTPHandler(mailhost=('smtp.nist.gov',25),
-                               fromaddr=f'{self.name}@pg903001.ncnr.nist.gov',
-                               toaddrs=toaddrs,
-                               subject='Driver Error')
-            mail_handler.setLevel(logging.ERROR)
-            self.app.logger.addHandler(mail_handler)
-
-
-
+        # SMTP email handling has been removed. The `toaddrs` argument is now
+        # ignored and retained only for backwards compatibility.
         path = pathlib.Path.home() / '.afl'
         path.mkdir(exist_ok=True,parents=True)
         filepath = path / f'{self.name}.log'
@@ -387,8 +427,13 @@ class APIServer:
             p.scatter(result[0],result[1],marker='circle', size=2,
                     line_color='navy', fill_color='orange', alpha=0.5)
             if len(result)>2:
-                errors = bokeh.models.Band(base=result[1],upper=result[1]+result[2],lower=result[1]-result[2], level='underlay',
-                fill_alpha=1.0, line_width=1, line_color='black')
+                band = bokeh.models.Band(base=result[1],
+                                         upper=result[1]+result[2],
+                                         lower=result[1]-result[2],
+                                         level='underlay',
+                                         fill_alpha=1.0,
+                                         line_width=1,
+                                         line_color='black')
                 p.add_layout(band)
 
         bokeh_js = JS_RESOURCES.render(
@@ -615,7 +660,7 @@ class APIServer:
         return 'Success',200
 
     def clear_queue(self):
-        self.task_queue.queue.clear()
+        self.task_queue.clear()
         return 'Success',200
 
     def clear_history(self):

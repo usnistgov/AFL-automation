@@ -24,14 +24,6 @@ __pycache__/
 *.poni
 data/
 
-# Development directories
-dev/
-
-# Documentation build
-docs/build/
-docs/source/generated/
-docs/source/_autosummary/
-
 # Tiled database specific
 tiled/data/
 tiled/catalog*
@@ -42,3 +34,47 @@ tiled/catalog*
 !AFL/automation/EpicsADLiveProcess/templates/static/jquery-3.4.1.min.js
 !AFL/automation/EpicsADLiveProcess/templates/static/logo.svg
 !AFL/automation/EpicsADLiveProcess/templates/static/ncnr.png
+
+# Dev
+dev/
+AFL/automation/_version.py
+venv/
+.DS_Store
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+`
+# Cursor
+.cursor/
+.cursor-cache/
+
+# Sphinx documentation
+docs/build/
+docs/source/generated/
+docs/source/reference/_autosummary/
+docs/source/_autosummary/
+*.doctree
+*.pickle
+.buildinfo
+objects.inv
+_build/
+.doctrees/
+*.mo
+
+# Pytest
+.pytest_cache/
+.coverage*
+coverage.xml
+htmlcov/
+
+# Tox
+.tox/
+.toxenv/
+
+# Hypothesis
+.hypothesis/

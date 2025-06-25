@@ -1,7 +1,8 @@
 from AFL.automation.APIServer.Driver import Driver
 #from AFL.automation.instrument.Instrument import Instrument
 import numpy as np # for return types in get data
-import seabreeze
+import lazy_loader as lazy
+seabreeze = lazy.load("seabreeze", require="AFL-automation[seabreeze]")
 import time
 import datetime
 import h5py

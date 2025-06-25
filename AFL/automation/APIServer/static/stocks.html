@@ -11,7 +11,10 @@
 </head>
 <body>
 <h1>Stock Setup</h1>
-<pre id="stocks"></pre>
+<table id="stocks-table">
+ <thead><tr><th>Name</th><th>Components</th><th>Location</th></tr></thead>
+ <tbody></tbody>
+</table>
 <h2>Add Stock</h2>
 <div>
  <label>Name <input id="stock-name" type="text"></label>
@@ -53,12 +56,15 @@ async function fetchComponents(){
  return r.ok? r.json():[];
 }
 async function loadStocks(){
- const token=await login();
- const r=await fetch('/enqueue',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({task_name:'get_config',name:'stocks'})});
+ const r=await fetch('/list_stocks');
  if(!r.ok) return;
- const uuid=await r.text();
- const data=await getTaskResult(token,uuid);
- document.getElementById('stocks').textContent=JSON.stringify(data,null,2);
+ const data=await r.json();
+ const tbody=$('#stocks-table tbody');
+ tbody.empty();
+ data.forEach(s=>{
+  const comps=Object.entries(s.masses||{}).map(([c,v])=>`${c}: ${v.value} ${v.units}`).join(', ');
+  tbody.append(`<tr><td>${s.name}</td><td>${comps}</td><td>${s.location||''}</td></tr>`);
+ });
 }
 function createRow(){
  const tr=$('<tr>');

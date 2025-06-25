@@ -221,6 +221,8 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         for stock_config in self.config['stocks']:
             stock = Solution(**stock_config)
             new_stocks.append(stock)
+            if 'stock_locations' in self.config and stock.location is not None:
+                self.config['stock_locations'][stock.name] = stock.location
         self.stocks = new_stocks
 
     def process_targets(self):
@@ -236,23 +238,41 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         else:
             prev = list(self.config['stocks'])
         self.config['stocks'] = self.config['stocks'] + [solution]
+        if 'stock_locations' in self.config and solution.get('location') is not None:
+            self.config['stock_locations'][solution['name']] = solution['location']
         try:
             self.process_stocks()
         except Exception as e:
             self.config['stocks'] = prev
             self.process_stocks()
             raise e
+        self.config._update_history()
 
     def add_target(self, target: Dict, reset: bool = False):
         if reset:
             self.reset_targets()
         self.config['targets'] = self.config['targets'] + [target]
+        self.config._update_history()
 
     def reset_stocks(self):
         self.config['stocks'] = []
+        if 'stock_locations' in self.config:
+            self.config['stock_locations'].clear()
+        self.config._update_history()
 
     def reset_targets(self):
         self.config['targets'] = []
+        self.config._update_history()
+
+    @Driver.unqueued()
+    def list_stocks(self):
+        self.process_stocks()
+        out = []
+        for stock in self.stocks:
+            data = stock.to_dict()
+            data['location'] = stock.location
+            out.append(data)
+        return out
 
     def _set_bounds(self):
         self.minimum_transfer_volume = enforce_units(self.config['minimum_volume'], 'volume')

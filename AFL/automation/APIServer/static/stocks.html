@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stock Configuration</title>
+<style>
+ body {font-family: Arial, sans-serif; margin:20px;}
+ table {border-collapse: collapse; margin-top:10px;}
+ th, td {border:1px solid #ccc; padding:4px;}
+</style>
+</head>
+<body>
+<h1>Stock Setup</h1>
+<pre id="stocks"></pre>
+<h2>Add Stock</h2>
+<div>
+ <label>Name <input id="stock-name" type="text"></label>
+ <label>Location <input id="stock-location" type="text"></label>
+ <br>
+ <label>Total Mass <input id="stock-total-mass" type="text" style="width:60px;"> <input id="stock-total-mass-units" type="text" style="width:40px;" placeholder="mg"></label>
+ <label>Total Volume <input id="stock-total-volume" type="text" style="width:60px;"> <input id="stock-total-volume-units" type="text" style="width:40px;" placeholder="ul"></label>
+ <table id="components-table">
+  <thead><tr><th>Component</th><th>Value</th><th>Units</th><th></th></tr></thead>
+  <tbody></tbody>
+ </table>
+ <button id="add-component" type="button">Add Component</button>
+ <button id="submit-stock" type="button">Submit</button>
+</div>
+<datalist id="component-names"></datalist>
+<script src="jquery/jquery-3.4.1.min.js"></script>
+<script>
+let jwtToken = null;
+async function login(){
+ if(jwtToken) return jwtToken;
+ const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'dashboard',password:'domo_arigato'})});
+ if(!r.ok){alert('login failed'); throw new Error('login');}
+ jwtToken=(await r.json()).token; return jwtToken;
+}
+async function getTaskResult(token,uuid){
+ const start=Date.now();
+ while(Date.now()-start<10000){
+  await new Promise(r=>setTimeout(r,200));
+  const resp=await fetch('/get_queue',{headers:{'Authorization':'Bearer '+token}});
+  if(!resp.ok) throw new Error('queue');
+  const q=await resp.json();
+  const hit=q[0]?.find(t=>t.uuid===uuid);
+  if(hit) return hit.meta?.return_val;
+ }
+ throw new Error('timeout');
+}
+async function fetchComponents(){
+ const r=await fetch('/list_components');
+ return r.ok? r.json():[];
+}
+async function loadStocks(){
+ const token=await login();
+ const r=await fetch('/enqueue',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({task_name:'get_config',name:'stocks'})});
+ if(!r.ok) return;
+ const uuid=await r.text();
+ const data=await getTaskResult(token,uuid);
+ document.getElementById('stocks').textContent=JSON.stringify(data,null,2);
+}
+function createRow(){
+ const tr=$('<tr>');
+ const comp=$('<input type="text" list="component-names" class="comp-name">');
+ const val=$('<input type="text" class="comp-val" style="width:60px;">');
+ const unit=$('<input type="text" class="comp-unit" style="width:40px;" placeholder="mg">');
+ const del=$('<button type="button">x</button>').click(()=>tr.remove());
+ tr.append($('<td>').append(comp)).append($('<td>').append(val)).append($('<td>').append(unit)).append($('<td>').append(del));
+ return tr;
+}
+$('#add-component').click(()=>$('#components-table tbody').append(createRow()));
+$('#submit-stock').click(async function(){
+ const name=$('#stock-name').val();
+ const location=$('#stock-location').val();
+ const masses={},volumes={},concentrations={},mass_fractions={};
+ $('#components-table tbody tr').each(function(){
+  const c=$(this).find('.comp-name').val();
+  const v=$(this).find('.comp-val').val();
+  const u=$(this).find('.comp-unit').val().trim();
+  if(!c) return;
+  const num=v?parseFloat(v):null;
+  const valStr=num!==null?num+' '+u:null;
+  if(u.toLowerCase().includes('%')){mass_fractions[c]=num;}
+  else if(u.toLowerCase().includes('mg')||u.toLowerCase()==='g'||u.toLowerCase()==='ug'){masses[c]=valStr;}
+  else if(u.toLowerCase().includes('l')){volumes[c]=valStr;}
+  else if(u.includes('/')){concentrations[c]=valStr;}
+ });
+ const sol={name};
+ if(Object.keys(masses).length) sol.masses=masses;
+ if(Object.keys(volumes).length) sol.volumes=volumes;
+ if(Object.keys(concentrations).length) sol.concentrations=concentrations;
+ if(Object.keys(mass_fractions).length) sol.mass_fractions=mass_fractions;
+ const tm=$('#stock-total-mass').val();
+ const tmu=$('#stock-total-mass-units').val();
+ if(tm) sol.total_mass=tm+' '+tmu;
+ const tv=$('#stock-total-volume').val();
+ const tvu=$('#stock-total-volume-units').val();
+ if(tv) sol.total_volume=tv+' '+tvu;
+ if(location) sol.location=location;
+ const token=await login();
+ const r=await fetch('/enqueue',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({task_name:'add_stock',solution:sol})});
+ if(!r.ok){alert('failed'); return;}
+ const uuid=await r.text();
+ await getTaskResult(token,uuid);
+ loadStocks();
+});
+$(async function(){
+ $('#components-table tbody').append(createRow());
+ const comps=await fetchComponents();
+ comps.forEach(c=>$('#component-names').append(`<option value="${c.name}">`));
+ loadStocks();
+});
+</script>
+</body>
+</html>

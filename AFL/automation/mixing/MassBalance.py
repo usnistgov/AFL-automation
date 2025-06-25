@@ -198,6 +198,10 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         except ValueError:
             self.mixdb = MixDB()
         self.useful_links['Edit Components DB'] = 'static/components.html'
+        try:
+            self.process_stocks()
+        except Exception as e:
+            warnings.warn(f'Failed to load stocks from config: {e}', stacklevel=2)
 
     @property
     def stock_components(self) -> Set[str]:
@@ -212,10 +216,11 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         return {component for target in self.targets for component in target.components}
 
     def process_stocks(self):
-        self.stocks = []
+        new_stocks = []
         for stock_config in self.config['stocks']:
             stock = Solution(**stock_config)
-            self.stocks.append(stock)
+            new_stocks.append(stock)
+        self.stocks = new_stocks
 
     def process_targets(self):
         self.targets = []
@@ -225,8 +230,17 @@ class MassBalanceDriver(MassBalanceBase, Driver):
 
     def add_stock(self, solution: Dict, reset: bool = False):
         if reset:
+            prev = []
             self.reset_stocks()
+        else:
+            prev = list(self.config['stocks'])
         self.config['stocks'] = self.config['stocks'] + [solution]
+        try:
+            self.process_stocks()
+        except Exception as e:
+            self.config['stocks'] = prev
+            self.process_stocks()
+            raise e
 
     def add_target(self, target: Dict, reset: bool = False):
         if reset:

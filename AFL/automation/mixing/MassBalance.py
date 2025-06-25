@@ -198,6 +198,7 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         except ValueError:
             self.mixdb = MixDB()
         self.useful_links['Edit Components DB'] = 'static/components.html'
+        self.useful_links['Configure Stocks'] = 'static/stocks.html'
         try:
             self.process_stocks()
         except Exception as e:

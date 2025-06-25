@@ -33,7 +33,6 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         self.targets = []
 
         self.useful_links['View Deck'] = '/visualize_deck'
-        self.useful_links['Configure Stocks'] = 'static/stocks.html'
 
     
     def status(self):

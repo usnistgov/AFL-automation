@@ -1,11 +1,12 @@
 import types
 import datetime
+import logging
 from AFL.automation.shared.units import has_units
 
 try:
     import matplotlib.pyplot as plt
 except ModuleNotFoundError:
-    print('importing Matplotlib failed, do you want plotting to work?')
+    logging.warning('importing Matplotlib failed, do you want plotting to work?')
 import io
 
 
@@ -20,10 +21,6 @@ def listify(obj):
         except TypeError:
             obj = [obj]
     return obj
-
-def tprint(in_str):
-    now = datetime.datetime.now().strftime('%y%m%d-%H:%M:%S')
-    print(f'[{now}] {in_str}')
     
 def makeRegistar():
     registry = {}

@@ -10,6 +10,7 @@ import requests
 import shutil
 import datetime
 import traceback
+import logging
 
 import xarray as xr
 
@@ -50,17 +51,17 @@ class CastingServer(Driver):
     def init_casting_manifest(self,attrs=None,overwrite=False):
         self.manifests = {}
         for manifest in ['manifest','manifest_prep','manifest_cast']:
-            print(f'Trying to load {self.config[manifest]}')
+            logging.info(f'Trying to load {self.config[manifest]}')
             if not overwrite:
                 try:
                     self.manifests[manifest] = xr.load_dataset(self.config[manifest])
-                    print(f'Loaded!')
+                    logging.info('Loaded!')
                 except (FileNotFoundError,ValueError):
                     self.manifests[manifest] = xr.Dataset()
-                    print(f'Not Found...starting new manifest')
+                    logging.info('Not Found...starting new manifest')
             else:
                 self.manifests[manifest] = xr.Dataset()
-                print(f'Starting new manifest')
+                logging.info('Starting new manifest')
 
             if attrs is not None:
                 self.manifests[manifest].attrs.update(attrs)

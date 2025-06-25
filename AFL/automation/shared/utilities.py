@@ -11,7 +11,7 @@ import io
 
 
 def listify(obj):
-    if isinstance(obj, str) or not hasattr(obj, "__iter__"):
+    if isinstance(obj, str) or isinstance(obj, dict) or not hasattr(obj, "__iter__"):
         obj = [obj]
     elif has_units(obj):
         #special handling for pint quanitites whch, for some reason

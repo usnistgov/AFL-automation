@@ -159,7 +159,11 @@ class Driver:
 
         kwargs.update({'sample_name':sample_name,'sample_uuid':sample_uuid})
         self.data.update(kwargs)
-        self.data.PROTECTED_SAMPLE_KEYS.update(kwargs.keys())
+
+        # update the protected sample keys
+        keys = set(self.data.PROTECTED_SAMPLE_KEYS)
+        keys.update(kwargs.keys())
+        self.data.PROTECTED_SAMPLE_KEYS = list(keys)
         
         return kwargs
 

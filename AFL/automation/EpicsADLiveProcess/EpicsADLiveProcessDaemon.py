@@ -2,9 +2,11 @@ import queue
 import threading
 import time
 import datetime
-import pyFAI,pyFAI.azimuthalIntegrator
-from CollateDaemon import CollateDaemon
-from ReduceDaemon import ReduceDaemon
+import lazy_loader as lazy
+# Lazy-load pyFAI and its submodules
+pyFAI = lazy.load("pyFAI", require="AFL-automation[scattering-processing]")
+from .CollateDaemon import CollateDaemon
+from .ReduceDaemon import ReduceDaemon
 from PIL import Image
 import numpy as np
 

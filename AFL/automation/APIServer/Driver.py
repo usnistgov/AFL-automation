@@ -43,6 +43,8 @@ class Driver:
     queued = makeRegistrar()
     quickbar = makeRegistrar()
     # Mapping of url subpaths to filesystem directories containing static assets
+    # Example: {'docs': '/path/to/docs', 'assets': pathlib.Path(__file__).parent / 'assets'}
+    # Files will be served at /static/{subpath}/{filename}
     static_dirs = {}
 
     def __init__(self, name, defaults=None, overrides=None, useful_links=None):
@@ -85,7 +87,18 @@ class Driver:
 
     @classmethod
     def gather_static_dirs(cls):
-        '''Gather all inherited class-level dictionaries named static_dirs.'''
+        '''Gather all inherited class-level dictionaries named static_dirs.
+        
+        This method walks through the Method Resolution Order (MRO) to collect
+        static_dirs definitions from all parent classes. Child class definitions
+        override parent definitions for the same subpath key.
+        
+        Returns
+        -------
+        dict
+            Dictionary mapping subpaths to pathlib.Path objects for directories
+            containing static files to be served by the API server.
+        '''
 
         dirs = {}
         for parent in cls.__mro__:

@@ -264,7 +264,21 @@ class APIServer:
         return jsonify(self.driver.queued.function_info),200
 
     def _add_driver_static_routes(self):
-        '''Serve any extra static directories defined by the driver.'''
+        '''Serve any extra static directories defined by the driver.
+        
+        This method creates Flask routes for each directory specified in the driver's
+        static_dirs dictionary. Files are served under /static/{subpath}/ URLs and
+        are accessible via HTTP GET requests.
+        
+        The method only creates routes for directories that actually exist on the
+        filesystem. Non-existent directories are silently skipped.
+        
+        Example:
+            If driver.static_dirs = {'docs': '/path/to/docs', 'assets': '/path/to/assets'}
+            then files will be served at:
+            - /static/docs/filename -> serves files from /path/to/docs/
+            - /static/assets/filename -> serves files from /path/to/assets/
+        '''
         for subpath, directory in getattr(self.driver, 'static_dirs', {}).items():
             directory = pathlib.Path(directory)
             if directory.exists():

@@ -198,6 +198,11 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         except ValueError:
             self.mixdb = MixDB()
         self.useful_links['Edit Components DB'] = 'static/components.html'
+        self.useful_links['Configure Stocks'] = 'static/stocks.html'
+        try:
+            self.process_stocks()
+        except Exception as e:
+            warnings.warn(f'Failed to load stocks from config: {e}', stacklevel=2)
 
     @property
     def stock_components(self) -> Set[str]:
@@ -212,10 +217,13 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         return {component for target in self.targets for component in target.components}
 
     def process_stocks(self):
-        self.stocks = []
+        new_stocks = []
         for stock_config in self.config['stocks']:
             stock = Solution(**stock_config)
-            self.stocks.append(stock)
+            new_stocks.append(stock)
+            if 'stock_locations' in self.config and stock.location is not None:
+                self.config['stock_locations'][stock.name] = stock.location
+        self.stocks = new_stocks
 
     def process_targets(self):
         self.targets = []
@@ -225,19 +233,46 @@ class MassBalanceDriver(MassBalanceBase, Driver):
 
     def add_stock(self, solution: Dict, reset: bool = False):
         if reset:
+            prev = []
             self.reset_stocks()
+        else:
+            prev = list(self.config['stocks'])
         self.config['stocks'] = self.config['stocks'] + [solution]
+        if 'stock_locations' in self.config and solution.get('location') is not None:
+            self.config['stock_locations'][solution['name']] = solution['location']
+        try:
+            self.process_stocks()
+        except Exception as e:
+            self.config['stocks'] = prev
+            self.process_stocks()
+            raise e
+        self.config._update_history()
 
     def add_target(self, target: Dict, reset: bool = False):
         if reset:
             self.reset_targets()
         self.config['targets'] = self.config['targets'] + [target]
+        self.config._update_history()
 
     def reset_stocks(self):
         self.config['stocks'] = []
+        if 'stock_locations' in self.config:
+            self.config['stock_locations'].clear()
+        self.config._update_history()
 
     def reset_targets(self):
         self.config['targets'] = []
+        self.config._update_history()
+
+    @Driver.unqueued()
+    def list_stocks(self):
+        self.process_stocks()
+        out = []
+        for stock in self.stocks:
+            data = stock.to_dict()
+            data['location'] = stock.location
+            out.append(data)
+        return out
 
     def _set_bounds(self):
         self.minimum_transfer_volume = enforce_units(self.config['minimum_volume'], 'volume')

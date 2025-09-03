@@ -29,6 +29,8 @@ from AFL.automation.prepare.utilities import make_locs,make_wellplate_locs
 
 from AFL.automation.prepare.MassBalance import MassBalance
 from AFL.automation.prepare.PipetteAction import PipetteAction
+from AFL.automation.prepare.OT2HTTPDriver import OT2HTTPDriver
+from AFL.automation.prepare.VirtualOT2HTTPDriver import VirtualOT2HTTPDriver
 
 from AFL.automation.prepare.factory import compositionSweepFactory,HD2OFactory
 

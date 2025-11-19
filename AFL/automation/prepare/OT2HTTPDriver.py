@@ -361,6 +361,11 @@ class OT2HTTPDriver(Driver):
         self.config["loaded_modules"] = {}
         self.config["available_tips"] = {}
         self.config["prep_targets"] = []
+        
+        # Clear internal state variables
+        self.modules = {}
+        self.sent_custom_labware = set()
+        self.run_id = None
 
     @Driver.quickbar(qb={"button_text": "Home"})
     def home(self, **kwargs):
@@ -1713,6 +1718,9 @@ class OT2HTTPDriver(Driver):
         self.log_info("Creating a new run for commands")
 
         try:
+            # Clear custom labware tracking so definitions are re-uploaded for the new run
+            self.sent_custom_labware = set()
+            
             # Create a run
             import datetime
 

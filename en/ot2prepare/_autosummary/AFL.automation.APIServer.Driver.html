@@ -507,10 +507,33 @@
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">useful_links</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.__init__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.static_dirs">
+<span class="sig-name descname"><span class="pre">static_dirs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.static_dirs" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.gather_defaults">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gather_defaults</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.gather_defaults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.gather_defaults" title="Link to this definition">#</a></dt>
 <dd><p>Gather all inherited static class-level dictionaries called default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.gather_static_dirs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gather_static_dirs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.gather_static_dirs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.gather_static_dirs" title="Link to this definition">#</a></dt>
+<dd><p>Gather all inherited class-level dictionaries named static_dirs.</p>
+<p>This method walks through the Method Resolution Order (MRO) to collect
+static_dirs definitions from all parent classes. Child class definitions
+override parent definitions for the same subpath key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping subpaths to pathlib.Path objects for directories
+containing static files to be served by the API server.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -581,12 +604,12 @@ is expected that this method be overridden by subclasses.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.set_data">
-<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.set_data" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.set_data" title="Link to this definition">#</a></dt>
 <dd><p>Set data in the DataPacket object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Dictionary of data to store in the driver object</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary of data to store in the driver object</p></li>
 <li><p><strong>variables</strong> (<em>Note! if the keys in data are not system</em><em> or </em><em>sample</em>)</p></li>
 </ul>
 </dd>
@@ -601,7 +624,7 @@ is expected that this method be overridden by subclasses.</p>
 <dd><p>Retrieve an object from the dropbox</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>uid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The uuid of the file to retrieve</p>
+<dd class="field-odd"><p><strong>uid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The uuid of the file to retrieve</p>
 </dd>
 </dl>
 </dd></dl>
@@ -613,8 +636,8 @@ is expected that this method be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><em>object</em></a>) – The object to store in the dropbox</p></li>
-<li><p><strong>uid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The uuid to store the object under</p></li>
+<li><p><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – The object to store in the dropbox</p></li>
+<li><p><strong>uid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The uuid to store the object under</p></li>
 </ul>
 </dd>
 </dl>
@@ -677,7 +700,9 @@ is expected that this method be overridden by subclasses.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.queued"><code class="docutils literal notranslate"><span class="pre">Driver.queued()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.quickbar"><code class="docutils literal notranslate"><span class="pre">Driver.quickbar()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.__init__"><code class="docutils literal notranslate"><span class="pre">Driver.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.static_dirs"><code class="docutils literal notranslate"><span class="pre">Driver.static_dirs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.gather_defaults"><code class="docutils literal notranslate"><span class="pre">Driver.gather_defaults()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.gather_static_dirs"><code class="docutils literal notranslate"><span class="pre">Driver.gather_static_dirs()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.set_config"><code class="docutils literal notranslate"><span class="pre">Driver.set_config()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.get_config"><code class="docutils literal notranslate"><span class="pre">Driver.get_config()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.get_configs"><code class="docutils literal notranslate"><span class="pre">Driver.get_configs()</span></code></a></li>

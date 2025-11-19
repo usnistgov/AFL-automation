@@ -9,5 +9,6 @@ How-to guides are problem-oriented instructions that help users accomplish speci
    
    dependencies
    my-first-server
+   static-directories
    run-tests
    

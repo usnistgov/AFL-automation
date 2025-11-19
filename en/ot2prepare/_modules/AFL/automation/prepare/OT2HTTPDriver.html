@@ -804,7 +804,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;available_tips&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Clear internal state variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modules</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sent_custom_labware</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_id</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.home">
@@ -2230,6 +2235,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Creating a new run for commands&quot;</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Clear custom labware tracking so definitions are re-uploaded for the new run</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sent_custom_labware</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            
             <span class="c1"># Create a run</span>
             <span class="kn">import</span> <span class="nn">datetime</span>
 

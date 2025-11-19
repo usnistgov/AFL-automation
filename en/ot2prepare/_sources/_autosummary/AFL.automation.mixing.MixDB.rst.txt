@@ -9,6 +9,7 @@ AFL.automation.mixing.MixDB
    .. autosummary::
    
       abstractmethod
+      has_units
    
    .. rubric:: Classes
 

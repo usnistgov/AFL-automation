@@ -415,7 +415,7 @@
 
 <span class="kn">from</span> <span class="nn">AFL.automation.shared.PersistentConfig</span> <span class="kn">import</span> <span class="n">PersistentConfig</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared.exceptions</span> <span class="kn">import</span> <span class="n">NotFoundError</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.units</span> <span class="kn">import</span> <span class="n">units</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.shared.units</span> <span class="kn">import</span> <span class="n">units</span><span class="p">,</span> <span class="n">has_units</span>
 
 <span class="c1"># Global variable to store the last instantiated MixDB instance</span>
 <span class="n">_MIXDB</span> <span class="o">=</span> <span class="kc">None</span>
@@ -441,6 +441,30 @@
         <span class="n">_MIXDB</span> <span class="o">=</span> <span class="bp">self</span></div>
 
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_serialize_component</span><span class="p">(</span><span class="n">component_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert any pint.Quantity objects in a component dictionary to strings</span>
+<span class="sd">        for JSON serialization compatibility.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        component_dict : Dict</span>
+<span class="sd">            Component dictionary that may contain Quantity objects</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Dict</span>
+<span class="sd">            Component dictionary with Quantity objects converted to strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">serialized</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">component_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">has_units</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="n">serialized</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">serialized</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">serialized</span>
+
 <div class="viewcode-block" id="MixDB.get_db">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MixDB.html#AFL.automation.mixing.MixDB.MixDB.get_db">[docs]</a>
     <span class="nd">@staticmethod</span>
@@ -465,8 +489,10 @@
     <span class="k">def</span> <span class="nf">add_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="s1">&#39;uid&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">component_dict</span><span class="p">:</span>
             <span class="n">component_dict</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">component_dict</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">component_dict</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span></div>
+        <span class="c1"># Serialize Quantity objects to strings before storing</span>
+        <span class="n">serialized_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_component</span><span class="p">(</span><span class="n">component_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">serialized_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">serialized_dict</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="MixDB.remove_component">
@@ -478,7 +504,9 @@
 <div class="viewcode-block" id="MixDB.list_components">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MixDB.html#AFL.automation.mixing.MixDB.MixDB.list_components">[docs]</a>
     <span class="k">def</span> <span class="nf">list_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">list_components</span><span class="p">()</span></div>
+        <span class="n">components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">list_components</span><span class="p">()</span>
+        <span class="c1"># Serialize any Quantity objects that might exist in the returned data</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_serialize_component</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">components</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="MixDB.update_component">
@@ -486,8 +514,10 @@
     <span class="k">def</span> <span class="nf">update_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="s1">&#39;uid&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">component_dict</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;uid required for update&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">update_component</span><span class="p">(</span><span class="n">component_dict</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">component_dict</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span></div>
+        <span class="c1"># Serialize Quantity objects to strings before storing</span>
+        <span class="n">serialized_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_component</span><span class="p">(</span><span class="n">component_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">update_component</span><span class="p">(</span><span class="n">serialized_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">serialized_dict</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="MixDB.get_component">

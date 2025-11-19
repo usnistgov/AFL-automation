@@ -1,8 +1,10 @@
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.PersistentConfig import PersistentConfig
 from AFL.automation.shared import serialization
-from math import ceil, sqrt
-import inspect
+import logging
+from math import ceil,sqrt
+import inspect 
+
 import pathlib
 import uuid
 
@@ -51,6 +53,8 @@ class Driver:
         self.app = None
         self.data = None
         self.dropbox = None
+        self.logger = logging.getLogger(name if name is not None else 'Driver')
+        self.logger.setLevel(logging.INFO)
 
         if name is None:
             self.name = 'Driver'
@@ -71,9 +75,32 @@ class Driver:
             defaults= defaults,
             overrides= overrides,
             )
-
+        
         # collect inherited static directories
         self.static_dirs = self.gather_static_dirs()
+
+    def _log(self, level, message):
+        if self.app is not None and hasattr(self.app, 'logger'):
+            log_func = getattr(self.app.logger, level, None)
+            if log_func:
+                log_func(message)
+        else:
+            log_func = getattr(self.logger, level, None)
+            if log_func:
+                log_func(message)
+
+    def log_info(self, message):
+        self._log('info', message)
+
+    def log_error(self, message):
+        self._log('error', message)
+
+    def log_debug(self, message):
+        self._log('debug', message)
+
+    def log_warning(self, message):
+        self._log('warning', message)
+
 
     @classmethod
     def gather_defaults(cls):
@@ -137,7 +164,7 @@ class Driver:
 
         value = self.config[name]
         if print_console:
-            print(f'{name:30s} = {value}')
+            self.log_info(f'{name:30s} = {value}')
 
         return value
 
@@ -154,7 +181,7 @@ class Driver:
         config = self.config
         if print_console:
             for name,value in config:
-                print(f'{name:30s} = {value}')
+                self.log_info(f'{name:30s} = {value}')
         return config.config
     
     def set_sample(self,sample_name,sample_uuid=None,**kwargs):

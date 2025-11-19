@@ -4,6 +4,7 @@ from AFL.automation.shared import serialization
 import logging
 from math import ceil,sqrt
 import inspect 
+
 import pathlib
 import uuid
 
@@ -43,7 +44,12 @@ class Driver:
     unqueued = makeRegistrar()
     queued = makeRegistrar()
     quickbar = makeRegistrar()
-    def __init__(self,name,defaults=None,overrides=None,useful_links=None):
+    # Mapping of url subpaths to filesystem directories containing static assets
+    # Example: {'docs': '/path/to/docs', 'assets': pathlib.Path(__file__).parent / 'assets'}
+    # Files will be served at /static/{subpath}/{filename}
+    static_dirs = {}
+
+    def __init__(self, name, defaults=None, overrides=None, useful_links=None):
         self.app = None
         self.data = None
         self.dropbox = None
@@ -69,6 +75,9 @@ class Driver:
             defaults= defaults,
             overrides= overrides,
             )
+        
+        # collect inherited static directories
+        self.static_dirs = self.gather_static_dirs()
 
     def _log(self, level, message):
         if self.app is not None and hasattr(self.app, 'logger'):
@@ -92,6 +101,7 @@ class Driver:
     def log_warning(self, message):
         self._log('warning', message)
 
+
     @classmethod
     def gather_defaults(cls):
         '''Gather all inherited static class-level dictionaries called default.'''
@@ -101,6 +111,27 @@ class Driver:
             if hasattr(parent,'defaults'):
                 defaults.update(parent.defaults)
         return defaults
+
+    @classmethod
+    def gather_static_dirs(cls):
+        '''Gather all inherited class-level dictionaries named static_dirs.
+        
+        This method walks through the Method Resolution Order (MRO) to collect
+        static_dirs definitions from all parent classes. Child class definitions
+        override parent definitions for the same subpath key.
+        
+        Returns
+        -------
+        dict
+            Dictionary mapping subpaths to pathlib.Path objects for directories
+            containing static files to be served by the API server.
+        '''
+
+        dirs = {}
+        for parent in cls.__mro__:
+            if hasattr(parent, 'static_dirs'):
+                dirs.update({k: pathlib.Path(v) for k, v in getattr(parent, 'static_dirs').items()})
+        return dirs
     
     def set_config(self,**kwargs):
         self.config.update(kwargs)

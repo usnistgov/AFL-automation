@@ -381,7 +381,7 @@ class APIServer:
         ##result = lambda: func(**kwargs)
 
         if render_hint is None: #try and infer what we should do based on the return type of func.
-            res_probe = result[0] if type(result) == list else result
+            res_probe = result[0] if (type(result) == list and len(result)>0) else result
             if type(res_probe) == np.ndarray:
                 if res_probe.ndim == 1:
                     render_hint = '1d_plot'

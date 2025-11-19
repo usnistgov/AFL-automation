@@ -50,6 +50,15 @@ Valid values of `render_hint` are ['raw','precomposed_svg','precomposed_jpg','1d
 
 The other kwargs can be provided in the function decorator, but will be overridden with URL arguments, so the user can change the plot from log to lin (say) from the client.
 
+.. note::
+
+   Unqueued functions are served via HTTP ``GET`` routes and are intended for
+   read-only queries.  Any action that modifies state must be submitted to the
+   server's ``/enqueue`` endpoint using a ``POST`` request with a valid JWT
+   token obtained from ``/login``.  A common pattern is for a user interface to
+   stage changes locally and then send them as one queued task, rather than
+   calling unqueued endpoints with ``POST``.
+
 
 
 2. **Quickbar Decorator**
@@ -74,3 +83,18 @@ A bit long-winded? Sure.
 But this syntax tells a client that this function can be called, using a button labeled "Load Sample", and takes a parameter as described, with a default value.
 
 Quickbar functions appear on the html status page of the server, and can be ingested by other user interfaces such as ipywidgets in a notebook.
+
+Serving Additional Static Files
+-------------------------------
+
+If your driver requires custom JavaScript or images, define a ``static_dirs``
+class attribute mapping subpaths to directories::
+
+    class MyDriver(Driver):
+        static_dirs = {
+            'js': pathlib.Path(__file__).parent / 'js',
+            'img': pathlib.Path(__file__).parent / 'images',
+        }
+
+The APIServer will automatically serve files from these directories at
+``/static/js`` and ``/static/img``.

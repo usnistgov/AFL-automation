@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify,send_file
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 
 from flask_cors import CORS
 
@@ -93,6 +93,7 @@ class APIServer:
         if self.driver.dropbox is None:
             self.driver.dropbox = {}
         self.driver._queue = self.task_queue
+        self._add_driver_static_routes()
         self.queue_daemon = QueueDaemon(self.app,driver,self.task_queue,self.history,data = self.data)
 
         if start_ca:
@@ -264,6 +265,30 @@ class APIServer:
 
     def get_queued_commands(self):
         return jsonify(self.driver.queued.function_info),200
+
+    def _add_driver_static_routes(self):
+        '''Serve any extra static directories defined by the driver.
+        
+        This method creates Flask routes for each directory specified in the driver's
+        static_dirs dictionary. Files are served under /static/{subpath}/ URLs and
+        are accessible via HTTP GET requests.
+        
+        The method only creates routes for directories that actually exist on the
+        filesystem. Non-existent directories are silently skipped.
+        
+        Example:
+            If driver.static_dirs = {'docs': '/path/to/docs', 'assets': '/path/to/assets'}
+            then files will be served at:
+            - /static/docs/filename -> serves files from /path/to/docs/
+            - /static/assets/filename -> serves files from /path/to/assets/
+        '''
+        for subpath, directory in getattr(self.driver, 'static_dirs', {}).items():
+            directory = pathlib.Path(directory)
+            if directory.exists():
+                route = f'/static/{subpath}/<path:filename>'
+                endpoint = f'static_{subpath}'
+                handler = lambda filename, directory=directory: send_from_directory(directory, filename)
+                self.app.add_url_rule(route, endpoint, handler)
 
     def add_unqueued_routes(self):
         print('Adding unqueued routes')

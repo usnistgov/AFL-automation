@@ -8,7 +8,7 @@ import pandas as pd  # type: ignore
 
 from AFL.automation.shared.PersistentConfig import PersistentConfig
 from AFL.automation.shared.exceptions import NotFoundError
-from AFL.automation.shared.units import units
+from AFL.automation.shared.units import units, has_units
 
 # Global variable to store the last instantiated MixDB instance
 _MIXDB = None
@@ -25,6 +25,30 @@ class MixDB:
     def set_db(self):
         global _MIXDB
         _MIXDB = self
+
+    @staticmethod
+    def _serialize_component(component_dict: Dict) -> Dict:
+        """
+        Convert any pint.Quantity objects in a component dictionary to strings
+        for JSON serialization compatibility.
+        
+        Parameters
+        ----------
+        component_dict : Dict
+            Component dictionary that may contain Quantity objects
+            
+        Returns
+        -------
+        Dict
+            Component dictionary with Quantity objects converted to strings
+        """
+        serialized = {}
+        for key, value in component_dict.items():
+            if has_units(value):
+                serialized[key] = str(value)
+            else:
+                serialized[key] = value
+        return serialized
 
     @staticmethod
     def get_db():
@@ -45,20 +69,26 @@ class MixDB:
     def add_component(self, component_dict: Dict) -> str:
         if 'uid' not in component_dict:
             component_dict['uid'] = str(uuid.uuid4())
-        self.engine.add_component(component_dict)
-        return component_dict['uid']
+        # Serialize Quantity objects to strings before storing
+        serialized_dict = self._serialize_component(component_dict)
+        self.engine.add_component(serialized_dict)
+        return serialized_dict['uid']
 
     def remove_component(self, name=None, uid=None):
         self.engine.remove_component(name=name, uid=uid)
 
     def list_components(self):
-        return self.engine.list_components()
+        components = self.engine.list_components()
+        # Serialize any Quantity objects that might exist in the returned data
+        return [self._serialize_component(comp) for comp in components]
 
     def update_component(self, component_dict: Dict) -> str:
         if 'uid' not in component_dict:
             raise ValueError('uid required for update')
-        self.engine.update_component(component_dict)
-        return component_dict['uid']
+        # Serialize Quantity objects to strings before storing
+        serialized_dict = self._serialize_component(component_dict)
+        self.engine.update_component(serialized_dict)
+        return serialized_dict['uid']
 
     def get_component(self,name=None,uid=None,interactive=True):
         if (name is None) == (uid is None): # XOR

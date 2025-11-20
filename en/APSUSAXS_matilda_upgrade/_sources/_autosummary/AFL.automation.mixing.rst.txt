@@ -1,0 +1,20 @@
+AFL.automation.mixing
+=====================
+
+.. automodule:: AFL.automation.mixing
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   BioSANSPrepare
+   Component
+   Context
+   MassBalance
+   MixDB
+   PipetteAction
+   Solution
+   TargetSolution

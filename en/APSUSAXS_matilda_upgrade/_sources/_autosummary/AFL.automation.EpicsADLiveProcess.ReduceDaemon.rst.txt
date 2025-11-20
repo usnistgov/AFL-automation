@@ -1,0 +1,12 @@
+AFL.automation.EpicsADLiveProcess.ReduceDaemon
+==============================================
+
+.. automodule:: AFL.automation.EpicsADLiveProcess.ReduceDaemon
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ReduceDaemon
+   

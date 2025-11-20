@@ -1,0 +1,1230 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFL.automation.shared.DataLabelerWidget &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/shared/DataLabelerWidget';</script>
+    <link rel="icon" href="../../../../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../../../../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../automation.html" class="nav-link">AFL.automation</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.shared.DataLabelerWidget</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for AFL.automation.shared.DataLabelerWidget</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">ipywidgets</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OrdinalEncoder</span>  <span class="c1"># type: ignore</span>
+
+
+<div class="viewcode-block" id="DataLabelerWidget">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget">[docs]</a>
+<span class="k">class</span> <span class="nc">DataLabelerWidget</span><span class="p">:</span>
+<div class="viewcode-block" id="DataLabelerWidget.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_dataset</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span>
+        <span class="n">sas_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">composition_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">sample_dim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+        <span class="n">fit_variable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset: xr.Dataset</span>
+<span class="sd">            Dataset from AFL</span>
+
+<span class="sd">        sas_variable: str</span>
+<span class="sd">            Name of data variable in the `xarray.Dataset` that holds the scattering data</span>
+
+<span class="sd">        composition_variable: str | List[str]</span>
+<span class="sd">            Name of data variable in the `xarray.Dataset` that holds the composition. If the composition is split across</span>
+<span class="sd">            multiple variables, pass in a list of variables.</span>
+
+<span class="sd">        sample_dim: str</span>
+<span class="sd">            The name of the `xarray` dimension corresponding to each sample or measurement. This is typically named</span>
+<span class="sd">            &#39;sample&#39; in much of the AFL agent codebase.</span>
+
+<span class="sd">        fit_variable: Optional[str]</span>
+<span class="sd">            If not none, this data will be plotted along with the sas_variable data. This data variable should have the</span>
+<span class="sd">            same shape as sas_variable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># preprocess the dataset before sending to the data model</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+        <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;sas&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_dataset</span><span class="p">[</span><span class="n">sas_variable</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">composition_variable</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;composition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">input_dataset</span><span class="p">[</span><span class="n">composition_variable</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">to_array</span><span class="p">(</span><span class="s2">&quot;component&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="s2">&quot;component&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;composition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_dataset</span><span class="p">[</span><span class="n">composition_variable</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span>
+                <span class="n">sample_dim</span><span class="p">,</span> <span class="o">...</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fit_variable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;fit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_dataset</span><span class="p">[</span><span class="n">fit_variable</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span> <span class="o">=</span> <span class="n">DataLabelerView</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span> <span class="o">=</span> <span class="n">DataLabelerModel</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.next_button_callback">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.next_button_callback">[docs]</a>
+    <span class="k">def</span> <span class="nf">next_button_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">click</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.prev_button_callback">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.prev_button_callback">[docs]</a>
+    <span class="k">def</span> <span class="nf">prev_button_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">click</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.goto_callback">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.goto_callback">[docs]</a>
+    <span class="k">def</span> <span class="nf">goto_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">click</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.composition_click_callback">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.composition_click_callback">[docs]</a>
+    <span class="k">def</span> <span class="nf">composition_click_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figure</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">click</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">point_inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.update_plot">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.update_plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">saxs_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">sas_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span>
+        <span class="n">composition_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">composition_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">update_plot</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">saxs_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">q_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">saxs_data</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">composition</span><span class="o">=</span><span class="n">composition_data</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_label</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">phase_labels</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.draw_peaks">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.draw_peaks">[docs]</a>
+    <span class="k">def</span> <span class="nf">draw_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peaks</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">clear_output</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">vl</span><span class="p">,</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">peak_loc</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">shapes</span><span class="p">,</span> <span class="n">peaks</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">q* = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">peak_loc</span><span class="p">))</span>
+                <span class="n">vl</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;x0&quot;</span><span class="p">:</span> <span class="n">peak_loc</span><span class="p">,</span> <span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="n">peak_loc</span><span class="p">,</span> <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+
+            <span class="k">for</span> <span class="p">(</span>
+                <span class="n">i</span><span class="p">,</span>
+                <span class="n">vl</span><span class="p">,</span>
+            <span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">shapes</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">vl</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.change_qstar_callback">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.change_qstar_callback">[docs]</a>
+    <span class="k">def</span> <span class="nf">change_qstar_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figure</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">click</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">phase_dropdown</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">n_orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">n_orders</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">qstar</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_order</span><span class="o">=</span><span class="n">n_orders</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_peaks</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.change_model_callback">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.change_model_callback">[docs]</a>
+    <span class="k">def</span> <span class="nf">change_model_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">phase_dropdown</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">n_orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">n_orders</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">max_order</span><span class="o">=</span><span class="n">n_orders</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_peaks</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.change_norder_callback">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.change_norder_callback">[docs]</a>
+    <span class="k">def</span> <span class="nf">change_norder_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">phase_dropdown</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">n_orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">n_orders</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">max_order</span><span class="o">=</span><span class="n">n_orders</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_peaks</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.label">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.label">[docs]</a>
+    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">phase_labels</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">update_composition_colors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">ordinal_phase_labels</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_button_callback</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerWidget.run">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">saxs_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">sas_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span>
+        <span class="n">composition_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">composition_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">composition_data</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">component_variable</span>
+        <span class="p">]</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">saxs_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">q_variable</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">saxs_data</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">all_compositions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">composition_data</span><span class="p">,</span>
+            <span class="n">composition</span><span class="o">=</span><span class="n">composition_data</span><span class="p">,</span>
+            <span class="n">models</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="n">ternary</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">ternary</span><span class="p">,</span>
+            <span class="n">components</span><span class="o">=</span><span class="n">components</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">change_qstar_callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">phase_dropdown</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">change_model_callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_label</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">phase_labels</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">bnext</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">next_button_callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">bprev</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_button_callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">bgoto</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">goto_callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">all_composition</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_click_callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">n_orders</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">change_norder_callback</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">b0</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">click</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">b1</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">click</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">b2</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">click</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">b3</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">click</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">b4</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">click</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="s2">&quot;E&quot;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">widget</span></div>
+</div>
+
+
+
+<span class="c1">##################</span>
+<span class="c1">### Data Model ###</span>
+<span class="c1">##################</span>
+
+
+<div class="viewcode-block" id="DataLabelerModel">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerModel">[docs]</a>
+<span class="k">class</span> <span class="nc">DataLabelerModel</span><span class="p">:</span>
+<div class="viewcode-block" id="DataLabelerModel.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerModel.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sas_data</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;sas&quot;</span><span class="p">]</span>
+
+        <span class="c1"># try to infer q-variable name...</span>
+        <span class="n">sasdims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sas_data</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
+        <span class="n">sasdims</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;sample&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_variable</span> <span class="o">=</span> <span class="n">sasdims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition_data</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;composition&quot;</span><span class="p">]</span>
+
+        <span class="c1"># try to infer component-variable name...</span>
+        <span class="n">compdims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_data</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
+        <span class="n">compdims</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;sample&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component_variable</span> <span class="o">=</span> <span class="n">compdims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_data</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">component_variable</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ternary</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">composition_data</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">component_variable</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ternary</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Can only handle two or three components. You passed </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">composition_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">component_variable</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Unlabeled&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">qstar</span> <span class="o">=</span> <span class="mf">0.02</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_models</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerModel.ordinal_phase_labels">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerModel.ordinal_phase_labels">[docs]</a>
+    <span class="k">def</span> <span class="nf">ordinal_phase_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">enc</span> <span class="o">=</span> <span class="n">OrdinalEncoder</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">enc</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_labels</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerModel.init_models">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerModel.init_models">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;q*&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;1&quot;</span><span class="p">],</span> <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;LAM&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;3&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;4&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;5&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;6&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;7&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;8&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;9&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;10&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;11&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;12&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;13&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;14&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;15&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;16&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;17&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;18&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;19&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;20&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">2</span><span class="p">,</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="mi">4</span><span class="p">,</span>
+                <span class="mi">5</span><span class="p">,</span>
+                <span class="mi">6</span><span class="p">,</span>
+                <span class="mi">7</span><span class="p">,</span>
+                <span class="mi">8</span><span class="p">,</span>
+                <span class="mi">9</span><span class="p">,</span>
+                <span class="mi">10</span><span class="p">,</span>
+                <span class="mi">11</span><span class="p">,</span>
+                <span class="mi">12</span><span class="p">,</span>
+                <span class="mi">13</span><span class="p">,</span>
+                <span class="mi">14</span><span class="p">,</span>
+                <span class="mi">15</span><span class="p">,</span>
+                <span class="mi">16</span><span class="p">,</span>
+                <span class="mi">17</span><span class="p">,</span>
+                <span class="mi">18</span><span class="p">,</span>
+                <span class="mi">19</span><span class="p">,</span>
+                <span class="mi">20</span><span class="p">,</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;HCP CYL&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(3)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; 2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(7)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; 3&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(12)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(13)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; 4&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(19)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(21)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; 5&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(27)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(28)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(31)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; 6&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(37)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(39)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(43)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(48)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;7&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                <span class="mi">2</span><span class="p">,</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span>
+                <span class="mi">3</span><span class="p">,</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">13</span><span class="p">),</span>
+                <span class="mi">4</span><span class="p">,</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">19</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">21</span><span class="p">),</span>
+                <span class="mi">5</span><span class="p">,</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">27</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">28</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">31</span><span class="p">),</span>
+                <span class="mi">6</span><span class="p">,</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">37</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">39</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">43</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">48</span><span class="p">),</span>
+                <span class="mi">7</span><span class="p">,</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;SC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(2)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(3)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(5)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(6)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(8)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;3&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;BCC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(2)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(3)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(5)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(6)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(7)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(8)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;3&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;FCC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;sqrt(3)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(8)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(11)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(12)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;4&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(19)&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">2</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                <span class="mi">4</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">19</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;SPH&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;2/sqrt(3)&quot;</span><span class="p">,</span> <span class="s2">&quot;2*sqrt(2)/sqrt(3)&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;HCP SPH&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;sqrt(32)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;6&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(41)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(68)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(96)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(113)&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">6</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">41</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">68</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">96</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">113</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;DD&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;sqrt(2)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(3)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; 2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(6)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(8)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; 3&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(10)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; sqrt(11)&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                <span class="mi">2</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                <span class="mi">3</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                <span class="n">sqrt</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;GYR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;sqrt(6)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(8)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(14)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(16)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(20)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(22)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(24)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(26)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(30)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(32)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(34)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(38)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(40)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(42)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(46)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(48)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(50)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(52)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(56)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(62)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(64)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(66)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(68)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(70)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(72)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(74)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(78)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(80)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(84)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(86)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(88)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sqrt(90)&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;spacings&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">6</span><span class="p">,</span>
+                <span class="mi">8</span><span class="p">,</span>
+                <span class="mi">14</span><span class="p">,</span>
+                <span class="mi">16</span><span class="p">,</span>
+                <span class="mi">20</span><span class="p">,</span>
+                <span class="mi">22</span><span class="p">,</span>
+                <span class="mi">24</span><span class="p">,</span>
+                <span class="mi">26</span><span class="p">,</span>
+                <span class="mi">30</span><span class="p">,</span>
+                <span class="mi">32</span><span class="p">,</span>
+                <span class="mi">34</span><span class="p">,</span>
+                <span class="mi">38</span><span class="p">,</span>
+                <span class="mi">40</span><span class="p">,</span>
+                <span class="mi">42</span><span class="p">,</span>
+                <span class="mi">46</span><span class="p">,</span>
+                <span class="mi">48</span><span class="p">,</span>
+                <span class="mi">50</span><span class="p">,</span>
+                <span class="mi">52</span><span class="p">,</span>
+                <span class="mi">56</span><span class="p">,</span>
+                <span class="mi">62</span><span class="p">,</span>
+                <span class="mi">64</span><span class="p">,</span>
+                <span class="mi">66</span><span class="p">,</span>
+                <span class="mi">68</span><span class="p">,</span>
+                <span class="mi">70</span><span class="p">,</span>
+                <span class="mi">72</span><span class="p">,</span>
+                <span class="mi">74</span><span class="p">,</span>
+                <span class="mi">78</span><span class="p">,</span>
+                <span class="mi">80</span><span class="p">,</span>
+                <span class="mi">84</span><span class="p">,</span>
+                <span class="mi">86</span><span class="p">,</span>
+                <span class="mi">88</span><span class="p">,</span>
+                <span class="mi">90</span><span class="p">,</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;GYR&quot;</span><span class="p">][</span><span class="s2">&quot;spacings&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">sqrt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">&quot;GYR&quot;</span><span class="p">][</span><span class="s2">&quot;spacings&quot;</span><span class="p">]</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerModel.get_peaks">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerModel.get_peaks">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">qstar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_order</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">qstar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">qstar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qstar</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">qstar</span> <span class="o">=</span> <span class="n">qstar</span>
+
+        <span class="n">peaks</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model</span><span class="p">][</span><span class="s2">&quot;spacings&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model</span><span class="p">][</span><span class="s2">&quot;labels&quot;</span><span class="p">])</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">max_order</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">peaks</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">spacing</span> <span class="o">*</span> <span class="n">qstar</span>
+        <span class="k">return</span> <span class="n">peaks</span></div>
+</div>
+
+
+
+<span class="c1">#################</span>
+<span class="c1">### Data View ###</span>
+<span class="c1">#################</span>
+
+
+<div class="viewcode-block" id="DataLabelerView">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerView">[docs]</a>
+<span class="k">class</span> <span class="nc">DataLabelerView</span><span class="p">:</span>
+<div class="viewcode-block" id="DataLabelerView.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerView.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nverts</span> <span class="o">=</span> <span class="mi">8</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerView.update_plot">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerView.update_plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">composition</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">y</span><span class="p">})</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ternary</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">1</span><span class="p">],),</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">2</span><span class="p">],)}</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">composition</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">1</span><span class="p">],)})</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerView.remove_vertical_lines">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerView.remove_vertical_lines">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove_vertical_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">layout</span><span class="p">[</span><span class="s2">&quot;shapes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerView.add_vertical_line">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerView.add_vertical_line">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_vertical_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">line_kw</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">line_kw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">line_kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">dash</span><span class="o">=</span><span class="s2">&quot;dot&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">add_shape</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">,</span>
+            <span class="n">xref</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
+            <span class="n">yref</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span>
+            <span class="n">x0</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">x1</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">y1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">line</span><span class="o">=</span><span class="n">line_kw</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerView.update_composition_colors">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerView.update_composition_colors">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_composition_colors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_composition</span><span class="o">.</span><span class="n">marker</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">colors</span></div>
+
+
+<div class="viewcode-block" id="DataLabelerView.run">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerView.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">all_compositions</span><span class="p">,</span> <span class="n">composition</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">ternary</span><span class="p">,</span> <span class="n">components</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ternary</span> <span class="o">=</span> <span class="n">ternary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">FigureWidget</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">update_yaxes</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">({</span><span class="s2">&quot;range&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.005</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+            <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nverts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_vertical_line</span><span class="p">(</span><span class="mf">0.02</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ternary</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig2</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">FigureWidget</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">go</span><span class="o">.</span><span class="n">Scatterternary</span><span class="p">(</span>
+                        <span class="n">a</span><span class="o">=</span><span class="n">all_compositions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+                        <span class="n">b</span><span class="o">=</span><span class="n">all_compositions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                        <span class="n">c</span><span class="o">=</span><span class="n">all_compositions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                        <span class="n">marker</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;black&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                            <span class="s2">&quot;colorscale&quot;</span><span class="p">:</span> <span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">qualitative</span><span class="o">.</span><span class="n">Prism</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="n">customdata</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_compositions</span><span class="p">))),</span>
+                        <span class="n">opacity</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">go</span><span class="o">.</span><span class="n">Scatterternary</span><span class="p">(</span>
+                        <span class="n">a</span><span class="o">=</span><span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span>
+                        <span class="n">b</span><span class="o">=</span><span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">1</span><span class="p">],),</span>
+                        <span class="n">c</span><span class="o">=</span><span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">2</span><span class="p">],),</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">marker</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;symbol&quot;</span><span class="p">:</span> <span class="s2">&quot;hexagon-open&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                        <span class="p">},</span>
+                    <span class="p">),</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig2</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">FigureWidget</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+                        <span class="n">x</span><span class="o">=</span><span class="n">all_compositions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+                        <span class="n">y</span><span class="o">=</span><span class="n">all_compositions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                        <span class="n">marker</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;black&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                            <span class="s2">&quot;colorscale&quot;</span><span class="p">:</span> <span class="n">px</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">qualitative</span><span class="o">.</span><span class="n">Prism</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="n">customdata</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_compositions</span><span class="p">))),</span>
+                        <span class="n">opacity</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+                        <span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span>
+                        <span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="n">composition</span><span class="p">[</span><span class="mi">1</span><span class="p">],),</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">marker</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;symbol&quot;</span><span class="p">:</span> <span class="s2">&quot;hexagon-open&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                        <span class="p">},</span>
+                    <span class="p">),</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_composition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig2</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig2</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig2</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+            <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+            <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+            <span class="n">xaxis_title</span><span class="o">=</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[()],</span>
+            <span class="n">yaxis_title</span><span class="o">=</span><span class="n">components</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[()],</span>
+        <span class="p">)</span>
+
+        <span class="n">plot_box</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">HBox</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig2</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">b0</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;PhaseA&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b1</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;PhaseB&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b2</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;PhaseC&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b3</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;PhaseD&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b4</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;PhaseE&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bprev</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Prev&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bnext</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Next&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bgoto</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;GoTo&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_index</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">IntText</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Data Index:&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_orders</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">BoundedIntText</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;n_orders&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">4</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_dropdown</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Dropdown</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">models</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_label_label</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Current Label:&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_label</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">phase_box</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">HBox</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">phase_dropdown</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_orders</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_label_label</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_label</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">buttons_hbox1</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">HBox</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">b0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b4</span><span class="p">])</span>
+        <span class="n">buttons_hbox2</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">HBox</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_index</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bgoto</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bprev</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bnext</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">Output</span><span class="p">()</span>
+        <span class="n">plot_tab</span> <span class="o">=</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">VBox</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">buttons_hbox1</span><span class="p">,</span> <span class="n">buttons_hbox2</span><span class="p">,</span> <span class="n">phase_box</span><span class="p">,</span> <span class="n">plot_box</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1">### Tab2</span>
+
+        <span class="c1"># dataset_loader_tab = ipywidgets.VBox(</span>
+        <span class="c1">#     []</span>
+        <span class="c1"># )</span>
+
+        <span class="c1"># tabs = ipywidgets.Tab([dataset_loader_tab,plot_tab])</span>
+
+        <span class="k">return</span> <span class="n">plot_tab</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../../../../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

@@ -357,28 +357,26 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         str or None
             UUID of the transfer task if successful, None otherwise
         """
+        # Get catch protocol parameters from config
+        catch_params = self.config.get('catch_protocol', {}).copy()
+
         # Determine source location
         if source is None:
             if self.last_target_location is None:
                 raise ValueError("No source specified and no last target location available. Call prepare() first or specify source.")
-            source = self.last_target_location
+            kwargs['source'] = self.last_target_location
+
         
         # Determine volume
-        if volume is None:
-            volume = self.config.get('catch_volume', '10 ul')
-        
-        # Get catch protocol parameters from config
-        catch_params = self.config.get('catch_protocol', {}).copy()
+        if volume is not None:
+            kwargs['volume'] = self.config.get('catch_volume', '900 ul')
         
         # Merge with kwargs (kwargs take precedence)
         catch_params.update(kwargs)
-        
+
         # Execute the transfer
         try:
-            self.transfer(
-                source=source,
-                **catch_params
-            )
+            self.transfer( **catch_params)
         except Exception as e:
             warnings.warn(f"Transfer to catch failed from {source} to dest using {catch_params}: {str(e)}", stacklevel=2)
             raise

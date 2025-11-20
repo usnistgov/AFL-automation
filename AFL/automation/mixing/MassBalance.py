@@ -106,7 +106,42 @@ class MassBalanceBase:
                 name += f'{comp}{target.concentration[component].to("mg/ml").magnitude:.2f}'
             target.name = name + '-mgml'
 
-    def balance(self, tol=0.05):
+    def balance_report(self):
+        """
+        Returns a json serializable structure that has all of the balanced targets 
+        that can be reconstituted by the user back into solution objects.
+        """
+        report = []
+        for item in self.balanced:
+            entry = {}
+            if item['target']:
+                entry['target'] = {
+                    'name': item['target'].name,
+                    'masses': {name: f"{c.mass.to('mg').magnitude} mg" for name, c in item['target']}
+                }
+            
+            if item['balanced_target']:
+                entry['balanced_target'] = {
+                    'name': item['balanced_target'].name,
+                    'masses': {name: f"{c.mass.to('mg').magnitude} mg" for name, c in item['balanced_target']}
+                }
+            else:
+                entry['balanced_target'] = None
+                
+            if item['transfers']:
+                entry['transfers'] = {stock.name: mass for stock, mass in item['transfers'].items()}
+            else:
+                entry['transfers'] = None
+                
+            if item.get('difference') is not None:
+                entry['difference'] = item['difference'].tolist()
+            else:
+                entry['difference'] = None
+            
+            report.append(entry)
+        return report
+
+    def balance(self, tol=0.05, return_report=False):
         if any([stock.location is None for stock in self.stocks]):
             raise ValueError("Some stocks don't have a location specified. This should be specified when the stocks are instantiated")
         self._set_bounds()
@@ -134,6 +169,7 @@ class MassBalanceBase:
                     'target':target, 
                     'balanced_target':None, 
                     'transfers':None,
+                    'difference': None,
                     })
             else:
                 balanced_target = min(balanced_targets, key=lambda x: sum(x['difference']))
@@ -141,7 +177,10 @@ class MassBalanceBase:
                     'target':target, 
                     'balanced_target':balanced_target['target'], 
                     'transfers':balanced_target['transfers'],
+                    'difference': balanced_target['difference']
                     })
+        if return_report:
+            return self.balance_report()
 
 
     def _set_bounds(self):
@@ -288,10 +327,11 @@ class MassBalanceDriver(MassBalanceBase, Driver):
             keep_feasible=False
         )
     
-    def balance(self):
+    def balance(self, return_report=False):
         self.process_stocks()
         self.process_targets()
-        super().balance(tol=self.config['tol'])
+        return super().balance(tol=self.config['tol'], return_report=return_report)
+    
 
     # --- Component database management ---
 

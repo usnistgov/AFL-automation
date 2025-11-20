@@ -1666,11 +1666,15 @@
 
             <span class="c1"># 5. Move tip above liquid and post-aspirate delay (tip above liquid)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
-                <span class="s2">&quot;moveToWellTop&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;moveToWell&quot;</span><span class="p">,</span>
                 <span class="p">{</span>
                     <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
                     <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">source_well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
                     <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">source_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+                    <span class="p">},</span>
                 <span class="p">},</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">post_aspirate_delay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1679,8 +1683,20 @@
 
             <span class="c1"># 6. Air gap if specified</span>
             <span class="k">if</span> <span class="n">air_gap</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+                <span class="c1"># Air gap is implemented as aspirate at the top of the source well</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
-                    <span class="s2">&quot;airGap&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">air_gap</span><span class="p">}</span>
+                    <span class="s2">&quot;aspirate&quot;</span><span class="p">,</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
+                        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">air_gap</span><span class="p">,</span>
+                        <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">source_well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">source_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+                        <span class="p">},</span>
+                        <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">],</span>
+                    <span class="p">},</span>
                 <span class="p">)</span>
 
             <span class="c1"># 7. Dispense</span>

@@ -642,23 +642,23 @@
         <span class="c1"># Execute each step in the protocol</span>
         <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">protocol</span><span class="p">:</span>
             <span class="c1"># Get source and destination</span>
+            <span class="c1"># Note: source is already a deck location (e.g., &#39;3A2&#39;)</span>
             <span class="n">source</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">source</span>
             <span class="n">dest</span> <span class="o">=</span> <span class="n">destination</span>
             <span class="n">volume_ul</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">volume</span>  <span class="c1"># Volume is already in μL</span>
             
-            <span class="c1"># Map source to a deck location</span>
-            <span class="k">if</span> <span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No deck location found for source: </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                
-            <span class="n">source_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">][</span><span class="n">source</span><span class="p">]</span>
+            <span class="c1"># Get stock name from deck location for transfer parameters</span>
+            <span class="n">stock_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;deck&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No stock name found for deck location: </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             
             <span class="c1"># Get stock-specific transfer parameters</span>
-            <span class="n">transfer_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_params</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+            <span class="n">transfer_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_params</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span>
             
             <span class="c1"># Execute the transfer</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
-                    <span class="n">source</span><span class="o">=</span><span class="n">source_location</span><span class="p">,</span>
+                    <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
                     <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span>
                     <span class="n">volume</span><span class="o">=</span><span class="n">volume_ul</span><span class="p">,</span>
                     <span class="o">**</span><span class="n">transfer_params</span>
@@ -678,6 +678,29 @@
         <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">destination</span></div>
 
         
+<div class="viewcode-block" id="OT2Prepare.process_stocks">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.process_stocks">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process stocks and update deck config with inverse of stock_locations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Call parent method to process stocks and update stock_locations</span>
+        <span class="n">MassBalanceDriver</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># Populate deck config with inverse of stock_locations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_deck_config</span><span class="p">()</span></div>
+
+    
+    <span class="k">def</span> <span class="nf">_update_deck_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the deck config with the inverse of stock_locations.</span>
+<span class="sd">        This creates a mapping from deck locations to stock names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">deck_config</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">stock_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">deck_location</span> <span class="ow">in</span> <span class="n">stock_locations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">deck_config</span><span class="p">[</span><span class="n">deck_location</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;deck&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deck_config</span>
+    
 <div class="viewcode-block" id="OT2Prepare.get_transfer_params">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.get_transfer_params">[docs]</a>
     <span class="k">def</span> <span class="nf">get_transfer_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">):</span>

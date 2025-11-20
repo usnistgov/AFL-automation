@@ -699,6 +699,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span></div>
 
 
+<div class="viewcode-block" id="MassBalanceDriver.add_targets">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_targets">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">targets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span></div>
+
+
 <div class="viewcode-block" id="MassBalanceDriver.reset_stocks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalance.html#AFL.automation.mixing.MassBalance.MassBalanceDriver.reset_stocks">[docs]</a>
     <span class="k">def</span> <span class="nf">reset_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

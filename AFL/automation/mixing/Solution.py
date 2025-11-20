@@ -113,7 +113,7 @@ class Solution(Context):
                     (self.mass is None) or (self.mass.magnitude == 0)
             ):
                 raise ValueError(
-                    "Cannot set concentrations without setting a component with mass or specifying the total_mass."
+                    "Cannot set mass_fraction without setting a component with mass or specifying the total_mass."
                 )
             else:
                 # need to initialize all components with a mass
@@ -395,7 +395,10 @@ class Solution(Context):
     @property
     def mass(self) -> pint.Quantity:
         """Total mass of mixture."""
-        return sum([component.mass for name, component in self if component.has_mass])
+        masses = [component.mass for name, component in self if component.has_mass]
+        if len(masses) == 0:
+            return 0 * units("mg")
+        return sum(masses)
 
     @mass.setter
     def mass(self, value: str | pint.Quantity):

@@ -1299,7 +1299,7 @@ class OrchestratorDriver(Driver):
 
 _DEFAULT_CUSTOM_CONFIG = {
 
-    '_classname': 'AFL.orchestrator.OrchestratorDriver.OrchestratorDriver',
+    '_classname': 'AFL.automation.orchestrator.OrchestratorDriver.OrchestratorDriver',
     'snapshot_directory': '/home/afl642/snaps'
 }
 

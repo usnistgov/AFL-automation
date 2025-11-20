@@ -418,7 +418,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare">[docs]</a>
 <span class="k">class</span> <span class="nc">OT2Prepare</span><span class="p">(</span><span class="n">OT2HTTPDriver</span><span class="p">,</span> <span class="n">MassBalanceDriver</span><span class="p">):</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;mixing_locations&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;prep_targets&#39;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s1">&#39;prepare_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;100 ul&#39;</span><span class="p">,</span>
         <span class="s1">&#39;catch_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;10 ul&#39;</span><span class="p">,</span>
         <span class="s1">&#39;deck&#39;</span><span class="p">:</span> <span class="p">{},</span>
@@ -443,7 +443,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span><span class="p">[</span><span class="s1">&#39;View Deck&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/visualize_deck&#39;</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span><span class="p">[</span><span class="s1">&#39;View Deck&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/visualize_deck&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span></div>
 
 
     
@@ -460,7 +461,7 @@
         <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Stocks: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)</span><span class="si">}</span><span class="s1"> configured&#39;</span><span class="p">)</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Stock locations: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;stock_locations&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;mixing_locations&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1"> mixing locations available&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1"> preparation targets available&#39;</span><span class="p">)</span>
         
         <span class="c1"># Combine status information</span>
         <span class="k">return</span> <span class="n">status</span> <span class="o">+</span> <span class="n">ot2_status</span></div>
@@ -491,9 +492,8 @@
 
         <span class="n">targets_to_check</span> <span class="o">=</span> <span class="n">listify</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
             
-        <span class="c1"># Process stocks from the driver if not already processed</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
+        <span class="c1"># Process stocks from the driver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
             
         <span class="c1"># Get the minimum volume configuration</span>
         <span class="n">minimum_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;minimum_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;100 ul&#39;</span><span class="p">)</span>
@@ -618,15 +618,15 @@
         <span class="n">balanced_target_solution_object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;balanced_target&#39;</span><span class="p">]</span>
         
         <span class="c1"># Configure the destination for the preparation</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mixing_locations&#39;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No mixing locations configured. Cannot select a destination location.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prep_targets&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No preparation targets configured. Cannot select a destination target.&quot;</span><span class="p">)</span>
         
-        <span class="c1"># Pop a location from the mixing locations list</span>
+        <span class="c1"># Pop a location from the preparation targets list</span>
         <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># need to pop and then resend the locations list so that the persistant config triggers a write</span>
-            <span class="n">mixing_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;mixing_locations&#39;</span><span class="p">]</span>
-            <span class="n">destination</span> <span class="o">=</span> <span class="n">mixing_locations</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;mixing_locations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mixing_locations</span>
+            <span class="n">prep_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;prep_targets&#39;</span><span class="p">]</span>
+            <span class="n">destination</span> <span class="o">=</span> <span class="n">prep_targets</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;prep_targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prep_targets</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">destination</span> <span class="o">=</span> <span class="n">dest</span>
         

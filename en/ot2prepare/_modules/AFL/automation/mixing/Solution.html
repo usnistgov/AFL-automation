@@ -530,7 +530,8 @@
                 <span class="c1"># need to initialize all components with a mass</span>
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">mass_fractions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="s1">&#39;1.0 mg&#39;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">total_mass</span>
+                <span class="k">if</span> <span class="n">total_mass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">total_mass</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mass_fraction</span> <span class="o">=</span> <span class="n">mass_fractions</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">concentrations</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span>

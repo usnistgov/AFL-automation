@@ -156,8 +156,8 @@ class MassBalanceBase:
             for transfers in mass_transfers:
                 balanced_target = _make_balanced_target(transfers, target)
                 _extract_masses(balanced_target, components, array=balanced_masses)
-                difference = (balanced_masses - target_masses) / target_masses
-                if all(difference < tol):
+                difference = abs(balanced_masses - target_masses) / target_masses
+                if all(np.abs(difference) < tol):
                     balanced_targets.append({
                         'target':balanced_target, 
                         'difference':difference,

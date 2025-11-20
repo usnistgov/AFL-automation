@@ -48,7 +48,7 @@ def _make_balanced_target(mass_transfers, target):
     balanced_target.name = target.name + "-balanced"
     for name, component in target:
         if not balanced_target.contains(name):
-            balanced_target[name] = component.copy()
+            balanced_target.components[name] = component.copy()
             balanced_target[name].mass = '0.0 g'
     return balanced_target
 

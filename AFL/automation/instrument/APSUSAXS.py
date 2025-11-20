@@ -59,10 +59,12 @@ class APSUSAXS(Driver):
 
                     }
                     }
-    defaults['empty_scan_title'] = ''
-    defaults['USAXS_mode'] = 'Flyscan' #Flyscane or uascan
-    defaults['USAXS_npts'] = 400
-    defaults['USAXS_signal_cutoff'] = 1.05
+    defaults['file_read_max_retries'] = 20
+    defaults['file_read_retry_sleep'] = 15.0
+    defaults['file_read_check_key'] = 'CalibratedData'  # Dictionary key to check for None
+    defaults['userdir_pv'] = 'usxLAX:userDir'
+    defaults['datadir_pv'] = 'usxLAX:sampleDir'
+    defaults['next_fs_order_n_pv'] = 'usxLAX:USAXS:FS_OrderNumber'
 
     def __init__(self,overrides=None):
         '''
@@ -70,9 +72,7 @@ class APSUSAXS(Driver):
 
         '''
 
-        self.convertUSAXS = lazy.load("Matilda.convertUSAXS", require="AFL-automation[usaxs]")
-        self.convertSAS = lazy.load("Matilda.convertSAS", require="AFL-automation[usaxs]")
-        self.readfromtiled = lazy.load("Matilda.readfromtiled", require="AFL-automation[usaxs]")
+        self.readMyNXcanSAS = lazy.load("Matilda.hdf5code.readMyNXcanSAS", require="AFL-automation[usaxs]")
 
         self.app = None
         Driver.__init__(self,name='APSUSAXS',defaults=self.gather_defaults(),overrides=overrides)
@@ -82,6 +82,7 @@ class APSUSAXS(Driver):
         
         self.status_txt = 'Just started...'
         self.filename = 'default'
+        self.filename_prefix = 'AFL'
         self.project = 'AFL'
         self.xpos = 0
         self.ypos = 0
@@ -90,7 +91,24 @@ class APSUSAXS(Driver):
         pass
 
 
-        
+    @Driver.unqueued()
+    def getFilenamePrefix(self):
+        '''
+            get the currently set file name prefix
+
+        '''
+        return self.filename_prefix
+    
+    @Driver.unqueued()
+    def setFilenamePrefix(self,prefix):
+        '''
+            set the currently set file name prefix
+
+        '''
+        self.filename_prefix = prefix
+        if self.app is not None:
+            self.app.logger.debug(f'Setting filename prefix to {prefix}')
+
     @Driver.unqueued()
     def getFilename(self):
         '''
@@ -149,6 +167,101 @@ class APSUSAXS(Driver):
             for line in lines:
                 f.write(line+'\r\n')
 
+    def _safe_read_file(self, filepath, filename,is_usaxs=True):
+        '''
+        Safely read a USAXS file with retry logic.
+        
+        Checks if file exists, then calls readMyNXcanSAS. If the specified
+        dictionary entry is None, retries after sleeping. Continues until
+        max retries are reached or the file is successfully read.
+        
+        Parameters
+        ----------
+        filepath : pathlib.Path
+            Path to the directory containing the file
+        filename : str
+            Name of the file to read
+            
+        Returns
+        -------
+        dict
+            Dictionary returned by readMyNXcanSAS
+            
+        Raises
+        ------
+        FileNotFoundError
+            If the file does not exist
+        RuntimeError
+            If the file cannot be read successfully after max retries
+        '''
+        full_path = filepath / filename
+        
+        # Check if file exists
+        if not full_path.exists():
+            raise FileNotFoundError(f'File does not exist: {full_path}')
+        
+        max_retries = self.config['file_read_max_retries']
+        retry_sleep = self.config['file_read_retry_sleep']
+        check_key = self.config['file_read_check_key']
+        
+        for attempt in range(max_retries):
+            try:
+                data_dict = self.readMyNXcanSAS(filepath, filename,is_usaxs=is_usaxs)
+                
+                # Check if the specified key is None
+                if check_key not in data_dict:
+                    if self.app is not None:
+                        self.app.logger.warning(
+                            f'Key "{check_key}" not found in data dictionary. '
+                            f'Available keys: {list(data_dict.keys())}'
+                        )
+                    # If key doesn't exist, treat as failure and retry
+                    if attempt < max_retries - 1:
+                        time.sleep(retry_sleep)
+                        continue
+                    else:
+                        raise RuntimeError(
+                            f'Key "{check_key}" not found in data dictionary after {max_retries} attempts'
+                        )
+                
+                if data_dict[check_key] is None:
+                    if attempt < max_retries - 1:
+                        if self.app is not None:
+                            self.app.logger.debug(
+                                f'Key "{check_key}" is None, retrying in {retry_sleep}s '
+                                f'(attempt {attempt + 1}/{max_retries})'
+                            )
+                        time.sleep(retry_sleep)
+                        continue
+                    else:
+                        raise RuntimeError(
+                            f'Key "{check_key}" is None after {max_retries} attempts. '
+                            f'File may not be fully written: {full_path}'
+                        )
+                
+                # Success - data is valid
+                if self.app is not None:
+                    self.app.logger.debug(f'Successfully read file {filename} on attempt {attempt + 1}')
+                return data_dict
+                
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    if self.app is not None:
+                        self.app.logger.warning(
+                            f'Error reading file {filename} (attempt {attempt + 1}/{max_retries}): {e}. '
+                            f'Retrying in {retry_sleep}s...'
+                        )
+                    time.sleep(retry_sleep)
+                    continue
+                else:
+                    raise RuntimeError(
+                        f'Failed to read file {full_path} after {max_retries} attempts. '
+                        f'Last error: {e}'
+                    )
+        
+        # Should never reach here, but just in case
+        raise RuntimeError(f'Failed to read file {full_path} after {max_retries} attempts')
+
     @Driver.quickbar(qb={'button_text':'Expose',
         'params':{
         'name':{'label':'Name','type':'text','default':'test_exposure'},
@@ -156,11 +269,11 @@ class APSUSAXS(Driver):
         'reduce_data':{'label':'Reduce?','type':'bool','default':True},
         'measure_transmission':{'label':'Measure Trans?','type':'bool','default':True}
         }})
-    def expose(self, name = None, block = True, reduce_USAXS = True, reduce_WAXS = True):
+    def expose(self, name = None, block = True, read_USAXS = True, read_SAXS = True):
         if name is None:
-            name=self.getFilename()
+            name=self.getFilenamePrefix()
         else:
-            self.setFilename(name)
+            self.setFilenamePrefix(name)
         self.status_txt = f'Starting USAXS/SAXS/WAXS scan named {name}'
         if self.app is not None:
             self.app.logger.debug(f'Starting USAXS/SAXS/WAXS exposure with name {name}')
@@ -178,61 +291,33 @@ class APSUSAXS(Driver):
             time.sleep(20)
             self.block_for_run_finish()
             self.status_txt = 'Instrument Idle'
+        
+        user_dir = epics.caget(self.config['userdir_pv'],as_string=True)
+        data_dir = epics.caget(self.config['datadir_pv'],as_string=True)
+        fs_order_n = epics.caget(self.config['next_fs_order_n_pv']) - 1.0 # need to subtract 1 because the order number is incremented after the scan starts
+        filename= f"{self.filename_prefix}_{fs_order_n:04d}.h5"
+        if read_USAXS:
+            filepath_usaxs = pathlib.Path(user_dir) / (str(data_dir) + '_usaxs') / filename
+            data_dict_usaxs = self._safe_read_file(filepath_usaxs, filename,is_usaxs=True)
+
+            self.data.add_array('USAXS_q',data_dict_usaxs['CalibratedData']['Q'])
+            self.data.add_array('USAXS_I',data_dict_usaxs['CalibratedData']['Intensity'])
+            self.data.add_array('USAXS_dI',data_dict_usaxs['CalibratedData']['Error'])
+            self.data['USAXS_Filepath'] = str(filepath_usaxs)
+            self.data['USAXS_Filename'] = filename
+            self.data['USAXS_name'] = name
+
+        if read_SAXS:
+            filepath_saxs = pathlib.Path(user_dir) / (str(data_dir) + '_saxs') / filename
+            data_dict_saxs = self._safe_read_file(filepath_saxs, filename,is_usaxs=False)
+
+            self.data.add_array('SAXS_q',data_dict_saxs['CalibratedData']['Q'])
+            self.data.add_array('SAXS_I',data_dict_saxs['CalibratedData']['Intensity'])
+            self.data.add_array('SAXS_dI',data_dict_saxs['CalibratedData']['Error'])
+            self.data['SAXS_Filepath'] = str(filepath_saxs)
+            self.data['SAXS_Filename'] = filename
+            self.data['SAXS_name'] = name
             
-        if reduce_USAXS:
-           # get last flyscan from Tiled and check that the set filename matches the found file
-           [last_scan_path, last_scan_file] = self.readfromtiled.FindLastScanData('Flyscan',1)[0]
-           if name.replace('-','_') not in last_scan_file:
-                   raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
-
-           # reduce flyscan data
-           last_scan_results = self.convertUSAXS.reduceFlyscanToQR(last_scan_path,last_scan_file)
-           results_ds = self.convertUSAXS.results_to_dataset(last_scan_results)
-           USAXS_int = results_ds['USAXS_int']
-
-           # get empty flyscan, reduce it
-           [empty_path,empty_file] = self.readfromtiled.FindScanDataByName('Flyscan',self.config['empty_scan_title'])[0]
-           empty_results = self.convertUSAXS.reduceFlyscanToQR(empty_path,empty_file)
-           empty_ds = self.convertUSAXS.results_to_dataset(empty_results)
-           MT_USAXS_int = empty_ds['USAXS_int']
-           MT_USAXS_int = MT_USAXS_int.interp_like(USAXS_int) #interpolate to match last scan
-
-           # determine minimum q; argmax because we're looking for the first True (which is cast to be 1)
-           qmin_index = np.argmax((USAXS_int.values/MT_USAXS_int.values)>float(self.config['USAXS_signal_cutoff']))
-           qmin = USAXS_int['q'].isel(q=qmin_index).item()
-           
-           #interpolate
-           new_q = np.geomspace(qmin,USAXS_int['q'].max(),self.config['USAXS_npts'])
-           USAXS_int = USAXS_int.interp(q=new_q)
-           MT_USAXS_int = MT_USAXS_int.interp(q=new_q)
-
-           # background subtraction
-           peaktopeak_T = (results_ds.Maximum / empty_ds.Maximum)
-           USAXS_sub = 1/peaktopeak_T * USAXS_int - MT_USAXS_int
-
-           # add data to tiled
-           self.data.add_array('USAXS_q',USAXS_int['q'].values)
-           self.data.add_array('USAXS_int',USAXS_int.values)
-           self.data.add_array('USAXS_sub',USAXS_sub.values)
-           self.data.add_array('MT_USAXS_q',MT_USAXS_int['q'].values)
-           self.data.add_array('MT_USAXS_int',MT_USAXS_int.values)
-           self.data['USAXS_Filepath'] = last_scan_path
-           self.data['USAXS_Filename'] = last_scan_file
-           self.data['USAXS_transmission'] = peaktopeak_T
-           
-        if reduce_WAXS: 
-           # get last WAXS from Tiled, reduce it
-           [last_scan_path, last_scan_file] = self.readfromtiled.FindLastScanData('WAXS',1)[0]
-           if name.replace('-','_') not in last_scan_file:
-                   raise ValueError(f"Did not get data that seemed to match, you collected {name}, we got {last_scan_file}")
-           #reduce
-           last_scan_results = self.convertSAS.ImportAndReduceAD(last_scan_path,last_scan_file)
-           
-           # add data to tiled
-           self.data.add_array('WAXS_q',last_scan_results['Q_array'])
-           self.data.add_array('WAXS_int',last_scan_results['Intensity'])
-           self.data['WAXS_Filepath'] = last_scan_path
-           self.data['WAXS_Filename'] = last_scan_file
 
     def block_for_run_finish(self):
         while self.getRunInProgress():

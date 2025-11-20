@@ -53,7 +53,6 @@ class OrchestratorDriver(Driver):
     defaults['snapshot_directory'] = '/home/nistoroboto'
     defaults['max_sample_transmission'] = 0.6
     defaults['mix_order'] = []
-    defaults['custom_stock_settings'] = []
     defaults['composition_var_name'] = 'comps'
     defaults['concat_dim'] = 'sample'
     defaults['sample_composition_tol'] = 0.0
@@ -64,6 +63,7 @@ class OrchestratorDriver(Driver):
     defaults['grid_file'] = None
     defaults['grid_blank_interval'] = None
     defaults['grid_blank_sample'] = None
+    defaults['prepare_volume'] = '1000 ul'
 
     def __init__(
             self,
@@ -115,7 +115,6 @@ class OrchestratorDriver(Driver):
             'snapshot_directory',
             'max_sample_transmission',
             'mix_order',
-            'custom_stock_settings',
             'composition_var_name',
             'concat_dim',
             'sample_composition_tol',
@@ -307,6 +306,73 @@ class OrchestratorDriver(Driver):
                 output_str = f'take_snapshot failed with error: {error.__repr__()}\n\n' + traceback.format_exc() + '\n\n'
                 self.app.logger.warning(output_str)
 
+    def _convert_composition_to_solution_format(self, composition: Dict, prepare_volume: Optional[str] = None) -> Dict:
+        """
+        Convert composition dict from old format to Solution-compatible format.
+        
+        Old format: {"component_name": {"value": value, "units": units}}
+        New format: {"concentrations": {"component_name": "value units"}, "total_volume": "volume"}
+        Or for ternary: {"mass_fractions": {"component_name": value}, "total_volume": "volume"}
+        
+        Parameters
+        ----------
+        composition : Dict
+            Composition in old format
+        prepare_volume : str, optional
+            Total volume to prepare. If None, uses self.config['prepare_volume']
+            
+        Returns
+        -------
+        Dict
+            Composition in Solution-compatible format
+        """
+        if prepare_volume is None:
+            prepare_volume = self.config['prepare_volume']
+        
+        # Check if already in Solution format (has 'concentrations' or 'mass_fractions' key)
+        if 'concentrations' in composition or 'mass_fractions' in composition:
+            # Already in Solution format, just ensure total_volume is set
+            solution_dict = composition.copy()
+            if 'total_volume' not in solution_dict:
+                solution_dict['total_volume'] = prepare_volume
+            return solution_dict
+        
+        # Convert composition to Solution format
+        if self.config.get('ternary', False):
+            # Ternary mode: use mass_fractions (dimensionless values)
+            mass_fractions = {}
+            for component_name, comp_data in composition.items():
+                if isinstance(comp_data, dict) and 'value' in comp_data:
+                    # Extract dimensionless value for mass fraction
+                    mass_fractions[component_name] = comp_data['value']
+                else:
+                    # Already a numeric value
+                    mass_fractions[component_name] = comp_data
+            
+            solution_dict = {
+                'mass_fractions': mass_fractions,
+                'total_volume': prepare_volume,
+                'name': 'prepared_sample'
+            }
+        else:
+            # Non-ternary mode: use concentrations
+            concentrations = {}
+            for component_name, comp_data in composition.items():
+                if isinstance(comp_data, dict) and 'value' in comp_data and 'units' in comp_data:
+                    # Format: "value units" as string (Solution accepts this)
+                    concentrations[component_name] = f"{comp_data['value']} {comp_data['units']}"
+                else:
+                    # Already in string format or other format, use as-is
+                    concentrations[component_name] = comp_data
+            
+            solution_dict = {
+                'concentrations': concentrations,
+                'total_volume': prepare_volume,
+                'name': 'prepared_sample'
+            }
+        
+        return solution_dict
+
     def process_sample(
             self,
             composition: Dict,
@@ -403,10 +469,13 @@ class OrchestratorDriver(Driver):
 
         print(f'Composition: {composition}')
         if composition: # composition is not empty
+            # Convert composition to Solution-compatible format
+            solution_target = self._convert_composition_to_solution_format(composition)
+            
             # Check if the requested composition is feasible
             feasibility_result = self.get_client('prep').enqueue(
                 task_name='is_feasible',
-                targets=[composition],
+                targets=[solution_target],
                 interactive=True
             )['return_val']
             
@@ -435,11 +504,11 @@ class OrchestratorDriver(Driver):
                 if client_name not in self.config['tiled_exclusion_list']:
                     self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
             
-            # Pass the composition and sample_volume to make_and_measure
+            # Pass the Solution-formatted target and sample_volume to make_and_measure
             # which will handle the actual preparation and measurements
             self.make_and_measure(
                 name=self.sample_name, 
-                composition=composition,
+                target=solution_target,
                 sample_volume=sample_volume,
                 calibrate_sensor=calibrate_sensor
             )
@@ -481,7 +550,7 @@ class OrchestratorDriver(Driver):
     def make_and_measure(
             self,
             name: str,
-            composition: Dict,
+            target: Dict,
             sample_volume: Dict,
             calibrate_sensor: bool = False,
     ):
@@ -504,29 +573,49 @@ class OrchestratorDriver(Driver):
         self.update_status(f'Preparing sample {name}...')
         prepare_result = self.get_client('prep').enqueue(
             task_name='prepare',
-            target=composition,
+            target=target,
             dest=None,  # Let the prepare server assign a location
             interactive=True
         )['return_val']
         
-        if not prepare_result:
+        if all(p is None for p in prepare_result):
             self.update_status(f'Failed to prepare sample {name}')
             return False
             
-        # Extract location of the prepared solution
+        # Extract result: (balanced_target_dict, solution_location)
+        balanced_target_dict = prepare_result[0]
         solution_location = prepare_result[1]
         
-        # Transfer sample from preparation unit to measurement system
-        self.update_status(f'Transferring sample {name} to syringe loader')
+        # Safety check: Verify prepared volume is sufficient for sample_volume
+        if 'total_volume' in balanced_target_dict:
+            prepared_volume_dict = balanced_target_dict['total_volume']
+            prepared_volume = units(f"{prepared_volume_dict['value']} {prepared_volume_dict['units']}")
+            sample_volume_quantity = units(f"{sample_volume['value']} {sample_volume['units']}")
+            
+            if prepared_volume < sample_volume_quantity:
+                error_msg = (
+                    f"Prepared volume ({prepared_volume}) is less than required sample volume "
+                    f"({sample_volume_quantity}) for sample {name}"
+                )
+                self.update_status(error_msg)
+                raise ValueError(error_msg)
+        else:
+            self.app.logger.warning(
+                f"No total_volume in prepare result for {name}, skipping volume safety check"
+            )
         
-        # Create transfer task
-        transfer_task = {
-            'source': solution_location,
-            'dest': 'syringe',  # or whatever your destination is
-            'volume': sample_volume
-        }
+        # Transfer sample from preparation unit to catch/loader
+        self.update_status(f'Transferring sample {name} to catch/loader')
         
-        self.uuid['catch'] = self.get_client('prep').enqueue(task_name='transfer', **transfer_task)
+        # Convert sample_volume to volume string for transfer
+        volume_str = f"{sample_volume['value']} {sample_volume['units']}"
+        
+        # Use transfer_to_catch method which handles catch protocol and destination internally
+        self.uuid['catch'] = self.get_client('prep').enqueue(
+            task_name='transfer_to_catch',
+            source=solution_location,
+            volume=volume_str
+        )
 
         if self.uuid['catch'] is not None:
             self.update_status(f"Waiting for sample prep/catch of {name} to finish: {self.uuid['catch'][-8:]}")

@@ -289,7 +289,8 @@ class Solution(Context):
             "masses": {},
         }
         for k, v in self:
-            out_dict["masses"][k] = {"value": v.mass.to("mg").magnitude, "units": "mg"}
+            # out_dict["masses"][k] = {"value": v.mass.to("mg").magnitude, "units": "mg"}
+            out_dict["masses"][k] = f"{v.mass.to('mg').magnitude}mg"
         return out_dict
 
     def add_component(self, name, solutes: Optional[List[str]] = None):

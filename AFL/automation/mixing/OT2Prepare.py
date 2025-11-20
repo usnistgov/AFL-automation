@@ -17,7 +17,8 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         'stock_mix_order': [],
         'fixed_compositions': {},
         'stock_locations': {},  # Maps stock names to deck positions: {'stockH2O': '3A2'}
-        'stock_transfer_params': {}  # Per-stock transfer parameters: {'stockH2O': {'mix_after': True}}
+        'stock_transfer_params': {},  # Per-stock transfer parameters: {'stockH2O': {'mix_after': True}}
+        'catch_protocol': {},  # PipetteAction-formatted dict for catch transfer parameters
     }
 
     def __init__(self, overrides=None):
@@ -31,6 +32,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         # Initialize additional attributes
         self.stocks = []
         self.targets = []
+        self.last_target_location = None
 
         self.useful_links['View Deck'] = '/visualize_deck'
         self.process_stocks()
@@ -242,8 +244,15 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
                 warnings.warn(f"Transfer failed from {source} to {dest}: {str(e)}", stacklevel=2)
                 return None, None
         
+        # Store the last target location for catch transfer
+        self.last_target_location = destination
+        
         # Return the balanced target and destination
-        return balanced_target_solution_object.to_dict(), destination
+        result_dict = balanced_target_solution_object.to_dict()
+        # Add total_volume to the result dictionary
+        if hasattr(balanced_target_solution_object, 'volume') and balanced_target_solution_object.volume is not None:
+            result_dict['total_volume'] = f"{balanced_target_solution_object.volume.to('ul').magnitude} ul"
+        return result_dict, destination
         
     def get_transfer_params(self, stock_name):
         """
@@ -310,6 +319,50 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
             
         return reordered
 
+    def transfer_to_catch(self, source=None, volume=None, **kwargs):
+        """
+        Transfer a prepared sample to the catch/loader location using catch protocol settings.
+        
+        Parameters
+        ----------
+        source : str, optional
+            Source location (well) of the prepared sample. If None, uses the last prepared target location.
+        volume : str or float, optional
+            Volume to transfer. If None, uses catch_volume from config.
+        **kwargs
+            Additional transfer parameters that override catch_protocol settings.
+            
+        Returns
+        -------
+        str or None
+            UUID of the transfer task if successful, None otherwise
+        """
+        # Determine source location
+        if source is None:
+            if self.last_target_location is None:
+                raise ValueError("No source specified and no last target location available. Call prepare() first or specify source.")
+            source = self.last_target_location
+        
+        # Determine volume
+        if volume is None:
+            volume = self.config.get('catch_volume', '10 ul')
+        
+        # Get catch protocol parameters from config
+        catch_params = self.config.get('catch_protocol', {}).copy()
+        
+        # Merge with kwargs (kwargs take precedence)
+        catch_params.update(kwargs)
+        
+        # Execute the transfer
+        try:
+            self.transfer(
+                source=source,
+                **catch_params
+            )
+        except Exception as e:
+            warnings.warn(f"Transfer to catch failed from {source} to dest using {catch_params}: {str(e)}", stacklevel=2)
+            raise
+    
     def reset(self):
         """Reset the driver state/configuration."""
         # Placeholder: implement reset logic

@@ -792,28 +792,26 @@
 <span class="sd">        str or None</span>
 <span class="sd">            UUID of the transfer task if successful, None otherwise</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get catch protocol parameters from config</span>
+        <span class="n">catch_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;catch_protocol&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
         <span class="c1"># Determine source location</span>
         <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No source specified and no last target location available. Call prepare() first or specify source.&quot;</span><span class="p">)</span>
-            <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span>
+
         
         <span class="c1"># Determine volume</span>
-        <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;catch_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;10 ul&#39;</span><span class="p">)</span>
-        
-        <span class="c1"># Get catch protocol parameters from config</span>
-        <span class="n">catch_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;catch_protocol&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;catch_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;900 ul&#39;</span><span class="p">)</span>
         
         <span class="c1"># Merge with kwargs (kwargs take precedence)</span>
         <span class="n">catch_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-        
+
         <span class="c1"># Execute the transfer</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
-                <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">catch_params</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span> <span class="o">**</span><span class="n">catch_params</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transfer to catch failed from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to dest using </span><span class="si">{</span><span class="n">catch_params</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">raise</span></div>

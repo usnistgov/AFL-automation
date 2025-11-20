@@ -9,7 +9,7 @@ from AFL.automation.mixing.PipetteAction import PipetteAction
 
 class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
     defaults = {
-        'mixing_locations': [],
+        'prep_targets': [],
         'prepare_volume': '100 ul',
         'catch_volume': '10 ul',
         'deck': {},
@@ -33,6 +33,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         self.targets = []
 
         self.useful_links['View Deck'] = '/visualize_deck'
+        self.process_stocks()
 
     
     def status(self):
@@ -46,7 +47,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         status = []
         status.append(f'Stocks: {len(self.stocks)} configured')
         status.append(f'Stock locations: {self.config["stock_locations"]}')
-        status.append(f'{len(self.config["mixing_locations"])} mixing locations available')
+        status.append(f'{len(self.config["prep_targets"])} preparation targets available')
         
         # Combine status information
         return status + ot2_status
@@ -74,9 +75,8 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
 
         targets_to_check = listify(targets)
             
-        # Process stocks from the driver if not already processed
-        if not self.stocks:
-            self.process_stocks()
+        # Process stocks from the driver
+        self.process_stocks()
             
         # Get the minimum volume configuration
         minimum_volume = self.config.get('minimum_volume', '100 ul')
@@ -195,15 +195,15 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         balanced_target_solution_object = self.balanced[0]['balanced_target']
         
         # Configure the destination for the preparation
-        if not self.config.get('mixing_locations'):
-            raise ValueError("No mixing locations configured. Cannot select a destination location.")
+        if not self.config.get('prep_targets'):
+            raise ValueError("No preparation targets configured. Cannot select a destination target.")
         
-        # Pop a location from the mixing locations list
+        # Pop a location from the preparation targets list
         if dest is None:
             # need to pop and then resend the locations list so that the persistant config triggers a write
-            mixing_locations = self.config['mixing_locations']
-            destination = mixing_locations.pop(0)
-            self.config['mixing_locations'] = mixing_locations
+            prep_targets = self.config['prep_targets']
+            destination = prep_targets.pop(0)
+            self.config['prep_targets'] = prep_targets
         else:
             destination = dest
         

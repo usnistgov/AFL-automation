@@ -119,7 +119,8 @@ class Solution(Context):
                 # need to initialize all components with a mass
                 for name in mass_fractions.keys():
                     self.components[name].mass = '1.0 mg'
-                self.mass = total_mass
+                if total_mass is not None:
+                    self.mass = total_mass
             self.mass_fraction = mass_fractions
 
         if len(concentrations) > 0 and (

@@ -1195,11 +1195,15 @@ class OT2HTTPDriver(Driver):
 
             # 5. Move tip above liquid and post-aspirate delay (tip above liquid)
             self._execute_atomic_command(
-                "moveToWellTop",
+                "moveToWell",
                 {
                     "pipetteId": pipette_id,
                     "labwareId": source_well["labwareId"],
                     "wellName": source_well["wellName"],
+                    "wellLocation": {
+                        "origin": "top",
+                        "offset": {"x": 0, "y": 0, "z": 0},
+                    },
                 },
             )
             if post_aspirate_delay > 0:
@@ -1208,8 +1212,20 @@ class OT2HTTPDriver(Driver):
 
             # 6. Air gap if specified
             if air_gap > 0: 
+                # Air gap is implemented as aspirate at the top of the source well
                 self._execute_atomic_command(
-                    "airGap", {"pipetteId": pipette_id, "volume": air_gap}
+                    "aspirate",
+                    {
+                        "pipetteId": pipette_id,
+                        "volume": air_gap,
+                        "labwareId": source_well["labwareId"],
+                        "wellName": source_well["wellName"],
+                        "wellLocation": {
+                            "origin": "top",
+                            "offset": {"x": 0, "y": 0, "z": 0},
+                        },
+                        "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
+                    },
                 )
 
             # 7. Dispense

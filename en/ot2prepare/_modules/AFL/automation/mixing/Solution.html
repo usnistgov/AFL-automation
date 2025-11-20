@@ -706,7 +706,8 @@
             <span class="s2">&quot;masses&quot;</span><span class="p">:</span> <span class="p">{},</span>
         <span class="p">}</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="n">out_dict</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;mg&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;mg&quot;</span><span class="p">}</span>
+            <span class="c1"># out_dict[&quot;masses&quot;][k] = {&quot;value&quot;: v.mass.to(&quot;mg&quot;).magnitude, &quot;units&quot;: &quot;mg&quot;}</span>
+            <span class="n">out_dict</span><span class="p">[</span><span class="s2">&quot;masses&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="si">}</span><span class="s2">mg&quot;</span>
         <span class="k">return</span> <span class="n">out_dict</span></div>
 
 

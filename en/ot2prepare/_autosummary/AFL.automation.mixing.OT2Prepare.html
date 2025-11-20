@@ -501,7 +501,7 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.mixing.OT2Prepare.</span></span><span class="sig-name descname"><span class="pre">OT2Prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/OT2Prepare.html#OT2Prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare" title="Link to this definition">#</a></dt>
 <dd><dl class="py attribute">
 <dt class="sig sig-object py" id="AFL.automation.mixing.OT2Prepare.OT2Prepare.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'catch_volume':</span> <span class="pre">'10</span> <span class="pre">ul',</span> <span class="pre">'deck':</span> <span class="pre">{},</span> <span class="pre">'fixed_compositions':</span> <span class="pre">{},</span> <span class="pre">'prep_targets':</span> <span class="pre">[],</span> <span class="pre">'prepare_volume':</span> <span class="pre">'100</span> <span class="pre">ul',</span> <span class="pre">'stock_locations':</span> <span class="pre">{},</span> <span class="pre">'stock_mix_order':</span> <span class="pre">[],</span> <span class="pre">'stock_transfer_params':</span> <span class="pre">{},</span> <span class="pre">'stocks':</span> <span class="pre">[]}</span></em><a class="headerlink" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.defaults" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'catch_protocol':</span> <span class="pre">{},</span> <span class="pre">'catch_volume':</span> <span class="pre">'10</span> <span class="pre">ul',</span> <span class="pre">'deck':</span> <span class="pre">{},</span> <span class="pre">'fixed_compositions':</span> <span class="pre">{},</span> <span class="pre">'prep_targets':</span> <span class="pre">[],</span> <span class="pre">'prepare_volume':</span> <span class="pre">'100</span> <span class="pre">ul',</span> <span class="pre">'stock_locations':</span> <span class="pre">{},</span> <span class="pre">'stock_mix_order':</span> <span class="pre">[],</span> <span class="pre">'stock_transfer_params':</span> <span class="pre">{},</span> <span class="pre">'stocks':</span> <span class="pre">[]}</span></em><a class="headerlink" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.defaults" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -594,6 +594,27 @@ or None for infeasible targets.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.mixing.OT2Prepare.OT2Prepare.transfer_to_catch">
+<span class="sig-name descname"><span class="pre">transfer_to_catch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/OT2Prepare.html#OT2Prepare.transfer_to_catch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.transfer_to_catch" title="Link to this definition">#</a></dt>
+<dd><p>Transfer a prepared sample to the catch/loader location using catch protocol settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Source location (well) of the prepared sample. If None, uses the last prepared target location.</p></li>
+<li><p><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Volume to transfer. If None, uses catch_volume from config.</p></li>
+<li><p><strong>**kwargs</strong> – Additional transfer parameters that override catch_protocol settings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>UUID of the transfer task if successful, None otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.mixing.OT2Prepare.OT2Prepare.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/OT2Prepare.html#OT2Prepare.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.reset" title="Link to this definition">#</a></dt>
 <dd><p>Reset the driver state/configuration.</p>
@@ -659,6 +680,7 @@ or None for infeasible targets.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.prepare"><code class="docutils literal notranslate"><span class="pre">OT2Prepare.prepare()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.get_transfer_params"><code class="docutils literal notranslate"><span class="pre">OT2Prepare.get_transfer_params()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.reorder_protocol"><code class="docutils literal notranslate"><span class="pre">OT2Prepare.reorder_protocol()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.transfer_to_catch"><code class="docutils literal notranslate"><span class="pre">OT2Prepare.transfer_to_catch()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.OT2Prepare.OT2Prepare.reset"><code class="docutils literal notranslate"><span class="pre">OT2Prepare.reset()</span></code></a></li>
 </ul>
 </li>

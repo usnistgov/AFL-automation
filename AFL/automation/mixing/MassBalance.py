@@ -254,6 +254,12 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         self.config['targets'] = self.config['targets'] + [target]
         self.config._update_history()
 
+    def add_targets(self, targets: List[Dict], reset: bool = False):
+        if reset:
+            self.reset_targets()
+        self.config['targets'] = self.config['targets'] + targets
+        self.config._update_history()
+
     def reset_stocks(self):
         self.config['stocks'] = []
         if 'stock_locations' in self.config:

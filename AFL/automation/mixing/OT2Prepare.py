@@ -219,23 +219,23 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         # Execute each step in the protocol
         for step in protocol:
             # Get source and destination
+            # Note: source is already a deck location (e.g., '3A2')
             source = step.source
             dest = destination
             volume_ul = step.volume  # Volume is already in μL
             
-            # Map source to a deck location
-            if source not in self.config['stock_locations']:
-                raise ValueError(f"No deck location found for source: {source}")
-                
-            source_location = self.config['stock_locations'][source]
+            # Get stock name from deck location for transfer parameters
+            stock_name = self.config.get('deck', {}).get(source)
+            if stock_name is None:
+                raise ValueError(f"No stock name found for deck location: {source}")
             
             # Get stock-specific transfer parameters
-            transfer_params = self.get_transfer_params(source)
+            transfer_params = self.get_transfer_params(stock_name)
             
             # Execute the transfer
             try:
                 self.transfer(
-                    source=source_location,
+                    source=source,
                     dest=dest,
                     volume=volume_ul,
                     **transfer_params
@@ -254,6 +254,26 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
             result_dict['total_volume'] = f"{balanced_target_solution_object.volume.to('ul').magnitude} ul"
         return result_dict, destination
         
+    def process_stocks(self):
+        """
+        Process stocks and update deck config with inverse of stock_locations.
+        """
+        # Call parent method to process stocks and update stock_locations
+        MassBalanceDriver.process_stocks(self)
+        # Populate deck config with inverse of stock_locations
+        self._update_deck_config()
+    
+    def _update_deck_config(self):
+        """
+        Update the deck config with the inverse of stock_locations.
+        This creates a mapping from deck locations to stock names.
+        """
+        deck_config = {}
+        stock_locations = self.config.get('stock_locations', {})
+        for stock_name, deck_location in stock_locations.items():
+            deck_config[deck_location] = stock_name
+        self.config['deck'] = deck_config
+    
     def get_transfer_params(self, stock_name):
         """
         Get the transfer parameters for a specific stock solution.

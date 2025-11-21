@@ -496,6 +496,15 @@ class OrchestratorDriver(Driver):
     ):
         self.update_status(f'starting make and measure for {name}')
         
+        # Start preparation immediately (async)
+        self.update_status(f'Preparing sample {name}...')
+        self.uuid['prep'] = self.get_client('prep').enqueue(
+            task_name='prepare',
+            target=sample,
+            dest=None,  # Let the prepare server assign a location
+            interactive=False
+        )
+
         if self.uuid['rinse'] is not None:
             self.update_status(f'Waiting for rinse...')
             self.get_client('load').wait(self.uuid['rinse'], for_history=False)
@@ -509,65 +518,75 @@ class OrchestratorDriver(Driver):
         self.update_status(f'Cell is clean, measuring empty cell scattering...')
         self.measure(name=name, empty=True, wait=True)
         
-        # Now prepare the sample - we already know it's feasible from earlier check
-        self.update_status(f'Preparing sample {name}...')
-        prepare_result = self.get_client('prep').enqueue(
-            task_name='prepare',
-            target=sample,
-            dest=None,  # Let the prepare server assign a location
-            interactive=True
-        )['return_val']
-        
-        if all(p is None for p in prepare_result):
-            self.update_status(f'Failed to prepare sample {name}')
-            return False
+        # Now wait for the preparation to finish
+        if self.uuid['prep'] is not None:
+            self.update_status(f"Waiting for sample prep of {name} to finish: {self.uuid['prep'][-8:]}")
+            prep_task_result = self.get_client('prep').wait(self.uuid['prep'])
             
-        # Extract result: (balanced_target_dict, solution_location)
-        balanced_target_dict = prepare_result[0]
-        solution_location = prepare_result[1]
-        
-        # Reconstruct balanced_target Solution object from dict for use in construct_datasets
-        # The dict contains: name, components (list), masses (dict with "value mg" strings), total_volume (optional)
-        # Create Solution with masses dict directly
-        solution_kwargs = {
-            'name': balanced_target_dict.get('name', name),
-            'masses': balanced_target_dict.get('masses', {}),
-        }
-        
-        # Add total_volume if provided
-        if 'total_volume' in balanced_target_dict:
-            total_vol_str = balanced_target_dict['total_volume']
-            if isinstance(total_vol_str, str):
-                solution_kwargs['total_volume'] = total_vol_str
-            elif isinstance(total_vol_str, dict) and 'value' in total_vol_str and 'units' in total_vol_str:
-                solution_kwargs['total_volume'] = f"{total_vol_str['value']} {total_vol_str['units']}"
-            else:
-                solution_kwargs['total_volume'] = total_vol_str
-        
-        # Disable sanity check since we're reconstructing from a balanced solution
-        solution_kwargs['sanity_check'] = False
-        self.balanced_target = Solution(**solution_kwargs)
-        
-        # Use transfer_to_catch method which handles catch protocol and destination internally
-        self.uuid['catch'] = self.get_client('prep').enqueue(
-            task_name='transfer_to_catch',
-            source=solution_location,
-        )
-
-        if self.uuid['catch'] is not None:
-            self.update_status(f"Waiting for sample prep/catch of {name} to finish: {self.uuid['catch'][-8:]}")
-            catch_result = self.get_client('prep').wait(self.uuid['catch'])
-            
-            # Check for failure in the catch task
-            if catch_result and isinstance(catch_result, dict) and catch_result.get('status') == 'failed':
-                error_msg = f"Transfer to catch failed for {name}: {catch_result.get('error')}"
+            if prep_task_result.get('status') == 'failed':
+                error_msg = f"Sample preparation failed for {name}: {prep_task_result.get('error')}"
                 self.update_status(error_msg)
                 self.app.logger.error(error_msg)
-                # Assuming interactive pause/wait is needed here? Or just return False?
-                # For now, return False to stop the process for this sample
                 return False
+
+            prepare_result = prep_task_result.get('return_val')
+            
+            if prepare_result is None or all(p is None for p in prepare_result):
+                self.update_status(f'Failed to prepare sample {name}')
+                return False
+
+            self.take_snapshot(prefix=f'02-after-prep-{name}')
+            
+            # Extract result: (balanced_target_dict, solution_location)
+            balanced_target_dict = prepare_result[0]
+            solution_location = prepare_result[1]
+            
+            # Reconstruct balanced_target Solution object from dict for use in construct_datasets
+            # The dict contains: name, components (list), masses (dict with "value mg" strings), total_volume (optional)
+            # Create Solution with masses dict directly
+            solution_kwargs = {
+                'name': balanced_target_dict.get('name', name),
+                'masses': balanced_target_dict.get('masses', {}),
+            }
+            
+            # Add total_volume if provided
+            if 'total_volume' in balanced_target_dict:
+                total_vol_str = balanced_target_dict['total_volume']
+                if isinstance(total_vol_str, str):
+                    solution_kwargs['total_volume'] = total_vol_str
+                elif isinstance(total_vol_str, dict) and 'value' in total_vol_str and 'units' in total_vol_str:
+                    solution_kwargs['total_volume'] = f"{total_vol_str['value']} {total_vol_str['units']}"
+                else:
+                    solution_kwargs['total_volume'] = total_vol_str
+            
+            # Disable sanity check since we're reconstructing from a balanced solution
+            solution_kwargs['sanity_check'] = False
+            self.balanced_target = Solution(**solution_kwargs)
+            
+            self.update_status(f'Queueing sample {name} load into syringe loader')
+            # Use transfer_to_catch method which handles catch protocol and destination internally
+            self.uuid['catch'] = self.get_client('prep').enqueue(
+                task_name='transfer_to_catch',
+                source=solution_location,
+            )
+
+            if self.uuid['catch'] is not None:
+                self.update_status(f"Waiting for sample prep/catch of {name} to finish: {self.uuid['catch'][-8:]}")
+                catch_result = self.get_client('prep').wait(self.uuid['catch'])
                 
-            self.take_snapshot(prefix=f'03-after-catch-{name}')
+                # Check for failure in the catch task
+                if catch_result and isinstance(catch_result, dict) and catch_result.get('status') == 'failed':
+                    error_msg = f"Transfer to catch failed for {name}: {catch_result.get('error')}"
+                    self.update_status(error_msg)
+                    self.app.logger.error(error_msg)
+                    # Assuming interactive pause/wait is needed here? Or just return False?
+                    # For now, return False to stop the process for this sample
+                    return False
+                    
+                self.take_snapshot(prefix=f'03-after-catch-{name}')
+                
+            # homing robot to try to mitigate drift problems
+            self.get_client('prep').enqueue(task_name='home')
 
         # do the sample measurement train
         self.update_status(f"Measuring sample with all loaded instruments...")

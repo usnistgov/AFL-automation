@@ -309,7 +309,7 @@ class APSUSAXS(Driver):
         data_dir = epics.caget(self.config['datadir_pv'],as_string=True)
         fs_order_n = epics.caget(self.config['next_fs_order_n_pv']) - 1.0 # need to subtract 1 because the order number is incremented after the scan starts
         if read_USAXS:
-            filename= f"{sanitized_prefix}_{fs_order_n:04d}.h5"
+            filename= f"{sanitized_prefix}_{int(fs_order_n):04d}.h5"
             filepath_usaxs = pathlib.Path(user_dir) / data_dir / (str(data_dir) + '_usaxs') 
             data_dict_usaxs = self._safe_read_file(filepath_usaxs, filename,isUSAXS=True,is_blank=is_blank)
 
@@ -322,7 +322,7 @@ class APSUSAXS(Driver):
             self.data['USAXS_blank'] = is_blank
 
         if read_SAXS:
-            filename= f"{sanitized_prefix}_{fs_order_n:04d}.hdf"
+            filename= f"{sanitized_prefix}_{int(fs_order_n):04d}.hdf"
             filepath_saxs = pathlib.Path(user_dir) / data_dir / (str(data_dir) + '_saxs') 
             data_dict_saxs = self._safe_read_file(filepath_saxs, filename,isUSAXS=False,is_blank=is_blank)
 

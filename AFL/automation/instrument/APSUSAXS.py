@@ -356,7 +356,7 @@ class APSUSAXS(Driver):
         status.append(f'EPICS status: {self.getRunStatus()}')
         status.append(f'Next X: {self.xpos}')
         status.append(f'Next Y: {self.ypos}')
-        status.append(f'Next filename_prefix: {self.filename_prefix.replace('.', '_').replace('-', '_')}')
+        status.append(f'Next filename_prefix: {self.filename_prefix}')
         status.append(f'Next project: {self.project}')
         return status
 if __name__ == '__main__':

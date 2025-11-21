@@ -411,6 +411,7 @@
 <span class="kn">from</span> <span class="nn">AFL.automation.mixing.MassBalance</span> <span class="kn">import</span> <span class="n">MassBalanceDriver</span><span class="p">,</span> <span class="n">MassBalance</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.prepare.OT2HTTPDriver</span> <span class="kn">import</span> <span class="n">OT2HTTPDriver</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared.utilities</span> <span class="kn">import</span> <span class="n">listify</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.shared.units</span> <span class="kn">import</span> <span class="n">to_quantity</span><span class="p">,</span> <span class="n">is_volume</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.mixing.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.mixing.PipetteAction</span> <span class="kn">import</span> <span class="n">PipetteAction</span>
 
@@ -803,8 +804,17 @@
 
         
         <span class="c1"># Determine volume</span>
-        <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;catch_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;900 ul&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;catch_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;900 ul&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Convert volume to uL</span>
+        <span class="n">vol_qty</span> <span class="o">=</span> <span class="n">to_quantity</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">vol_qty</span><span class="p">,</span> <span class="s1">&#39;dimensionality&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_volume</span><span class="p">(</span><span class="n">vol_qty</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vol_qty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">vol_qty</span><span class="p">,</span> <span class="s1">&#39;magnitude&#39;</span><span class="p">):</span>
+             <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vol_qty</span><span class="o">.</span><span class="n">magnitude</span>
+        <span class="k">else</span><span class="p">:</span>
+             <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
         
         <span class="c1"># Merge with kwargs (kwargs take precedence)</span>
         <span class="n">catch_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>

@@ -8,7 +8,9 @@ AFL.automation.mixing.OT2Prepare
 
    .. autosummary::
    
+      is_volume
       listify
+      to_quantity
    
    .. rubric:: Classes
 

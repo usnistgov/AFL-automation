@@ -12,6 +12,7 @@ AFL.automation.instrument
 
    APSDNDCAT
    APSUSAXS
+   APSUSAXS_Phantom
    BioSANS
    CDSAXSLabview
    CHESSID3B

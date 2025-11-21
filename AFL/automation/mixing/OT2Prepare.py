@@ -4,6 +4,7 @@ from typing import List, Union, Dict, Any, Optional, Tuple
 from AFL.automation.mixing.MassBalance import MassBalanceDriver, MassBalance
 from AFL.automation.prepare.OT2HTTPDriver import OT2HTTPDriver
 from AFL.automation.shared.utilities import listify
+from AFL.automation.shared.units import to_quantity, is_volume
 from AFL.automation.mixing.Solution import Solution
 from AFL.automation.mixing.PipetteAction import PipetteAction
 
@@ -368,8 +369,17 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
 
         
         # Determine volume
-        if volume is not None:
-            kwargs['volume'] = self.config.get('catch_volume', '900 ul')
+        if volume is None:
+            volume = self.config.get('catch_volume', '900 ul')
+        
+        # Convert volume to uL
+        vol_qty = to_quantity(volume)
+        if hasattr(vol_qty, 'dimensionality') and is_volume(vol_qty):
+            kwargs['volume'] = vol_qty.to('ul').magnitude
+        elif hasattr(vol_qty, 'magnitude'):
+             kwargs['volume'] = vol_qty.magnitude
+        else:
+             kwargs['volume'] = float(volume)
         
         # Merge with kwargs (kwargs take precedence)
         catch_params.update(kwargs)

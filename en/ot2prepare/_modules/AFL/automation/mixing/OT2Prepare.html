@@ -420,8 +420,8 @@
 <span class="k">class</span> <span class="nc">OT2Prepare</span><span class="p">(</span><span class="n">OT2HTTPDriver</span><span class="p">,</span> <span class="n">MassBalanceDriver</span><span class="p">):</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;prep_targets&#39;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s1">&#39;prepare_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;100 ul&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;catch_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;10 ul&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;prepare_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;900 ul&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;catch_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;900 ul&#39;</span><span class="p">,</span>
         <span class="s1">&#39;deck&#39;</span><span class="p">:</span> <span class="p">{},</span>
         <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s1">&#39;stock_mix_order&#39;</span><span class="p">:</span> <span class="p">[],</span>
@@ -775,7 +775,7 @@
 
 <div class="viewcode-block" id="OT2Prepare.transfer_to_catch">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.transfer_to_catch">[docs]</a>
-    <span class="k">def</span> <span class="nf">transfer_to_catch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">transfer_to_catch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transfer a prepared sample to the catch/loader location using catch protocol settings.</span>
 <span class="sd">        </span>
@@ -783,6 +783,8 @@
 <span class="sd">        ----------</span>
 <span class="sd">        source : str, optional</span>
 <span class="sd">            Source location (well) of the prepared sample. If None, uses the last prepared target location.</span>
+<span class="sd">        dest : str, optional</span>
+<span class="sd">            Destination location (well). If None, must be specified in catch_protocol config.</span>
 <span class="sd">        volume : str or float, optional</span>
 <span class="sd">            Volume to transfer. If None, uses catch_volume from config.</span>
 <span class="sd">        **kwargs</span>
@@ -800,8 +802,9 @@
         <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No source specified and no last target location available. Call prepare() first or specify source.&quot;</span><span class="p">)</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span>
-
+            <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span>
+        
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
         
         <span class="c1"># Determine volume</span>
         <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -816,14 +819,22 @@
         <span class="k">else</span><span class="p">:</span>
              <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
         
+        <span class="c1"># Handle destination</span>
+        <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest</span>
+
         <span class="c1"># Merge with kwargs (kwargs take precedence)</span>
         <span class="n">catch_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;dest&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">catch_params</span><span class="p">:</span>
+             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Destination &#39;dest&#39; must be specified in catch_protocol config or as an argument.&quot;</span><span class="p">)</span>
 
         <span class="c1"># Execute the transfer</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span> <span class="o">**</span><span class="n">catch_params</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transfer to catch failed from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to dest using </span><span class="si">{</span><span class="n">catch_params</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">dest_val</span> <span class="o">=</span> <span class="n">catch_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dest&#39;</span><span class="p">,</span> <span class="s1">&#39;unknown&#39;</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transfer to catch failed from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest_val</span><span class="si">}</span><span class="s2"> using </span><span class="si">{</span><span class="n">catch_params</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">raise</span></div>
 
     

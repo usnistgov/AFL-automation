@@ -73,7 +73,7 @@ class APSUSAXS(Driver):
 
         '''
 
-        self.readMyNXcanSAS = lazy.load("matilda.hdf5code.readMyNXcanSAS", require="AFL-automation[usaxs]")
+        self.readMyNXcanSAS = lazy.load("matilda.hdf5code", require="AFL-automation[usaxs]").readMyNXcanSAS
 
         self.app = None
         Driver.__init__(self,name='APSUSAXS',defaults=self.gather_defaults(),overrides=overrides)

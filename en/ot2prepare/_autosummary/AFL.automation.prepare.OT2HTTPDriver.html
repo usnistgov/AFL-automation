@@ -598,26 +598,53 @@ It can be used to home all axes at once or specific axes as needed.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware">
-<span class="sig-name descname"><span class="pre">send_labware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labware_def</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.send_labware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">send_labware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labware_def</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_run_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.send_labware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware" title="Link to this definition">#</a></dt>
 <dd><p>Send a custom labware definition to the current run and persist it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>check_run_status</strong> – If False, skip HTTP GET check when ensuring run exists.
+Passed to _ensure_run_exists for optimization.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware">
-<span class="sig-name descname"><span class="pre">load_labware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_labware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_labware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_run_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_labware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware" title="Link to this definition">#</a></dt>
 <dd><p>Load labware (containers, tipracks) into the protocol using HTTP API</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>check_run_status</strong> – If False, skip HTTP GET check when ensuring run exists.
+Passed to _ensure_run_exists and send_labware for optimization.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module">
-<span class="sig-name descname"><span class="pre">load_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_run_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module" title="Link to this definition">#</a></dt>
 <dd><p>Load modules (heater-shaker, tempdeck) into the protocol using HTTP API</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>check_run_status</strong> – If False, skip HTTP GET check when ensuring run exists.
+Passed to _ensure_run_exists for optimization.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_instrument">
-<span class="sig-name descname"><span class="pre">load_instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_rack_slots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_instrument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_instrument" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_rack_slots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_run_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_pipettes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_instrument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_instrument" title="Link to this definition">#</a></dt>
 <dd><p>Load pipette and store tiprack information using HTTP API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>check_run_status</strong> – If False, skip HTTP GET check when ensuring run exists.
+Passed to _ensure_run_exists for optimization.</p></li>
+<li><p><strong>update_pipettes</strong> – If False, skip calling _update_pipettes (for optimization during reload).</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

@@ -921,8 +921,13 @@
                     <span class="p">)</span>
 <div class="viewcode-block" id="OT2HTTPDriver.send_labware">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a custom labware definition to the current run and persist it.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">send_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a custom labware definition to the current run and persist it.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            check_run_status: If False, skip HTTP GET check when ensuring run exists.</span>
+<span class="sd">                             Passed to _ensure_run_exists for optimization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sending custom labware definition: </span><span class="si">{</span><span class="n">labware_def</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -946,7 +951,7 @@
             <span class="k">return</span> <span class="n">key</span>
 
         <span class="c1"># Ensure we have a valid run</span>
-        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
+        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">(</span><span class="n">check_run_status</span><span class="o">=</span><span class="n">check_run_status</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">command_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">labware_def</span><span class="p">}</span>
@@ -977,12 +982,17 @@
                         
 <div class="viewcode-block" id="OT2HTTPDriver.load_labware">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load labware (containers, tipracks) into the protocol using HTTP API&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">load_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load labware (containers, tipracks) into the protocol using HTTP API</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            check_run_status: If False, skip HTTP GET check when ensuring run exists.</span>
+<span class="sd">                             Passed to _ensure_run_exists and send_labware for optimization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading labware &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; into slot &#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
         <span class="c1"># Ensure we have a valid run</span>
-        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
+        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">(</span><span class="n">check_run_status</span><span class="o">=</span><span class="n">check_run_status</span><span class="p">)</span>
 
         <span class="n">labware_json</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;labware_json&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -994,7 +1004,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">load_name</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;labware_json missing parameters.loadName&quot;</span><span class="p">)</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">load_name</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">send_labware</span><span class="p">(</span><span class="n">labware_json</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_labware</span><span class="p">(</span><span class="n">labware_json</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="n">check_run_status</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
                 <span class="n">namespace</span><span class="p">,</span> <span class="n">load_name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -1013,7 +1023,7 @@
                 <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                         <span class="n">definition</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">send_labware</span><span class="p">(</span><span class="n">definition</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_labware</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="n">check_run_status</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Custom labware definition not found for </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1139,12 +1149,17 @@
             
 <div class="viewcode-block" id="OT2HTTPDriver.load_module">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load modules (heater-shaker, tempdeck) into the protocol using HTTP API&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">load_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load modules (heater-shaker, tempdeck) into the protocol using HTTP API</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            check_run_status: If False, skip HTTP GET check when ensuring run exists.</span>
+<span class="sd">                             Passed to _ensure_run_exists for optimization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading module &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; into slot &#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
         <span class="c1"># Ensure we have a valid run</span>
-        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
+        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">(</span><span class="n">check_run_status</span><span class="o">=</span><span class="n">check_run_status</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">slot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -1219,14 +1234,20 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.load_instrument">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_instrument">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_instrument</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load pipette and store tiprack information using HTTP API.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">load_instrument</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">update_pipettes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load pipette and store tiprack information using HTTP API.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            check_run_status: If False, skip HTTP GET check when ensuring run exists.</span>
+<span class="sd">                             Passed to _ensure_run_exists for optimization.</span>
+<span class="sd">            update_pipettes: If False, skip calling _update_pipettes (for optimization during reload).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Loading pipette &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; on &#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39; mount with tip_racks in slots </span><span class="si">{</span><span class="n">tip_rack_slots</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
 
         <span class="c1"># Ensure we have a valid run</span>
-        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
+        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">(</span><span class="n">check_run_status</span><span class="o">=</span><span class="n">check_run_status</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># First, load the pipette using the HTTP API</span>
@@ -1258,8 +1279,12 @@
 
             <span class="n">pipette_id</span> <span class="o">=</span> <span class="n">response_data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;result&quot;</span><span class="p">][</span><span class="s2">&quot;pipetteId&quot;</span><span class="p">]</span>
 
-            <span class="c1"># Make sure we have the latest pipette information</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_update_pipettes</span><span class="p">()</span>
+            <span class="c1"># Make sure we have the latest pipette information (unless disabled for optimization)</span>
+            <span class="k">if</span> <span class="n">update_pipettes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_pipettes</span><span class="p">()</span>
+            <span class="c1"># Ensure pipette_info entry exists before patching</span>
+            <span class="k">if</span> <span class="n">mount</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">mount</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">mount</span><span class="p">][</span>
                 <span class="s2">&quot;id&quot;</span>
             <span class="p">]</span> <span class="o">=</span> <span class="n">pipette_id</span>  <span class="c1"># patch the correct pipette id to the pipette_info dict</span>
@@ -1363,6 +1388,9 @@
     <span class="k">def</span> <span class="nf">mix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mixing </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">uL </span><span class="si">{</span><span class="n">repetitions</span><span class="si">}</span><span class="s2"> times at </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
+        <span class="c1"># Verify run exists once at the start, then skip checks for all atomic commands</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
+
         <span class="c1"># Get pipette based on volume</span>
         <span class="n">pipette</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
         <span class="n">pipette_mount</span> <span class="o">=</span> <span class="n">pipette</span><span class="p">[</span><span class="s2">&quot;mount&quot;</span><span class="p">]</span>
@@ -1393,6 +1421,7 @@
                     <span class="s2">&quot;pipetteMount&quot;</span><span class="p">:</span> <span class="n">pipette_mount</span><span class="p">,</span>
                     <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Use next available tip in rack</span>
                 <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -1410,6 +1439,7 @@
                         <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
                     <span class="p">},</span>
                 <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
@@ -1424,6 +1454,7 @@
                         <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
                     <span class="p">},</span>
                 <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span></div>
 
 
@@ -1512,6 +1543,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Transfer fluid from one location to another using atomic HTTP API commands&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transferring </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         
+        <span class="c1"># Verify run exists once at the start, then skip checks for all atomic commands</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
         
         <span class="c1"># Set flow rates if specified</span>
@@ -1569,6 +1601,7 @@
                     <span class="s2">&quot;pipetteMount&quot;</span><span class="p">:</span> <span class="n">pipette_mount</span><span class="p">,</span>
                     <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Use next available tip in rack, will be updated in _execute_atomic_command</span>
                 <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
             
             <span class="c1"># 1a. If destination is on a heater-shaker, stop the shaking and latch the latch pre-flight</span>
@@ -1618,6 +1651,7 @@
                             <span class="p">},</span>
                             <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">],</span>
                         <span class="p">},</span>
+                        <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="p">)</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
@@ -1633,6 +1667,7 @@
                             <span class="p">},</span>
                             <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;dispense_flow_rate&#39;</span><span class="p">],</span>
                         <span class="p">},</span>
+                        <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="p">)</span>
 
                 <span class="c1"># Restore original rates</span>
@@ -1657,6 +1692,7 @@
                     <span class="p">},</span>
                     <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">],</span>
                 <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="c1"># 4. Aspirate equilibration delay (while tip is in liquid)</span>
@@ -1676,6 +1712,7 @@
                         <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
                     <span class="p">},</span>
                 <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">post_aspirate_delay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">post_aspirate_delay</span><span class="p">)</span>
@@ -1697,6 +1734,7 @@
                         <span class="p">},</span>
                         <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">],</span>
                     <span class="p">},</span>
+                    <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="p">)</span>
 
             <span class="c1"># 7. Dispense</span>
@@ -1721,6 +1759,7 @@
                     <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="n">dest_position</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">},</span>
                     <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;dispense_flow_rate&#39;</span><span class="p">],</span>
                 <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="c1"># 8. Post-dispense delay</span>
@@ -1755,6 +1794,7 @@
                             <span class="p">},</span>
                             <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">],</span>
                         <span class="p">},</span>
+                        <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="p">)</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
@@ -1770,6 +1810,7 @@
                             <span class="p">},</span>
                             <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;dispense_flow_rate&#39;</span><span class="p">],</span>
                         <span class="p">},</span>
+                        <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="p">)</span>
 
                 <span class="c1"># Restore original rates</span>
@@ -1790,6 +1831,7 @@
                         <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
                         <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="n">dest_position</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">},</span>
                     <span class="p">},</span>
+                    <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="p">)</span>
 
                 
@@ -1809,18 +1851,25 @@
                             <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                             <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">10</span>
                         <span class="p">},</span>
-                        <span class="s2">&quot;alternateDropLocation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+                        <span class="s2">&quot;alternateDropLocation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                        <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span><span class="s2">&quot;dropTipInPlace&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span> 
-                                                        <span class="p">})</span>
+                                                        <span class="p">},</span>
+                                                        <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="c1"># Update last pipette</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="n">pipette</span></div>
 
 
     <span class="k">def</span> <span class="nf">_execute_atomic_command</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">command_type</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wait_until_complete</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">command_type</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wait_until_complete</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a single atomic command using the HTTP API&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a single atomic command using the HTTP API</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            check_run_status: If False, skip HTTP GET check when ensuring run exists.</span>
+<span class="sd">                             Passed to _ensure_run_exists for optimization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -1848,7 +1897,7 @@
         <span class="p">)</span>
 
         <span class="c1"># Ensure we have a valid run</span>
-        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
+        <span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">(</span><span class="n">check_run_status</span><span class="o">=</span><span class="n">check_run_status</span><span class="p">)</span>
 
         <span class="c1"># Build the query parameters</span>
         <span class="n">query_params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;waitUntilComplete&quot;</span><span class="p">:</span> <span class="n">wait_until_complete</span><span class="p">}</span>
@@ -2299,17 +2348,19 @@
         
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Step 1: Load modules first</span>
+            <span class="c1"># We know the run exists because _create_run just created it, so skip status checks</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Reloading modules&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">slot</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">module_name</span><span class="p">)</span> <span class="ow">in</span> <span class="n">original_modules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reloading module </span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2"> in slot </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">slot</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                     <span class="c1"># New module ID will be stored in config[&quot;loaded_modules&quot;]</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reloading module </span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2"> in slot </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">raise</span>
                     
             <span class="c1"># Step 2: Load labware</span>
+            <span class="c1"># We know the run exists because _create_run just created it, so skip status checks</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Reloading labware&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">slot</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">labware_name</span><span class="p">,</span> <span class="n">labware_data</span><span class="p">)</span> <span class="ow">in</span> <span class="n">original_labware</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="c1"># Check if this labware is on a module</span>
@@ -2319,20 +2370,22 @@
                     
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reloading labware </span><span class="si">{</span><span class="n">labware_name</span><span class="si">}</span><span class="s2"> in slot </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span><span class="n">labware_name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="n">module_id</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span><span class="n">labware_name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="n">module_id</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                     <span class="c1"># New labware ID will be stored in config[&quot;loaded_labware&quot;]</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reloading labware </span><span class="si">{</span><span class="n">labware_name</span><span class="si">}</span><span class="s2"> in slot </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">raise</span>
                     
             <span class="c1"># Step 3: Load instruments</span>
+            <span class="c1"># We know the run exists because _create_run just created it, so skip status checks</span>
+            <span class="c1"># Also skip pipette updates since _initialize_robot already fetched pipette info</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Reloading instruments&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">instrument_data</span> <span class="ow">in</span> <span class="n">original_instruments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">instrument_name</span> <span class="o">=</span> <span class="n">instrument_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
                 
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reloading instrument </span><span class="si">{</span><span class="n">instrument_name</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2"> mount&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">load_instrument</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">tiprack_slots</span><span class="p">[</span><span class="n">mount</span><span class="p">],</span><span class="n">reload</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">load_instrument</span><span class="p">(</span><span class="n">instrument_name</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">tiprack_slots</span><span class="p">[</span><span class="n">mount</span><span class="p">],</span> <span class="n">reload</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">update_pipettes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                     <span class="c1"># New instrument ID will be stored in config[&quot;loaded_instruments&quot;]</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reloading instrument </span><span class="si">{</span><span class="n">instrument_name</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2"> mount: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -2373,10 +2426,19 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_instruments</span>
             <span class="k">return</span> <span class="kc">False</span>
     
-    <span class="k">def</span> <span class="nf">_ensure_run_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure a run exists for executing commands, creating one if needed&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_ensure_run_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure a run exists for executing commands, creating one if needed</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            check_run_status: If False, skip HTTP GET check and return run_id if it exists.</span>
+<span class="sd">                             If True, verify run status via HTTP GET request.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;run_id&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_run</span><span class="p">()</span>
+
+        <span class="c1"># Skip status check if requested (optimization for bulk operations)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">check_run_status</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_id</span>
 
         <span class="c1"># Check if the run is still valid</span>
         <span class="k">try</span><span class="p">:</span>

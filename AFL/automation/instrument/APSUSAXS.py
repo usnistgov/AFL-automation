@@ -9,7 +9,7 @@ epics = lazy.load("epics", require="AFL-automation[neutron-scattering]")
 import os
 import pathlib
 import warnings
-Matilda = lazy.load("Matilda", require="AFL-automation[usaxs]")
+Matilda = lazy.load("matilda", require="AFL-automation[usaxs]")
 
 class APSUSAXS(Driver):
     defaults = {}
@@ -73,7 +73,7 @@ class APSUSAXS(Driver):
 
         '''
 
-        self.readMyNXcanSAS = lazy.load("Matilda.hdf5code.readMyNXcanSAS", require="AFL-automation[usaxs]")
+        self.readMyNXcanSAS = lazy.load("matilda.hdf5code.readMyNXcanSAS", require="AFL-automation[usaxs]")
 
         self.app = None
         Driver.__init__(self,name='APSUSAXS',defaults=self.gather_defaults(),overrides=overrides)

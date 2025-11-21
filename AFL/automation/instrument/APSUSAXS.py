@@ -158,7 +158,7 @@ class APSUSAXS(Driver):
         with open(pathlib.Path(self.config['script_path'])/self.config['script_template_file'],'r') as f:
             for line in f:
                 s = line.replace(self.config['magic_project_key'],self.project)
-                s = s.replace(self.config['magic_filename_key'],self.filename)
+                s = s.replace(self.config['magic_filename_key'],self.filename_prefix)
                 s = s.replace(self.config['magic_xpos_key'],str(self.xpos))
                 s = s.replace(self.config['magic_ypos_key'],str(self.ypos))
                 s = s.replace('\r','')
@@ -211,7 +211,7 @@ class APSUSAXS(Driver):
         
         for attempt in range(max_retries):
             try:
-                data_dict = self.readMyNXcanSAS(filepath, filename,is_usaxs=is_usaxs)
+                data_dict = self.readMyNXcanSAS(filepath, filename, isUSAXS=is_usaxs)
                 
                 # Check if the specified key is None
                 if check_key not in data_dict:
@@ -305,9 +305,9 @@ class APSUSAXS(Driver):
         user_dir = epics.caget(self.config['userdir_pv'],as_string=True)
         data_dir = epics.caget(self.config['datadir_pv'],as_string=True)
         fs_order_n = epics.caget(self.config['next_fs_order_n_pv']) - 1.0 # need to subtract 1 because the order number is incremented after the scan starts
-        filename= f"{self.filename_prefix}_{fs_order_n:04d}.h5"
         if read_USAXS:
-            filepath_usaxs = pathlib.Path(user_dir) / (str(data_dir) + '_usaxs') / filename
+            filename= f"{self.filename_prefix}_{int(fs_order_n):04d}.h5"
+            filepath_usaxs = pathlib.Path(user_dir) / data_dir/  (str(data_dir) + '_usaxs')
             data_dict_usaxs = self._safe_read_file(filepath_usaxs, filename,is_usaxs=True,is_blank=is_blank)
 
             self.data.add_array('USAXS_q',data_dict_usaxs['CalibratedData']['Q'])
@@ -319,7 +319,8 @@ class APSUSAXS(Driver):
             self.data['USAXS_blank'] = is_blank
 
         if read_SAXS:
-            filepath_saxs = pathlib.Path(user_dir) / (str(data_dir) + '_saxs') / filename
+            filename= f"{self.filename_prefix}_{int(fs_order_n):04d}.hdf"
+            filepath_saxs = pathlib.Path(user_dir) / data_dir / (str(data_dir) + '_saxs') 
             data_dict_saxs = self._safe_read_file(filepath_saxs, filename,is_usaxs=False,is_blank=is_blank)
 
             self.data.add_array('SAXS_q',data_dict_saxs['CalibratedData']['Q'])
@@ -352,7 +353,7 @@ class APSUSAXS(Driver):
         status.append(f'EPICS status: {self.getRunStatus()}')
         status.append(f'Next X: {self.xpos}')
         status.append(f'Next Y: {self.ypos}')
-        status.append(f'Next filename: {self.filename}')
+        status.append(f'Next filename prefix: {self.filename_prefix}')
         status.append(f'Next project: {self.project}')
         return status
 if __name__ == '__main__':

@@ -209,6 +209,7 @@ class APSUSAXS(Driver):
         else:
             check_key = self.config['file_data_check_key']
         
+        
         for attempt in range(max_retries):
             try:
                 data_dict = self.readMyNXcanSAS(filepath, filename,is_usaxs=is_usaxs)
@@ -302,10 +303,12 @@ class APSUSAXS(Driver):
         else:
             is_blank = False
         
+        sanitized_prefix = self.filename_prefix.replace('.', '_').replace('-', '_')
+        
         user_dir = epics.caget(self.config['userdir_pv'],as_string=True)
         data_dir = epics.caget(self.config['datadir_pv'],as_string=True)
         fs_order_n = epics.caget(self.config['next_fs_order_n_pv']) - 1.0 # need to subtract 1 because the order number is incremented after the scan starts
-        filename= f"{self.filename_prefix}_{fs_order_n:04d}.h5"
+        filename= f"{sanitized_prefix}_{fs_order_n:04d}.h5"
         if read_USAXS:
             filepath_usaxs = pathlib.Path(user_dir) / (str(data_dir) + '_usaxs') / filename
             data_dict_usaxs = self._safe_read_file(filepath_usaxs, filename,is_usaxs=True,is_blank=is_blank)

@@ -65,7 +65,7 @@ class OrchestratorDriver(Driver):
     defaults['grid_blank_interval'] = None
     defaults['grid_blank_sample'] = None
     defaults['prepare_volume'] = '1000 ul'
-
+    defaults['empty_prefix'] = 'MT-'
     def __init__(
             self,
             camera_urls: Optional[List[str]] = None,
@@ -597,7 +597,7 @@ class OrchestratorDriver(Driver):
         assert len(self.config['instrument'])>0, 'No instruments loaded in config for this server!'
 
         if empty:
-            name = 'MT-' + name
+            name = self.config['empty_prefix'] + name
 
         instrument=None
         for i,instrument in enumerate(self.config['instrument']):
@@ -744,7 +744,7 @@ class OrchestratorDriver(Driver):
 
                     measurement_list = []
                     for _,tiled_data in tiled_result.items():
-                        if 'MT-' in tiled_data.metadata['name']:
+                        if self.config['empty_prefix'] in tiled_data.metadata['name']:
                             continue
                         measurement_list.append(xr.DataArray(tiled_data[()], dims=dims, coords=coords))
                     measurement = xr.concat(measurement_list, dim=instrument['sample_dim'])
@@ -1132,7 +1132,7 @@ class OrchestratorDriver(Driver):
 
                     measurement_list = []
                     for _,tiled_data in tiled_result.items():
-                        if 'MT-' in tiled_data.metadata['name']:
+                        if self.config['empty_prefix'] in tiled_data.metadata['name']:
                             continue
                         measurement_list.append(xr.DataArray(tiled_data[()], dims=dims, coords=coords))
                     measurement = xr.concat(measurement_list, dim=instrument['sample_dim'])

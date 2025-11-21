@@ -606,7 +606,17 @@ class OrchestratorDriver(Driver):
 
         if self.uuid['catch'] is not None:
             self.update_status(f"Waiting for sample prep/catch of {name} to finish: {self.uuid['catch'][-8:]}")
-            self.get_client('prep').wait(self.uuid['catch'])
+            catch_result = self.get_client('prep').wait(self.uuid['catch'])
+            
+            # Check for failure in the catch task
+            if catch_result and isinstance(catch_result, dict) and catch_result.get('status') == 'failed':
+                error_msg = f"Transfer to catch failed for {name}: {catch_result.get('error')}"
+                self.update_status(error_msg)
+                self.app.logger.error(error_msg)
+                # Assuming interactive pause/wait is needed here? Or just return False?
+                # For now, return False to stop the process for this sample
+                return False
+                
             self.take_snapshot(prefix=f'03-after-catch-{name}')
 
         # do the sample measurement train

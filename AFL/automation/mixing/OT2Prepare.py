@@ -11,8 +11,8 @@ from AFL.automation.mixing.PipetteAction import PipetteAction
 class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
     defaults = {
         'prep_targets': [],
-        'prepare_volume': '100 ul',
-        'catch_volume': '10 ul',
+        'prepare_volume': '900 ul',
+        'catch_volume': '900 ul',
         'deck': {},
         'stocks': [],
         'stock_mix_order': [],
@@ -340,7 +340,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
             
         return reordered
 
-    def transfer_to_catch(self, source=None, volume=None, **kwargs):
+    def transfer_to_catch(self, source=None, dest=None, volume=None, **kwargs):
         """
         Transfer a prepared sample to the catch/loader location using catch protocol settings.
         
@@ -348,6 +348,8 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         ----------
         source : str, optional
             Source location (well) of the prepared sample. If None, uses the last prepared target location.
+        dest : str, optional
+            Destination location (well). If None, must be specified in catch_protocol config.
         volume : str or float, optional
             Volume to transfer. If None, uses catch_volume from config.
         **kwargs
@@ -365,8 +367,9 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         if source is None:
             if self.last_target_location is None:
                 raise ValueError("No source specified and no last target location available. Call prepare() first or specify source.")
-            kwargs['source'] = self.last_target_location
-
+            source = self.last_target_location
+        
+        kwargs['source'] = source
         
         # Determine volume
         if volume is None:
@@ -381,14 +384,22 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         else:
              kwargs['volume'] = float(volume)
         
+        # Handle destination
+        if dest is not None:
+            kwargs['dest'] = dest
+
         # Merge with kwargs (kwargs take precedence)
         catch_params.update(kwargs)
+
+        if 'dest' not in catch_params:
+             raise ValueError("Destination 'dest' must be specified in catch_protocol config or as an argument.")
 
         # Execute the transfer
         try:
             self.transfer( **catch_params)
         except Exception as e:
-            warnings.warn(f"Transfer to catch failed from {source} to dest using {catch_params}: {str(e)}", stacklevel=2)
+            dest_val = catch_params.get('dest', 'unknown')
+            warnings.warn(f"Transfer to catch failed from {source} to {dest_val} using {catch_params}: {str(e)}", stacklevel=2)
             raise
     
     def reset(self):

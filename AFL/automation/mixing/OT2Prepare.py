@@ -340,7 +340,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
             
         return reordered
 
-    def transfer_to_catch(self, source=None, dest=None, volume=None, **kwargs):
+    def transfer_to_catch(self, source=None, dest=None, **kwargs):
         """
         Transfer a prepared sample to the catch/loader location using catch protocol settings.
         
@@ -350,8 +350,6 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
             Source location (well) of the prepared sample. If None, uses the last prepared target location.
         dest : str, optional
             Destination location (well). If None, must be specified in catch_protocol config.
-        volume : str or float, optional
-            Volume to transfer. If None, uses catch_volume from config.
         **kwargs
             Additional transfer parameters that override catch_protocol settings.
             
@@ -368,21 +366,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
             if self.last_target_location is None:
                 raise ValueError("No source specified and no last target location available. Call prepare() first or specify source.")
             source = self.last_target_location
-        
         kwargs['source'] = source
-        
-        # Determine volume
-        if volume is None:
-            volume = self.config.get('catch_volume', '900 ul')
-        
-        # Convert volume to uL
-        vol_qty = to_quantity(volume)
-        if hasattr(vol_qty, 'dimensionality') and is_volume(vol_qty):
-            kwargs['volume'] = vol_qty.to('ul').magnitude
-        elif hasattr(vol_qty, 'magnitude'):
-             kwargs['volume'] = vol_qty.magnitude
-        else:
-             kwargs['volume'] = float(volume)
         
         # Handle destination
         if dest is not None:
@@ -396,7 +380,7 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
 
         # Execute the transfer
         try:
-            self.transfer( **catch_params)
+            self.transfer(**catch_params)
         except Exception as e:
             dest_val = catch_params.get('dest', 'unknown')
             warnings.warn(f"Transfer to catch failed from {source} to {dest_val} using {catch_params}: {str(e)}", stacklevel=2)

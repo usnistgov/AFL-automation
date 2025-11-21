@@ -548,60 +548,10 @@ class OrchestratorDriver(Driver):
         solution_kwargs['sanity_check'] = False
         self.balanced_target = Solution(**solution_kwargs)
         
-        # Extract sample_volume from sample dict or use a default
-        # Check if sample_volume is specified in the sample dict
-        sample_volume = None
-        if 'sample_volume' in sample:
-            sample_volume = sample['sample_volume']
-        elif 'transfer_volume' in sample:
-            sample_volume = sample['transfer_volume']
-        else:
-            # Use a default based on catch_volume config or prepare_volume
-            default_volume = self.config.get('catch_volume', '10 ul')
-            if isinstance(default_volume, str):
-                sample_volume = {'value': units(default_volume).magnitude, 'units': str(units(default_volume).units)}
-            else:
-                sample_volume = default_volume
-        
-        # Convert sample_volume to dict format if needed
-        if isinstance(sample_volume, str):
-            vol_quantity = units(sample_volume)
-            sample_volume = {'value': vol_quantity.magnitude, 'units': str(vol_quantity.units)}
-        elif isinstance(sample_volume, dict) and 'value' in sample_volume and 'units' in sample_volume:
-            pass  # Already in correct format
-        else:
-            # Try to parse as quantity
-            vol_quantity = units(sample_volume)
-            sample_volume = {'value': vol_quantity.magnitude, 'units': str(vol_quantity.units)}
-        
-        # Safety check: Verify prepared volume is sufficient for sample_volume
-        if hasattr(self.balanced_target, 'volume') and self.balanced_target.volume is not None:
-            prepared_volume = self.balanced_target.volume
-            sample_volume_quantity = units(f"{sample_volume['value']} {sample_volume['units']}")
-            
-            if prepared_volume < sample_volume_quantity:
-                error_msg = (
-                    f"Prepared volume ({prepared_volume}) is less than required sample volume "
-                    f"({sample_volume_quantity}) for sample {name}"
-                )
-                self.update_status(error_msg)
-                raise ValueError(error_msg)
-        else:
-            self.app.logger.warning(
-                f"No total_volume in prepare result for {name}, skipping volume safety check"
-            )
-        
-        # Transfer sample from preparation unit to catch/loader
-        self.update_status(f'Transferring sample {name} to catch/loader')
-        
-        # Convert sample_volume to volume string for transfer
-        volume_str = f"{sample_volume['value']} {sample_volume['units']}"
-        
         # Use transfer_to_catch method which handles catch protocol and destination internally
         self.uuid['catch'] = self.get_client('prep').enqueue(
             task_name='transfer_to_catch',
             source=solution_location,
-            volume=volume_str
         )
 
         if self.uuid['catch'] is not None:

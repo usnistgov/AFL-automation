@@ -21,6 +21,7 @@ from scipy.spatial.distance import cdist
 
 from AFL.automation.APIServer.Client import Client  # type: ignore
 from AFL.automation.APIServer.Driver import Driver  # type: ignore
+from AFL.automation.mixing.Solution import Solution  # type: ignore
 from AFL.automation.shared.units import units  # type: ignore
 
 
@@ -102,6 +103,7 @@ class OrchestratorDriver(Driver):
         self.grid_sample_count = 0
         self.grid_data = None
         self.stop_grid = False
+        self.balanced_target = None
 
     def validate_config(self):
         required_keys = [
@@ -306,79 +308,10 @@ class OrchestratorDriver(Driver):
                 output_str = f'take_snapshot failed with error: {error.__repr__()}\n\n' + traceback.format_exc() + '\n\n'
                 self.app.logger.warning(output_str)
 
-    def _convert_composition_to_solution_format(self, composition: Dict, prepare_volume: Optional[str] = None) -> Dict:
-        """
-        Convert composition dict from old format to Solution-compatible format.
-        
-        Old format: {"component_name": {"value": value, "units": units}}
-        New format: {"concentrations": {"component_name": "value units"}, "total_volume": "volume"}
-        Or for ternary: {"mass_fractions": {"component_name": value}, "total_volume": "volume"}
-        
-        Parameters
-        ----------
-        composition : Dict
-            Composition in old format
-        prepare_volume : str, optional
-            Total volume to prepare. If None, uses self.config['prepare_volume']
-            
-        Returns
-        -------
-        Dict
-            Composition in Solution-compatible format
-        """
-        if prepare_volume is None:
-            prepare_volume = self.config['prepare_volume']
-        
-        # Check if already in Solution format (has 'concentrations' or 'mass_fractions' key)
-        if 'concentrations' in composition or 'mass_fractions' in composition:
-            # Already in Solution format, just ensure total_volume is set
-            solution_dict = composition.copy()
-            if 'total_volume' not in solution_dict:
-                solution_dict['total_volume'] = prepare_volume
-            return solution_dict
-        
-        # Convert composition to Solution format
-        if self.config.get('ternary', False):
-            # Ternary mode: use mass_fractions (dimensionless values)
-            mass_fractions = {}
-            for component_name, comp_data in composition.items():
-                if isinstance(comp_data, dict) and 'value' in comp_data:
-                    # Extract dimensionless value for mass fraction
-                    mass_fractions[component_name] = comp_data['value']
-                else:
-                    # Already a numeric value
-                    mass_fractions[component_name] = comp_data
-            
-            solution_dict = {
-                'mass_fractions': mass_fractions,
-                'total_volume': prepare_volume,
-                'name': 'prepared_sample'
-            }
-        else:
-            # Non-ternary mode: use concentrations
-            concentrations = {}
-            for component_name, comp_data in composition.items():
-                if isinstance(comp_data, dict) and 'value' in comp_data and 'units' in comp_data:
-                    # Format: "value units" as string (Solution accepts this)
-                    concentrations[component_name] = f"{comp_data['value']} {comp_data['units']}"
-                else:
-                    # Already in string format or other format, use as-is
-                    concentrations[component_name] = comp_data
-            
-            solution_dict = {
-                'concentrations': concentrations,
-                'total_volume': prepare_volume,
-                'name': 'prepared_sample'
-            }
-        
-        return solution_dict
 
     def process_sample(
             self,
-            composition: Dict,
-            sample_volume: Dict,
-            fixed_concs: Dict,
-            prepare_mfrac_split: Optional[Dict]=None,
+            sample: Dict,
             predict_combine_comps: Optional[Dict]=None,
             predict_next: bool = False,
             enqueue_next: bool = False,
@@ -393,17 +326,16 @@ class OrchestratorDriver(Driver):
         Parameters
         ----------
 
-        composition: Dict
-            Dict should be of the form composition["component_name"] = {"value":value, "units":units}
+        sample: Dict
+            Solution-compatible dictionary containing sample definition. Should include:
+            - 'name': str (optional, can be overridden by name parameter)
+            - 'concentrations' or 'mass_fractions': Dict with component specifications
+            - 'total_volume': str or pint.Quantity (optional, uses config default if not provided)
+            - Other Solution constructor kwargs (masses, volumes, location, solutes, etc.)
+            If 'total_volume' is not provided, will use self.config['prepare_volume'].
 
-        sample_volume: dict
-            Dict should be of the form sample_volume =  {"value":value, "units":units}
-
-        fixed_concs: Optional[Dict]
-            Dict should be of the form fixed_concs[component] = {"value":value, "units":units}
-
-        mfrac_split: Dict
-            Dict should be of the form mfrac_split = {'component_to_split':{'component_A':'mfrac_A','component_B':'mfrac_B'}}
+        predict_combine_comps: Optional[Dict]
+            Dictionary for combining components in dataset construction
 
         predict_next: bool
             If True, will trigger predict call to the agent
@@ -414,17 +346,17 @@ class OrchestratorDriver(Driver):
         calibrate_sensor: bool
             If True, trigger a load stopper sensor recalibration before the next measurement
 
-        name: str
-            The name of the sample, if not generated, it will be auto generated from the self.config['data_tag'] and
-            uuid
+        name: str, optional
+            The name of the sample. If not provided, will use sample['name'] if present,
+            otherwise auto-generated from self.config['data_tag'] and uuid
 
-        sample_uuid: str
+        sample_uuid: str, optional
             uuid of sample, if not specified it will be auto-generated
 
-        AL_uuid: str
+        AL_uuid: str, optional
             uuid of AL campaign
 
-        AL_campaign_name: str
+        AL_campaign_name: str, optional
             name of AL campaign
         """
 
@@ -451,8 +383,12 @@ class OrchestratorDriver(Driver):
         else:
             self.uuid['sample'] = sample_uuid
 
+        # Extract name from sample dict if not provided as parameter
         if name is None:
-            self.sample_name = f"{self.config['data_tag']}_{self.uuid['sample'][-8:]}"
+            if 'name' in sample:
+                self.sample_name = sample['name']
+            else:
+                self.sample_name = f"{self.config['data_tag']}_{self.uuid['sample'][-8:]}"
         else:
             self.sample_name = name
 
@@ -466,16 +402,21 @@ class OrchestratorDriver(Driver):
         else:
             self.AL_campaign_name = AL_campaign_name
        
+        # Ensure sample has total_volume set
+        sample_target = sample.copy()
+        if 'total_volume' not in sample_target:
+            sample_target['total_volume'] = self.config['prepare_volume']
+        
+        # Ensure sample has name set
+        if 'name' not in sample_target:
+            sample_target['name'] = self.sample_name
 
-        print(f'Composition: {composition}')
-        if composition: # composition is not empty
-            # Convert composition to Solution-compatible format
-            solution_target = self._convert_composition_to_solution_format(composition)
-            
+        print(f'Sample: {sample_target}')
+        if sample_target: # sample is not empty
             # Check if the requested composition is feasible
             feasibility_result = self.get_client('prep').enqueue(
                 task_name='is_feasible',
-                targets=[solution_target],
+                targets=[sample_target],
                 interactive=True
             )['return_val']
             
@@ -487,7 +428,7 @@ class OrchestratorDriver(Driver):
             sample_composition_realized = feasibility_result[0]
             
             # Update sample information with target and realized compositions
-            self.data['sample_composition_target'] = composition
+            self.data['sample_composition_target'] = sample_target
             self.data['sample_composition_realized'] = sample_composition_realized
             
             # Set sample info for all servers with realized composition
@@ -504,18 +445,16 @@ class OrchestratorDriver(Driver):
                 if client_name not in self.config['tiled_exclusion_list']:
                     self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
             
-            # Pass the Solution-formatted target and sample_volume to make_and_measure
-            # which will handle the actual preparation and measurements
+            # Pass the sample dict to make_and_measure which will handle the actual preparation and measurements
             self.make_and_measure(
                 name=self.sample_name, 
-                target=solution_target,
-                sample_volume=sample_volume,
+                sample=sample_target,
                 calibrate_sensor=calibrate_sensor
             )
             self.construct_datasets(combine_comps=predict_combine_comps)
 
         if enqueue_next or predict_next:
-            if composition:#assume we made/measured a sample and append
+            if sample_target:#assume we made/measured a sample and append
                 self.add_new_data_to_agent()
             self.predict_next_sample()
 
@@ -524,15 +463,17 @@ class OrchestratorDriver(Driver):
             ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
             next_samples = ag_result[self.config['next_samples_variable']]
             
-            new_composition = next_samples.to_pandas().squeeze().to_dict()
-            new_composition = {k:{'value':v,'units':'milligram / milliliter'} for k,v in new_composition.items()}
+            # Convert next_samples to Solution-compatible format
+            new_sample = next_samples.to_pandas().squeeze().to_dict()
+            # Convert to concentrations format for Solution
+            new_sample_dict = {
+                'concentrations': {k: f"{v} mg/ml" for k, v in new_sample.items()},
+                'name': f"sample_{self.uuid['sample'][-8:]}"
+            }
 
             task = {
                 'task_name':'process_sample',
-                'composition': new_composition,
-                'sample_volume': sample_volume,
-                'fixed_concs':fixed_concs,
-                'prepare_mfrac_split':prepare_mfrac_split,
+                'sample': new_sample_dict,
                 'predict_combine_comps': predict_combine_comps,
                 'predict_next':predict_next,
                 'enqueue_next':enqueue_next,
@@ -550,8 +491,7 @@ class OrchestratorDriver(Driver):
     def make_and_measure(
             self,
             name: str,
-            target: Dict,
-            sample_volume: Dict,
+            sample: Dict,
             calibrate_sensor: bool = False,
     ):
         self.update_status(f'starting make and measure for {name}')
@@ -573,7 +513,7 @@ class OrchestratorDriver(Driver):
         self.update_status(f'Preparing sample {name}...')
         prepare_result = self.get_client('prep').enqueue(
             task_name='prepare',
-            target=target,
+            target=sample,
             dest=None,  # Let the prepare server assign a location
             interactive=True
         )['return_val']
@@ -586,10 +526,57 @@ class OrchestratorDriver(Driver):
         balanced_target_dict = prepare_result[0]
         solution_location = prepare_result[1]
         
-        # Safety check: Verify prepared volume is sufficient for sample_volume
+        # Reconstruct balanced_target Solution object from dict for use in construct_datasets
+        # The dict contains: name, components (list), masses (dict with "value mg" strings), total_volume (optional)
+        # Create Solution with masses dict directly
+        solution_kwargs = {
+            'name': balanced_target_dict.get('name', name),
+            'masses': balanced_target_dict.get('masses', {}),
+        }
+        
+        # Add total_volume if provided
         if 'total_volume' in balanced_target_dict:
-            prepared_volume_dict = balanced_target_dict['total_volume']
-            prepared_volume = units(f"{prepared_volume_dict['value']} {prepared_volume_dict['units']}")
+            total_vol_str = balanced_target_dict['total_volume']
+            if isinstance(total_vol_str, str):
+                solution_kwargs['total_volume'] = total_vol_str
+            elif isinstance(total_vol_str, dict) and 'value' in total_vol_str and 'units' in total_vol_str:
+                solution_kwargs['total_volume'] = f"{total_vol_str['value']} {total_vol_str['units']}"
+            else:
+                solution_kwargs['total_volume'] = total_vol_str
+        
+        # Disable sanity check since we're reconstructing from a balanced solution
+        solution_kwargs['sanity_check'] = False
+        self.balanced_target = Solution(**solution_kwargs)
+        
+        # Extract sample_volume from sample dict or use a default
+        # Check if sample_volume is specified in the sample dict
+        sample_volume = None
+        if 'sample_volume' in sample:
+            sample_volume = sample['sample_volume']
+        elif 'transfer_volume' in sample:
+            sample_volume = sample['transfer_volume']
+        else:
+            # Use a default based on catch_volume config or prepare_volume
+            default_volume = self.config.get('catch_volume', '10 ul')
+            if isinstance(default_volume, str):
+                sample_volume = {'value': units(default_volume).magnitude, 'units': str(units(default_volume).units)}
+            else:
+                sample_volume = default_volume
+        
+        # Convert sample_volume to dict format if needed
+        if isinstance(sample_volume, str):
+            vol_quantity = units(sample_volume)
+            sample_volume = {'value': vol_quantity.magnitude, 'units': str(vol_quantity.units)}
+        elif isinstance(sample_volume, dict) and 'value' in sample_volume and 'units' in sample_volume:
+            pass  # Already in correct format
+        else:
+            # Try to parse as quantity
+            vol_quantity = units(sample_volume)
+            sample_volume = {'value': vol_quantity.magnitude, 'units': str(vol_quantity.units)}
+        
+        # Safety check: Verify prepared volume is sufficient for sample_volume
+        if hasattr(self.balanced_target, 'volume') and self.balanced_target.volume is not None:
+            prepared_volume = self.balanced_target.volume
             sample_volume_quantity = units(f"{sample_volume['value']} {sample_volume['units']}")
             
             if prepared_volume < sample_volume_quantity:
@@ -830,42 +817,48 @@ class OrchestratorDriver(Driver):
 
         self.new_data['sample_uuid'] = self.uuid['sample']
 
+        # Use balanced_target Solution object from make_and_measure
+        if not hasattr(self, 'balanced_target') or self.balanced_target is None:
+            raise ValueError("balanced_target not available. make_and_measure must be called before construct_datasets.")
+        
+        balanced_target = self.balanced_target
+        
         sample_composition = {}
         if self.config['ternary']:
             total = 0
             for component in self.config['AL_components']:
-                mf = self.sample.target_check.mass_fraction[component].magnitude
+                mf = balanced_target.mass_fraction[component].magnitude
                 self.new_data[component] = mf
                 total += mf
             for component in self.config['AL_components']:
                 self.new_data[component] = self.new_data[component] / total
 
                 # for tiled
-                sample_composition['ternary_mfrac_' + component] = self.sample.target_check.concentration[
+                sample_composition['ternary_mfrac_' + component] = balanced_target.concentration[
                     component].to("mg/ml").magnitude
         else:
             for component in self.config['AL_components']:
                 try:
-                    self.new_data[component] = self.sample.target_check.concentration[component].to("mg/ml").magnitude
+                    self.new_data[component] = balanced_target.concentration[component].to("mg/ml").magnitude
                     self.new_data[component].attrs['units'] = 'mg/ml'
 
                     # for tiled
-                    sample_composition['conc_' + component] = self.sample.target_check.concentration[component].to(
+                    sample_composition['conc_' + component] = balanced_target.concentration[component].to(
                     "mg/ml").magnitude
                 except KeyError:
                     warnings.warn(f"Skipping component {component} in AL_components")
 
         for component in self.config['components']:
-            self.new_data['mfrac_' + component] = self.sample.target_check.mass_fraction[component].magnitude
-            self.new_data['mass_' + component] = self.sample.target_check[component].mass.to('mg').magnitude
+            self.new_data['mfrac_' + component] = balanced_target.mass_fraction[component].magnitude
+            self.new_data['mass_' + component] = balanced_target[component].mass.to('mg').magnitude
             self.new_data['mass_' + component].attrs['units'] = 'mg'
-            if self.sample.target_check[component].volume is not None:
-                self.new_data['volume_' + component] = self.sample.target_check[component].volume.to('ml').magnitude
+            if balanced_target[component].volume is not None:
+                self.new_data['volume_' + component] = balanced_target[component].volume.to('ml').magnitude
                 self.new_data['volume_' + component].attrs['units'] = 'ml'
 
             # for tiled
-            sample_composition['mfrac_' + component] = self.sample.target_check.mass_fraction[component].magnitude
-            sample_composition['mass_' + component] = self.sample.target_check[component].mass.to('mg').magnitude
+            sample_composition['mfrac_' + component] = balanced_target.mass_fraction[component].magnitude
+            sample_composition['mass_' + component] = balanced_target[component].mass.to('mg').magnitude
 
         if combine_comps is not None:
             for new_component,combine_list in combine_comps.items():
@@ -873,9 +866,9 @@ class OrchestratorDriver(Driver):
                 mass = 0 * units('mg')
                 volume = 0 * units('ul')
                 for component in combine_list:
-                    conc += self.sample.target_check.concentration[component].to("mg/ml")
-                    mass += self.sample.target_check[component].mass.to("mg")
-                    volume += self.sample.target_check[component].volume.to("ul")
+                    conc += balanced_target.concentration[component].to("mg/ml")
+                    mass += balanced_target[component].mass.to("mg")
+                    volume += balanced_target[component].volume.to("ul")
 
                 self.new_data[new_component] = conc.to("mg/ml").magnitude #include as main AL variable
                 self.new_data['conc_'+new_component] = conc.to("mg/ml").magnitude

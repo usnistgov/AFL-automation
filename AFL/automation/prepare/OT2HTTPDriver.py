@@ -465,8 +465,13 @@ class OT2HTTPDriver(Driver):
                     raise RuntimeError(
                         f"Command returned error: {response.text}"
                     )
-    def send_labware(self, labware_def):
-        """Send a custom labware definition to the current run and persist it."""
+    def send_labware(self, labware_def, check_run_status=True):
+        """Send a custom labware definition to the current run and persist it.
+        
+        Args:
+            check_run_status: If False, skip HTTP GET check when ensuring run exists.
+                             Passed to _ensure_run_exists for optimization.
+        """
 
         self.log_debug(f"Sending custom labware definition: {labware_def}")
 
@@ -490,7 +495,7 @@ class OT2HTTPDriver(Driver):
             return key
 
         # Ensure we have a valid run
-        run_id = self._ensure_run_exists()
+        run_id = self._ensure_run_exists(check_run_status=check_run_status)
 
         try:
             command_dict = {"data": labware_def}
@@ -518,12 +523,17 @@ class OT2HTTPDriver(Driver):
             self.log_error(f"Error sending custom labware: {str(e)}")
             raise RuntimeError(f"Error sending custom labware: {str(e)}")
                         
-    def load_labware(self, name, slot, module=None, **kwargs):
-        """Load labware (containers, tipracks) into the protocol using HTTP API"""
+    def load_labware(self, name, slot, module=None, check_run_status=True, **kwargs):
+        """Load labware (containers, tipracks) into the protocol using HTTP API
+        
+        Args:
+            check_run_status: If False, skip HTTP GET check when ensuring run exists.
+                             Passed to _ensure_run_exists and send_labware for optimization.
+        """
         self.log_debug(f"Loading labware '{name}' into slot '{slot}'")
 
         # Ensure we have a valid run
-        run_id = self._ensure_run_exists()
+        run_id = self._ensure_run_exists(check_run_status=check_run_status)
 
         labware_json = kwargs.pop("labware_json", None)
 
@@ -535,7 +545,7 @@ class OT2HTTPDriver(Driver):
             if not load_name:
                 raise ValueError("labware_json missing parameters.loadName")
             name = load_name
-            self.send_labware(labware_json)
+            self.send_labware(labware_json, check_run_status=check_run_status)
         else:
             if "/" in name:
                 namespace, load_name = name.split("/", 1)
@@ -554,7 +564,7 @@ class OT2HTTPDriver(Driver):
                 if path and Path(path).exists():
                     with open(path, "r") as f:
                         definition = json.load(f)
-                    self.send_labware(definition)
+                    self.send_labware(definition, check_run_status=check_run_status)
                 else:
                     self.log_warning(f"Custom labware definition not found for {key}")
 
@@ -677,12 +687,17 @@ class OT2HTTPDriver(Driver):
             self.log_error(f"Error loading labware: {str(e)}")
             raise RuntimeError(f"Error loading labware: {str(e)}")
             
-    def load_module(self, name, slot, **kwargs):
-        """Load modules (heater-shaker, tempdeck) into the protocol using HTTP API"""
+    def load_module(self, name, slot, check_run_status=True, **kwargs):
+        """Load modules (heater-shaker, tempdeck) into the protocol using HTTP API
+        
+        Args:
+            check_run_status: If False, skip HTTP GET check when ensuring run exists.
+                             Passed to _ensure_run_exists for optimization.
+        """
         self.log_debug(f"Loading module '{name}' into slot '{slot}'")
 
         # Ensure we have a valid run
-        run_id = self._ensure_run_exists()
+        run_id = self._ensure_run_exists(check_run_status=check_run_status)
 
         try:
             if slot in self.config["loaded_modules"].keys():
@@ -754,14 +769,20 @@ class OT2HTTPDriver(Driver):
             self.log_error(f"Error loading module: {str(e)}")
             raise RuntimeError(f"Error loading module: {str(e)}")
 
-    def load_instrument(self, name, mount, tip_rack_slots, reload=False, **kwargs):
-        """Load pipette and store tiprack information using HTTP API."""
+    def load_instrument(self, name, mount, tip_rack_slots, reload=False, check_run_status=True, update_pipettes=True, **kwargs):
+        """Load pipette and store tiprack information using HTTP API.
+        
+        Args:
+            check_run_status: If False, skip HTTP GET check when ensuring run exists.
+                             Passed to _ensure_run_exists for optimization.
+            update_pipettes: If False, skip calling _update_pipettes (for optimization during reload).
+        """
         self.log_debug(
             f"Loading pipette '{name}' on '{mount}' mount with tip_racks in slots {tip_rack_slots}"
         )
 
         # Ensure we have a valid run
-        run_id = self._ensure_run_exists()
+        run_id = self._ensure_run_exists(check_run_status=check_run_status)
 
         try:
             # First, load the pipette using the HTTP API
@@ -793,8 +814,12 @@ class OT2HTTPDriver(Driver):
 
             pipette_id = response_data["data"]["result"]["pipetteId"]
 
-            # Make sure we have the latest pipette information
-            self._update_pipettes()
+            # Make sure we have the latest pipette information (unless disabled for optimization)
+            if update_pipettes:
+                self._update_pipettes()
+            # Ensure pipette_info entry exists before patching
+            if mount not in self.pipette_info:
+                self.pipette_info[mount] = {}
             self.pipette_info[mount][
                 "id"
             ] = pipette_id  # patch the correct pipette id to the pipette_info dict
@@ -895,6 +920,9 @@ class OT2HTTPDriver(Driver):
     def mix(self, volume, location, repetitions=1, **kwargs):
         self.log_info(f"Mixing {volume}uL {repetitions} times at {location}")
 
+        # Verify run exists once at the start, then skip checks for all atomic commands
+        self._ensure_run_exists()
+
         # Get pipette based on volume
         pipette = self.get_pipette(volume)
         pipette_mount = pipette["mount"]
@@ -925,6 +953,7 @@ class OT2HTTPDriver(Driver):
                     "pipetteMount": pipette_mount,
                     "wellLocation": None,  # Use next available tip in rack
                 },
+                check_run_status=False,
             )
             self.has_tip = True
 
@@ -942,6 +971,7 @@ class OT2HTTPDriver(Driver):
                         "offset": {"x": 0, "y": 0, "z": 0},
                     },
                 },
+                check_run_status=False,
             )
 
             self._execute_atomic_command(
@@ -956,6 +986,7 @@ class OT2HTTPDriver(Driver):
                         "offset": {"x": 0, "y": 0, "z": 0},
                     },
                 },
+                check_run_status=False,
             )
 
     def _split_up_transfers(self, vol):
@@ -1041,6 +1072,7 @@ class OT2HTTPDriver(Driver):
         """Transfer fluid from one location to another using atomic HTTP API commands"""
         self.log_info(f"Transferring {volume}uL from {source} to {dest}")
         
+        # Verify run exists once at the start, then skip checks for all atomic commands
         self._ensure_run_exists()
         
         # Set flow rates if specified
@@ -1098,6 +1130,7 @@ class OT2HTTPDriver(Driver):
                     "pipetteMount": pipette_mount,
                     "wellLocation": None,  # Use next available tip in rack, will be updated in _execute_atomic_command
                 },
+                check_run_status=False,
             )
             
             # 1a. If destination is on a heater-shaker, stop the shaking and latch the latch pre-flight
@@ -1147,6 +1180,7 @@ class OT2HTTPDriver(Driver):
                             },
                             "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                         },
+                        check_run_status=False,
                     )
 
                     self._execute_atomic_command(
@@ -1162,6 +1196,7 @@ class OT2HTTPDriver(Driver):
                             },
                             "flowRate": self.pipette_info[pipette_mount]['dispense_flow_rate'],
                         },
+                        check_run_status=False,
                     )
 
                 # Restore original rates
@@ -1186,6 +1221,7 @@ class OT2HTTPDriver(Driver):
                     },
                     "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                 },
+                check_run_status=False,
             )
 
             # 4. Aspirate equilibration delay (while tip is in liquid)
@@ -1205,6 +1241,7 @@ class OT2HTTPDriver(Driver):
                         "offset": {"x": 0, "y": 0, "z": 0},
                     },
                 },
+                check_run_status=False,
             )
             if post_aspirate_delay > 0:
                 time.sleep(post_aspirate_delay)
@@ -1226,6 +1263,7 @@ class OT2HTTPDriver(Driver):
                         },
                         "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                     },
+                    check_run_status=False,
                 )
 
             # 7. Dispense
@@ -1250,6 +1288,7 @@ class OT2HTTPDriver(Driver):
                     "wellLocation": {"origin": dest_position, "offset": offset},
                     "flowRate": self.pipette_info[pipette_mount]['dispense_flow_rate'],
                 },
+                check_run_status=False,
             )
 
             # 8. Post-dispense delay
@@ -1284,6 +1323,7 @@ class OT2HTTPDriver(Driver):
                             },
                             "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                         },
+                        check_run_status=False,
                     )
 
                     self._execute_atomic_command(
@@ -1299,6 +1339,7 @@ class OT2HTTPDriver(Driver):
                             },
                             "flowRate": self.pipette_info[pipette_mount]['dispense_flow_rate'],
                         },
+                        check_run_status=False,
                     )
 
                 # Restore original rates
@@ -1319,6 +1360,7 @@ class OT2HTTPDriver(Driver):
                         "wellName": dest_well["wellName"],
                         "wellLocation": {"origin": dest_position, "offset": offset},
                     },
+                    check_run_status=False,
                 )
 
                 
@@ -1338,17 +1380,24 @@ class OT2HTTPDriver(Driver):
                             "y": 0,
                             "z": 10
                         },
-                        "alternateDropLocation": False})
+                        "alternateDropLocation": False},
+                        check_run_status=False)
 
                 self._execute_atomic_command("dropTipInPlace", {"pipetteId": pipette_id, 
-                                                        })
+                                                        },
+                                                        check_run_status=False)
             # Update last pipette
             self.last_pipette = pipette
 
     def _execute_atomic_command(
-        self, command_type, params=None, wait_until_complete=True, timeout=None
+        self, command_type, params=None, wait_until_complete=True, timeout=None, check_run_status=True
     ):
-        """Execute a single atomic command using the HTTP API"""
+        """Execute a single atomic command using the HTTP API
+        
+        Args:
+            check_run_status: If False, skip HTTP GET check when ensuring run exists.
+                             Passed to _ensure_run_exists for optimization.
+        """
         if params is None:
             params = {}
 
@@ -1376,7 +1425,7 @@ class OT2HTTPDriver(Driver):
         )
 
         # Ensure we have a valid run
-        run_id = self._ensure_run_exists()
+        run_id = self._ensure_run_exists(check_run_status=check_run_status)
 
         # Build the query parameters
         query_params = {"waitUntilComplete": wait_until_complete}
@@ -1782,17 +1831,19 @@ class OT2HTTPDriver(Driver):
         
         try:
             # Step 1: Load modules first
+            # We know the run exists because _create_run just created it, so skip status checks
             self.log_info("Reloading modules")
             for slot, (_, module_name) in original_modules.items():
                 try:
                     self.log_info(f"Reloading module {module_name} in slot {slot}")
-                    self.load_module(module_name, slot)
+                    self.load_module(module_name, slot, check_run_status=False)
                     # New module ID will be stored in config["loaded_modules"]
                 except Exception as e:
                     self.log_error(f"Error reloading module {module_name} in slot {slot}: {str(e)}")
                     raise
                     
             # Step 2: Load labware
+            # We know the run exists because _create_run just created it, so skip status checks
             self.log_info("Reloading labware")
             for slot, (_, labware_name, labware_data) in original_labware.items():
                 # Check if this labware is on a module
@@ -1802,20 +1853,22 @@ class OT2HTTPDriver(Driver):
                     
                 try:
                     self.log_info(f"Reloading labware {labware_name} in slot {slot}")
-                    self.load_labware(labware_name, slot, module=module_id)
+                    self.load_labware(labware_name, slot, module=module_id, check_run_status=False)
                     # New labware ID will be stored in config["loaded_labware"]
                 except Exception as e:
                     self.log_error(f"Error reloading labware {labware_name} in slot {slot}: {str(e)}")
                     raise
                     
             # Step 3: Load instruments
+            # We know the run exists because _create_run just created it, so skip status checks
+            # Also skip pipette updates since _initialize_robot already fetched pipette info
             self.log_info("Reloading instruments")
             for mount, instrument_data in original_instruments.items():
                 instrument_name = instrument_data['name']
                 
                 try:
                     self.log_info(f"Reloading instrument {instrument_name} on {mount} mount")
-                    self.load_instrument(instrument_name, mount, tiprack_slots[mount],reload=True)
+                    self.load_instrument(instrument_name, mount, tiprack_slots[mount], reload=True, check_run_status=False, update_pipettes=False)
                     # New instrument ID will be stored in config["loaded_instruments"]
                 except Exception as e:
                     self.log_error(f"Error reloading instrument {instrument_name} on {mount} mount: {str(e)}")
@@ -1856,10 +1909,19 @@ class OT2HTTPDriver(Driver):
             self.config["loaded_instruments"] = original_instruments
             return False
     
-    def _ensure_run_exists(self):
-        """Ensure a run exists for executing commands, creating one if needed"""
+    def _ensure_run_exists(self, check_run_status=True):
+        """Ensure a run exists for executing commands, creating one if needed
+        
+        Args:
+            check_run_status: If False, skip HTTP GET check and return run_id if it exists.
+                             If True, verify run status via HTTP GET request.
+        """
         if not hasattr(self, "run_id") or not self.run_id:
             return self._create_run()
+
+        # Skip status check if requested (optimization for bulk operations)
+        if not check_run_status:
+            return self.run_id
 
         # Check if the run is still valid
         try:

@@ -62,7 +62,7 @@ class APSUSAXS(Driver):
     defaults['file_read_max_retries'] = 20
     defaults['file_read_retry_sleep'] = 15.0
     defaults['file_data_check_key'] = 'CalibratedData'  # Dictionary key to check for None
-    defaults['file_blank_check_key'] = 'BlankData'  # Dictionary key to check for None
+    defaults['file_blank_check_key'] = 'QRSData'  # Dictionary key to check for None
     defaults['userdir_pv'] = 'usxLAX:userDir'
     defaults['datadir_pv'] = 'usxLAX:sampleDir'
     defaults['next_fs_order_n_pv'] = 'usxLAX:USAXS:FS_OrderNumber'
@@ -308,10 +308,10 @@ class APSUSAXS(Driver):
         user_dir = epics.caget(self.config['userdir_pv'],as_string=True)
         data_dir = epics.caget(self.config['datadir_pv'],as_string=True)
         fs_order_n = epics.caget(self.config['next_fs_order_n_pv']) - 1.0 # need to subtract 1 because the order number is incremented after the scan starts
-        if read_USAXS:
+        if not is_blank and read_USAXS:
             filename= f"{sanitized_prefix}_{int(fs_order_n):04d}.h5"
             filepath_usaxs = pathlib.Path(user_dir) / data_dir / (str(data_dir) + '_usaxs') 
-            data_dict_usaxs = self._safe_read_file(filepath_usaxs, filename,isUSAXS=True,is_blank=is_blank)
+            data_dict_usaxs = self._safe_read_file(filepath_usaxs, filename,isUSAXS=True, is_blank=is_blank)
 
             self.data.add_array('USAXS_q',data_dict_usaxs['CalibratedData']['Q'])
             self.data.add_array('USAXS_I',data_dict_usaxs['CalibratedData']['Intensity'])
@@ -321,10 +321,10 @@ class APSUSAXS(Driver):
             self.data['USAXS_name'] = name
             self.data['USAXS_blank'] = is_blank
 
-        if read_SAXS:
+        if not is_blank and read_SAXS:
             filename= f"{sanitized_prefix}_{int(fs_order_n):04d}.hdf"
             filepath_saxs = pathlib.Path(user_dir) / data_dir / (str(data_dir) + '_saxs') 
-            data_dict_saxs = self._safe_read_file(filepath_saxs, filename,isUSAXS=False,is_blank=is_blank)
+            data_dict_saxs = self._safe_read_file(filepath_saxs, filename,isUSAXS=False, is_blank=is_blank)
 
             self.data.add_array('SAXS_q',data_dict_saxs['CalibratedData']['Q'])
             self.data.add_array('SAXS_I',data_dict_saxs['CalibratedData']['Intensity'])

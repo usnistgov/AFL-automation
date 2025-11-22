@@ -20,6 +20,7 @@ LABWARE_OPTIONS = {
     "opentrons/opentrons_96_tiprack_1000ul": "Opentrons 96 Tiprack 1000µL",
     "opentrons/corning_96_wellplate_360ul_flat": "Corning 96 Well Plate",
     "opentrons/nest_96_wellplate_2ml_deep": "NEST 2mL 96 Deep Well Plate",
+    "custom_beta/nest_96_wellplate_1p6ml_deep_afl": "NEST 1.6mL 96 Deep Well Plate (AFL Definition)",
     "custom_beta/nist_pneumatic_loader": "NIST Pneumatic Loader (slot 10 only)",
     "custom_beta/nist_6_20ml_vials": "NIST 6 x 20mL vial carrier",
     "custom_beta/nist_2_100ml_bottles": "NIST 2 x 100mL bottle carrier",

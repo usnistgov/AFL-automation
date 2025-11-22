@@ -320,6 +320,7 @@ class APSUSAXS(Driver):
             self.data['USAXS_Filename'] = filename
             self.data['USAXS_name'] = name
             self.data['USAXS_blank'] = is_blank
+            self.data['USAXS_q'] = data_dict_usaxs['CalibratedData']['Q']
 
         if not is_blank and read_SAXS:
             filename= f"{sanitized_prefix}_{int(fs_order_n):04d}.hdf"
@@ -333,6 +334,7 @@ class APSUSAXS(Driver):
             self.data['SAXS_Filename'] = filename
             self.data['SAXS_name'] = name
             self.data['SAXS_blank'] = is_blank
+            self.data['SAXS_q'] = data_dict_saxs['CalibratedData']['Q']
 
     def block_for_run_finish(self):
         while self.getRunInProgress():

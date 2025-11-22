@@ -441,6 +441,24 @@
         <span class="c1"># Override the name set by both parents</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;OT2Prepare&#39;</span>
         
+        <span class="c1"># Update filepath to match the new name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.config.json&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Replace config with optimized settings for OT2Prepare</span>
+        <span class="c1"># Inherits optimized settings from MassBalanceDriver, but we can further customize</span>
+        <span class="c1"># Note: PersistentConfig will automatically load existing values from disk</span>
+        <span class="kn">from</span> <span class="nn">AFL.automation.shared.PersistentConfig</span> <span class="kn">import</span> <span class="n">PersistentConfig</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">PersistentConfig</span><span class="p">(</span>
+            <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span>
+            <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">,</span>
+            <span class="n">max_history</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>  <span class="c1"># Reduced from default 10000</span>
+            <span class="n">max_history_size_mb</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>  <span class="c1"># Limit file size to 50MB</span>
+            <span class="n">write_debounce_seconds</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># Batch rapid operations</span>
+            <span class="n">compact_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Use compact JSON for large files</span>
+        <span class="p">)</span>
+        
         <span class="c1"># Initialize additional attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>

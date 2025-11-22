@@ -664,6 +664,22 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">MassBalance</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MassBalance&#39;</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+        
+        <span class="c1"># Replace config with optimized settings for large stock configurations</span>
+        <span class="c1"># This significantly improves performance when adding many stocks</span>
+        <span class="c1"># Note: PersistentConfig will automatically load existing values from disk</span>
+        <span class="kn">from</span> <span class="nn">AFL.automation.shared.PersistentConfig</span> <span class="kn">import</span> <span class="n">PersistentConfig</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">PersistentConfig</span><span class="p">(</span>
+            <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span>
+            <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">,</span>
+            <span class="n">max_history</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>  <span class="c1"># Reduced from default 10000 - large configs don&#39;t need that much history</span>
+            <span class="n">max_history_size_mb</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>  <span class="c1"># Limit file size to 50MB</span>
+            <span class="n">write_debounce_seconds</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># Batch rapid stock additions (e.g., when adding many stocks)</span>
+            <span class="n">compact_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Use compact JSON for large files</span>
+        <span class="p">)</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transfer_volume</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>

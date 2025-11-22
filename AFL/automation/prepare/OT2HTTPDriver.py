@@ -2079,7 +2079,7 @@ class OT2HTTPDriver(Driver):
         
         # Write to file
         with open(filename, 'w') as f:
-            f.write('\\n'.join(script))
+            f.write('\n'.join(script))
             
         self.log_info(f"Generated alignment script at {filename}")
     

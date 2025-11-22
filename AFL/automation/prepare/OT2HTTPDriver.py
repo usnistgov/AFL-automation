@@ -1969,6 +1969,119 @@ class OT2HTTPDriver(Driver):
         for m in self.config["available_tips"]:
             status.append(self.get_tip_status(m))
         return "\n".join(status)
+
+    def make_align_script(self, filename: str):
+        """
+        Generate an Opentrons Python Protocol API script to verify alignment.
+        
+        This script recreates the current deck state (modules, labware, instruments)
+        and performs a movement to the top of well A1 for each labware using each pipette.
+        This allows for visual verification of calibration and alignment.
+        """
+        script = []
+        
+        # Header
+        script.append("from opentrons import protocol_api")
+        script.append("")
+        script.append("metadata = {")
+        script.append("    'protocolName': 'Alignment Check',")
+        script.append("    'author': 'AFL Auto-Generated',")
+        script.append("    'description': 'Script for aligning and testing deck configuration',")
+        script.append("    'apiLevel': '2.13'")
+        script.append("}")
+        script.append("")
+        script.append("def run(protocol: protocol_api.ProtocolContext):")
+        
+        indent = "    "
+        
+        # Track labware variable names by ID
+        labware_var_by_id = {}
+        
+        # 1. Modules
+        loaded_modules = self.config.get("loaded_modules", {})
+        if loaded_modules:
+            script.append(f"{indent}# Modules")
+            # Sort by slot
+            for slot in sorted(loaded_modules.keys(), key=lambda x: int(x) if x.isdigit() else 99):
+                module_id, module_name = loaded_modules[slot]
+                script.append(f"{indent}module_{slot} = protocol.load_module('{module_name}', '{slot}')")
+            script.append("")
+
+        # 2. Labware
+        loaded_labware = self.config.get("loaded_labware", {})
+        regular_labware_vars = []
+        
+        if loaded_labware:
+            script.append(f"{indent}# Labware")
+            # Sort by slot
+            for slot in sorted(loaded_labware.keys(), key=lambda x: int(x) if x.isdigit() else 99):
+                labware_id, _, labware_data = loaded_labware[slot]
+                
+                # Get precise load info from definition if available
+                definition = labware_data.get('definition', {})
+                params = definition.get('parameters', {})
+                load_name = params.get('loadName', 'unknown_labware')
+                namespace = definition.get('namespace', 'opentrons')
+                version = definition.get('version', 1)
+                
+                # Determine if tiprack
+                labware_type = definition.get('metadata', {}).get('displayCategory', 'default')
+                is_tiprack = (
+                    params.get('isTiprack') or 
+                    labware_type == 'tipRack' or
+                    'tiprack' in load_name.lower()
+                )
+                
+                var_name = f"labware_{slot}"
+                labware_var_by_id[labware_id] = var_name
+                
+                if not is_tiprack:
+                    regular_labware_vars.append(var_name)
+                
+                # Check if on module
+                if str(slot) in loaded_modules:
+                    parent = f"module_{slot}"
+                    script.append(f"{indent}{var_name} = {parent}.load_labware('{load_name}', namespace='{namespace}', version={version})")
+                else:
+                    script.append(f"{indent}{var_name} = protocol.load_labware('{load_name}', '{slot}', namespace='{namespace}', version={version})")
+            script.append("")
+
+        # 3. Pipettes
+        loaded_instruments = self.config.get("loaded_instruments", {})
+        pipette_vars = []
+        
+        if loaded_instruments:
+            script.append(f"{indent}# Pipettes")
+            for mount, instrument_data in loaded_instruments.items():
+                name = instrument_data['name']
+                tip_rack_ids = instrument_data.get('tip_racks', [])
+                
+                # Resolve tip rack variables
+                tip_rack_vars = [labware_var_by_id[tid] for tid in tip_rack_ids if tid in labware_var_by_id]
+                tip_racks_arg = f"[{', '.join(tip_rack_vars)}]"
+                
+                var_name = f"pipette_{mount}"
+                pipette_vars.append(var_name)
+                
+                script.append(f"{indent}{var_name} = protocol.load_instrument('{name}', '{mount}', tip_racks={tip_racks_arg})")
+            script.append("")
+            
+        # 4. Alignment Moves
+        if pipette_vars and regular_labware_vars:
+            script.append(f"{indent}# Alignment Verification")
+            script.append(f"{indent}# Move to top of A1 for each labware")
+            
+            for pip in pipette_vars:
+                for lab in regular_labware_vars:
+                    script.append(f"{indent}protocol.comment(f'Checking {lab} with {pip}')")
+                    script.append(f"{indent}{pip}.move_to({lab}['A1'].top())")
+                    script.append(f"{indent}protocol.delay(seconds=0.5)") 
+        
+        # Write to file
+        with open(filename, 'w') as f:
+            f.write('\\n'.join(script))
+            
+        self.log_info(f"Generated alignment script at {filename}")
     
     @Driver.unqueued(render_hint='html')
     def visualize_deck(self, mode='full', **kwargs):

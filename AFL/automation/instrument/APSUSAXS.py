@@ -65,6 +65,7 @@ class APSUSAXS(Driver):
     defaults['file_blank_check_key'] = 'QRSData'  # Dictionary key to check for None
     defaults['userdir_pv'] = 'usxLAX:userDir'
     defaults['datadir_pv'] = 'usxLAX:sampleDir'
+    defaults['data_autocollection_permit_pv'] = 'usxLAX:AutoCollectionPermit'
     defaults['next_fs_order_n_pv'] = 'usxLAX:USAXS:FS_OrderNumber'
 
     def __init__(self,overrides=None):
@@ -283,17 +284,24 @@ class APSUSAXS(Driver):
         self.status_txt = f'Starting USAXS/SAXS/WAXS scan named {name}'
         if self.app is not None:
             self.app.logger.debug(f'Starting USAXS/SAXS/WAXS exposure with name {name}')
+
+        autocollection_permit = epics.caget(self.config['data_autocollection_permit_pv'])
+        if not (autocollection_permit==1):
+            raise RuntimeError('Data autocollection is not permitted. Please start RE(auto_collect.remote_ops()).')
+
         self.status_txt = 'Writing script...'
         self._writeUSAXSScript()
         self.status_txt = 'Waiting for script save...'
         time.sleep(self.config['script_write_cooldown'])
         epics.caput(self.config['script_name_pv'],self.config['script_file'])
         time.sleep(0.1)
+        epics.caput(self.config['instrument_status_pv'], "Starting AFL auto exposure...")
+        time.sleep(0.1)
         epics.caput(self.config['run_initiate_pv'],1)
         self.status_txt = 'Run started!'
 
         time.sleep(0.5)
-        if block or reduce_data:
+        if block:
             time.sleep(20)
             self.block_for_run_finish()
             self.status_txt = 'Instrument Idle'

@@ -2492,6 +2492,122 @@
             <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_tip_status</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
         <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="OT2HTTPDriver.make_align_script">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.make_align_script">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_align_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate an Opentrons Python Protocol API script to verify alignment.</span>
+<span class="sd">        </span>
+<span class="sd">        This script recreates the current deck state (modules, labware, instruments)</span>
+<span class="sd">        and performs a movement to the top of well A1 for each labware using each pipette.</span>
+<span class="sd">        This allows for visual verification of calibration and alignment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Header</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;from opentrons import protocol_api&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;metadata = {&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    &#39;protocolName&#39;: &#39;Alignment Check&#39;,&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    &#39;author&#39;: &#39;AFL Auto-Generated&#39;,&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    &#39;description&#39;: &#39;Script for aligning and testing deck configuration&#39;,&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    &#39;apiLevel&#39;: &#39;2.13&#39;&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;}&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;def run(protocol: protocol_api.ProtocolContext):&quot;</span><span class="p">)</span>
+        
+        <span class="n">indent</span> <span class="o">=</span> <span class="s2">&quot;    &quot;</span>
+        
+        <span class="c1"># Track labware variable names by ID</span>
+        <span class="n">labware_var_by_id</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># 1. Modules</span>
+        <span class="n">loaded_modules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loaded_modules&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="n">loaded_modules</span><span class="p">:</span>
+            <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}</span><span class="s2"># Modules&quot;</span><span class="p">)</span>
+            <span class="c1"># Sort by slot</span>
+            <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">loaded_modules</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="mi">99</span><span class="p">):</span>
+                <span class="n">module_id</span><span class="p">,</span> <span class="n">module_name</span> <span class="o">=</span> <span class="n">loaded_modules</span><span class="p">[</span><span class="n">slot</span><span class="p">]</span>
+                <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}</span><span class="s2">module_</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2"> = protocol.load_module(&#39;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&#39;)&quot;</span><span class="p">)</span>
+            <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 2. Labware</span>
+        <span class="n">loaded_labware</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">regular_labware_vars</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="n">loaded_labware</span><span class="p">:</span>
+            <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}</span><span class="s2"># Labware&quot;</span><span class="p">)</span>
+            <span class="c1"># Sort by slot</span>
+            <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">loaded_labware</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="mi">99</span><span class="p">):</span>
+                <span class="n">labware_id</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">labware_data</span> <span class="o">=</span> <span class="n">loaded_labware</span><span class="p">[</span><span class="n">slot</span><span class="p">]</span>
+                
+                <span class="c1"># Get precise load info from definition if available</span>
+                <span class="n">definition</span> <span class="o">=</span> <span class="n">labware_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;definition&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parameters&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">load_name</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;loadName&#39;</span><span class="p">,</span> <span class="s1">&#39;unknown_labware&#39;</span><span class="p">)</span>
+                <span class="n">namespace</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;namespace&#39;</span><span class="p">,</span> <span class="s1">&#39;opentrons&#39;</span><span class="p">)</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                
+                <span class="c1"># Determine if tiprack</span>
+                <span class="n">labware_type</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;displayCategory&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">)</span>
+                <span class="n">is_tiprack</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;isTiprack&#39;</span><span class="p">)</span> <span class="ow">or</span> 
+                    <span class="n">labware_type</span> <span class="o">==</span> <span class="s1">&#39;tipRack&#39;</span> <span class="ow">or</span>
+                    <span class="s1">&#39;tiprack&#39;</span> <span class="ow">in</span> <span class="n">load_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="p">)</span>
+                
+                <span class="n">var_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;labware_</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">labware_var_by_id</span><span class="p">[</span><span class="n">labware_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_name</span>
+                
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">is_tiprack</span><span class="p">:</span>
+                    <span class="n">regular_labware_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
+                
+                <span class="c1"># Check if on module</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span> <span class="ow">in</span> <span class="n">loaded_modules</span><span class="p">:</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;module_</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}{</span><span class="n">var_name</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">parent</span><span class="si">}</span><span class="s2">.load_labware(&#39;</span><span class="si">{</span><span class="n">load_name</span><span class="si">}</span><span class="s2">&#39;, namespace=&#39;</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">&#39;, version=</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}{</span><span class="n">var_name</span><span class="si">}</span><span class="s2"> = protocol.load_labware(&#39;</span><span class="si">{</span><span class="n">load_name</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">&#39;, namespace=&#39;</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">&#39;, version=</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 3. Pipettes</span>
+        <span class="n">loaded_instruments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">pipette_vars</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="n">loaded_instruments</span><span class="p">:</span>
+            <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}</span><span class="s2"># Pipettes&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">instrument_data</span> <span class="ow">in</span> <span class="n">loaded_instruments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">instrument_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">tip_rack_ids</span> <span class="o">=</span> <span class="n">instrument_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tip_racks&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                
+                <span class="c1"># Resolve tip rack variables</span>
+                <span class="n">tip_rack_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">labware_var_by_id</span><span class="p">[</span><span class="n">tid</span><span class="p">]</span> <span class="k">for</span> <span class="n">tid</span> <span class="ow">in</span> <span class="n">tip_rack_ids</span> <span class="k">if</span> <span class="n">tid</span> <span class="ow">in</span> <span class="n">labware_var_by_id</span><span class="p">]</span>
+                <span class="n">tip_racks_arg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tip_rack_vars</span><span class="p">)</span><span class="si">}</span><span class="s2">]&quot;</span>
+                
+                <span class="n">var_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;pipette_</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">pipette_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
+                
+                <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}{</span><span class="n">var_name</span><span class="si">}</span><span class="s2"> = protocol.load_instrument(&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39;, tip_racks=</span><span class="si">{</span><span class="n">tip_racks_arg</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            
+        <span class="c1"># 4. Alignment Moves</span>
+        <span class="k">if</span> <span class="n">pipette_vars</span> <span class="ow">and</span> <span class="n">regular_labware_vars</span><span class="p">:</span>
+            <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}</span><span class="s2"># Alignment Verification&quot;</span><span class="p">)</span>
+            <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}</span><span class="s2"># Move to top of A1 for each labware&quot;</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">pip</span> <span class="ow">in</span> <span class="n">pipette_vars</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">regular_labware_vars</span><span class="p">:</span>
+                    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}</span><span class="s2">protocol.comment(f&#39;Checking </span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">pip</span><span class="si">}</span><span class="s2">&#39;)&quot;</span><span class="p">)</span>
+                    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}{</span><span class="n">pip</span><span class="si">}</span><span class="s2">.move_to(</span><span class="si">{</span><span class="n">lab</span><span class="si">}</span><span class="s2">[&#39;A1&#39;].top())&quot;</span><span class="p">)</span>
+                    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}</span><span class="s2">protocol.delay(seconds=0.5)&quot;</span><span class="p">)</span> 
+        
+        <span class="c1"># Write to file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">n&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script</span><span class="p">))</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated alignment script at </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
     
 <div class="viewcode-block" id="OT2HTTPDriver.visualize_deck">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.visualize_deck">[docs]</a>

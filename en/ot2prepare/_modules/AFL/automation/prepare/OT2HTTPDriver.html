@@ -427,6 +427,7 @@
     <span class="s2">&quot;opentrons/opentrons_96_tiprack_1000ul&quot;</span><span class="p">:</span> <span class="s2">&quot;Opentrons 96 Tiprack 1000µL&quot;</span><span class="p">,</span>
     <span class="s2">&quot;opentrons/corning_96_wellplate_360ul_flat&quot;</span><span class="p">:</span> <span class="s2">&quot;Corning 96 Well Plate&quot;</span><span class="p">,</span>
     <span class="s2">&quot;opentrons/nest_96_wellplate_2ml_deep&quot;</span><span class="p">:</span> <span class="s2">&quot;NEST 2mL 96 Deep Well Plate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;custom_beta/nest_96_wellplate_1p6ml_deep_afl&quot;</span><span class="p">:</span> <span class="s2">&quot;NEST 1.6mL 96 Deep Well Plate (AFL Definition)&quot;</span><span class="p">,</span>
     <span class="s2">&quot;custom_beta/nist_pneumatic_loader&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST Pneumatic Loader (slot 10 only)&quot;</span><span class="p">,</span>
     <span class="s2">&quot;custom_beta/nist_6_20ml_vials&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST 6 x 20mL vial carrier&quot;</span><span class="p">,</span>
     <span class="s2">&quot;custom_beta/nist_2_100ml_bottles&quot;</span><span class="p">:</span> <span class="s2">&quot;NIST 2 x 100mL bottle carrier&quot;</span><span class="p">,</span>
@@ -2604,7 +2605,7 @@
         
         <span class="c1"># Write to file</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">n&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script</span><span class="p">))</span>
             
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated alignment script at </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 

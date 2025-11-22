@@ -229,6 +229,22 @@ class MassBalanceDriver(MassBalanceBase, Driver):
     def __init__(self, overrides=None):
         MassBalance.__init__(self)
         Driver.__init__(self, name='MassBalance', defaults=self.gather_defaults(), overrides=overrides)
+        
+        # Replace config with optimized settings for large stock configurations
+        # This significantly improves performance when adding many stocks
+        # Note: PersistentConfig will automatically load existing values from disk
+        from AFL.automation.shared.PersistentConfig import PersistentConfig
+        
+        self.config = PersistentConfig(
+            path=self.filepath,
+            defaults=self.gather_defaults(),
+            overrides=overrides,
+            max_history=100,  # Reduced from default 10000 - large configs don't need that much history
+            max_history_size_mb=50,  # Limit file size to 50MB
+            write_debounce_seconds=0.5,  # Batch rapid stock additions (e.g., when adding many stocks)
+            compact_json=True,  # Use compact JSON for large files
+        )
+        
         self.minimum_transfer_volume = None
         self.stocks = []
         self.targets = []

@@ -3,6 +3,7 @@ import datetime
 import pathlib
 import copy
 import warnings
+import threading
 from collections.abc import MutableMapping
 
 class PersistentConfig(MutableMapping):
@@ -24,6 +25,9 @@ class PersistentConfig(MutableMapping):
         lock=False,
         write=True,
         max_history=10000,
+        max_history_size_mb=100,  # New: limit history by file size
+        write_debounce_seconds=0.1,  # New: batch writes within this time window
+        compact_json=True,  # New: use compact JSON for large files
         datetime_key_format='%y/%d/%m %H:%M:%S.%f'
                 ):
         '''Constructor
@@ -51,6 +55,23 @@ class PersistentConfig(MutableMapping):
             If False, all writing to the config file will be disabled and a 
             warning will be emitted each time the config is modified.
         
+        max_history: int
+            Maximum number of history entries to keep (default: 10000)
+            
+        max_history_size_mb: float
+            Maximum size of history file in MB. If exceeded, oldest entries are removed.
+            Set to None to disable size-based limiting. (default: 100 MB)
+            
+        write_debounce_seconds: float
+            Delay in seconds before writing to disk after a change. Multiple rapid
+            changes will be batched into a single write. Set to 0 to disable debouncing.
+            (default: 0.1 seconds)
+            
+        compact_json: bool
+            If True, use compact JSON (no indentation) for files larger than 1MB.
+            This significantly reduces file size and write time for large configs.
+            (default: True)
+        
         datetime_key_format: str
             String defining the root level keys of the json-serialized file. 
             See https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior.
@@ -60,6 +81,14 @@ class PersistentConfig(MutableMapping):
         self.write = write  
         self.lock = False  # In case of True, only lock configuration at end of constructor
         self.max_history = max_history
+        self.max_history_size_mb = max_history_size_mb
+        self.write_debounce_seconds = write_debounce_seconds
+        self.compact_json = compact_json
+        
+        # Debouncing state
+        self._pending_write = False
+        self._write_timer = None
+        self._write_lock = threading.Lock()
         
         need_update=False
         if self.path.exists():
@@ -85,7 +114,7 @@ class PersistentConfig(MutableMapping):
             need_update=True
                     
         if need_update:
-            self._update_history()
+            self._update_history(immediate=True)  # Immediate write during init
             
         self.lock = lock #In case of True, only lock configuration at end of constructor
                 
@@ -166,7 +195,7 @@ class PersistentConfig(MutableMapping):
         else:
             raise ValueError('Must supply nth or datetime_key!')
         self.config = copy.deepcopy(self.history[key])
-        self._update_history()
+        self._update_history(immediate=True)  # Immediate write for revert
     
     def get_historical_values(self,key,convert_to_datetime=False):
         '''Convenience method for gathering historical values of a parameter
@@ -202,22 +231,121 @@ class PersistentConfig(MutableMapping):
             
         return keys
     
-    def _update_history(self):
+    def flush(self):
+        '''Force immediate write to disk, bypassing debouncing'''
+        with self._write_lock:
+            if self._write_timer is not None:
+                self._write_timer.cancel()
+                self._write_timer = None
+            self._pending_write = False
+            self._do_write()
+    
+    def _estimate_history_size_mb(self):
+        '''Estimate the size of history in MB by serializing to JSON'''
+        try:
+            # Use compact JSON for size estimation
+            json_str = json.dumps(self.history, separators=(',', ':'))
+            return len(json_str.encode('utf-8')) / (1024 * 1024)
+        except Exception:
+            # Fallback: rough estimate based on number of entries
+            return len(self.history) * 0.01  # Assume ~10KB per entry
+    
+    def _trim_history_by_size(self):
+        '''Remove oldest history entries until file size is under limit'''
+        if self.max_history_size_mb is None:
+            return
+            
+        while self._estimate_history_size_mb() > self.max_history_size_mb:
+            keys = self._get_sorted_history_keys()
+            if len(keys) <= 1:  # Keep at least one entry
+                break
+            # Remove oldest entry
+            del self.history[keys[0]]
+    
+    def _do_write(self):
+        '''Perform the actual write to disk'''
+        if not self.write:
+            return
+            
+        # Trim history by count
+        if len(self.history) > self.max_history:
+            keys = self._get_sorted_history_keys()
+            # delete all keys more than max history
+            for key in keys[:-self.max_history]:
+                del self.history[key]
+        
+        # Trim history by size
+        self._trim_history_by_size()
+        
+        # Add current config to history
+        key = self._get_datetime_key()
+        self.history[key] = copy.deepcopy(self.config)
+        
+        # Determine if we should use compact JSON
+        use_compact = self.compact_json and self._estimate_history_size_mb() > 1.0
+        
+        # Atomic write: write to temp file, then rename
+        temp_path = self.path.with_suffix(self.path.suffix + '.tmp')
+        try:
+            with open(temp_path, 'w') as f:
+                if use_compact:
+                    # Compact JSON for large files
+                    json.dump(self.history, f, separators=(',', ':'))
+                else:
+                    # Pretty-printed JSON for small files (easier to read/debug)
+                    json.dump(self.history, f, indent=4)
+            
+            # Atomic rename
+            temp_path.replace(self.path)
+        except Exception as e:
+            # Clean up temp file on error
+            if temp_path.exists():
+                temp_path.unlink()
+            raise e
+    
+    def _schedule_write(self):
+        '''Schedule a debounced write'''
+        if self.write_debounce_seconds <= 0:
+            # No debouncing, write immediately
+            self._do_write()
+            return
+            
+        with self._write_lock:
+            self._pending_write = True
+            
+            # Cancel existing timer if any
+            if self._write_timer is not None:
+                self._write_timer.cancel()
+            
+            # Schedule new write
+            def delayed_write():
+                with self._write_lock:
+                    if self._pending_write:
+                        self._pending_write = False
+                        self._write_timer = None
+                        self._do_write()
+            
+            self._write_timer = threading.Timer(self.write_debounce_seconds, delayed_write)
+            self._write_timer.start()
+    
+    def _update_history(self, immediate=False):
+        '''Update history and optionally write to disk
+        
+        Parameters
+        ----------
+        immediate: bool
+            If True, write immediately without debouncing. Used for initialization
+            and critical operations like revert.
+        '''
         if self.write:
-            if len(self.history)>self.max_history:
-                keys = self._get_sorted_history_keys()
-                #print(f'History reached max # of entries ( removing oldest key: {keys[0]}')
-                # delete all keys more than max history
-                for key in keys[:-self.max_history]:
-                    del self.history[key]
-            key = self._get_datetime_key()
-            self.history[key] = copy.deepcopy(self.config)
-            with open(self.path,'w') as f:
-                json.dump(self.history,f,indent=4)
+            if immediate or self.write_debounce_seconds <= 0:
+                self._do_write()
+            else:
+                self._schedule_write()
         else:
             warnings.warn(
                 '''
                 PersistentConfig writing disabled. To save changes to config, 
                 set self.write to True.
-                '''
+                ''' 
             )

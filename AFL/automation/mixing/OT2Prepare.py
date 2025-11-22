@@ -30,6 +30,24 @@ class OT2Prepare(OT2HTTPDriver, MassBalanceDriver):
         # Override the name set by both parents
         self.name = 'OT2Prepare'
         
+        # Update filepath to match the new name
+        self.filepath = self.path / (self.name + '.config.json')
+        
+        # Replace config with optimized settings for OT2Prepare
+        # Inherits optimized settings from MassBalanceDriver, but we can further customize
+        # Note: PersistentConfig will automatically load existing values from disk
+        from AFL.automation.shared.PersistentConfig import PersistentConfig
+        
+        self.config = PersistentConfig(
+            path=self.filepath,
+            defaults=self.gather_defaults(),
+            overrides=overrides,
+            max_history=100,  # Reduced from default 10000
+            max_history_size_mb=50,  # Limit file size to 50MB
+            write_debounce_seconds=0.5,  # Batch rapid operations
+            compact_json=True,  # Use compact JSON for large files
+        )
+        
         # Initialize additional attributes
         self.stocks = []
         self.targets = []

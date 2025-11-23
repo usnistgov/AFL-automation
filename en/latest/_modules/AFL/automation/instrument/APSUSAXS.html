@@ -468,10 +468,12 @@
 
                     <span class="p">}</span>
                     <span class="p">}</span>
-    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;empty_scan_title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;USAXS_mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Flyscan&#39;</span> <span class="c1">#Flyscane or uascan</span>
-    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;USAXS_npts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">400</span>
-    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;USAXS_signal_cutoff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.05</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;file_read_max_retries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;file_read_retry_sleep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">15.0</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;file_read_check_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CalibratedData&#39;</span>  <span class="c1"># Dictionary key to check for None</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;userdir_pv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;usxLAX:userDir&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;datadir_pv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;usxLAX:sampleDir&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;next_fs_order_n_pv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;usxLAX:USAXS:FS_OrderNumber&#39;</span>
 
 <div class="viewcode-block" id="APSUSAXS.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.__init__">[docs]</a>
@@ -481,9 +483,7 @@
 
 <span class="sd">        &#39;&#39;&#39;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;Matilda.convertUSAXS&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[usaxs]&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">convertSAS</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;Matilda.convertSAS&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[usaxs]&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">readfromtiled</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;Matilda.readfromtiled&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[usaxs]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readMyNXcanSAS</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;Matilda.hdf5code.readMyNXcanSAS&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[usaxs]&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;APSUSAXS&#39;</span><span class="p">,</span><span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
@@ -493,6 +493,7 @@
         
         <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Just started...&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename_prefix</span> <span class="o">=</span> <span class="s1">&#39;AFL&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="s1">&#39;AFL&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span> <span class="o">=</span> <span class="mi">0</span></div>
@@ -505,7 +506,30 @@
 
 
 
-        
+<div class="viewcode-block" id="APSUSAXS.getFilenamePrefix">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.getFilenamePrefix">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getFilenamePrefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            get the currently set file name prefix</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename_prefix</span></div>
+
+    
+<div class="viewcode-block" id="APSUSAXS.setFilenamePrefix">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.setFilenamePrefix">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">setFilenamePrefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">prefix</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            set the currently set file name prefix</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting filename prefix to </span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="APSUSAXS.getFilename">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.getFilename">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
@@ -576,6 +600,101 @@
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_safe_read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span><span class="n">is_usaxs</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Safely read a USAXS file with retry logic.</span>
+<span class="sd">        </span>
+<span class="sd">        Checks if file exists, then calls readMyNXcanSAS. If the specified</span>
+<span class="sd">        dictionary entry is None, retries after sleeping. Continues until</span>
+<span class="sd">        max retries are reached or the file is successfully read.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filepath : pathlib.Path</span>
+<span class="sd">            Path to the directory containing the file</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Name of the file to read</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary returned by readMyNXcanSAS</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            If the file does not exist</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If the file cannot be read successfully after max retries</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">full_path</span> <span class="o">=</span> <span class="n">filepath</span> <span class="o">/</span> <span class="n">filename</span>
+        
+        <span class="c1"># Check if file exists</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">full_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File does not exist: </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+        <span class="n">max_retries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;file_read_max_retries&#39;</span><span class="p">]</span>
+        <span class="n">retry_sleep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;file_read_retry_sleep&#39;</span><span class="p">]</span>
+        <span class="n">check_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;file_read_check_key&#39;</span><span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readMyNXcanSAS</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span><span class="n">is_usaxs</span><span class="o">=</span><span class="n">is_usaxs</span><span class="p">)</span>
+                
+                <span class="c1"># Check if the specified key is None</span>
+                <span class="k">if</span> <span class="n">check_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;Key &quot;</span><span class="si">{</span><span class="n">check_key</span><span class="si">}</span><span class="s1">&quot; not found in data dictionary. &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;Available keys: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">data_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
+                        <span class="p">)</span>
+                    <span class="c1"># If key doesn&#39;t exist, treat as failure and retry</span>
+                    <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_retries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">retry_sleep</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;Key &quot;</span><span class="si">{</span><span class="n">check_key</span><span class="si">}</span><span class="s1">&quot; not found in data dictionary after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s1"> attempts&#39;</span>
+                        <span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">check_key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_retries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s1">&#39;Key &quot;</span><span class="si">{</span><span class="n">check_key</span><span class="si">}</span><span class="s1">&quot; is None, retrying in </span><span class="si">{</span><span class="n">retry_sleep</span><span class="si">}</span><span class="s1">s &#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39;(attempt </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s1">)&#39;</span>
+                            <span class="p">)</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">retry_sleep</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;Key &quot;</span><span class="si">{</span><span class="n">check_key</span><span class="si">}</span><span class="s1">&quot; is None after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s1"> attempts. &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;File may not be fully written: </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s1">&#39;</span>
+                        <span class="p">)</span>
+                
+                <span class="c1"># Success - data is valid</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Successfully read file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1"> on attempt </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">data_dict</span>
+                
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_retries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;Error reading file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1"> (attempt </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s1">): </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">. &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;Retrying in </span><span class="si">{</span><span class="n">retry_sleep</span><span class="si">}</span><span class="s1">s...&#39;</span>
+                        <span class="p">)</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">retry_sleep</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Failed to read file </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s1"> attempts. &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;Last error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="p">)</span>
+        
+        <span class="c1"># Should never reach here, but just in case</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to read file </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s1"> attempts&#39;</span><span class="p">)</span>
+
 <div class="viewcode-block" id="APSUSAXS.expose">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.expose">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Expose&#39;</span><span class="p">,</span>
@@ -585,11 +704,11 @@
         <span class="s1">&#39;reduce_data&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Reduce?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span>
         <span class="s1">&#39;measure_transmission&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Measure Trans?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
         <span class="p">}})</span>
-    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">block</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">reduce_USAXS</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">reduce_WAXS</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">block</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">read_USAXS</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">read_SAXS</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getFilename</span><span class="p">()</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getFilenamePrefix</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">setFilename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setFilenamePrefix</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Starting USAXS/SAXS/WAXS scan named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting USAXS/SAXS/WAXS exposure with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -607,62 +726,34 @@
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">block_for_run_finish</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Instrument Idle&#39;</span>
+        
+        <span class="n">user_dir</span> <span class="o">=</span> <span class="n">epics</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;userdir_pv&#39;</span><span class="p">],</span><span class="n">as_string</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="n">epics</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;datadir_pv&#39;</span><span class="p">],</span><span class="n">as_string</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">fs_order_n</span> <span class="o">=</span> <span class="n">epics</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;next_fs_order_n_pv&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.0</span> <span class="c1"># need to subtract 1 because the order number is incremented after the scan starts</span>
+        <span class="n">filename</span><span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filename_prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">fs_order_n</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">.h5&quot;</span>
+        <span class="k">if</span> <span class="n">read_USAXS</span><span class="p">:</span>
+            <span class="n">filepath_usaxs</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">user_dir</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_usaxs&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">filename</span>
+            <span class="n">data_dict_usaxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_read_file</span><span class="p">(</span><span class="n">filepath_usaxs</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span><span class="n">is_usaxs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_q&#39;</span><span class="p">,</span><span class="n">data_dict_usaxs</span><span class="p">[</span><span class="s1">&#39;CalibratedData&#39;</span><span class="p">][</span><span class="s1">&#39;Q&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_I&#39;</span><span class="p">,</span><span class="n">data_dict_usaxs</span><span class="p">[</span><span class="s1">&#39;CalibratedData&#39;</span><span class="p">][</span><span class="s1">&#39;Intensity&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_dI&#39;</span><span class="p">,</span><span class="n">data_dict_usaxs</span><span class="p">[</span><span class="s1">&#39;CalibratedData&#39;</span><span class="p">][</span><span class="s1">&#39;Error&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath_usaxs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="k">if</span> <span class="n">read_SAXS</span><span class="p">:</span>
+            <span class="n">filepath_saxs</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">user_dir</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_saxs&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">filename</span>
+            <span class="n">data_dict_saxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_read_file</span><span class="p">(</span><span class="n">filepath_saxs</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span><span class="n">is_usaxs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;SAXS_q&#39;</span><span class="p">,</span><span class="n">data_dict_saxs</span><span class="p">[</span><span class="s1">&#39;CalibratedData&#39;</span><span class="p">][</span><span class="s1">&#39;Q&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;SAXS_I&#39;</span><span class="p">,</span><span class="n">data_dict_saxs</span><span class="p">[</span><span class="s1">&#39;CalibratedData&#39;</span><span class="p">][</span><span class="s1">&#39;Intensity&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;SAXS_dI&#39;</span><span class="p">,</span><span class="n">data_dict_saxs</span><span class="p">[</span><span class="s1">&#39;CalibratedData&#39;</span><span class="p">][</span><span class="s1">&#39;Error&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;SAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath_saxs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;SAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;SAXS_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span></div>
+
             
-        <span class="k">if</span> <span class="n">reduce_USAXS</span><span class="p">:</span>
-           <span class="c1"># get last flyscan from Tiled and check that the set filename matches the found file</span>
-           <span class="p">[</span><span class="n">last_scan_path</span><span class="p">,</span> <span class="n">last_scan_file</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readfromtiled</span><span class="o">.</span><span class="n">FindLastScanData</span><span class="p">(</span><span class="s1">&#39;Flyscan&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-           <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">last_scan_file</span><span class="p">:</span>
-                   <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Did not get data that seemed to match, you collected </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, we got </span><span class="si">{</span><span class="n">last_scan_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-           <span class="c1"># reduce flyscan data</span>
-           <span class="n">last_scan_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span><span class="o">.</span><span class="n">reduceFlyscanToQR</span><span class="p">(</span><span class="n">last_scan_path</span><span class="p">,</span><span class="n">last_scan_file</span><span class="p">)</span>
-           <span class="n">results_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span><span class="o">.</span><span class="n">results_to_dataset</span><span class="p">(</span><span class="n">last_scan_results</span><span class="p">)</span>
-           <span class="n">USAXS_int</span> <span class="o">=</span> <span class="n">results_ds</span><span class="p">[</span><span class="s1">&#39;USAXS_int&#39;</span><span class="p">]</span>
-
-           <span class="c1"># get empty flyscan, reduce it</span>
-           <span class="p">[</span><span class="n">empty_path</span><span class="p">,</span><span class="n">empty_file</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readfromtiled</span><span class="o">.</span><span class="n">FindScanDataByName</span><span class="p">(</span><span class="s1">&#39;Flyscan&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty_scan_title&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-           <span class="n">empty_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span><span class="o">.</span><span class="n">reduceFlyscanToQR</span><span class="p">(</span><span class="n">empty_path</span><span class="p">,</span><span class="n">empty_file</span><span class="p">)</span>
-           <span class="n">empty_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertUSAXS</span><span class="o">.</span><span class="n">results_to_dataset</span><span class="p">(</span><span class="n">empty_results</span><span class="p">)</span>
-           <span class="n">MT_USAXS_int</span> <span class="o">=</span> <span class="n">empty_ds</span><span class="p">[</span><span class="s1">&#39;USAXS_int&#39;</span><span class="p">]</span>
-           <span class="n">MT_USAXS_int</span> <span class="o">=</span> <span class="n">MT_USAXS_int</span><span class="o">.</span><span class="n">interp_like</span><span class="p">(</span><span class="n">USAXS_int</span><span class="p">)</span> <span class="c1">#interpolate to match last scan</span>
-
-           <span class="c1"># determine minimum q; argmax because we&#39;re looking for the first True (which is cast to be 1)</span>
-           <span class="n">qmin_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">((</span><span class="n">USAXS_int</span><span class="o">.</span><span class="n">values</span><span class="o">/</span><span class="n">MT_USAXS_int</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">&gt;</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;USAXS_signal_cutoff&#39;</span><span class="p">]))</span>
-           <span class="n">qmin</span> <span class="o">=</span> <span class="n">USAXS_int</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">qmin_index</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-           
-           <span class="c1">#interpolate</span>
-           <span class="n">new_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">qmin</span><span class="p">,</span><span class="n">USAXS_int</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;USAXS_npts&#39;</span><span class="p">])</span>
-           <span class="n">USAXS_int</span> <span class="o">=</span> <span class="n">USAXS_int</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">new_q</span><span class="p">)</span>
-           <span class="n">MT_USAXS_int</span> <span class="o">=</span> <span class="n">MT_USAXS_int</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">new_q</span><span class="p">)</span>
-
-           <span class="c1"># background subtraction</span>
-           <span class="n">peaktopeak_T</span> <span class="o">=</span> <span class="p">(</span><span class="n">results_ds</span><span class="o">.</span><span class="n">Maximum</span> <span class="o">/</span> <span class="n">empty_ds</span><span class="o">.</span><span class="n">Maximum</span><span class="p">)</span>
-           <span class="n">USAXS_sub</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">peaktopeak_T</span> <span class="o">*</span> <span class="n">USAXS_int</span> <span class="o">-</span> <span class="n">MT_USAXS_int</span>
-
-           <span class="c1"># add data to tiled</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_q&#39;</span><span class="p">,</span><span class="n">USAXS_int</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_int&#39;</span><span class="p">,</span><span class="n">USAXS_int</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_sub&#39;</span><span class="p">,</span><span class="n">USAXS_sub</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;MT_USAXS_q&#39;</span><span class="p">,</span><span class="n">MT_USAXS_int</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;MT_USAXS_int&#39;</span><span class="p">,</span><span class="n">MT_USAXS_int</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scan_path</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scan_file</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">peaktopeak_T</span>
-           
-        <span class="k">if</span> <span class="n">reduce_WAXS</span><span class="p">:</span> 
-           <span class="c1"># get last WAXS from Tiled, reduce it</span>
-           <span class="p">[</span><span class="n">last_scan_path</span><span class="p">,</span> <span class="n">last_scan_file</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readfromtiled</span><span class="o">.</span><span class="n">FindLastScanData</span><span class="p">(</span><span class="s1">&#39;WAXS&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-           <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">last_scan_file</span><span class="p">:</span>
-                   <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Did not get data that seemed to match, you collected </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, we got </span><span class="si">{</span><span class="n">last_scan_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-           <span class="c1">#reduce</span>
-           <span class="n">last_scan_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convertSAS</span><span class="o">.</span><span class="n">ImportAndReduceAD</span><span class="p">(</span><span class="n">last_scan_path</span><span class="p">,</span><span class="n">last_scan_file</span><span class="p">)</span>
-           
-           <span class="c1"># add data to tiled</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;WAXS_q&#39;</span><span class="p">,</span><span class="n">last_scan_results</span><span class="p">[</span><span class="s1">&#39;Q_array&#39;</span><span class="p">])</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;WAXS_int&#39;</span><span class="p">,</span><span class="n">last_scan_results</span><span class="p">[</span><span class="s1">&#39;Intensity&#39;</span><span class="p">])</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;WAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scan_path</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;WAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scan_file</span></div>
-
 
 <div class="viewcode-block" id="APSUSAXS.block_for_run_finish">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.block_for_run_finish">[docs]</a>

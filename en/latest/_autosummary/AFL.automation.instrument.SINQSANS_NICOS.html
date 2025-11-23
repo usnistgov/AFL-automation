@@ -573,10 +573,10 @@ and the normalization monitor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – The exposure time or counts (default is 1e5).</p></li>
-<li><p><strong>exposure_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – The type of exposure, must be one of ‘time’, ‘detector’, or ‘monitor’ (default is ‘detector’).</p></li>
-<li><p><strong>set_empty_transmission</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, set the measured transmission as the empty transmission (default is False).</p></li>
-<li><p><strong>return_full</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, return the full transmission data including raw counts and empty transmission (default is False).</p></li>
+<li><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The exposure time or counts (default is 1e5).</p></li>
+<li><p><strong>exposure_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The type of exposure, must be one of ‘time’, ‘detector’, or ‘monitor’ (default is ‘detector’).</p></li>
+<li><p><strong>set_empty_transmission</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, set the measured transmission as the empty transmission (default is False).</p></li>
+<li><p><strong>return_full</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, return the full transmission data including raw counts and empty transmission (default is False).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -584,7 +584,7 @@ and the normalization monitor.</p>
 monitor counts, sample counts, and empty transmission.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -606,20 +606,20 @@ and saving it in Nexus format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the sample (default is None).</p></li>
-<li><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – The exposure time or counts (default is None).</p></li>
-<li><p><strong>exposure_transmission</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – The exposure time or counts for transmission measurement (default is None).</p></li>
-<li><p><strong>block</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, block until the exposure is complete (default is True).</p></li>
-<li><p><strong>reduce_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, reduce the data after exposure (default is True).</p></li>
-<li><p><strong>measure_transmission</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, measure the transmission before exposure (default is True).</p></li>
-<li><p><strong>save_nexus</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, save the data in Nexus format (default is True).</p></li>
-<li><p><strong>exposure_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – The type of exposure, must be one of ‘time’, ‘detector’, or ‘monitor’ (default is ‘detector’).</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the sample (default is None).</p></li>
+<li><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The exposure time or counts (default is None).</p></li>
+<li><p><strong>exposure_transmission</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The exposure time or counts for transmission measurement (default is None).</p></li>
+<li><p><strong>block</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, block until the exposure is complete (default is True).</p></li>
+<li><p><strong>reduce_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, reduce the data after exposure (default is True).</p></li>
+<li><p><strong>measure_transmission</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, measure the transmission before exposure (default is True).</p></li>
+<li><p><strong>save_nexus</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, save the data in Nexus format (default is True).</p></li>
+<li><p><strong>exposure_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The type of exposure, must be one of ‘time’, ‘detector’, or ‘monitor’ (default is ‘detector’).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If the exposure type is not one of ‘time’, ‘detector’, or ‘monitor’.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.13)"><strong>FileNotFoundError</strong></a> – If the data file cannot be located after multiple attempts.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the exposure type is not one of ‘time’, ‘detector’, or ‘monitor’.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.14)"><strong>FileNotFoundError</strong></a> – If the data file cannot be located after multiple attempts.</p></li>
 </ul>
 </dd>
 </dl>

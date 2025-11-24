@@ -9,6 +9,7 @@ AFL.automation.prepare.OT2HTTPDriver
    .. autosummary::
    
       ceil
+      files
       listify
    
    .. rubric:: Classes
@@ -17,4 +18,6 @@ AFL.automation.prepare.OT2HTTPDriver
    
       Driver
       OT2HTTPDriver
+      Path
+      Template
    

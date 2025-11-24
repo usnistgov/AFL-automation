@@ -17,7 +17,7 @@
    :recursive:
 
    APIServer
-   EpicsADLiveProcess
+   driver_templates
    instrument
    loading
    mixing

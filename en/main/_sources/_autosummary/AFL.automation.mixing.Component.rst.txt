@@ -9,6 +9,7 @@ AFL.automation.mixing.Component
    .. autosummary::
    
       enforce_units
+      to_quantity
    
    .. rubric:: Classes
 

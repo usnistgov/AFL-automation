@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>AFL.automation.EpicsADLiveProcess.Client &#8212; AFL-automation  documentation</title>
+    <title>AFL.automation.driver_templates &#8212; AFL-automation  documentation</title>
   
   
   
@@ -46,12 +46,12 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../_static/_static/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/AFL.automation.EpicsADLiveProcess.Client';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/AFL.automation.driver_templates';</script>
     <link rel="icon" href="../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="AFL.automation.EpicsADLiveProcess.CollateDaemon" href="AFL.automation.EpicsADLiveProcess.CollateDaemon.html" />
-    <link rel="prev" title="AFL.automation.EpicsADLiveProcess.AreaDetectorLive" href="AFL.automation.EpicsADLiveProcess.AreaDetectorLive.html" />
+    <link rel="next" title="AFL.automation.instrument" href="AFL.automation.instrument.html" />
+    <link rel="prev" title="AFL.automation.APIServer.QueueDaemon" href="AFL.automation.APIServer.QueueDaemon.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -360,14 +360,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../api.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="AFL.automation.html">AFL.automation</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="AFL.automation.APIServer.html">AFL.automation.APIServer</a></li>
-<li class="toctree-l3 current active has-children"><a class="reference internal" href="AFL.automation.EpicsADLiveProcess.html">AFL.automation.EpicsADLiveProcess</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="AFL.automation.EpicsADLiveProcess.AreaDetectorLive.html">AFL.automation.EpicsADLiveProcess.AreaDetectorLive</a></li>
-<li class="toctree-l4 current active"><a class="current reference internal" href="#">AFL.automation.EpicsADLiveProcess.Client</a></li>
-<li class="toctree-l4"><a class="reference internal" href="AFL.automation.EpicsADLiveProcess.CollateDaemon.html">AFL.automation.EpicsADLiveProcess.CollateDaemon</a></li>
-<li class="toctree-l4"><a class="reference internal" href="AFL.automation.EpicsADLiveProcess.EpicsADLiveProcessDaemon.html">AFL.automation.EpicsADLiveProcess.EpicsADLiveProcessDaemon</a></li>
-<li class="toctree-l4"><a class="reference internal" href="AFL.automation.EpicsADLiveProcess.ReduceDaemon.html">AFL.automation.EpicsADLiveProcess.ReduceDaemon</a></li>
-</ul>
-</details></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">AFL.automation.driver_templates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="AFL.automation.instrument.html">AFL.automation.instrument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="AFL.automation.loading.html">AFL.automation.loading</a></li>
 <li class="toctree-l3"><a class="reference internal" href="AFL.automation.mixing.html">AFL.automation.mixing</a></li>
@@ -435,10 +428,7 @@
     
     <li class="breadcrumb-item"><a href="AFL.automation.html" class="nav-link">AFL.automation</a></li>
     
-    
-    <li class="breadcrumb-item"><a href="AFL.automation.EpicsADLiveProcess.html" class="nav-link">AFL.automation.EpicsADLiveProcess</a></li>
-    
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.EpicsADLiveProcess.Client</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.driver_templates</span></li>
   </ul>
 </nav>
 </div>
@@ -455,88 +445,8 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-AFL.automation.EpicsADLiveProcess.Client">
-<span id="afl-automation-epicsadliveprocess-client"></span><h1>AFL.automation.EpicsADLiveProcess.Client<a class="headerlink" href="#module-AFL.automation.EpicsADLiveProcess.Client" title="Link to this heading">#</a></h1>
-<p class="rubric">Classes</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.EpicsADLiveProcess.Client.Client" title="AFL.automation.EpicsADLiveProcess.Client.Client"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Client</span></code></a>([ip, port])</p></td>
-<td><p>Communicate with NistoRoboto server on OT-2</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<dl class="py class">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.EpicsADLiveProcess.Client.</span></span><span class="sig-name descname"><span class="pre">Client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'10.42.0.30'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'5000'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client" title="Link to this definition">#</a></dt>
-<dd><p>Communicate with NistoRoboto server on OT-2</p>
-<p>This class maps pipettor functions to HTTP REST requests that are sent to
-the NistoRoboto server</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'10.42.0.30'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'5000'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.__init__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.logged_in">
-<span class="sig-name descname"><span class="pre">logged_in</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.logged_in"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.logged_in" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.login">
-<span class="sig-name descname"><span class="pre">login</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">username</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.login"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.login" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.set_queue_mode">
-<span class="sig-name descname"><span class="pre">set_queue_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debug_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.set_queue_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.set_queue_mode" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.transfer">
-<span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.transfer" title="Link to this definition">#</a></dt>
-<dd><p>Transfer fluid from one location to another</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Source wells to transfer from. Wells should be specified as three
-character strings with the first character being the slot number.</p></li>
-<li><p><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Destination wells to transfer from. Wells should be specified as
-three character strings with the first character being the slot
-number.</p></li>
-<li><p><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – volume of fluid to transfer in microliters</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.load_labware">
-<span class="sig-name descname"><span class="pre">load_labware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.load_labware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.load_labware" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.load_instrument">
-<span class="sig-name descname"><span class="pre">load_instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_rack_slots</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.load_instrument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.load_instrument" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.reset" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.home">
-<span class="sig-name descname"><span class="pre">home</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.home"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.home" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.EpicsADLiveProcess.Client.Client.halt">
-<span class="sig-name descname"><span class="pre">halt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/EpicsADLiveProcess/Client.html#Client.halt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.EpicsADLiveProcess.Client.Client.halt" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <section id="module-AFL.automation.driver_templates">
+<span id="afl-automation-driver-templates"></span><h1>AFL.automation.driver_templates<a class="headerlink" href="#module-AFL.automation.driver_templates" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -550,20 +460,20 @@ number.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="AFL.automation.EpicsADLiveProcess.AreaDetectorLive.html"
+       href="AFL.automation.APIServer.QueueDaemon.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">AFL.automation.EpicsADLiveProcess.AreaDetectorLive</p>
+        <p class="prev-next-title">AFL.automation.APIServer.QueueDaemon</p>
       </div>
     </a>
     <a class="right-next"
-       href="AFL.automation.EpicsADLiveProcess.CollateDaemon.html"
+       href="AFL.automation.instrument.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">AFL.automation.EpicsADLiveProcess.CollateDaemon</p>
+        <p class="prev-next-title">AFL.automation.instrument</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -579,34 +489,10 @@ number.</p></li>
 
 
   <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client"><code class="docutils literal notranslate"><span class="pre">Client</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.__init__"><code class="docutils literal notranslate"><span class="pre">Client.__init__()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.logged_in"><code class="docutils literal notranslate"><span class="pre">Client.logged_in()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.login"><code class="docutils literal notranslate"><span class="pre">Client.login()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.set_queue_mode"><code class="docutils literal notranslate"><span class="pre">Client.set_queue_mode()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.transfer"><code class="docutils literal notranslate"><span class="pre">Client.transfer()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.load_labware"><code class="docutils literal notranslate"><span class="pre">Client.load_labware()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.load_instrument"><code class="docutils literal notranslate"><span class="pre">Client.load_instrument()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.reset"><code class="docutils literal notranslate"><span class="pre">Client.reset()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.home"><code class="docutils literal notranslate"><span class="pre">Client.home()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.EpicsADLiveProcess.Client.Client.halt"><code class="docutils literal notranslate"><span class="pre">Client.halt()</span></code></a></li>
-</ul>
-</li>
-</ul>
-  </nav></div>
-
-  <div class="sidebar-secondary-item">
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/_autosummary/AFL.automation.EpicsADLiveProcess.Client.rst.txt"
+      <li><a href="../_sources/_autosummary/AFL.automation.driver_templates.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>

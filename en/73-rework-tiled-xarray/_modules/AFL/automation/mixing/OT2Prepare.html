@@ -1,0 +1,936 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFL.automation.mixing.OT2Prepare &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/mixing/OT2Prepare';</script>
+    <link rel="icon" href="../../../../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../../../../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../automation.html" class="nav-link">AFL.automation</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.mixing.OT2Prepare</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for AFL.automation.mixing.OT2Prepare</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.mixing.MassBalance</span> <span class="kn">import</span> <span class="n">MassBalanceDriver</span><span class="p">,</span> <span class="n">MassBalance</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.prepare.OT2HTTPDriver</span> <span class="kn">import</span> <span class="n">OT2HTTPDriver</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.shared.utilities</span> <span class="kn">import</span> <span class="n">listify</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.shared.units</span> <span class="kn">import</span> <span class="n">to_quantity</span><span class="p">,</span> <span class="n">is_volume</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.mixing.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.mixing.PipetteAction</span> <span class="kn">import</span> <span class="n">PipetteAction</span>
+
+<div class="viewcode-block" id="OT2Prepare">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare">[docs]</a>
+<span class="k">class</span> <span class="nc">OT2Prepare</span><span class="p">(</span><span class="n">OT2HTTPDriver</span><span class="p">,</span> <span class="n">MassBalanceDriver</span><span class="p">):</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;prep_targets&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;prepare_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;900 ul&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;catch_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;900 ul&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;deck&#39;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;stock_mix_order&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;fixed_compositions&#39;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s1">&#39;stock_locations&#39;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># Maps stock names to deck positions: {&#39;stockH2O&#39;: &#39;3A2&#39;}</span>
+        <span class="s1">&#39;stock_transfer_params&#39;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># Per-stock transfer parameters: {&#39;stockH2O&#39;: {&#39;mix_after&#39;: True}}</span>
+        <span class="s1">&#39;catch_protocol&#39;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># PipetteAction-formatted dict for catch transfer parameters</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="OT2Prepare.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Initialize both parent classes</span>
+        <span class="n">OT2HTTPDriver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+        <span class="n">MassBalanceDriver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+        
+        <span class="c1"># Override the name set by both parents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;OT2Prepare&#39;</span>
+        
+        <span class="c1"># Update filepath to match the new name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.config.json&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Replace config with optimized settings for OT2Prepare</span>
+        <span class="c1"># Inherits optimized settings from MassBalanceDriver, but we can further customize</span>
+        <span class="c1"># Note: PersistentConfig will automatically load existing values from disk</span>
+        <span class="kn">from</span> <span class="nn">AFL.automation.shared.PersistentConfig</span> <span class="kn">import</span> <span class="n">PersistentConfig</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">PersistentConfig</span><span class="p">(</span>
+            <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span>
+            <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">,</span>
+            <span class="n">max_history</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>  <span class="c1"># Reduced from default 10000</span>
+            <span class="n">max_history_size_mb</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>  <span class="c1"># Limit file size to 50MB</span>
+            <span class="n">write_debounce_seconds</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># Batch rapid operations</span>
+            <span class="n">compact_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Use compact JSON for large files</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># Initialize additional attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span><span class="p">[</span><span class="s1">&#39;View Deck&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/visualize_deck&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span></div>
+
+
+    
+<div class="viewcode-block" id="OT2Prepare.status">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.status">[docs]</a>
+    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the status of the OT2Prepare driver.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get status from OT2HTTPDriver</span>
+        <span class="n">ot2_status</span> <span class="o">=</span> <span class="n">OT2HTTPDriver</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        
+        <span class="c1"># Add our own status information</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Stocks: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)</span><span class="si">}</span><span class="s1"> configured&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Stock locations: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;stock_locations&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1"> preparation targets available&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Combine status information</span>
+        <span class="k">return</span> <span class="n">status</span> <span class="o">+</span> <span class="n">ot2_status</span></div>
+
+            
+
+<div class="viewcode-block" id="OT2Prepare.is_feasible">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.is_feasible">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_feasible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span>  <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the target composition(s) is/are feasible for preparation using mass balance.</span>
+<span class="sd">        If feasible, returns the balanced target solution dictionary. Otherwise, returns None.</span>
+<span class="sd">        </span>
+<span class="sd">        This implementation creates a local MassBalance instance for each feasibility check</span>
+<span class="sd">        to avoid modifying the driver&#39;s state.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        targets : Union[dict, List[dict]]</span>
+<span class="sd">            Either a single target dictionary or a list of target dictionaries.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Union[dict, None]]</span>
+<span class="sd">            A list containing the balanced target dictionary for each feasible target, </span>
+<span class="sd">            or None for infeasible targets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">targets_to_check</span> <span class="o">=</span> <span class="n">listify</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+            
+        <span class="c1"># Process stocks from the driver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
+            
+        <span class="c1"># Get the minimum volume configuration</span>
+        <span class="n">minimum_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;minimum_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;100 ul&#39;</span><span class="p">)</span>
+        
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets_to_check</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Create a local MassBalance instance</span>
+                <span class="n">mb</span> <span class="o">=</span> <span class="n">MassBalance</span><span class="p">(</span><span class="n">minimum_volume</span><span class="o">=</span><span class="n">minimum_volume</span><span class="p">)</span>
+                
+                <span class="c1"># Configure the same stocks as in the driver</span>
+                <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">:</span>
+                    <span class="n">mb</span><span class="o">.</span><span class="n">stocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
+                
+                <span class="c1"># Apply any fixed compositions from config</span>
+                <span class="n">target_with_fixed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_fixed_comps</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                
+                <span class="c1"># Create a Solution from the target and add it to the MassBalance instance</span>
+                <span class="kn">from</span> <span class="nn">AFL.automation.mixing.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
+                <span class="n">target_solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="n">target_with_fixed</span><span class="p">)</span>
+                <span class="n">mb</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_solution</span><span class="p">)</span>
+                
+                <span class="c1"># Calculate mass balance</span>
+                <span class="n">mb</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tol&#39;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">))</span>
+                
+                <span class="c1"># Check if balance was successful for this target</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">balanced</span> <span class="ow">and</span> 
+                    <span class="nb">len</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">balanced</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> 
+                    <span class="n">mb</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;balanced_target&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;balanced_target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                    
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># If an exception occurs, indicate failure</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exception during feasibility check for target </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unnamed&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="OT2Prepare.apply_fixed_comps">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.apply_fixed_comps">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply_fixed_comps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply fixed compositions to a target dictionary without overwriting existing values.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        target : dict</span>
+<span class="sd">            The target solution dictionary</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            A new target dictionary with fixed compositions applied</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create a copy to avoid modifying the original</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="c1"># Get fixed compositions from config</span>
+        <span class="n">fixed_comps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fixed_compositions&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fixed_comps</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+            
+        <span class="c1"># For each component property type that might exist in the target</span>
+        <span class="k">for</span> <span class="n">prop_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;masses&#39;</span><span class="p">,</span> <span class="s1">&#39;volumes&#39;</span><span class="p">,</span> <span class="s1">&#39;concentrations&#39;</span><span class="p">,</span> <span class="s1">&#39;mass_fractions&#39;</span><span class="p">]:</span>
+            <span class="c1"># Initialize property dictionaries if they don&#39;t exist</span>
+            <span class="k">if</span> <span class="n">prop_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">prop_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                
+            <span class="c1"># If this property exists in fixed compositions</span>
+            <span class="k">if</span> <span class="n">prop_type</span> <span class="ow">in</span> <span class="n">fixed_comps</span><span class="p">:</span>
+                <span class="c1"># Add each component from fixed compositions that doesn&#39;t already exist</span>
+                <span class="k">for</span> <span class="n">comp_name</span><span class="p">,</span> <span class="n">comp_value</span> <span class="ow">in</span> <span class="n">fixed_comps</span><span class="p">[</span><span class="n">prop_type</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">comp_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="n">prop_type</span><span class="p">]:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">prop_type</span><span class="p">][</span><span class="n">comp_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp_value</span>
+        
+        <span class="c1"># Handle simpler properties that might not be dictionaries</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;total_mass&#39;</span><span class="p">,</span> <span class="s1">&#39;total_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">fixed_comps</span> <span class="ow">and</span> <span class="n">prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixed_comps</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span>
+                
+        <span class="c1"># Handle solutes list</span>
+        <span class="k">if</span> <span class="s1">&#39;solutes&#39;</span> <span class="ow">in</span> <span class="n">fixed_comps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;solutes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="s1">&#39;solutes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixed_comps</span><span class="p">[</span><span class="s1">&#39;solutes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Add any solutes that aren&#39;t already in the list</span>
+                <span class="k">for</span> <span class="n">solute</span> <span class="ow">in</span> <span class="n">fixed_comps</span><span class="p">[</span><span class="s1">&#39;solutes&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">solute</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;solutes&#39;</span><span class="p">]:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;solutes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">solute</span><span class="p">)</span>
+                        
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="OT2Prepare.prepare">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.prepare">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the target solution. The dest argument is currently not used by this implementation.&quot;&quot;&quot;</span>
+        <span class="c1"># Apply fixed compositions without overwriting existing values</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_fixed_comps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+
+        <span class="c1"># Check if the target is feasible before attempting preparation</span>
+        <span class="n">feasibility_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_feasible</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">feasibility_results</span> <span class="ow">or</span> <span class="n">feasibility_results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Target composition </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Unnamed target&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1"> is not feasible based on mass balance calculations&#39;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="n">balanced_target_dict_from_feasible</span> <span class="o">=</span> <span class="n">feasibility_results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
+        <span class="c1"># We need to re-add the original target, not the dict from is_feasible</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">balance</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;balanced_target&#39;</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No suitable mass balance found for target: </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Unnamed target&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        
+        <span class="c1"># This is the Solution object containing the protocol</span>
+        <span class="n">balanced_target_solution_object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;balanced_target&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Configure the destination for the preparation</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prep_targets&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No preparation targets configured. Cannot select a destination target.&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Pop a location from the preparation targets list</span>
+        <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># need to pop and then resend the locations list so that the persistant config triggers a write</span>
+            <span class="n">prep_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;prep_targets&#39;</span><span class="p">]</span>
+            <span class="n">destination</span> <span class="o">=</span> <span class="n">prep_targets</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;prep_targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prep_targets</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">destination</span> <span class="o">=</span> <span class="n">dest</span>
+        
+        <span class="c1"># Execute the protocol using OT2HTTPDriver</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">balanced_target_solution_object</span><span class="p">,</span> <span class="s1">&#39;protocol&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">balanced_target_solution_object</span><span class="o">.</span><span class="n">protocol</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No protocol generated for the target solution&quot;</span><span class="p">)</span>
+            
+        <span class="c1"># Reorder protocol based on stock_mix_order if specified</span>
+        <span class="n">protocol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reorder_protocol</span><span class="p">(</span><span class="n">balanced_target_solution_object</span><span class="o">.</span><span class="n">protocol</span><span class="p">)</span>
+        
+        <span class="c1"># Execute each step in the protocol</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">protocol</span><span class="p">:</span>
+            <span class="c1"># Get source and destination</span>
+            <span class="c1"># Note: source is already a deck location (e.g., &#39;3A2&#39;)</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">source</span>
+            <span class="n">dest</span> <span class="o">=</span> <span class="n">destination</span>
+            <span class="n">volume_ul</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">volume</span>  <span class="c1"># Volume is already in μL</span>
+            
+            <span class="c1"># Get stock name from deck location for transfer parameters</span>
+            <span class="n">stock_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;deck&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No stock name found for deck location: </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Get stock-specific transfer parameters</span>
+            <span class="n">transfer_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_params</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span>
+            
+            <span class="c1"># Execute the transfer</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
+                    <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+                    <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span>
+                    <span class="n">volume</span><span class="o">=</span><span class="n">volume_ul</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">transfer_params</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transfer failed from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        
+        <span class="c1"># Store the last target location for catch transfer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="o">=</span> <span class="n">destination</span>
+        
+        <span class="c1"># Return the balanced target and destination</span>
+        <span class="n">result_dict</span> <span class="o">=</span> <span class="n">balanced_target_solution_object</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="c1"># Add total_volume to the result dictionary</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">balanced_target_solution_object</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">balanced_target_solution_object</span><span class="o">.</span><span class="n">volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result_dict</span><span class="p">[</span><span class="s1">&#39;total_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">balanced_target_solution_object</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="si">}</span><span class="s2"> ul&quot;</span>
+        <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">destination</span></div>
+
+        
+<div class="viewcode-block" id="OT2Prepare.process_stocks">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.process_stocks">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process stocks and update deck config with inverse of stock_locations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Call parent method to process stocks and update stock_locations</span>
+        <span class="n">MassBalanceDriver</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># Populate deck config with inverse of stock_locations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_deck_config</span><span class="p">()</span></div>
+
+    
+    <span class="k">def</span> <span class="nf">_update_deck_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the deck config with the inverse of stock_locations.</span>
+<span class="sd">        This creates a mapping from deck locations to stock names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">deck_config</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">stock_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">deck_location</span> <span class="ow">in</span> <span class="n">stock_locations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">deck_config</span><span class="p">[</span><span class="n">deck_location</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;deck&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deck_config</span>
+    
+<div class="viewcode-block" id="OT2Prepare.get_transfer_params">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.get_transfer_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_transfer_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the transfer parameters for a specific stock solution.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stock_name : str</span>
+<span class="sd">            Name of the stock solution</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary of transfer parameters to pass to transfer()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get stock-specific parameters if available</span>
+        <span class="n">stock_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_transfer_params&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="p">{})</span>
+        
+        <span class="c1"># Get default parameters</span>
+        <span class="n">default_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_transfer_params&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        
+        <span class="c1"># Combine default and stock-specific parameters, with stock-specific taking precedence</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">default_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">stock_params</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">params</span></div>
+
+    
+<div class="viewcode-block" id="OT2Prepare.reorder_protocol">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.reorder_protocol">[docs]</a>
+    <span class="k">def</span> <span class="nf">reorder_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reorder the protocol based on stock_mix_order if specified</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        protocol : list</span>
+<span class="sd">            List of PipetteAction objects</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            Reordered list of PipetteAction objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If no stock_mix_order is specified, return original protocol</span>
+        <span class="n">stock_mix_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_mix_order&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">stock_mix_order</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">protocol</span>
+            
+        <span class="c1"># Group protocol steps by source</span>
+        <span class="n">steps_by_source</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">protocol</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">steps_by_source</span><span class="p">:</span>
+                <span class="n">steps_by_source</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">source</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">steps_by_source</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">source</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+            
+        <span class="c1"># Build reordered protocol based on stock_mix_order</span>
+        <span class="n">reordered</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">stock_name</span> <span class="ow">in</span> <span class="n">stock_mix_order</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">in</span> <span class="n">steps_by_source</span><span class="p">:</span>
+                <span class="n">reordered</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">steps_by_source</span><span class="p">[</span><span class="n">stock_name</span><span class="p">])</span>
+                <span class="k">del</span> <span class="n">steps_by_source</span><span class="p">[</span><span class="n">stock_name</span><span class="p">]</span>
+                
+        <span class="c1"># Add any remaining steps that weren&#39;t in stock_mix_order</span>
+        <span class="k">for</span> <span class="n">steps</span> <span class="ow">in</span> <span class="n">steps_by_source</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">reordered</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">reordered</span></div>
+
+
+<div class="viewcode-block" id="OT2Prepare.transfer_to_catch">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.transfer_to_catch">[docs]</a>
+    <span class="k">def</span> <span class="nf">transfer_to_catch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transfer a prepared sample to the catch/loader location using catch protocol settings.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        source : str, optional</span>
+<span class="sd">            Source location (well) of the prepared sample. If None, uses the last prepared target location.</span>
+<span class="sd">        dest : str, optional</span>
+<span class="sd">            Destination location (well). If None, must be specified in catch_protocol config.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional transfer parameters that override catch_protocol settings.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str or None</span>
+<span class="sd">            UUID of the transfer task if successful, None otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get catch protocol parameters from config</span>
+        <span class="n">catch_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;catch_protocol&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Determine source location</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No source specified and no last target location available. Call prepare() first or specify source.&quot;</span><span class="p">)</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+        
+        <span class="c1"># Handle destination</span>
+        <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest</span>
+
+        <span class="c1"># Merge with kwargs (kwargs take precedence)</span>
+        <span class="n">catch_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;dest&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">catch_params</span><span class="p">:</span>
+             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Destination &#39;dest&#39; must be specified in catch_protocol config or as an argument.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Execute the transfer</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="o">**</span><span class="n">catch_params</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">dest_val</span> <span class="o">=</span> <span class="n">catch_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dest&#39;</span><span class="p">,</span> <span class="s1">&#39;unknown&#39;</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transfer to catch failed from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest_val</span><span class="si">}</span><span class="s2"> using </span><span class="si">{</span><span class="n">catch_params</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">raise</span></div>
+
+    
+<div class="viewcode-block" id="OT2Prepare.reset">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.OT2Prepare.html#AFL.automation.mixing.OT2Prepare.OT2Prepare.reset">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the driver state/configuration.&quot;&quot;&quot;</span>
+        <span class="c1"># Placeholder: implement reset logic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_stocks</span><span class="p">()</span></div>
+</div>
+
+
+<span class="n">_DEFAULT_PORT</span><span class="o">=</span><span class="mi">5002</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+
+    
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../../../../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+AFL.automation.loading.PiPlatesRelay
+====================================
+
+.. automodule:: AFL.automation.loading.PiPlatesRelay
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MultiChannelRelay
+      PiPlatesRelay
+   

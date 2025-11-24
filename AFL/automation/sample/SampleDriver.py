@@ -706,7 +706,7 @@ class SampleDriver(Driver):
             if i == 0:
                 task['force_new_tip'] = True
             if i == (len(prep_protocol) - 1):  # last prepare
-                task['drop_tip'] = False
+                task['drop_tip'] = True# false to conserve tips, not working with OT2HTTP False
             self.uuid['prep'] = self.get_client('prep').enqueue(task_name='transfer',**task)
 
         if self.uuid['rinse'] is not None:

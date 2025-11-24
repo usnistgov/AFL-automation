@@ -1,0 +1,60 @@
+{
+    "ordering": [
+        [
+            "A1"
+        ]
+    ],
+    "brand": {
+        "brand": "NIST",
+        "brandId": [
+            "catchless-catch"
+        ]
+    },
+    "metadata": {
+        "displayName": "NIST Stirred Catch",
+        "displayCategory": "wellPlate",
+        "displayVolumeUnits": "µL",
+        "tags": []
+    },
+    "dimensions": {
+        "xDimension": 127.76,
+        "yDimension": 85.47,
+        "zDimension": 82.71
+    },
+    "wells": {
+        "A1": {
+            "depth": 15,
+            "totalLiquidVolume": 2000,
+            "shape": "circular",
+            "diameter": 15,
+            "x": 63.88,
+            "y": 67.31,
+            "z": 67.71
+        }
+    },
+    "groups": [
+        {
+            "metadata": {
+                "wellBottomShape": "v"
+            },
+            "wells": [
+                "A1"
+            ]
+        }
+    ],
+    "parameters": {
+        "format": "irregular",
+        "quirks": [],
+        "isTiprack": false,
+        "isMagneticModuleCompatible": false,
+        "loadName": "nist_stirred_catch"
+    },
+    "namespace": "custom_beta",
+    "version": 1,
+    "schemaVersion": 2,
+    "cornerOffsetFromSlot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+    }
+}

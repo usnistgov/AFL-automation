@@ -9,7 +9,7 @@ epics = lazy.load("epics", require="AFL-automation[neutron-scattering]")
 import os
 import pathlib
 import warnings
-Matilda = lazy.load("Matilda", require="AFL-automation[usaxs]")
+Matilda = lazy.load("matilda", require="AFL-automation[usaxs]")
 
 class APSUSAXS(Driver):
     defaults = {}
@@ -61,9 +61,11 @@ class APSUSAXS(Driver):
                     }
     defaults['file_read_max_retries'] = 20
     defaults['file_read_retry_sleep'] = 15.0
-    defaults['file_read_check_key'] = 'CalibratedData'  # Dictionary key to check for None
+    defaults['file_data_check_key'] = 'CalibratedData'  # Dictionary key to check for None
+    defaults['file_blank_check_key'] = 'QRSData'  # Dictionary key to check for None
     defaults['userdir_pv'] = 'usxLAX:userDir'
     defaults['datadir_pv'] = 'usxLAX:sampleDir'
+    defaults['data_autocollection_permit_pv'] = 'usxLAX:AutoCollectionPermit'
     defaults['next_fs_order_n_pv'] = 'usxLAX:USAXS:FS_OrderNumber'
 
     def __init__(self,overrides=None):
@@ -72,7 +74,7 @@ class APSUSAXS(Driver):
 
         '''
 
-        self.readMyNXcanSAS = lazy.load("Matilda.hdf5code.readMyNXcanSAS", require="AFL-automation[usaxs]")
+        self.readMyNXcanSAS = lazy.load("matilda.hdf5code", require="AFL-automation[usaxs]").readMyNXcanSAS
 
         self.app = None
         Driver.__init__(self,name='APSUSAXS',defaults=self.gather_defaults(),overrides=overrides)
@@ -157,7 +159,7 @@ class APSUSAXS(Driver):
         with open(pathlib.Path(self.config['script_path'])/self.config['script_template_file'],'r') as f:
             for line in f:
                 s = line.replace(self.config['magic_project_key'],self.project)
-                s = s.replace(self.config['magic_filename_key'],self.filename)
+                s = s.replace(self.config['magic_filename_key'],self.filename_prefix.replace('.', '_').replace('-', '_'))
                 s = s.replace(self.config['magic_xpos_key'],str(self.xpos))
                 s = s.replace(self.config['magic_ypos_key'],str(self.ypos))
                 s = s.replace('\r','')
@@ -167,7 +169,7 @@ class APSUSAXS(Driver):
             for line in lines:
                 f.write(line+'\r\n')
 
-    def _safe_read_file(self, filepath, filename,is_usaxs=True):
+    def _safe_read_file(self, filepath, filename, isUSAXS=True, is_blank=False):
         '''
         Safely read a USAXS file with retry logic.
         
@@ -202,11 +204,16 @@ class APSUSAXS(Driver):
         
         max_retries = self.config['file_read_max_retries']
         retry_sleep = self.config['file_read_retry_sleep']
-        check_key = self.config['file_read_check_key']
+
+        if is_blank:
+            check_key = self.config['file_blank_check_key']
+        else:
+            check_key = self.config['file_data_check_key']
+        
         
         for attempt in range(max_retries):
             try:
-                data_dict = self.readMyNXcanSAS(filepath, filename,is_usaxs=is_usaxs)
+                data_dict = self.readMyNXcanSAS(filepath, filename,isUSAXS=isUSAXS)
                 
                 # Check if the specified key is None
                 if check_key not in data_dict:
@@ -224,18 +231,18 @@ class APSUSAXS(Driver):
                             f'Key "{check_key}" not found in data dictionary after {max_retries} attempts'
                         )
                 
-                if data_dict[check_key] is None:
+                if data_dict[check_key]['Intensity'] is None:
                     if attempt < max_retries - 1:
                         if self.app is not None:
                             self.app.logger.debug(
-                                f'Key "{check_key}" is None, retrying in {retry_sleep}s '
+                                f'Key ["{check_key}"]["Intensity"] is None, retrying in {retry_sleep}s '
                                 f'(attempt {attempt + 1}/{max_retries})'
                             )
                         time.sleep(retry_sleep)
                         continue
                     else:
                         raise RuntimeError(
-                            f'Key "{check_key}" is None after {max_retries} attempts. '
+                            f'Key ["{check_key}"]["Intensity"] is None after {max_retries} attempts. '
                             f'File may not be fully written: {full_path}'
                         )
                 
@@ -277,28 +284,42 @@ class APSUSAXS(Driver):
         self.status_txt = f'Starting USAXS/SAXS/WAXS scan named {name}'
         if self.app is not None:
             self.app.logger.debug(f'Starting USAXS/SAXS/WAXS exposure with name {name}')
+
+        autocollection_permit = epics.caget(self.config['data_autocollection_permit_pv'])
+        if not (autocollection_permit==1):
+            raise RuntimeError('Data autocollection is not permitted. Please start RE(auto_collect.remote_ops()).')
+
         self.status_txt = 'Writing script...'
         self._writeUSAXSScript()
         self.status_txt = 'Waiting for script save...'
         time.sleep(self.config['script_write_cooldown'])
         epics.caput(self.config['script_name_pv'],self.config['script_file'])
         time.sleep(0.1)
+        epics.caput(self.config['instrument_status_pv'], "Starting AFL auto exposure...")
+        time.sleep(0.1)
         epics.caput(self.config['run_initiate_pv'],1)
         self.status_txt = 'Run started!'
 
         time.sleep(0.5)
-        if block or reduce_data:
+        if block:
             time.sleep(20)
             self.block_for_run_finish()
             self.status_txt = 'Instrument Idle'
         
+        if "blank" in name.lower():
+            is_blank = True
+        else:
+            is_blank = False
+        
+        sanitized_prefix = self.filename_prefix.replace('.', '_').replace('-', '_')
+        
         user_dir = epics.caget(self.config['userdir_pv'],as_string=True)
         data_dir = epics.caget(self.config['datadir_pv'],as_string=True)
         fs_order_n = epics.caget(self.config['next_fs_order_n_pv']) - 1.0 # need to subtract 1 because the order number is incremented after the scan starts
-        filename= f"{self.filename_prefix}_{fs_order_n:04d}.h5"
-        if read_USAXS:
-            filepath_usaxs = pathlib.Path(user_dir) / (str(data_dir) + '_usaxs') / filename
-            data_dict_usaxs = self._safe_read_file(filepath_usaxs, filename,is_usaxs=True)
+        if not is_blank and read_USAXS:
+            filename= f"{sanitized_prefix}_{int(fs_order_n):04d}.h5"
+            filepath_usaxs = pathlib.Path(user_dir) / data_dir / (str(data_dir) + '_usaxs') 
+            data_dict_usaxs = self._safe_read_file(filepath_usaxs, filename,isUSAXS=True, is_blank=is_blank)
 
             self.data.add_array('USAXS_q',data_dict_usaxs['CalibratedData']['Q'])
             self.data.add_array('USAXS_I',data_dict_usaxs['CalibratedData']['Intensity'])
@@ -306,10 +327,13 @@ class APSUSAXS(Driver):
             self.data['USAXS_Filepath'] = str(filepath_usaxs)
             self.data['USAXS_Filename'] = filename
             self.data['USAXS_name'] = name
+            self.data['USAXS_blank'] = is_blank
+            self.data['USAXS_q'] = data_dict_usaxs['CalibratedData']['Q']
 
-        if read_SAXS:
-            filepath_saxs = pathlib.Path(user_dir) / (str(data_dir) + '_saxs') / filename
-            data_dict_saxs = self._safe_read_file(filepath_saxs, filename,is_usaxs=False)
+        if not is_blank and read_SAXS:
+            filename= f"{sanitized_prefix}_{int(fs_order_n):04d}.hdf"
+            filepath_saxs = pathlib.Path(user_dir) / data_dir / (str(data_dir) + '_saxs') 
+            data_dict_saxs = self._safe_read_file(filepath_saxs, filename,isUSAXS=False, is_blank=is_blank)
 
             self.data.add_array('SAXS_q',data_dict_saxs['CalibratedData']['Q'])
             self.data.add_array('SAXS_I',data_dict_saxs['CalibratedData']['Intensity'])
@@ -317,7 +341,8 @@ class APSUSAXS(Driver):
             self.data['SAXS_Filepath'] = str(filepath_saxs)
             self.data['SAXS_Filename'] = filename
             self.data['SAXS_name'] = name
-            
+            self.data['SAXS_blank'] = is_blank
+            self.data['SAXS_q'] = data_dict_saxs['CalibratedData']['Q']
 
     def block_for_run_finish(self):
         while self.getRunInProgress():
@@ -341,7 +366,7 @@ class APSUSAXS(Driver):
         status.append(f'EPICS status: {self.getRunStatus()}')
         status.append(f'Next X: {self.xpos}')
         status.append(f'Next Y: {self.ypos}')
-        status.append(f'Next filename: {self.filename}')
+        status.append(f'Next filename_prefix: {self.filename_prefix}')
         status.append(f'Next project: {self.project}')
         return status
 if __name__ == '__main__':

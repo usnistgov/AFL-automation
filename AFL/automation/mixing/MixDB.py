@@ -283,7 +283,7 @@ class PersistentConfig_DBEngine(DBEngine):
         return component_dict
 
     def write(self, filename: str, writer: str = 'json') -> None:
-        self.config._update_history()
+        self.config.flush()
 
 def _get_engine(db_spec: str | pathlib.Path | pd.DataFrame) -> DBEngine:
     if isinstance(db_spec, str):

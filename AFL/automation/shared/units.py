@@ -10,8 +10,9 @@ DEFAULT_UNITS['mass'] = 'mg'
 DEFAULT_UNITS['concentration'] = 'g/ml'
 DEFAULT_UNITS['density'] = 'g/ml'
 DEFAULT_UNITS['molarity'] = 'millimolar'
+DEFAULT_UNITS['molality'] = 'mol/kg'
 
-SUPPORTED_TYPES = ['volume', 'mass', 'density', 'molarity', 'concentration','dimensionless']
+SUPPORTED_TYPES = ['volume', 'mass', 'density', 'molarity', 'molality', 'concentration','dimensionless']
 
 
 def has_units(value: pint.Quantity) -> bool:
@@ -24,6 +25,11 @@ def is_volume(value: pint.Quantity) -> bool:
 
 def is_molarity(value: pint.Quantity) -> bool:
     return ((len(value.dimensionality) == 2) and (value.dimensionality['[length]'] == -3) and (
+            value.dimensionality['[substance]'] == 1))
+
+
+def is_molality(value: pint.Quantity) -> bool:
+    return ((len(value.dimensionality) == 2) and (value.dimensionality['[mass]'] == -1) and (
             value.dimensionality['[substance]'] == 1))
 
 
@@ -47,6 +53,8 @@ def get_unit_type(value: pint.Quantity) -> str:
         return 'volume'
     elif is_molarity(value):
         return 'molarity'
+    elif is_molality(value):
+        return 'molality'
     elif is_mass(value):
         return 'mass'
     elif is_density(value):
@@ -112,5 +120,11 @@ def enforce_units(value:None | str | pint.Quantity, unit_type:str) -> pint.Quant
             raise ValueError(f'Supplied value must be a molarity not {value.dimensionality}')
         else:
             value = value.to(DEFAULT_UNITS['molarity'])
+
+    elif unit_type.lower() == 'molality':
+        if not is_molality(value):
+            raise ValueError(f'Supplied value must be a molality not {value.dimensionality}')
+        else:
+            value = value.to(DEFAULT_UNITS['molality'])
 
     return value

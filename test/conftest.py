@@ -10,11 +10,12 @@ def sample_dataframe():
         'uid': [
             'd72d1bb9-b608-4b18-89be-bdbea89b52dd',
             'e2777302-6565-4d4e-b9b4-800401db4ca2',
-            '949d3fab-01d5-4107-8756-eeef44a5ed4a'
+            '949d3fab-01d5-4107-8756-eeef44a5ed4a',
+            'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
         ],
-        'name': ['H2O', 'Hexanes', 'NaCl'],
-        'density': ['1.0 g/ml','661 kg/m^3', None],
-        'formula': [None,'C6H14', None],
+        'name': ['H2O', 'Hexanes', 'NaCl', 'Mystery_Solvent'],
+        'density': ['1.0 g/ml','661 kg/m^3', None, '0.9 g/ml'],
+        'formula': [None,'C6H14', None, None],
     }
     return pd.DataFrame(data)
 

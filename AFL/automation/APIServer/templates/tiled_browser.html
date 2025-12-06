@@ -26,22 +26,19 @@
         <!-- Search and Controls -->
         <div id="controls">
             <div id="search-container">
-                <input type="text" id="search-input" placeholder="Search across all metadata fields..." />
-                <button id="search-button">Search</button>
-                <button id="clear-search-button">Clear</button>
+                <div id="query-rows"></div>
+                <div id="search-buttons">
+                    <button id="add-query-button">+ Add Query</button>
+                    <button id="search-button">Search</button>
+                    <button id="clear-search-button">Clear All</button>
+                </div>
             </div>
 
             <div id="info-bar">
                 <span id="total-count">Total: 0 entries</span>
-                <span id="page-info"></span>
-                <div id="page-size-container">
-                    <label for="page-size">Rows per page:</label>
-                    <select id="page-size">
-                        <option value="25">25</option>
-                        <option value="50" selected>50</option>
-                        <option value="100">100</option>
-                        <option value="200">200</option>
-                    </select>
+                <div id="selection-controls">
+                    <button id="copy-entry-id-button" disabled>Copy Entry ID</button>
+                    <button id="copy-sample-uuid-button" disabled>Copy Sample UUID</button>
                 </div>
             </div>
         </div>

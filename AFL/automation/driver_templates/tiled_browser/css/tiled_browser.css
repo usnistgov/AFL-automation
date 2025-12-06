@@ -73,32 +73,86 @@ body {
 
 #search-container {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 12px;
     margin-bottom: 12px;
 }
 
-#search-input {
+#query-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.query-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.query-field {
+    min-width: 180px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+}
+
+.query-value {
     flex: 1;
-    padding: 10px 16px;
+    padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-#search-input:focus {
+.query-value:focus, .query-field:focus {
     outline: none;
     border-color: #3498db;
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-#search-button, #clear-search-button {
+.remove-query-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background-color: #e74c3c;
+    color: white;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.remove-query-btn:hover {
+    background-color: #c0392b;
+}
+
+#search-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+#add-query-button, #search-button, #clear-search-button {
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.2s;
+}
+
+#add-query-button {
+    background-color: #27ae60;
+    color: white;
+}
+
+#add-query-button:hover {
+    background-color: #229954;
 }
 
 #search-button {
@@ -122,24 +176,48 @@ body {
 #info-bar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 24px;
     font-size: 14px;
     color: #666;
 }
 
-#page-size-container {
-    margin-left: auto;
+#selection-controls {
     display: flex;
-    align-items: center;
     gap: 8px;
 }
 
-#page-size {
-    padding: 6px 12px;
-    border: 1px solid #ddd;
+#copy-entry-id-button, #copy-sample-uuid-button {
+    padding: 8px 16px;
+    border: none;
     border-radius: 4px;
     font-size: 14px;
-    background-color: white;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+#copy-entry-id-button {
+    background-color: #27ae60;
+    color: white;
+}
+
+#copy-entry-id-button:hover:not(:disabled) {
+    background-color: #229954;
+}
+
+#copy-sample-uuid-button {
+    background-color: #8e44ad;
+    color: white;
+}
+
+#copy-sample-uuid-button:hover:not(:disabled) {
+    background-color: #7d3c98;
+}
+
+#copy-entry-id-button:disabled,
+#copy-sample-uuid-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Error Banner */

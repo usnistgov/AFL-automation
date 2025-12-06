@@ -293,12 +293,11 @@ class Driver:
         """Serve the Tiled database browser HTML interface."""
         return render_template('tiled_browser.html')
 
-    @unqueued()
-    def tiled_config(self, **kwargs):
-        """Return Tiled server configuration from shared config file.
+    def _read_tiled_config(self):
+        """Internal helper to read Tiled config from ~/.afl/config.json.
 
-        Reads tiled_server and tiled_api_key from ~/.afl/config.json.
-        Returns dict with status and config values or helpful error message.
+        Returns:
+            dict with status and config values or error message
         """
         config_path = pathlib.Path.home() / '.afl' / 'config.json'
 
@@ -357,6 +356,15 @@ class Driver:
             'tiled_api_key': tiled_api_key
         }
 
+    @unqueued()
+    def tiled_config(self, **kwargs):
+        """Return Tiled server configuration from shared config file.
+
+        Reads tiled_server and tiled_api_key from ~/.afl/config.json.
+        Returns dict with status and config values or helpful error message.
+        """
+        return self._read_tiled_config()
+
     def _get_tiled_client(self):
         """Get or create cached Tiled client.
 
@@ -366,8 +374,8 @@ class Driver:
         if self._tiled_client is not None:
             return self._tiled_client
 
-        # Get config
-        config = self.tiled_config()
+        # Get config using internal method (avoids decorator issues)
+        config = self._read_tiled_config()
         if config['status'] == 'error':
             return config
 
@@ -385,11 +393,11 @@ class Driver:
             }
 
     @unqueued()
-    def tiled_search(self, query='', offset=0, limit=50, **kwargs):
+    def tiled_search(self, queries='', offset=0, limit=50, **kwargs):
         """Proxy endpoint for Tiled metadata search to avoid CORS issues.
 
         Args:
-            query: Search query string
+            queries: JSON string of query list: [{"field": "field_name", "value": "search_value"}, ...]
             offset: Result offset for pagination
             limit: Number of results to return
 
@@ -406,11 +414,28 @@ class Driver:
         limit = int(limit)
 
         try:
-            if query:
-                # Search with fulltext filter
-                results = client.search({'fulltext': query})
+            # Parse queries JSON
+            import json
+            if queries and queries != '[]':
+                query_list = json.loads(queries) if isinstance(queries, str) else queries
             else:
-                # No search, use root container
+                query_list = []
+
+            # Start with root client
+            results = client
+
+            # Chain searches using Contains query
+            if query_list:
+                from tiled.queries import Contains
+                for query_item in query_list:
+                    field = query_item.get('field', '')
+                    value = query_item.get('value', '')
+                    if field and value:
+                        # Use Contains query for field-specific search
+                        results = results.search(Contains(field, value))
+
+            # If no queries, use root container
+            if not query_list:
                 results = client
 
             # Get total count
@@ -445,9 +470,11 @@ class Driver:
             }
 
         except Exception as e:
+            error_msg = str(e) if str(e) else repr(e)
+            self.app.logger.error(f'Tiled search error: {error_msg}', exc_info=True)
             return {
                 'status': 'error',
-                'message': f'Error connecting to Tiled: {str(e)}'
+                'message': f'Error searching Tiled database: {error_msg}'
             }
 
     @unqueued()

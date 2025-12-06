@@ -10,11 +10,25 @@
 // =============================================================================
 
 let tiledConfig = null;  // { tiled_server, tiled_api_key }
-let currentQuery = '';
+let currentQueries = [];  // Array of {field, value} query objects
 let pageSize = 50;
 let gridApi = null;
 let currentColumns = new Set();
 let totalCount = 0;
+
+// Available search fields (excluding datetime columns)
+const SEARCH_FIELDS = [
+    'driver_name',
+    'data_tag',
+    'run_time_minutes',
+    'task_name',
+    'sample_uuid',
+    'sample_name',
+    'name',
+    'AL_campaign_name',
+    'AL_uuid',
+    'AL_components'
+];
 
 // =============================================================================
 // Utility Functions
@@ -185,16 +199,16 @@ async function checkConfig() {
 /**
  * Search Tiled database with pagination
  */
-async function performSearch(query, offset, limit) {
+async function performSearch(queries, offset, limit) {
     try {
         // Use proxy endpoint to avoid CORS issues
         const params = new URLSearchParams({
-            query: query || '',
+            queries: JSON.stringify(queries || []),
             offset: offset,
             limit: limit
         });
 
-        console.log('Calling /tiled_search with params:', { query, offset, limit });
+        console.log('Calling /tiled_search with params:', { queries, offset, limit });
 
         const response = await authenticatedFetch(`/tiled_search?${params}`);
 
@@ -460,7 +474,7 @@ function createDatasource() {
 
             updateConnectionStatus('loading');
 
-            const result = await performSearch(currentQuery, offset, limit);
+            const result = await performSearch(currentQueries, offset, limit);
 
             console.log('performSearch result:', result);
 
@@ -477,17 +491,30 @@ function createDatasource() {
                     return;
                 }
 
-                // Update columns if needed
-                if (result.columns && result.columns.length > 0) {
-                    updateColumns(result.columns);
-                }
+                // Transform data for grid with specific columns
+                const rows = result.data.map(item => {
+                    const metadata = item.attributes?.metadata || {};
+                    // Check both direct metadata and attrs (Tiled may nest in attrs)
+                    const attrs = metadata.attrs || metadata;
+                    const meta = attrs.meta || {};
 
-                // Transform data for grid
-                const rows = result.data.map(item => ({
-                    id: item.id,
-                    ...flattenMetadata(item.attributes?.metadata || {}),
-                    _raw: item
-                }));
+                    return {
+                        id: item.id,
+                        driver_name: attrs.driver_name || null,
+                        data_tag: attrs.data_tag || null,
+                        meta_started: meta.started || null,
+                        meta_ended: meta.ended || null,
+                        run_time_minutes: meta.run_time_minutes || null,
+                        task_name: attrs.task_name || null,
+                        sample_uuid: attrs.sample_uuid || null,
+                        sample_name: attrs.sample_name || null,
+                        name: attrs.name || null,
+                        AL_campaign_name: attrs.AL_campaign_name || null,
+                        AL_uuid: attrs.AL_uuid || null,
+                        AL_components: attrs.AL_components || null,
+                        _raw: item
+                    };
+                });
 
                 // Update total count display
                 totalCount = result.total_count || 0;
@@ -516,11 +543,37 @@ function initializeGrid() {
 
     const gridOptions = {
         columnDefs: [
-            { field: 'id', headerName: 'Entry ID', pinned: 'left', width: 200 },
-            { field: 'actions', headerName: 'Actions', pinned: 'right', width: 220, cellRenderer: ActionsRenderer }
+            {
+                field: 'id',
+                headerName: 'Entry ID',
+                pinned: 'left',
+                width: 100,
+                checkboxSelection: true
+                // Note: headerCheckboxSelection not supported with infinite row model
+            },
+            { field: 'driver_name', headerName: 'Driver Name', width: 150 },
+            { field: 'data_tag', headerName: 'Data Tag', width: 150 },
+            { field: 'meta_started', headerName: 'Started', width: 180 },
+            { field: 'meta_ended', headerName: 'Ended', width: 180 },
+            { field: 'run_time_minutes', headerName: 'Runtime (min)', width: 130 },
+            { field: 'task_name', headerName: 'Task Name', width: 200 },
+            { field: 'sample_uuid', headerName: 'Sample UUID', width: 250 },
+            { field: 'sample_name', headerName: 'Sample Name', width: 200 },
+            { field: 'name', headerName: 'Name', width: 200 },
+            { field: 'AL_campaign_name', headerName: 'AL Campaign', width: 200 },
+            { field: 'AL_uuid', headerName: 'AL UUID', width: 250 },
+            { field: 'AL_components', headerName: 'AL Components', width: 200 },
+            {
+                field: 'actions',
+                headerName: 'Actions',
+                pinned: 'right',
+                width: 220,
+                cellRenderer: ActionsRenderer,
+                lockPosition: true
+            }
         ],
         defaultColDef: {
-            sortable: false,
+            sortable: true,
             filter: false,
             resizable: true
         },
@@ -533,14 +586,19 @@ function initializeGrid() {
         infiniteInitialRowCount: 100,
         pagination: true,
         paginationPageSize: pageSize,
+        paginationPageSizeSelector: [25, 50, 100, 200],
         animateRows: true,
-        rowSelection: 'single',
+        rowSelection: 'multiple',
+        suppressRowClickSelection: true,
         onGridReady: (params) => {
             gridApi = params.api;
             hideLoadingOverlay();
         },
         onPaginationChanged: () => {
             updateInfoBar();
+        },
+        onSelectionChanged: () => {
+            updateSelectionButtons();
         }
     };
 
@@ -584,12 +642,7 @@ function updateConnectionStatus(status) {
  */
 function updateInfoBar() {
     document.getElementById('total-count').textContent = `Total: ${totalCount} entries`;
-
-    if (gridApi) {
-        const currentPage = gridApi.paginationGetCurrentPage() + 1;
-        const totalPages = gridApi.paginationGetTotalPages();
-        document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
-    }
+    // Note: page-info element removed since AG Grid handles pagination display
 }
 
 /**
@@ -611,6 +664,30 @@ function showError(message) {
  */
 function hideError() {
     document.getElementById('error-container').style.display = 'none';
+}
+
+/**
+ * Show success message
+ */
+function showSuccess(message) {
+    // Reuse error container but with success styling
+    const container = document.getElementById('error-container');
+    const text = document.getElementById('error-text');
+    const errorMsg = container.querySelector('.error-message');
+
+    text.textContent = message;
+    errorMsg.style.backgroundColor = '#d4edda';
+    errorMsg.style.borderColor = '#28a745';
+    errorMsg.style.color = '#155724';
+    container.style.display = 'block';
+
+    // Auto-hide after 3 seconds and reset styling
+    setTimeout(() => {
+        hideError();
+        errorMsg.style.backgroundColor = '';
+        errorMsg.style.borderColor = '';
+        errorMsg.style.color = '';
+    }, 3000);
 }
 
 /**
@@ -673,26 +750,144 @@ function closeModals() {
 // =============================================================================
 
 /**
+ * Add a new query row to the search builder
+ */
+function addQueryRow() {
+    const container = document.getElementById('query-rows');
+    const queryRow = document.createElement('div');
+    queryRow.className = 'query-row';
+
+    const fieldSelect = document.createElement('select');
+    fieldSelect.className = 'query-field';
+    fieldSelect.innerHTML = '<option value="">Select field...</option>' +
+        SEARCH_FIELDS.map(f => `<option value="${f}">${f}</option>`).join('');
+
+    const valueInput = document.createElement('input');
+    valueInput.type = 'text';
+    valueInput.className = 'query-value';
+    valueInput.placeholder = 'Search value...';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-query-btn';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = () => {
+        container.removeChild(queryRow);
+        performSearchAction();
+    };
+
+    queryRow.appendChild(fieldSelect);
+    queryRow.appendChild(valueInput);
+    queryRow.appendChild(removeBtn);
+    container.appendChild(queryRow);
+}
+
+/**
  * Perform search action
  */
 function performSearchAction() {
-    currentQuery = document.getElementById('search-input').value;
+    // Collect all queries from the query rows
+    const queryRows = document.querySelectorAll('.query-row');
+    currentQueries = [];
+
+    queryRows.forEach(row => {
+        const field = row.querySelector('.query-field').value;
+        const value = row.querySelector('.query-value').value;
+        if (field && value) {
+            currentQueries.push({ field, value });
+        }
+    });
 
     if (gridApi) {
-        gridApi.setDatasource(createDatasource());
+        gridApi.updateGridOptions({ datasource: createDatasource() });
     }
 }
 
 /**
- * Clear search
+ * Clear all searches
  */
 function clearSearch() {
-    document.getElementById('search-input').value = '';
-    currentQuery = '';
+    // Remove all query rows
+    const container = document.getElementById('query-rows');
+    container.innerHTML = '';
+
+    // Add one empty row
+    addQueryRow();
+
+    // Clear current queries
+    currentQueries = [];
 
     if (gridApi) {
-        gridApi.setDatasource(createDatasource());
+        gridApi.updateGridOptions({ datasource: createDatasource() });
     }
+}
+
+/**
+ * Update selection button states based on selected rows
+ */
+function updateSelectionButtons() {
+    const selectedRows = gridApi.getSelectedRows();
+    const copyEntryBtn = document.getElementById('copy-entry-id-button');
+    const copySampleBtn = document.getElementById('copy-sample-uuid-button');
+
+    if (copyEntryBtn && copySampleBtn) {
+        const hasSelection = selectedRows.length > 0;
+        copyEntryBtn.disabled = !hasSelection;
+        copySampleBtn.disabled = !hasSelection;
+
+        // Update button text with count
+        copyEntryBtn.textContent = hasSelection
+            ? `Copy Entry ID (${selectedRows.length})`
+            : 'Copy Entry ID';
+        copySampleBtn.textContent = hasSelection
+            ? `Copy Sample UUID (${selectedRows.length})`
+            : 'Copy Sample UUID';
+    }
+}
+
+/**
+ * Copy selected entry IDs to clipboard
+ */
+function copyEntryIds() {
+    const selectedRows = gridApi.getSelectedRows();
+    if (selectedRows.length === 0) {
+        showError('No rows selected');
+        return;
+    }
+
+    const ids = selectedRows.map(row => row.id).join('\n');
+    navigator.clipboard.writeText(ids).then(() => {
+        showSuccess(`Copied ${selectedRows.length} entry ID(s) to clipboard`);
+    }).catch(err => {
+        showError(`Failed to copy to clipboard: ${err.message}`);
+    });
+}
+
+/**
+ * Copy selected sample UUIDs to clipboard
+ */
+function copySampleUuids() {
+    const selectedRows = gridApi.getSelectedRows();
+    if (selectedRows.length === 0) {
+        showError('No rows selected');
+        return;
+    }
+
+    const uuids = selectedRows
+        .map(row => row.sample_uuid)
+        .filter(uuid => uuid !== null && uuid !== undefined)
+        .join('\n');
+
+    if (uuids.length === 0) {
+        showError('No sample UUIDs found in selected rows');
+        return;
+    }
+
+    navigator.clipboard.writeText(uuids).then(() => {
+        const count = selectedRows.filter(row => row.sample_uuid).length;
+        showSuccess(`Copied ${count} sample UUID(s) to clipboard`);
+    }).catch(err => {
+        showError(`Failed to copy to clipboard: ${err.message}`);
+    });
 }
 
 /**
@@ -702,9 +897,11 @@ function handlePageSizeChange(newSize) {
     pageSize = parseInt(newSize);
 
     if (gridApi) {
-        gridApi.setGridOption('paginationPageSize', pageSize);
-        gridApi.setGridOption('cacheBlockSize', pageSize);
-        gridApi.setDatasource(createDatasource());
+        gridApi.updateGridOptions({
+            paginationPageSize: pageSize,
+            cacheBlockSize: pageSize,
+            datasource: createDatasource()
+        });
     }
 }
 
@@ -718,17 +915,33 @@ function setupEventListeners() {
     // Clear button
     document.getElementById('clear-search-button').addEventListener('click', clearSearch);
 
-    // Search on Enter key
-    document.getElementById('search-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+    // Add query button
+    document.getElementById('add-query-button').addEventListener('click', addQueryRow);
+
+    // Search on Enter key in query rows (delegate event)
+    document.getElementById('query-rows').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && (e.target.classList.contains('query-value') || e.target.classList.contains('query-field'))) {
             performSearchAction();
         }
     });
 
-    // Page size change
-    document.getElementById('page-size').addEventListener('change', (e) => {
-        handlePageSizeChange(e.target.value);
-    });
+    // Page size change (may not exist if using AG Grid's built-in pagination)
+    const pageSizeEl = document.getElementById('page-size');
+    if (pageSizeEl) {
+        pageSizeEl.addEventListener('change', (e) => {
+            handlePageSizeChange(e.target.value);
+        });
+    }
+
+    // Clipboard buttons
+    const copyEntryBtn = document.getElementById('copy-entry-id-button');
+    const copySampleBtn = document.getElementById('copy-sample-uuid-button');
+    if (copyEntryBtn) {
+        copyEntryBtn.addEventListener('click', copyEntryIds);
+    }
+    if (copySampleBtn) {
+        copySampleBtn.addEventListener('click', copySampleUuids);
+    }
 
     // Error close button
     document.getElementById('error-close').addEventListener('click', hideError);
@@ -762,6 +975,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         hideLoadingOverlay();
         return;
     }
+
+    // Add initial query row
+    addQueryRow();
 
     // Set up event listeners
     setupEventListeners();

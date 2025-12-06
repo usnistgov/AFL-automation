@@ -424,15 +424,27 @@ class Driver:
             # Start with root client
             results = client
 
-            # Chain searches using Contains query
+            # Group queries by field to handle multiple values (OR logic)
             if query_list:
-                from tiled.queries import Contains
+                from tiled.queries import Contains, In
+                from collections import defaultdict
+
+                # Group values by field
+                field_values = defaultdict(list)
                 for query_item in query_list:
                     field = query_item.get('field', '')
                     value = query_item.get('value', '')
                     if field and value:
-                        # Use Contains query for field-specific search
-                        results = results.search(Contains(field, value))
+                        field_values[field].append(value)
+
+                # Apply queries - use In for multiple values, Contains for single
+                for field, values in field_values.items():
+                    if len(values) == 1:
+                        # Single value: use Contains
+                        results = results.search(Contains(field, values[0]))
+                    else:
+                        # Multiple values: use In (OR logic)
+                        results = results.search(In(field, values))
 
             # If no queries, use root container
             if not query_list:
@@ -591,4 +603,45 @@ class Driver:
             return {
                 'status': 'error',
                 'message': f'Error fetching metadata: {str(e)}'
+            }
+
+    @unqueued()
+    def tiled_get_distinct_values(self, field, **kwargs):
+        """Get distinct/unique values for a metadata field using Tiled's distinct() method.
+
+        Args:
+            field: Metadata field name (e.g., 'sample_name', 'sample_uuid', 'AL_campaign_name', 'AL_uuid')
+
+        Returns:
+            dict with status and list of unique values, or error message
+        """
+        # Get cached Tiled client
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        try:
+            # Use Tiled's distinct() method to get unique values for this field
+            distinct_result = client.distinct(field)
+
+            # Extract the values from the metadata
+            # distinct() returns {'metadata': {field: [{'value': ..., 'count': ...}, ...]}}
+            if 'metadata' in distinct_result and field in distinct_result['metadata']:
+                values_list = distinct_result['metadata'][field]
+                # Extract just the 'value' field from each entry
+                unique_values = [item['value'] for item in values_list if item.get('value') is not None]
+            else:
+                unique_values = []
+
+            return {
+                'status': 'success',
+                'field': field,
+                'values': unique_values,
+                'count': len(unique_values)
+            }
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error getting distinct values for field "{field}": {str(e)}'
             }

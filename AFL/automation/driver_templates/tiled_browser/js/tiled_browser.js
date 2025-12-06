@@ -11,20 +11,20 @@
 
 let tiledConfig = null;  // { tiled_server, tiled_api_key }
 let currentQueries = [];  // Array of {field, value} query objects
+let currentFilters = {};  // Object mapping filter field names to arrays of selected values
 let pageSize = 50;
 let gridApi = null;
 let currentColumns = new Set();
 let totalCount = 0;
+let multiSelectInstances = {};  // Store multi-select state for each filter
 
 // Available search fields (excluding datetime columns)
 const SEARCH_FIELDS = [
-    'driver_name',
-    'data_tag',
-    'run_time_minutes',
     'task_name',
+    'driver_name',
+    'run_time_minutes',
     'sample_uuid',
     'sample_name',
-    'name',
     'AL_campaign_name',
     'AL_uuid',
     'AL_components'
@@ -201,14 +201,33 @@ async function checkConfig() {
  */
 async function performSearch(queries, offset, limit) {
     try {
+        // Combine filters and queries
+        const allQueries = [...queries];
+
+        // Add filters - for multi-value filters, add each value as a separate query
+        // Multiple values for the same field will be OR'd together on the backend
+        for (const [field, values] of Object.entries(currentFilters)) {
+            if (Array.isArray(values)) {
+                // Multi-select: add each value
+                values.forEach(value => {
+                    if (value) {
+                        allQueries.push({ field, value });
+                    }
+                });
+            } else if (values) {
+                // Single value
+                allQueries.push({ field, value: values });
+            }
+        }
+
         // Use proxy endpoint to avoid CORS issues
         const params = new URLSearchParams({
-            queries: JSON.stringify(queries || []),
+            queries: JSON.stringify(allQueries),
             offset: offset,
             limit: limit
         });
 
-        console.log('Calling /tiled_search with params:', { queries, offset, limit });
+        console.log('Calling /tiled_search with params:', { queries: allQueries, offset, limit });
 
         const response = await authenticatedFetch(`/tiled_search?${params}`);
 
@@ -325,6 +344,37 @@ async function loadMetadata(entryId) {
         return {
             status: 'success',
             metadata: result.metadata
+        };
+
+    } catch (error) {
+        return {
+            status: 'error',
+            message: error.message
+        };
+    }
+}
+
+/**
+ * Load distinct/unique values for a metadata field
+ */
+async function loadDistinctValues(field) {
+    try {
+        const params = new URLSearchParams({ field });
+        const response = await authenticatedFetch(`/tiled_get_distinct_values?${params}`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.status === 'error') {
+            return result;
+        }
+
+        return {
+            status: 'success',
+            values: result.values || []
         };
 
     } catch (error) {
@@ -500,15 +550,13 @@ function createDatasource() {
 
                     return {
                         id: item.id,
+                        task_name: attrs.task_name || null,
                         driver_name: attrs.driver_name || null,
-                        data_tag: attrs.data_tag || null,
                         meta_started: meta.started || null,
                         meta_ended: meta.ended || null,
                         run_time_minutes: meta.run_time_minutes || null,
-                        task_name: attrs.task_name || null,
                         sample_uuid: attrs.sample_uuid || null,
                         sample_name: attrs.sample_name || null,
-                        name: attrs.name || null,
                         AL_campaign_name: attrs.AL_campaign_name || null,
                         AL_uuid: attrs.AL_uuid || null,
                         AL_components: attrs.AL_components || null,
@@ -551,15 +599,13 @@ function initializeGrid() {
                 checkboxSelection: true
                 // Note: headerCheckboxSelection not supported with infinite row model
             },
+            { field: 'task_name', headerName: 'Task Name', width: 200 },
             { field: 'driver_name', headerName: 'Driver Name', width: 150 },
-            { field: 'data_tag', headerName: 'Data Tag', width: 150 },
             { field: 'meta_started', headerName: 'Started', width: 180 },
             { field: 'meta_ended', headerName: 'Ended', width: 180 },
             { field: 'run_time_minutes', headerName: 'Runtime (min)', width: 130 },
-            { field: 'task_name', headerName: 'Task Name', width: 200 },
             { field: 'sample_uuid', headerName: 'Sample UUID', width: 250 },
             { field: 'sample_name', headerName: 'Sample Name', width: 200 },
-            { field: 'name', headerName: 'Name', width: 200 },
             { field: 'AL_campaign_name', headerName: 'AL Campaign', width: 200 },
             { field: 'AL_uuid', headerName: 'AL UUID', width: 250 },
             { field: 'AL_components', headerName: 'AL Components', width: 200 },
@@ -782,7 +828,7 @@ function addQueryRow() {
 }
 
 /**
- * Perform search action
+ * Perform search action - combines filters and queries
  */
 function performSearchAction() {
     // Collect all queries from the query rows
@@ -797,6 +843,7 @@ function performSearchAction() {
         }
     });
 
+    // Combine filters and queries for search
     if (gridApi) {
         gridApi.updateGridOptions({ datasource: createDatasource() });
     }
@@ -906,9 +953,238 @@ function handlePageSizeChange(newSize) {
 }
 
 /**
+ * Initialize a multi-select component
+ */
+function initMultiSelect(container, fieldName, values) {
+    const searchBox = container.querySelector('.multiselect-search-box');
+    const searchInput = container.querySelector('.multiselect-search');
+    const tagsContainer = container.querySelector('.multiselect-tags');
+    const dropdown = container.querySelector('.multiselect-dropdown');
+    const optionsContainer = container.querySelector('.multiselect-options');
+
+    // Store state
+    const state = {
+        allValues: values,
+        selectedValues: [],
+        isOpen: false
+    };
+    multiSelectInstances[fieldName] = state;
+
+    // Populate options
+    optionsContainer.innerHTML = '';
+    values.forEach(value => {
+        const option = document.createElement('div');
+        option.className = 'multiselect-option';
+        option.textContent = value;
+        option.dataset.value = value;
+        option.addEventListener('click', () => toggleOption(fieldName, value));
+        optionsContainer.appendChild(option);
+    });
+
+    // Search input handler
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const options = optionsContainer.querySelectorAll('.multiselect-option');
+        options.forEach(option => {
+            const text = option.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                option.classList.remove('hidden');
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+    });
+
+    // Focus/blur handlers for dropdown
+    searchInput.addEventListener('focus', () => {
+        dropdown.style.display = 'block';
+        state.isOpen = true;
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+            dropdown.style.display = 'none';
+            state.isOpen = false;
+        }
+    });
+}
+
+/**
+ * Toggle option selection in multi-select
+ */
+function toggleOption(fieldName, value) {
+    const state = multiSelectInstances[fieldName];
+    const index = state.selectedValues.indexOf(value);
+
+    if (index === -1) {
+        // Add selection
+        state.selectedValues.push(value);
+    } else {
+        // Remove selection
+        state.selectedValues.splice(index, 1);
+    }
+
+    updateMultiSelectUI(fieldName);
+}
+
+/**
+ * Remove a tag from multi-select
+ */
+function removeTag(fieldName, value) {
+    const state = multiSelectInstances[fieldName];
+    const index = state.selectedValues.indexOf(value);
+    if (index !== -1) {
+        state.selectedValues.splice(index, 1);
+        updateMultiSelectUI(fieldName);
+    }
+}
+
+/**
+ * Update multi-select UI (tags and option highlighting)
+ */
+function updateMultiSelectUI(fieldName) {
+    const state = multiSelectInstances[fieldName];
+    const container = document.querySelector(`.multiselect-search-box[data-filter="${fieldName}"]`).parentElement;
+    const tagsContainer = container.querySelector('.multiselect-tags');
+    const optionsContainer = container.querySelector('.multiselect-options');
+
+    // Update tags
+    tagsContainer.innerHTML = '';
+    state.selectedValues.forEach(value => {
+        const tag = document.createElement('div');
+        tag.className = 'multiselect-tag';
+        tag.innerHTML = `
+            <span>${value}</span>
+            <span class="multiselect-tag-remove" data-value="${value}">&times;</span>
+        `;
+        tag.querySelector('.multiselect-tag-remove').addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeTag(fieldName, value);
+        });
+        tagsContainer.appendChild(tag);
+    });
+
+    // Update option highlighting
+    const options = optionsContainer.querySelectorAll('.multiselect-option');
+    options.forEach(option => {
+        const value = option.dataset.value;
+        if (state.selectedValues.includes(value)) {
+            option.classList.add('selected');
+        } else {
+            option.classList.remove('selected');
+        }
+    });
+}
+
+/**
+ * Load unique values into multi-select components
+ */
+async function loadFilterDropdowns() {
+    const filterFields = [
+        { field: 'driver_name' },
+        { field: 'sample_name' },
+        { field: 'sample_uuid' },
+        { field: 'AL_campaign_name' },
+        { field: 'AL_uuid' }
+    ];
+
+    for (const { field } of filterFields) {
+        const container = document.querySelector(`.multiselect-search-box[data-filter="${field}"]`).parentElement;
+        const optionsContainer = container.querySelector('.multiselect-options');
+
+        // Show loading state
+        optionsContainer.innerHTML = '<div class="multiselect-loading">Loading...</div>';
+
+        // Load distinct values
+        const result = await loadDistinctValues(field);
+
+        if (result.status === 'success') {
+            // Initialize multi-select with values
+            initMultiSelect(container, field, result.values);
+        } else {
+            // Show error state
+            optionsContainer.innerHTML = '<div class="multiselect-empty">Error loading values</div>';
+            console.error(`Failed to load distinct values for ${field}:`, result.message);
+        }
+    }
+}
+
+/**
+ * Apply filter selections
+ */
+function applyFilters() {
+    // Clear existing filters
+    currentFilters = {};
+
+    // Collect selected filter values from multi-select instances
+    for (const [fieldName, state] of Object.entries(multiSelectInstances)) {
+        if (state.selectedValues.length > 0) {
+            currentFilters[fieldName] = state.selectedValues;
+        }
+    }
+
+    // Refresh grid with new filters
+    if (gridApi) {
+        gridApi.updateGridOptions({ datasource: createDatasource() });
+    }
+}
+
+/**
+ * Clear all filter selections
+ */
+function clearFilters() {
+    // Clear all multi-select instances
+    for (const [fieldName, state] of Object.entries(multiSelectInstances)) {
+        state.selectedValues = [];
+        updateMultiSelectUI(fieldName);
+    }
+
+    // Clear filter state
+    currentFilters = {};
+
+    // Refresh grid
+    if (gridApi) {
+        gridApi.updateGridOptions({ datasource: createDatasource() });
+    }
+}
+
+/**
+ * Switch between tabs
+ */
+function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        if (content.id === `${tabName}-tab`) {
+            content.classList.add('active');
+        } else {
+            content.classList.remove('active');
+        }
+    });
+}
+
+/**
  * Set up all event listeners
  */
 function setupEventListeners() {
+    // Tab buttons
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Filter buttons
+    document.getElementById('apply-filters-button').addEventListener('click', applyFilters);
+    document.getElementById('clear-filters-button').addEventListener('click', clearFilters);
+
     // Search button
     document.getElementById('search-button').addEventListener('click', performSearchAction);
 
@@ -975,6 +1251,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         hideLoadingOverlay();
         return;
     }
+
+    // Load unique values for filter dropdowns
+    loadFilterDropdowns();
 
     // Add initial query row
     addQueryRow();

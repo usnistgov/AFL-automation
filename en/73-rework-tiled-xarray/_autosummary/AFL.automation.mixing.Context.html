@@ -461,7 +461,7 @@
   <section id="module-AFL.automation.mixing.Context">
 <span id="afl-automation-mixing-context"></span><h1>AFL.automation.mixing.Context<a class="headerlink" href="#module-AFL.automation.mixing.Context" title="Link to this heading">#</a></h1>
 <p class="rubric">Classes</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code>(*args, **kwargs)</p></td>
 <td><p>Special type indicating an unconstrained type.</p></td>
@@ -473,7 +473,7 @@
 </table>
 </div>
 <p class="rubric">Exceptions</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.mixing.Context.NoContextException" title="AFL.automation.mixing.Context.NoContextException"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NoContextException</span></code></a></p></td>
 <td><p></p></td>
@@ -483,12 +483,12 @@
 </div>
 <dl class="py exception">
 <dt class="sig sig-object py" id="AFL.automation.mixing.Context.NoContextException">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.mixing.Context.</span></span><span class="sig-name descname"><span class="pre">NoContextException</span></span><a class="reference internal" href="../_modules/AFL/automation/mixing/Context.html#NoContextException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.Context.NoContextException" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.mixing.Context.</span></span><span class="sig-name descname"><span class="pre">NoContextException</span></span><a class="reference internal" href="../_modules/AFL/automation/mixing/Context.html#NoContextException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.Context.NoContextException" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="AFL.automation.mixing.Context.Context">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.mixing.Context.</span></span><span class="sig-name descname"><span class="pre">Context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/Context.html#Context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.Context.Context" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.mixing.Context.</span></span><span class="sig-name descname"><span class="pre">Context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/Context.html#Context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.Context.Context" title="Link to this definition">#</a></dt>
 <dd><p>Inherited by Pipeline to allow for context manager abuse</p>
 <p>See <a class="reference external" href="https://stackoverflow.com/questions/49573131/how-are-pymc3-variables-assigned-to-the-currently-active-model">https://stackoverflow.com/questions/49573131/how-are-pymc3-variables-assigned-to-the-currently-active-model</a></p>
 <dl class="py attribute">
@@ -503,12 +503,12 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.mixing.Context.Context.get_contexts">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_contexts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/mixing/Context.html#Context.get_contexts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.Context.Context.get_contexts" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_contexts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/mixing/Context.html#Context.get_contexts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.Context.Context.get_contexts" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.mixing.Context.Context.get_context">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/mixing/Context.html#Context.get_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.Context.Context.get_context" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/mixing/Context.html#Context.get_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.Context.Context.get_context" title="Link to this definition">#</a></dt>
 <dd><p>Return the deepest context on the stack.</p>
 </dd></dl>
 
@@ -625,7 +625,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

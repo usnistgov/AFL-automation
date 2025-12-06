@@ -3,8 +3,12 @@ from AFL.automation.shared.PersistentConfig import PersistentConfig
 from AFL.automation.shared import serialization
 from math import ceil, sqrt
 import inspect
+import json
 import pathlib
 import uuid
+
+from flask import render_template, jsonify, request
+from tiled.client import from_uri
 
 def makeRegistrar():
     functions = []
@@ -45,12 +49,16 @@ class Driver:
     # Mapping of url subpaths to filesystem directories containing static assets
     # Example: {'docs': '/path/to/docs', 'assets': pathlib.Path(__file__).parent / 'assets'}
     # Files will be served at /static/{subpath}/{filename}
-    static_dirs = {}
+    static_dirs = {
+        "tiled_browser_js": pathlib.Path(__file__).parent.parent / "driver_templates" / "tiled_browser" / "js",
+        "tiled_browser_css": pathlib.Path(__file__).parent.parent / "driver_templates" / "tiled_browser" / "css",
+    }
 
     def __init__(self, name, defaults=None, overrides=None, useful_links=None):
         self.app = None
         self.data = None
         self.dropbox = None
+        self._tiled_client = None  # Cached Tiled client
 
         if name is None:
             self.name = 'Driver'
@@ -58,14 +66,15 @@ class Driver:
             self.name = name
 
         if useful_links is None:
-            self.useful_links = {}
+            self.useful_links = {"Tiled Browser": "/tiled_browser"}
         else:
+            useful_links["Tiled Browser"] = "/tiled_browser"
             self.useful_links = useful_links
-        
-        self.path = pathlib.Path.home() / '.afl' 
+
+        self.path = pathlib.Path.home() / '.afl'
         self.path.mkdir(exist_ok=True,parents=True)
         self.filepath = self.path / (name + '.config.json')
-            
+
         self.config = PersistentConfig(
             path=self.filepath,
             defaults= defaults,
@@ -278,3 +287,281 @@ class Driver:
         self.app.logger.info(f'Storing object in dropbox as {uuid}')
         self.dropbox[uid] = obj
         return uid
+
+    @unqueued(render_hint='html')
+    def tiled_browser(self, **kwargs):
+        """Serve the Tiled database browser HTML interface."""
+        return render_template('tiled_browser.html')
+
+    @unqueued()
+    def tiled_config(self, **kwargs):
+        """Return Tiled server configuration from shared config file.
+
+        Reads tiled_server and tiled_api_key from ~/.afl/config.json.
+        Returns dict with status and config values or helpful error message.
+        """
+        config_path = pathlib.Path.home() / '.afl' / 'config.json'
+
+        if not config_path.exists():
+            return {
+                'status': 'error',
+                'message': 'Config file not found at ~/.afl/config.json. Please create this file with tiled_server and tiled_api_key settings.'
+            }
+
+        try:
+            with open(config_path, 'r') as f:
+                config_data = json.load(f)
+        except json.JSONDecodeError as e:
+            return {
+                'status': 'error',
+                'message': f'Invalid JSON in config file: {str(e)}'
+            }
+
+        # Search through config entries (newest first) to find tiled settings
+        if not config_data:
+            return {
+                'status': 'error',
+                'message': 'Config file is empty.'
+            }
+
+        # Try entries in reverse sorted order to find one with tiled config
+        keys = sorted(config_data.keys(), reverse=True)
+        tiled_server = ''
+        tiled_api_key = ''
+
+        for key in keys:
+            entry = config_data[key]
+            if isinstance(entry, dict):
+                server = entry.get('tiled_server', '')
+                api_key = entry.get('tiled_api_key', '')
+                if server and api_key:
+                    tiled_server = server
+                    tiled_api_key = api_key
+                    break
+
+        if not tiled_server:
+            return {
+                'status': 'error',
+                'message': 'tiled_server not configured in ~/.afl/config.json. Please add a tiled_server URL to your config.'
+            }
+
+        if not tiled_api_key:
+            return {
+                'status': 'error',
+                'message': 'tiled_api_key not configured in ~/.afl/config.json. Please add your Tiled API key to the config.'
+            }
+
+        return {
+            'status': 'success',
+            'tiled_server': tiled_server,
+            'tiled_api_key': tiled_api_key
+        }
+
+    def _get_tiled_client(self):
+        """Get or create cached Tiled client.
+
+        Returns:
+            Tiled client or dict with error status
+        """
+        if self._tiled_client is not None:
+            return self._tiled_client
+
+        # Get config
+        config = self.tiled_config()
+        if config['status'] == 'error':
+            return config
+
+        try:
+            # Create and cache client
+            self._tiled_client = from_uri(
+                config['tiled_server'],
+                api_key=config['tiled_api_key']
+            )
+            return self._tiled_client
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Failed to connect to Tiled: {str(e)}'
+            }
+
+    @unqueued()
+    def tiled_search(self, query='', offset=0, limit=50, **kwargs):
+        """Proxy endpoint for Tiled metadata search to avoid CORS issues.
+
+        Args:
+            query: Search query string
+            offset: Result offset for pagination
+            limit: Number of results to return
+
+        Returns:
+            dict with status, data, total_count, or error message
+        """
+        # Get cached Tiled client
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        # Convert offset and limit to integers (they come as strings from URL params)
+        offset = int(offset)
+        limit = int(limit)
+
+        try:
+            if query:
+                # Search with fulltext filter
+                results = client.search({'fulltext': query})
+            else:
+                # No search, use root container
+                results = client
+
+            # Get total count
+            total_count = len(results)
+
+            # Get all keys and apply pagination
+            all_keys = list(results.keys())
+            paginated_keys = all_keys[offset:offset + limit]
+
+            # Build entries list with metadata
+            entries = []
+            for key in paginated_keys:
+                try:
+                    item = results[key]
+                    # Build entry in same format as Tiled HTTP API
+                    entry = {
+                        'id': key,
+                        'attributes': {
+                            'metadata': dict(item.metadata) if hasattr(item, 'metadata') else {}
+                        }
+                    }
+                    entries.append(entry)
+                except Exception as e:
+                    # Skip entries that can't be accessed
+                    self.app.logger.warning(f'Could not access entry {key}: {str(e)}')
+                    continue
+
+            return {
+                'status': 'success',
+                'data': entries,
+                'total_count': total_count
+            }
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error connecting to Tiled: {str(e)}'
+            }
+
+    @unqueued()
+    def tiled_get_data(self, entry_id, **kwargs):
+        """Proxy endpoint to get xarray HTML representation from Tiled.
+
+        Args:
+            entry_id: Tiled entry ID
+
+        Returns:
+            dict with status and html, or error message
+        """
+        # Get cached Tiled client
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        try:
+            # Get the entry
+            if entry_id not in client:
+                return {
+                    'status': 'error',
+                    'message': f'Entry "{entry_id}" not found'
+                }
+
+            item = client[entry_id]
+
+            # Try to get xarray dataset representation
+            try:
+                # Check if this is a DatasetClient and read with optimization
+                from tiled.client.xarray import DatasetClient
+                if isinstance(item, DatasetClient):
+                    dataset = item.read(optimize_wide_table=False)
+                else:
+                    dataset = item.read()
+
+                # Get HTML representation
+                if hasattr(dataset, '_repr_html_'):
+                    html = dataset._repr_html_()
+                else:
+                    # Fallback to string representation
+                    html = f'<pre>{str(dataset)}</pre>'
+
+                return {
+                    'status': 'success',
+                    'html': html
+                }
+            except Exception as e:
+                # If can't read as dataset, provide basic info
+                html = '<div class="data-display">'
+                html += f'<p><strong>Entry ID:</strong> {entry_id}</p>'
+                html += f'<p><strong>Type:</strong> {type(item).__name__}</p>'
+                if hasattr(item, 'metadata'):
+                    html += '<h4>Metadata:</h4>'
+                    html += f'<pre>{json.dumps(dict(item.metadata), indent=2)}</pre>'
+                html += f'<p><em>Could not load data representation: {str(e)}</em></p>'
+                html += '</div>'
+
+                return {
+                    'status': 'success',
+                    'html': html
+                }
+
+        except KeyError:
+            return {
+                'status': 'error',
+                'message': f'Entry "{entry_id}" not found'
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error fetching data: {str(e)}'
+            }
+
+    @unqueued()
+    def tiled_get_metadata(self, entry_id, **kwargs):
+        """Proxy endpoint to get metadata from Tiled.
+
+        Args:
+            entry_id: Tiled entry ID
+
+        Returns:
+            dict with status and metadata, or error message
+        """
+        # Get cached Tiled client
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        try:
+            # Get the entry
+            if entry_id not in client:
+                return {
+                    'status': 'error',
+                    'message': f'Entry "{entry_id}" not found'
+                }
+
+            item = client[entry_id]
+
+            # Extract metadata
+            metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
+
+            return {
+                'status': 'success',
+                'metadata': metadata
+            }
+
+        except KeyError:
+            return {
+                'status': 'error',
+                'message': f'Entry "{entry_id}" not found'
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error fetching metadata: {str(e)}'
+            }

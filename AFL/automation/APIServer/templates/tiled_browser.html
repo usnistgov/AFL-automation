@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiled Database Browser</title>
+
+    <!-- AG Grid CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-theme-alpine.css">
+
+    <!-- Custom CSS -->
+    <link rel='stylesheet' href='/static/tiled_browser_css/tiled_browser.css'>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header -->
+        <div id="header">
+            <h1>Tiled Database Browser</h1>
+            <div id="connection-status" class="status-disconnected">
+                <span class="status-indicator"></span>
+                <span class="status-text">Not Connected</span>
+            </div>
+        </div>
+
+        <!-- Search and Controls -->
+        <div id="controls">
+            <div id="search-container">
+                <input type="text" id="search-input" placeholder="Search across all metadata fields..." />
+                <button id="search-button">Search</button>
+                <button id="clear-search-button">Clear</button>
+            </div>
+
+            <div id="info-bar">
+                <span id="total-count">Total: 0 entries</span>
+                <span id="page-info"></span>
+                <div id="page-size-container">
+                    <label for="page-size">Rows per page:</label>
+                    <select id="page-size">
+                        <option value="25">25</option>
+                        <option value="50" selected>50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="error-container" style="display: none;">
+            <div class="error-message">
+                <span class="error-icon">&#9888;</span>
+                <span id="error-text"></span>
+                <button id="error-close">&times;</button>
+            </div>
+        </div>
+
+        <!-- AG Grid Container -->
+        <div id="grid-container" class="ag-theme-alpine">
+            <div id="loading-overlay">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading Tiled data...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Modal -->
+    <div id="data-modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Dataset View</h3>
+                <button class="modal-close" id="data-modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="data-modal-body">
+                <!-- xarray HTML repr will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Metadata Modal -->
+    <div id="metadata-modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Metadata View</h3>
+                <button class="modal-close" id="metadata-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre id="metadata-modal-body"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- AG Grid JS -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
+
+    <!-- Main Application JS -->
+    <script src="/static/tiled_browser_js/tiled_browser.js"></script>
+</body>
+</html>

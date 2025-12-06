@@ -47,9 +47,9 @@ class VirtualSAS_theory(Driver):
         import sasmodels.direct_model
         import sasmodels.bumps_model
 
-        import shapely.MultiPoint
-        import shapely.geometry.Point
-        import shapely.concave_hull
+        # Trigger lazy loading of shapely submodules
+        from shapely import MultiPoint, Point
+        from shapely import concave_hull
         
 
 

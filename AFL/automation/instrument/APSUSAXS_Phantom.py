@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import xarray as xr
 from AFL.automation.instrument.APSUSAXS import APSUSAXS
 from AFL.automation.APIServer.Driver import Driver
 
@@ -67,29 +68,30 @@ class APSUSAXS_Phantom(APSUSAXS):
         # USAXS q range approx 1e-4 to 1e-1
         # SAXS q range approx 1e-2 to 1.0
         
+        ds = xr.Dataset()
+        ds.attrs['USAXS_Filepath'] = '/tmp/phantom/usaxs'
+        ds.attrs['USAXS_Filename'] = f'{name}.h5'
+        ds.attrs['USAXS_name'] = name
+        ds.attrs['USAXS_blank'] = is_blank
         if read_USAXS:
             q_usaxs = np.logspace(np.log10(1e-4), np.log10(1e-1), 200)
             I_usaxs, dI_usaxs = self._generate_fake_signal(q_usaxs, is_blank)
+            ds['USAXS_q'] = ('USAXS_q',q_usaxs)
+            ds['USAXS_I'] = ('USAXS_q',I_usaxs)
+            ds['USAXS_dI'] = ('USAXS_q',dI_usaxs)
             
-            self.data.add_array('USAXS_q', q_usaxs)
-            self.data.add_array('USAXS_I', I_usaxs)
-            self.data.add_array('USAXS_dI', dI_usaxs)
-            self.data['USAXS_Filepath'] = '/tmp/phantom/usaxs'
-            self.data['USAXS_Filename'] = f'{name}.h5'
-            self.data['USAXS_name'] = name
-            self.data['USAXS_blank'] = is_blank
 
         if read_SAXS:
             q_saxs = np.logspace(np.log10(1e-2), np.log10(1.0), 200)
             I_saxs, dI_saxs = self._generate_fake_signal(q_saxs, is_blank)
-            
-            self.data.add_array('SAXS_q', q_saxs)
-            self.data.add_array('SAXS_I', I_saxs)
-            self.data.add_array('SAXS_dI', dI_saxs)
-            self.data['SAXS_Filepath'] = '/tmp/phantom/saxs'
-            self.data['SAXS_Filename'] = f'{name}.h5'
-            self.data['SAXS_name'] = name
-            self.data['SAXS_blank'] = is_blank
+            if ds is None:
+                ds = xr.Dataset()
+
+            ds['SAXS_q'] = ('SAXS_q',q_saxs)
+            ds['SAXS_I'] = ('SAXS_q',I_saxs)
+            ds['SAXS_dI'] = ('SAXS_q',dI_saxs)
+
+        return ds
 
     def _generate_fake_signal(self, q, is_blank):
         if is_blank:

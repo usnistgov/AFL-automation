@@ -3,7 +3,9 @@ import datetime
 import json
 import os
 import tiled.client
+from tiled.client.xarray import write_xarray_dataset
 import numpy as np
+import xarray as xr
 import copy
 
 class DataTiled(DataPacket):
@@ -40,6 +42,11 @@ class DataTiled(DataPacket):
                 del (self._transient_dict[name])
         
     def transmit(self):
+        if 'main_dataset' in self._dict().keys():
+            # main_dataset is handled directly in _transmit, no need to move to arrays dict
+            self._transmit()
+            return
+        
         if 'main_array' in self._dict().keys():
             self.arrays['main_array'] = self._transient_dict['main_array']
             del(self._transient_dict['main_array'])
@@ -63,26 +70,70 @@ class DataTiled(DataPacket):
         '''
         
         try:
-            if 'main_array' in self._dict().keys():
+            if 'main_dataset' in self._dict().keys():
+                main_data = copy.deepcopy(self._dict()['main_dataset'])
+                del(self._transient_dict['main_dataset'])
+                # Sanitize internal dicts first
+                self._sanitize()
+                # Get sanitized metadata from DataPacket
+                metadata = self._dict()
+                # Merge DataPacket metadata into dataset.attrs so it becomes searchable
+                # write_xarray_dataset stores dataset.attrs in metadata['attrs']
+                if not hasattr(main_data, 'attrs'):
+                    main_data.attrs = {}
+                # Update dataset attrs with DataPacket metadata
+                main_data.attrs.update(metadata)
+                # Write using native Tiled xarray support
+                write_xarray_dataset(self.tiled_client, main_data)
+            elif 'main_array' in self._dict().keys():
                 main_data = copy.deepcopy(self._dict()['main_array'])
+                array_name = self._transient_dict.get('array_name', 'main_array')
                 del(self._transient_dict['main_array'])
-                fxn = self.tiled_client.write_array
+                if 'array_name' in self._transient_dict:
+                    del(self._transient_dict['array_name'])
+                # Convert numpy array to xarray Dataset
+                # Create dimension names based on array shape
+                dims = [f'dim_{i}' for i in range(main_data.ndim)]
+                dataset = xr.Dataset({array_name: (dims, main_data)})
+                # Sanitize internal dicts first
+                self._sanitize()
+                # Get sanitized metadata from DataPacket
+                metadata = self._dict()
+                # Merge DataPacket metadata into dataset.attrs so it becomes searchable
+                # write_xarray_dataset stores dataset.attrs in metadata['attrs']
+                if not hasattr(dataset, 'attrs'):
+                    dataset.attrs = {}
+                # Update dataset attrs with DataPacket metadata
+                dataset.attrs.update(metadata)
+                # Write using native Tiled xarray support
+                write_xarray_dataset(self.tiled_client, dataset)
             elif 'main_dataframe' in self._dict().keys():
                 main_data = copy.deepcopy(self._dict()['main_dataframe'])
                 del(self._transient_dict['main_dataframe'])
                 fxn = self.tiled_client.write_dataframe
+                self._sanitize()
+                fxn(main_data, metadata=self._dict())
             else:
                 main_data = [np.nan]
                 fxn = self.tiled_client.write_array
-            #self._print_dict_member_types(self._dict())
-            self._sanitize()
-            #print(self._dict())
-            #self._print_dict_member_types(self._dict())
-            fxn(main_data,metadata =self._dict())
+                self._sanitize()
+                fxn(main_data, metadata=self._dict())
         except Exception as e:
             print(f'Exception while transmitting to Tiled! {e}. Saving data in backup store.')
-            if type(main_data) == np.ndarray:
-                self['main_data'] = main_data.tolist()
+            if 'main_data' not in locals():
+                if 'main_dataset' in self._dict().keys():
+                    # For datasets, try to serialize key info
+                    try:
+                        dataset = self._dict()['main_dataset']
+                        self['main_data'] = {'type': 'xarray.Dataset', 'variables': list(dataset.data_vars.keys())}
+                    except:
+                        self['main_data'] = 'xarray.Dataset'
+                elif 'main_array' in self._dict().keys():
+                    main_data = self._dict()['main_array']
+                    if isinstance(main_data, np.ndarray):
+                        self['main_data'] = main_data.tolist()
+                    else:
+                        self['main_data'] = str(main_data)
             self._sanitize()
             
             filename = str(datetime.datetime.now()).replace(' ','-')

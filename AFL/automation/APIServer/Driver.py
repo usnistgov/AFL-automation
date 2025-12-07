@@ -740,12 +740,25 @@ class Driver:
 
                 # Check if it's an xarray Dataset
                 if hasattr(dataset, 'data_vars'):
+                    # Extract metadata
+                    metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
+                    metadata_list.append(metadata)
+
+                    # Extract sample_composition from metadata and add as coords
+                    if 'sample_composition' in metadata and isinstance(metadata['sample_composition'], dict):
+                        sample_comp = metadata['sample_composition']
+
+                        # Create a new dimension for sample_composition
+                        comp_names = list(sample_comp.keys())
+                        comp_values = [sample_comp[name] for name in comp_names]
+
+                        # Add sample_composition as coordinates
+                        for i, comp_name in enumerate(comp_names):
+                            coord_name = f'composition_{comp_name}'
+                            # Add as a scalar coordinate (will be broadcasted during concat)
+                            dataset = dataset.assign_coords({coord_name: comp_values[i]})
+
                     datasets.append(dataset)
-                    # Store metadata
-                    if hasattr(item, 'metadata'):
-                        metadata_list.append(dict(item.metadata))
-                    else:
-                        metadata_list.append({})
                 else:
                     skipped_entries.append({
                         'entry_id': entry_id,

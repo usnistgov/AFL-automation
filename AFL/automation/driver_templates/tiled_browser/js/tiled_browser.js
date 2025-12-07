@@ -877,8 +877,19 @@ function selectAllRows() {
         return;
     }
 
-    // Select all nodes (respects current filters)
-    gridApi.selectAll();
+    // For infinite row model, we need to select all loaded nodes
+    // Get all currently loaded row nodes
+    const nodesToSelect = [];
+    gridApi.forEachNode(node => {
+        if (node.data) {
+            nodesToSelect.push(node);
+        }
+    });
+
+    // Select all nodes
+    nodesToSelect.forEach(node => {
+        node.setSelected(true);
+    });
 }
 
 /**

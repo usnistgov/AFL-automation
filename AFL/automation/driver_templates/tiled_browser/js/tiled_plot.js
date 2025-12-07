@@ -324,7 +324,10 @@ function updateDataInfo(data) {
  * Extract data for plotting
  */
 function extractPlotData(xVar, yVar, hueDim, legendVar, selectedLegendValues) {
-    if (!plotData) return null;
+    if (!plotData) {
+        console.error('No plot data available');
+        return null;
+    }
 
     // Get x data (coordinate or data variable)
     let xData;
@@ -333,6 +336,7 @@ function extractPlotData(xVar, yVar, hueDim, legendVar, selectedLegendValues) {
     } else if (plotData.data && plotData.data[xVar] && !plotData.data[xVar].error) {
         xData = plotData.data[xVar].values;
     } else {
+        console.error(`Could not find x variable: ${xVar}`, plotData);
         return null;
     }
 
@@ -342,6 +346,7 @@ function extractPlotData(xVar, yVar, hueDim, legendVar, selectedLegendValues) {
         yData = plotData.data[yVar].values;
         yDims = plotData.data[yVar].dims;
     } else {
+        console.error(`Could not find y variable: ${yVar}`, plotData);
         return null;
     }
 
@@ -393,6 +398,7 @@ function extractPlotData(xVar, yVar, hueDim, legendVar, selectedLegendValues) {
 
             // Filter by selected legend values if any
             if (selectedLegendValues.length > 0 && !selectedLegendValues.includes(traceName)) {
+                console.log(`Filtering out trace ${traceName}, not in selected values:`, selectedLegendValues);
                 continue;
             }
 
@@ -401,6 +407,19 @@ function extractPlotData(xVar, yVar, hueDim, legendVar, selectedLegendValues) {
                 y: ySlice,
                 name: traceName
             });
+        }
+
+        if (traces.length === 0) {
+            console.error('All traces were filtered out. Selected legend values:', selectedLegendValues, 'Available trace names:',
+                Array.from({length: numTraces}, (_, i) => {
+                    if (legendData && Array.isArray(legendData)) {
+                        return String(legendData[i] || `Trace ${i}`);
+                    } else if (legendData) {
+                        return String(legendData);
+                    } else {
+                        return String(i);
+                    }
+                }));
         }
 
         return traces;
@@ -560,18 +579,17 @@ function updateConfigFromUI() {
 
     currentPlotType = document.getElementById('plot-type').value;
 
-    // Get selected legend values from Slim Select
+    // Get selected legend variable from Slim Select
     if (legendMultiSelect) {
-        currentConfig.selectedLegendValues = legendMultiSelect.getSelected();
-        // If legend variable select exists in data
-        if (plotData && plotData.available_legend_vars && plotData.available_legend_vars.length > 0) {
-            // Use first selected as legend var, or default to sample_name
-            if (currentConfig.selectedLegendValues.length > 0) {
-                // This is filtering, not changing the legend var
-                currentConfig.legendVar = plotData.available_legend_vars[0];
-            }
+        const selected = legendMultiSelect.getSelected();
+        // Use the selected variable name as the legend variable
+        if (selected.length > 0) {
+            currentConfig.legendVar = selected[0];
         }
     }
+
+    // For now, don't filter traces - show all
+    currentConfig.selectedLegendValues = [];
 }
 
 /**

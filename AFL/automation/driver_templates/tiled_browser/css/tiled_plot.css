@@ -681,6 +681,44 @@ body {
     box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
 }
 
+/* Plot with sidebar layout (for variable selectors) */
+.plot-with-sidebar {
+    display: flex;
+    flex: 1;
+    gap: 12px;
+    min-height: 0;
+}
+
+.variable-sidebar {
+    width: 160px;
+    min-width: 120px;
+    max-width: 200px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    background-color: white;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.variable-sidebar option {
+    padding: 4px 6px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+}
+
+.variable-sidebar option:checked {
+    background-color: #27ae60;
+    color: white;
+}
+
+.variable-sidebar:focus {
+    outline: none;
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
 .plot-widget {
     border: 1px solid #e0e0e0;
     border-radius: 4px;
@@ -798,6 +836,17 @@ body {
 
     .plot-section {
         width: 100%;
+    }
+
+    .plot-with-sidebar {
+        flex-direction: column;
+    }
+
+    .variable-sidebar {
+        width: 100%;
+        max-width: none;
+        height: 100px;
+        min-height: 80px;
     }
 }
 

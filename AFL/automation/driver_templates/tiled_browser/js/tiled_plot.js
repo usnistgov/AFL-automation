@@ -1316,6 +1316,32 @@ function initializeDatasetWidgetListeners() {
         updateColorScale();
     });
 
+    // Log scale toggles - instant update
+    document.getElementById('logx-config').addEventListener('change', (e) => {
+        AppState.logX = e.target.checked;
+        renderScatteringPlot();
+    });
+    document.getElementById('logy-config').addEventListener('change', (e) => {
+        AppState.logY = e.target.checked;
+        renderScatteringPlot();
+    });
+
+    // X-axis range inputs - instant update
+    document.getElementById('xmin-config').addEventListener('input', (e) => {
+        AppState.xmin = parseFloat(e.target.value);
+        renderScatteringPlot();
+    });
+    document.getElementById('xmax-config').addEventListener('input', (e) => {
+        AppState.xmax = parseFloat(e.target.value);
+        renderScatteringPlot();
+    });
+
+    // Colorscale select - instant update
+    document.getElementById('colorscale-config').addEventListener('change', (e) => {
+        AppState.colorscale = e.target.value;
+        renderCompositionPlot();
+    });
+
     // Composition variable selection
     document.getElementById('composition-var').addEventListener('change', (e) => {
         AppState.compositionVariable = e.target.value;

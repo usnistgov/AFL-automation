@@ -43,120 +43,165 @@
             </div>
         </div>
 
-        <!-- Controls Panel -->
-        <div id="controls-panel">
-            <!-- Simple Controls (Always Visible) -->
-            <div id="simple-controls" class="controls-section">
-                <div class="control-group">
-                    <label for="plot-type">Plot Type:</label>
-                    <select id="plot-type" class="control-select">
-                        <option value="line">Line Plot</option>
-                        <option value="scatter">Scatter Plot</option>
-                        <option value="heatmap">Heatmap</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="x-variable">X Axis:</label>
-                    <select id="x-variable" class="control-select">
-                        <option value="">Select variable...</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="y-variable">Y Axis:</label>
-                    <select id="y-variable" class="control-select">
-                        <option value="">Select variable...</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="legend-variable">Legend Variable:</label>
-                    <select id="legend-variable" class="control-select" multiple>
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-
-                <div class="control-group scale-controls">
-                    <div class="scale-toggle">
-                        <input type="checkbox" id="x-log-scale" checked>
-                        <label for="x-log-scale">Log X</label>
-                    </div>
-                    <div class="scale-toggle">
-                        <input type="checkbox" id="y-log-scale" checked>
-                        <label for="y-log-scale">Log Y</label>
-                    </div>
-                </div>
-
-                <button id="update-plot-btn" class="primary-button">Update Plot</button>
-            </div>
-
-            <!-- Advanced Controls (Collapsible) -->
-            <div id="advanced-controls-header" class="advanced-header">
-                <span>Advanced Options</span>
-                <span class="expand-icon">&#9658;</span>
-            </div>
-
-            <div id="advanced-controls" class="controls-section advanced-section" style="display: none;">
-                <div class="control-group">
-                    <label for="hue-dim">Hue Dimension:</label>
-                    <select id="hue-dim" class="control-select">
-                        <option value="index">index</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="colorscale">Colorscale:</label>
-                    <select id="colorscale" class="control-select">
-                        <option value="Viridis">Viridis</option>
-                        <option value="Plasma">Plasma</option>
-                        <option value="Bluered">Bluered</option>
-                        <option value="RdBu">RdBu</option>
-                        <option value="Jet">Jet</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="marker-size">Marker Size:</label>
-                    <input type="number" id="marker-size" class="control-input" value="6" min="1" max="20">
-                </div>
-
-                <div class="control-group">
-                    <label for="line-width">Line Width:</label>
-                    <input type="number" id="line-width" class="control-input" value="2" min="0.5" max="10" step="0.5">
-                </div>
-
-                <div class="control-group">
-                    <label for="plot-title">Plot Title:</label>
-                    <input type="text" id="plot-title" class="control-input" placeholder="Auto-generated">
-                </div>
-
-                <div class="control-group checkbox-group">
-                    <input type="checkbox" id="show-legend" checked>
-                    <label for="show-legend">Show Legend</label>
-                </div>
-
-                <div class="control-group checkbox-group">
-                    <input type="checkbox" id="show-grid" checked>
-                    <label for="show-grid">Show Grid</label>
-                </div>
-            </div>
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" style="display: none;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading data...</div>
         </div>
 
-        <!-- Plot Container -->
-        <div id="plot-container">
-            <div id="loading-overlay">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">Loading data...</div>
+        <!-- Tab Container -->
+        <div id="tab-container">
+            <!-- Tab Header -->
+            <div class="tab-header">
+                <button class="tab-btn" data-tab="dataset">Dataset</button>
+                <button class="tab-btn active" data-tab="plot">Plot</button>
+                <button class="tab-btn" data-tab="config">Config</button>
             </div>
-            <div id="plot"></div>
-        </div>
 
-        <!-- Data Info Panel -->
-        <div id="info-panel">
-            <h3>Dataset Information</h3>
-            <div id="data-info-content">
-                <p class="info-loading">Loading data information...</p>
+            <!-- Tab 1: Dataset -->
+            <div id="dataset-tab" class="tab-content">
+                <div class="dataset-operations">
+                    <!-- Sample Dimension Selector -->
+                    <div class="operation-group">
+                        <label for="sample-dim-select">Sample Dimension:</label>
+                        <select id="sample-dim-select" class="control-select">
+                            <option value="index">index</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtering Operations -->
+                    <div class="operation-group">
+                        <label for="sel-dim">Filter by:</label>
+                        <select id="sel-dim" class="control-select">
+                            <option value="">Select dimension...</option>
+                        </select>
+                        <input type="text" id="sel-value" class="control-input" placeholder="Value (e.g., 0, 0.75, 'T1')">
+                        <button id="apply-sel" class="secondary-button">Apply sel</button>
+                        <button id="apply-isel" class="secondary-button">Apply isel</button>
+                    </div>
+
+                    <!-- Combine Variables -->
+                    <div class="operation-group">
+                        <label>Combine Variables:</label>
+                        <input type="text" id="combined-var" class="control-input" placeholder="New variable name (e.g., 'comps')">
+                        <input type="text" id="to-combine" class="control-input" placeholder="Variables to combine (JSON array)">
+                        <button id="combine-vars" class="secondary-button">Combine Vars</button>
+                    </div>
+
+                    <!-- Extract Variable -->
+                    <div class="operation-group">
+                        <label>Extract Variable:</label>
+                        <select id="extract-from-var" class="control-select">
+                            <option value="">Select variable...</option>
+                        </select>
+                        <select id="extract-from-coord" class="control-select">
+                            <option value="">Select coordinate...</option>
+                        </select>
+                        <button id="extract-var" class="secondary-button">Extract Var</button>
+                    </div>
+
+                    <!-- Reset Dataset -->
+                    <div class="operation-group">
+                        <button id="reset-dataset" class="warning-button">Reset Dataset</button>
+                    </div>
+                </div>
+
+                <!-- Dataset Info Display -->
+                <div id="dataset-info-html">
+                    <h3>Dataset Information</h3>
+                    <div id="data-info-content">
+                        <p class="info-loading">Loading data information...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Plot (Default Active) -->
+            <div id="plot-tab" class="tab-content active">
+                <!-- Navigation Controls -->
+                <div class="plot-controls-top">
+                    <div class="nav-controls">
+                        <button id="prev-sample" class="nav-button">&#9664; Previous</button>
+                        <input type="number" id="data-index" class="index-input" value="0" min="0">
+                        <span id="index-display" class="index-display">/ 0</span>
+                        <button id="next-sample" class="nav-button">Next &#9654;</button>
+                    </div>
+                </div>
+
+                <!-- Dual Plot Container -->
+                <div class="dual-plot-container">
+                    <div class="plot-section">
+                        <div class="plot-header">
+                            <h3>Scattering Data</h3>
+                            <select id="scatter-vars" class="control-select" multiple size="3">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <div id="scattering-plot" class="plot-widget"></div>
+                    </div>
+
+                    <div class="plot-section">
+                        <div class="plot-header">
+                            <h3>Composition</h3>
+                            <div class="composition-controls">
+                                <select id="composition-var" class="control-select">
+                                    <option value="">Select composition...</option>
+                                </select>
+                                <select id="composition-color" class="control-select">
+                                    <option value="">Color by...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="composition-plot" class="plot-widget"></div>
+                    </div>
+                </div>
+
+                <!-- Bottom Controls -->
+                <div class="plot-controls-bottom">
+                    <div class="color-controls">
+                        <label>Color Range:</label>
+                        <input type="number" id="cmin" class="control-input-small" value="0.0" step="0.01">
+                        <span>to</span>
+                        <input type="number" id="cmax" class="control-input-small" value="1.0" step="0.01">
+                    </div>
+                    <button id="update-plot" class="primary-button">Update Plots</button>
+                </div>
+            </div>
+
+            <!-- Tab 3: Config -->
+            <div id="config-tab" class="tab-content">
+                <div class="config-section">
+                    <h3>Scattering Plot Settings</h3>
+                    <div class="control-group">
+                        <label>X-axis Range:</label>
+                        <input type="number" id="xmin-config" class="control-input-small" value="0.001" step="0.001">
+                        <span>to</span>
+                        <input type="number" id="xmax-config" class="control-input-small" value="1.0" step="0.1">
+                    </div>
+                    <div class="control-group scale-controls">
+                        <div class="scale-toggle">
+                            <input type="checkbox" id="logx-config" checked>
+                            <label for="logx-config">Log X</label>
+                        </div>
+                        <div class="scale-toggle">
+                            <input type="checkbox" id="logy-config" checked>
+                            <label for="logy-config">Log Y</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>Composition Plot Settings</h3>
+                    <div class="control-group">
+                        <label for="colorscale-config">Colorscale:</label>
+                        <select id="colorscale-config" class="control-select">
+                            <option value="Bluered">Bluered</option>
+                            <option value="Viridis">Viridis</option>
+                            <option value="Plasma">Plasma</option>
+                            <option value="RdBu">RdBu</option>
+                            <option value="Jet">Jet</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

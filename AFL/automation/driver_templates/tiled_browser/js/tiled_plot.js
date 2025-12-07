@@ -8,24 +8,35 @@
 // State Management
 // =============================================================================
 
-let plotData = null;  // Cached plot data from server
 let entryIds = [];    // List of entry IDs being plotted
-let legendMultiSelect = null;  // Slim Select instance for legend variable
-let currentPlotType = 'line';
-let currentConfig = {
-    xVariable: null,
-    yVariable: null,
-    hueDim: 'index',  // Dimension for separating traces
-    legendVar: 'sample_name',  // Variable for trace labels
-    selectedLegendValues: [],  // Filter which traces to show
-    xLogScale: true,
-    yLogScale: true,
-    markerSize: 6,
-    lineWidth: 2,
-    colorscale: 'Viridis',
-    showLegend: true,
-    showGrid: true,
-    plotTitle: ''
+
+// Enhanced state management for DatasetWidget functionality
+const AppState = {
+    // Dataset management
+    originalDataset: null,       // Immutable reference for reset
+    workingDataset: null,         // Current filtered/modified state
+    dataIndex: 0,                 // Current sample index (0-based)
+    sampleDim: 'index',           // Active sample dimension name
+    currentTab: 'plot',           // Active tab (dataset|plot|config)
+
+    // Variable categorization (auto-computed)
+    sampleVars: [],               // 1D with sample_dim only
+    compVars: [],                 // Multi-D, non-sample dim < 10
+    scattVars: [],                // Multi-D, non-sample dim >= 10
+
+    // Plot selections
+    scatteringVariables: [],      // Multi-select for overlay
+    compositionVariable: null,
+    compositionColorVariable: null,
+
+    // Settings
+    cmin: 0.0,
+    cmax: 1.0,
+    colorscale: 'Bluered',
+    xmin: 0.001,
+    xmax: 1.0,
+    logX: true,
+    logY: true
 };
 
 // =============================================================================
@@ -91,7 +102,9 @@ function setStatus(status, text) {
  */
 function setLoading(isLoading) {
     const overlay = document.getElementById('loading-overlay');
-    overlay.style.display = isLoading ? 'flex' : 'none';
+    if (overlay) {
+        overlay.style.display = isLoading ? 'flex' : 'none';
+    }
 }
 
 // =============================================================================
@@ -140,6 +153,161 @@ async function loadCombinedPlotData(entryIdsList) {
     } finally {
         setLoading(false);
     }
+}
+
+// =============================================================================
+// DatasetWidget Functions (Variable Categorization & Data Extraction)
+// =============================================================================
+
+/**
+ * Categorize variables into sample/composition/scattering based on dimensionality
+ * Port of DatasetWidget_Model.split_vars()
+ */
+function categorizeVariables(dataset, sampleDim) {
+    const sampleVars = [];
+    const compVars = [];
+    const scattVars = [];
+
+    if (!dataset || !dataset.variables) {
+        return { sampleVars, compVars, scattVars };
+    }
+
+    for (const varName of dataset.variables) {
+        const varData = dataset.data[varName];
+        if (!varData || varData.error) continue;
+
+        const dims = varData.dims || [];
+
+        // 1D variable with only sample dimension
+        if (dims.length === 1 && dims[0] === sampleDim) {
+            sampleVars.push(varName);
+        }
+        // Multi-dimensional
+        else if (dims.length >= 2 && dims.includes(sampleDim)) {
+            // Find non-sample dimension
+            const otherDims = dims.filter(d => d !== sampleDim);
+            if (otherDims.length > 0) {
+                const otherDimSize = dataset.dim_sizes[otherDims[0]] || 0;
+                // Heuristic: <10 = composition, >=10 = scattering
+                if (otherDimSize < 10) {
+                    compVars.push(varName);
+                } else {
+                    scattVars.push(varName);
+                }
+            }
+        }
+    }
+
+    return { sampleVars, compVars, scattVars };
+}
+
+/**
+ * Extract scattering data for a specific sample index
+ * Port of DatasetWidget_Model.get_scattering()
+ */
+function getScattering(dataset, varName, index, sampleDim) {
+    if (!dataset || !dataset.data || !dataset.data[varName]) {
+        return { x: [], y: [] };
+    }
+
+    const varData = dataset.data[varName];
+    if (varData.error) {
+        return { x: [], y: [] };
+    }
+
+    const dims = varData.dims || [];
+    const values = varData.values;
+
+    if (!Array.isArray(values) || values.length === 0) {
+        return { x: [], y: [] };
+    }
+
+    // Find sample dimension index
+    const sampleDimIdx = dims.indexOf(sampleDim);
+    const otherDim = dims.filter(d => d !== sampleDim)[0];
+
+    if (sampleDimIdx === -1) {
+        return { x: [], y: [] };
+    }
+
+    // Extract slice at index
+    let ySlice;
+    if (sampleDimIdx === 0) {
+        ySlice = values[index] || [];
+    } else {
+        // Transpose case
+        ySlice = values.map(row => Array.isArray(row) ? row[index] : row);
+    }
+
+    // Get x coordinate (q-values)
+    let xCoord;
+    if (otherDim && dataset.coords && dataset.coords[otherDim] && !dataset.coords[otherDim].error) {
+        xCoord = dataset.coords[otherDim];
+    } else {
+        // Fallback to indices
+        xCoord = Array.from({ length: ySlice.length }, (_, i) => i);
+    }
+
+    return { x: xCoord, y: ySlice };
+}
+
+/**
+ * Extract composition data for all samples
+ * Port of DatasetWidget_Model.get_composition()
+ */
+function getComposition(dataset, varName, sampleDim) {
+    const emptyResult = { x: [], y: [], z: null, xname: 'x', yname: 'y', zname: null };
+
+    if (!dataset || !dataset.data || !dataset.data[varName]) {
+        return emptyResult;
+    }
+
+    const varData = dataset.data[varName];
+    if (varData.error || !Array.isArray(varData.values)) {
+        return emptyResult;
+    }
+
+    const dims = varData.dims || [];
+    const values = varData.values;
+    const componentDim = dims.filter(d => d !== sampleDim)[0];
+
+    if (!componentDim) {
+        return emptyResult;
+    }
+
+    // Get component coordinate names
+    let componentCoord = ['x', 'y', 'z'];
+    if (dataset.coords && dataset.coords[componentDim] && !dataset.coords[componentDim].error) {
+        componentCoord = dataset.coords[componentDim];
+    }
+
+    // Assume shape is [sample_dim, component]
+    const sampleDimIdx = dims.indexOf(sampleDim);
+
+    // Extract x, y, z columns
+    let x, y, z;
+    if (sampleDimIdx === 0) {
+        // Standard layout [samples, components]
+        x = values.map(row => Array.isArray(row) ? row[0] : row);
+        y = values.map(row => Array.isArray(row) ? row[1] : 0);
+        z = values[0] && values[0].length > 2
+            ? values.map(row => Array.isArray(row) ? row[2] : 0)
+            : null;
+    } else {
+        // Transposed layout - less common
+        x = Array.isArray(values[0]) ? values[0] : [];
+        y = Array.isArray(values[1]) ? values[1] : [];
+        z = values.length > 2 && Array.isArray(values[2]) ? values[2] : null;
+    }
+
+    return {
+        x,
+        y,
+        z,
+        xname: componentCoord[0] || 'x',
+        yname: componentCoord[1] || 'y',
+        zname: z ? (componentCoord[2] || 'z') : null
+    };
 }
 
 // =============================================================================
@@ -558,6 +726,557 @@ function renderPlot() {
 }
 
 // =============================================================================
+// DatasetWidget Plotting Functions
+// =============================================================================
+
+/**
+ * Render scattering plot with multi-trace overlay
+ */
+function renderScatteringPlot() {
+    const scatterVarsSelect = document.getElementById('scatter-vars');
+    const selectedVars = Array.from(scatterVarsSelect.selectedOptions).map(opt => opt.value);
+    const dataset = AppState.workingDataset;
+    const index = AppState.dataIndex;
+
+    if (!dataset || selectedVars.length === 0 || selectedVars[0] === '') {
+        Plotly.purge('scattering-plot');
+        return;
+    }
+
+    const traces = [];
+
+    for (const varName of selectedVars) {
+        const { x, y } = getScattering(dataset, varName, index, AppState.sampleDim);
+
+        if (x.length > 0 && y.length > 0) {
+            traces.push({
+                x: x,
+                y: y,
+                name: varName,
+                type: 'scatter',
+                mode: 'markers',
+                marker: { size: 4 }
+            });
+        }
+    }
+
+    if (traces.length === 0) {
+        Plotly.purge('scattering-plot');
+        return;
+    }
+
+    const layout = {
+        xaxis: {
+            title: 'q',
+            type: AppState.logX ? 'log' : 'linear',
+            range: AppState.logX
+                ? [Math.log10(AppState.xmin), Math.log10(AppState.xmax)]
+                : [AppState.xmin, AppState.xmax]
+        },
+        yaxis: {
+            title: 'I',
+            type: AppState.logY ? 'log' : 'linear'
+        },
+        height: 300,
+        width: 500,
+        margin: { t: 10, b: 40, l: 50, r: 10 },
+        legend: { yanchor: 'top', xanchor: 'right', y: 0.99, x: 0.99 }
+    };
+
+    Plotly.react('scattering-plot', traces, layout, { responsive: true });
+}
+
+/**
+ * Render composition plot (2D or 3D) with color mapping
+ */
+function renderCompositionPlot() {
+    const compVar = AppState.compositionVariable;
+    const colorVar = AppState.compositionColorVariable;
+    const dataset = AppState.workingDataset;
+
+    if (!dataset || !compVar) {
+        Plotly.purge('composition-plot');
+        return;
+    }
+
+    const { x, y, z, xname, yname, zname } = getComposition(dataset, compVar, AppState.sampleDim);
+
+    if (x.length === 0) {
+        Plotly.purge('composition-plot');
+        return;
+    }
+
+    // Get color data
+    let colors = null;
+    if (colorVar && colorVar !== '' && dataset.data[colorVar] && !dataset.data[colorVar].error) {
+        colors = dataset.data[colorVar].values;
+        // Auto-set color range
+        const validColors = colors.filter(c => c !== null && c !== undefined && !isNaN(c));
+        if (validColors.length > 0) {
+            AppState.cmin = Math.min(...validColors);
+            AppState.cmax = Math.max(...validColors);
+            // Update UI
+            document.getElementById('cmin').value = AppState.cmin.toFixed(2);
+            document.getElementById('cmax').value = AppState.cmax.toFixed(2);
+        }
+    }
+    if (!colors) {
+        colors = Array(x.length).fill(0);
+    }
+
+    const traces = [];
+
+    if (z) {
+        // 3D scatter plot
+        traces.push({
+            type: 'scatter3d',
+            mode: 'markers',
+            x: x,
+            y: y,
+            z: z,
+            marker: {
+                color: colors,
+                showscale: true,
+                cmin: AppState.cmin,
+                cmax: AppState.cmax,
+                colorscale: AppState.colorscale,
+                colorbar: { thickness: 15, outlinewidth: 0 },
+                size: 4
+            },
+            customdata: colors,
+            hovertemplate: `${xname}: %{x:.2f}<br>${yname}: %{y:.2f}<br>${zname}: %{z:.2f}<br>color: %{customdata:.2f}<extra></extra>`,
+            showlegend: false
+        });
+
+        // Selected point (highlighted)
+        traces.push({
+            type: 'scatter3d',
+            mode: 'markers',
+            x: [x[AppState.dataIndex]],
+            y: [y[AppState.dataIndex]],
+            z: [z[AppState.dataIndex]],
+            marker: {
+                color: 'red',
+                symbol: 'circle-open',
+                size: 10,
+                line: { width: 2 }
+            },
+            hoverinfo: 'skip',
+            showlegend: false
+        });
+
+        const layout = {
+            scene: {
+                xaxis: { title: xname },
+                yaxis: { title: yname },
+                zaxis: { title: zname },
+                aspectmode: 'cube'
+            },
+            height: 400,
+            width: 500,
+            margin: { t: 10, b: 10, l: 10, r: 10 }
+        };
+
+        Plotly.react('composition-plot', traces, layout, { responsive: true });
+    } else {
+        // 2D scatter plot
+        traces.push({
+            type: 'scatter',
+            mode: 'markers',
+            x: x,
+            y: y,
+            marker: {
+                color: colors,
+                showscale: true,
+                cmin: AppState.cmin,
+                cmax: AppState.cmax,
+                colorscale: AppState.colorscale,
+                colorbar: { thickness: 15, outlinewidth: 0 },
+                size: 6
+            },
+            customdata: colors,
+            hovertemplate: `${xname}: %{x:.2f}<br>${yname}: %{y:.2f}<br>color: %{customdata:.2f}<extra></extra>`,
+            showlegend: false
+        });
+
+        // Selected point (highlighted)
+        traces.push({
+            type: 'scatter',
+            mode: 'markers',
+            x: [x[AppState.dataIndex]],
+            y: [y[AppState.dataIndex]],
+            marker: {
+                color: 'red',
+                symbol: 'hexagon-open',
+                size: 12,
+                line: { width: 2 }
+            },
+            hoverinfo: 'skip',
+            showlegend: false
+        });
+
+        const layout = {
+            xaxis: { title: xname },
+            yaxis: { title: yname },
+            height: 400,
+            width: 500,
+            margin: { t: 10, b: 10, l: 10, r: 10 }
+        };
+
+        Plotly.react('composition-plot', traces, layout, { responsive: true });
+    }
+
+    // Attach click handler
+    const plotDiv = document.getElementById('composition-plot');
+    plotDiv.removeAllListeners && plotDiv.removeAllListeners('plotly_click');
+    plotDiv.on('plotly_click', handleCompositionClick);
+}
+
+/**
+ * Update only the selected point marker (efficient update)
+ */
+function updateSelectedPoint() {
+    const compVar = AppState.compositionVariable;
+    const dataset = AppState.workingDataset;
+
+    if (!dataset || !compVar) return;
+
+    const { x, y, z } = getComposition(dataset, compVar, AppState.sampleDim);
+
+    if (x.length === 0) return;
+
+    const update = z ? {
+        x: [[x[AppState.dataIndex]]],
+        y: [[y[AppState.dataIndex]]],
+        z: [[z[AppState.dataIndex]]]
+    } : {
+        x: [[x[AppState.dataIndex]]],
+        y: [[y[AppState.dataIndex]]]
+    };
+
+    // Update trace 1 (the selected point marker)
+    Plotly.restyle('composition-plot', update, [1]);
+}
+
+/**
+ * Update color scale in real-time
+ */
+function updateColorScale() {
+    const update = {
+        'marker.cmin': AppState.cmin,
+        'marker.cmax': AppState.cmax
+    };
+    Plotly.restyle('composition-plot', update, [0]);
+}
+
+/**
+ * Update both plots
+ */
+function updatePlots() {
+    renderScatteringPlot();
+    updateSelectedPoint();
+}
+
+/**
+ * Handle click on composition plot to select sample
+ */
+function handleCompositionClick(data) {
+    if (data.points && data.points.length > 0) {
+        const pointIndex = data.points[0].pointIndex;
+        AppState.dataIndex = pointIndex;
+
+        // Update UI
+        document.getElementById('data-index').value = pointIndex;
+
+        // Update both plots
+        updatePlots();
+    }
+}
+
+// =============================================================================
+// Tab Navigation
+// =============================================================================
+
+/**
+ * Switch between tabs
+ */
+function switchTab(tabName) {
+    // Update buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+
+    // Update content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        const contentId = content.id.replace('-tab', '');
+        content.classList.toggle('active', contentId === tabName);
+    });
+
+    AppState.currentTab = tabName;
+
+    // Resize plots if switching to plot tab
+    if (tabName === 'plot') {
+        setTimeout(() => {
+            Plotly.Plots.resize('scattering-plot');
+            Plotly.Plots.resize('composition-plot');
+        }, 100);
+    }
+}
+
+/**
+ * Initialize tab navigation
+ */
+function initializeTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const targetTab = e.target.dataset.tab;
+            switchTab(targetTab);
+        });
+    });
+
+    // Default to 'plot' tab
+    switchTab('plot');
+}
+
+// =============================================================================
+// Sample Navigation
+// =============================================================================
+
+/**
+ * Navigate to next sample
+ */
+function nextSample() {
+    const maxIndex = (AppState.workingDataset?.dim_sizes[AppState.sampleDim] || 1) - 1;
+    if (AppState.dataIndex < maxIndex) {
+        AppState.dataIndex++;
+        document.getElementById('data-index').value = AppState.dataIndex;
+        updatePlots();
+    }
+}
+
+/**
+ * Navigate to previous sample
+ */
+function prevSample() {
+    if (AppState.dataIndex > 0) {
+        AppState.dataIndex--;
+        document.getElementById('data-index').value = AppState.dataIndex;
+        updatePlots();
+    }
+}
+
+/**
+ * Go to specific sample index
+ */
+function gotoSample() {
+    const input = document.getElementById('data-index');
+    const index = parseInt(input.value);
+    const maxIndex = (AppState.workingDataset?.dim_sizes[AppState.sampleDim] || 1) - 1;
+
+    if (!isNaN(index) && index >= 0 && index <= maxIndex) {
+        AppState.dataIndex = index;
+        updatePlots();
+    } else {
+        // Reset to current valid index
+        input.value = AppState.dataIndex;
+    }
+}
+
+/**
+ * Initialize navigation controls
+ */
+function initializeNavigation() {
+    document.getElementById('next-sample').addEventListener('click', nextSample);
+    document.getElementById('prev-sample').addEventListener('click', prevSample);
+    document.getElementById('data-index').addEventListener('change', gotoSample);
+}
+
+// =============================================================================
+// Data Manipulation Operations
+// =============================================================================
+
+/**
+ * Update dropdowns after dataset changes
+ */
+function updateDropdowns() {
+    const dataset = AppState.workingDataset;
+    if (!dataset) return;
+
+    // Update scatter vars
+    const scatterSelect = document.getElementById('scatter-vars');
+    scatterSelect.innerHTML = AppState.scattVars.map(v =>
+        `<option value="${v}">${v}</option>`
+    ).join('');
+    // Auto-select first scattering variable
+    if (AppState.scattVars.length > 0) {
+        scatterSelect.selectedIndex = 0;
+    }
+
+    // Update composition var
+    const compSelect = document.getElementById('composition-var');
+    compSelect.innerHTML = ['<option value="">Select composition...</option>']
+        .concat(AppState.compVars.map(v => `<option value="${v}">${v}</option>`))
+        .join('');
+    // Auto-select first composition variable
+    if (AppState.compVars.length > 0 && !AppState.compositionVariable) {
+        AppState.compositionVariable = AppState.compVars[0];
+        compSelect.value = AppState.compositionVariable;
+    }
+
+    // Update composition color
+    const colorSelect = document.getElementById('composition-color');
+    colorSelect.innerHTML = ['<option value="">None</option>']
+        .concat(AppState.sampleVars.map(v => `<option value="${v}">${v}</option>`))
+        .join('');
+
+    // Update sel dimension dropdown
+    const selDimSelect = document.getElementById('sel-dim');
+    if (dataset.dims) {
+        selDimSelect.innerHTML = ['<option value="">Select dimension...</option>']
+            .concat(dataset.dims.map(d => `<option value="${d}">${d}</option>`))
+            .join('');
+    }
+
+    // Update extract from var
+    const extractVarSelect = document.getElementById('extract-from-var');
+    extractVarSelect.innerHTML = ['<option value="">Select variable...</option>']
+        .concat(AppState.compVars.concat(AppState.scattVars).map(v =>
+            `<option value="${v}">${v}</option>`
+        )).join('');
+
+    // Update sample dimension selector
+    const sampleDimSelect = document.getElementById('sample-dim-select');
+    if (dataset.dims) {
+        sampleDimSelect.innerHTML = dataset.dims.map(d =>
+            `<option value="${d}" ${d === AppState.sampleDim ? 'selected' : ''}>${d}</option>`
+        ).join('');
+    }
+
+    // Update index display
+    const maxIndex = (dataset.dim_sizes[AppState.sampleDim] || 1) - 1;
+    document.getElementById('index-display').textContent = `/ ${maxIndex}`;
+}
+
+/**
+ * Update dataset info HTML display
+ */
+function updateDatasetHTML() {
+    const dataset = AppState.workingDataset;
+    const infoContent = document.getElementById('data-info-content');
+
+    if (dataset && dataset.dataset_html) {
+        infoContent.innerHTML = dataset.dataset_html;
+    } else {
+        infoContent.innerHTML = '<p class="info-loading">No dataset information available.</p>';
+    }
+}
+
+/**
+ * Update after dataset changes (re-categorize, update UI)
+ */
+function updateAfterDataChange() {
+    const dataset = AppState.workingDataset;
+    if (!dataset) return;
+
+    // Re-categorize variables
+    const { sampleVars, compVars, scattVars } = categorizeVariables(dataset, AppState.sampleDim);
+    AppState.sampleVars = sampleVars;
+    AppState.compVars = compVars;
+    AppState.scattVars = scattVars;
+
+    // Update all dropdowns
+    updateDropdowns();
+
+    // Update dataset HTML display
+    updateDatasetHTML();
+
+    // Reset data index if out of bounds
+    const newSize = dataset.dim_sizes[AppState.sampleDim] || 1;
+    if (AppState.dataIndex >= newSize) {
+        AppState.dataIndex = 0;
+        document.getElementById('data-index').value = 0;
+    }
+
+    // Update plots
+    renderScatteringPlot();
+    renderCompositionPlot();
+}
+
+/**
+ * Reset dataset to original state
+ */
+function resetDataset() {
+    if (!AppState.originalDataset) return;
+
+    // Deep clone original dataset
+    AppState.workingDataset = JSON.parse(JSON.stringify(AppState.originalDataset));
+
+    updateAfterDataChange();
+}
+
+/**
+ * Initialize DatasetWidget event listeners
+ */
+function initializeDatasetWidgetListeners() {
+    // Tab navigation
+    initializeTabs();
+
+    // Sample navigation
+    initializeNavigation();
+
+    // Plot update button
+    document.getElementById('update-plot').addEventListener('click', () => {
+        // Update settings from config inputs
+        AppState.xmin = parseFloat(document.getElementById('xmin-config').value);
+        AppState.xmax = parseFloat(document.getElementById('xmax-config').value);
+        AppState.logX = document.getElementById('logx-config').checked;
+        AppState.logY = document.getElementById('logy-config').checked;
+        AppState.colorscale = document.getElementById('colorscale-config').value;
+
+        renderScatteringPlot();
+        renderCompositionPlot();
+    });
+
+    // Color range inputs
+    document.getElementById('cmin').addEventListener('input', (e) => {
+        AppState.cmin = parseFloat(e.target.value);
+        updateColorScale();
+    });
+    document.getElementById('cmax').addEventListener('input', (e) => {
+        AppState.cmax = parseFloat(e.target.value);
+        updateColorScale();
+    });
+
+    // Composition variable selection
+    document.getElementById('composition-var').addEventListener('change', (e) => {
+        AppState.compositionVariable = e.target.value;
+        renderCompositionPlot();
+    });
+
+    // Composition color variable selection
+    document.getElementById('composition-color').addEventListener('change', (e) => {
+        AppState.compositionColorVariable = e.target.value;
+        renderCompositionPlot();
+    });
+
+    // Scattering variables selection
+    document.getElementById('scatter-vars').addEventListener('change', () => {
+        renderScatteringPlot();
+    });
+
+    // Sample dimension change
+    document.getElementById('sample-dim-select').addEventListener('change', (e) => {
+        AppState.sampleDim = e.target.value;
+        AppState.dataIndex = 0;
+        document.getElementById('data-index').value = 0;
+        updateAfterDataChange();
+    });
+
+    // Reset dataset button
+    document.getElementById('reset-dataset').addEventListener('click', resetDataset);
+}
+
+// =============================================================================
 // Event Handlers
 // =============================================================================
 
@@ -643,57 +1362,23 @@ async function downloadDataset() {
 }
 
 /**
- * Initialize event listeners
+ * Initialize event listeners (for backward compatibility - only elements that still exist)
  */
 function initializeEventListeners() {
-    // Update plot button
-    document.getElementById('update-plot-btn').addEventListener('click', () => {
-        updateConfigFromUI();
-        renderPlot();
-    });
+    // Download dataset button (still exists)
+    const downloadBtn = document.getElementById('download-dataset-btn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', downloadDataset);
+    }
 
-    // Download dataset button
-    document.getElementById('download-dataset-btn').addEventListener('click', downloadDataset);
+    // Error close button (still exists)
+    const errorClose = document.getElementById('error-close');
+    if (errorClose) {
+        errorClose.addEventListener('click', hideError);
+    }
 
-    // Advanced controls toggle
-    document.getElementById('advanced-controls-header').addEventListener('click', () => {
-        const advancedSection = document.getElementById('advanced-controls');
-        const expandIcon = document.querySelector('.expand-icon');
-
-        if (advancedSection.style.display === 'none') {
-            advancedSection.style.display = 'flex';
-            expandIcon.textContent = '▼';
-        } else {
-            advancedSection.style.display = 'none';
-            expandIcon.textContent = '►';
-        }
-    });
-
-    // Error close button
-    document.getElementById('error-close').addEventListener('click', hideError);
-
-    // Plot type change - update relevant controls
-    document.getElementById('plot-type').addEventListener('change', (e) => {
-        const plotType = e.target.value;
-        const legendGroup = document.getElementById('legend-variable').closest('.control-group');
-        const markerGroup = document.getElementById('marker-size').closest('.control-group');
-        const lineGroup = document.getElementById('line-width').closest('.control-group');
-
-        if (plotType === 'heatmap') {
-            // Hide marker and line controls for heatmap
-            if (markerGroup) markerGroup.style.display = 'none';
-            if (lineGroup) lineGroup.style.display = 'none';
-            if (legendGroup) legendGroup.style.display = 'none';
-        } else if (plotType === 'scatter') {
-            if (markerGroup) markerGroup.style.display = 'flex';
-            if (lineGroup) lineGroup.style.display = 'none';
-            if (legendGroup) legendGroup.style.display = 'flex';
-        } else if (plotType === 'line') {
-            if (markerGroup) markerGroup.style.display = 'none';
-            if (lineGroup) lineGroup.style.display = 'flex';
-            if (legendGroup) legendGroup.style.display = 'flex';
-        }
-    });
+    // Old controls are removed in new UI, so skip those event listeners
+    // The new DatasetWidget controls are handled in initializeDatasetWidgetListeners()
 }
 
 // =============================================================================
@@ -733,17 +1418,48 @@ async function initialize() {
 
         // Initialize event listeners
         initializeEventListeners();
+        initializeDatasetWidgetListeners();
 
         // Load data from server
         const data = await loadCombinedPlotData(entryIds);
 
-        // Initialize controls with loaded data
-        initializeControls(data);
+        // Initialize AppState with dataset
+        AppState.originalDataset = JSON.parse(JSON.stringify(data)); // Deep clone
+        AppState.workingDataset = data;
 
-        // Render initial plot if we have defaults
-        if (currentConfig.xVariable && currentConfig.yVariable) {
-            renderPlot();
+        // Categorize variables
+        const { sampleVars, compVars, scattVars } = categorizeVariables(data, AppState.sampleDim);
+        AppState.sampleVars = sampleVars;
+        AppState.compVars = compVars;
+        AppState.scattVars = scattVars;
+
+        console.log('Categorized variables:', { sampleVars, compVars, scattVars });
+
+        // Update dropdowns with categorized variables
+        updateDropdowns();
+
+        // Update dataset HTML display
+        updateDatasetHTML();
+
+        // Auto-select defaults for composition plot
+        if (compVars.length > 0) {
+            AppState.compositionVariable = compVars[0];
+            document.getElementById('composition-var').value = compVars[0];
         }
+        if (sampleVars.length > 0) {
+            AppState.compositionColorVariable = sampleVars[0];
+            document.getElementById('composition-color').value = sampleVars[0];
+        }
+
+        // Render initial plots
+        renderScatteringPlot();
+        renderCompositionPlot();
+
+        // Also initialize old controls for backward compatibility (commented out for now)
+        // initializeControls(data);
+        // if (currentConfig.xVariable && currentConfig.yVariable) {
+        //     renderPlot();
+        // }
 
     } catch (error) {
         console.error('Initialization error:', error);

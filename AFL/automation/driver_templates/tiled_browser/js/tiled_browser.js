@@ -514,79 +514,161 @@ function updateColumns(apiColumns) {
 }
 
 /**
- * Create infinite datasource for AG Grid (Community edition)
+ * Load all data for client-side row model
  */
-function createDatasource() {
-    return {
-        getRows: async (params) => {
-            const offset = params.startRow;
-            const limit = params.endRow - params.startRow;
+async function loadAllData() {
+    try {
+        updateConnectionStatus('loading');
+        showLoadingOverlay();
 
-            updateConnectionStatus('loading');
+        // Fetch all data (use a large limit)
+        const result = await performSearch(currentQueries, 0, 10000);
 
-            const result = await performSearch(currentQueries, offset, limit);
+        console.log('performSearch result:', result);
 
-            console.log('performSearch result:', result);
+        if (result.status === 'success') {
+            updateConnectionStatus('connected');
 
-            if (result.status === 'success') {
-                updateConnectionStatus('connected');
-
-                // Defensive check for data array
-                if (!result.data || !Array.isArray(result.data)) {
-                    console.error('Invalid data format:', result);
-                    updateConnectionStatus('error');
-                    showError('Invalid data format received from server');
-                    params.failCallback();
-                    hideLoadingOverlay();
-                    return;
-                }
-
-                // Transform data for grid with specific columns
-                const rows = result.data.map(item => {
-                    const metadata = item.attributes?.metadata || {};
-                    // Check both direct metadata and attrs (Tiled may nest in attrs)
-                    const attrs = metadata.attrs || metadata;
-                    const meta = attrs.meta || {};
-
-                    return {
-                        id: item.id,
-                        task_name: attrs.task_name || null,
-                        driver_name: attrs.driver_name || null,
-                        meta_started: meta.started || null,
-                        meta_ended: meta.ended || null,
-                        run_time_minutes: meta.run_time_minutes || null,
-                        sample_uuid: attrs.sample_uuid || null,
-                        sample_name: attrs.sample_name || null,
-                        AL_campaign_name: attrs.AL_campaign_name || null,
-                        AL_uuid: attrs.AL_uuid || null,
-                        AL_components: attrs.AL_components || null,
-                        _raw: item
-                    };
-                });
-
-                // Update total count display
-                totalCount = result.total_count || 0;
-                updateInfoBar();
-
-                // For infinite row model: lastRow is the total count, or -1 if unknown
-                const lastRow = result.total_count <= params.endRow ? result.total_count : -1;
-                params.successCallback(rows, lastRow);
-
-            } else {
+            // Defensive check for data array
+            if (!result.data || !Array.isArray(result.data)) {
+                console.error('Invalid data format:', result);
                 updateConnectionStatus('error');
-                showError(result.message || 'Unknown error occurred');
-                params.failCallback();
+                showError('Invalid data format received from server');
+                hideLoadingOverlay();
+                return [];
             }
 
+            // Transform data for grid with specific columns
+            const rows = result.data.map(item => {
+                const metadata = item.attributes?.metadata || {};
+                // Check both direct metadata and attrs (Tiled may nest in attrs)
+                const attrs = metadata.attrs || metadata;
+                const meta = attrs.meta || {};
+
+                return {
+                    id: item.id,
+                    task_name: attrs.task_name || null,
+                    driver_name: attrs.driver_name || null,
+                    meta_started: meta.started || null,
+                    meta_ended: meta.ended || null,
+                    run_time_minutes: meta.run_time_minutes || null,
+                    sample_uuid: attrs.sample_uuid || null,
+                    sample_name: attrs.sample_name || null,
+                    AL_campaign_name: attrs.AL_campaign_name || null,
+                    AL_uuid: attrs.AL_uuid || null,
+                    AL_components: attrs.AL_components || null,
+                    _raw: item
+                };
+            });
+
+            // Update total count display
+            totalCount = result.total_count || 0;
+            updateInfoBar();
+
             hideLoadingOverlay();
+            return rows;
+
+        } else {
+            updateConnectionStatus('error');
+            showError(result.message || 'Unknown error occurred');
+            hideLoadingOverlay();
+            return [];
         }
-    };
+
+    } catch (error) {
+        console.error('Exception in loadAllData:', error);
+        updateConnectionStatus('error');
+        showError(`Error loading data: ${error.message}`);
+        hideLoadingOverlay();
+        return [];
+    }
 }
 
 /**
- * Initialize AG Grid
+ * Parse date string to timestamp for sorting
+ * Parses format: MM/DD/YY HH:MM:SS-microseconds TIMEZONE_NAME±TIMEZONE_OFFSET
+ * Example: "12/07/25 14:30:45-123456 EST-0500"
+ * Returns: Unix timestamp (milliseconds) or 0 if invalid
  */
-function initializeGrid() {
+function parseDateToTimestamp(dateString) {
+    if (!dateString) return 0;
+
+    try {
+        // Extract date/time portion before the microseconds
+        const match = dateString.match(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+
+        if (!match) {
+            return 0; // Return 0 for invalid format
+        }
+
+        const [_, month, day, year, hours, minutes, seconds] = match;
+
+        // Convert 2-digit year to 4-digit year (assuming 20xx)
+        const fullYear = '20' + year;
+
+        // Format as ISO string for Date parsing: YYYY-MM-DDTHH:MM:SS
+        const isoString = `${fullYear}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        const date = new Date(isoString);
+
+        // Validate the date is valid
+        if (isNaN(date.getTime())) {
+            return 0;
+        }
+
+        return date.getTime();
+    } catch (e) {
+        return 0;
+    }
+}
+
+/**
+ * Format date/time string for display
+ * Parses format: MM/DD/YY HH:MM:SS-microseconds TIMEZONE_NAME±TIMEZONE_OFFSET
+ * Example: "12/07/25 14:30:45-123456 EST-0500"
+ */
+function formatDateTime(dateString) {
+    if (!dateString) return '';
+
+    try {
+        // Extract date/time portion before the microseconds
+        const match = dateString.match(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+
+        if (!match) {
+            return dateString; // Return original if format doesn't match
+        }
+
+        const [_, month, day, year, hours, minutes, seconds] = match;
+
+        // Convert 2-digit year to 4-digit year (assuming 20xx)
+        const fullYear = '20' + year;
+
+        // Format as ISO string for Date parsing: YYYY-MM-DDTHH:MM:SS
+        const isoString = `${fullYear}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        const date = new Date(isoString);
+
+        // Validate the date is valid
+        if (isNaN(date.getTime())) {
+            return dateString;
+        }
+
+        // Format output as YYYY-MM-DD HH:MM:SS
+        const outYear = date.getFullYear();
+        const outMonth = String(date.getMonth() + 1).padStart(2, '0');
+        const outDay = String(date.getDate()).padStart(2, '0');
+        const outHours = String(date.getHours()).padStart(2, '0');
+        const outMinutes = String(date.getMinutes()).padStart(2, '0');
+        const outSeconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${outYear}-${outMonth}-${outDay} ${outHours}:${outMinutes}:${outSeconds}`;
+    } catch (e) {
+        return dateString;
+    }
+}
+
+/**
+ * Initialize AG Grid with client-side row model for sorting support
+ */
+async function initializeGrid() {
     const gridDiv = document.getElementById('grid-container');
 
     const gridOptions = {
@@ -596,13 +678,36 @@ function initializeGrid() {
                 headerName: 'Entry ID',
                 pinned: 'left',
                 width: 100,
-                checkboxSelection: true
-                // Note: headerCheckboxSelection not supported with infinite row model
+                checkboxSelection: true,
+                headerCheckboxSelection: true
             },
             { field: 'task_name', headerName: 'Task Name', width: 200 },
             { field: 'driver_name', headerName: 'Driver Name', width: 150 },
-            { field: 'meta_started', headerName: 'Started', width: 180 },
-            { field: 'meta_ended', headerName: 'Ended', width: 180 },
+            {
+                field: 'meta_started',
+                headerName: 'Started',
+                width: 180,
+                valueFormatter: params => formatDateTime(params.value),
+                comparator: (valueA, valueB) => {
+                    // Parse custom date format for sorting
+                    const timestampA = parseDateToTimestamp(valueA);
+                    const timestampB = parseDateToTimestamp(valueB);
+                    return timestampA - timestampB;
+                }
+            },
+            {
+                field: 'meta_ended',
+                headerName: 'Ended',
+                width: 180,
+                sort: 'desc',  // Default sort: most recent first
+                valueFormatter: params => formatDateTime(params.value),
+                comparator: (valueA, valueB) => {
+                    // Parse custom date format for sorting
+                    const timestampA = parseDateToTimestamp(valueA);
+                    const timestampB = parseDateToTimestamp(valueB);
+                    return timestampA - timestampB;
+                }
+            },
             { field: 'run_time_minutes', headerName: 'Runtime (min)', width: 130 },
             { field: 'sample_uuid', headerName: 'Sample UUID', width: 250 },
             { field: 'sample_name', headerName: 'Sample Name', width: 200 },
@@ -615,7 +720,8 @@ function initializeGrid() {
                 pinned: 'right',
                 width: 150,
                 cellRenderer: ActionsRenderer,
-                lockPosition: true
+                lockPosition: true,
+                sortable: false
             }
         ],
         defaultColDef: {
@@ -623,22 +729,20 @@ function initializeGrid() {
             filter: false,
             resizable: true
         },
-        rowModelType: 'infinite',
-        datasource: createDatasource(),
-        cacheBlockSize: pageSize,
-        maxBlocksInCache: 10,
-        cacheOverflowSize: 2,
-        maxConcurrentDatasourceRequests: 2,
-        infiniteInitialRowCount: 100,
+        rowModelType: 'clientSide',
+        rowData: [],  // Will be populated after loading
         pagination: true,
         paginationPageSize: pageSize,
         paginationPageSizeSelector: [25, 50, 100, 200],
         animateRows: true,
         rowSelection: 'multiple',
-        suppressRowClickSelection: true,
-        onGridReady: (params) => {
+        suppressRowClickSelection: false,  // Enable row click selection
+        rowMultiSelectWithClick: true,  // Enable multi-select with Ctrl/Cmd click
+        onGridReady: async (params) => {
             gridApi = params.api;
-            hideLoadingOverlay();
+            // Load initial data
+            const rows = await loadAllData();
+            gridApi.setGridOption('rowData', rows);
         },
         onPaginationChanged: () => {
             updateInfoBar();
@@ -830,7 +934,7 @@ function addQueryRow() {
 /**
  * Perform search action - combines filters and queries
  */
-function performSearchAction() {
+async function performSearchAction() {
     // Collect all queries from the query rows
     const queryRows = document.querySelectorAll('.query-row');
     currentQueries = [];
@@ -843,16 +947,17 @@ function performSearchAction() {
         }
     });
 
-    // Combine filters and queries for search
+    // Reload data with new queries
     if (gridApi) {
-        gridApi.updateGridOptions({ datasource: createDatasource() });
+        const rows = await loadAllData();
+        gridApi.setGridOption('rowData', rows);
     }
 }
 
 /**
  * Clear all searches
  */
-function clearSearch() {
+async function clearSearch() {
     // Remove all query rows
     const container = document.getElementById('query-rows');
     container.innerHTML = '';
@@ -864,7 +969,8 @@ function clearSearch() {
     currentQueries = [];
 
     if (gridApi) {
-        gridApi.updateGridOptions({ datasource: createDatasource() });
+        const rows = await loadAllData();
+        gridApi.setGridOption('rowData', rows);
     }
 }
 
@@ -1171,7 +1277,7 @@ async function loadFilterDropdowns() {
 /**
  * Apply filter selections
  */
-function applyFilters() {
+async function applyFilters() {
     // Clear existing filters
     currentFilters = {};
 
@@ -1184,14 +1290,15 @@ function applyFilters() {
 
     // Refresh grid with new filters
     if (gridApi) {
-        gridApi.updateGridOptions({ datasource: createDatasource() });
+        const rows = await loadAllData();
+        gridApi.setGridOption('rowData', rows);
     }
 }
 
 /**
  * Clear all filter selections
  */
-function clearFilters() {
+async function clearFilters() {
     // Clear all multi-select instances
     for (const [fieldName, state] of Object.entries(multiSelectInstances)) {
         state.selectedValues = [];
@@ -1203,8 +1310,34 @@ function clearFilters() {
 
     // Refresh grid
     if (gridApi) {
-        gridApi.updateGridOptions({ datasource: createDatasource() });
+        const rows = await loadAllData();
+        gridApi.setGridOption('rowData', rows);
     }
+}
+
+/**
+ * Refresh data while keeping current filters and search
+ */
+async function refreshData() {
+    if (!gridApi) {
+        console.error('Grid API not available');
+        return;
+    }
+
+    // Show brief loading indication
+    const refreshBtn = document.getElementById('refresh-button');
+    const originalText = refreshBtn.textContent;
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = '⟳ Refreshing...';
+
+    // Reload data with current filters/queries
+    const rows = await loadAllData();
+    gridApi.setGridOption('rowData', rows);
+
+    // Reset button
+    refreshBtn.disabled = false;
+    refreshBtn.textContent = originalText;
+    showSuccess('Data refreshed');
 }
 
 /**
@@ -1242,6 +1375,12 @@ function setupEventListeners() {
     // Filter buttons
     document.getElementById('apply-filters-button').addEventListener('click', applyFilters);
     document.getElementById('clear-filters-button').addEventListener('click', clearFilters);
+
+    // Refresh button
+    const refreshBtn = document.getElementById('refresh-button');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', refreshData);
+    }
 
     // Search button
     document.getElementById('search-button').addEventListener('click', performSearchAction);

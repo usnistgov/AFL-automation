@@ -686,6 +686,245 @@ class Driver:
                 'message': f'Error getting distinct values for field "{field}": {str(e)}'
             }
 
+    def _fetch_single_tiled_entry(self, entry_id):
+        """Fetch a single entry from Tiled and extract metadata.
+
+        Parameters
+        ----------
+        entry_id : str
+            Tiled entry ID to fetch
+
+        Returns
+        -------
+        tuple
+            (dataset, metadata_dict) where metadata_dict contains:
+            - entry_id: str - The Tiled entry ID
+            - sample_name: str - Sample name (from metadata, attrs, or entry_id)
+            - sample_uuid: str - Sample UUID (from metadata, attrs, or '')
+            - sample_composition: Optional[Dict] - Parsed composition with structure:
+                {'components': List[str], 'values': List[float]}
+
+        Raises
+        ------
+        ValueError
+            If Tiled client cannot be obtained
+            If entry_id is not found in Tiled
+            If dataset cannot be read
+        """
+        import xarray as xr
+
+        # Get tiled client
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            raise ValueError(f"Failed to get tiled client: {client.get('message', 'Unknown error')}")
+
+        if entry_id not in client:
+            raise ValueError(f'Entry "{entry_id}" not found in tiled')
+
+        item = client[entry_id]
+
+        # Fetch dataset
+        from tiled.client.xarray import DatasetClient
+        if isinstance(item, DatasetClient):
+            dataset = item.read(optimize_wide_table=False)
+        else:
+            dataset = item.read()
+
+        # Extract metadata from tiled item
+        tiled_metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
+
+        # Also check dataset attrs for metadata
+        ds_attrs = dict(dataset.attrs) if hasattr(dataset, 'attrs') else {}
+
+        # Build metadata dict, preferring tiled metadata over dataset attrs
+        metadata = {
+            'entry_id': entry_id,
+            'sample_name': tiled_metadata.get('sample_name') or ds_attrs.get('sample_name') or entry_id,
+            'sample_uuid': tiled_metadata.get('sample_uuid') or ds_attrs.get('sample_uuid') or '',
+            'sample_composition': None
+        }
+
+        # Extract sample_composition - be fault tolerant if it doesn't exist
+        comp_dict = tiled_metadata.get('sample_composition') or ds_attrs.get('sample_composition')
+        if comp_dict and isinstance(comp_dict, dict):
+            # Parse composition dict to extract components and values
+            components = []
+            values = []
+            for comp_name, comp_data in comp_dict.items():
+                # Skip non-component keys like 'units', 'components', etc.
+                if comp_name in ('units', 'conc_units', 'mass_units', 'components'):
+                    continue
+
+                try:
+                    if isinstance(comp_data, dict):
+                        # Handle both 'value' (scalar) and 'values' (array) cases
+                        if 'value' in comp_data:
+                            values.append(float(comp_data['value']))
+                            components.append(comp_name)
+                        elif 'values' in comp_data:
+                            val = comp_data['values']
+                            if isinstance(val, (list, tuple)) and len(val) > 0:
+                                values.append(float(val[0]))
+                            else:
+                                values.append(float(val) if val is not None else 0.0)
+                            components.append(comp_name)
+                    elif isinstance(comp_data, (int, float)):
+                        # Direct numeric value
+                        values.append(float(comp_data))
+                        components.append(comp_name)
+                except (ValueError, TypeError):
+                    # Skip components that can't be converted to float
+                    continue
+
+            if components:
+                metadata['sample_composition'] = {
+                    'components': components,
+                    'values': values
+                }
+
+        return dataset, metadata
+
+    def tiled_concat_datasets(self, entry_ids, concat_dim='index', variable_prefix=''):
+        """Gather datasets from Tiled entries and concatenate them along a dimension.
+
+        This method fetches multiple datasets from a Tiled server, extracts metadata
+        (sample_name, sample_uuid, sample_composition), and concatenates them along
+        the specified dimension. It also supports prefixing variable names.
+
+        Parameters
+        ----------
+        entry_ids : List[str]
+            List of Tiled entry IDs to fetch and concatenate
+        concat_dim : str, default="index"
+            Dimension name along which to concatenate the datasets
+        variable_prefix : str, default=""
+            Optional prefix to prepend to variable, coordinate, and dimension names
+            (except the concat_dim itself)
+
+        Returns
+        -------
+        xr.Dataset
+            Concatenated dataset with:
+            - All original data variables and coordinates from individual datasets
+            - Additional coordinates along concat_dim:
+                - sample_name: Sample name from metadata or entry_id
+                - sample_uuid: Sample UUID from metadata or empty string
+                - entry_id: The Tiled entry ID for each dataset
+            - If sample_composition metadata exists:
+                - composition: DataArray with dims [concat_dim, "components"]
+                  containing composition values for each sample
+
+        Raises
+        ------
+        ValueError
+            If entry_ids is empty
+            If any entry_id is not found in Tiled
+            If datasets cannot be fetched or concatenated
+        """
+        import xarray as xr
+        import numpy as np
+
+        if not entry_ids:
+            raise ValueError("entry_ids list cannot be empty")
+
+        # Fetch all entry datasets and metadata
+        datasets = []
+        metadata_list = []
+        for entry_id in entry_ids:
+            try:
+                ds, metadata = self._fetch_single_tiled_entry(entry_id)
+                datasets.append(ds)
+                metadata_list.append(metadata)
+            except Exception as e:
+                raise ValueError(f"Failed to fetch entry '{entry_id}': {str(e)}")
+
+        if not datasets:
+            raise ValueError("No datasets fetched")
+
+        # Collect metadata values for each entry
+        sample_names = [m['sample_name'] for m in metadata_list]
+        sample_uuids = [m['sample_uuid'] for m in metadata_list]
+        entry_id_values = [m['entry_id'] for m in metadata_list]
+
+        # Build compositions DataArray before concatenation
+        # Collect all unique components across all entries
+        all_components = set()
+        for m in metadata_list:
+            if m['sample_composition']:
+                all_components.update(m['sample_composition']['components'])
+        all_components = sorted(list(all_components))
+
+        # Create composition data array if we have components
+        if all_components:
+            n_samples = len(datasets)
+            n_components = len(all_components)
+            comp_data = np.zeros((n_samples, n_components))
+
+            for i, m in enumerate(metadata_list):
+                if m['sample_composition']:
+                    for j, comp_name in enumerate(all_components):
+                        if comp_name in m['sample_composition']['components']:
+                            idx = m['sample_composition']['components'].index(comp_name)
+                            comp_data[i, j] = m['sample_composition']['values'][idx]
+
+            # Create the compositions DataArray
+            compositions = xr.DataArray(
+                data=comp_data,
+                dims=[concat_dim, "components"],
+                coords={
+                    concat_dim: range(n_samples),
+                    "components": all_components
+                },
+                name="composition"
+            )
+        else:
+            compositions = None
+
+        # Concatenate along new dimension
+        # Use coords="minimal" to avoid conflict with compat="override"
+        concatenated = xr.concat(datasets, dim=concat_dim, coords="minimal", compat='override')
+
+        # Assign 1D coordinates along concat_dim
+        concatenated = concatenated.assign_coords({
+            'sample_name': (concat_dim, sample_names),
+            'sample_uuid': (concat_dim, sample_uuids),
+            'entry_id': (concat_dim, entry_id_values)
+        })
+
+        # Add compositions if we have it
+        if compositions is not None:
+            concatenated = concatenated.assign(composition=compositions)
+
+        # Prefix names (data vars, coords, dims) but NOT the concat_dim itself
+        if variable_prefix:
+            rename_dict = {}
+
+            # Rename data variables
+            for var_name in list(concatenated.data_vars):
+                if not var_name.startswith(variable_prefix):
+                    rename_dict[var_name] = variable_prefix + var_name
+
+            # Rename coordinates (but not concat_dim)
+            for coord_name in list(concatenated.coords):
+                if coord_name == concat_dim:
+                    continue  # Don't rename the concat_dim coordinate
+                if coord_name not in concatenated.dims:  # Non-dimension coordinates
+                    if not coord_name.startswith(variable_prefix):
+                        rename_dict[coord_name] = variable_prefix + coord_name
+
+            # Rename dimensions but NOT concat_dim
+            for dim_name in list(concatenated.dims):
+                if dim_name == concat_dim:
+                    continue  # Don't rename the concat_dim
+                if not dim_name.startswith(variable_prefix):
+                    rename_dict[dim_name] = variable_prefix + dim_name
+
+            # Apply all renames
+            if rename_dict:
+                concatenated = concatenated.rename(rename_dict)
+
+        return concatenated
+
     @unqueued()
     def tiled_get_combined_plot_data(self, entry_ids, **kwargs):
         """Get concatenated xarray datasets from multiple Tiled entries.
@@ -711,82 +950,37 @@ class Driver:
                 'message': f'Invalid JSON in entry_ids parameter: {str(e)}'
             }
 
-        # Get Tiled client
-        client = self._get_tiled_client()
-        if isinstance(client, dict) and client.get('status') == 'error':
-            return client
-
-        # Collect datasets
-        datasets = []
+        # Use the new tiled_concat_datasets method
         skipped_entries = []
-        metadata_list = []
-
-        for entry_id in entry_ids_list:
-            try:
-                if entry_id not in client:
-                    skipped_entries.append({
-                        'entry_id': entry_id,
-                        'reason': 'Not found in Tiled'
-                    })
-                    continue
-
-                item = client[entry_id]
-
-                # Try to read as dataset
-                try:
-                    dataset = item.read(optimize_wide_table=False)
-                except:
-                    dataset = item.read()
-
-                # Check if it's an xarray Dataset
-                if hasattr(dataset, 'data_vars'):
-                    # Extract metadata
-                    metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
-                    metadata_list.append(metadata)
-
-                    # Extract sample_composition from metadata and add as coords
-                    if 'sample_composition' in metadata and isinstance(metadata['sample_composition'], dict):
-                        sample_comp = metadata['sample_composition']
-
-                        # Create a new dimension for sample_composition
-                        comp_names = list(sample_comp.keys())
-                        comp_values = [sample_comp[name] for name in comp_names]
-
-                        # Add sample_composition as coordinates
-                        for i, comp_name in enumerate(comp_names):
-                            coord_name = f'composition_{comp_name}'
-                            # Add as a scalar coordinate (will be broadcasted during concat)
-                            dataset = dataset.assign_coords({coord_name: comp_values[i]})
-
-                    datasets.append(dataset)
-                else:
-                    skipped_entries.append({
-                        'entry_id': entry_id,
-                        'reason': 'Not an xarray.Dataset'
-                    })
-
-            except Exception as e:
-                skipped_entries.append({
-                    'entry_id': entry_id,
-                    'reason': f'Error reading: {str(e)}'
-                })
-
-        # Check if we have any datasets
-        if len(datasets) == 0:
-            return {
-                'status': 'error',
-                'message': 'No xarray.Dataset entries found in selection',
-                'skipped_entries': skipped_entries
-            }
-
-        # Concatenate datasets along 'index' dimension
         try:
-            combined_dataset = xr.concat(datasets, dim='index')
+            combined_dataset = self.tiled_concat_datasets(
+                entry_ids=entry_ids_list,
+                concat_dim='index',
+                variable_prefix=''
+            )
 
             # Cache the dataset for download endpoint
             self._cached_combined_dataset = combined_dataset
             self._cached_entry_ids = entry_ids_list
 
+        except ValueError as e:
+            # Handle individual entry errors by tracking skipped entries
+            error_msg = str(e)
+            if 'Failed to fetch entry' in error_msg:
+                # Extract entry_id from error message if possible
+                import re
+                match = re.search(r"Failed to fetch entry '([^']+)'", error_msg)
+                if match:
+                    skipped_entries.append({
+                        'entry_id': match.group(1),
+                        'reason': error_msg
+                    })
+
+            return {
+                'status': 'error',
+                'message': f'Error concatenating datasets: {error_msg}',
+                'skipped_entries': skipped_entries
+            }
         except Exception as e:
             return {
                 'status': 'error',
@@ -803,10 +997,27 @@ class Driver:
             except:
                 dataset_html = f'<pre>{str(combined_dataset)}</pre>'
 
+            # Get num_datasets from the 'index' dimension size
+            num_datasets = combined_dataset.dims.get('index', 0)
+
+            # Build metadata list from coordinates
+            metadata_list = []
+            if 'sample_name' in combined_dataset.coords and 'sample_uuid' in combined_dataset.coords:
+                sample_names = combined_dataset.coords['sample_name'].values.tolist()
+                sample_uuids = combined_dataset.coords['sample_uuid'].values.tolist()
+                entry_ids = combined_dataset.coords.get('entry_id', [None] * num_datasets).values.tolist()
+
+                for i in range(num_datasets):
+                    metadata_list.append({
+                        'sample_name': sample_names[i] if i < len(sample_names) else '',
+                        'sample_uuid': sample_uuids[i] if i < len(sample_uuids) else '',
+                        'entry_id': entry_ids[i] if i < len(entry_ids) else ''
+                    })
+
             result = {
                 'status': 'success',
                 'data_type': 'xarray_dataset',
-                'num_datasets': len(datasets),
+                'num_datasets': num_datasets,
                 'variables': list(combined_dataset.data_vars.keys()),
                 'dims': list(combined_dataset.dims.keys()),
                 'dim_sizes': {dim: int(size) for dim, size in combined_dataset.dims.items()},

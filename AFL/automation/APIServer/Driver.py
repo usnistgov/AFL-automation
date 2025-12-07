@@ -298,6 +298,11 @@ class Driver:
         """Serve the Tiled plotting interface for selected entries."""
         return render_template('tiled_plot.html')
 
+    @unqueued(render_hint='html')
+    def tiled_gantt(self, **kwargs):
+        """Serve the Tiled Gantt chart interface for selected entries."""
+        return render_template('tiled_gantt.html')
+
     def _read_tiled_config(self):
         """Internal helper to read Tiled config from ~/.afl/config.json.
 
@@ -737,11 +742,19 @@ class Driver:
         ds_attrs = dict(dataset.attrs) if hasattr(dataset, 'attrs') else {}
 
         # Build metadata dict, preferring tiled metadata over dataset attrs
+        # Include ALL metadata fields for Gantt chart
         metadata = {
             'entry_id': entry_id,
             'sample_name': tiled_metadata.get('sample_name') or ds_attrs.get('sample_name') or entry_id,
             'sample_uuid': tiled_metadata.get('sample_uuid') or ds_attrs.get('sample_uuid') or '',
-            'sample_composition': None
+            'sample_composition': None,
+            # Add full metadata for Gantt chart and other uses
+            'attrs': tiled_metadata.get('attrs', {}) or ds_attrs.get('attrs', {}),
+            'meta': tiled_metadata.get('meta', {}) or tiled_metadata.get('attrs', {}).get('meta', {}) or ds_attrs.get('meta', {}),
+            'AL_campaign_name': tiled_metadata.get('AL_campaign_name') or tiled_metadata.get('attrs', {}).get('AL_campaign_name') or ds_attrs.get('AL_campaign_name', ''),
+            'AL_uuid': tiled_metadata.get('AL_uuid') or tiled_metadata.get('attrs', {}).get('AL_uuid') or ds_attrs.get('AL_uuid', ''),
+            'task_name': tiled_metadata.get('task_name') or tiled_metadata.get('attrs', {}).get('task_name') or ds_attrs.get('task_name', ''),
+            'driver_name': tiled_metadata.get('driver_name') or tiled_metadata.get('attrs', {}).get('driver_name') or ds_attrs.get('driver_name', ''),
         }
 
         # Extract sample_composition - be fault tolerant if it doesn't exist
@@ -1097,26 +1110,55 @@ class Driver:
                 sample_dim = 'index'
                 num_datasets = combined_dataset.dims.get('index', 0)
 
-            # Build metadata list
+            # Build metadata list - need to re-fetch metadata for each entry to get full details
             metadata_list = []
-            if is_single_entry:
-                # Single entry: metadata is in attrs
-                metadata_list.append({
-                    'sample_name': combined_dataset.attrs.get('sample_name', ''),
-                    'sample_uuid': combined_dataset.attrs.get('sample_uuid', ''),
-                    'entry_id': combined_dataset.attrs.get('entry_id', entry_ids_list[0])
-                })
-            elif 'sample_name' in combined_dataset.coords and 'sample_uuid' in combined_dataset.coords:
-                # Multiple entries: metadata is in coordinates along index dim
-                sample_names = combined_dataset.coords['sample_name'].values.tolist()
-                sample_uuids = combined_dataset.coords['sample_uuid'].values.tolist()
-                entry_ids = combined_dataset.coords.get('entry_id', [None] * num_datasets).values.tolist()
+            for entry_id in entry_ids_list:
+                try:
+                    # Re-fetch metadata from Tiled for this specific entry
+                    client = self._get_tiled_client()
+                    if isinstance(client, dict) and client.get('status') == 'error':
+                        # If client fails, use basic metadata
+                        metadata_list.append({
+                            'entry_id': entry_id,
+                            'sample_name': '',
+                            'sample_uuid': '',
+                            'meta': {},
+                            'AL_campaign_name': '',
+                        })
+                        continue
 
-                for i in range(num_datasets):
+                    if entry_id not in client:
+                        metadata_list.append({
+                            'entry_id': entry_id,
+                            'sample_name': '',
+                            'sample_uuid': '',
+                            'meta': {},
+                            'AL_campaign_name': '',
+                        })
+                        continue
+
+                    item = client[entry_id]
+                    tiled_metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
+
+                    # Extract full metadata including timing data
                     metadata_list.append({
-                        'sample_name': sample_names[i] if i < len(sample_names) else '',
-                        'sample_uuid': sample_uuids[i] if i < len(sample_uuids) else '',
-                        'entry_id': entry_ids[i] if i < len(entry_ids) else ''
+                        'entry_id': entry_id,
+                        'sample_name': tiled_metadata.get('sample_name', ''),
+                        'sample_uuid': tiled_metadata.get('sample_uuid', ''),
+                        'AL_campaign_name': tiled_metadata.get('AL_campaign_name') or tiled_metadata.get('attrs', {}).get('AL_campaign_name', ''),
+                        'AL_uuid': tiled_metadata.get('AL_uuid') or tiled_metadata.get('attrs', {}).get('AL_uuid', ''),
+                        'task_name': tiled_metadata.get('task_name') or tiled_metadata.get('attrs', {}).get('task_name', ''),
+                        'driver_name': tiled_metadata.get('driver_name') or tiled_metadata.get('attrs', {}).get('driver_name', ''),
+                        'meta': tiled_metadata.get('meta', {}) or tiled_metadata.get('attrs', {}).get('meta', {}),
+                    })
+                except Exception as e:
+                    # If metadata fetch fails for an entry, use basic metadata
+                    metadata_list.append({
+                        'entry_id': entry_id,
+                        'sample_name': '',
+                        'sample_uuid': '',
+                        'meta': {},
+                        'AL_campaign_name': '',
                     })
 
             result = {
@@ -1267,6 +1309,82 @@ class Driver:
                 'status': 'error',
                 'message': f'Error extracting dataset structure: {str(e)}'
             }
+
+    @unqueued()
+    def tiled_get_gantt_metadata(self, entry_ids, **kwargs):
+        """Get metadata for Gantt chart from multiple Tiled entries.
+
+        This is a lightweight endpoint that only fetches metadata without
+        loading or combining the actual datasets.
+
+        Args:
+            entry_ids: JSON string array of entry IDs
+
+        Returns:
+            dict with list of metadata for each entry
+        """
+        import json
+
+        # Parse entry_ids from JSON string
+        try:
+            if isinstance(entry_ids, str):
+                entry_ids_list = json.loads(entry_ids)
+            else:
+                entry_ids_list = entry_ids
+        except json.JSONDecodeError as e:
+            return {
+                'status': 'error',
+                'message': f'Invalid JSON in entry_ids parameter: {str(e)}'
+            }
+
+        # Get tiled client
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        # Fetch metadata for each entry
+        metadata_list = []
+        skipped_entries = []
+
+        for entry_id in entry_ids_list:
+            try:
+                if entry_id not in client:
+                    skipped_entries.append({
+                        'entry_id': entry_id,
+                        'reason': 'Entry not found in Tiled'
+                    })
+                    continue
+
+                item = client[entry_id]
+                tiled_metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
+
+                # Extract all metadata fields
+                # Check both direct metadata and nested attrs
+                attrs = tiled_metadata.get('attrs', {})
+                meta = tiled_metadata.get('meta', {}) or attrs.get('meta', {})
+
+                metadata_list.append({
+                    'entry_id': entry_id,
+                    'sample_name': tiled_metadata.get('sample_name') or attrs.get('sample_name', ''),
+                    'sample_uuid': tiled_metadata.get('sample_uuid') or attrs.get('sample_uuid', ''),
+                    'task_name': tiled_metadata.get('task_name') or attrs.get('task_name', ''),
+                    'driver_name': tiled_metadata.get('driver_name') or attrs.get('driver_name', ''),
+                    'AL_campaign_name': tiled_metadata.get('AL_campaign_name') or attrs.get('AL_campaign_name', ''),
+                    'AL_uuid': tiled_metadata.get('AL_uuid') or attrs.get('AL_uuid', ''),
+                    'meta': meta
+                })
+
+            except Exception as e:
+                skipped_entries.append({
+                    'entry_id': entry_id,
+                    'reason': f'Error fetching metadata: {str(e)}'
+                })
+
+        return {
+            'status': 'success',
+            'metadata': metadata_list,
+            'skipped_entries': skipped_entries
+        }
 
     @unqueued()
     def tiled_download_combined_dataset(self, entry_ids, **kwargs):

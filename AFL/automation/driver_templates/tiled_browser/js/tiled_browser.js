@@ -1026,6 +1026,12 @@ function updateSelectionButtons() {
     if (plotSelectedBtn) {
         plotSelectedBtn.disabled = !hasSelection;
     }
+
+    // Enable/disable Gantt Selected button
+    const ganttSelectedBtn = document.getElementById('gantt-selected-btn');
+    if (ganttSelectedBtn) {
+        ganttSelectedBtn.disabled = !hasSelection;
+    }
 }
 
 /**
@@ -1098,6 +1104,32 @@ function plotSelected() {
         // Long list: use sessionStorage to pass data
         sessionStorage.setItem('plotEntryIds', JSON.stringify(entryIds));
         window.open('/tiled_plot', '_blank');
+    }
+}
+
+/**
+ * Open Gantt chart for selected rows
+ */
+function ganttSelected() {
+    const selectedRows = gridApi.getSelectedRows();
+
+    if (selectedRows.length === 0) {
+        showError('Please select at least one row for Gantt chart');
+        return;
+    }
+
+    // Extract entry IDs
+    const entryIds = selectedRows.map(row => row.id);
+
+    // Open gantt page and pass entry IDs
+    if (entryIds.length <= 10) {
+        // Short list: use URL params
+        const idsParam = encodeURIComponent(JSON.stringify(entryIds));
+        window.open(`/tiled_gantt?entry_ids=${idsParam}`, '_blank');
+    } else {
+        // Long list: use sessionStorage
+        sessionStorage.setItem('ganttEntryIds', JSON.stringify(entryIds));
+        window.open('/tiled_gantt', '_blank');
     }
 }
 
@@ -1426,6 +1458,12 @@ function setupEventListeners() {
     const plotSelectedBtn = document.getElementById('plot-selected-btn');
     if (plotSelectedBtn) {
         plotSelectedBtn.addEventListener('click', plotSelected);
+    }
+
+    // Gantt Selected button
+    const ganttSelectedBtn = document.getElementById('gantt-selected-btn');
+    if (ganttSelectedBtn) {
+        ganttSelectedBtn.addEventListener('click', ganttSelected);
     }
 
     // Error close button

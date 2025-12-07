@@ -1123,39 +1123,63 @@ function initializeNavigation() {
 
 /**
  * Update dropdowns after dataset changes
+ * Mirrors Python DatasetWidget_View.update_dropdowns()
  */
 function updateDropdowns() {
     const dataset = AppState.workingDataset;
     if (!dataset) return;
 
-    // Update scatter vars
+    // Update scatter vars (1D data variables)
     const scatterSelect = document.getElementById('scatter-vars');
+    const prevScatterSelection = Array.from(scatterSelect.selectedOptions).map(o => o.value);
     scatterSelect.innerHTML = AppState.scattVars.map(v =>
         `<option value="${v}">${v}</option>`
     ).join('');
-    // Auto-select first scattering variable
+    // Try to restore previous selection, otherwise auto-select first
     if (AppState.scattVars.length > 0) {
-        scatterSelect.selectedIndex = 0;
+        const validPrevSelection = prevScatterSelection.filter(v => AppState.scattVars.includes(v));
+        if (validPrevSelection.length > 0) {
+            validPrevSelection.forEach(v => {
+                const opt = scatterSelect.querySelector(`option[value="${v}"]`);
+                if (opt) opt.selected = true;
+            });
+        } else {
+            scatterSelect.selectedIndex = 0;
+        }
     }
 
-    // Update composition var
+    // Update composition var dropdown
     const compSelect = document.getElementById('composition-var');
     compSelect.innerHTML = ['<option value="">Select composition...</option>']
         .concat(AppState.compVars.map(v => `<option value="${v}">${v}</option>`))
         .join('');
-    // Auto-select first composition variable
-    if (AppState.compVars.length > 0 && !AppState.compositionVariable) {
+    
+    // Check if current selection is still valid, otherwise pick first available
+    if (AppState.compositionVariable && AppState.compVars.includes(AppState.compositionVariable)) {
+        compSelect.value = AppState.compositionVariable;
+    } else if (AppState.compVars.length > 0) {
         AppState.compositionVariable = AppState.compVars[0];
         compSelect.value = AppState.compositionVariable;
+    } else {
+        AppState.compositionVariable = null;
+        compSelect.value = '';
     }
 
-    // Update composition color
+    // Update composition color dropdown (populated with sample_vars - 1D variables)
     const colorSelect = document.getElementById('composition-color');
     colorSelect.innerHTML = ['<option value="">None</option>']
         .concat(AppState.sampleVars.map(v => `<option value="${v}">${v}</option>`))
         .join('');
+    
+    // Restore color selection if still valid
+    if (AppState.compositionColorVariable && AppState.sampleVars.includes(AppState.compositionColorVariable)) {
+        colorSelect.value = AppState.compositionColorVariable;
+    } else {
+        AppState.compositionColorVariable = null;
+        colorSelect.value = '';
+    }
 
-    // Update sel dimension dropdown
+    // Update sel dimension dropdown (for filtering operations)
     const selDimSelect = document.getElementById('sel-dim');
     if (dataset.dims) {
         selDimSelect.innerHTML = ['<option value="">Select dimension...</option>']
@@ -1163,7 +1187,7 @@ function updateDropdowns() {
             .join('');
     }
 
-    // Update extract from var
+    // Update extract from var dropdown
     const extractVarSelect = document.getElementById('extract-from-var');
     extractVarSelect.innerHTML = ['<option value="">Select variable...</option>']
         .concat(AppState.compVars.concat(AppState.scattVars).map(v =>
@@ -1178,9 +1202,17 @@ function updateDropdowns() {
         ).join('');
     }
 
-    // Update index display
+    // Update index display with max index for current sample dimension
     const maxIndex = (dataset.dim_sizes[AppState.sampleDim] || 1) - 1;
     document.getElementById('index-display').textContent = `/ ${maxIndex}`;
+    
+    console.log('Updated dropdowns:', {
+        sampleVars: AppState.sampleVars,
+        compVars: AppState.compVars,
+        scattVars: AppState.scattVars,
+        compositionVariable: AppState.compositionVariable,
+        compositionColorVariable: AppState.compositionColorVariable
+    });
 }
 
 /**
@@ -1250,7 +1282,7 @@ function initializeDatasetWidgetListeners() {
     // Sample navigation
     initializeNavigation();
 
-    // Plot update button
+    // Plot update button - mirrors Python initialize_plots()
     document.getElementById('update-plot').addEventListener('click', () => {
         // Update settings from config inputs
         AppState.xmin = parseFloat(document.getElementById('xmin-config').value);
@@ -1258,6 +1290,17 @@ function initializeDatasetWidgetListeners() {
         AppState.logX = document.getElementById('logx-config').checked;
         AppState.logY = document.getElementById('logy-config').checked;
         AppState.colorscale = document.getElementById('colorscale-config').value;
+
+        // Sync dropdown values to AppState before rendering
+        AppState.compositionVariable = document.getElementById('composition-var').value || null;
+        AppState.compositionColorVariable = document.getElementById('composition-color').value || null;
+
+        console.log('Update Plot clicked:', {
+            compositionVariable: AppState.compositionVariable,
+            compositionColorVariable: AppState.compositionColorVariable,
+            sampleDim: AppState.sampleDim,
+            dataIndex: AppState.dataIndex
+        });
 
         renderScatteringPlot();
         renderCompositionPlot();
@@ -1290,11 +1333,20 @@ function initializeDatasetWidgetListeners() {
         renderScatteringPlot();
     });
 
-    // Sample dimension change
+    // Sample dimension change - mirrors Python update_sample_dim()
     document.getElementById('sample-dim-select').addEventListener('change', (e) => {
+        console.log('Sample dimension changed to:', e.target.value);
         AppState.sampleDim = e.target.value;
+        
+        // Reset composition selections so new defaults get picked (like Python does)
+        AppState.compositionVariable = null;
+        AppState.compositionColorVariable = null;
+        
+        // Reset data index
         AppState.dataIndex = 0;
         document.getElementById('data-index').value = 0;
+        
+        // Re-categorize variables and update dropdowns
         updateAfterDataChange();
     });
 
@@ -1453,12 +1505,40 @@ async function initialize() {
         AppState.originalDataset = JSON.parse(JSON.stringify(data)); // Deep clone
         AppState.workingDataset = data;
 
-        // Categorize variables
+        // Use server-provided sample_dim if available, otherwise detect
+        if (data.sample_dim) {
+            AppState.sampleDim = data.sample_dim;
+            console.log(`Using server-provided sample dimension: ${data.sample_dim}`);
+        } else if (data.dims && !data.dims.includes('index')) {
+            // Fallback: Auto-detect sample dimension if 'index' doesn't exist
+            // Look for dimensions matching *_sample pattern
+            const samplePattern = /_sample$/;
+            for (const dim of data.dims) {
+                if (samplePattern.test(dim)) {
+                    AppState.sampleDim = dim;
+                    console.log(`Auto-detected sample dimension: ${dim}`);
+                    break;
+                }
+            }
+            // If no *_sample pattern found, use first dimension with size > 1
+            if (AppState.sampleDim === 'index' && data.dim_sizes) {
+                for (const dim of data.dims) {
+                    if (data.dim_sizes[dim] > 1) {
+                        AppState.sampleDim = dim;
+                        console.log(`Using first multi-valued dimension as sample dim: ${dim}`);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Categorize variables based on sample dimension
         const { sampleVars, compVars, scattVars } = categorizeVariables(data, AppState.sampleDim);
         AppState.sampleVars = sampleVars;
         AppState.compVars = compVars;
         AppState.scattVars = scattVars;
 
+        console.log('Sample dimension:', AppState.sampleDim);
         console.log('Categorized variables:', { sampleVars, compVars, scattVars });
 
         // Update dropdowns with categorized variables

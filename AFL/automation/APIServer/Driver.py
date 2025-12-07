@@ -784,6 +784,40 @@ class Driver:
 
         return dataset, metadata
 
+    def _detect_sample_dimension(self, dataset):
+        """Detect the sample dimension from a dataset.
+        
+        Looks for dimensions matching patterns like '*_sample' or 'sample'.
+        Falls back to the first dimension with size > 1.
+        
+        Returns
+        -------
+        str or None
+            The detected sample dimension name, or None if not found
+        """
+        import re
+        
+        # Pattern priority: exact 'sample', then '*_sample', then first multi-valued dim
+        dims = list(dataset.dims.keys())
+        
+        # Check for exact 'sample' first
+        if 'sample' in dims:
+            return 'sample'
+        
+        # Check for *_sample pattern
+        sample_pattern = re.compile(r'.*_sample$')
+        for dim in dims:
+            if sample_pattern.match(dim):
+                return dim
+        
+        # Fallback: first dimension with size > 1
+        for dim in dims:
+            if dataset.dims[dim] > 1:
+                return dim
+        
+        # Last resort: first dimension
+        return dims[0] if dims else None
+
     def tiled_concat_datasets(self, entry_ids, concat_dim='index', variable_prefix=''):
         """Gather datasets from Tiled entries and concatenate them along a dimension.
 
@@ -791,12 +825,15 @@ class Driver:
         (sample_name, sample_uuid, sample_composition), and concatenates them along
         the specified dimension. It also supports prefixing variable names.
 
+        For a single entry, the dataset is returned as-is without concatenation,
+        and the sample dimension is auto-detected from existing dimensions.
+
         Parameters
         ----------
         entry_ids : List[str]
             List of Tiled entry IDs to fetch and concatenate
         concat_dim : str, default="index"
-            Dimension name along which to concatenate the datasets
+            Dimension name along which to concatenate the datasets (ignored for single entry)
         variable_prefix : str, default=""
             Optional prefix to prepend to variable, coordinate, and dimension names
             (except the concat_dim itself)
@@ -804,7 +841,8 @@ class Driver:
         Returns
         -------
         xr.Dataset
-            Concatenated dataset with:
+            For single entry: The original dataset with metadata added as attributes
+            For multiple entries: Concatenated dataset with:
             - All original data variables and coordinates from individual datasets
             - Additional coordinates along concat_dim:
                 - sample_name: Sample name from metadata or entry_id
@@ -841,6 +879,54 @@ class Driver:
         if not datasets:
             raise ValueError("No datasets fetched")
 
+        # SINGLE ENTRY CASE: Return dataset as-is with metadata added
+        if len(datasets) == 1:
+            dataset = datasets[0]
+            metadata = metadata_list[0]
+            
+            # Detect the sample dimension from the dataset
+            sample_dim = self._detect_sample_dimension(dataset)
+            
+            # Add metadata as dataset attributes (not coordinates, since we don't have a new dim)
+            dataset.attrs['sample_name'] = metadata['sample_name']
+            dataset.attrs['sample_uuid'] = metadata['sample_uuid']
+            dataset.attrs['entry_id'] = metadata['entry_id']
+            dataset.attrs['_detected_sample_dim'] = sample_dim
+            
+            # If sample_composition exists, add it as a DataArray along the sample dimension
+            if metadata['sample_composition'] and sample_dim:
+                components = metadata['sample_composition']['components']
+                values = metadata['sample_composition']['values']
+                
+                # Check if composition already exists in dataset (common case)
+                # If not, we could add it, but for single entry this is usually already there
+                if 'composition' not in dataset.data_vars:
+                    # Create composition array - but we need to match the sample dimension size
+                    # This is tricky for single entry since composition is per-sample
+                    # For now, store in attrs
+                    dataset.attrs['sample_composition'] = {
+                        'components': components,
+                        'values': values
+                    }
+            
+            # Apply variable prefix if specified
+            if variable_prefix:
+                rename_dict = {}
+                for var_name in list(dataset.data_vars):
+                    if not var_name.startswith(variable_prefix):
+                        rename_dict[var_name] = variable_prefix + var_name
+                for coord_name in list(dataset.coords):
+                    if coord_name not in dataset.dims and not coord_name.startswith(variable_prefix):
+                        rename_dict[coord_name] = variable_prefix + coord_name
+                for dim_name in list(dataset.dims):
+                    if not dim_name.startswith(variable_prefix):
+                        rename_dict[dim_name] = variable_prefix + dim_name
+                if rename_dict:
+                    dataset = dataset.rename(rename_dict)
+            
+            return dataset
+
+        # MULTIPLE ENTRIES CASE: Concatenate along concat_dim
         # Collect metadata values for each entry
         sample_names = [m['sample_name'] for m in metadata_list]
         sample_uuids = [m['sample_uuid'] for m in metadata_list]
@@ -997,12 +1083,31 @@ class Driver:
             except:
                 dataset_html = f'<pre>{str(combined_dataset)}</pre>'
 
-            # Get num_datasets from the 'index' dimension size
-            num_datasets = combined_dataset.dims.get('index', 0)
+            # Detect sample dimension:
+            # - For single entry: use '_detected_sample_dim' from attrs
+            # - For multiple entries: use 'index' (the concat_dim)
+            is_single_entry = len(entry_ids_list) == 1
+            if is_single_entry:
+                sample_dim = combined_dataset.attrs.get('_detected_sample_dim', None)
+                if not sample_dim:
+                    # Fallback detection
+                    sample_dim = self._detect_sample_dimension(combined_dataset)
+                num_datasets = combined_dataset.dims.get(sample_dim, 1) if sample_dim else 1
+            else:
+                sample_dim = 'index'
+                num_datasets = combined_dataset.dims.get('index', 0)
 
-            # Build metadata list from coordinates
+            # Build metadata list
             metadata_list = []
-            if 'sample_name' in combined_dataset.coords and 'sample_uuid' in combined_dataset.coords:
+            if is_single_entry:
+                # Single entry: metadata is in attrs
+                metadata_list.append({
+                    'sample_name': combined_dataset.attrs.get('sample_name', ''),
+                    'sample_uuid': combined_dataset.attrs.get('sample_uuid', ''),
+                    'entry_id': combined_dataset.attrs.get('entry_id', entry_ids_list[0])
+                })
+            elif 'sample_name' in combined_dataset.coords and 'sample_uuid' in combined_dataset.coords:
+                # Multiple entries: metadata is in coordinates along index dim
                 sample_names = combined_dataset.coords['sample_name'].values.tolist()
                 sample_uuids = combined_dataset.coords['sample_uuid'].values.tolist()
                 entry_ids = combined_dataset.coords.get('entry_id', [None] * num_datasets).values.tolist()
@@ -1023,12 +1128,27 @@ class Driver:
                 'dim_sizes': {dim: int(size) for dim, size in combined_dataset.dims.items()},
                 'coords': {},
                 'data': {},
-                'hue_dim': 'index',
+                'sample_dim': sample_dim,  # Tell the client which dimension is the sample dimension
+                'hue_dim': sample_dim or 'index',  # Use detected sample_dim as hue_dim
                 'available_legend_vars': [],
                 'metadata': metadata_list,
                 'skipped_entries': skipped_entries,
                 'dataset_html': dataset_html
             }
+
+            # Helper function to recursively sanitize values for JSON
+            def sanitize_for_json(obj):
+                """Recursively replace NaN and Inf with None for JSON compatibility."""
+                import numpy as np
+                import math
+                if isinstance(obj, list):
+                    return [sanitize_for_json(x) for x in obj]
+                elif isinstance(obj, float):
+                    if math.isnan(obj) or math.isinf(obj):
+                        return None
+                    return obj
+                else:
+                    return obj
 
             # Helper function to safely convert numpy arrays to JSON-serializable lists
             def safe_tolist(arr):
@@ -1053,13 +1173,8 @@ class Driver:
                 # Convert to list
                 lst = arr.tolist()
 
-                # Replace NaN and Inf with None for JSON compatibility
-                if isinstance(lst, list):
-                    return [None if (isinstance(x, float) and (np.isnan(x) or np.isinf(x))) else x for x in lst]
-                elif isinstance(lst, float) and (np.isnan(lst) or np.isinf(lst)):
-                    return None
-                else:
-                    return lst
+                # Recursively replace NaN and Inf with None for JSON compatibility
+                return sanitize_for_json(lst)
 
             # Extract coordinates (limit size)
             print(f"\n=== EXTRACTING COORDINATES ===")
@@ -1089,8 +1204,8 @@ class Driver:
             for var_name in combined_dataset.data_vars.keys():
                 var = combined_dataset[var_name]
 
-                # Check if variable has 'index' dimension (suitable for legend)
-                if 'index' in var.dims:
+                # Check if variable has sample dimension (suitable for legend)
+                if sample_dim and sample_dim in var.dims:
                     result['available_legend_vars'].append(var_name)
 
                 # Only include if total size is reasonable (<100k points)

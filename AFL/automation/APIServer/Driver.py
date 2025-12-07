@@ -1030,22 +1030,62 @@ class Driver:
                 'dataset_html': dataset_html
             }
 
+            # Helper function to safely convert numpy arrays to JSON-serializable lists
+            def safe_tolist(arr):
+                """Convert numpy array to list, handling NaN, Inf, and datetime objects."""
+                import numpy as np
+                import pandas as pd
+
+                # Convert to numpy array if not already
+                if not isinstance(arr, np.ndarray):
+                    arr = np.asarray(arr)
+
+                # Handle datetime types
+                if np.issubdtype(arr.dtype, np.datetime64):
+                    # Convert to ISO format strings
+                    return pd.to_datetime(arr).astype(str).tolist()
+
+                # Handle timedelta types
+                if np.issubdtype(arr.dtype, np.timedelta64):
+                    # Convert to total seconds
+                    return (arr / np.timedelta64(1, 's')).tolist()
+
+                # Convert to list
+                lst = arr.tolist()
+
+                # Replace NaN and Inf with None for JSON compatibility
+                if isinstance(lst, list):
+                    return [None if (isinstance(x, float) and (np.isnan(x) or np.isinf(x))) else x for x in lst]
+                elif isinstance(lst, float) and (np.isnan(lst) or np.isinf(lst)):
+                    return None
+                else:
+                    return lst
+
             # Extract coordinates (limit size)
+            print(f"\n=== EXTRACTING COORDINATES ===")
             for coord_name, coord_data in combined_dataset.coords.items():
                 try:
+                    print(f"Coordinate: {coord_name}, dtype: {coord_data.dtype}, size: {coord_data.size}, shape: {coord_data.shape}")
                     if coord_data.size < 100000:
-                        result['coords'][coord_name] = coord_data.values.tolist()
+                        converted = safe_tolist(coord_data.values)
+                        result['coords'][coord_name] = converted
+                        print(f"  ✓ Converted: type={type(converted).__name__}, sample={str(converted)[:100] if converted else 'None'}")
                     else:
                         result['coords'][coord_name] = {
                             'error': f'Coordinate too large ({coord_data.size} points)',
                             'shape': list(coord_data.shape)
                         }
-                except:
+                        print(f"  ⊘ Skipped: too large")
+                except Exception as e:
+                    print(f"  ✗ ERROR: {type(e).__name__}: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
                     result['coords'][coord_name] = {
-                        'error': 'Could not serialize coordinate'
+                        'error': f'Could not serialize coordinate: {str(e)}'
                     }
 
             # Extract data variables (with size limits)
+            print(f"\n=== EXTRACTING DATA VARIABLES ===")
             for var_name in combined_dataset.data_vars.keys():
                 var = combined_dataset[var_name]
 
@@ -1054,17 +1094,23 @@ class Driver:
                     result['available_legend_vars'].append(var_name)
 
                 # Only include if total size is reasonable (<100k points)
+                print(f"Variable: {var_name}, dtype: {var.dtype}, size: {var.size}, shape: {var.shape}, dims: {var.dims}")
                 if var.size < 100000:
                     try:
+                        converted = safe_tolist(var.values)
                         result['data'][var_name] = {
-                            'values': var.values.tolist(),
+                            'values': converted,
                             'dims': list(var.dims),
                             'shape': list(var.shape),
                             'dtype': str(var.dtype)
                         }
-                    except:
+                        print(f"  ✓ Converted: type={type(converted).__name__}, sample={str(converted)[:100] if converted else 'None'}")
+                    except Exception as e:
+                        print(f"  ✗ ERROR: {type(e).__name__}: {str(e)}")
+                        import traceback
+                        traceback.print_exc()
                         result['data'][var_name] = {
-                            'error': f'Could not serialize variable {var_name}',
+                            'error': f'Could not serialize variable {var_name}: {str(e)}',
                             'dims': list(var.dims),
                             'shape': list(var.shape)
                         }
@@ -1074,10 +1120,34 @@ class Driver:
                         'dims': list(var.dims),
                         'shape': list(var.shape)
                     }
+                    print(f"  ⊘ Skipped: too large")
+
+            # Test JSON serialization before returning
+            print(f"\n=== TESTING JSON SERIALIZATION ===")
+            try:
+                import json
+                json_str = json.dumps(result)
+                print(f"✓ JSON serialization successful, length: {len(json_str)} chars")
+            except Exception as json_err:
+                print(f"✗ JSON serialization FAILED: {type(json_err).__name__}: {str(json_err)}")
+                # Try to find which field is problematic
+                for key in ['coords', 'data']:
+                    if key in result:
+                        print(f"\nTesting '{key}' field:")
+                        for subkey, subval in result[key].items():
+                            try:
+                                json.dumps({subkey: subval})
+                                print(f"  ✓ {subkey}: OK")
+                            except Exception as e:
+                                print(f"  ✗ {subkey}: FAILED - {type(e).__name__}: {str(e)}")
+                                print(f"    Type: {type(subval)}, Sample: {str(subval)[:200]}")
 
             return result
 
         except Exception as e:
+            print(f"\n✗ EXCEPTION in tiled_get_combined_plot_data: {type(e).__name__}: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return {
                 'status': 'error',
                 'message': f'Error extracting dataset structure: {str(e)}'
@@ -1132,7 +1202,23 @@ class Driver:
         try:
             # Create in-memory bytes buffer
             buffer = io.BytesIO()
-            combined_dataset.to_netcdf(buffer)
+
+            # Convert any object-type coordinates to strings for NetCDF compatibility
+            ds_copy = combined_dataset.copy()
+            for coord_name in ds_copy.coords:
+                coord = ds_copy.coords[coord_name]
+                if coord.dtype == object:
+                    # Convert objects to strings
+                    ds_copy.coords[coord_name] = coord.astype(str)
+
+            # Also convert object-type data variables
+            for var_name in ds_copy.data_vars:
+                var = ds_copy[var_name]
+                if var.dtype == object:
+                    ds_copy[var_name] = var.astype(str)
+
+            # Write to NetCDF with netcdf4 engine for better compatibility
+            ds_copy.to_netcdf(buffer, engine='netcdf4', format='NETCDF4')
             buffer.seek(0)
 
             # Generate filename with timestamp

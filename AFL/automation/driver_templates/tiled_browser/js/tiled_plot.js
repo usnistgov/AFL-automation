@@ -123,13 +123,39 @@ async function loadCombinedPlotData(entryIdsList) {
             entry_ids: JSON.stringify(entryIdsList)
         });
 
+        console.log('=== FETCHING DATA ===');
+        console.log('URL:', `/tiled_get_combined_plot_data?${params}`);
+
         const response = await authenticatedFetch(`/tiled_get_combined_plot_data?${params}`);
+
+        console.log('Response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
 
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
         }
 
-        const result = await response.json();
+        // Get the raw text first to see what we're trying to parse
+        const responseText = await response.text();
+        console.log('Response length:', responseText.length, 'chars');
+        console.log('Response preview:', responseText.substring(0, 500));
+
+        let result;
+        try {
+            result = JSON.parse(responseText);
+            console.log('✓ JSON parse successful');
+            console.log('Result keys:', Object.keys(result));
+        } catch (parseError) {
+            console.error('✗ JSON parse FAILED:', parseError);
+            console.error('Error at position:', parseError.message);
+            // Try to find the problematic area
+            const errorMatch = parseError.message.match(/position (\d+)/);
+            if (errorMatch) {
+                const pos = parseInt(errorMatch[1]);
+                console.error('Context around error:', responseText.substring(Math.max(0, pos - 100), Math.min(responseText.length, pos + 100)));
+            }
+            throw parseError;
+        }
 
         if (result.status === 'error') {
             throw new Error(result.message);
@@ -777,13 +803,13 @@ function renderScatteringPlot() {
             title: 'I',
             type: AppState.logY ? 'log' : 'linear'
         },
-        height: 300,
-        width: 500,
+        autosize: true,
         margin: { t: 10, b: 40, l: 50, r: 10 },
         legend: { yanchor: 'top', xanchor: 'right', y: 0.99, x: 0.99 }
     };
 
-    Plotly.react('scattering-plot', traces, layout, { responsive: true });
+    const config = { responsive: true, displayModeBar: true };
+    Plotly.react('scattering-plot', traces, layout, config);
 }
 
 /**
@@ -872,12 +898,12 @@ function renderCompositionPlot() {
                 zaxis: { title: zname },
                 aspectmode: 'cube'
             },
-            height: 400,
-            width: 500,
+            autosize: true,
             margin: { t: 10, b: 10, l: 10, r: 10 }
         };
 
-        Plotly.react('composition-plot', traces, layout, { responsive: true });
+        const config = { responsive: true, displayModeBar: true };
+        Plotly.react('composition-plot', traces, layout, config);
     } else {
         // 2D scatter plot
         traces.push({
@@ -918,12 +944,12 @@ function renderCompositionPlot() {
         const layout = {
             xaxis: { title: xname },
             yaxis: { title: yname },
-            height: 400,
-            width: 500,
+            autosize: true,
             margin: { t: 10, b: 10, l: 10, r: 10 }
         };
 
-        Plotly.react('composition-plot', traces, layout, { responsive: true });
+        const config = { responsive: true, displayModeBar: true };
+        Plotly.react('composition-plot', traces, layout, config);
     }
 
     // Attach click handler
@@ -1474,3 +1500,23 @@ if (document.readyState === 'loading') {
 } else {
     initialize();
 }
+
+// Add window resize handler to resize Plotly plots
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        // Only resize if plot tab is active
+        if (AppState.currentTab === 'plot') {
+            const scatteringPlot = document.getElementById('scattering-plot');
+            const compositionPlot = document.getElementById('composition-plot');
+
+            if (scatteringPlot && scatteringPlot.data) {
+                Plotly.Plots.resize('scattering-plot');
+            }
+            if (compositionPlot && compositionPlot.data) {
+                Plotly.Plots.resize('composition-plot');
+            }
+        }
+    }, 100); // Debounce resize events
+});

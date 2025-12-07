@@ -538,10 +538,12 @@ body {
     padding: 20px;
     overflow-y: auto;
     flex: 1;
+    min-height: 0;
 }
 
 .tab-content.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Dataset Tab Styles */
@@ -577,11 +579,10 @@ body {
 }
 
 /* Plot Tab Styles */
-.plot-controls-top {
+.plot-top-controls {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+    gap: 16px;
+    margin-bottom: 20px;
     padding-bottom: 16px;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -630,13 +631,16 @@ body {
 .dual-plot-container {
     display: flex;
     gap: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+    flex: 1;
+    min-height: 0;
 }
 
 .plot-section {
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 .plot-header {
@@ -646,12 +650,14 @@ body {
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
 }
 
 .plot-header h3 {
     font-size: 16px;
     color: #333;
     margin: 0;
+    flex-shrink: 0;
 }
 
 .composition-controls {
@@ -659,11 +665,55 @@ body {
     gap: 8px;
 }
 
+.control-select-multi {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.control-select-multi:focus {
+    outline: none;
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
 .plot-widget {
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     background-color: #fafafa;
-    min-height: 300px;
+    flex: 1;
+    min-height: 400px;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.plot-settings {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.settings-row label {
+    font-weight: 600;
+    color: #666;
+    font-size: 14px;
 }
 
 .plot-controls-bottom {
@@ -672,6 +722,7 @@ body {
     align-items: center;
     padding-top: 16px;
     border-top: 1px solid #e0e0e0;
+    flex-shrink: 0;
 }
 
 .color-controls {

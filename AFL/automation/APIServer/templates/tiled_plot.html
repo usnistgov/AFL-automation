@@ -55,20 +55,11 @@
             <div class="tab-header">
                 <button class="tab-btn" data-tab="dataset">Dataset</button>
                 <button class="tab-btn active" data-tab="plot">Plot</button>
-                <button class="tab-btn" data-tab="config">Config</button>
             </div>
 
             <!-- Tab 1: Dataset -->
             <div id="dataset-tab" class="tab-content">
                 <div class="dataset-operations">
-                    <!-- Sample Dimension Selector -->
-                    <div class="operation-group">
-                        <label for="sample-dim-select">Sample Dimension:</label>
-                        <select id="sample-dim-select" class="control-select">
-                            <option value="index">index</option>
-                        </select>
-                    </div>
-
                     <!-- Filtering Operations -->
                     <div class="operation-group">
                         <label for="sel-dim">Filter by:</label>
@@ -117,13 +108,13 @@
 
             <!-- Tab 2: Plot (Default Active) -->
             <div id="plot-tab" class="tab-content active">
-                <!-- Navigation Controls -->
-                <div class="plot-controls-top">
-                    <div class="nav-controls">
-                        <button id="prev-sample" class="nav-button">&#9664; Previous</button>
-                        <input type="number" id="data-index" class="index-input" value="0" min="0">
-                        <span id="index-display" class="index-display">/ 0</span>
-                        <button id="next-sample" class="nav-button">Next &#9654;</button>
+                <!-- Sample Dimension Selector -->
+                <div class="plot-top-controls">
+                    <div class="control-group">
+                        <label for="sample-dim-select">Sample Dimension:</label>
+                        <select id="sample-dim-select" class="control-select">
+                            <option value="index">index</option>
+                        </select>
                     </div>
                 </div>
 
@@ -131,12 +122,32 @@
                 <div class="dual-plot-container">
                     <div class="plot-section">
                         <div class="plot-header">
-                            <h3>Scattering Data</h3>
-                            <select id="scatter-vars" class="control-select" multiple size="3">
+                            <h3>1D Data</h3>
+                            <select id="scatter-vars" class="control-select-multi" multiple>
                                 <option value="">Loading...</option>
                             </select>
                         </div>
                         <div id="scattering-plot" class="plot-widget"></div>
+
+                        <!-- 1D Plot Settings -->
+                        <div class="plot-settings">
+                            <div class="settings-row">
+                                <label>X-axis Range:</label>
+                                <input type="number" id="xmin-config" class="control-input-small" value="0.001" step="0.001">
+                                <span>to</span>
+                                <input type="number" id="xmax-config" class="control-input-small" value="1.0" step="0.1">
+                            </div>
+                            <div class="settings-row">
+                                <div class="scale-toggle">
+                                    <input type="checkbox" id="logx-config" checked>
+                                    <label for="logx-config">Log X</label>
+                                </div>
+                                <div class="scale-toggle">
+                                    <input type="checkbox" id="logy-config" checked>
+                                    <label for="logy-config">Log Y</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="plot-section">
@@ -152,55 +163,38 @@
                             </div>
                         </div>
                         <div id="composition-plot" class="plot-widget"></div>
+
+                        <!-- Composition Plot Settings -->
+                        <div class="plot-settings">
+                            <div class="settings-row">
+                                <label for="colorscale-config">Colorscale:</label>
+                                <select id="colorscale-config" class="control-select">
+                                    <option value="Bluered">Bluered</option>
+                                    <option value="Viridis">Viridis</option>
+                                    <option value="Plasma">Plasma</option>
+                                    <option value="RdBu">RdBu</option>
+                                    <option value="Jet">Jet</option>
+                                </select>
+                            </div>
+                            <div class="settings-row">
+                                <label>Color Range:</label>
+                                <input type="number" id="cmin" class="control-input-small" value="0.0" step="0.01">
+                                <span>to</span>
+                                <input type="number" id="cmax" class="control-input-small" value="1.0" step="0.01">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Bottom Controls -->
                 <div class="plot-controls-bottom">
-                    <div class="color-controls">
-                        <label>Color Range:</label>
-                        <input type="number" id="cmin" class="control-input-small" value="0.0" step="0.01">
-                        <span>to</span>
-                        <input type="number" id="cmax" class="control-input-small" value="1.0" step="0.01">
+                    <div class="nav-controls">
+                        <button id="prev-sample" class="nav-button">&#9664; Previous</button>
+                        <input type="number" id="data-index" class="index-input" value="0" min="0">
+                        <span id="index-display" class="index-display">/ 0</span>
+                        <button id="next-sample" class="nav-button">Next &#9654;</button>
                     </div>
                     <button id="update-plot" class="primary-button">Update Plots</button>
-                </div>
-            </div>
-
-            <!-- Tab 3: Config -->
-            <div id="config-tab" class="tab-content">
-                <div class="config-section">
-                    <h3>Scattering Plot Settings</h3>
-                    <div class="control-group">
-                        <label>X-axis Range:</label>
-                        <input type="number" id="xmin-config" class="control-input-small" value="0.001" step="0.001">
-                        <span>to</span>
-                        <input type="number" id="xmax-config" class="control-input-small" value="1.0" step="0.1">
-                    </div>
-                    <div class="control-group scale-controls">
-                        <div class="scale-toggle">
-                            <input type="checkbox" id="logx-config" checked>
-                            <label for="logx-config">Log X</label>
-                        </div>
-                        <div class="scale-toggle">
-                            <input type="checkbox" id="logy-config" checked>
-                            <label for="logy-config">Log Y</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="config-section">
-                    <h3>Composition Plot Settings</h3>
-                    <div class="control-group">
-                        <label for="colorscale-config">Colorscale:</label>
-                        <select id="colorscale-config" class="control-select">
-                            <option value="Bluered">Bluered</option>
-                            <option value="Viridis">Viridis</option>
-                            <option value="Plasma">Plasma</option>
-                            <option value="RdBu">RdBu</option>
-                            <option value="Jet">Jet</option>
-                        </select>
-                    </div>
                 </div>
             </div>
         </div>

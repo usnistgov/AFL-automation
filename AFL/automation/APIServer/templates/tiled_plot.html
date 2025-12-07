@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiled Plot Viewer</title>
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Slim Select for multi-select dropdown -->
+    <link href="https://cdn.jsdelivr.net/npm/slim-select@2.6.0/dist/slimselect.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/slim-select@2.6.0/dist/slimselect.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel='stylesheet' href='/static/tiled_browser_css/tiled_plot.css'>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header -->
+        <div id="header">
+            <div class="header-left">
+                <h1>Tiled Plot Viewer</h1>
+                <p class="dataset-count" id="dataset-count">Loading...</p>
+            </div>
+            <div class="header-right">
+                <button id="download-dataset-btn" class="header-button" disabled>
+                    Download Dataset
+                </button>
+                <div id="status-indicator" class="status-loading">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="error-container" style="display: none;">
+            <div class="error-message">
+                <span class="error-icon">&#9888;</span>
+                <span id="error-text"></span>
+                <button id="error-close">&times;</button>
+            </div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div id="controls-panel">
+            <!-- Simple Controls (Always Visible) -->
+            <div id="simple-controls" class="controls-section">
+                <div class="control-group">
+                    <label for="plot-type">Plot Type:</label>
+                    <select id="plot-type" class="control-select">
+                        <option value="line">Line Plot</option>
+                        <option value="scatter">Scatter Plot</option>
+                        <option value="heatmap">Heatmap</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="x-variable">X Axis:</label>
+                    <select id="x-variable" class="control-select">
+                        <option value="">Select variable...</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="y-variable">Y Axis:</label>
+                    <select id="y-variable" class="control-select">
+                        <option value="">Select variable...</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="legend-variable">Legend Variable:</label>
+                    <select id="legend-variable" class="control-select" multiple>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+
+                <div class="control-group scale-controls">
+                    <div class="scale-toggle">
+                        <input type="checkbox" id="x-log-scale" checked>
+                        <label for="x-log-scale">Log X</label>
+                    </div>
+                    <div class="scale-toggle">
+                        <input type="checkbox" id="y-log-scale" checked>
+                        <label for="y-log-scale">Log Y</label>
+                    </div>
+                </div>
+
+                <button id="update-plot-btn" class="primary-button">Update Plot</button>
+            </div>
+
+            <!-- Advanced Controls (Collapsible) -->
+            <div id="advanced-controls-header" class="advanced-header">
+                <span>Advanced Options</span>
+                <span class="expand-icon">&#9658;</span>
+            </div>
+
+            <div id="advanced-controls" class="controls-section advanced-section" style="display: none;">
+                <div class="control-group">
+                    <label for="hue-dim">Hue Dimension:</label>
+                    <select id="hue-dim" class="control-select">
+                        <option value="index">index</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="colorscale">Colorscale:</label>
+                    <select id="colorscale" class="control-select">
+                        <option value="Viridis">Viridis</option>
+                        <option value="Plasma">Plasma</option>
+                        <option value="Bluered">Bluered</option>
+                        <option value="RdBu">RdBu</option>
+                        <option value="Jet">Jet</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="marker-size">Marker Size:</label>
+                    <input type="number" id="marker-size" class="control-input" value="6" min="1" max="20">
+                </div>
+
+                <div class="control-group">
+                    <label for="line-width">Line Width:</label>
+                    <input type="number" id="line-width" class="control-input" value="2" min="0.5" max="10" step="0.5">
+                </div>
+
+                <div class="control-group">
+                    <label for="plot-title">Plot Title:</label>
+                    <input type="text" id="plot-title" class="control-input" placeholder="Auto-generated">
+                </div>
+
+                <div class="control-group checkbox-group">
+                    <input type="checkbox" id="show-legend" checked>
+                    <label for="show-legend">Show Legend</label>
+                </div>
+
+                <div class="control-group checkbox-group">
+                    <input type="checkbox" id="show-grid" checked>
+                    <label for="show-grid">Show Grid</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plot Container -->
+        <div id="plot-container">
+            <div id="loading-overlay">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading data...</div>
+            </div>
+            <div id="plot"></div>
+        </div>
+
+        <!-- Data Info Panel -->
+        <div id="info-panel">
+            <h3>Dataset Information</h3>
+            <div id="data-info-content">
+                <p class="info-loading">Loading data information...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application JS -->
+    <script src="/static/tiled_browser_js/tiled_plot.js"></script>
+</body>
+</html>

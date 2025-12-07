@@ -293,6 +293,11 @@ class Driver:
         """Serve the Tiled database browser HTML interface."""
         return render_template('tiled_browser.html')
 
+    @unqueued(render_hint='html')
+    def tiled_plot(self, **kwargs):
+        """Serve the Tiled plotting interface for selected entries."""
+        return render_template('tiled_plot.html')
+
     def _read_tiled_config(self):
         """Internal helper to read Tiled config from ~/.afl/config.json.
 
@@ -438,24 +443,59 @@ class Driver:
                         field_values[field].append(value)
 
                 # Apply queries - use In for multiple values, Contains for single
+                # Search in both metadata and attrs fields and collect unique keys
+                all_matching_keys = set()
+
                 for field, values in field_values.items():
+                    field_matching_keys = set()
+
                     if len(values) == 1:
                         # Single value: use Contains
-                        results = results.search(Contains(field, values[0]))
+                        try:
+                            metadata_results = results.search(Contains(field, values[0]))
+                            field_matching_keys.update(metadata_results.keys())
+                        except:
+                            pass
+
+                        try:
+                            attrs_results = results.search(Contains(f'attrs.{field}', values[0]))
+                            field_matching_keys.update(attrs_results.keys())
+                        except:
+                            pass
                     else:
-                        # Multiple values: use In (OR logic)
-                        results = results.search(In(field, values))
+                        # Multiple values: use In
+                        try:
+                            metadata_results = results.search(In(field, values))
+                            field_matching_keys.update(metadata_results.keys())
+                        except:
+                            pass
 
-            # If no queries, use root container
-            if not query_list:
+                        try:
+                            attrs_results = results.search(In(f'attrs.{field}', values))
+                            field_matching_keys.update(attrs_results.keys())
+                        except:
+                            pass
+
+                    # Intersect with previous field results (AND logic between fields)
+                    if not all_matching_keys:
+                        all_matching_keys = field_matching_keys
+                    else:
+                        all_matching_keys &= field_matching_keys
+
+            # Get keys to use based on whether we have filters
+            if query_list and field_values:
+                # Use filtered keys from combined search
+                all_keys = sorted(list(all_matching_keys))
+                total_count = len(all_keys)
+                paginated_keys = all_keys[offset:offset + limit]
+                # Use client as results for accessing items
                 results = client
-
-            # Get total count
-            total_count = len(results)
-
-            # Get all keys and apply pagination
-            all_keys = list(results.keys())
-            paginated_keys = all_keys[offset:offset + limit]
+            else:
+                # No queries - use all keys
+                results = client
+                total_count = len(results)
+                all_keys = list(results.keys())
+                paginated_keys = all_keys[offset:offset + limit]
 
             # Build entries list with metadata
             entries = []
@@ -644,4 +684,249 @@ class Driver:
             return {
                 'status': 'error',
                 'message': f'Error getting distinct values for field "{field}": {str(e)}'
+            }
+
+    @unqueued()
+    def tiled_get_combined_plot_data(self, entry_ids, **kwargs):
+        """Get concatenated xarray datasets from multiple Tiled entries.
+
+        Args:
+            entry_ids: JSON string array of entry IDs to concatenate
+
+        Returns:
+            dict with combined dataset structure ready for plotting
+        """
+        import json
+        import xarray as xr
+
+        # Parse entry_ids from JSON string
+        try:
+            if isinstance(entry_ids, str):
+                entry_ids_list = json.loads(entry_ids)
+            else:
+                entry_ids_list = entry_ids
+        except json.JSONDecodeError as e:
+            return {
+                'status': 'error',
+                'message': f'Invalid JSON in entry_ids parameter: {str(e)}'
+            }
+
+        # Get Tiled client
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        # Collect datasets
+        datasets = []
+        skipped_entries = []
+        metadata_list = []
+
+        for entry_id in entry_ids_list:
+            try:
+                if entry_id not in client:
+                    skipped_entries.append({
+                        'entry_id': entry_id,
+                        'reason': 'Not found in Tiled'
+                    })
+                    continue
+
+                item = client[entry_id]
+
+                # Try to read as dataset
+                try:
+                    dataset = item.read(optimize_wide_table=False)
+                except:
+                    dataset = item.read()
+
+                # Check if it's an xarray Dataset
+                if hasattr(dataset, 'data_vars'):
+                    datasets.append(dataset)
+                    # Store metadata
+                    if hasattr(item, 'metadata'):
+                        metadata_list.append(dict(item.metadata))
+                    else:
+                        metadata_list.append({})
+                else:
+                    skipped_entries.append({
+                        'entry_id': entry_id,
+                        'reason': 'Not an xarray.Dataset'
+                    })
+
+            except Exception as e:
+                skipped_entries.append({
+                    'entry_id': entry_id,
+                    'reason': f'Error reading: {str(e)}'
+                })
+
+        # Check if we have any datasets
+        if len(datasets) == 0:
+            return {
+                'status': 'error',
+                'message': 'No xarray.Dataset entries found in selection',
+                'skipped_entries': skipped_entries
+            }
+
+        # Concatenate datasets along 'index' dimension
+        try:
+            combined_dataset = xr.concat(datasets, dim='index')
+
+            # Cache the dataset for download endpoint
+            self._cached_combined_dataset = combined_dataset
+            self._cached_entry_ids = entry_ids_list
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error concatenating datasets: {str(e)}',
+                'skipped_entries': skipped_entries
+            }
+
+        # Extract structure for JSON serialization
+        try:
+            # Get HTML representation of combined dataset
+            dataset_html = ''
+            try:
+                dataset_html = combined_dataset._repr_html_()
+            except:
+                dataset_html = f'<pre>{str(combined_dataset)}</pre>'
+
+            result = {
+                'status': 'success',
+                'data_type': 'xarray_dataset',
+                'num_datasets': len(datasets),
+                'variables': list(combined_dataset.data_vars.keys()),
+                'dims': list(combined_dataset.dims.keys()),
+                'dim_sizes': {dim: int(size) for dim, size in combined_dataset.dims.items()},
+                'coords': {},
+                'data': {},
+                'hue_dim': 'index',
+                'available_legend_vars': [],
+                'metadata': metadata_list,
+                'skipped_entries': skipped_entries,
+                'dataset_html': dataset_html
+            }
+
+            # Extract coordinates (limit size)
+            for coord_name, coord_data in combined_dataset.coords.items():
+                try:
+                    if coord_data.size < 100000:
+                        result['coords'][coord_name] = coord_data.values.tolist()
+                    else:
+                        result['coords'][coord_name] = {
+                            'error': f'Coordinate too large ({coord_data.size} points)',
+                            'shape': list(coord_data.shape)
+                        }
+                except:
+                    result['coords'][coord_name] = {
+                        'error': 'Could not serialize coordinate'
+                    }
+
+            # Extract data variables (with size limits)
+            for var_name in combined_dataset.data_vars.keys():
+                var = combined_dataset[var_name]
+
+                # Check if variable has 'index' dimension (suitable for legend)
+                if 'index' in var.dims:
+                    result['available_legend_vars'].append(var_name)
+
+                # Only include if total size is reasonable (<100k points)
+                if var.size < 100000:
+                    try:
+                        result['data'][var_name] = {
+                            'values': var.values.tolist(),
+                            'dims': list(var.dims),
+                            'shape': list(var.shape),
+                            'dtype': str(var.dtype)
+                        }
+                    except:
+                        result['data'][var_name] = {
+                            'error': f'Could not serialize variable {var_name}',
+                            'dims': list(var.dims),
+                            'shape': list(var.shape)
+                        }
+                else:
+                    result['data'][var_name] = {
+                        'error': f'Variable too large ({var.size} points)',
+                        'dims': list(var.dims),
+                        'shape': list(var.shape)
+                    }
+
+            return result
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error extracting dataset structure: {str(e)}'
+            }
+
+    @unqueued()
+    def tiled_download_combined_dataset(self, entry_ids, **kwargs):
+        """Download the concatenated xarray dataset as NetCDF file.
+
+        Args:
+            entry_ids: JSON string array of entry IDs (to regenerate dataset if needed)
+
+        Returns:
+            NetCDF file download with appropriate headers
+        """
+        from flask import Response
+        import json
+        import xarray as xr
+        from datetime import datetime
+        import io
+
+        # Check if we have a cached dataset with matching entry_ids
+        if (hasattr(self, '_cached_combined_dataset') and
+            hasattr(self, '_cached_entry_ids')):
+
+            # Parse requested entry_ids
+            try:
+                if isinstance(entry_ids, str):
+                    entry_ids_list = json.loads(entry_ids)
+                else:
+                    entry_ids_list = entry_ids
+            except:
+                entry_ids_list = None
+
+            # Check if cache matches
+            if entry_ids_list == self._cached_entry_ids:
+                combined_dataset = self._cached_combined_dataset
+            else:
+                # Regenerate dataset
+                result = self.tiled_get_combined_plot_data(entry_ids, **kwargs)
+                if result['status'] == 'error':
+                    return result
+                combined_dataset = self._cached_combined_dataset
+        else:
+            # No cache, generate dataset
+            result = self.tiled_get_combined_plot_data(entry_ids, **kwargs)
+            if result['status'] == 'error':
+                return result
+            combined_dataset = self._cached_combined_dataset
+
+        # Serialize to NetCDF
+        try:
+            # Create in-memory bytes buffer
+            buffer = io.BytesIO()
+            combined_dataset.to_netcdf(buffer)
+            buffer.seek(0)
+
+            # Generate filename with timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f'combined_dataset_{timestamp}.nc'
+
+            # Return as file download
+            return Response(
+                buffer.getvalue(),
+                mimetype='application/x-netcdf',
+                headers={
+                    'Content-Disposition': f'attachment; filename="{filename}"',
+                    'Content-Type': 'application/x-netcdf'
+                }
+            )
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error creating NetCDF file: {str(e)}'
             }

@@ -28,6 +28,7 @@ body {
     background: linear-gradient(135deg, #2c3e50, #3498db);
     color: white;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    gap: 16px;
 }
 
 #header h1 {
@@ -394,7 +395,7 @@ body {
     gap: 8px;
 }
 
-#copy-entry-id-button, #copy-sample-uuid-button {
+#copy-entry-id-button, #copy-sample-uuid-button, #plot-selected-btn {
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
@@ -421,8 +422,27 @@ body {
     background-color: #7d3c98;
 }
 
+#select-all-button {
+    background-color: #16a085;
+    color: white;
+}
+
+#select-all-button:hover {
+    background-color: #138d75;
+}
+
+#plot-selected-btn {
+    background-color: #e67e22;
+    color: white;
+}
+
+#plot-selected-btn:hover:not(:disabled) {
+    background-color: #d35400;
+}
+
 #copy-entry-id-button:disabled,
-#copy-sample-uuid-button:disabled {
+#copy-sample-uuid-button:disabled,
+#plot-selected-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }

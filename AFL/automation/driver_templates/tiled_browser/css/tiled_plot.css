@@ -1,0 +1,486 @@
+/* Tiled Plot Viewer Styles */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    overflow-x: hidden;
+}
+
+#app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header Styles */
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #27ae60, #229954);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+    flex: 1;
+}
+
+#header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.dataset-count {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-button {
+    padding: 10px 20px;
+    background-color: white;
+    color: #27ae60;
+    border: 2px solid white;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.header-button:hover:not(:disabled) {
+    background-color: #f8f9fa;
+}
+
+.header-button:active:not(:disabled) {
+    background-color: #e9ecef;
+}
+
+.header-button:disabled {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Status Indicator */
+#status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #e74c3c;
+}
+
+.status-loading .status-dot {
+    background-color: #f39c12;
+    animation: pulse 1s infinite;
+}
+
+.status-success .status-dot {
+    background-color: #fff;
+    animation: none;
+}
+
+.status-error .status-dot {
+    background-color: #e74c3c;
+    animation: none;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Error Banner */
+#error-container {
+    padding: 12px 24px;
+    background-color: #fff3cd;
+    border-bottom: 1px solid #ffc107;
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #856404;
+}
+
+.error-icon {
+    font-size: 1.2rem;
+}
+
+#error-text {
+    flex: 1;
+    font-size: 14px;
+}
+
+#error-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #856404;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+#error-close:hover {
+    color: #533f03;
+}
+
+/* Controls Panel */
+#controls-panel {
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 24px;
+}
+
+.controls-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.control-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+}
+
+.control-select,
+.control-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.control-select:focus,
+.control-input:focus {
+    outline: none;
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
+.scale-controls {
+    flex-direction: row;
+    gap: 16px;
+    align-items: center;
+}
+
+.scale-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.scale-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.scale-toggle label {
+    cursor: pointer;
+    margin: 0;
+}
+
+.primary-button {
+    padding: 10px 24px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    align-self: flex-end;
+}
+
+.primary-button:hover {
+    background-color: #229954;
+}
+
+.primary-button:active {
+    background-color: #1e8449;
+}
+
+/* Advanced Controls */
+.advanced-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    margin-top: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    color: #666;
+    border-top: 1px solid #e0e0e0;
+}
+
+.advanced-header:hover {
+    color: #333;
+}
+
+.expand-icon {
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.advanced-section {
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 8px;
+}
+
+.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.checkbox-group label {
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Slim Select Styling */
+.ss-main {
+    min-width: 200px;
+}
+
+.ss-main .ss-single-selected,
+.ss-main .ss-multi-selected {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+.ss-main .ss-single-selected:focus,
+.ss-main .ss-multi-selected:focus {
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
+/* Plot Container */
+#plot-container {
+    flex: 1;
+    position: relative;
+    margin: 16px 24px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-height: 400px;
+}
+
+#plot {
+    width: 100%;
+    height: 100%;
+}
+
+/* Loading Overlay */
+#loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #27ae60;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    margin-top: 16px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Info Panel */
+#info-panel {
+    background-color: white;
+    border-top: 1px solid #e0e0e0;
+    padding: 16px 24px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+#info-panel h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.info-item {
+    display: flex;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.info-item.info-full-width {
+    grid-column: 1 / -1;
+    flex-direction: column;
+}
+
+.info-item.warning {
+    background-color: #fff3cd;
+    padding: 12px;
+    border-radius: 4px;
+    border-left: 4px solid #ffc107;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.info-value {
+    color: #333;
+}
+
+.variable-list {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+}
+
+.variable-list li {
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.variable-list code {
+    background-color: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 12px;
+}
+
+.variable-list em {
+    color: #e74c3c;
+    font-style: normal;
+}
+
+.info-loading {
+    color: #999;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .controls-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .control-group {
+        min-width: 100%;
+    }
+
+    .primary-button {
+        align-self: stretch;
+    }
+
+    .scale-controls {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+}
+
+@media (max-width: 768px) {
+    #header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #controls-panel {
+        padding: 12px 16px;
+    }
+
+    #plot-container {
+        margin: 12px 16px;
+        min-height: 300px;
+    }
+
+    #info-panel {
+        padding: 12px 16px;
+        max-height: 400px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}

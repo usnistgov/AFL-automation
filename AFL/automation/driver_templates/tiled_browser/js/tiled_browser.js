@@ -399,12 +399,12 @@ class ActionsRenderer {
         this.eGui.className = 'action-buttons';
 
         const viewDataBtn = document.createElement('button');
-        viewDataBtn.textContent = 'View Data';
+        viewDataBtn.textContent = 'Data';
         viewDataBtn.className = 'action-btn view-data-btn';
         viewDataBtn.onclick = () => this.onViewData();
 
         const viewMetadataBtn = document.createElement('button');
-        viewMetadataBtn.textContent = 'View Metadata';
+        viewMetadataBtn.textContent = 'Metadata';
         viewMetadataBtn.className = 'action-btn view-metadata-btn';
         viewMetadataBtn.onclick = () => this.onViewMetadata();
 
@@ -613,7 +613,7 @@ function initializeGrid() {
                 field: 'actions',
                 headerName: 'Actions',
                 pinned: 'right',
-                width: 220,
+                width: 150,
                 cellRenderer: ActionsRenderer,
                 lockPosition: true
             }
@@ -869,15 +869,30 @@ function clearSearch() {
 }
 
 /**
+ * Select all currently filtered/visible rows
+ */
+function selectAllRows() {
+    if (!gridApi) {
+        console.error('Grid API not available');
+        return;
+    }
+
+    // Select all nodes (respects current filters)
+    gridApi.selectAll();
+}
+
+/**
  * Update selection button states based on selected rows
  */
 function updateSelectionButtons() {
     const selectedRows = gridApi.getSelectedRows();
     const copyEntryBtn = document.getElementById('copy-entry-id-button');
     const copySampleBtn = document.getElementById('copy-sample-uuid-button');
+    const plotSelectedBtn = document.getElementById('plot-selected-btn');
+
+    const hasSelection = selectedRows.length > 0;
 
     if (copyEntryBtn && copySampleBtn) {
-        const hasSelection = selectedRows.length > 0;
         copyEntryBtn.disabled = !hasSelection;
         copySampleBtn.disabled = !hasSelection;
 
@@ -888,6 +903,11 @@ function updateSelectionButtons() {
         copySampleBtn.textContent = hasSelection
             ? `Copy Sample UUID (${selectedRows.length})`
             : 'Copy Sample UUID';
+    }
+
+    // Enable/disable Plot Selected button
+    if (plotSelectedBtn) {
+        plotSelectedBtn.disabled = !hasSelection;
     }
 }
 
@@ -901,7 +921,7 @@ function copyEntryIds() {
         return;
     }
 
-    const ids = selectedRows.map(row => row.id).join('\n');
+    const ids = selectedRows.map(row => row.id).join(', ');
     navigator.clipboard.writeText(ids).then(() => {
         showSuccess(`Copied ${selectedRows.length} entry ID(s) to clipboard`);
     }).catch(err => {
@@ -922,7 +942,7 @@ function copySampleUuids() {
     const uuids = selectedRows
         .map(row => row.sample_uuid)
         .filter(uuid => uuid !== null && uuid !== undefined)
-        .join('\n');
+        .join(', ');
 
     if (uuids.length === 0) {
         showError('No sample UUIDs found in selected rows');
@@ -935,6 +955,33 @@ function copySampleUuids() {
     }).catch(err => {
         showError(`Failed to copy to clipboard: ${err.message}`);
     });
+}
+
+/**
+ * Open plot page with selected entries
+ */
+function plotSelected() {
+    const selectedRows = gridApi.getSelectedRows();
+
+    if (selectedRows.length === 0) {
+        showError('Please select at least one row to plot');
+        return;
+    }
+
+    // Extract entry IDs
+    const entryIds = selectedRows.map(row => row.id);
+
+    // Open plot page and pass entry IDs
+    // Use URL params for short lists, sessionStorage for long lists
+    if (entryIds.length <= 10) {
+        // Short list: use URL params
+        const idsParam = encodeURIComponent(JSON.stringify(entryIds));
+        window.open(`/tiled_plot?entry_ids=${idsParam}`, '_blank');
+    } else {
+        // Long list: use sessionStorage to pass data
+        sessionStorage.setItem('plotEntryIds', JSON.stringify(entryIds));
+        window.open('/tiled_plot', '_blank');
+    }
 }
 
 /**
@@ -1209,6 +1256,12 @@ function setupEventListeners() {
         });
     }
 
+    // Select All button
+    const selectAllBtn = document.getElementById('select-all-button');
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', selectAllRows);
+    }
+
     // Clipboard buttons
     const copyEntryBtn = document.getElementById('copy-entry-id-button');
     const copySampleBtn = document.getElementById('copy-sample-uuid-button');
@@ -1217,6 +1270,12 @@ function setupEventListeners() {
     }
     if (copySampleBtn) {
         copySampleBtn.addEventListener('click', copySampleUuids);
+    }
+
+    // Plot Selected button
+    const plotSelectedBtn = document.getElementById('plot-selected-btn');
+    if (plotSelectedBtn) {
+        plotSelectedBtn.addEventListener('click', plotSelected);
     }
 
     // Error close button

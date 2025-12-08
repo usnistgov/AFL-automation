@@ -165,7 +165,42 @@ class Driver:
             for name,value in config:
                 print(f'{name:30s} = {value}')
         return config.config
-    
+
+    def clean_config(self):
+        """Remove any config keys that are not present in defaults.
+
+        This method gathers all defaults from the class hierarchy, makes a copy
+        of the current config, and removes any keys that don't exist in the defaults.
+        The cleaned config is then saved back to the persistent config.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the keys that were removed from config
+        """
+        import copy
+
+        # Get all valid default keys from class hierarchy
+        defaults = self.gather_defaults()
+
+        # Make a copy of current config
+        current_config = copy.deepcopy(self.config.config)
+
+        # Find keys that are not in defaults
+        removed_keys = {}
+        for key in list(current_config.keys()):
+            if key not in defaults:
+                removed_keys[key] = current_config[key]
+                del current_config[key]
+
+        # Update config with cleaned version
+        if removed_keys:
+            # Clear and rebuild config with only valid keys
+            self.config.config = current_config
+            self.config.save()
+
+        return removed_keys
+
     def set_sample(self,sample_name,sample_uuid=None,**kwargs):
         if sample_uuid is None:
             sample_uuid = 'SAM-' + str(uuid.uuid4())

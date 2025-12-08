@@ -80,9 +80,6 @@ class OrchestratorDriver(Driver):
     defaults['mix_order'] = []
     defaults['camera_urls'] = []
     defaults['snapshot_directory'] = []
-    defaults['grid_file'] = None
-    defaults['grid_blank_interval'] = None
-    defaults['grid_blank_sample'] = None
     defaults['prepare_volume'] = '1000 ul'
     defaults['empty_prefix'] = 'MT-'
     defaults['composition_format'] = 'mass_fraction'
@@ -120,10 +117,6 @@ class OrchestratorDriver(Driver):
 
         self.catch_protocol = None
         self.AL_status_str = ''
-        self.grid_sample_count = 0
-        self.grid_data = None
-        self.stop_grid = False
-        self.balanced_target = None
 
     def validate_config(self):
         required_keys = [
@@ -211,68 +204,6 @@ class OrchestratorDriver(Driver):
 
         print("Configuration validation passed successfully.")
 
-    def validate_config_grid(self):
-        """Validate configuration specific to grid-based sample processing."""
-        # Basic client validation
-        if not isinstance(self.config['client'], dict):
-            raise TypeError("self.config['client'] must be a dictionary")
-            
-        # Instrument validation - simplified compared to regular validate_config
-        if not isinstance(self.config['instrument'], list):
-            raise TypeError("self.config['instrument'] must be a list")
-        if len(self.config['instrument']) == 0:
-            raise ValueError("At least one instrument must be configured in self.config['instrument']")
-            
-        for i, instrument in enumerate(self.config['instrument']):
-            # Minimal required keys for grid mode
-            required_instrument_keys = ['client_name', 'data', 'measure_base_kw', 'empty_base_kw']
-            missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
-            if missing_instrument_keys:
-                raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
-                
-            if not isinstance(instrument['data'], list):
-                raise TypeError(f"Instrument {i}: 'data' must be a list")
-            for j, data_item in enumerate(instrument['data']):
-                required_data_keys = ['data_name', 'tiled_array_name']
-                missing_data_keys = [key for key in required_data_keys if key not in data_item]
-                if missing_data_keys:
-                    raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
-                    
-        # Validate grid-specific configuration items
-        if self.config['grid_file'] is not None and not isinstance(self.config['grid_file'], (str, pathlib.Path)):
-            raise TypeError("self.config['grid_file'] must be a string or pathlib.Path")
-            
-        if self.config['grid_blank_interval'] is not None and not isinstance(self.config['grid_blank_interval'], int):
-            raise TypeError("self.config['grid_blank_interval'] must be an integer")
-            
-        if self.config['grid_blank_sample'] is not None and not isinstance(self.config['grid_blank_sample'], dict):
-            raise TypeError("self.config['grid_blank_sample'] must be a dictionary")
-            
-        if not isinstance(self.config['data_tag'], str):
-            raise TypeError("self.config['data_tag'] must be a string")
-            
-        # Validate instrument configuration
-        if not isinstance(self.config['instrument'], list):
-            raise TypeError("self.config['instrument'] must be a list")
-        if len(self.config['instrument']) == 0:
-            raise ValueError("At least one instrument must be configured in self.config['instrument']")
-
-        for i, instrument in enumerate(self.config['instrument']):
-            required_instrument_keys = ['client_name', 'data', 'measure_base_kw', 'empty_base_kw', 'sample_dim', 'sample_comps_variable']
-            missing_instrument_keys = [key for key in required_instrument_keys if key not in instrument]
-            if missing_instrument_keys:
-                raise KeyError(f"Instrument {i} is missing the following required keys: {', '.join(missing_instrument_keys)}")
-            
-            if not isinstance(instrument['data'], list):
-                raise TypeError(f"Instrument {i}: 'data' must be a list")
-            for j, data_item in enumerate(instrument['data']):
-                required_data_keys = ['data_name', 'tiled_array_name']
-                missing_data_keys = [key for key in required_data_keys if key not in data_item]
-                if missing_data_keys:
-                    raise KeyError(f"Instrument {i}, data item {j} is missing the following required keys: {', '.join(missing_data_keys)}")
-            
-        print("Grid configuration validation passed successfully.")
-
     @property
     def tiled_client(self):
         # start tiled catalog connection
@@ -286,8 +217,6 @@ class OrchestratorDriver(Driver):
         status.append(f'Cameras: {self.config["camera_urls"]}')
         status.append(self.status_str)
         status.append(self.AL_status_str)
-        if self.grid_data:
-            status.append(f'Grid Dims: {self.grid_data.sizes}')
         return status
 
     def update_status(self, value):
@@ -398,7 +327,6 @@ class OrchestratorDriver(Driver):
             assert ('agent' in self.config['client']), (
                 f"No client url for 'agent'! self.config['client']={self.config['client']}"
             )
-
 
         # do this now, so that we fail early if we're missing something
         self.validate_config()
@@ -804,194 +732,6 @@ class OrchestratorDriver(Driver):
             interactive=True
         )['return_val']
 
-    def process_sample_grid(
-            self,
-            sample,
-            name: Optional[str] = None,
-            sample_uuid: Optional[str] = None,
-            AL_campaign_name: Optional[str] = None,
-            AL_uuid: Optional[str] = None,
-            predict_next: bool = False,
-            enqueue_next: bool = False,
-            reset_grid: bool = False,
-    ):
-        """Process a sample from a grid of samples.
-
-        Parameters
-        ----------
-        sample: Dict, optional
-            Dictionary containing sample coordinates or properties. If None, will be fetched 
-            from the grid or agent.
-            
-        name: str, optional
-            The name of the sample. If not provided, will be auto-generated.
-            
-        sample_uuid: str, optional
-            UUID for the sample. If not provided, will be auto-generated.
-            
-        AL_campaign_name: str, optional
-            Name of the active learning campaign.
-            
-        AL_uuid: str, optional
-            UUID for the active learning campaign.
-            
-        predict_next: bool
-            If True, triggers a predict call to the agent.
-            
-        enqueue_next: bool
-            If True, will enqueue the next sample for measurement.
-            
-        """
-        # Validate config for grid processing
-        self.validate_config_grid()
-
-        if reset_grid or self.grid_data is None:
-            self.reset_grid()
-        
-        # Handle sample UUID generation
-        if sample_uuid is None:
-            self.uuid['sample'] = 'SAM-' + str(uuid.uuid4())
-        else:
-            self.uuid['sample'] = sample_uuid
-            
-        # Handle AL UUID
-        if predict_next and AL_uuid is None:
-            self.uuid['AL'] = 'AL-' + str(uuid.uuid4())
-        else:
-            self.uuid['AL'] = AL_uuid
-            
-        # Handle campaign name
-        if predict_next and AL_campaign_name is None:
-            self.AL_campaign_name = f"{self.config['data_tag']}_{self.uuid['AL'][-8:]}"
-        else:
-            self.AL_campaign_name = AL_campaign_name
-        
-        # Check if we should measure a blank
-        if (self.config['grid_blank_interval'] is not None and 
-            self.config['grid_blank_sample'] is not None and 
-            self.grid_sample_count > 0 and 
-            self.grid_sample_count % self.config['grid_blank_interval'] == 0):
-            
-            self.update_status(f"Measuring blank sample (scheduled interval {self.config['grid_blank_interval']})")
-            blank_sample = self.config['grid_blank_sample']
-            blank_name = f"blank_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            
-            # Configure blank measurement
-            self.measure_grid_sample(blank_sample, name=blank_name, empty=True)
-            
-        # Handle the next sample based on mode
-        if sample is not None:
-            # find the closest sample in the grid by euclidean distance
-            available = self.grid_data[self.config['components']].to_array('component').transpose(...,'component')
-            selected = xr.Dataset(sample).to_array('component')
-            dist = (selected - available).pipe(np.square).sum('component') #no sqrt needed for just min distance
-            sample_index = dist.argmin()
-            
-            # Get the data variables from grid_data and add them individually to sample dict
-            grid_sample = self.grid_data.isel(sample=sample_index).reset_coords()
-            for var_name in grid_sample.data_vars:
-                sample[var_name] = grid_sample[var_name].item()
-            self.update_status(f"Found closest sample to be {grid_sample}")
-
-            # Generate sample name if not provided
-            if name is None:
-                self.sample_name = f"{self.config['data_tag']}_{self.uuid['sample'][-8:]}"
-            else:
-                self.sample_name = name
-        
-            # Measure the sample
-            self.measure_grid_sample(sample, name=self.sample_name, empty=False)
-
-            # update sample manifest and grid data
-            self.num_samples = self.grid_data.sizes['sample']#update num samples
-            self.grid_data = self.grid_data.drop_isel(sample=sample_index)
-            self.grid_sample_count += 1
-        
-        # Predict next sample if requested
-        if predict_next:
-            self.predict_next_sample()
-
-        # Enqueue next sample if requested
-        if enqueue_next:
-            ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
-            next_samples = ag_result['next_samples']
-            
-            new_composition = next_samples.to_pandas().squeeze().to_dict()
-            new_composition = {k:v for k,v in new_composition.items()}
-
-            task = {
-                'task_name': 'process_sample_grid',
-                'sample': new_composition,
-                'predict_next': predict_next,
-                'enqueue_next': enqueue_next,
-                'AL_campaign_name': self.AL_campaign_name,
-                'AL_uuid': self.uuid['AL'],
-            }
-            
-            task_uuid = 'QD-' + str(uuid.uuid4())
-            package = {'task': task, 'meta': {}, 'uuid': task_uuid}
-            package['meta']['queued'] = datetime.datetime.now().strftime('%m/%d/%y %H:%M:%S-%f')
-            
-            queue_loc = self._queue.qsize()  # append at end of queue
-            self._queue.put(package, queue_loc)
-    
-    def measure_grid_sample(self, sample, name, empty=False):
-        """Measure a sample using the grid-based workflow.
-
-        instrument = {
-            'client_name': 'APSUSAXS',
-            'empty_base_kw': {'task_name': 'expose'},
-            'measure_base_kw': {'task_name': 'expose'},
-            'select_sample_base_kw': {'task_name': 'setPosition', 'y_offset': 2},
-            'sample_select_kwargs': ['plate', 'row', 'col'],
-            'sample_comps_variable': 'sample_composition'
-        }
-        
-        Parameters
-        ----------
-        sample: Dict
-            Dictionary containing sample coordinates and properties
-            
-        name: str
-            Sample name for the measurement
-        
-
-
-        """
-        self.update_status(f"Starting measurement of {name}")
-        
-        # Set sample information in all clients
-        sample_data = self.set_sample(
-            sample_name=name,
-            sample_uuid=self.uuid['sample'],
-            AL_campaign_name=self.AL_campaign_name,
-            AL_uuid=self.uuid['AL'],
-            AL_components=self.config['AL_components'],
-            sample_composition=sample,
-        )
-        
-        for client_name in self.config['client'].keys():
-            self.get_client(client_name).enqueue(task_name='set_sample', **sample_data)
-
-        
-        # Move to the sample position based on instrument configuration
-        for i, instrument in enumerate(self.config['instrument']):
-            self.update_status(f"Moving to sample position using global command template")
-            move_cmd_kwargs = {k:sample[k] for k in instrument['sample_select_kwargs']}
-            move_cmd_kwargs.update(instrument['select_sample_base_kw'])
-            self.uuid['move'] = self.get_client(instrument['client_name']).enqueue(**move_cmd_kwargs)
-            self.get_client(instrument['client_name']).wait(self.uuid['move'])
-
-
-            self.update_status(f"Measuring sample with {instrument['client_name']}")
-            measure_cmd_kwargs = instrument['measure_base_kw'] if not empty else instrument['empty_base_kw']
-            measure_cmd_kwargs['name'] = name
-            self.uuid['measure'] = self.get_client(instrument['client_name']).enqueue(**measure_cmd_kwargs)
-            self.get_client(instrument['client_name']).wait(self.uuid['measure'])
-
-        
-        self.update_status(f'All done for {name}!')
-    
     def set_sample(self, 
                   sample_name: str, 
                   sample_uuid: str, 
@@ -1242,20 +982,6 @@ class OrchestratorDriver(Driver):
 
         # Step 4: Update AgentDriver config (direct, no interactive)
         self.get_client('agent').set_config('tiled_input_groups', current_groups)
-
-    # New grid reset methods
-    @Driver.quickbar(qb={'button_text':'Reset Grid'})
-    def reset_grid(self):
-        """Reload the grid from file and reset grid_sample_count."""
-        if self.config['grid_file'] is None:
-            self.app.logger.info("No grid file specified in configuration.")
-            self.grid_data = None
-            self.grid_sample_count = 0
-        else:
-            self.grid_data = xr.load_dataset(self.config['grid_file'])
-            self.grid_sample_count = 0
-            self.app.logger.info(f"Grid reloaded: {self.grid_data.sizes['sample']} samples available.")
-    
 
 _DEFAULT_CUSTOM_CONFIG = {
 

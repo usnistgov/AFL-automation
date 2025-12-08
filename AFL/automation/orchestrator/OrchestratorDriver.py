@@ -73,7 +73,6 @@ class OrchestratorDriver(Driver):
     defaults['instrument'] = {}
     defaults['ternary'] = False
     defaults['data_tag'] = 'default'
-    defaults['data_path'] = './'
     defaults['components'] = []
     defaults['AL_components'] = []
     defaults['snapshot_directory'] = '/home/nistoroboto'
@@ -132,7 +131,6 @@ class OrchestratorDriver(Driver):
             'instrument',
             'ternary',
             'data_tag',
-            'data_path',
             'components',
             'AL_components',
             'snapshot_directory',
@@ -181,8 +179,6 @@ class OrchestratorDriver(Driver):
             raise TypeError("self.config['ternary'] must be a boolean")
         if not isinstance(self.config['data_tag'], str):
             raise TypeError("self.config['data_tag'] must be a string")
-        if not isinstance(self.config['data_path'], (str, pathlib.Path)):
-            raise TypeError("self.config['data_path'] must be a string or pathlib.Path")
         if not isinstance(self.config['snapshot_directory'], (str, pathlib.Path)):
             raise TypeError("self.config['snapshot_directory'] must be a string or pathlib.Path")
         if not isinstance(self.config['max_sample_transmission'], (int, float)):
@@ -251,10 +247,6 @@ class OrchestratorDriver(Driver):
             
         if self.config['grid_blank_sample'] is not None and not isinstance(self.config['grid_blank_sample'], dict):
             raise TypeError("self.config['grid_blank_sample'] must be a dictionary")
-            
-        # Validate data-related settings
-        if not isinstance(self.config['data_path'], (str, pathlib.Path)):
-            raise TypeError("self.config['data_path'] must be a string or pathlib.Path")
             
         if not isinstance(self.config['data_tag'], str):
             raise TypeError("self.config['data_tag'] must be a string")
@@ -811,23 +803,6 @@ class OrchestratorDriver(Driver):
             AL_campaign_name=self.AL_campaign_name,
             interactive=True
         )['return_val']
-
-    def validate_measurements(self):
-        data_path = self.config['data_path']
-        h5_path = data_path / (self.sample_name + '.h5')
-        with h5py.File(h5_path, 'r') as h5:
-            self.SAS_transmission = h5['entry/sample/transmission'][()]
-
-        if self.SAS_transmission > self.config['max_sample_transmission']:
-            self.update_status(f'Last sample missed! (Transmission={self.SAS_transmission})')
-            self.app.logger.info('Dropping this sample from AL and hoping the next one hits...')
-            transmission_validated = False
-
-        else:
-            self.update_status(f'Last Sample success! (Transmission={self.SAS_transmission})')
-            transmission_validated = True
-
-        return transmission_validated
 
     def process_sample_grid(
             self,

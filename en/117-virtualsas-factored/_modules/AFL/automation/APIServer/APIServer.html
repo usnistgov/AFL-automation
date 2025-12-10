@@ -1,0 +1,1390 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFL.automation.APIServer.APIServer &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/APIServer/APIServer';</script>
+    <link rel="icon" href="../../../../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../../../../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../automation.html" class="nav-link">AFL.automation</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.APIServer.APIServer</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for AFL.automation.APIServer.APIServer</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">send_file</span><span class="p">,</span> <span class="n">send_from_directory</span>
+
+<span class="kn">from</span> <span class="nn">flask_cors</span> <span class="kn">import</span> <span class="n">CORS</span>
+
+<span class="c1">#authentication module</span>
+<span class="kn">from</span> <span class="nn">flask_jwt_extended</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JWTManager</span><span class="p">,</span> <span class="n">jwt_required</span><span class="p">,</span> <span class="n">create_access_token</span><span class="p">,</span>
+    <span class="n">create_refresh_token</span><span class="p">,</span>
+    <span class="n">get_jwt_identity</span><span class="p">,</span> <span class="n">set_access_cookies</span><span class="p">,</span>
+    <span class="n">set_refresh_cookies</span><span class="p">,</span> <span class="n">unset_jwt_cookies</span>
+<span class="p">)</span>
+
+
+
+<span class="kn">import</span> <span class="nn">datetime</span><span class="o">,</span><span class="nn">requests</span><span class="o">,</span><span class="nn">subprocess</span><span class="o">,</span><span class="nn">shlex</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">threading</span><span class="o">,</span><span class="nn">queue</span><span class="o">,</span><span class="nn">logging</span><span class="o">,</span><span class="nn">json</span><span class="o">,</span><span class="nn">pathlib</span><span class="o">,</span><span class="nn">uuid</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">waitress</span> <span class="kn">import</span> <span class="n">serve</span> <span class="k">as</span> <span class="n">wsgi_serve</span>
+    <span class="n">_HAVE_WAITRESS</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1"># Silence verbose logging from waitress which can flood the console</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;waitress&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">_HAVE_WAITRESS</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">FileHandler</span>
+
+<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.QueueDaemon</span> <span class="kn">import</span> <span class="n">QueueDaemon</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.LoggerFilter</span> <span class="kn">import</span> <span class="n">LoggerFilter</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.CAStatusPublisher</span> <span class="kn">import</span> <span class="n">CAStatusPublisher</span>
+
+<span class="kn">from</span> <span class="nn">AFL.automation.shared.MutableQueue</span> <span class="kn">import</span> <span class="n">MutableQueue</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.shared.utilities</span> <span class="kn">import</span> <span class="n">listify</span>
+<span class="kn">from</span> <span class="nn">AFL.automation.shared</span> <span class="kn">import</span> <span class="n">serialization</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="k">try</span><span class="p">:</span>
+<span class="c1">#this import block is all for the web-ui unqueued rendering code</span>
+    <span class="kn">import</span> <span class="nn">bokeh</span>
+    <span class="kn">import</span> <span class="nn">bokeh.plotting</span>
+    <span class="kn">from</span> <span class="nn">bokeh.resources</span> <span class="kn">import</span> <span class="n">INLINE</span>
+    <span class="kn">from</span> <span class="nn">bokeh.core.templates</span> <span class="kn">import</span> <span class="n">JS_RESOURCES</span>
+    <span class="kn">from</span> <span class="nn">bokeh.core.templates</span> <span class="kn">import</span> <span class="n">CSS_RESOURCES</span>
+    <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">cm</span>
+    <span class="kn">import</span> <span class="nn">io</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">from</span> <span class="nn">distutils.util</span> <span class="kn">import</span> <span class="n">strtobool</span>
+<span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span><span class="ne">ImportError</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Plotting imports failed! Live data plotting will not work on this server.&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">socket</span>
+    <span class="kn">from</span> <span class="nn">zeroconf</span> <span class="kn">import</span> <span class="n">IPVersion</span><span class="p">,</span> <span class="n">ServiceInfo</span><span class="p">,</span> <span class="n">Zeroconf</span>
+    <span class="n">_ADVERTISE_ZEROCONF</span><span class="o">=</span><span class="kc">True</span>
+<span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span><span class="ne">ImportError</span><span class="p">):</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not import zeroconf! Network autodiscovery will not work on this server.&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">_ADVERTISE_ZEROCONF</span><span class="o">=</span><span class="kc">False</span>
+
+<div class="viewcode-block" id="APIServer">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer">[docs]</a>
+<span class="k">class</span> <span class="nc">APIServer</span><span class="p">:</span>
+<div class="viewcode-block" id="APIServer.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">experiment</span><span class="o">=</span><span class="s1">&#39;Development&#39;</span><span class="p">,</span><span class="n">contact</span><span class="o">=</span><span class="s1">&#39;tbm@nist.gov&#39;</span><span class="p">,</span><span class="n">index_template</span><span class="o">=</span><span class="s1">&#39;index.html&#39;</span><span class="p">,</span><span class="n">new_index_template</span><span class="o">=</span><span class="s1">&#39;index-new.html&#39;</span><span class="p">,</span><span class="n">plot_template</span><span class="o">=</span><span class="s1">&#39;simple-bokeh.html&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span> <span class="o">=</span> <span class="n">experiment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact</span> <span class="o">=</span> <span class="n">contact</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_template</span> <span class="o">=</span> <span class="n">index_template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_index_template</span> <span class="o">=</span> <span class="n">new_index_template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_template</span> <span class="o">=</span> <span class="n">plot_template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger_filter</span><span class="o">=</span> <span class="n">LoggerFilter</span><span class="p">(</span><span class="s1">&#39;get_queue&#39;</span><span class="p">,</span><span class="s1">&#39;queue_state&#39;</span><span class="p">,</span><span class="s1">&#39;driver_status&#39;</span><span class="p">,</span><span class="s1">&#39;get_server_time&#39;</span><span class="p">,</span><span class="s1">&#39;get_info&#39;</span><span class="p">)</span>
+
+        <span class="c1">#allows the flask server to find the static and templates directories</span>
+        <span class="n">root_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">root_path</span><span class="o">=</span><span class="n">root_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_logging</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;JWT_SECRET_KEY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;03570&#39;</span> <span class="c1">#hide the secret?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;JWT_ACCESS_TOKEN_EXPIRES&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jwt</span> <span class="o">=</span> <span class="n">JWTManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+
+        <span class="c1"># CORS may have to come after JWTManager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cors</span> <span class="o">=</span> <span class="n">CORS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="APIServer.create_queue">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.create_queue">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">driver</span><span class="p">,</span><span class="n">add_unqueued</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">start_ca</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ca_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ca_port</span><span class="o">=</span><span class="mi">5064</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span> <span class="o">=</span> <span class="n">MutableQueue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span>     <span class="o">=</span> <span class="n">driver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_driver_static_routes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span> <span class="o">=</span> <span class="n">QueueDaemon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span><span class="n">driver</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">start_ca</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ca_prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ca_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;AFL:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ca_publisher</span> <span class="o">=</span> <span class="n">CAStatusPublisher</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">ca_prefix</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">ca_port</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ca_publisher</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">add_unqueued</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_unqueued_routes</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="APIServer.reset_queue_daemon">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.reset_queue_daemon">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_queue_daemon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">driver</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">=</span><span class="n">driver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_queue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+<div class="viewcode-block" id="APIServer.advertise_zeroconf">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.advertise_zeroconf">[docs]</a>
+    <span class="k">def</span> <span class="nf">advertise_zeroconf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;port&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="mi">5000</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;system_info&#39;</span><span class="p">:</span> <span class="s1">&#39;AFL&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;driver_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="s1">&#39;server_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="s1">&#39;contact&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact</span><span class="p">,</span>
+                        <span class="s1">&#39;driver_parents&#39;</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)[:</span><span class="mi">150</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span><span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+                        <span class="c1"># other stuff here, AFL system serial, etc.</span>
+                        <span class="p">}</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zeroconf_info</span> <span class="o">=</span> <span class="n">ServiceInfo</span><span class="p">(</span>
+            <span class="s2">&quot;_aflhttp._tcp.local.&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">._aflhttp._tcp.local.&quot;</span><span class="p">,</span>
+            <span class="n">addresses</span><span class="o">=</span><span class="p">[</span><span class="n">socket</span><span class="o">.</span><span class="n">inet_aton</span><span class="p">(</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">)],</span>
+            <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span> <span class="n">properties</span><span class="p">,</span>
+            <span class="n">server</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span><span class="si">}</span><span class="s2">.local.&quot;</span><span class="p">,</span>
+         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zeroconf</span> <span class="o">=</span> <span class="n">Zeroconf</span><span class="p">(</span><span class="n">ip_version</span><span class="o">=</span><span class="n">IPVersion</span><span class="o">.</span><span class="n">All</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zeroconf</span><span class="o">.</span><span class="n">register_service</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zeroconf_info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Started mDNS service advertisement.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="APIServer.run">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_waitress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;create_queue must be called before running server&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_ADVERTISE_ZEROCONF</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">advertise_zeroconf</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;failed while trying to start zeroconf </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">, continuing&#39;</span><span class="p">)</span>
+        <span class="c1"># before_first_request was removed in Flask &gt;=3.0, so run init here</span>
+        <span class="c1"># to start the queue daemon before the server begins serving.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">use_waitress</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">use_waitress</span> <span class="o">=</span> <span class="n">_HAVE_WAITRESS</span>
+
+            <span class="k">if</span> <span class="n">use_waitress</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">_HAVE_WAITRESS</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;waitress is not installed&quot;</span><span class="p">)</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">wsgi_serve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;use_debugger&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;use_reloader&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">_ADVERTISE_ZEROCONF</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zeroconf</span><span class="o">.</span><span class="n">unregister_service</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zeroconf_info</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zeroconf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="APIServer.run_threaded">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.run_threaded">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_threaded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_thread</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_waitress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;create_queue must be called before running server&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_ADVERTISE_ZEROCONF</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">advertise_zeroconf</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_waitress</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">use_waitress</span> <span class="o">=</span> <span class="n">_HAVE_WAITRESS</span>
+
+        <span class="k">if</span> <span class="n">use_waitress</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_HAVE_WAITRESS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;waitress is not installed&quot;</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;threads&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">wsgi_serve</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;use_debugger&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;use_reloader&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">run</span>
+
+        <span class="c1"># before_first_request was removed in Flask &gt;=3.0, so run init here</span>
+        <span class="c1"># to start the queue daemon before the server begins serving.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+        <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span><span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">start_thread</span><span class="p">:</span>
+            <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">thread</span></div>
+
+
+<div class="viewcode-block" id="APIServer.add_standard_routes">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.add_standard_routes">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_standard_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;index_new&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">index_new</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/new&#39;</span><span class="p">,</span><span class="s1">&#39;index_new&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">index_new</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/old&#39;</span><span class="p">,</span><span class="s1">&#39;index&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/app&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">webapp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/webapp&#39;</span><span class="p">,</span><span class="s1">&#39;webapp&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">webapp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/enqueue&#39;</span><span class="p">,</span><span class="s1">&#39;enqueue&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">enqueue</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/query_driver&#39;</span><span class="p">,</span><span class="s1">&#39;query_driver&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">query_driver</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/clear_queue&#39;</span><span class="p">,</span><span class="s1">&#39;clear_queue&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">clear_queue</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/clear_history&#39;</span><span class="p">,</span><span class="s1">&#39;clear_history&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">clear_history</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/debug&#39;</span><span class="p">,</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/pause&#39;</span><span class="p">,</span><span class="s1">&#39;pause&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pause</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/halt&#39;</span><span class="p">,</span><span class="s1">&#39;halt&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">halt</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/get_queue&#39;</span><span class="p">,</span><span class="s1">&#39;get_queue&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">get_queue</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/get_queue_iteration&#39;</span><span class="p">,</span> <span class="s1">&#39;get_queue_iteration&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue_iteration</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/queue_state&#39;</span><span class="p">,</span><span class="s1">&#39;queue_state&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_state</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/driver_status&#39;</span><span class="p">,</span><span class="s1">&#39;driver_status&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">driver_status</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/login&#39;</span><span class="p">,</span><span class="s1">&#39;login&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/login_test&#39;</span><span class="p">,</span><span class="s1">&#39;login_test&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">login_test</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/reset_queue_daemon&#39;</span><span class="p">,</span><span class="s1">&#39;reset_queue_daemon&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_queue_daemon</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/is_server_live&#39;</span><span class="p">,</span><span class="s1">&#39;is_server_live&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">is_server_live</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/get_queued_commands&#39;</span><span class="p">,</span><span class="s1">&#39;get_queued_commands&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">get_queued_commands</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/get_unqueued_commands&#39;</span><span class="p">,</span><span class="s1">&#39;get_unqueued_commands&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">get_unqueued_commands</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/get_server_time&#39;</span><span class="p">,</span><span class="s1">&#39;get_server_time&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">get_server_time</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/remove_item&#39;</span><span class="p">,</span><span class="s1">&#39;remove_item&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">remove_item</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/move_item&#39;</span><span class="p">,</span><span class="s1">&#39;move_item&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">move_item</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/get_info&#39;</span><span class="p">,</span><span class="s1">&#39;get_info&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">get_info</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/reorder_queue&#39;</span><span class="p">,</span><span class="s1">&#39;reorder_queue&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">reorder_queue</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/remove_items&#39;</span><span class="p">,</span><span class="s1">&#39;remove_items&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">remove_items</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/get_quickbar&#39;</span><span class="p">,</span><span class="s1">&#39;get_quickbar&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">get_quickbar</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/set_driver_object&#39;</span><span class="p">,</span><span class="s1">&#39;set_driver_object&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">set_driver_object</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/get_driver_object&#39;</span><span class="p">,</span><span class="s1">&#39;get_driver_object&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">get_driver_object</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/deposit_obj&#39;</span><span class="p">,</span> <span class="s1">&#39;deposit_obj&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deposit_obj</span><span class="p">,</span>
+                              <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/retrieve_obj&#39;</span><span class="p">,</span> <span class="s1">&#39;retrieve_obj&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieve_obj</span><span class="p">,</span>
+                              <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">])</span></div>
+
+
+        <span class="c1"># self.init is now called from run()/run_threaded due to Flask 3 removal</span>
+        <span class="c1"># of the before_first_request hook</span>
+
+<div class="viewcode-block" id="APIServer.get_info">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Live, status page of the robot&#39;&#39;&#39;</span>
+        <span class="c1">#self.app.logger.error(print(self.get_queue()[0].json))</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;contact&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue_state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_state</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;driver&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">kw</span><span class="p">),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.get_quickbar">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_quickbar">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_quickbar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Return the functions, params, and defaults to be shown in this server&#39;s quickbar</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">quickbar</span><span class="o">.</span><span class="n">function_info</span><span class="p">),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.is_server_live">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.is_server_live">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_server_live</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Server is live.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.get_unqueued_commands">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_unqueued_commands">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_unqueued_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">unqueued</span><span class="o">.</span><span class="n">function_info</span><span class="p">),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.get_queued_commands">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_queued_commands">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_queued_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">queued</span><span class="o">.</span><span class="n">function_info</span><span class="p">),</span><span class="mi">200</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_add_driver_static_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Serve any extra static directories defined by the driver.</span>
+<span class="sd">        </span>
+<span class="sd">        This method creates Flask routes for each directory specified in the driver&#39;s</span>
+<span class="sd">        static_dirs dictionary. Files are served under /static/{subpath}/ URLs and</span>
+<span class="sd">        are accessible via HTTP GET requests.</span>
+<span class="sd">        </span>
+<span class="sd">        The method only creates routes for directories that actually exist on the</span>
+<span class="sd">        filesystem. Non-existent directories are silently skipped.</span>
+<span class="sd">        </span>
+<span class="sd">        Example:</span>
+<span class="sd">            If driver.static_dirs = {&#39;docs&#39;: &#39;/path/to/docs&#39;, &#39;assets&#39;: &#39;/path/to/assets&#39;}</span>
+<span class="sd">            then files will be served at:</span>
+<span class="sd">            - /static/docs/filename -&gt; serves files from /path/to/docs/</span>
+<span class="sd">            - /static/assets/filename -&gt; serves files from /path/to/assets/</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">subpath</span><span class="p">,</span> <span class="n">directory</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="s1">&#39;static_dirs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">directory</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">route</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;/static/</span><span class="si">{</span><span class="n">subpath</span><span class="si">}</span><span class="s1">/&lt;path:filename&gt;&#39;</span>
+                <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;static_</span><span class="si">{</span><span class="n">subpath</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="n">handler</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">filename</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">:</span> <span class="n">send_from_directory</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="n">route</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
+
+<div class="viewcode-block" id="APIServer.add_unqueued_routes">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.add_unqueued_routes">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_unqueued_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Adding unqueued routes&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">unqueued</span><span class="o">.</span><span class="n">functions</span><span class="p">:</span>
+            <span class="n">route</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">fn</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">fn</span>
+            <span class="n">kwarg_add</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">unqueued</span><span class="o">.</span><span class="n">decorator_kwargs</span><span class="p">[</span><span class="n">fn</span><span class="p">]</span>
+            <span class="n">response_function</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">response_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">fn</span><span class="o">=</span><span class="n">fn</span><span class="p">,</span><span class="n">kwarg_add</span><span class="o">=</span><span class="n">kwarg_add</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_unqueued</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span><span class="n">fn</span><span class="p">),</span><span class="n">kwarg_add</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Adding route </span><span class="si">{</span><span class="n">route</span><span class="si">}</span><span class="s1"> for function named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> with baked-in kwargs </span><span class="si">{</span><span class="n">kwarg_add</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="n">route</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">response_function</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="APIServer.query_driver">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.query_driver">[docs]</a>
+    <span class="k">def</span> <span class="nf">query_driver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Request for </span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;r&#39;</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">task</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">unqueued</span><span class="o">.</span><span class="n">functions</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span><span class="n">task</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">])(</span><span class="o">**</span><span class="n">task</span><span class="p">),</span><span class="mi">200</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;No such task found as an unqueued function in driver&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;No task specified, add argument r=task to get result&quot;</span><span class="p">,</span><span class="mi">404</span></div>
+
+
+
+
+<div class="viewcode-block" id="APIServer.init_logging">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.init_logging">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_logging</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">toaddrs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+        <span class="c1"># SMTP email handling has been removed. The `toaddrs` argument is now</span>
+        <span class="c1"># ignored and retained only for backwards compatibility.</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;.afl&#39;</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">path</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">.log&#39;</span>
+        <span class="n">file_handler</span> <span class="o">=</span> <span class="n">FileHandler</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+                <span class="s1">&#39;[</span><span class="si">%(asctime)s</span><span class="s1">] </span><span class="si">%(levelname)s</span><span class="s1"> in </span><span class="si">%(module)s</span><span class="s1">: </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+                <span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;werkzeug&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="APIServer.index">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.index">[docs]</a>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Render the legacy status board</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Serving index page&#39;</span><span class="p">)</span>
+
+        <span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue</span><span class="p">()</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue_state&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_state</span><span class="p">()</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;driver&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;useful_links&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">useful_links</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_template</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">),</span><span class="mi">200</span></div>
+
+<div class="viewcode-block" id="APIServer.index_new">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.index_new">[docs]</a>
+    <span class="k">def</span> <span class="nf">index_new</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Render the new driver UI</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Serving index page&#39;</span><span class="p">)</span>
+
+        <span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_queue</span><span class="p">()</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;queue_state&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_state</span><span class="p">()</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;driver&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;useful_links&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">useful_links</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_index_template</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.webapp">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.webapp">[docs]</a>
+    <span class="k">def</span> <span class="nf">webapp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Render the jquery webapp</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Serving WebApp&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;webapp.html&#39;</span><span class="p">),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.render_unqueued">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.render_unqueued">[docs]</a>
+    <span class="k">def</span> <span class="nf">render_unqueued</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">func</span><span class="p">,</span><span class="n">kwargs_add</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Convert an unqueued return item into web-suitable output&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Serving unqueued function: </span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> received with decorator kwargs </span><span class="si">{</span><span class="n">kwargs_add</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs_add</span><span class="p">)</span>
+        <span class="c1"># if request.json:</span>
+        <span class="c1">#     kwargs.update(request.json)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">render_hint</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;render_hint&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;render_hint&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1">##result = lambda: func(**kwargs)</span>
+
+        <span class="k">if</span> <span class="n">render_hint</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#try and infer what we should do based on the return type of func.</span>
+            <span class="n">res_probe</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="n">result</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">res_probe</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">res_probe</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">render_hint</span> <span class="o">=</span> <span class="s1">&#39;1d_plot&#39;</span>
+                <span class="k">if</span> <span class="n">res_probe</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">render_hint</span> <span class="o">=</span> <span class="s1">&#39;2d_img&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1">#how do we support a 3d array?  throw up our hands.</span>
+                    <span class="n">render_hint</span> <span class="o">=</span> <span class="s1">&#39;raw&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#don&#39;t do complicated rendering</span>
+                <span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;raw&#39;</span>
+        <span class="k">if</span> <span class="n">render_hint</span> <span class="o">==</span> <span class="s1">&#39;1d_plot&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_1d_plot</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="c1">#lambda:</span>
+        <span class="k">elif</span> <span class="n">render_hint</span> <span class="o">==</span> <span class="s1">&#39;2d_img&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_array_as_jpg</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="c1">#lambda:</span>
+        <span class="k">elif</span> <span class="n">render_hint</span> <span class="o">==</span> <span class="s1">&#39;raw&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">render_hint</span> <span class="o">==</span> <span class="s1">&#39;precomposed_svg&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sending svg to browser&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">send_file</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">mimetype</span><span class="o">=</span><span class="s1">&#39;image/svg+xml&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">render_hint</span> <span class="o">==</span> <span class="s1">&#39;precomposed_png&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sending png to browser&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">send_file</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">mimetype</span><span class="o">=</span><span class="s1">&#39;image/png&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">render_hint</span> <span class="o">==</span> <span class="s1">&#39;precomposed_jpeg&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sending png to browser&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">send_file</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">mimetype</span><span class="o">=</span><span class="s1">&#39;image/jpeg&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">render_hint</span> <span class="o">==</span> <span class="s1">&#39;html&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sending raw html to browser&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">elif</span> <span class="n">render_hint</span> <span class="o">==</span> <span class="s1">&#39;netcdf&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sending netcdf to browser&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">send_file</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">download_name</span> <span class="o">=</span> <span class="s1">&#39;dataset.nc&#39;</span><span class="p">,</span><span class="n">mimetype</span><span class="o">=</span><span class="s1">&#39;application/netcdf&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;Error while rendering output&quot;</span><span class="p">,</span><span class="mi">500</span></div>
+
+
+<div class="viewcode-block" id="APIServer.send_1d_plot">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.send_1d_plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">send_1d_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">result</span><span class="p">,</span><span class="n">multi</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;xlin&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xlin&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">xlin</span> <span class="o">=</span> <span class="n">strtobool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xlin&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">xlin</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xlin&#39;</span><span class="p">]</span>
+            <span class="n">xmode</span> <span class="o">=</span> <span class="s1">&#39;linear&#39;</span> <span class="k">if</span> <span class="n">xlin</span> <span class="k">else</span> <span class="s1">&#39;log&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xmode</span> <span class="o">=</span> <span class="s1">&#39;log&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;ylin&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ylin&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">ylin</span> <span class="o">=</span> <span class="n">strtobool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ylin&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ylin</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ylin&#39;</span><span class="p">]</span>
+            <span class="n">ymode</span> <span class="o">=</span> <span class="s1">&#39;linear&#39;</span> <span class="k">if</span> <span class="n">ylin</span> <span class="k">else</span> <span class="s1">&#39;log&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ymode</span> <span class="o">=</span> <span class="s1">&#39;log&#39;</span>
+
+
+        <span class="n">TOOLS</span> <span class="o">=</span> <span class="s1">&#39;pan,wheel_zoom,box_zoom,reset,save&#39;</span>
+
+        <span class="n">title</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;title&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="n">bokeh</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span><span class="n">tools</span><span class="o">=</span><span class="n">TOOLS</span><span class="p">,</span><span class="n">x_axis_type</span><span class="o">=</span><span class="n">xmode</span><span class="p">,</span><span class="n">y_axis_type</span><span class="o">=</span><span class="n">ymode</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;xlabel&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="s1">&#39;x&#39;</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ylabel&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="s1">&#39;y&#39;</span>
+
+        <span class="k">if</span> <span class="n">multi</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">listify</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;circle&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;navy&#39;</span><span class="p">,</span> <span class="n">fill_color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;circle&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;navy&#39;</span><span class="p">,</span> <span class="n">fill_color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">2</span><span class="p">:</span>
+                <span class="n">band</span> <span class="o">=</span> <span class="n">bokeh</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Band</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                         <span class="n">upper</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                         <span class="n">lower</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                         <span class="n">level</span><span class="o">=</span><span class="s1">&#39;underlay&#39;</span><span class="p">,</span>
+                                         <span class="n">fill_alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                                         <span class="n">line_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                         <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">add_layout</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
+
+        <span class="n">bokeh_js</span> <span class="o">=</span> <span class="n">JS_RESOURCES</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                <span class="n">js_raw</span> <span class="o">=</span> <span class="n">INLINE</span><span class="o">.</span><span class="n">js_raw</span><span class="p">,</span>
+                <span class="n">js_files</span> <span class="o">=</span> <span class="n">INLINE</span><span class="o">.</span><span class="n">js_files</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">bokeh_css</span> <span class="o">=</span> <span class="n">CSS_RESOURCES</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                <span class="n">css_raw</span> <span class="o">=</span> <span class="n">INLINE</span><span class="o">.</span><span class="n">css_raw</span><span class="p">,</span>
+                <span class="n">css_files</span> <span class="o">=</span> <span class="n">INLINE</span><span class="o">.</span><span class="n">css_files</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">script</span><span class="p">,</span><span class="n">div</span> <span class="o">=</span> <span class="n">bokeh</span><span class="o">.</span><span class="n">embed</span><span class="o">.</span><span class="n">components</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="c1"># return render_template(self.plot_template,script=script,div=div,title=title,plot_resources=plot_resources)</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_template</span><span class="p">,</span><span class="n">script</span><span class="o">=</span><span class="n">script</span><span class="p">,</span><span class="n">div</span><span class="o">=</span><span class="n">div</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span><span class="n">bokeh_css</span><span class="o">=</span><span class="n">bokeh_css</span><span class="p">,</span><span class="n">bokeh_js</span><span class="o">=</span><span class="n">bokeh_js</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="APIServer.send_array_as_jpg">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.send_array_as_jpg">[docs]</a>
+    <span class="k">def</span> <span class="nf">send_array_as_jpg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">array</span><span class="p">,</span><span class="n">log_image</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">max_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">fillna</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1">#img = Image.fromarray(array.astype(&#39;uint8&#39;))</span>
+        <span class="c1">#self.app.logger.info(type(array))</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">array</span><span class="p">,</span><span class="n">nan</span><span class="o">=</span><span class="n">fillna</span><span class="p">)</span>
+        <span class="c1">#self.app.logger.info(str(array))</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">log_image</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">log_image</span> <span class="o">=</span> <span class="n">strtobool</span><span class="p">(</span><span class="n">log_image</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log_image</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Serving image, max val = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="si">}</span><span class="s1">, min val = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="si">}</span><span class="s1">, total cts = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">max_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">max_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_val</span><span class="p">)</span>
+
+
+        <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">/</span><span class="n">max_val</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">*</span><span class="mi">255</span><span class="p">))</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+        <span class="c1"># create file-object in memory</span>
+        <span class="n">file_object</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+
+        <span class="c1"># write PNG in file-object</span>
+        <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file_object</span><span class="p">,</span> <span class="s1">&#39;jpeg&#39;</span><span class="p">)</span>
+
+        <span class="c1"># move to beginning of file so `send_file()` it will read from start</span>
+        <span class="n">file_object</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">send_file</span><span class="p">(</span><span class="n">file_object</span><span class="p">,</span> <span class="n">mimetype</span><span class="o">=</span><span class="s1">&#39;image/jpeg&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="APIServer.queue_state">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.queue_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">queue_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">paused</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;Paused&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;Debug&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">busy</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;Active&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;Ready&#39;</span>
+        <span class="k">return</span> <span class="n">state</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.driver_status">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.driver_status">[docs]</a>
+    <span class="k">def</span> <span class="nf">driver_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">status</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">status</span><span class="p">),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.get_queue">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_queue">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span>
+        <span class="k">if</span> <span class="s1">&#39;with_iteration&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">with_iteration</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;with_iteration&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">with_iteration</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">running_task</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">with_iteration</span><span class="p">:</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">iterationid</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">output</span><span class="p">),</span><span class="mi">200</span></div>
+
+<div class="viewcode-block" id="APIServer.get_queue_iteration">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_queue_iteration">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_queue_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">iterationid</span><span class="p">()),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.deposit_obj">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.deposit_obj">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">deposit_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Store an object named obj in the driver&#39;s dropbox</span>
+<span class="sd">        If a uuid is provided, the object will be stored with that uuid</span>
+<span class="sd">        Otherwise, a new uuid will be generated.</span>
+<span class="sd">        In either case, the uuid will be returned to the client.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;obj&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;deposit_obj called&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;uuid&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">uid</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">uid</span> <span class="o">=</span> <span class="s1">&#39;DB-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s1"> is storing an object w uuid </span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s1"> in driver dropbox&#39;</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span><span class="p">[</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+        <span class="k">return</span> <span class="n">uid</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.retrieve_obj">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.retrieve_obj">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">retrieve_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Retrieve an object from the driver&#39;s dropbox</span>
+<span class="sd">        uuid specifies the object to retrieve</span>
+<span class="sd">        delete specifies whether to delete the object after retrieval</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s1"> is getting an object with uuid </span><span class="si">{</span><span class="n">task</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> from driver, delete = </span><span class="si">{</span><span class="n">task</span><span class="p">[</span><span class="s2">&quot;delete&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> &#39;</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="s1">&#39;Nothing in dropbox under this uuid&#39;</span><span class="p">,</span><span class="mi">404</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span><span class="p">[</span><span class="n">task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="s1">&#39;delete&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">task</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">delete</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">delete</span> <span class="o">=</span> <span class="n">task</span><span class="p">[</span><span class="s1">&#39;delete&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">delete</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span><span class="p">[</span><span class="n">task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;obj&#39;</span><span class="p">:</span><span class="n">result</span><span class="p">}),</span><span class="mi">200</span></div>
+
+
+
+<div class="viewcode-block" id="APIServer.set_driver_object">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.set_driver_object">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">set_driver_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">obj</span> <span class="ow">in</span> <span class="n">task</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s1"> is setting an object named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> in driver&#39;</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;Success!&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.get_driver_object">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_driver_object">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_driver_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s1"> is getting an object named </span><span class="si">{</span><span class="n">task</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> from driver&#39;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span><span class="n">task</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;obj&#39;</span><span class="p">:</span><span class="n">result</span><span class="p">}),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.enqueue">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.enqueue">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">enqueue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="k">if</span> <span class="s1">&#39;queue_loc&#39;</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
+            <span class="n">queue_loc</span> <span class="o">=</span> <span class="n">task</span><span class="p">[</span><span class="s1">&#39;queue_loc&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">task</span><span class="p">[</span><span class="s1">&#39;queue_loc&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#insert at back of queue</span>
+            <span class="n">queue_loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s1">&#39;uuid&#39;</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
+            <span class="n">task_uuid</span> <span class="o">=</span> <span class="n">task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">task_uuid</span> <span class="o">=</span> <span class="s1">&#39;QD-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s1"> enqueued </span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">package</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;task&#39;</span><span class="p">:</span><span class="n">task</span><span class="p">,</span><span class="s1">&#39;meta&#39;</span><span class="p">:{},</span><span class="s1">&#39;uuid&#39;</span><span class="p">:</span><span class="n">task_uuid</span><span class="p">}</span>
+        <span class="n">package</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="s1">&#39;queued&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%y %H:%M:%S-</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">package</span><span class="p">,</span><span class="n">queue_loc</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">package</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.reorder_queue">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.reorder_queue">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">reorder_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">prior_state</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;prior_state&#39;</span><span class="p">]</span>
+        <span class="n">reordered_queue</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">prior_state</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prior_state</span> <span class="o">!=</span> <span class="s1">&#39;Paused&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting queue paused state to true&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">paused</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="n">temp_queue</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()):</span>
+            <span class="n">q_task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="c1">#server queue task</span>
+            <span class="n">task_found</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">reordered_queue</span><span class="p">)):</span>
+                <span class="n">rq_task</span> <span class="o">=</span> <span class="n">reordered_queue</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="c1">#reordered queue task</span>
+                <span class="k">if</span> <span class="n">rq_task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">q_task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]):</span>
+                    <span class="n">task_found</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">temp_queue</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">q_task</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;found </span><span class="si">{</span><span class="n">rq_task</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">task_found</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">matches</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;failed&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="s1">&#39;Failed&#39;</span><span class="p">,</span><span class="mi">400</span>
+        <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;matched&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="n">temp_queue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">prior_state</span> <span class="o">!=</span> <span class="s1">&#39;Paused&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting queue paused state to false&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">paused</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+        
+<div class="viewcode-block" id="APIServer.remove_items">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.remove_items">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">remove_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;remove </span><span class="si">{</span><span class="n">items</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">uuid</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_to_qpos</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_uuid_to_qpos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uuid</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="n">uuid</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="n">idx</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">pos</span>
+
+<div class="viewcode-block" id="APIServer.remove_item">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.remove_item">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">remove_item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">uuid</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_to_qpos</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.move_item">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.move_item">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">move_item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">uuid</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_to_qpos</span><span class="p">(</span><span class="n">uuid</span><span class="p">),</span><span class="n">new_index</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.clear_queue">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.clear_queue">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.clear_history">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.clear_history">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[:]</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.debug">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.debug">[docs]</a>
+    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting queue debug state to </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.pause">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.pause">[docs]</a>
+    <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting queue paused state to </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">paused</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.halt">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.halt">[docs]</a>
+    <span class="k">def</span> <span class="nf">halt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Halting all drivers and stopping QueueDaemon&#39;</span><span class="p">)</span>
+        <span class="c1"># ToDo....</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.init">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.init">[docs]</a>
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># this kills the default werkzeug webserver output</span>
+        <span class="c1"># log = logging.getLogger(&#39;werkzeug&#39;)</span>
+        <span class="c1">#log.disabled = True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Spawning Daemons&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.login">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.login">[docs]</a>
+    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">is_json</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Missing JSON in request&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="n">username</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;username&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">username</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Missing username parameter&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="n">password</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Missing password parameter&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="k">if</span> <span class="n">password</span> <span class="o">!=</span> <span class="s1">&#39;domo_arigato&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Bad password&quot;</span><span class="p">}),</span> <span class="mi">401</span>
+
+        <span class="c1"># Identity can be any data that is json serializable</span>
+        <span class="c1">#expires = datetime.timedelta(days=1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Creating login token for user </span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">create_access_token</span><span class="p">(</span><span class="n">identity</span><span class="o">=</span><span class="n">username</span><span class="p">)</span><span class="c1">#,expires=expires)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1">#sometimes the token comes as a bytestring, possible due to different versions of jwt</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">),</span> <span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.get_server_time">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_server_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_server_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H:%M:%S - %y/%m/</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">now</span></div>
+
+
+
+<div class="viewcode-block" id="APIServer.login_test">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.login_test">[docs]</a>
+    <span class="nd">@jwt_required</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">login_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Login test for </span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s1"> successful&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
+</div>
+
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.DummyDriver</span> <span class="kn">import</span> <span class="n">DummyDriver</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">APIServer</span><span class="p">(</span><span class="s1">&#39;TestServer&#39;</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">add_standard_routes</span><span class="p">()</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">create_queue</span><span class="p">(</span><span class="n">DummyDriver</span><span class="p">())</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span><span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../../../../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

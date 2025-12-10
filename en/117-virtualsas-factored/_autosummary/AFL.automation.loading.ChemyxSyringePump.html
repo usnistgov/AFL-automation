@@ -1,0 +1,888 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>AFL.automation.loading.ChemyxSyringePump &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/AFL.automation.loading.ChemyxSyringePump';</script>
+    <link rel="icon" href="../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="AFL.automation.loading.DAQC2Sensor" href="AFL.automation.loading.DAQC2Sensor.html" />
+    <link rel="prev" title="AFL.automation.loading.CetoniSyringePump" href="AFL.automation.loading.CetoniSyringePump.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../modules.html">Modules</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../modules/apiserver.html">API Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/instrument.html">Instrument</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../modules/loading.html">Loading</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="AFL.automation.loading.html">AFL.automation.loading</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.CetoniMultiPosValve.html">AFL.automation.loading.CetoniMultiPosValve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.CetoniSyringePump.html">AFL.automation.loading.CetoniSyringePump</a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">AFL.automation.loading.ChemyxSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.DAQC2Sensor.html">AFL.automation.loading.DAQC2Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.DigitalOutPressureController.html">AFL.automation.loading.DigitalOutPressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.DoubleViciMultiposSelector.html">AFL.automation.loading.DoubleViciMultiposSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.DummyPump.html">AFL.automation.loading.DummyPump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.FlowSelector.html">AFL.automation.loading.FlowSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.LabJackDigitalOut.html">AFL.automation.loading.LabJackDigitalOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.LabJackGPIO.html">AFL.automation.loading.LabJackGPIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.LabJackRelay.html">AFL.automation.loading.LabJackRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.LabJackSensor.html">AFL.automation.loading.LabJackSensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.LoadStopperDriver.html">AFL.automation.loading.LoadStopperDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.MultiChannelRelay.html">AFL.automation.loading.MultiChannelRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.NE1kSyringePump.html">AFL.automation.loading.NE1kSyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.OneSelectorBlowoutSampleCell.html">AFL.automation.loading.OneSelectorBlowoutSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.PiGPIO.html">AFL.automation.loading.PiGPIO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.PiPlatesRelay.html">AFL.automation.loading.PiPlatesRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.PneumaticPressureSampleCell.html">AFL.automation.loading.PneumaticPressureSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.PneumaticSampleCell.html">AFL.automation.loading.PneumaticSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.PressureController.html">AFL.automation.loading.PressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.PressureControllerAsPump.html">AFL.automation.loading.PressureControllerAsPump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.PushPullSelectorSampleCell.html">AFL.automation.loading.PushPullSelectorSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.RSoXSSolutionSampleCell.html">AFL.automation.loading.RSoXSSolutionSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.SainSmartRelay.html">AFL.automation.loading.SainSmartRelay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.SampleCell.html">AFL.automation.loading.SampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.Sensor.html">AFL.automation.loading.Sensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.SensorCallbackThread.html">AFL.automation.loading.SensorCallbackThread</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.SensorPollingThread.html">AFL.automation.loading.SensorPollingThread</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.SerialDevice.html">AFL.automation.loading.SerialDevice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.SyringePump.html">AFL.automation.loading.SyringePump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.Tubing.html">AFL.automation.loading.Tubing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.TwoSelectorBlowoutSampleCell.html">AFL.automation.loading.TwoSelectorBlowoutSampleCell</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.UltimusVPressureController.html">AFL.automation.loading.UltimusVPressureController</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.ViciMultiposSelector.html">AFL.automation.loading.ViciMultiposSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.loading.VirtualPneumaticPressureLoader.html">AFL.automation.loading.VirtualPneumaticPressureLoader</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/prepare.html">Prepare</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/sample.html">Sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/shared.html">Shared</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../reference/index.html" class="nav-link">Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../api.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="AFL.automation.html" class="nav-link">AFL.automation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="AFL.automation.loading.html" class="nav-link">AFL.automation.loading</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.loading.ChemyxSyringePump</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-AFL.automation.loading.ChemyxSyringePump">
+<span id="afl-automation-loading-chemyxsyringepump"></span><h1>AFL.automation.loading.ChemyxSyringePump<a class="headerlink" href="#module-AFL.automation.loading.ChemyxSyringePump" title="Link to this heading">#</a></h1>
+<p>This is largely duplicated from the reference code provided by Chemyx.
+Their package is a GUI and direct import of the module would be problematic.</p>
+<p class="rubric">Functions</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.loading.ChemyxSyringePump.getOpenPorts" title="AFL.automation.loading.ChemyxSyringePump.getOpenPorts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getOpenPorts</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.loading.ChemyxSyringePump.parsePortName" title="AFL.automation.loading.ChemyxSyringePump.parsePortName"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parsePortName</span></code></a>(portinfo)</p></td>
+<td><p>On macOS and Linux, selects only usbserial options and parses the 8 character serial number.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection" title="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChemyxConnection</span></code></a>(port, baudrate[, x, mode, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump" title="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChemyxSyringePump</span></code></a>(port, syringe_id_mm, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SyringePump</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.loading.ChemyxSyringePump.</span></span><span class="sig-name descname"><span class="pre">ChemyxSyringePump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syringe_id_mm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syringe_volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baud</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump" title="Link to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syringe_id_mm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syringe_volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baud</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.__init__" title="Link to this definition">#</a></dt>
+<dd><p>Initializes and verifies connection to a Chemyx syringe pump.</p>
+<blockquote>
+<div><p>port = serial port reference</p>
+<dl class="simple">
+<dt>syringe_id_mm = syringe inner diameter in mm, used for absolute volume.</dt><dd><p>(will re-program the pump with this diameter on connection)</p>
+</dd>
+</dl>
+<p>syringe_volume = syringe volume in mL</p>
+<p>baud = baudrate for connection</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.wait_dosage_finished">
+<span class="sig-name descname"><span class="pre">wait_dosage_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout_seconds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.wait_dosage_finished"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.wait_dosage_finished" title="Link to this definition">#</a></dt>
+<dd><p>The function waits until the last dosage command has finished
+until the timeout occurs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.stop" title="Link to this definition">#</a></dt>
+<dd><p>Abort the current dispense/withdraw action.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.withdraw">
+<span class="sig-name descname"><span class="pre">withdraw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.withdraw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.withdraw" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.dispense">
+<span class="sig-name descname"><span class="pre">dispense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.dispense"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.dispense" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.setRate">
+<span class="sig-name descname"><span class="pre">setRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.setRate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.setRate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getRate">
+<span class="sig-name descname"><span class="pre">getRate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.getRate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getRate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.emptySyringe">
+<span class="sig-name descname"><span class="pre">emptySyringe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.emptySyringe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.emptySyringe" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getLevel">
+<span class="sig-name descname"><span class="pre">getLevel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.getLevel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getLevel" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.setLevel">
+<span class="sig-name descname"><span class="pre">setLevel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.setLevel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.setLevel" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.blockUntilStatusStopped">
+<span class="sig-name descname"><span class="pre">blockUntilStatusStopped</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pollingdelay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.blockUntilStatusStopped"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.blockUntilStatusStopped" title="Link to this definition">#</a></dt>
+<dd><p>This is a deprecated function from old serial logic.  It should work, but do not use.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getStatus">
+<span class="sig-name descname"><span class="pre">getStatus</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.getStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getStatus" title="Link to this definition">#</a></dt>
+<dd><p>query the pump status and return whether the pump is moving or not (true if moving, false if stopped)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getValueFromParams">
+<span class="sig-name descname"><span class="pre">getValueFromParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxSyringePump.getValueFromParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getValueFromParams" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.getOpenPorts">
+<span class="sig-prename descclassname"><span class="pre">AFL.automation.loading.ChemyxSyringePump.</span></span><span class="sig-name descname"><span class="pre">getOpenPorts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#getOpenPorts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.getOpenPorts" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.parsePortName">
+<span class="sig-prename descclassname"><span class="pre">AFL.automation.loading.ChemyxSyringePump.</span></span><span class="sig-name descname"><span class="pre">parsePortName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">portinfo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#parsePortName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.parsePortName" title="Link to this definition">#</a></dt>
+<dd><p>On macOS and Linux, selects only usbserial options and parses the 8 character serial number.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.loading.ChemyxSyringePump.</span></span><span class="sig-name descname"><span class="pre">ChemyxConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baudrate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection" title="Link to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baudrate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.__init__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.openConnection">
+<span class="sig-name descname"><span class="pre">openConnection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.openConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.openConnection" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.closeConnection">
+<span class="sig-name descname"><span class="pre">closeConnection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.closeConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.closeConnection" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.sendCommand">
+<span class="sig-name descname"><span class="pre">sendCommand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.sendCommand"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.sendCommand" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getResponse">
+<span class="sig-name descname"><span class="pre">getResponse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.getResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getResponse" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.startPump">
+<span class="sig-name descname"><span class="pre">startPump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.startPump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.startPump" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.stopPump">
+<span class="sig-name descname"><span class="pre">stopPump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.stopPump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.stopPump" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.pausePump">
+<span class="sig-name descname"><span class="pre">pausePump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.pausePump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.pausePump" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.restartPump">
+<span class="sig-name descname"><span class="pre">restartPump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.restartPump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.restartPump" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setUnits">
+<span class="sig-name descname"><span class="pre">setUnits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.setUnits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setUnits" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setDiameter">
+<span class="sig-name descname"><span class="pre">setDiameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.setDiameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setDiameter" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setRate">
+<span class="sig-name descname"><span class="pre">setRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.setRate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setRate" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setVolume">
+<span class="sig-name descname"><span class="pre">setVolume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.setVolume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setVolume" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setDelay">
+<span class="sig-name descname"><span class="pre">setDelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.setDelay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setDelay" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setTime">
+<span class="sig-name descname"><span class="pre">setTime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.setTime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setTime" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getParameterLimits">
+<span class="sig-name descname"><span class="pre">getParameterLimits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.getParameterLimits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getParameterLimits" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getParameters">
+<span class="sig-name descname"><span class="pre">getParameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.getParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getParameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getDisplacedVolume">
+<span class="sig-name descname"><span class="pre">getDisplacedVolume</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.getDisplacedVolume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getDisplacedVolume" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getElapsedTime">
+<span class="sig-name descname"><span class="pre">getElapsedTime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.getElapsedTime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getElapsedTime" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getPumpStatus">
+<span class="sig-name descname"><span class="pre">getPumpStatus</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.getPumpStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getPumpStatus" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.addMode">
+<span class="sig-name descname"><span class="pre">addMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.addMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.addMode" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.addX">
+<span class="sig-name descname"><span class="pre">addX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/ChemyxSyringePump.html#ChemyxConnection.addX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.addX" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="AFL.automation.loading.CetoniSyringePump.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">AFL.automation.loading.CetoniSyringePump</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="AFL.automation.loading.DAQC2Sensor.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">AFL.automation.loading.DAQC2Sensor</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.__init__"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.wait_dosage_finished"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.wait_dosage_finished()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.stop"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.stop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.withdraw"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.withdraw()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.dispense"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.dispense()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.setRate"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.setRate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getRate"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.getRate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.emptySyringe"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.emptySyringe()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getLevel"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.getLevel()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.setLevel"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.setLevel()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.blockUntilStatusStopped"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.blockUntilStatusStopped()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getStatus"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.getStatus()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getValueFromParams"><code class="docutils literal notranslate"><span class="pre">ChemyxSyringePump.getValueFromParams()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.getOpenPorts"><code class="docutils literal notranslate"><span class="pre">getOpenPorts()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.parsePortName"><code class="docutils literal notranslate"><span class="pre">parsePortName()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.__init__"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.openConnection"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.openConnection()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.closeConnection"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.closeConnection()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.sendCommand"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.sendCommand()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getResponse"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.getResponse()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.startPump"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.startPump()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.stopPump"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.stopPump()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.pausePump"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.pausePump()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.restartPump"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.restartPump()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setUnits"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.setUnits()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setDiameter"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.setDiameter()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setRate"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.setRate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setVolume"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.setVolume()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setDelay"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.setDelay()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.setTime"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.setTime()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getParameterLimits"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.getParameterLimits()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getParameters"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.getParameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getDisplacedVolume"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.getDisplacedVolume()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getElapsedTime"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.getElapsedTime()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getPumpStatus"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.getPumpStatus()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.addMode"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.addMode()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.addX"><code class="docutils literal notranslate"><span class="pre">ChemyxConnection.addX()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_autosummary/AFL.automation.loading.ChemyxSyringePump.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

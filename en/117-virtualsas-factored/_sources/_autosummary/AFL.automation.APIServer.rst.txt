@@ -1,0 +1,25 @@
+AFL.automation.APIServer
+========================
+
+.. automodule:: AFL.automation.APIServer
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      APIServer
+      CAStatusPublisher
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   Client
+   Driver
+   DummyDriver
+   DummyOT2Driver
+   LoggerFilter
+   QueueDaemon

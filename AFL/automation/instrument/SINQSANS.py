@@ -4,6 +4,7 @@ import datetime
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
 import numpy as np # for return types in get data
+import xarray as xr
 import h5py #for Nexus file writing
 import os
 import pathlib
@@ -259,18 +260,21 @@ class SINQSANS(ScatteringInstrument,Driver):
         
         
         pre_sicsdatanumber = self.client.ask_param('sicsdatanumber')
-        if self.data is not None:
-            self.data['pre_sicsdatanumber'] = pre_sicsdatanumber
+
+        # Create xarray Dataset
+        ds = xr.Dataset()
+        ds.attrs['pre_sicsdatanumber'] = pre_sicsdatanumber
+
         self.status_txt = f'Starting {exposure} moni count named {name}'
         if self.app is not None:
             self.app.logger.debug(f'Starting exposure with name {name} for {exposure} moni cts')
-        
+
         self.client.send_cmd(f'MLscatt {self.config["exposure"]}')
         if block or reduce_data or save_nexus:
             self.blockForCompleted()
             self.client.flush_buffer()
 
-            
+
             try:
                  trash = int(self.client.ask_param('banana sum 40 80 40 80'))
             except ValueError:
@@ -284,16 +288,14 @@ class SINQSANS(ScatteringInstrument,Driver):
             if save_nexus:
                 self.status_txt = 'Writing Nexus'
                 normalized_sample_transmission  = self.last_measured_transmission[0]
-                if self.data is not None:
-                    self.data['raw_data'] = data
-                    self.data['normalized_sample_transmission'] = normalized_sample_transmission
+                ds.attrs['raw_data'] = data
+                ds.attrs['normalized_sample_transmission'] = normalized_sample_transmission
                 self._writeNexus(data,name,name,self.last_measured_transmission)
 
             if reduce_data:
                 self.status_txt = 'Reducing Data'
                 reduced = self.getReducedData(write_data=True,filename=name)
-                if self.data is not None:
-                    self.data['reduced_data'] = reduced
+                ds.attrs['reduced_data'] = reduced
                 np.savetxt(f'{name}_chosen_r1d.csv',np.transpose(reduced),delimiter=',')
 
                 normalized_sample_transmission  = self.last_measured_transmission[0]
@@ -301,13 +303,12 @@ class SINQSANS(ScatteringInstrument,Driver):
                 sample_flux = self.last_measured_transmission[2]
                 empty_cell_transmission = self.last_measured_transmission[3]
                 sample_transmission = normalized_sample_transmission*empty_cell_transmission
-                
-                if self.data is not None:
-                    self.data['normalized_sample_transmission'] = normalized_sample_transmission
-                    self.data['open_flux'] = open_flux
-                    self.data['sample_flux'] = sample_flux
-                    self.data['empty_cell_transmission'] = empty_cell_transmission
-                    self.data['sample_transmission'] = sample_transmission
+
+                ds.attrs['normalized_sample_transmission'] = normalized_sample_transmission
+                ds.attrs['open_flux'] = open_flux
+                ds.attrs['sample_flux'] = sample_flux
+                ds.attrs['empty_cell_transmission'] = empty_cell_transmission
+                ds.attrs['sample_transmission'] = sample_transmission
 
 
                 if save_nexus:
@@ -323,6 +324,8 @@ class SINQSANS(ScatteringInstrument,Driver):
                     json.dump(out,f)
 
             self.status_txt = 'Instrument Idle'
+
+        return ds
          
     def blockForIdle(self):
         self.status_monitor_client.success()

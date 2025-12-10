@@ -6,6 +6,7 @@ from pathlib import Path
 from tiled.client import from_uri
 
 import numpy as np
+import xarray as xr
 import lazy_loader as lazy
 
 # Neutron scattering and control system dependencies
@@ -280,12 +281,12 @@ class ISISLARMOR(Driver):
         if reduce_data:
             self.waitforfile(Path(PREFIX) / self.config['cycle_path'] / sampleSANS_fname)
             try:
-                self.reduce(name=name, sampleSANS_rn=sampleSANS_rn, sampleTRANS_rn=sampleTRANS_rn,sample_thickness=self.config['sample_thickness'])
+                ds = self.reduce(name=name, sampleSANS_rn=sampleSANS_rn, sampleTRANS_rn=sampleTRANS_rn,sample_thickness=self.config['sample_thickness'])
             except Exception as e:
                 print(f'retrying reduction after an exception {e}, waiting 60 s first for any transient things to resolve')
                 time.sleep(60)
-                self.reduce(name=name, sampleSANS_rn=sampleSANS_rn, sampleTRANS_rn=sampleTRANS_rn,sample_thickness=self.config['sample_thickness'])
-            return self.data['transmission']
+                ds = self.reduce(name=name, sampleSANS_rn=sampleSANS_rn, sampleTRANS_rn=sampleTRANS_rn,sample_thickness=self.config['sample_thickness'])
+            return ds
     def reduce(self, sampleSANS_rn: int, sampleTRANS_rn: Optional[int]=None, sample_thickness: Number=2, name:str=""):
         prefix = "//isis/inst$"
         self.mantid_simpleapiConfigService.setDataSearchDirs(
@@ -339,18 +340,21 @@ class ISISLARMOR(Driver):
         sasdata = loader.load(str(filename.absolute()))
         if len(sasdata)>1:
             warnings.warn("Loaded multiple data from file...taking the last one",stacklevel=2)
-            
+
         sasdata = sasdata[-1]
-        self.data['transmission'] = np.mean(sasdata.trans_spectrum[-1].transmission)
-        self.data['q'] = sasdata.x
-        self.data['filename'] = filename
-        self.data.add_array('q',sasdata.x)
-        self.data.add_array('I',sasdata.y)
-        self.data.add_array('dI',sasdata.dy)
-        self.data.add_array('dq',sasdata.dx)
-        
-        self.data.add_array('transmission_spectrum',sasdata.trans_spectrum[-1].transmission)
-        self.data.add_array('transmission_wavelength',sasdata.trans_spectrum[-1].wavelength)
+
+        # Create xarray Dataset
+        ds = xr.Dataset()
+        ds.attrs['transmission'] = np.mean(sasdata.trans_spectrum[-1].transmission)
+        ds.attrs['filename'] = str(filename)
+        ds['q'] = ('q', sasdata.x)
+        ds['I'] = ('q', sasdata.y)
+        ds['dI'] = ('q', sasdata.dy)
+        ds['dq'] = ('q', sasdata.dx)
+        ds['transmission_spectrum'] = ('wavelength', sasdata.trans_spectrum[-1].transmission)
+        ds['transmission_wavelength'] = ('wavelength', sasdata.trans_spectrum[-1].wavelength)
+
+        return ds
 
 
 if __name__ == '__main__':

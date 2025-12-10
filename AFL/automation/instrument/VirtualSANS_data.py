@@ -2,6 +2,7 @@ import time
 import datetime
 from AFL.automation.APIServer.Driver import Driver
 import numpy as np # for return types in get data
+import xarray as xr
 import h5py #for Nexus file writing
 import os
 import pathlib
@@ -111,31 +112,39 @@ class VirtualSANS_data(Driver):
             mean, var, idx = self.sg.predict(X_new=X, gplist=gplist)
         else:
             mean, var = self.sg.predict(X_new=X)
-        self.data['scattering_mu'], self.data['scattering_var'] = mean.squeeze(), var.squeeze()  
+
+        scattering_mu = mean.squeeze()
+        scattering_var = var.squeeze()
         data_pointers = self.sg.get_defaults()
         qmin = self.dataset.attrs[data_pointers['Y_data_filter'][0]]
         qmax = self.dataset.attrs[data_pointers['Y_data_filter'][1]]
         print(qmin,qmax)
         if self.clustered:
             print(len(self.sg.independentGPs[0].Y_coord.sel({'q':slice(qmin,qmax)}).values))
-            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord.sel({'q':slice(qmin,qmax)}).values
+            Y_data_coord = self.sg.independentGPs[0].Y_coord.sel({'q':slice(qmin,qmax)}).values
         else:
             print(len(self.sg.Y_coord.sel({'q':slice(qmin,qmax)}).values))
-            self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord.sel({'q':slice(qmin, qmax)}).values
-        self.data['X_*'] = X
-        self.data['components'] = components
-        
-        ### store just the predicted mean for now...
-        data = self.data['scattering_mu'] 
-        
-        self.data['main_array'] = self.data['scattering_mu']
-        self.data['q']
-        print(self.data['main_array'].shape)
+            Y_data_coord = self.sg.Y_coord.sel({'q':slice(qmin, qmax)}).values
 
-        
+        ### store just the predicted mean for now...
+        data = scattering_mu
+
+        print(scattering_mu.shape)
+
+
         ### write out the data to disk as a csv or h5?
         if write_data:
             self._writedata(data)
+
+        # Create and return xarray Dataset
+        ds = xr.Dataset()
+        ds.attrs['scattering_mu'] = scattering_mu
+        ds.attrs['scattering_var'] = scattering_var
+        ds.attrs[data_pointers['Y_data_coord']] = Y_data_coord
+        ds.attrs['X_*'] = X
+        ds.attrs['components'] = components
+        ds.attrs['main_array'] = scattering_mu
+        return ds
         
 
 

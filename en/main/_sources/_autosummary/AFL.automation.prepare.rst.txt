@@ -20,12 +20,14 @@ AFL.automation.prepare
       ComponentDB
       Deck
       MassBalance
+      OT2HTTPDriver
       PipetteAction
       Sample
       SampleSeries
       Solute
       Solution
       Solvent
+      VirtualOT2HTTPDriver
    
 .. rubric:: Modules
 
@@ -37,7 +39,6 @@ AFL.automation.prepare
    DeckBuilderWidget
    Dummy_OT2_Driver
    OT2Client
-   OT2HTTPDriver
    OT2_Driver
    PrepType
    PrepareWidget

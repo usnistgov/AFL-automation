@@ -15,6 +15,7 @@ AFL.automation.shared.units
       is_density
       is_dimensionless
       is_mass
+      is_molality
       is_molarity
       is_volume
       to_quantity

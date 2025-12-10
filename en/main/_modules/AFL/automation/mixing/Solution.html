@@ -453,6 +453,9 @@
         <span class="n">volumes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">concentrations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mass_fractions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">volume_fractions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">molarities</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">molalities</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">location</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">solutes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sanity_check</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -475,7 +478,15 @@
 <span class="sd">        concentrations : dict, optional</span>
 <span class="sd">            A dictionary of component concentrations.</span>
 <span class="sd">        mass_fractions : dict, optional</span>
-<span class="sd">            A dictionary of component mass fractions.</span>
+<span class="sd">            A dictionary of component mass fractions. A single component can have a value of None</span>
+<span class="sd">            to indicate it should be calculated as the remainder (1.0 - sum of other fractions).</span>
+<span class="sd">        volume_fractions : dict, optional</span>
+<span class="sd">            A dictionary of component volume fractions. A single component can have a value of None</span>
+<span class="sd">            to indicate it should be calculated as the remainder (1.0 - sum of other fractions).</span>
+<span class="sd">        molarities : dict, optional</span>
+<span class="sd">            A dictionary of component molarities (moles per liter of solution).</span>
+<span class="sd">        molalities : dict, optional</span>
+<span class="sd">            A dictionary of component molalities (moles per kilogram of solvent).</span>
 <span class="sd">        location : str, optional</span>
 <span class="sd">            The location of the solution on the robot. Usually a deck location e.g., &#39;1A1&#39;.</span>
 <span class="sd">        solutes : list of str, optional</span>
@@ -489,6 +500,9 @@
 <span class="sd">        ValueError</span>
 <span class="sd">            If concentrations are set without specifying a component with volume.</span>
 <span class="sd">            If mass fractions are set without specifying a component with mass or the total mass.</span>
+<span class="sd">            If volume fractions are set without specifying a component with volume or the total volume.</span>
+<span class="sd">            If molarities are set without specifying a component with volume.</span>
+<span class="sd">            If molalities are set without specifying a solvent with mass.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
@@ -507,17 +521,27 @@
             <span class="n">concentrations</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">mass_fractions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mass_fractions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">volume_fractions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">volume_fractions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">molarities</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">molarities</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">molalities</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">molalities</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">solutes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">solutes</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="c1"># Initialize components</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">solutes</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">solutes</span><span class="p">)</span>
+        <span class="c1"># Process fractions with remainder calculation (replace None values)</span>
+        <span class="n">mass_fractions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_fractions_with_remainder</span><span class="p">(</span><span class="n">mass_fractions</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">)</span>
+        <span class="n">volume_fractions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_fractions_with_remainder</span><span class="p">(</span><span class="n">volume_fractions</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mass</span> <span class="ow">in</span> <span class="n">masses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">mass</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">volume</span> <span class="ow">in</span> <span class="n">volumes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">volume</span>
+        <span class="c1"># Initialize components</span>
+        <span class="k">for</span> <span class="n">component_name</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">volume_fractions</span><span class="p">,</span> <span class="n">molarities</span><span class="p">,</span> <span class="n">molalities</span><span class="p">,</span> <span class="n">solutes</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">component_name</span><span class="p">,</span> <span class="n">solutes</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">component_name</span><span class="p">,</span> <span class="n">mass</span> <span class="ow">in</span> <span class="n">masses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">component_name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">mass</span>
+        <span class="k">for</span> <span class="n">component_name</span><span class="p">,</span> <span class="n">volume</span> <span class="ow">in</span> <span class="n">volumes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">component_name</span><span class="p">]</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">volume</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mass_fractions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">total_mass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
@@ -528,11 +552,26 @@
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># need to initialize all components with a mass</span>
-                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">mass_fractions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="s1">&#39;1.0 mg&#39;</span>
+                <span class="k">for</span> <span class="n">component_name</span> <span class="ow">in</span> <span class="n">mass_fractions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">component_name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="s1">&#39;1.0 mg&#39;</span>
                 <span class="k">if</span> <span class="n">total_mass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">total_mass</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mass_fraction</span> <span class="o">=</span> <span class="n">mass_fractions</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">volume_fractions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">total_volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot set volume_fraction without setting a component with volume or specifying the total_volume.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># need to initialize all components with a volume</span>
+                <span class="k">for</span> <span class="n">component_name</span> <span class="ow">in</span> <span class="n">volume_fractions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">component_name</span><span class="p">]</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="s1">&#39;1.0 ml&#39;</span>
+                <span class="k">if</span> <span class="n">total_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">total_volume</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">volume_fraction</span> <span class="o">=</span> <span class="n">volume_fractions</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">concentrations</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
@@ -542,6 +581,26 @@
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">concentration</span> <span class="o">=</span> <span class="n">concentrations</span>
 
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">molarities</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot set molarities without setting a component with volume.&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">molarity</span> <span class="o">=</span> <span class="n">molarities</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">molalities</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solvent_mass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solvent_mass</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot set molalities without setting a solvent with mass.&quot;</span>
+                <span class="p">)</span>
+            <span class="c1"># Validate that all molality components have formulas</span>
+            <span class="k">for</span> <span class="n">component_name</span> <span class="ow">in</span> <span class="n">molalities</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">component_name</span><span class="p">]</span><span class="o">.</span><span class="n">has_formula</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Cannot set molality for component &#39;</span><span class="si">{</span><span class="n">component_name</span><span class="si">}</span><span class="s2">&#39; without a chemical formula defined.&quot;</span>
+                    <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">molality</span> <span class="o">=</span> <span class="n">molalities</span>
+
         <span class="k">if</span> <span class="n">total_mass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">total_mass</span>
 
@@ -549,10 +608,72 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">total_volume</span>
 
         <span class="k">if</span> <span class="n">sanity_check</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_sanity_check</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sanity_check</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">volume_fractions</span><span class="p">,</span> <span class="n">molarities</span><span class="p">,</span> <span class="n">molalities</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_sanity_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_process_fractions_with_remainder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fractions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">fraction_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process a fractions dictionary, calculating remainder for None values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fractions : dict</span>
+<span class="sd">            Dictionary of component fractions, may contain one None value</span>
+<span class="sd">        fraction_type : str</span>
+<span class="sd">            Type of fraction for error messages (&#39;mass&#39; or &#39;volume&#39;)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Processed fractions with None replaced by calculated remainder</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fractions</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fractions</span>
+
+        <span class="n">none_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fractions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">none_keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Validate that fractions sum to &lt;= 1.0</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">enforce_units</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fractions</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">:</span>  <span class="c1"># tolerance for floating point</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fraction_type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2"> fractions sum to </span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s2">, which exceeds 1.0&quot;</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">fractions</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">none_keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Only one component can have a None value in </span><span class="si">{</span><span class="n">fraction_type</span><span class="si">}</span><span class="s2">_fractions, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">none_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">none_keys</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Calculate remainder</span>
+        <span class="n">remainder_key</span> <span class="o">=</span> <span class="n">none_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">specified_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="n">enforce_units</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s1">&#39;dimensionless&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fractions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">specified_sum</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">:</span>  <span class="c1"># tolerance for floating point</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Specified </span><span class="si">{</span><span class="n">fraction_type</span><span class="si">}</span><span class="s2"> fractions sum to </span><span class="si">{</span><span class="n">specified_sum</span><span class="si">}</span><span class="s2">, which exceeds 1.0. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot calculate remainder for &#39;</span><span class="si">{</span><span class="n">remainder_key</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">remainder</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">specified_sum</span>
+        <span class="k">if</span> <span class="n">remainder</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-9</span><span class="p">:</span>  <span class="c1"># tolerance for floating point</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Calculated remainder for &#39;</span><span class="si">{</span><span class="n">remainder_key</span><span class="si">}</span><span class="s2">&#39; is negative (</span><span class="si">{</span><span class="n">remainder</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Specified </span><span class="si">{</span><span class="n">fraction_type</span><span class="si">}</span><span class="s2"> fractions sum to more than 1.0.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Create new dict with remainder filled in</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fractions</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">remainder_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>  <span class="c1"># Clamp to 0 for tiny negative values due to float precision</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_sanity_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">volume_fractions</span><span class="p">,</span> <span class="n">molarities</span><span class="p">,</span> <span class="n">molalities</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform a sanity check on the solution to ensure consistency of requested and final properties.</span>
 
@@ -566,6 +687,12 @@
 <span class="sd">            A dictionary of component concentrations.</span>
 <span class="sd">        mass_fractions : dict</span>
 <span class="sd">            A dictionary of component mass fractions.</span>
+<span class="sd">        volume_fractions : dict</span>
+<span class="sd">            A dictionary of component volume fractions.</span>
+<span class="sd">        molarities : dict</span>
+<span class="sd">            A dictionary of component molarities.</span>
+<span class="sd">        molalities : dict</span>
+<span class="sd">            A dictionary of component molalities.</span>
 <span class="sd">        total_mass : str or pint.Quantity, optional</span>
 <span class="sd">            The total mass of the solution.</span>
 <span class="sd">        total_volume : str or pint.Quantity, optional</span>
@@ -595,6 +722,20 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mass_fraction</span> <span class="ow">in</span> <span class="n">mass_fractions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass_fraction</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">mass_fraction</span><span class="p">):</span>
                 <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Mass fraction of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> was specified to be </span><span class="si">{</span><span class="n">mass_fraction</span><span class="si">}</span><span class="s2"> but is now </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mass_fraction</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">volume_fraction</span> <span class="ow">in</span> <span class="n">volume_fractions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_fraction</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Volume fraction of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> was specified to be </span><span class="si">{</span><span class="n">volume_fraction</span><span class="si">}</span><span class="s2"> but is now </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_fraction</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">molarity</span> <span class="ow">in</span> <span class="n">molarities</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">molarity</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">molarity</span><span class="p">,</span> <span class="s2">&quot;molarity&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">molarity</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">molarity</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Molarity of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> was specified to be </span><span class="si">{</span><span class="n">molarity</span><span class="si">}</span><span class="s2"> but is now </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">molarity</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">molality_value</span> <span class="ow">in</span> <span class="n">molalities</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">molality_value</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">molality_value</span><span class="p">,</span> <span class="s2">&quot;molality&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">molality</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">molality_value</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Molality of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> was specified to be </span><span class="si">{</span><span class="n">molality_value</span><span class="si">}</span><span class="s2"> but is now </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">molality</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
 
         <span class="k">if</span> <span class="n">total_mass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">total_mass</span><span class="p">,</span> <span class="s2">&quot;mass&quot;</span><span class="p">)):</span>
@@ -653,6 +794,30 @@
                 <span class="p">]</span>
             <span class="p">):</span>
                 <span class="n">reasons</span> <span class="o">+=</span> <span class="s2">&quot;- You have specified the same component(s) in both concentrations and mass fractions.</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">((</span><span class="n">name</span> <span class="ow">in</span> <span class="n">volumes</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="n">volume_fractions</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span>
+                <span class="p">]</span>
+            <span class="p">):</span>
+                <span class="n">reasons</span> <span class="o">+=</span> <span class="s2">&quot;- You have specified the same component(s) in both volumes and volume fractions.</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">((</span><span class="n">name</span> <span class="ow">in</span> <span class="n">molarities</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="n">concentrations</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span>
+                <span class="p">]</span>
+            <span class="p">):</span>
+                <span class="n">reasons</span> <span class="o">+=</span> <span class="s2">&quot;- You have specified the same component(s) in both molarities and concentrations.</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">((</span><span class="n">name</span> <span class="ow">in</span> <span class="n">molalities</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="n">molarities</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span>
+                <span class="p">]</span>
+            <span class="p">):</span>
+                <span class="n">reasons</span> <span class="o">+=</span> <span class="s2">&quot;- You have specified the same component(s) in both molalities and molarities.</span><span class="se">\n</span><span class="s2">&quot;</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="n">total_mass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">total_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="n">reasons</span> <span class="o">+=</span> <span class="p">(</span>
@@ -1035,19 +1200,62 @@
     <span class="nd">@molarity</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">molarity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molarity_dict</span><span class="p">):</span>
         <span class="n">total_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">molarity</span> <span class="ow">in</span> <span class="n">molarity_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">molarity_value</span> <span class="ow">in</span> <span class="n">molarity_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">has_formula</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Attempting to set molarity of component without formula: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="n">molarity_value</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">molarity_value</span><span class="p">,</span> <span class="s2">&quot;molarity&quot;</span><span class="p">)</span>
                 <span class="n">molar_mass</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">formula</span><span class="o">.</span><span class="n">molecular_mass</span>
                     <span class="o">*</span> <span class="n">AVOGADROS_NUMBER</span>
                     <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span>
-                    <span class="n">molarity</span> <span class="o">*</span> <span class="n">molar_mass</span> <span class="o">*</span> <span class="n">total_volume</span><span class="p">,</span> <span class="s2">&quot;mass&quot;</span>
+                    <span class="n">molarity_value</span> <span class="o">*</span> <span class="n">molar_mass</span> <span class="o">*</span> <span class="n">total_volume</span><span class="p">,</span> <span class="s2">&quot;mass&quot;</span>
+                <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">molality</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Molality of components in mixture (moles of solute per kilogram of solvent)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        molality: dict</span>
+<span class="sd">            Component molalities for components with chemical formulas defined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">solvent_mass_kg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvent_mass</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;kg&#39;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">component</span><span class="o">.</span><span class="n">has_formula</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">component</span><span class="o">.</span><span class="n">moles</span> <span class="o">/</span> <span class="n">solvent_mass_kg</span><span class="p">,</span> <span class="s2">&quot;molality&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@molality</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">molality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molality_dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set component masses based on molality (moles per kg of solvent)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        molality_dict : dict</span>
+<span class="sd">            Dictionary mapping component names to molality values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">solvent_mass_kg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvent_mass</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;kg&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">molality_value</span> <span class="ow">in</span> <span class="n">molality_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">has_formula</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Attempting to set molality of component without formula: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">molality_value</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">molality_value</span><span class="p">,</span> <span class="s2">&quot;molality&quot;</span><span class="p">)</span>
+                <span class="n">molar_mass</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">formula</span><span class="o">.</span><span class="n">molecular_mass</span>
+                    <span class="o">*</span> <span class="n">AVOGADROS_NUMBER</span>
+                    <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span>
+                    <span class="n">molality_value</span> <span class="o">*</span> <span class="n">molar_mass</span> <span class="o">*</span> <span class="n">solvent_mass_kg</span><span class="p">,</span> <span class="s2">&quot;mass&quot;</span>
                 <span class="p">)</span>
 
 <div class="viewcode-block" id="Solution.measure_out">

@@ -45,3 +45,4 @@ AFL.automation.loading
    TwoSelectorBlowoutSampleCell
    UltimusVPressureController
    ViciMultiposSelector
+   VirtualPneumaticPressureLoader

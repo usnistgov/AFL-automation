@@ -417,8 +417,9 @@
 <span class="n">DEFAULT_UNITS</span><span class="p">[</span><span class="s1">&#39;concentration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;g/ml&#39;</span>
 <span class="n">DEFAULT_UNITS</span><span class="p">[</span><span class="s1">&#39;density&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;g/ml&#39;</span>
 <span class="n">DEFAULT_UNITS</span><span class="p">[</span><span class="s1">&#39;molarity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;millimolar&#39;</span>
+<span class="n">DEFAULT_UNITS</span><span class="p">[</span><span class="s1">&#39;molality&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;mol/kg&#39;</span>
 
-<span class="n">SUPPORTED_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;density&#39;</span><span class="p">,</span> <span class="s1">&#39;molarity&#39;</span><span class="p">,</span> <span class="s1">&#39;concentration&#39;</span><span class="p">,</span><span class="s1">&#39;dimensionless&#39;</span><span class="p">]</span>
+<span class="n">SUPPORTED_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;density&#39;</span><span class="p">,</span> <span class="s1">&#39;molarity&#39;</span><span class="p">,</span> <span class="s1">&#39;molality&#39;</span><span class="p">,</span> <span class="s1">&#39;concentration&#39;</span><span class="p">,</span><span class="s1">&#39;dimensionless&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="has_units">
@@ -439,6 +440,14 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_molarity">[docs]</a>
 <span class="k">def</span> <span class="nf">is_molarity</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[length]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[substance]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="is_molality">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_molality">[docs]</a>
+<span class="k">def</span> <span class="nf">is_molality</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[mass]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
             <span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="s1">&#39;[substance]&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span></div>
 
 
@@ -477,6 +486,8 @@
         <span class="k">return</span> <span class="s1">&#39;volume&#39;</span>
     <span class="k">elif</span> <span class="n">is_molarity</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;molarity&#39;</span>
+    <span class="k">elif</span> <span class="n">is_molality</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;molality&#39;</span>
     <span class="k">elif</span> <span class="n">is_mass</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;mass&#39;</span>
     <span class="k">elif</span> <span class="n">is_density</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
@@ -548,6 +559,12 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Supplied value must be a molarity not </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEFAULT_UNITS</span><span class="p">[</span><span class="s1">&#39;molarity&#39;</span><span class="p">])</span>
+
+    <span class="k">elif</span> <span class="n">unit_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;molality&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_molality</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Supplied value must be a molality not </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">dimensionality</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEFAULT_UNITS</span><span class="p">[</span><span class="s1">&#39;molality&#39;</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">value</span></div>
 

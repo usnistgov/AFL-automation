@@ -34,6 +34,7 @@ AFL.automation.instrument
    SeabreezeUVVis
    SpecScreen_Driver
    USBCamera
+   VirtualInstrument
    VirtualSANS_data
    VirtualSAS_theory
    VirtualSpec_data

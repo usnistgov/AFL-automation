@@ -42,6 +42,9 @@ class Solution(Context):
         volumes: Optional[Dict] = None,
         concentrations: Optional[Dict] = None,
         mass_fractions: Optional[Dict] = None,
+        volume_fractions: Optional[Dict] = None,
+        molarities: Optional[Dict] = None,
+        molalities: Optional[Dict] = None,
         location: Optional[str] = None,
         solutes: Optional[List[str]] = None,
         sanity_check: Optional[bool] = True,
@@ -64,7 +67,15 @@ class Solution(Context):
         concentrations : dict, optional
             A dictionary of component concentrations.
         mass_fractions : dict, optional
-            A dictionary of component mass fractions.
+            A dictionary of component mass fractions. A single component can have a value of None
+            to indicate it should be calculated as the remainder (1.0 - sum of other fractions).
+        volume_fractions : dict, optional
+            A dictionary of component volume fractions. A single component can have a value of None
+            to indicate it should be calculated as the remainder (1.0 - sum of other fractions).
+        molarities : dict, optional
+            A dictionary of component molarities (moles per liter of solution).
+        molalities : dict, optional
+            A dictionary of component molalities (moles per kilogram of solvent).
         location : str, optional
             The location of the solution on the robot. Usually a deck location e.g., '1A1'.
         solutes : list of str, optional
@@ -78,6 +89,9 @@ class Solution(Context):
         ValueError
             If concentrations are set without specifying a component with volume.
             If mass fractions are set without specifying a component with mass or the total mass.
+            If volume fractions are set without specifying a component with volume or the total volume.
+            If molarities are set without specifying a component with volume.
+            If molalities are set without specifying a solvent with mass.
         """
 
         super().__init__(name=name)
@@ -96,31 +110,57 @@ class Solution(Context):
             concentrations = {}
         if mass_fractions is None:
             mass_fractions = {}
+        if volume_fractions is None:
+            volume_fractions = {}
+        if molarities is None:
+            molarities = {}
+        if molalities is None:
+            molalities = {}
         if solutes is None:
             solutes = []
 
-        # Initialize components
-        for name in chain(masses, volumes, concentrations, mass_fractions, solutes):
-            self.add_component(name, solutes)
+        # Process fractions with remainder calculation (replace None values)
+        mass_fractions = self._process_fractions_with_remainder(mass_fractions, 'mass')
+        volume_fractions = self._process_fractions_with_remainder(volume_fractions, 'volume')
 
-        for name, mass in masses.items():
-            self.components[name].mass = mass
-        for name, volume in volumes.items():
-            self.components[name].volume = volume
+        # Initialize components
+        for component_name in chain(masses, volumes, concentrations, mass_fractions, volume_fractions, molarities, molalities, solutes):
+            self.add_component(component_name, solutes)
+
+        for component_name, mass in masses.items():
+            self.components[component_name].mass = mass
+        for component_name, volume in volumes.items():
+            self.components[component_name].volume = volume
 
         if len(mass_fractions) > 0:
             if (total_mass is None) and (
                     (self.mass is None) or (self.mass.magnitude == 0)
             ):
                 raise ValueError(
-                    "Cannot set concentrations without setting a component with mass or specifying the total_mass."
+                    "Cannot set mass_fraction without setting a component with mass or specifying the total_mass."
                 )
             else:
                 # need to initialize all components with a mass
-                for name in mass_fractions.keys():
-                    self.components[name].mass = '1.0 mg'
-                self.mass = total_mass
+                for component_name in mass_fractions.keys():
+                    self.components[component_name].mass = '1.0 mg'
+                if total_mass is not None:
+                    self.mass = total_mass
             self.mass_fraction = mass_fractions
+
+        if len(volume_fractions) > 0:
+            if (total_volume is None) and (
+                    (self.volume is None) or (self.volume.magnitude == 0)
+            ):
+                raise ValueError(
+                    "Cannot set volume_fraction without setting a component with volume or specifying the total_volume."
+                )
+            else:
+                # need to initialize all components with a volume
+                for component_name in volume_fractions.keys():
+                    self.components[component_name].volume = '1.0 ml'
+                if total_volume is not None:
+                    self.volume = total_volume
+            self.volume_fraction = volume_fractions
 
         if len(concentrations) > 0 and (
             (self.volume is None) or (self.volume.magnitude == 0)
@@ -130,6 +170,26 @@ class Solution(Context):
             )
         self.concentration = concentrations
 
+        if len(molarities) > 0:
+            if (self.volume is None) or (self.volume.magnitude == 0):
+                raise ValueError(
+                    "Cannot set molarities without setting a component with volume."
+                )
+            self.molarity = molarities
+
+        if len(molalities) > 0:
+            if (self.solvent_mass is None) or (self.solvent_mass.magnitude == 0):
+                raise ValueError(
+                    "Cannot set molalities without setting a solvent with mass."
+                )
+            # Validate that all molality components have formulas
+            for component_name in molalities.keys():
+                if not self.components[component_name].has_formula:
+                    raise ValueError(
+                        f"Cannot set molality for component '{component_name}' without a chemical formula defined."
+                    )
+            self.molality = molalities
+
         if total_mass is not None:
             self.mass = total_mass
 
@@ -137,9 +197,71 @@ class Solution(Context):
             self.volume = total_volume
 
         if sanity_check:
-            self._sanity_check(masses, volumes, concentrations, mass_fractions, total_mass, total_volume)
+            self._sanity_check(masses, volumes, concentrations, mass_fractions, volume_fractions, molarities, molalities, total_mass, total_volume)
 
-    def _sanity_check(self, masses, volumes, concentrations, mass_fractions, total_mass, total_volume):
+    def _process_fractions_with_remainder(self, fractions: Dict, fraction_type: str) -> Dict:
+        """
+        Process a fractions dictionary, calculating remainder for None values.
+
+        Parameters
+        ----------
+        fractions : dict
+            Dictionary of component fractions, may contain one None value
+        fraction_type : str
+            Type of fraction for error messages ('mass' or 'volume')
+
+        Returns
+        -------
+        dict
+            Processed fractions with None replaced by calculated remainder
+        """
+        if not fractions:
+            return fractions
+
+        none_keys = [k for k, v in fractions.items() if v is None]
+
+        if len(none_keys) == 0:
+            # Validate that fractions sum to <= 1.0
+            total = sum(enforce_units(v, 'dimensionless') for v in fractions.values())
+            if total > 1.0 + 1e-9:  # tolerance for floating point
+                raise ValueError(
+                    f"{fraction_type.capitalize()} fractions sum to {total}, which exceeds 1.0"
+                )
+            return fractions
+
+        if len(none_keys) > 1:
+            raise ValueError(
+                f"Only one component can have a None value in {fraction_type}_fractions, "
+                f"but found {len(none_keys)}: {none_keys}"
+            )
+
+        # Calculate remainder
+        remainder_key = none_keys[0]
+        specified_sum = sum(
+            enforce_units(v, 'dimensionless')
+            for k, v in fractions.items()
+            if v is not None
+        )
+
+        if specified_sum > 1.0 + 1e-9:  # tolerance for floating point
+            raise ValueError(
+                f"Specified {fraction_type} fractions sum to {specified_sum}, which exceeds 1.0. "
+                f"Cannot calculate remainder for '{remainder_key}'."
+            )
+
+        remainder = 1.0 - specified_sum
+        if remainder < -1e-9:  # tolerance for floating point
+            raise ValueError(
+                f"Calculated remainder for '{remainder_key}' is negative ({remainder}). "
+                f"Specified {fraction_type} fractions sum to more than 1.0."
+            )
+
+        # Create new dict with remainder filled in
+        result = dict(fractions)
+        result[remainder_key] = max(0.0, remainder)  # Clamp to 0 for tiny negative values due to float precision
+        return result
+
+    def _sanity_check(self, masses, volumes, concentrations, mass_fractions, volume_fractions, molarities, molalities, total_mass, total_volume):
         """
         Perform a sanity check on the solution to ensure consistency of requested and final properties.
 
@@ -153,6 +275,12 @@ class Solution(Context):
             A dictionary of component concentrations.
         mass_fractions : dict
             A dictionary of component mass fractions.
+        volume_fractions : dict
+            A dictionary of component volume fractions.
+        molarities : dict
+            A dictionary of component molarities.
+        molalities : dict
+            A dictionary of component molalities.
         total_mass : str or pint.Quantity, optional
             The total mass of the solution.
         total_volume : str or pint.Quantity, optional
@@ -182,6 +310,20 @@ class Solution(Context):
         for name, mass_fraction in mass_fractions.items():
             if not np.isclose(self.mass_fraction[name], mass_fraction):
                 msg += f"Mass fraction of {name} was specified to be {mass_fraction} but is now {self.mass_fraction[name]}.\n"
+
+        for name, volume_fraction in volume_fractions.items():
+            if not np.isclose(self.volume_fraction[name], volume_fraction):
+                msg += f"Volume fraction of {name} was specified to be {volume_fraction} but is now {self.volume_fraction[name]}.\n"
+
+        for name, molarity in molarities.items():
+            molarity = enforce_units(molarity, "molarity")
+            if not np.isclose(self.molarity[name], molarity):
+                msg += f"Molarity of {name} was specified to be {molarity} but is now {self.molarity[name]}.\n"
+
+        for name, molality_value in molalities.items():
+            molality_value = enforce_units(molality_value, "molality")
+            if not np.isclose(self.molality[name], molality_value):
+                msg += f"Molality of {name} was specified to be {molality_value} but is now {self.molality[name]}.\n"
 
         if total_mass is not None:
             if not np.isclose(self.mass, enforce_units(total_mass, "mass")):
@@ -241,6 +383,30 @@ class Solution(Context):
             ):
                 reasons += "- You have specified the same component(s) in both concentrations and mass fractions.\n"
 
+            if any(
+                [
+                    ((name in volumes) and (name in volume_fractions))
+                    for name, component in self
+                ]
+            ):
+                reasons += "- You have specified the same component(s) in both volumes and volume fractions.\n"
+
+            if any(
+                [
+                    ((name in molarities) and (name in concentrations))
+                    for name, component in self
+                ]
+            ):
+                reasons += "- You have specified the same component(s) in both molarities and concentrations.\n"
+
+            if any(
+                [
+                    ((name in molalities) and (name in molarities))
+                    for name, component in self
+                ]
+            ):
+                reasons += "- You have specified the same component(s) in both molalities and molarities.\n"
+
             if (total_mass is not None) or (total_volume is not None):
                 reasons += (
                     "- You specified total_mass and/or total_volume. These transforms happen at the end of the\n "
@@ -288,7 +454,8 @@ class Solution(Context):
             "masses": {},
         }
         for k, v in self:
-            out_dict["masses"][k] = {"value": v.mass.to("mg").magnitude, "units": "mg"}
+            # out_dict["masses"][k] = {"value": v.mass.to("mg").magnitude, "units": "mg"}
+            out_dict["masses"][k] = f"{v.mass.to('mg').magnitude}mg"
         return out_dict
 
     def add_component(self, name, solutes: Optional[List[str]] = None):
@@ -394,7 +561,10 @@ class Solution(Context):
     @property
     def mass(self) -> pint.Quantity:
         """Total mass of mixture."""
-        return sum([component.mass for name, component in self if component.has_mass])
+        masses = [component.mass for name, component in self if component.has_mass]
+        if len(masses) == 0:
+            return 0 * units("mg")
+        return sum(masses)
 
     @mass.setter
     def mass(self, value: str | pint.Quantity):
@@ -585,19 +755,62 @@ class Solution(Context):
     @molarity.setter
     def molarity(self, molarity_dict):
         total_volume = self.volume
-        for name, molarity in molarity_dict.items():
+        for name, molarity_value in molarity_dict.items():
             if not self.components[name].has_formula:
                 raise ValueError(
                     f"Attempting to set molarity of component without formula: {name}"
                 )
             else:
+                molarity_value = enforce_units(molarity_value, "molarity")
                 molar_mass = (
                     self.components[name].formula.molecular_mass
                     * AVOGADROS_NUMBER
                     * units("g")
                 )
                 self.components[name].mass = enforce_units(
-                    molarity * molar_mass * total_volume, "mass"
+                    molarity_value * molar_mass * total_volume, "mass"
+                )
+
+    @property
+    def molality(self):
+        """Molality of components in mixture (moles of solute per kilogram of solvent)
+
+        Returns
+        -------
+        molality: dict
+            Component molalities for components with chemical formulas defined
+        """
+        solvent_mass_kg = self.solvent_mass.to('kg')
+        result = {}
+        for name, component in self:
+            if component.has_formula:
+                result[name] = enforce_units(component.moles / solvent_mass_kg, "molality")
+        return result
+
+    @molality.setter
+    def molality(self, molality_dict):
+        """Set component masses based on molality (moles per kg of solvent)
+
+        Parameters
+        ----------
+        molality_dict : dict
+            Dictionary mapping component names to molality values
+        """
+        solvent_mass_kg = self.solvent_mass.to('kg')
+        for name, molality_value in molality_dict.items():
+            if not self.components[name].has_formula:
+                raise ValueError(
+                    f"Attempting to set molality of component without formula: {name}"
+                )
+            else:
+                molality_value = enforce_units(molality_value, "molality")
+                molar_mass = (
+                    self.components[name].formula.molecular_mass
+                    * AVOGADROS_NUMBER
+                    * units("g")
+                )
+                self.components[name].mass = enforce_units(
+                    molality_value * molar_mass * solvent_mass_kg, "mass"
                 )
 
     def measure_out(

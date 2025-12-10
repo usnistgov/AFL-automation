@@ -1,0 +1,143 @@
+{
+    "ordering": [
+        [
+            "A1",
+            "B1"
+        ],
+        [
+            "A2",
+            "B2"
+        ],
+        [
+            "A3",
+            "B3"
+        ],
+        [
+            "A4",
+            "B4"
+        ]
+    ],
+    "brand": {
+        "brand": "nist",
+        "brandId": [
+            "8_20mL_vials"
+        ]
+    },
+    "metadata": {
+        "displayName": "NIST 8x20mL vial holder",
+        "displayCategory": "wellPlate",
+        "displayVolumeUnits": "µL",
+        "tags": []
+    },
+    "dimensions": {
+        "xDimension": 128.07,
+        "yDimension": 86.15,
+        "zDimension": 57.72
+    },
+    "wells": {
+        "A1": {
+            "depth": 50,
+            "totalLiquidVolume": 20000,
+            "shape": "circular",
+            "diameter": 16,
+            "x": 22,
+            "y": 65.15,
+            "z": 7.72
+        },
+        "B1": {
+            "depth": 50,
+            "totalLiquidVolume": 20000,
+            "shape": "circular",
+            "diameter": 16,
+            "x": 22,
+            "y": 36.21,
+            "z": 7.72
+        },
+        "A2": {
+            "depth": 50,
+            "totalLiquidVolume": 20000,
+            "shape": "circular",
+            "diameter": 16,
+            "x": 50.94,
+            "y": 65.15,
+            "z": 7.72
+        },
+        "B2": {
+            "depth": 50,
+            "totalLiquidVolume": 20000,
+            "shape": "circular",
+            "diameter": 16,
+            "x": 50.94,
+            "y": 36.21,
+            "z": 7.72
+        },
+        "A3": {
+            "depth": 50,
+            "totalLiquidVolume": 20000,
+            "shape": "circular",
+            "diameter": 16,
+            "x": 79.88,
+            "y": 65.15,
+            "z": 7.72
+        },
+        "B3": {
+            "depth": 50,
+            "totalLiquidVolume": 20000,
+            "shape": "circular",
+            "diameter": 16,
+            "x": 79.88,
+            "y": 36.21,
+            "z": 7.72
+        },
+        "A4": {
+            "depth": 50,
+            "totalLiquidVolume": 20000,
+            "shape": "circular",
+            "diameter": 16,
+            "x": 108.82,
+            "y": 65.15,
+            "z": 7.72
+        },
+        "B4": {
+            "depth": 50,
+            "totalLiquidVolume": 20000,
+            "shape": "circular",
+            "diameter": 16,
+            "x": 108.82,
+            "y": 36.21,
+            "z": 7.72
+        }
+    },
+    "groups": [
+        {
+            "metadata": {
+                "wellBottomShape": "flat"
+            },
+            "wells": [
+                "A1",
+                "B1",
+                "A2",
+                "B2",
+                "A3",
+                "B3",
+                "A4",
+                "B4"
+            ]
+        }
+    ],
+    "parameters": {
+        "format": "irregular",
+        "quirks": [],
+        "isTiprack": false,
+        "isMagneticModuleCompatible": false,
+        "loadName": "nist_8_20ml_vials"
+    },
+    "namespace": "custom_beta",
+    "version": 1,
+    "schemaVersion": 2,
+    "cornerOffsetFromSlot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+    }
+}

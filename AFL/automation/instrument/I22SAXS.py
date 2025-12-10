@@ -122,19 +122,21 @@ class I22SAXS(Driver):
 
         self.app.logger.info(f'Selected scan #{selected_run} | {scan_id_list[selected_run]} with transmission of {transmission_list[selected_run]}.  Other options were {transmission_list}.')
 
-        self.data['scan_ids'] = scan_id_list
-        self.data['counters'] = counters_list
-        self.data['transmissions'] = transmission_list
-
         if empty and set_empty:
             self.config['empty_scan_id'] = scan_id_list[selected_run]
-        self.data['scan_id'] = scan_id_list[selected_run]
-        self.data['counter'] = counters_list[selected_run]
-        self.data['transmission'] = transmission_list[selected_run]
-    
-        self.read_integrated(scan_id_list[selected_run])
 
-        return transmission_list[selected_run]
+        # Get integrated data
+        ds_integrated = self.read_integrated(scan_id_list[selected_run])
+
+        # Add exposure metadata to dataset
+        ds_integrated.attrs['scan_ids'] = scan_id_list
+        ds_integrated.attrs['counters'] = counters_list
+        ds_integrated.attrs['transmissions'] = transmission_list
+        ds_integrated.attrs['scan_id'] = scan_id_list[selected_run]
+        ds_integrated.attrs['counter'] = counters_list[selected_run]
+        ds_integrated.attrs['transmission'] = transmission_list[selected_run]
+
+        return ds_integrated
 
     def read_integrated(self,scanid):
         """ 
@@ -160,14 +162,11 @@ class I22SAXS(Driver):
             q = f['processed']['result']['q'][:]
             err = f['processed']['result']['errors'][:]
 
-        
-        # construct an xarray with this and return it?
+        # Construct and return xarray Dataset
         data = xr.Dataset(data_vars={'I':(['position','frameid','q'],I),'dI':(['position','frameid','q'],err)},coords={'q':q})
-        
-        self.data['q'] = data['q'].values
-        self.data.add_array('I',data['I'].values.squeeze())
-        self.data.add_array('dI',data['dI'].values.squeeze())
-        return scanid
+        data.attrs['scanid'] = scanid
+
+        return data
 
 
 _DEFAULT__PORT = 5001

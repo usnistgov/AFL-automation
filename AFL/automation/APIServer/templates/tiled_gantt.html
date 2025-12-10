@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiled Gantt Chart</title>
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel='stylesheet' href='/static/tiled_browser_css/tiled_gantt.css'>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header -->
+        <div id="header">
+            <h1>Task Timeline - Gantt Chart</h1>
+            <div id="controls">
+                <label for="color-scheme-select">Color by:</label>
+                <select id="color-scheme-select">
+                    <option value="driver_name">Driver Name</option>
+                    <option value="task_name">Task Name</option>
+                    <option value="sample_name">Sample Name</option>
+                    <option value="AL_campaign_name">AL Campaign</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="error-container" style="display: none;">
+            <div class="error-message">
+                <span id="error-text"></span>
+                <button id="error-close">&times;</button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading data...</div>
+        </div>
+
+        <!-- Gantt Chart Container -->
+        <div id="gantt-chart-container"></div>
+    </div>
+
+    <!-- Main Application JS -->
+    <script src="/static/tiled_browser_js/tiled_gantt.js"></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import pathlib,glob,os,datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 import lazy_loader as lazy
 cv2 = lazy.load("cv2", require="AFL-automation[vision]")
 from PIL import Image
@@ -168,12 +169,13 @@ class OpticalTurbidity(Driver):
             plt.savefig(pathlib.Path(self.config['save_path'])/f'{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-turbidity1.png')
 #             plt.show()
             plt.close(fig)
-        if self.data is not None:
-                self.data['located_center'] = [cx,cy]  
-                self.data['name'] = name 
-                self.data.add_array('turbidity',[turbidity_metric]) 
-        #returns the turbidity value in normalized units, the center of the circular mask and the radius as a list
-        return  turbidity_metric, [cx, cy]
+        # Create and return xarray Dataset
+        ds = xr.Dataset()
+        ds.attrs['located_center'] = [cx, cy]
+        ds.attrs['name'] = name
+        ds.attrs['turbidity_metric'] = turbidity_metric
+        ds['turbidity'] = ('turbidity', [turbidity_metric])
+        return ds
 
 
 

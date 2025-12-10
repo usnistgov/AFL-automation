@@ -354,3 +354,156 @@ def test_solvent_mass_property():
             solutes=["NaCl"],
         )
     assert solution.solvent_mass == 15 * units.g
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_solution_with_volume_fractions():
+    """Test creating solution with volume_fractions constructor parameter"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            volume_fractions={"H2O": 0.6, "Hexanes": 0.4},
+            total_volume="10 ml",
+        )
+    assert solution.volume == 10 * units.ml
+    assert np.isclose(solution.volume_fraction["H2O"], 0.6)
+    assert np.isclose(solution.volume_fraction["Hexanes"], 0.4)
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_solution_with_molarities():
+    """Test creating solution with molarities constructor parameter"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            volumes={"H2O": "10 ml"},
+            molarities={"NaCl": "100 mM"},
+            solutes=["NaCl"],
+        )
+    assert solution.volume == 10 * units.ml
+    np.testing.assert_allclose(
+        solution.molarity["NaCl"].to("mM").magnitude, 100, rtol=1e-3
+    )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_solution_with_molalities():
+    """Test creating solution with molalities constructor parameter"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            masses={"H2O": "1 kg"},
+            molalities={"NaCl": "1 mol/kg"},
+            solutes=["NaCl"],
+        )
+    # NaCl molality of 1 mol/kg means 1 mole of NaCl per kg of solvent (H2O)
+    # NaCl molar mass ~ 58.44 g/mol
+    np.testing.assert_allclose(
+        solution.molality["NaCl"].to("mol/kg").magnitude, 1.0, rtol=1e-3
+    )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_mass_fraction_remainder():
+    """Test using None for remainder calculation in mass_fractions"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            mass_fractions={"H2O": 0.8, "Hexanes": None},
+            total_mass="10 g",
+        )
+    assert solution.mass == 10 * units.g
+    np.testing.assert_allclose(solution.mass_fraction["H2O"].magnitude, 0.8, rtol=1e-9)
+    np.testing.assert_allclose(solution.mass_fraction["Hexanes"].magnitude, 0.2, rtol=1e-9)
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_volume_fraction_remainder():
+    """Test using None for remainder calculation in volume_fractions"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            volume_fractions={"H2O": 0.7, "Hexanes": None},
+            total_volume="10 ml",
+        )
+    assert solution.volume == 10 * units.ml
+    np.testing.assert_allclose(solution.volume_fraction["H2O"], 0.7, rtol=1e-9)
+    np.testing.assert_allclose(solution.volume_fraction["Hexanes"], 0.3, rtol=1e-9)
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_multiple_none_values_error():
+    """Test error when multiple None values are in fractions"""
+    with pytest.raises(ValueError, match="Only one component can have a None value"):
+        Solution(
+            name="TestSolution",
+            mass_fractions={"H2O": None, "Hexanes": None},
+            total_mass="10 g",
+        )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_fractions_sum_exceeds_one_error():
+    """Test error when fractions sum exceeds 1.0"""
+    with pytest.raises(ValueError, match="exceeds 1.0"):
+        Solution(
+            name="TestSolution",
+            mass_fractions={"H2O": 0.8, "Hexanes": 0.5},
+            total_mass="10 g",
+        )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_molalities_without_formula_error():
+    """Test error when setting molality for component without formula"""
+    with pytest.raises(ValueError, match="without a chemical formula"):
+        # Mystery_Solvent has no formula defined and its name can't be parsed as a formula
+        Solution(
+            name="TestSolution",
+            masses={"H2O": "1 kg"},
+            molalities={"Mystery_Solvent": "1 mol/kg"},
+            solutes=["Mystery_Solvent"],
+        )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_molality_property():
+    """Test the molality property getter"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            masses={"H2O": "1 kg", "NaCl": "58.44 g"},
+            solutes=["NaCl"],
+        )
+    # NaCl molar mass ~ 58.44 g/mol, so 58.44g = 1 mol
+    # Solvent mass is 1 kg, so molality = 1 mol/kg
+    np.testing.assert_allclose(
+        solution.molality["NaCl"].to("mol/kg").magnitude, 1.0, rtol=1e-2
+    )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_volume_fractions_without_volume_error():
+    """Test error when setting volume fractions without volume specified"""
+    with pytest.raises(ValueError, match="Cannot set volume_fraction"):
+        Solution(
+            name="TestSolution",
+            volume_fractions={"H2O": 0.5, "Hexanes": 0.5},
+        )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_molarities_without_volume_error():
+    """Test error when setting molarities without volume specified"""
+    with pytest.raises(ValueError, match="Cannot set molarities without"):
+        Solution(
+            name="TestSolution",
+            molarities={"NaCl": "100 mM"},
+            solutes=["NaCl"],
+        )

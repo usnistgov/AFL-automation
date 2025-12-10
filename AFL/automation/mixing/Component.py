@@ -5,7 +5,7 @@ import copy
 from pyparsing import ParseException
 from typing import Optional, Dict, Iterator, Tuple, Union
 
-from AFL.automation.shared.units import units, AVOGADROS_NUMBER, enforce_units  # type: ignore
+from AFL.automation.shared.units import units, AVOGADROS_NUMBER, enforce_units, to_quantity  # type: ignore
 from AFL.automation.shared.warnings import MixWarning
 
 
@@ -40,7 +40,7 @@ class Component:
         self._mass: Optional[units.Quantity] = enforce_units(mass, 'mass')
         self._volume: Optional[units.Quantity] = enforce_units(volume, 'volume')
         self._density: Optional[units.Quantity] = enforce_units(density, 'density')
-        self._sld: Optional[units.Quantity] = sld #need to add sld units
+        self._sld: Optional[units.Quantity] = to_quantity(sld) if sld is not None else None  # Convert string to Quantity if needed
 
         self.solute = solute
         if not self.solute and not self.has_density:

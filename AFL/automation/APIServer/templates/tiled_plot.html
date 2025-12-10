@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiled Plot Viewer</title>
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Slim Select for multi-select dropdown -->
+    <link href="https://cdn.jsdelivr.net/npm/slim-select@2.6.0/dist/slimselect.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/slim-select@2.6.0/dist/slimselect.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel='stylesheet' href='/static/tiled_browser_css/tiled_plot.css'>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header -->
+        <div id="header">
+            <div class="header-left">
+                <h1>Tiled Plot Viewer</h1>
+                <p class="dataset-count" id="dataset-count">Loading...</p>
+            </div>
+            <div class="header-right">
+                <button id="download-dataset-btn" class="header-button" disabled>
+                    Download Dataset
+                </button>
+                <div id="status-indicator" class="status-loading">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="error-container" style="display: none;">
+            <div class="error-message">
+                <span class="error-icon">&#9888;</span>
+                <span id="error-text"></span>
+                <button id="error-close">&times;</button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" style="display: none;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading data...</div>
+        </div>
+
+        <!-- Tab Container -->
+        <div id="tab-container">
+            <!-- Tab Header -->
+            <div class="tab-header">
+                <button class="tab-btn" data-tab="dataset">Dataset</button>
+                <button class="tab-btn active" data-tab="plot">Plot</button>
+            </div>
+
+            <!-- Tab 1: Dataset -->
+            <div id="dataset-tab" class="tab-content">
+                <div class="dataset-operations">
+                    <!-- Filtering Operations -->
+                    <div class="operation-group">
+                        <label for="sel-dim">Filter by:</label>
+                        <select id="sel-dim" class="control-select">
+                            <option value="">Select dimension...</option>
+                        </select>
+                        <input type="text" id="sel-value" class="control-input" placeholder="Value (e.g., 0, 0.75, 'T1')">
+                        <button id="apply-sel" class="secondary-button">Apply sel</button>
+                        <button id="apply-isel" class="secondary-button">Apply isel</button>
+                    </div>
+
+                    <!-- Combine Variables -->
+                    <div class="operation-group">
+                        <label>Combine Variables:</label>
+                        <input type="text" id="combined-var" class="control-input" placeholder="New variable name (e.g., 'comps')">
+                        <input type="text" id="to-combine" class="control-input" placeholder="Variables to combine (JSON array)">
+                        <button id="combine-vars" class="secondary-button">Combine Vars</button>
+                    </div>
+
+                    <!-- Extract Variable -->
+                    <div class="operation-group">
+                        <label>Extract Variable:</label>
+                        <select id="extract-from-var" class="control-select">
+                            <option value="">Select variable...</option>
+                        </select>
+                        <select id="extract-from-coord" class="control-select">
+                            <option value="">Select coordinate...</option>
+                        </select>
+                        <button id="extract-var" class="secondary-button">Extract Var</button>
+                    </div>
+
+                    <!-- Reset Dataset -->
+                    <div class="operation-group">
+                        <button id="reset-dataset" class="warning-button">Reset Dataset</button>
+                    </div>
+                </div>
+
+                <!-- Dataset Info Display -->
+                <div id="dataset-info-html">
+                    <h3>Dataset Information</h3>
+                    <div id="data-info-content">
+                        <p class="info-loading">Loading data information...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Plot (Default Active) -->
+            <div id="plot-tab" class="tab-content active">
+                <!-- Sample Dimension Selector -->
+                <div class="plot-top-controls">
+                    <div class="control-group">
+                        <label for="sample-dim-select">Sample Dimension:</label>
+                        <select id="sample-dim-select" class="control-select">
+                            <option value="index">index</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dual Plot Container -->
+                <div class="dual-plot-container">
+                    <div class="plot-section">
+                        <div class="plot-header">
+                            <h3>1D Data</h3>
+                        </div>
+                        <div class="plot-with-sidebar">
+                            <select id="scatter-vars" class="variable-sidebar" multiple>
+                                <option value="">Loading...</option>
+                            </select>
+                            <div id="scattering-plot" class="plot-widget"></div>
+                        </div>
+
+                        <!-- 1D Plot Settings -->
+                        <div class="plot-settings">
+                            <div class="settings-row">
+                                <label>X-axis Range:</label>
+                                <input type="number" id="xmin-config" class="control-input-small" value="0.001" step="0.001">
+                                <span>to</span>
+                                <input type="number" id="xmax-config" class="control-input-small" value="1.0" step="0.1">
+                            </div>
+                            <div class="settings-row">
+                                <div class="scale-toggle">
+                                    <input type="checkbox" id="logx-config" checked>
+                                    <label for="logx-config">Log X</label>
+                                </div>
+                                <div class="scale-toggle">
+                                    <input type="checkbox" id="logy-config" checked>
+                                    <label for="logy-config">Log Y</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="plot-section">
+                        <div class="plot-header">
+                            <h3>Composition</h3>
+                            <div class="composition-controls">
+                                <select id="composition-var" class="control-select">
+                                    <option value="">Select composition...</option>
+                                </select>
+                                <select id="composition-color" class="control-select">
+                                    <option value="">Color by...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="composition-plot" class="plot-widget"></div>
+
+                        <!-- Composition Plot Settings -->
+                        <div class="plot-settings">
+                            <div class="settings-row">
+                                <label for="colorscale-config">Colorscale:</label>
+                                <select id="colorscale-config" class="control-select">
+                                    <option value="Bluered">Bluered</option>
+                                    <option value="Viridis">Viridis</option>
+                                    <option value="Plasma">Plasma</option>
+                                    <option value="RdBu">RdBu</option>
+                                    <option value="Jet">Jet</option>
+                                </select>
+                            </div>
+                            <div class="settings-row">
+                                <label>Color Range:</label>
+                                <input type="number" id="cmin" class="control-input-small" value="0.0" step="0.01">
+                                <span>to</span>
+                                <input type="number" id="cmax" class="control-input-small" value="1.0" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Controls -->
+                <div class="plot-controls-bottom">
+                    <div class="nav-controls">
+                        <button id="prev-sample" class="nav-button">&#9664; Previous</button>
+                        <input type="number" id="data-index" class="index-input" value="0" min="0">
+                        <span id="index-display" class="index-display">/ 0</span>
+                        <button id="next-sample" class="nav-button">Next &#9654;</button>
+                    </div>
+                    <button id="update-plot" class="primary-button">Update Plots</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application JS -->
+    <script src="/static/tiled_browser_js/tiled_plot.js"></script>
+</body>
+</html>

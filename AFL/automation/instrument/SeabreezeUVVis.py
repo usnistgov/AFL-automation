@@ -1,6 +1,7 @@
 from AFL.automation.APIServer.Driver import Driver
 #from AFL.automation.instrument.Instrument import Instrument
 import numpy as np # for return types in get data
+import xarray as xr
 import lazy_loader as lazy
 seabreeze = lazy.load("seabreeze", require="AFL-automation[seabreeze]")
 import time
@@ -106,23 +107,22 @@ class SeabreezeUVVis(Driver):
 
         while datetime.datetime.now() < (start + duration):
             data.append(self.spectrometer.intensities(
-                        correct_dark_counts=self.config['correctDarkCounts'], 
+                        correct_dark_counts=self.config['correctDarkCounts'],
                         correct_nonlinearity=self.config['correctNonlinearity']))
             time.sleep(self.config['exposure_delay'])
-        
-        if self.data is not None:
-            self.data['mode'] = 'continuous'
-            self.data['wavelength'] = self.wl.tolist()
-            self.data.add_array('wavelength',self.wl.tolist())
-            self.data.add_array('spectra',data[0])
-           
+
+        # Create xarray Dataset
+        ds = xr.Dataset()
+        ds.attrs['mode'] = 'continuous'
+        ds['wavelength'] = ('wavelength', self.wl.tolist())
+        ds['spectra'] = ('wavelength', data[0])
+
         self._writedata(data)
 
         if not return_data:
-            data = f'data written to file: {self.config["filename"]}'
-            return data
+            return ds
         else:
-            return data
+            return ds
 
 
     @Driver.unqueued()
@@ -140,19 +140,21 @@ class SeabreezeUVVis(Driver):
         if self.config['saveSingleScan']:
             self._writedata(raw_data)
 
+        # Keep config writes (read from self.data)
         if set_reference:
             self.config['reference_uuid'] = copy.deepcopy(self.data['sample_uuid'])
 
         if set_air:
             self.config['air_uuid'] = copy.deepcopy(self.data['sample_uuid'])
-        
 
-        if self.data is not None:
-            self.data['mode'] = 'single'
-            self.data['wavelength'] = wl
-            self.data['reduced'] = False
-            self.data.add_array('wavelength',wl)
-            self.data.add_array('spectrum_raw',raw_data)
+        # Create xarray Dataset
+        ds = xr.Dataset()
+        ds.attrs['mode'] = 'single'
+        ds.attrs['reduced'] = False
+        ds['wavelength'] = ('wavelength', wl)
+        ds['spectrum_raw'] = ('wavelength', raw_data)
+
+        return ds
 
 
     def _writedata(self,data):
@@ -206,35 +208,31 @@ class SeabreezeUVVis(Driver):
         if self.config['saveSingleScan']:
             self._writedata(data_raw)
 
+        # Keep config writes (read from self.data)
         if set_reference:
             self.config['reference_uuid'] = copy.deepcopy(self.data['sample_uuid'])
 
         if set_air:
             self.config['air_uuid'] = copy.deepcopy(self.data['sample_uuid'])
-        
-        if self.data is not None:
-            self.data['mode'] = 'collect'
-            self.data['wavelength'] = wl
-            self.data['reference_uuid'] = self.config['reference_uuid']
-            self.data['air_uuid'] = self.config['air_uuid']
-            self.data['reduced'] = reduced
-            self.data['absorbance'] = absorbance
-            self.data['mean_air'] = mean_air
-            self.data['std_air'] = std_air
-            self.data.add_array('wavelength',wl)
-            self.data.add_array('all_spectra',data_raw)
-            self.data.add_array('spectrum_raw',data_raw_mean)
-            self.data.add_array('spectrum_raw_std',data_raw_std)
-            if reduced:
-                self.data.add_array('spectrum',data_mean)
-                self.data.add_array('spectrum_std',data_std)
 
+        # Create xarray Dataset
+        ds = xr.Dataset()
+        ds.attrs['mode'] = 'collect'
+        ds.attrs['reference_uuid'] = self.config['reference_uuid']
+        ds.attrs['air_uuid'] = self.config['air_uuid']
+        ds.attrs['reduced'] = reduced
+        ds.attrs['absorbance'] = absorbance
+        ds.attrs['mean_air'] = mean_air
+        ds.attrs['std_air'] = std_air
+        ds['wavelength'] = ('wavelength', wl)
+        ds['all_spectra'] = (['frame', 'wavelength'], data_raw)
+        ds['spectrum_raw'] = ('wavelength', data_raw_mean)
+        ds['spectrum_raw_std'] = ('wavelength', data_raw_std)
         if reduced:
-            data_out = [wl.tolist(),data_mean.tolist()] 
-        else:
-            data_out = [wl.tolist(),data_raw_mean.tolist()] 
-        if return_data:
-            return data_out
+            ds['spectrum'] = ('wavelength', data_mean)
+            ds['spectrum_std'] = ('wavelength', data_std)
+
+        return ds
 
     def reduced(self,data_raw_mean,data_raw_std,absorbance=True, reference_uuid='reference_uuid'):
         if self.data is None:

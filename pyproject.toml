@@ -36,7 +36,7 @@ dependencies = [
   "scipy",
   "xarray",
   "h5py",
-  "tiled",
+  "tiled[all]",
   
   # Visualization core
   "bokeh",
@@ -108,3 +108,9 @@ packages = ["AFL"]
 
 [tool.hatch.build.targets.sdist]
 packages = ["AFL"]
+
+[tool.afl]
+custom_labware_dir = "support/labware"
+
+[tool.setuptools]
+package-data = { "AFL.automation.driver_templates" = ["*.html"] }

@@ -5,6 +5,7 @@ import json
 import os
 
 import numpy as np  # for return types in get data
+import xarray as xr
 import h5py  # for Nexus file writing
 
 from AFL.automation.APIServer.Driver import Driver
@@ -371,6 +372,9 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
         self.client.clear_messages()
         time.sleep(15)
 
+        # Create xarray Dataset
+        ds = xr.Dataset()
+
         if reduce_data or save_nexus:
 
             data = self.getData()
@@ -378,18 +382,16 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
             if save_nexus:
                 self.status_txt = 'Writing Nexus'
                 normalized_sample_transmission = self.last_measured_transmission[0]
-                if self.data is not None:
-                    self.data.add_array('raw',data)
-                    self.data['normalized_sample_transmission'] = normalized_sample_transmission
+                ds.attrs['raw'] = data
+                ds.attrs['normalized_sample_transmission'] = normalized_sample_transmission
                 self._writeNexus(data, name, name, self.last_measured_transmission)
 
             if reduce_data:
                 self.status_txt = 'Reducing Data'
                 reduced = self.getReducedData(write_data=True, filename=name)
-                if self.data is not None:
-                    self.data['q'] = reduced[0]
-                    self.data.add_array('I', reduced[1])
-                    self.data.add_array('dI', reduced[2])
+                ds['q'] = ('q', reduced[0])
+                ds['I'] = ('q', reduced[1])
+                ds['dI'] = ('q', reduced[2])
                 np.savetxt(f'{name}_chosen_r1d.csv', np.transpose(reduced), delimiter=',')
 
                 normalized_sample_transmission = self.last_measured_transmission[0]
@@ -398,15 +400,14 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                 empty_cell_transmission = self.last_measured_transmission[3]
                 sample_transmission = normalized_sample_transmission * empty_cell_transmission
 
-                if self.data is not None:
-                    self.data['normalized_sample_transmission'] = normalized_sample_transmission
-                    self.data['open_flux'] = open_flux
-                    self.data['sample_flux'] = sample_flux
-                    self.data['empty_cell_transmission'] = empty_cell_transmission
-                    self.data['sample_transmission'] = sample_transmission
+                ds.attrs['normalized_sample_transmission'] = normalized_sample_transmission
+                ds.attrs['open_flux'] = open_flux
+                ds.attrs['sample_flux'] = sample_flux
+                ds.attrs['empty_cell_transmission'] = empty_cell_transmission
+                ds.attrs['sample_transmission'] = sample_transmission
 
-                    # for sample server
-                    self.data['transmission'] = normalized_sample_transmission
+                # for sample server
+                ds.attrs['transmission'] = normalized_sample_transmission
 
                 if save_nexus:
                     self._appendReducedToNexus(reduced, name, name)
@@ -423,6 +424,8 @@ class SINQSANS_NICOS(ScatteringInstrument, Driver):
                     json.dump(out, f)
 
             self.status_txt = 'Instrument Idle'
+
+        return ds
 
 
     def banana(self,xlo=40,xhi=80,ylo=40,yhi=80,measure=True):

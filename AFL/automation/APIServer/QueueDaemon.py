@@ -11,6 +11,7 @@ import json
 import pathlib
 import numpy as np
 import pandas as pd
+import xarray as xr
 from AFL.automation.shared.serialization import is_serialized
 from AFL.automation.APIServer.data.DataTrashcan import DataTrashcan
 
@@ -143,6 +144,8 @@ class QueueDaemon(threading.Thread):
                 masked_package['meta']['return_val'] = return_val.tolist()
             elif isinstance(return_val,pd.Series):
                 masked_package['meta']['return_val'] = return_val.tolist()
+            elif isinstance(return_val,xr.Dataset):
+                masked_package['meta']['return_val'] = 'xarray.Dataset'
             else:
                 masked_package['meta']['return_val'] = return_val
             masked_package['uuid'] = str(masked_package['uuid'])
@@ -153,9 +156,9 @@ class QueueDaemon(threading.Thread):
             # the following block names the return value a special name
             # so that DataTiled can store it as the main data element
 
-            if type(return_val) is np.ndarray:
-                self.data['main_array'] = return_val
-            if type(return_val) is np.ndarray:
+            if isinstance(return_val, xr.Dataset):
+                self.data['main_dataset'] = return_val
+            elif type(return_val) is np.ndarray:
                 self.data['main_array'] = return_val
             elif type(return_val) is pd.DataFrame:
                 self.data['main_dataframe'] = return_val

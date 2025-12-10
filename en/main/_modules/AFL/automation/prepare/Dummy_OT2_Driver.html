@@ -405,8 +405,9 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.prepare.Dummy_OT2_Driver</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> 
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
 
 
@@ -462,7 +463,7 @@
         <span class="s1">&#39;mount&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Which Pipet left/right/both&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="s1">&#39;both&#39;</span><span class="p">},</span>
         <span class="p">}})</span>
     <span class="k">def</span> <span class="nf">reset_tipracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">mount</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called reset tipracks&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Called reset tipracks&#39;</span><span class="p">)</span></div>
 
                 
 
@@ -471,7 +472,7 @@
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Home&#39;</span><span class="p">,</span>
         <span class="p">})</span>
     <span class="k">def</span> <span class="nf">home</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Homing robot&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Homing robot&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.parse_well">
@@ -501,88 +502,88 @@
 <div class="viewcode-block" id="Dummy_OT2_Driver.get_labware">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.get_labware">[docs]</a>
     <span class="k">def</span> <span class="nf">get_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">slot</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Getting labware from slot </span><span class="se">\&#39;</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Getting labware from slot </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.load_labware">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.load_labware">[docs]</a>
     <span class="k">def</span> <span class="nf">load_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">slot</span><span class="p">,</span><span class="n">module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loading labware </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> into slot </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loading labware </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> into slot </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
         
 <div class="viewcode-block" id="Dummy_OT2_Driver.set_temp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.set_temp">[docs]</a>
     <span class="k">def</span> <span class="nf">set_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">slot</span><span class="p">,</span><span class="n">temp</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Set the temperature of a tempdeck in slot slot&#39;&#39;&#39;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called set_temp with slot=</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s1"> and temp=</span><span class="si">{</span><span class="n">temp</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called set_temp with slot=</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s1"> and temp=</span><span class="si">{</span><span class="n">temp</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
     
 <div class="viewcode-block" id="Dummy_OT2_Driver.get_temp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.get_temp">[docs]</a>
     <span class="k">def</span> <span class="nf">get_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">slot</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Get the temperature of a tempdeck in slot slot&#39;&#39;&#39;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called get_temp with slot=</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called get_temp with slot=</span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.deactivate_temp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.deactivate_temp">[docs]</a>
     <span class="k">def</span> <span class="nf">deactivate_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">slot</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Disablea tempdeck in slot slot&#39;&#39;&#39;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called deactivate_temp&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Called deactivate_temp&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.set_shake">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.set_shake">[docs]</a>
     <span class="k">def</span> <span class="nf">set_shake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rpm</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called set_shake with rpm=</span><span class="si">{</span><span class="n">rpm</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called set_shake with rpm=</span><span class="si">{</span><span class="n">rpm</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.stop_shake">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.stop_shake">[docs]</a>
     <span class="k">def</span> <span class="nf">stop_shake</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called stop_shake&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Called stop_shake&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.set_shaker_temp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.set_shaker_temp">[docs]</a>
     <span class="k">def</span> <span class="nf">set_shaker_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">temp</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called set_shaker_temp with temp=</span><span class="si">{</span><span class="n">temp</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called set_shaker_temp with temp=</span><span class="si">{</span><span class="n">temp</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.unlatch_shaker">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.unlatch_shaker">[docs]</a>
     <span class="k">def</span> <span class="nf">unlatch_shaker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called latch_shaker&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Called latch_shaker&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.latch_shaker">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.latch_shaker">[docs]</a>
     <span class="k">def</span> <span class="nf">latch_shaker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called latch_shaker&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Called latch_shaker&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.get_shaker_temp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.get_shaker_temp">[docs]</a>
     <span class="k">def</span> <span class="nf">get_shaker_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called get_shake_temp&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Called get_shake_temp&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.get_shake_rpm">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.get_shake_rpm">[docs]</a>
     <span class="k">def</span> <span class="nf">get_shake_rpm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called get_shake_rpm&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Called get_shake_rpm&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.get_shake_latch_status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.get_shake_latch_status">[docs]</a>
     <span class="k">def</span> <span class="nf">get_shake_latch_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Called get_shake_latch_status&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Called get_shake_latch_status&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.load_instrument">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.load_instrument">[docs]</a>
     <span class="k">def</span> <span class="nf">load_instrument</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">mount</span><span class="p">,</span><span class="n">tip_rack_slots</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loading instrument </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> into </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s1"> with tip_racks=</span><span class="si">{</span><span class="n">tip_rack_slots</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loading instrument </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> into </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s1"> with tip_racks=</span><span class="si">{</span><span class="n">tip_rack_slots</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.transfer">
@@ -594,26 +595,26 @@
         <span class="s1">&#39;volume&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Volume (uL)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mi">300</span><span class="p">}</span>
         <span class="p">}})</span>
     <span class="k">def</span> <span class="nf">transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">source</span><span class="p">,</span><span class="n">dest</span><span class="p">,</span><span class="n">volume</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Transferring from </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s1"> uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s1"> with kwargs: </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Transferring </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s1"> uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s1"> with kwargs: </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
     
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.set_aspirate_rate">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.set_aspirate_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">set_aspirate_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rate</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting aspirate rate to </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting aspirate rate to </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.set_dispense_rate">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.set_dispense_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">set_dispense_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rate</span><span class="o">=</span><span class="mi">300</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting dispense rate to </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting dispense rate to </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Dummy_OT2_Driver.set_gantry_speed">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver.set_gantry_speed">[docs]</a>
     <span class="k">def</span> <span class="nf">set_gantry_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting gantry speed to </span><span class="si">{</span><span class="n">speed</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting gantry speed to </span><span class="si">{</span><span class="n">speed</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 </div>
 
 

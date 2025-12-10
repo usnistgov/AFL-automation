@@ -415,6 +415,7 @@
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
@@ -606,7 +607,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sample_composition_tol&#39;</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;self.config[&#39;sample_composition_tol&#39;] must be a number&quot;</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Configuration validation passed successfully.&quot;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Configuration validation passed successfully.&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SampleDriver.validate_config_grid">
@@ -675,7 +676,7 @@
                 <span class="k">if</span> <span class="n">missing_data_keys</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Instrument </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, data item </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2"> is missing the following required keys: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_data_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Grid configuration validation passed successfully.&quot;</span><span class="p">)</span></div>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Grid configuration validation passed successfully.&quot;</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
@@ -948,7 +949,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">AL_campaign_name</span> <span class="o">=</span> <span class="n">AL_campaign_name</span>
        
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Composition: </span><span class="si">{</span><span class="n">composition</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Composition: </span><span class="si">{</span><span class="n">composition</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">composition</span><span class="p">:</span> <span class="c1"># composition is not empty</span>
             <span class="n">prep_protocol</span><span class="p">,</span> <span class="n">catch_protocol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_prep_protocol</span><span class="p">(</span>
                 <span class="n">composition</span> <span class="o">=</span> <span class="n">composition</span><span class="p">,</span>
@@ -1088,7 +1089,7 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">fixed_concs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">mass_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">comp</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="n">comp</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">sample_volume</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mg&#39;</span><span class="p">)</span>
 
-            <span class="nb">print</span><span class="p">(</span><span class="n">mass_dict</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mass_dict</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">mfrac_split</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">split_component</span><span class="p">,</span> <span class="n">split_def</span> <span class="ow">in</span> <span class="n">mfrac_split</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1395,8 +1396,8 @@
                     <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">values</span> <span class="ow">in</span> <span class="n">instrument</span><span class="p">[</span><span class="s1">&#39;sample_env&#39;</span><span class="p">][</span><span class="s1">&#39;move_swept_kw&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                         <span class="n">measurement</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">instrument</span><span class="p">[</span><span class="s1">&#39;sample_dim&#39;</span><span class="p">],</span><span class="n">values</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">new_data</span><span class="p">[</span><span class="n">instrument_data</span><span class="p">[</span><span class="s1">&#39;data_name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">measurement</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_data</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_data</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_data</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_data</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
 
                     <span class="n">tiled_data</span> <span class="o">=</span> <span class="n">tiled_result</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>

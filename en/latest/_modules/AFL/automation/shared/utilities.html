@@ -407,12 +407,13 @@
   <h1>Source code for AFL.automation.shared.utilities</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">types</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared.units</span> <span class="kn">import</span> <span class="n">has_units</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;importing Matplotlib failed, do you want plotting to work?&#39;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;importing Matplotlib failed, do you want plotting to work?&#39;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">io</span>
 
 
@@ -429,13 +430,6 @@
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="n">obj</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">obj</span></div>
-
-
-<div class="viewcode-block" id="tprint">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.utilities.html#AFL.automation.shared.utilities.tprint">[docs]</a>
-<span class="k">def</span> <span class="nf">tprint</span><span class="p">(</span><span class="n">in_str</span><span class="p">):</span>
-    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%y%m</span><span class="si">%d</span><span class="s1">-%H:%M:%S&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[</span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="s1">] </span><span class="si">{</span><span class="n">in_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
     
 <div class="viewcode-block" id="makeRegistar">

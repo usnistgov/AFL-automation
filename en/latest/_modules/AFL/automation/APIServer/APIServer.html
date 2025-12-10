@@ -485,6 +485,7 @@
         <span class="c1">#allows the flask server to find the static and templates directories</span>
         <span class="n">root_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">root_path</span><span class="o">=</span><span class="n">root_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_logging</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;JWT_SECRET_KEY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;03570&#39;</span> <span class="c1">#hide the secret?</span>
@@ -556,7 +557,8 @@
          <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zeroconf</span> <span class="o">=</span> <span class="n">Zeroconf</span><span class="p">(</span><span class="n">ip_version</span><span class="o">=</span><span class="n">IPVersion</span><span class="o">.</span><span class="n">All</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zeroconf</span><span class="o">.</span><span class="n">register_service</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zeroconf_info</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Started mDNS service advertisement.&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Started mDNS service advertisement.&quot;</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="APIServer.run">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.run">[docs]</a>
@@ -567,7 +569,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">advertise_zeroconf</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;failed while trying to start zeroconf </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">, continuing&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;failed while trying to start zeroconf </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">, continuing&#39;</span><span class="p">)</span>
         <span class="c1"># before_first_request was removed in Flask &gt;=3.0, so run init here</span>
         <span class="c1"># to start the queue daemon before the server begins serving.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
@@ -738,14 +740,14 @@
 <div class="viewcode-block" id="APIServer.add_unqueued_routes">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.add_unqueued_routes">[docs]</a>
     <span class="k">def</span> <span class="nf">add_unqueued_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Adding unqueued routes&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Adding unqueued routes&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">unqueued</span><span class="o">.</span><span class="n">functions</span><span class="p">:</span>
             <span class="n">route</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">fn</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">fn</span>
             <span class="n">kwarg_add</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">unqueued</span><span class="o">.</span><span class="n">decorator_kwargs</span><span class="p">[</span><span class="n">fn</span><span class="p">]</span>
             <span class="n">response_function</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">response_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">fn</span><span class="o">=</span><span class="n">fn</span><span class="p">,</span><span class="n">kwarg_add</span><span class="o">=</span><span class="n">kwarg_add</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_unqueued</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span><span class="n">fn</span><span class="p">),</span><span class="n">kwarg_add</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Adding route </span><span class="si">{</span><span class="n">route</span><span class="si">}</span><span class="s1"> for function named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> with baked-in kwargs </span><span class="si">{</span><span class="n">kwarg_add</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Adding route </span><span class="si">{</span><span class="n">route</span><span class="si">}</span><span class="s1"> for function named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> with baked-in kwargs </span><span class="si">{</span><span class="n">kwarg_add</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="n">route</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">response_function</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span></div>
 
 
@@ -1028,7 +1030,7 @@
         <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
         <span class="n">user</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;obj&#39;</span><span class="p">]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;deposit_obj called&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="s1">&#39;uuid&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">uid</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1128,7 +1130,7 @@
         <span class="n">reordered_queue</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>
         <span class="n">matches</span> <span class="o">=</span> <span class="kc">True</span>
         
-        <span class="nb">print</span><span class="p">(</span><span class="n">prior_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">prior_state</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">prior_state</span> <span class="o">!=</span> <span class="s1">&#39;Paused&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting queue paused state to true&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">paused</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1142,15 +1144,15 @@
                 <span class="k">if</span> <span class="n">rq_task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">q_task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]):</span>
                     <span class="n">task_found</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="n">temp_queue</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">q_task</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;found&#39;</span><span class="p">,</span> <span class="n">rq_task</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;found </span><span class="si">{</span><span class="n">rq_task</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">task_found</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
                 <span class="n">matches</span> <span class="o">=</span> <span class="kc">False</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;failed&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;failed&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="s1">&#39;Failed&#39;</span><span class="p">,</span><span class="mi">400</span>
         <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;matched&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;matched&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="n">temp_queue</span>
-            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span><span class="p">)</span>
             
         <span class="k">if</span> <span class="n">prior_state</span> <span class="o">!=</span> <span class="s1">&#39;Paused&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting queue paused state to false&#39;</span><span class="p">)</span>
@@ -1165,7 +1167,7 @@
     <span class="k">def</span> <span class="nf">remove_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">items</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;remove&#39;</span><span class="p">,</span> <span class="n">items</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;remove </span><span class="si">{</span><span class="n">items</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">uuid</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_to_qpos</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
         <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>

@@ -408,7 +408,9 @@
 <span></span><span class="kn">from</span> <span class="nn">AFL.automation.shared.utilities</span> <span class="kn">import</span> <span class="n">listify</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared.PersistentConfig</span> <span class="kn">import</span> <span class="n">PersistentConfig</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared</span> <span class="kn">import</span> <span class="n">serialization</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">sqrt</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span><span class="n">sqrt</span>
+<span class="kn">import</span> <span class="nn">inspect</span> 
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
@@ -472,6 +474,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dropbox</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;Driver&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tiled_client</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Cached Tiled client</span>
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -494,9 +498,44 @@
             <span class="n">defaults</span><span class="o">=</span> <span class="n">defaults</span><span class="p">,</span>
             <span class="n">overrides</span><span class="o">=</span> <span class="n">overrides</span><span class="p">,</span>
             <span class="p">)</span>
-
+        
         <span class="c1"># collect inherited static directories</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">static_dirs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gather_static_dirs</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;logger&#39;</span><span class="p">):</span>
+            <span class="n">log_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">log_func</span><span class="p">:</span>
+                <span class="n">log_func</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">log_func</span><span class="p">:</span>
+                <span class="n">log_func</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Driver.log_info">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.log_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Driver.log_error">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.log_error">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Driver.log_debug">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.log_debug">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Driver.log_warning">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.log_warning">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;warning&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="Driver.gather_defaults">
@@ -572,7 +611,7 @@
 
         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">print_console</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s1">30s</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s1">30s</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">value</span></div>
 
@@ -592,7 +631,7 @@
         <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
         <span class="k">if</span> <span class="n">print_console</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s1">30s</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s1">30s</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">config</span></div>
 
 

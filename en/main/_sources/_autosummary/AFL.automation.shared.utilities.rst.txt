@@ -12,6 +12,5 @@ AFL.automation.shared.utilities
       listify
       makeRegistar
       mpl_plot_to_bytes
-      tprint
       xarray_to_bytes
    

@@ -406,6 +406,7 @@
                   
   <h1>Source code for AFL.automation.APIServer.Client</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">requests</span><span class="o">,</span><span class="nn">uuid</span><span class="o">,</span><span class="nn">time</span><span class="o">,</span><span class="nn">copy</span><span class="o">,</span><span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared</span> <span class="kn">import</span> <span class="n">serialization</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">AFL.automation.shared.ServerDiscovery</span> <span class="kn">import</span> <span class="n">ServerDiscovery</span>
@@ -469,7 +470,7 @@
         <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
 
@@ -645,7 +646,7 @@
         <span class="k">if</span> <span class="n">interactive</span><span class="p">:</span>
             <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">target_uuid</span><span class="o">=</span><span class="n">task_uuid</span><span class="p">,</span><span class="n">first_check_delay</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;exit_state&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Error!&#39;</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;return_val&#39;</span><span class="p">])</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;return_val&#39;</span><span class="p">])</span>
             <span class="k">return</span> <span class="n">meta</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">task_uuid</span></div>

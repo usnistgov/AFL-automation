@@ -1,0 +1,14 @@
+AFL.automation.prepare.OT2Client
+================================
+
+.. automodule:: AFL.automation.prepare.OT2Client
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Client
+      OT2Client
+      PipetteAction
+   

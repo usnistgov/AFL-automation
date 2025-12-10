@@ -1,5 +1,7 @@
 import requests
 import time
+import logging
+
 import json
 import tomllib
 from pathlib import Path
@@ -74,6 +76,7 @@ class OT2HTTPDriver(Driver):
 
 
         self.useful_links['View Deck'] = '/visualize_deck'
+
 
     def _log(self, level, message):
         """Safe logging that checks if app exists before logging"""
@@ -811,7 +814,7 @@ class OT2HTTPDriver(Driver):
             self._check_cmd_success(response)
             # Get the pipette ID from the response
             response_data = response.json()
-            print(f'loadPipette response: {response_data}')
+            logging.debug(f'loadPipette response: {response_data}')
 
             pipette_id = response_data["data"]["result"]["pipetteId"]
 
@@ -1707,7 +1710,7 @@ class OT2HTTPDriver(Driver):
             if not heater_shaker_module:
                 self.log_error("No heater-shaker module found")
                 return "No heater-shaker module found"
-            print(heater_shaker_module)
+            logging.debug(heater_shaker_module)
             current_temp = heater_shaker_module.get("data", {}).get("currentTemp")
             target_temp = heater_shaker_module.get("data", {}).get("targetTemp")
             self.log_info(

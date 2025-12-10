@@ -1,4 +1,5 @@
 import requests,uuid,time,copy,inspect
+import logging
 from AFL.automation.shared import serialization
 try:
     from AFL.automation.shared.ServerDiscovery import ServerDiscovery
@@ -52,7 +53,7 @@ class Client:
         if response.status_code == 200:
             return True
         else:
-            print(response.content)
+            logging.error(response.content)
             return False
 
     def login(self,username,populate_commands=True):
@@ -195,7 +196,7 @@ class Client:
         if interactive:
             meta = self.wait(target_uuid=task_uuid,first_check_delay=0.5)
             if meta['exit_state']=='Error!':
-                print(meta['return_val'])
+                logging.error(meta['return_val'])
             return meta
         else:
             return task_uuid

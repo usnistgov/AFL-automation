@@ -5,6 +5,7 @@ import json
 import os
 import copy
 import numpy as np  # for return types in get data
+import xarray as xr
 import h5py  # for Nexus file writing
 from epics import caget, caput, cainfo
 
@@ -283,19 +284,20 @@ class BioSANS(Driver):
         self._simple_expose(exposure=exposure, name=name, exposure_type=exposure_type, block=block)
         time.sleep(15)
 
-        if self.data is not None:
-            data = self.readFileSafely(self._readLastReducedFile)
-            transmission = self.readFileSafely(self._readLastTransmission)
+        # Read data and create xarray Dataset
+        data = self.readFileSafely(self._readLastReducedFile)
+        transmission = self.readFileSafely(self._readLastTransmission)
 
-            self.data.add_array('I',data['I'])
-            self.data.add_array('dI',data['dI'])
-            self.data.add_array('dQ',data['dQ'])
-            self.data.add_array('q',data['q'])
-            self.data['q'] = data['q']
-            self.data['sample_transmission'] = transmission
-
+        ds = xr.Dataset()
+        ds['q'] = ('q', data['q'])
+        ds['I'] = ('q', data['I'])
+        ds['dI'] = ('q', data['dI'])
+        ds['dQ'] = ('q', data['dQ'])
+        ds.attrs['sample_transmission'] = transmission
 
         self.status_txt = 'Instrument Idle'
+
+        return ds
 
 
     def status(self):

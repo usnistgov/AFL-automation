@@ -109,29 +109,37 @@ class VirtualSpec_data(Driver):
             mean, var, idx = self.sg.predict(X_new=X, gplist=gplist)
         else:
             mean, var = self.sg.predict(X_new=X)
-        self.data['model_mu'], self.data['model_var'] = mean.squeeze(), var.squeeze()  
+
+        # Create xarray Dataset
+        ds = xr.Dataset()
+        model_mu = mean.squeeze()
+        model_var = var.squeeze()
+        ds.attrs['model_mu'] = model_mu
+        ds.attrs['model_var'] = model_var
+
         data_pointers = self.sg.get_defaults()
         print(data_pointers['Y_data_coord'])
         if self.clustered:
-            self.data[data_pointers['Y_data_coord']] = self.sg.independentGPs[0].Y_coord.values
+            Y_coord = self.sg.independentGPs[0].Y_coord.values
         else:
             try:
-                self.data[data_pointers['Y_data_coord']] = self.sg.Y_coord.values
+                Y_coord = self.sg.Y_coord.values
             except:
-                pass
-        self.data['X_*'] = X
-        self.data['components'] = components
-        
-        ### store just the predicted mean for now...
-        data = self.data['model_mu'] 
-        
-        self.data['main_array'] = self.data['model_mu']
-        print(self.data['main_array'].shape)
+                Y_coord = None
 
-        
+        if Y_coord is not None:
+            ds.attrs[data_pointers['Y_data_coord']] = Y_coord
+
+        ds.attrs['X_*'] = X
+        ds.attrs['components'] = components
+        ds.attrs['main_array'] = model_mu
+        print(ds.attrs['main_array'].shape)
+
         ### write out the data to disk as a csv or h5?
         if write_data:
-            self._writedata(data)
+            self._writedata(model_mu)
+
+        return ds
 
 
     def status(self):

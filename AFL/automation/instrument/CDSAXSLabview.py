@@ -9,6 +9,7 @@ import datetime
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.instrument.ScatteringInstrument import ScatteringInstrument
 import numpy as np # for return types in get data
+import xarray as xr
 import h5py #for Nexus file writing
 import os
 import scipy.ndimage as ndi
@@ -437,22 +438,30 @@ class CDSAXSLabview(ScatteringInstrument,Driver):
                 if self.config['empty_filename'] is not None:
                     empty_data = pd.read_csv(self.config['empty_filename'],comment='#',header=None,delim_whitespace=True)
                     empty_data.columns = ['q','I']
-                    self.data.add_array('raw_I',reduced[1])
+                    raw_I = reduced[1].copy()
                     reduced[1] = reduced[1] - empty_data.I
                 else:
                     self.app.logger.error('Asked for subtracted data, but no empty filename set.  Returning UNSUBTRACTED DATA.')
+                    raw_I = None
+            else:
+                raw_I = None
+
             print(np.shape(reduced))
-            self.data['q'] = reduced[0]
-            self.data['filename'] = name
-            self.data['transmission'] = transmission[0]
-            self.data['open_direct_beam_cts'] = transmission[1]
-            self.data['sample_direct_beam_cts'] = transmission[2]
-            self.data['empty_cell_transmission'] = transmission[3]
-            self.data.add_array('q',reduced[0])
-            self.data.add_array('I',reduced[1])
-            #self.data.add_array('dI',reduced[2])
-            
-            return transmission
+
+            # Create and return xarray Dataset
+            ds = xr.Dataset()
+            ds.attrs['filename'] = name
+            ds.attrs['transmission'] = transmission[0]
+            ds.attrs['open_direct_beam_cts'] = transmission[1]
+            ds.attrs['sample_direct_beam_cts'] = transmission[2]
+            ds.attrs['empty_cell_transmission'] = transmission[3]
+            ds['q'] = ('q', reduced[0])
+            ds['I'] = ('q', reduced[1])
+            if raw_I is not None:
+                ds['raw_I'] = ('q', raw_I)
+            #ds['dI'] = ('q', reduced[2])
+
+            return ds
             
     def scan(self,axis,npts,start,step,name=None,exposure=None,block=False):
         if name is not None:

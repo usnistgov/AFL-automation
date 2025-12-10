@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiled Database Browser</title>
+
+    <!-- AG Grid CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-theme-alpine.css">
+
+    <!-- Custom CSS -->
+    <link rel='stylesheet' href='/static/tiled_browser_css/tiled_browser.css'>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header -->
+        <div id="header">
+            <h1>Tiled Database Browser</h1>
+            <div id="connection-status" class="status-disconnected">
+                <span class="status-indicator"></span>
+                <span class="status-text">Not Connected</span>
+            </div>
+        </div>
+
+        <!-- Search and Controls -->
+        <div id="controls">
+            <!-- Tab Navigation -->
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="filters">Quick Filters</button>
+                    <button class="tab-button" data-tab="advanced">Advanced Search</button>
+                </div>
+
+                <!-- Filters Tab -->
+                <div id="filters-tab" class="tab-content active">
+                    <div id="filter-selects">
+                        <div class="filter-group">
+                            <label for="filter-driver-name">Driver Name:</label>
+                            <div class="multiselect-container">
+                                <div class="multiselect-search-box" data-filter="driver_name">
+                                    <input type="text" class="multiselect-search" placeholder="Search and select...">
+                                    <div class="multiselect-tags"></div>
+                                </div>
+                                <div class="multiselect-dropdown" style="display: none;">
+                                    <div class="multiselect-options"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-sample-name">Sample Name:</label>
+                            <div class="multiselect-container">
+                                <div class="multiselect-search-box" data-filter="sample_name">
+                                    <input type="text" class="multiselect-search" placeholder="Search and select...">
+                                    <div class="multiselect-tags"></div>
+                                </div>
+                                <div class="multiselect-dropdown" style="display: none;">
+                                    <div class="multiselect-options"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-sample-uuid">Sample UUID:</label>
+                            <div class="multiselect-container">
+                                <div class="multiselect-search-box" data-filter="sample_uuid">
+                                    <input type="text" class="multiselect-search" placeholder="Search and select...">
+                                    <div class="multiselect-tags"></div>
+                                </div>
+                                <div class="multiselect-dropdown" style="display: none;">
+                                    <div class="multiselect-options"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-al-campaign">AL Campaign:</label>
+                            <div class="multiselect-container">
+                                <div class="multiselect-search-box" data-filter="AL_campaign_name">
+                                    <input type="text" class="multiselect-search" placeholder="Search and select...">
+                                    <div class="multiselect-tags"></div>
+                                </div>
+                                <div class="multiselect-dropdown" style="display: none;">
+                                    <div class="multiselect-options"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-al-uuid">AL UUID:</label>
+                            <div class="multiselect-container">
+                                <div class="multiselect-search-box" data-filter="AL_uuid">
+                                    <input type="text" class="multiselect-search" placeholder="Search and select...">
+                                    <div class="multiselect-tags"></div>
+                                </div>
+                                <div class="multiselect-dropdown" style="display: none;">
+                                    <div class="multiselect-options"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="filter-buttons">
+                        <button id="apply-filters-button">Apply Filters</button>
+                        <button id="clear-filters-button">Clear Filters</button>
+                    </div>
+                </div>
+
+                <!-- Advanced Search Tab -->
+                <div id="advanced-tab" class="tab-content">
+                    <div id="query-rows"></div>
+                    <div id="search-buttons">
+                        <button id="add-query-button">+ Add Query</button>
+                        <button id="search-button">Search</button>
+                        <button id="clear-search-button">Clear All</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="info-bar">
+                <span id="total-count">Total: 0 entries</span>
+                <div id="selection-controls">
+                    <button id="refresh-button" title="Refresh data while keeping filters">&#x21bb; Refresh</button>
+                    <button id="select-all-button">Select All</button>
+                    <button id="copy-entry-id-button" disabled>Copy Entry ID</button>
+                    <button id="copy-sample-uuid-button" disabled>Copy Sample UUID</button>
+                    <button id="plot-selected-btn" disabled>Plot Selected</button>
+                    <button id="gantt-selected-btn" disabled>Gantt Selected</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="error-container" style="display: none;">
+            <div class="error-message">
+                <span class="error-icon">&#9888;</span>
+                <span id="error-text"></span>
+                <button id="error-close">&times;</button>
+            </div>
+        </div>
+
+        <!-- AG Grid Container -->
+        <div id="grid-container" class="ag-theme-alpine">
+            <div id="loading-overlay">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading Tiled data...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Modal -->
+    <div id="data-modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Dataset View</h3>
+                <button class="modal-close" id="data-modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="data-modal-body">
+                <!-- xarray HTML repr will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Metadata Modal -->
+    <div id="metadata-modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Metadata View</h3>
+                <button class="modal-close" id="metadata-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre id="metadata-modal-body"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- AG Grid JS -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
+
+    <!-- Main Application JS -->
+    <script src="/static/tiled_browser_js/tiled_browser.js"></script>
+</body>
+</html>

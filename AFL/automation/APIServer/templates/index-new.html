@@ -156,12 +156,13 @@
 
         <div id="driver_status" class="overflow"></div>
         {% if useful_links %}
-        <div id="useful_links" class="element status">
-            <ul>
+        <div id="useful_links" style="margin-top: 20px;">
+            <h4 style="margin-bottom: 10px;">Quick Links</h4>
+            <div class="button_row">
             {% for text, url in useful_links.items() %}
-                <li class="element status"><a href="{{ url|safe }}" target="_blank">{{ text }}</a></li>
+                <button class="button" onclick="window.open('{{ url|safe }}', '_blank')" style="background-color: #2980b9;">{{ text }}</button>
             {% endfor %}
-            </ul>
+            </div>
         </div>
         {% endif %}
         <div id="quickbar-commands" class="command-container"></div>

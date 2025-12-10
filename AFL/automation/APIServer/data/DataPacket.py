@@ -4,6 +4,9 @@ from collections.abc import MutableMapping
 import numpy as np
 import pandas as pd
 
+# Maximum number of elements in a list/array before it gets condensed to a summary string in metadata
+METADATA_ARRAY_LENGTH_CUTOFF = 25
+
 
 class DataPacket(MutableMapping):
     '''
@@ -94,13 +97,19 @@ class DataPacket(MutableMapping):
             
             if isinstance(to_sanitize[key], (list, tuple)):
                 # print(f'Sanitized list/tuple {key}')
-                output_dict[key] = list(to_sanitize[key])
+                if len(to_sanitize[key]) > METADATA_ARRAY_LENGTH_CUTOFF:
+                    output_dict[key] = f"<{type(to_sanitize[key]).__name__} of {len(to_sanitize[key])} elements>"
+                else:
+                    output_dict[key] = list(to_sanitize[key])
             elif isinstance(to_sanitize[key], (int, float, str, bool)):
                 # print(f'No need to sanitize primitive {key}')
                 pass
             elif isinstance(to_sanitize[key], np.ndarray):
                 # print(f'Sanitized ndarray {key}')
-                output_dict[key] = to_sanitize[key].tolist()
+                if to_sanitize[key].size > METADATA_ARRAY_LENGTH_CUTOFF:
+                    output_dict[key] = f"<ndarray of shape {to_sanitize[key].shape}, dtype {to_sanitize[key].dtype}>"
+                else:
+                    output_dict[key] = to_sanitize[key].tolist()
             elif isinstance(to_sanitize[key], pd.DataFrame):
                 # print(f'Sanitized dataframe {key}')
                 output_dict[key] = to_sanitize[key].tojson()

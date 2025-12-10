@@ -9,8 +9,11 @@ AFL.automation.APIServer.Driver
    .. autosummary::
    
       ceil
+      from_uri
+      jsonify
       listify
       makeRegistrar
+      render_template
       sqrt
    
    .. rubric:: Classes

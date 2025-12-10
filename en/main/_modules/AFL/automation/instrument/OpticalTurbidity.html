@@ -408,6 +408,7 @@
 <span></span><span class="kn">import</span> <span class="nn">pathlib</span><span class="o">,</span><span class="nn">glob</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">import</span> <span class="nn">lazy_loader</span> <span class="k">as</span> <span class="nn">lazy</span>
 <span class="n">cv2</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;cv2&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[vision]&quot;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
@@ -582,12 +583,13 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">])</span><span class="o">/</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">-turbidity1.png&#39;</span><span class="p">)</span>
 <span class="c1">#             plt.show()</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;located_center&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">cx</span><span class="p">,</span><span class="n">cy</span><span class="p">]</span>  
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span> 
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;turbidity&#39;</span><span class="p">,[</span><span class="n">turbidity_metric</span><span class="p">])</span> 
-        <span class="c1">#returns the turbidity value in normalized units, the center of the circular mask and the radius as a list</span>
-        <span class="k">return</span>  <span class="n">turbidity_metric</span><span class="p">,</span> <span class="p">[</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">]</span></div>
+        <span class="c1"># Create and return xarray Dataset</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;located_center&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">]</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;turbidity_metric&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">turbidity_metric</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;turbidity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;turbidity&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">turbidity_metric</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">ds</span></div>
 </div>
 
 
@@ -658,7 +660,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

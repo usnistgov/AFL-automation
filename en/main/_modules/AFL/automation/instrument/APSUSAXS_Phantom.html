@@ -407,6 +407,7 @@
   <h1>Source code for AFL.automation.instrument.APSUSAXS_Phantom</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.instrument.APSUSAXS</span> <span class="kn">import</span> <span class="n">APSUSAXS</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
 
@@ -481,29 +482,30 @@
         <span class="c1"># USAXS q range approx 1e-4 to 1e-1</span>
         <span class="c1"># SAXS q range approx 1e-2 to 1.0</span>
         
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;USAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/tmp/phantom/usaxs&#39;</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;USAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">.h5&#39;</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;USAXS_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;USAXS_blank&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_blank</span>
         <span class="k">if</span> <span class="n">read_USAXS</span><span class="p">:</span>
             <span class="n">q_usaxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">1e-1</span><span class="p">),</span> <span class="mi">200</span><span class="p">)</span>
             <span class="n">I_usaxs</span><span class="p">,</span> <span class="n">dI_usaxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_fake_signal</span><span class="p">(</span><span class="n">q_usaxs</span><span class="p">,</span> <span class="n">is_blank</span><span class="p">)</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;USAXS_q&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;USAXS_q&#39;</span><span class="p">,</span><span class="n">q_usaxs</span><span class="p">)</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;USAXS_I&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;USAXS_q&#39;</span><span class="p">,</span><span class="n">I_usaxs</span><span class="p">)</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;USAXS_dI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;USAXS_q&#39;</span><span class="p">,</span><span class="n">dI_usaxs</span><span class="p">)</span>
             
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_q&#39;</span><span class="p">,</span> <span class="n">q_usaxs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_I&#39;</span><span class="p">,</span> <span class="n">I_usaxs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;USAXS_dI&#39;</span><span class="p">,</span> <span class="n">dI_usaxs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/tmp/phantom/usaxs&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">.h5&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;USAXS_blank&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_blank</span>
 
         <span class="k">if</span> <span class="n">read_SAXS</span><span class="p">:</span>
             <span class="n">q_saxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span> <span class="mi">200</span><span class="p">)</span>
             <span class="n">I_saxs</span><span class="p">,</span> <span class="n">dI_saxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_fake_signal</span><span class="p">(</span><span class="n">q_saxs</span><span class="p">,</span> <span class="n">is_blank</span><span class="p">)</span>
-            
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;SAXS_q&#39;</span><span class="p">,</span> <span class="n">q_saxs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;SAXS_I&#39;</span><span class="p">,</span> <span class="n">I_saxs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_array</span><span class="p">(</span><span class="s1">&#39;SAXS_dI&#39;</span><span class="p">,</span> <span class="n">dI_saxs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;SAXS_Filepath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/tmp/phantom/saxs&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;SAXS_Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">.h5&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;SAXS_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;SAXS_blank&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_blank</span></div>
+            <span class="k">if</span> <span class="n">ds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+
+            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;SAXS_q&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SAXS_q&#39;</span><span class="p">,</span><span class="n">q_saxs</span><span class="p">)</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;SAXS_I&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SAXS_q&#39;</span><span class="p">,</span><span class="n">I_saxs</span><span class="p">)</span>
+            <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;SAXS_dI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SAXS_q&#39;</span><span class="p">,</span><span class="n">dI_saxs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ds</span></div>
 
 
     <span class="k">def</span> <span class="nf">_generate_fake_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">is_blank</span><span class="p">):</span>
@@ -638,7 +640,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

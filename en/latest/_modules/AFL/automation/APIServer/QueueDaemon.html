@@ -418,6 +418,7 @@
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared.serialization</span> <span class="kn">import</span> <span class="n">is_serialized</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.data.DataTrashcan</span> <span class="kn">import</span> <span class="n">DataTrashcan</span>
 
@@ -566,6 +567,8 @@
                 <span class="n">masked_package</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="s1">&#39;return_val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_val</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">return_val</span><span class="p">,</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
                 <span class="n">masked_package</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="s1">&#39;return_val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_val</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">return_val</span><span class="p">,</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+                <span class="n">masked_package</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="s1">&#39;return_val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;xarray.Dataset&#39;</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">masked_package</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="s1">&#39;return_val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_val</span>
             <span class="n">masked_package</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">masked_package</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
@@ -576,9 +579,9 @@
             <span class="c1"># the following block names the return value a special name</span>
             <span class="c1"># so that DataTiled can store it as the main data element</span>
 
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">return_val</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;main_array&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_val</span>
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">return_val</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">return_val</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;main_dataset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_val</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">return_val</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;main_array&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_val</span>
             <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">return_val</span><span class="p">)</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;main_dataframe&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_val</span>
@@ -649,7 +652,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

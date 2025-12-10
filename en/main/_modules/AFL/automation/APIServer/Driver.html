@@ -410,8 +410,12 @@
 <span class="kn">from</span> <span class="nn">AFL.automation.shared</span> <span class="kn">import</span> <span class="n">serialization</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">sqrt</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">tiled.client</span> <span class="kn">import</span> <span class="n">from_uri</span>
 
 <div class="viewcode-block" id="makeRegistrar">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.makeRegistrar">[docs]</a>
@@ -457,7 +461,10 @@
     <span class="c1"># Mapping of url subpaths to filesystem directories containing static assets</span>
     <span class="c1"># Example: {&#39;docs&#39;: &#39;/path/to/docs&#39;, &#39;assets&#39;: pathlib.Path(__file__).parent / &#39;assets&#39;}</span>
     <span class="c1"># Files will be served at /static/{subpath}/{filename}</span>
-    <span class="n">static_dirs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">static_dirs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;tiled_browser_js&quot;</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;driver_templates&quot;</span> <span class="o">/</span> <span class="s2">&quot;tiled_browser&quot;</span> <span class="o">/</span> <span class="s2">&quot;js&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tiled_browser_css&quot;</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;driver_templates&quot;</span> <span class="o">/</span> <span class="s2">&quot;tiled_browser&quot;</span> <span class="o">/</span> <span class="s2">&quot;css&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
 
 <div class="viewcode-block" id="Driver.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.__init__">[docs]</a>
@@ -465,6 +472,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dropbox</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tiled_client</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Cached Tiled client</span>
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Driver&#39;</span>
@@ -472,14 +480,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
         <span class="k">if</span> <span class="n">useful_links</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Tiled Browser&quot;</span><span class="p">:</span> <span class="s2">&quot;/tiled_browser&quot;</span><span class="p">}</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">useful_links</span><span class="p">[</span><span class="s2">&quot;Tiled Browser&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/tiled_browser&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span> <span class="o">=</span> <span class="n">useful_links</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;.afl&#39;</span> 
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;.afl&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.config.json&#39;</span><span class="p">)</span>
-            
+
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">PersistentConfig</span><span class="p">(</span>
             <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span>
             <span class="n">defaults</span><span class="o">=</span> <span class="n">defaults</span><span class="p">,</span>
@@ -586,7 +595,45 @@
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s1">30s</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">config</span></div>
 
-    
+
+<div class="viewcode-block" id="Driver.clean_config">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.clean_config">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove any config keys that are not present in defaults.</span>
+
+<span class="sd">        This method gathers all defaults from the class hierarchy, makes a copy</span>
+<span class="sd">        of the current config, and removes any keys that don&#39;t exist in the defaults.</span>
+<span class="sd">        The cleaned config is then saved back to the persistent config.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary containing the keys that were removed from config</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">copy</span>
+
+        <span class="c1"># Get all valid default keys from class hierarchy</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">()</span>
+
+        <span class="c1"># Make a copy of current config</span>
+        <span class="n">current_config</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Find keys that are not in defaults</span>
+        <span class="n">removed_keys</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">current_config</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">:</span>
+                <span class="n">removed_keys</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">current_config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="c1"># Update config with cleaned version</span>
+        <span class="k">if</span> <span class="n">removed_keys</span><span class="p">:</span>
+            <span class="c1"># Clear and rebuild config with only valid keys</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">current_config</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">removed_keys</span></div>
+
+
 <div class="viewcode-block" id="Driver.set_sample">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.set_sample">[docs]</a>
     <span class="k">def</span> <span class="nf">set_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sample_name</span><span class="p">,</span><span class="n">sample_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -743,6 +790,1228 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Storing object in dropbox as </span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dropbox</span><span class="p">[</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
         <span class="k">return</span> <span class="n">uid</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_browser">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_browser">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">tiled_browser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serve the Tiled database browser HTML interface.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_browser.html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_plot">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_plot">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">tiled_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serve the Tiled plotting interface for selected entries.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_plot.html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_gantt">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_gantt">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">tiled_gantt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serve the Tiled Gantt chart interface for selected entries.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_gantt.html&#39;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_read_tiled_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal helper to read Tiled config from ~/.afl/config.json.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with status and config values or error message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;.afl&#39;</span> <span class="o">/</span> <span class="s1">&#39;config.json&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Config file not found at ~/.afl/config.json. Please create this file with tiled_server and tiled_api_key settings.&#39;</span>
+            <span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">config_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid JSON in config file: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Search through config entries (newest first) to find tiled settings</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Config file is empty.&#39;</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Try entries in reverse sorted order to find one with tiled config</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">config_data</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">tiled_server</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">tiled_api_key</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="n">config_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">server</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tiled_server&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">api_key</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tiled_api_key&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">server</span> <span class="ow">and</span> <span class="n">api_key</span><span class="p">:</span>
+                    <span class="n">tiled_server</span> <span class="o">=</span> <span class="n">server</span>
+                    <span class="n">tiled_api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+                    <span class="k">break</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tiled_server</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;tiled_server not configured in ~/.afl/config.json. Please add a tiled_server URL to your config.&#39;</span>
+            <span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tiled_api_key</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;tiled_api_key not configured in ~/.afl/config.json. Please add your Tiled API key to the config.&#39;</span>
+            <span class="p">}</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tiled_server&#39;</span><span class="p">:</span> <span class="n">tiled_server</span><span class="p">,</span>
+            <span class="s1">&#39;tiled_api_key&#39;</span><span class="p">:</span> <span class="n">tiled_api_key</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="Driver.tiled_config">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_config">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Tiled server configuration from shared config file.</span>
+
+<span class="sd">        Reads tiled_server and tiled_api_key from ~/.afl/config.json.</span>
+<span class="sd">        Returns dict with status and config values or helpful error message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_config</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_get_tiled_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get or create cached Tiled client.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tiled client or dict with error status</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tiled_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tiled_client</span>
+
+        <span class="c1"># Get config using internal method (avoids decorator issues)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_config</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">config</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Create and cache client</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tiled_client</span> <span class="o">=</span> <span class="n">from_uri</span><span class="p">(</span>
+                <span class="n">config</span><span class="p">[</span><span class="s1">&#39;tiled_server&#39;</span><span class="p">],</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;tiled_api_key&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tiled_client</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Failed to connect to Tiled: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span>
+
+<div class="viewcode-block" id="Driver.tiled_search">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_search">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint for Tiled metadata search to avoid CORS issues.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            queries: JSON string of query list: [{&quot;field&quot;: &quot;field_name&quot;, &quot;value&quot;: &quot;search_value&quot;}, ...]</span>
+<span class="sd">            offset: Result offset for pagination</span>
+<span class="sd">            limit: Number of results to return</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with status, data, total_count, or error message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get cached Tiled client</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span>
+
+        <span class="c1"># Convert offset and limit to integers (they come as strings from URL params)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+        <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Parse queries JSON</span>
+            <span class="kn">import</span> <span class="nn">json</span>
+            <span class="k">if</span> <span class="n">queries</span> <span class="ow">and</span> <span class="n">queries</span> <span class="o">!=</span> <span class="s1">&#39;[]&#39;</span><span class="p">:</span>
+                <span class="n">query_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">queries</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">query_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># Start with root client</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">client</span>
+
+            <span class="c1"># Group queries by field to handle multiple values (OR logic)</span>
+            <span class="k">if</span> <span class="n">query_list</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">tiled.queries</span> <span class="kn">import</span> <span class="n">Contains</span><span class="p">,</span> <span class="n">In</span>
+                <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+                <span class="c1"># Group values by field</span>
+                <span class="n">field_values</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">query_item</span> <span class="ow">in</span> <span class="n">query_list</span><span class="p">:</span>
+                    <span class="n">field</span> <span class="o">=</span> <span class="n">query_item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">query_item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">field</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
+                        <span class="n">field_values</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+                <span class="c1"># Apply queries - use In for multiple values, Contains for single</span>
+                <span class="c1"># Search in both metadata and attrs fields and collect unique keys</span>
+                <span class="n">all_matching_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+                <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">field_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">field_matching_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># Single value: use Contains</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">metadata_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">Contains</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                            <span class="n">field_matching_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">metadata_results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                        <span class="k">except</span><span class="p">:</span>
+                            <span class="k">pass</span>
+
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">attrs_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">Contains</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;attrs.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                            <span class="n">field_matching_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs_results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                        <span class="k">except</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Multiple values: use In</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">metadata_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">In</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+                            <span class="n">field_matching_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">metadata_results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                        <span class="k">except</span><span class="p">:</span>
+                            <span class="k">pass</span>
+
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">attrs_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">In</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;attrs.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+                            <span class="n">field_matching_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs_results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                        <span class="k">except</span><span class="p">:</span>
+                            <span class="k">pass</span>
+
+                    <span class="c1"># Intersect with previous field results (AND logic between fields)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">all_matching_keys</span><span class="p">:</span>
+                        <span class="n">all_matching_keys</span> <span class="o">=</span> <span class="n">field_matching_keys</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">all_matching_keys</span> <span class="o">&amp;=</span> <span class="n">field_matching_keys</span>
+
+            <span class="c1"># Get keys to use based on whether we have filters</span>
+            <span class="k">if</span> <span class="n">query_list</span> <span class="ow">and</span> <span class="n">field_values</span><span class="p">:</span>
+                <span class="c1"># Use filtered keys from combined search</span>
+                <span class="n">all_keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">all_matching_keys</span><span class="p">))</span>
+                <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_keys</span><span class="p">)</span>
+                <span class="n">paginated_keys</span> <span class="o">=</span> <span class="n">all_keys</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">limit</span><span class="p">]</span>
+                <span class="c1"># Use client as results for accessing items</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">client</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># No queries - use all keys</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">client</span>
+                <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+                <span class="n">all_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">paginated_keys</span> <span class="o">=</span> <span class="n">all_keys</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">limit</span><span class="p">]</span>
+
+            <span class="c1"># Build entries list with metadata</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">paginated_keys</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">item</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="c1"># Build entry in same format as Tiled HTTP API</span>
+                    <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+                        <span class="s1">&#39;attributes&#39;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># Skip entries that can&#39;t be accessed</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not access entry </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">entries</span><span class="p">,</span>
+                <span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="n">total_count</span>
+            <span class="p">}</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">else</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tiled search error: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error searching Tiled database: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_get_data">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_data">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint to get xarray HTML representation from Tiled.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entry_id: Tiled entry ID</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with status and html, or error message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get cached Tiled client</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Get the entry</span>
+            <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span>
+                <span class="p">}</span>
+
+            <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+
+            <span class="c1"># Try to get xarray dataset representation</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Check if this is a DatasetClient and read with optimization</span>
+                <span class="kn">from</span> <span class="nn">tiled.client.xarray</span> <span class="kn">import</span> <span class="n">DatasetClient</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">DatasetClient</span><span class="p">):</span>
+                    <span class="n">dataset</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">optimize_wide_table</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dataset</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+                <span class="c1"># Get HTML representation</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s1">&#39;_repr_html_&#39;</span><span class="p">):</span>
+                    <span class="n">html</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Fallback to string representation</span>
+                    <span class="n">html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;pre&gt;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/pre&gt;&#39;</span>
+
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;html&#39;</span><span class="p">:</span> <span class="n">html</span>
+                <span class="p">}</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># If can&#39;t read as dataset, provide basic info</span>
+                <span class="n">html</span> <span class="o">=</span> <span class="s1">&#39;&lt;div class=&quot;data-display&quot;&gt;&#39;</span>
+                <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&lt;p&gt;&lt;strong&gt;Entry ID:&lt;/strong&gt; </span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&lt;/p&gt;&#39;</span>
+                <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&lt;p&gt;&lt;strong&gt;Type:&lt;/strong&gt; </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&lt;/p&gt;&#39;</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">):</span>
+                    <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;h4&gt;Metadata:&lt;/h4&gt;&#39;</span>
+                    <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&lt;pre&gt;</span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">),</span><span class="w"> </span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/pre&gt;&#39;</span>
+                <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&lt;p&gt;&lt;em&gt;Could not load data representation: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/em&gt;&lt;/p&gt;&#39;</span>
+                <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/div&gt;&#39;</span>
+
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;html&#39;</span><span class="p">:</span> <span class="n">html</span>
+                <span class="p">}</span>
+
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error fetching data: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_get_metadata">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_metadata">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint to get metadata from Tiled.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entry_id: Tiled entry ID</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with status and metadata, or error message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get cached Tiled client</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Get the entry</span>
+            <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span>
+                <span class="p">}</span>
+
+            <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+
+            <span class="c1"># Extract metadata</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata</span>
+            <span class="p">}</span>
+
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error fetching metadata: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_get_distinct_values">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_distinct_values">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_get_distinct_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get distinct/unique values for a metadata field using Tiled&#39;s distinct() method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            field: Metadata field name (e.g., &#39;sample_name&#39;, &#39;sample_uuid&#39;, &#39;AL_campaign_name&#39;, &#39;AL_uuid&#39;)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with status and list of unique values, or error message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get cached Tiled client</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Use Tiled&#39;s distinct() method to get unique values for this field</span>
+            <span class="n">distinct_result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">distinct</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+            <span class="c1"># Extract the values from the metadata</span>
+            <span class="c1"># distinct() returns {&#39;metadata&#39;: {field: [{&#39;value&#39;: ..., &#39;count&#39;: ...}, ...]}}</span>
+            <span class="k">if</span> <span class="s1">&#39;metadata&#39;</span> <span class="ow">in</span> <span class="n">distinct_result</span> <span class="ow">and</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">distinct_result</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]:</span>
+                <span class="n">values_list</span> <span class="o">=</span> <span class="n">distinct_result</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="n">field</span><span class="p">]</span>
+                <span class="c1"># Extract just the &#39;value&#39; field from each entry</span>
+                <span class="n">unique_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">values_list</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">unique_values</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span>
+                <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="n">unique_values</span><span class="p">,</span>
+                <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_values</span><span class="p">)</span>
+            <span class="p">}</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error getting distinct values for field &quot;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s1">&quot;: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_fetch_single_tiled_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch a single entry from Tiled and extract metadata.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        entry_id : str</span>
+<span class="sd">            Tiled entry ID to fetch</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            (dataset, metadata_dict) where metadata_dict contains:</span>
+<span class="sd">            - entry_id: str - The Tiled entry ID</span>
+<span class="sd">            - sample_name: str - Sample name (from metadata, attrs, or entry_id)</span>
+<span class="sd">            - sample_uuid: str - Sample UUID (from metadata, attrs, or &#39;&#39;)</span>
+<span class="sd">            - sample_composition: Optional[Dict] - Parsed composition with structure:</span>
+<span class="sd">                {&#39;components&#39;: List[str], &#39;values&#39;: List[float]}</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If Tiled client cannot be obtained</span>
+<span class="sd">            If entry_id is not found in Tiled</span>
+<span class="sd">            If dataset cannot be read</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+        <span class="c1"># Get tiled client</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to get tiled client: </span><span class="si">{</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unknown error&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found in tiled&#39;</span><span class="p">)</span>
+
+        <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+
+        <span class="c1"># Fetch dataset</span>
+        <span class="kn">from</span> <span class="nn">tiled.client.xarray</span> <span class="kn">import</span> <span class="n">DatasetClient</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">DatasetClient</span><span class="p">):</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">optimize_wide_table</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="c1"># Extract metadata from tiled item</span>
+        <span class="n">tiled_metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="c1"># Also check dataset attrs for metadata</span>
+        <span class="n">ds_attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s1">&#39;attrs&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="c1"># Build metadata dict, preferring tiled metadata over dataset attrs</span>
+        <span class="c1"># Include ALL metadata fields for Gantt chart</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">entry_id</span><span class="p">,</span>
+            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_composition&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="c1"># Add full metadata for Gantt chart and other uses</span>
+            <span class="s1">&#39;attrs&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;AL_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;driver_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Extract sample_composition - be fault tolerant if it doesn&#39;t exist</span>
+        <span class="n">comp_dict</span> <span class="o">=</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">comp_dict</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comp_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># Parse composition dict to extract components and values</span>
+            <span class="n">components</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">comp_name</span><span class="p">,</span> <span class="n">comp_data</span> <span class="ow">in</span> <span class="n">comp_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># Skip non-component keys like &#39;units&#39;, &#39;components&#39;, etc.</span>
+                <span class="k">if</span> <span class="n">comp_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;conc_units&#39;</span><span class="p">,</span> <span class="s1">&#39;mass_units&#39;</span><span class="p">,</span> <span class="s1">&#39;components&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comp_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="c1"># Handle both &#39;value&#39; (scalar) and &#39;values&#39; (array) cases</span>
+                        <span class="k">if</span> <span class="s1">&#39;value&#39;</span> <span class="ow">in</span> <span class="n">comp_data</span><span class="p">:</span>
+                            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">comp_data</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]))</span>
+                            <span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp_name</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="s1">&#39;values&#39;</span> <span class="ow">in</span> <span class="n">comp_data</span><span class="p">:</span>
+                            <span class="n">val</span> <span class="o">=</span> <span class="n">comp_data</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">)</span>
+                            <span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp_name</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comp_data</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                        <span class="c1"># Direct numeric value</span>
+                        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">comp_data</span><span class="p">))</span>
+                        <span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp_name</span><span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                    <span class="c1"># Skip components that can&#39;t be converted to float</span>
+                    <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">components</span><span class="p">:</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;components&#39;</span><span class="p">:</span> <span class="n">components</span><span class="p">,</span>
+                    <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="n">values</span>
+                <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">metadata</span>
+
+    <span class="k">def</span> <span class="nf">_detect_sample_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Detect the sample dimension from a dataset.</span>
+<span class="sd">        </span>
+<span class="sd">        Looks for dimensions matching patterns like &#39;*_sample&#39; or &#39;sample&#39;.</span>
+<span class="sd">        Falls back to the first dimension with size &gt; 1.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str or None</span>
+<span class="sd">            The detected sample dimension name, or None if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">re</span>
+        
+        <span class="c1"># Pattern priority: exact &#39;sample&#39;, then &#39;*_sample&#39;, then first multi-valued dim</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        
+        <span class="c1"># Check for exact &#39;sample&#39; first</span>
+        <span class="k">if</span> <span class="s1">&#39;sample&#39;</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;sample&#39;</span>
+        
+        <span class="c1"># Check for *_sample pattern</span>
+        <span class="n">sample_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.*_sample$&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sample_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">dim</span>
+        
+        <span class="c1"># Fallback: first dimension with size &gt; 1</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">dim</span>
+        
+        <span class="c1"># Last resort: first dimension</span>
+        <span class="k">return</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">dims</span> <span class="k">else</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Driver.tiled_concat_datasets">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_concat_datasets">[docs]</a>
+    <span class="k">def</span> <span class="nf">tiled_concat_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="n">concat_dim</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">variable_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gather datasets from Tiled entries and concatenate them along a dimension.</span>
+
+<span class="sd">        This method fetches multiple datasets from a Tiled server, extracts metadata</span>
+<span class="sd">        (sample_name, sample_uuid, sample_composition), and concatenates them along</span>
+<span class="sd">        the specified dimension. It also supports prefixing variable names.</span>
+
+<span class="sd">        For a single entry, the dataset is returned as-is without concatenation,</span>
+<span class="sd">        and the sample dimension is auto-detected from existing dimensions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        entry_ids : List[str]</span>
+<span class="sd">            List of Tiled entry IDs to fetch and concatenate</span>
+<span class="sd">        concat_dim : str, default=&quot;index&quot;</span>
+<span class="sd">            Dimension name along which to concatenate the datasets (ignored for single entry)</span>
+<span class="sd">        variable_prefix : str, default=&quot;&quot;</span>
+<span class="sd">            Optional prefix to prepend to variable, coordinate, and dimension names</span>
+<span class="sd">            (except the concat_dim itself)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.Dataset</span>
+<span class="sd">            For single entry: The original dataset with metadata added as attributes</span>
+<span class="sd">            For multiple entries: Concatenated dataset with:</span>
+<span class="sd">            - All original data variables and coordinates from individual datasets</span>
+<span class="sd">            - Additional coordinates along concat_dim:</span>
+<span class="sd">                - sample_name: Sample name from metadata or entry_id</span>
+<span class="sd">                - sample_uuid: Sample UUID from metadata or empty string</span>
+<span class="sd">                - entry_id: The Tiled entry ID for each dataset</span>
+<span class="sd">            - If sample_composition metadata exists:</span>
+<span class="sd">                - composition: DataArray with dims [concat_dim, &quot;components&quot;]</span>
+<span class="sd">                  containing composition values for each sample</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If entry_ids is empty</span>
+<span class="sd">            If any entry_id is not found in Tiled</span>
+<span class="sd">            If datasets cannot be fetched or concatenated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">entry_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;entry_ids list cannot be empty&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Fetch all entry datasets and metadata</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">metadata_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">entry_id</span> <span class="ow">in</span> <span class="n">entry_ids</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ds</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_single_tiled_entry</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
+                <span class="n">datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+                <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to fetch entry &#39;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">datasets</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No datasets fetched&quot;</span><span class="p">)</span>
+
+        <span class="c1"># SINGLE ENTRY CASE: Return dataset as-is with metadata added</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            
+            <span class="c1"># Detect the sample dimension from the dataset</span>
+            <span class="n">sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_sample_dimension</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+            
+            <span class="c1"># Add metadata as dataset attributes (not coordinates, since we don&#39;t have a new dim)</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;entry_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;entry_id&#39;</span><span class="p">]</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_dim</span>
+            
+            <span class="c1"># If sample_composition exists, add it as a DataArray along the sample dimension</span>
+            <span class="k">if</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">sample_dim</span><span class="p">:</span>
+                <span class="n">components</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">][</span><span class="s1">&#39;components&#39;</span><span class="p">]</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span>
+                
+                <span class="c1"># Check if composition already exists in dataset (common case)</span>
+                <span class="c1"># If not, we could add it, but for single entry this is usually already there</span>
+                <span class="k">if</span> <span class="s1">&#39;composition&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+                    <span class="c1"># Create composition array - but we need to match the sample dimension size</span>
+                    <span class="c1"># This is tricky for single entry since composition is per-sample</span>
+                    <span class="c1"># For now, store in attrs</span>
+                    <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;components&#39;</span><span class="p">:</span> <span class="n">components</span><span class="p">,</span>
+                        <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="n">values</span>
+                    <span class="p">}</span>
+            
+            <span class="c1"># Apply variable prefix if specified</span>
+            <span class="k">if</span> <span class="n">variable_prefix</span><span class="p">:</span>
+                <span class="n">rename_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">var_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">variable_prefix</span><span class="p">):</span>
+                        <span class="n">rename_dict</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_prefix</span> <span class="o">+</span> <span class="n">var_name</span>
+                <span class="k">for</span> <span class="n">coord_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">coord_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">dims</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">coord_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">variable_prefix</span><span class="p">):</span>
+                        <span class="n">rename_dict</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_prefix</span> <span class="o">+</span> <span class="n">coord_name</span>
+                <span class="k">for</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dims</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">dim_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">variable_prefix</span><span class="p">):</span>
+                        <span class="n">rename_dict</span><span class="p">[</span><span class="n">dim_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_prefix</span> <span class="o">+</span> <span class="n">dim_name</span>
+                <span class="k">if</span> <span class="n">rename_dict</span><span class="p">:</span>
+                    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">rename_dict</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">dataset</span>
+
+        <span class="c1"># MULTIPLE ENTRIES CASE: Concatenate along concat_dim</span>
+        <span class="c1"># Collect metadata values for each entry</span>
+        <span class="n">sample_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metadata_list</span><span class="p">]</span>
+        <span class="n">sample_uuids</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metadata_list</span><span class="p">]</span>
+        <span class="n">entry_id_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;entry_id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metadata_list</span><span class="p">]</span>
+
+        <span class="c1"># Build compositions DataArray before concatenation</span>
+        <span class="c1"># Collect all unique components across all entries</span>
+        <span class="n">all_components</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metadata_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]:</span>
+                <span class="n">all_components</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">][</span><span class="s1">&#39;components&#39;</span><span class="p">])</span>
+        <span class="n">all_components</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">all_components</span><span class="p">))</span>
+
+        <span class="c1"># Create composition data array if we have components</span>
+        <span class="k">if</span> <span class="n">all_components</span><span class="p">:</span>
+            <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span>
+            <span class="n">n_components</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_components</span><span class="p">)</span>
+            <span class="n">comp_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_components</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">metadata_list</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">comp_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_components</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">comp_name</span> <span class="ow">in</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">][</span><span class="s1">&#39;components&#39;</span><span class="p">]:</span>
+                            <span class="n">idx</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">][</span><span class="s1">&#39;components&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">comp_name</span><span class="p">)</span>
+                            <span class="n">comp_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+
+            <span class="c1"># Create the compositions DataArray</span>
+            <span class="n">compositions</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">comp_data</span><span class="p">,</span>
+                <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="n">concat_dim</span><span class="p">,</span> <span class="s2">&quot;components&quot;</span><span class="p">],</span>
+                <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+                    <span class="n">concat_dim</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_samples</span><span class="p">),</span>
+                    <span class="s2">&quot;components&quot;</span><span class="p">:</span> <span class="n">all_components</span>
+                <span class="p">},</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;composition&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">compositions</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Concatenate along new dimension</span>
+        <span class="c1"># Use coords=&quot;minimal&quot; to avoid conflict with compat=&quot;override&quot;</span>
+        <span class="n">concatenated</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">concat_dim</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="s2">&quot;minimal&quot;</span><span class="p">,</span> <span class="n">compat</span><span class="o">=</span><span class="s1">&#39;override&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Assign 1D coordinates along concat_dim</span>
+        <span class="n">concatenated</span> <span class="o">=</span> <span class="n">concatenated</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span>
+            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">concat_dim</span><span class="p">,</span> <span class="n">sample_names</span><span class="p">),</span>
+            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">concat_dim</span><span class="p">,</span> <span class="n">sample_uuids</span><span class="p">),</span>
+            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">concat_dim</span><span class="p">,</span> <span class="n">entry_id_values</span><span class="p">)</span>
+        <span class="p">})</span>
+
+        <span class="c1"># Add compositions if we have it</span>
+        <span class="k">if</span> <span class="n">compositions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">concatenated</span> <span class="o">=</span> <span class="n">concatenated</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">compositions</span><span class="p">)</span>
+
+        <span class="c1"># Prefix names (data vars, coords, dims) but NOT the concat_dim itself</span>
+        <span class="k">if</span> <span class="n">variable_prefix</span><span class="p">:</span>
+            <span class="n">rename_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="c1"># Rename data variables</span>
+            <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">concatenated</span><span class="o">.</span><span class="n">data_vars</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">var_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">variable_prefix</span><span class="p">):</span>
+                    <span class="n">rename_dict</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_prefix</span> <span class="o">+</span> <span class="n">var_name</span>
+
+            <span class="c1"># Rename coordinates (but not concat_dim)</span>
+            <span class="k">for</span> <span class="n">coord_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">concatenated</span><span class="o">.</span><span class="n">coords</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">coord_name</span> <span class="o">==</span> <span class="n">concat_dim</span><span class="p">:</span>
+                    <span class="k">continue</span>  <span class="c1"># Don&#39;t rename the concat_dim coordinate</span>
+                <span class="k">if</span> <span class="n">coord_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">concatenated</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>  <span class="c1"># Non-dimension coordinates</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">coord_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">variable_prefix</span><span class="p">):</span>
+                        <span class="n">rename_dict</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_prefix</span> <span class="o">+</span> <span class="n">coord_name</span>
+
+            <span class="c1"># Rename dimensions but NOT concat_dim</span>
+            <span class="k">for</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">concatenated</span><span class="o">.</span><span class="n">dims</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">dim_name</span> <span class="o">==</span> <span class="n">concat_dim</span><span class="p">:</span>
+                    <span class="k">continue</span>  <span class="c1"># Don&#39;t rename the concat_dim</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">dim_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">variable_prefix</span><span class="p">):</span>
+                    <span class="n">rename_dict</span><span class="p">[</span><span class="n">dim_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_prefix</span> <span class="o">+</span> <span class="n">dim_name</span>
+
+            <span class="c1"># Apply all renames</span>
+            <span class="k">if</span> <span class="n">rename_dict</span><span class="p">:</span>
+                <span class="n">concatenated</span> <span class="o">=</span> <span class="n">concatenated</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">rename_dict</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">concatenated</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_get_combined_plot_data">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_combined_plot_data">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_get_combined_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get concatenated xarray datasets from multiple Tiled entries.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entry_ids: JSON string array of entry IDs to concatenate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with combined dataset structure ready for plotting</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">json</span>
+        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+        <span class="c1"># Parse entry_ids from JSON string</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">entry_ids</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid JSON in entry_ids parameter: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Use the new tiled_concat_datasets method</span>
+        <span class="n">skipped_entries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiled_concat_datasets</span><span class="p">(</span>
+                <span class="n">entry_ids</span><span class="o">=</span><span class="n">entry_ids_list</span><span class="p">,</span>
+                <span class="n">concat_dim</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span>
+                <span class="n">variable_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Cache the dataset for download endpoint</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span> <span class="o">=</span> <span class="n">combined_dataset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_entry_ids</span> <span class="o">=</span> <span class="n">entry_ids_list</span>
+
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Handle individual entry errors by tracking skipped entries</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;Failed to fetch entry&#39;</span> <span class="ow">in</span> <span class="n">error_msg</span><span class="p">:</span>
+                <span class="c1"># Extract entry_id from error message if possible</span>
+                <span class="kn">import</span> <span class="nn">re</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Failed to fetch entry &#39;([^&#39;]+)&#39;&quot;</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="n">skipped_entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                        <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="n">error_msg</span>
+                    <span class="p">})</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error concatenating datasets: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;skipped_entries&#39;</span><span class="p">:</span> <span class="n">skipped_entries</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error concatenating datasets: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;skipped_entries&#39;</span><span class="p">:</span> <span class="n">skipped_entries</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Extract structure for JSON serialization</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Get HTML representation of combined dataset</span>
+            <span class="n">dataset_html</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dataset_html</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">dataset_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;pre&gt;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">combined_dataset</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/pre&gt;&#39;</span>
+
+            <span class="c1"># Detect sample dimension:</span>
+            <span class="c1"># - For single entry: use &#39;_detected_sample_dim&#39; from attrs</span>
+            <span class="c1"># - For multiple entries: use &#39;index&#39; (the concat_dim)</span>
+            <span class="n">is_single_entry</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">is_single_entry</span><span class="p">:</span>
+                <span class="n">sample_dim</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_dim</span><span class="p">:</span>
+                    <span class="c1"># Fallback detection</span>
+                    <span class="n">sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_sample_dimension</span><span class="p">(</span><span class="n">combined_dataset</span><span class="p">)</span>
+                <span class="n">num_datasets</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">sample_dim</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sample_dim</span> <span class="o">=</span> <span class="s1">&#39;index&#39;</span>
+                <span class="n">num_datasets</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Build metadata list - need to re-fetch metadata for each entry to get full details</span>
+            <span class="n">metadata_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">entry_id</span> <span class="ow">in</span> <span class="n">entry_ids_list</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Re-fetch metadata from Tiled for this specific entry</span>
+                    <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+                        <span class="c1"># If client fails, use basic metadata</span>
+                        <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+                            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                            <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                        <span class="p">})</span>
+                        <span class="k">continue</span>
+
+                    <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
+                        <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+                            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                            <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                        <span class="p">})</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+                    <span class="n">tiled_metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+
+                    <span class="c1"># Extract full metadata including timing data</span>
+                    <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+                        <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;AL_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;driver_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                        <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{}),</span>
+                    <span class="p">})</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># If metadata fetch fails for an entry, use basic metadata</span>
+                    <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+                        <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                        <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="p">})</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;data_type&#39;</span><span class="p">:</span> <span class="s1">&#39;xarray_dataset&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;num_datasets&#39;</span><span class="p">:</span> <span class="n">num_datasets</span><span class="p">,</span>
+                <span class="s1">&#39;variables&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                <span class="s1">&#39;dim_sizes&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                <span class="s1">&#39;coords&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="s1">&#39;sample_dim&#39;</span><span class="p">:</span> <span class="n">sample_dim</span><span class="p">,</span>  <span class="c1"># Tell the client which dimension is the sample dimension</span>
+                <span class="s1">&#39;hue_dim&#39;</span><span class="p">:</span> <span class="n">sample_dim</span> <span class="ow">or</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span>  <span class="c1"># Use detected sample_dim as hue_dim</span>
+                <span class="s1">&#39;available_legend_vars&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata_list</span><span class="p">,</span>
+                <span class="s1">&#39;skipped_entries&#39;</span><span class="p">:</span> <span class="n">skipped_entries</span><span class="p">,</span>
+                <span class="s1">&#39;dataset_html&#39;</span><span class="p">:</span> <span class="n">dataset_html</span>
+            <span class="p">}</span>
+
+            <span class="c1"># Helper function to recursively sanitize values for JSON</span>
+            <span class="k">def</span> <span class="nf">sanitize_for_json</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Recursively replace NaN and Inf with None for JSON compatibility.&quot;&quot;&quot;</span>
+                <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+                <span class="kn">import</span> <span class="nn">math</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="p">[</span><span class="n">sanitize_for_json</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">None</span>
+                    <span class="k">return</span> <span class="n">obj</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">obj</span>
+
+            <span class="c1"># Helper function to safely convert numpy arrays to JSON-serializable lists</span>
+            <span class="k">def</span> <span class="nf">safe_tolist</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Convert numpy array to list, handling NaN, Inf, and datetime objects.&quot;&quot;&quot;</span>
+                <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+                <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+                <span class="c1"># Convert to numpy array if not already</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+
+                <span class="c1"># Handle datetime types</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+                    <span class="c1"># Convert to ISO format strings</span>
+                    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+                <span class="c1"># Handle timedelta types</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">):</span>
+                    <span class="c1"># Convert to total seconds</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">arr</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+                <span class="c1"># Convert to list</span>
+                <span class="n">lst</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+                <span class="c1"># Recursively replace NaN and Inf with None for JSON compatibility</span>
+                <span class="k">return</span> <span class="n">sanitize_for_json</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+
+            <span class="c1"># Extract coordinates (limit size)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== EXTRACTING COORDINATES ===&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">coord_name</span><span class="p">,</span> <span class="n">coord_data</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Coordinate: </span><span class="si">{</span><span class="n">coord_name</span><span class="si">}</span><span class="s2">, dtype: </span><span class="si">{</span><span class="n">coord_data</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, size: </span><span class="si">{</span><span class="n">coord_data</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">, shape: </span><span class="si">{</span><span class="n">coord_data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">coord_data</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">100000</span><span class="p">:</span>
+                        <span class="n">converted</span> <span class="o">=</span> <span class="n">safe_tolist</span><span class="p">(</span><span class="n">coord_data</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">][</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">converted</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ Converted: type=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, sample=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">converted</span><span class="p">)[:</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">converted</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;None&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">][</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Coordinate too large (</span><span class="si">{</span><span class="n">coord_data</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s1"> points)&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">coord_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                        <span class="p">}</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ⊘ Skipped: too large&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✗ ERROR: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="kn">import</span> <span class="nn">traceback</span>
+                    <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">][</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Could not serialize coordinate: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="p">}</span>
+
+            <span class="c1"># Extract data variables (with size limits)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== EXTRACTING DATA VARIABLES ===&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
+
+                <span class="c1"># Check if variable has sample dimension (suitable for legend)</span>
+                <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">sample_dim</span> <span class="ow">in</span> <span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;available_legend_vars&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
+
+                <span class="c1"># Only include if total size is reasonable (&lt;100k points)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable: </span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s2">, dtype: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, size: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">, shape: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, dims: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">100000</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">converted</span> <span class="o">=</span> <span class="n">safe_tolist</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="n">converted</span><span class="p">,</span>
+                            <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
+                            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                            <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                        <span class="p">}</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ Converted: type=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, sample=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">converted</span><span class="p">)[:</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">converted</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;None&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✗ ERROR: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="kn">import</span> <span class="nn">traceback</span>
+                        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Could not serialize variable </span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
+                            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                        <span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Variable too large (</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s1"> points)&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
+                        <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="p">}</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ⊘ Skipped: too large&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Test JSON serialization before returning</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== TESTING JSON SERIALIZATION ===&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">json</span>
+                <span class="n">json_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ JSON serialization successful, length: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">json_err</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✗ JSON serialization FAILED: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">json_err</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">json_err</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Try to find which field is problematic</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Testing &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; field:&quot;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">subkey</span><span class="p">,</span> <span class="n">subval</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="n">subkey</span><span class="p">:</span> <span class="n">subval</span><span class="p">})</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ </span><span class="si">{</span><span class="n">subkey</span><span class="si">}</span><span class="s2">: OK&quot;</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✗ </span><span class="si">{</span><span class="n">subkey</span><span class="si">}</span><span class="s2">: FAILED - </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">subval</span><span class="p">)</span><span class="si">}</span><span class="s2">, Sample: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">subval</span><span class="p">)[:</span><span class="mi">200</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✗ EXCEPTION in tiled_get_combined_plot_data: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="kn">import</span> <span class="nn">traceback</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error extracting dataset structure: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_get_gantt_metadata">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_gantt_metadata">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_get_gantt_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get metadata for Gantt chart from multiple Tiled entries.</span>
+
+<span class="sd">        This is a lightweight endpoint that only fetches metadata without</span>
+<span class="sd">        loading or combining the actual datasets.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entry_ids: JSON string array of entry IDs</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with list of metadata for each entry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">json</span>
+
+        <span class="c1"># Parse entry_ids from JSON string</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">entry_ids</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid JSON in entry_ids parameter: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Get tiled client</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span>
+
+        <span class="c1"># Fetch metadata for each entry</span>
+        <span class="n">metadata_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">skipped_entries</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">entry_id</span> <span class="ow">in</span> <span class="n">entry_ids_list</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
+                    <span class="n">skipped_entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+                        <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="s1">&#39;Entry not found in Tiled&#39;</span>
+                    <span class="p">})</span>
+                    <span class="k">continue</span>
+
+                <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+                <span class="n">tiled_metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+
+                <span class="c1"># Extract all metadata fields</span>
+                <span class="c1"># Check both direct metadata and nested attrs</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">meta</span> <span class="o">=</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+                <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+                    <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;driver_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;AL_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="n">meta</span>
+                <span class="p">})</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">skipped_entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+                    <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error fetching metadata: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="p">})</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata_list</span><span class="p">,</span>
+            <span class="s1">&#39;skipped_entries&#39;</span><span class="p">:</span> <span class="n">skipped_entries</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Driver.tiled_download_combined_dataset">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_download_combined_dataset">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_download_combined_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download the concatenated xarray dataset as NetCDF file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entry_ids: JSON string array of entry IDs (to regenerate dataset if needed)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            NetCDF file download with appropriate headers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Response</span>
+        <span class="kn">import</span> <span class="nn">json</span>
+        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+        <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+        <span class="kn">import</span> <span class="nn">io</span>
+
+        <span class="c1"># Check if we have a cached dataset with matching entry_ids</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_cached_combined_dataset&#39;</span><span class="p">)</span> <span class="ow">and</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_cached_entry_ids&#39;</span><span class="p">)):</span>
+
+            <span class="c1"># Parse requested entry_ids</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">entry_ids</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># Check if cache matches</span>
+            <span class="k">if</span> <span class="n">entry_ids_list</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_entry_ids</span><span class="p">:</span>
+                <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Regenerate dataset</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiled_get_combined_plot_data</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">result</span>
+                <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No cache, generate dataset</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiled_get_combined_plot_data</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">result</span>
+            <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span>
+
+        <span class="c1"># Serialize to NetCDF</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Create in-memory bytes buffer</span>
+            <span class="n">buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+
+            <span class="c1"># Convert any object-type coordinates to strings for NetCDF compatibility</span>
+            <span class="n">ds_copy</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">coord_name</span> <span class="ow">in</span> <span class="n">ds_copy</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+                <span class="n">coord</span> <span class="o">=</span> <span class="n">ds_copy</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">coord</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
+                    <span class="c1"># Convert objects to strings</span>
+                    <span class="n">ds_copy</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">coord</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+            <span class="c1"># Also convert object-type data variables</span>
+            <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">ds_copy</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="n">ds_copy</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
+                    <span class="n">ds_copy</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+            <span class="c1"># Write to NetCDF with netcdf4 engine for better compatibility</span>
+            <span class="n">ds_copy</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;netcdf4&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;NETCDF4&#39;</span><span class="p">)</span>
+            <span class="n">buffer</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Generate filename with timestamp</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;combined_dataset_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s1">.nc&#39;</span>
+
+            <span class="c1"># Return as file download</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+                <span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">(),</span>
+                <span class="n">mimetype</span><span class="o">=</span><span class="s1">&#39;application/x-netcdf&#39;</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;Content-Disposition&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;attachment; filename=&quot;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/x-netcdf&#39;</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error creating NetCDF file: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span></div>
 </div>
 
 </pre></div>
@@ -797,7 +2066,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

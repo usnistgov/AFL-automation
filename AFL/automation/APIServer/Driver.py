@@ -8,6 +8,7 @@ import inspect
 import json
 import pathlib
 import uuid
+import datetime
 
 from flask import render_template, jsonify, request
 from tiled.client import from_uri
@@ -396,7 +397,17 @@ class Driver:
             }
 
         # Try entries in reverse sorted order to find one with tiled config
-        keys = sorted(config_data.keys(), reverse=True)
+        # Use datetime parsing to properly sort date keys (format: YY/DD/MM HH:MM:SS.ffffff)
+        datetime_key_format = '%y/%d/%m %H:%M:%S.%f'
+        try:
+            keys = sorted(
+                config_data.keys(),
+                key=lambda k: datetime.datetime.strptime(k, datetime_key_format),
+                reverse=True
+            )
+        except ValueError:
+            # Fallback to lexicographic sort if datetime parsing fails
+            keys = sorted(config_data.keys(), reverse=True)
         tiled_server = ''
         tiled_api_key = ''
 

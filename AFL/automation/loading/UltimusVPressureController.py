@@ -1,6 +1,7 @@
 import lazy_loader as lazy
 serial = lazy.load("serial", require="AFL-automation[serial]")
 import threading
+import time
 from AFL.automation.loading.PressureController import PressureController
 
 class UltimusVPressureController(PressureController):
@@ -279,6 +280,9 @@ class UltimusVPressureController(PressureController):
             r = self.set_pressure(pressure)
             if not r['ok']:
                 raise ValueError('Pressure set failed')
+            
+            # Allow regulator to settle to target pressure before opening valve
+            time.sleep(0.15)
             
             # Now turn on dispense
             self.dispense_on()

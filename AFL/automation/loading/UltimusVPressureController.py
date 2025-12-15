@@ -50,11 +50,18 @@ class UltimusVPressureController(PressureController):
         """Establish connection and verify with ENQ->ACK."""
         if self._serial is None or not self._serial.is_open:
             self._serial = serial.Serial(self.port, self.baud, timeout=0.5)
+        # Clear any leftover data in input buffer
+        self._serial.reset_input_buffer()
         # Send ENQ (0x05), expect ACK (0x06)
         self._serial.write(b'\x05')
         response = self._serial.read(1)
         if response != b'\x06':
-            raise ConnectionError(f"Expected ACK (0x06), got {response!r}")
+            # If we didn't get ACK, try clearing buffer and retrying once
+            self._serial.reset_input_buffer()
+            self._serial.write(b'\x05')
+            response = self._serial.read(1)
+            if response != b'\x06':
+                raise ConnectionError(f"Expected ACK (0x06), got {response!r}")
 
     def _disconnect(self):
         """Send EOT and close connection."""
@@ -87,6 +94,8 @@ class UltimusVPressureController(PressureController):
             result = {'ok': ok, 'cmd': cmd_echo, 'raw': response}
             if not ok:
                 self._log('warning', f'Command failed: {cmd!r}, response: {response!r}')
+            # Clear any remaining data after reading response
+            self._serial.reset_input_buffer()
             return result
 
     def set_mode_timed(self):

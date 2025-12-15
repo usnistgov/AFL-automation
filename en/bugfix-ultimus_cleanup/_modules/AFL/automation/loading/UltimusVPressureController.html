@@ -415,20 +415,25 @@
 <span class="k">class</span> <span class="nc">UltimusVPressureController</span><span class="p">(</span><span class="n">PressureController</span><span class="p">):</span>
 <div class="viewcode-block" id="UltimusVPressureController.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">baud</span><span class="o">=</span><span class="mi">115200</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">baud</span><span class="o">=</span><span class="mi">115200</span><span class="p">,</span> <span class="n">auto_initialize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Initializes an UltimusVPressureController</span>
 
 <span class="sd">        Params:</span>
 <span class="sd">            port (str): serial port to use</span>
 <span class="sd">            baud (int): baud rate (default 115200)</span>
+<span class="sd">            auto_initialize (bool): if True, immediately initialize the controller</span>
+<span class="sd">                                    to a safe state with steady mode enabled</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">baud</span> <span class="o">=</span> <span class="n">baud</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_serial</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># For logging via Driver pattern</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># For logging via Driver pattern</span>
+        
+        <span class="k">if</span> <span class="n">auto_initialize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="UltimusVPressureController.compute_checksum">
@@ -535,7 +540,11 @@
 <div class="viewcode-block" id="UltimusVPressureController.set_mode_steady">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.set_mode_steady">[docs]</a>
     <span class="k">def</span> <span class="nf">set_mode_steady</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set steady/maintained dispense mode (MT command).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set steady/maintained dispense mode (MT command).</span>
+<span class="sd">        </span>
+<span class="sd">        In steady mode, RS232 has full control and the front panel</span>
+<span class="sd">        cannot override the dispense state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_command</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;MT  &#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;ok&#39;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Failed to set steady mode&#39;</span><span class="p">)</span>
@@ -600,16 +609,105 @@
         <span class="k">return</span> <span class="n">result</span></div>
 
 
+<div class="viewcode-block" id="UltimusVPressureController.dispense_on">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_on">[docs]</a>
+    <span class="k">def</span> <span class="nf">dispense_on</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Turn dispensing ON if not already on.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispense_toggle</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;ok&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;cmd&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;raw&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="UltimusVPressureController.dispense_off">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_off">[docs]</a>
+    <span class="k">def</span> <span class="nf">dispense_off</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Turn dispensing OFF if currently on.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispense_toggle</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;ok&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;cmd&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;raw&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="UltimusVPressureController.initialize">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.initialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the controller to a safe state with RS232 control.</span>
+<span class="sd">        </span>
+<span class="sd">        Sets:</span>
+<span class="sd">        - Steady mode (MT) so RS232 has full control, front panel cannot override</span>
+<span class="sd">        - Pressure to 0</span>
+<span class="sd">        - Vacuum to 0</span>
+<span class="sd">        - Dispensing OFF</span>
+<span class="sd">        </span>
+<span class="sd">        Call this at startup before using the controller.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;Initializing UltimusV controller to safe state&#39;</span><span class="p">)</span>
+        <span class="c1"># First, ensure dispensing is off (toggle twice if needed to sync state)</span>
+        <span class="c1"># We don&#39;t know the actual state, so we&#39;ll set pressure to 0 first for safety</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_pressure</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c1"># May fail if not connected yet, that&#39;s ok</span>
+        
+        <span class="c1"># Set steady mode for RS232 control</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_mode_steady</span><span class="p">()</span>
+        
+        <span class="c1"># Set pressure and vacuum to 0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_pressure</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_vacuum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># Ensure dispense is off - toggle to sync state if needed</span>
+        <span class="c1"># Send DI to toggle, then check if we need to toggle again</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dispense_toggle</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;UltimusV initialized: steady mode, P=0, V=0, dispense OFF&#39;</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="UltimusVPressureController.safe_idle">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.safe_idle">[docs]</a>
     <span class="k">def</span> <span class="nf">safe_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set controller to safe idle state.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_mode_timed</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_vacuum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set controller to safe idle state.</span>
+<span class="sd">        </span>
+<span class="sd">        Stops dispensing, sets pressure and vacuum to 0, </span>
+<span class="sd">        and keeps steady mode for RS232 control.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;Setting UltimusV to safe idle&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># First stop dispensing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dispense_off</span><span class="p">()</span>
+        
+        <span class="c1"># Then set pressure to 0 (no more output)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_pressure</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dispense_toggle</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span> <span class="o">=</span> <span class="kc">False</span></div>
+        
+        <span class="c1"># Set vacuum to 0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_vacuum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># Ensure we&#39;re in steady mode for RS232 control</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_mode_steady</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="UltimusVPressureController.stop">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.stop">[docs]</a>
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override base class stop to use safe_idle for complete shutdown.</span>
+<span class="sd">        </span>
+<span class="sd">        This ensures the controller is in a known safe state after every</span>
+<span class="sd">        dispense, with pressure=0, vacuum=0, dispense OFF, and steady mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;Dispense stop called - entering safe idle&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safe_idle</span><span class="p">()</span>
+        <span class="c1"># Cancel any pending timer/thread from base class</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_callback</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="c1"># This is a ramp thread, not a timer - set the stop flag</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;stop_flag&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop_flag</span><span class="o">.</span><span class="n">set</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="UltimusVPressureController.set_P">
@@ -618,21 +716,31 @@
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Set pressure in PSI (backward compatibility method).</span>
 <span class="sd">        </span>
+<span class="sd">        This method handles the full dispense cycle:</span>
+<span class="sd">        - To stop: turns dispense OFF, then sets pressure to 0</span>
+<span class="sd">        - To start: ensures steady mode, sets pressure FIRST (to avoid spit), </span>
+<span class="sd">                    then turns dispense ON</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            pressure (float): pressure to set in psi</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span> <span class="ow">and</span> <span class="n">pressure</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispense_toggle</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;ok&#39;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="n">pressure</span> <span class="o">&gt;</span> <span class="mf">0.1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pressure</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
+            <span class="c1"># Stopping dispense: turn off FIRST, then set pressure to 0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dispense_off</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_pressure</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Starting dispense: ensure steady mode, set pressure BEFORE turning on</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span><span class="p">:</span>
+                <span class="c1"># Ensure we&#39;re in steady mode for full RS232 control</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_mode_steady</span><span class="p">()</span>
+            
+            <span class="c1"># Set pressure BEFORE turning on dispense (prevents spit)</span>
             <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_pressure</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;ok&#39;</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Pressure set failed&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span><span class="p">:</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispense_toggle</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;ok&#39;</span><span class="p">]:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">dispensing</span> <span class="o">=</span> <span class="kc">True</span></div>
+            
+            <span class="c1"># Now turn on dispense</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dispense_on</span><span class="p">()</span></div>
 </div>
 
 </pre></div>

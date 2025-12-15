@@ -485,7 +485,7 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PressureController</span></code>()</p></td>
 <td><p>Abstract superclass for pressure controllers that provides timed dispensing</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController" title="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UltimusVPressureController</span></code></a>(port[, baud])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController" title="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UltimusVPressureController</span></code></a>(port[, baud, ...])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -493,14 +493,18 @@
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.loading.UltimusVPressureController.</span></span><span class="sig-name descname"><span class="pre">UltimusVPressureController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baud</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">115200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.loading.UltimusVPressureController.</span></span><span class="sig-name descname"><span class="pre">UltimusVPressureController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baud</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">115200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_initialize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController" title="Link to this definition">#</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baud</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">115200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.__init__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baud</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">115200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_initialize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initializes an UltimusVPressureController</p>
-<dl class="simple">
+<dl>
 <dt>Params:</dt><dd><p>port (str): serial port to use
-baud (int): baud rate (default 115200)</p>
+baud (int): baud rate (default 115200)
+auto_initialize (bool): if True, immediately initialize the controller</p>
+<blockquote>
+<div><p>to a safe state with steady mode enabled</p>
+</div></blockquote>
 </dd>
 </dl>
 </dd></dl>
@@ -547,6 +551,8 @@ baud (int): baud rate (default 115200)</p>
 <dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.set_mode_steady">
 <span class="sig-name descname"><span class="pre">set_mode_steady</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.set_mode_steady"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.set_mode_steady" title="Link to this definition">#</a></dt>
 <dd><p>Set steady/maintained dispense mode (MT command).</p>
+<p>In steady mode, RS232 has full control and the front panel
+cannot override the dispense state.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -589,15 +595,55 @@ baud (int): baud rate (default 115200)</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_on">
+<span class="sig-name descname"><span class="pre">dispense_on</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.dispense_on"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_on" title="Link to this definition">#</a></dt>
+<dd><p>Turn dispensing ON if not already on.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_off">
+<span class="sig-name descname"><span class="pre">dispense_off</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.dispense_off"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_off" title="Link to this definition">#</a></dt>
+<dd><p>Turn dispensing OFF if currently on.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.initialize" title="Link to this definition">#</a></dt>
+<dd><p>Initialize the controller to a safe state with RS232 control.</p>
+<p>Sets:
+- Steady mode (MT) so RS232 has full control, front panel cannot override
+- Pressure to 0
+- Vacuum to 0
+- Dispensing OFF</p>
+<p>Call this at startup before using the controller.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.safe_idle">
 <span class="sig-name descname"><span class="pre">safe_idle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.safe_idle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.safe_idle" title="Link to this definition">#</a></dt>
 <dd><p>Set controller to safe idle state.</p>
+<p>Stops dispensing, sets pressure and vacuum to 0,
+and keeps steady mode for RS232 control.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.stop" title="Link to this definition">#</a></dt>
+<dd><p>Override base class stop to use safe_idle for complete shutdown.</p>
+<p>This ensures the controller is in a known safe state after every
+dispense, with pressure=0, vacuum=0, dispense OFF, and steady mode.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.set_P">
 <span class="sig-name descname"><span class="pre">set_P</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pressure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/loading/UltimusVPressureController.html#UltimusVPressureController.set_P"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.set_P" title="Link to this definition">#</a></dt>
 <dd><p>Set pressure in PSI (backward compatibility method).</p>
+<p>This method handles the full dispense cycle:
+- To stop: turns dispense OFF, then sets pressure to 0
+- To start: ensures steady mode, sets pressure FIRST (to avoid spit),</p>
+<blockquote>
+<div><p>then turns dispense ON</p>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>pressure</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – pressure to set in psi</p>
@@ -668,7 +714,11 @@ baud (int): baud rate (default 115200)</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.set_vacuum"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.set_vacuum()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.set_time"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.set_time()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_toggle"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.dispense_toggle()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_on"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.dispense_on()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.dispense_off"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.dispense_off()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.initialize"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.initialize()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.safe_idle"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.safe_idle()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.stop"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.stop()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.set_P"><code class="docutils literal notranslate"><span class="pre">UltimusVPressureController.set_P()</span></code></a></li>
 </ul>
 </li>

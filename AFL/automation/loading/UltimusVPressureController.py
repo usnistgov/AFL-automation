@@ -4,13 +4,15 @@ import threading
 from AFL.automation.loading.PressureController import PressureController
 
 class UltimusVPressureController(PressureController):
-    def __init__(self, port, baud=115200):
+    def __init__(self, port, baud=115200, auto_initialize=True):
         '''
         Initializes an UltimusVPressureController
 
         Params:
             port (str): serial port to use
             baud (int): baud rate (default 115200)
+            auto_initialize (bool): if True, immediately initialize the controller
+                                    to a safe state with steady mode enabled
         '''
         self.port = port
         self.baud = baud
@@ -18,6 +20,9 @@ class UltimusVPressureController(PressureController):
         self._serial = None
         self._lock = threading.Lock()
         self.app = None  # For logging via Driver pattern
+        
+        if auto_initialize:
+            self.initialize()
 
     def compute_checksum(self, cmd):
         """Compute checksum for command."""
@@ -106,7 +111,11 @@ class UltimusVPressureController(PressureController):
         return result
 
     def set_mode_steady(self):
-        """Set steady/maintained dispense mode (MT command)."""
+        """Set steady/maintained dispense mode (MT command).
+        
+        In steady mode, RS232 has full control and the front panel
+        cannot override the dispense state.
+        """
         result = self.send_command(b'MT  ')
         if not result['ok']:
             raise ValueError('Failed to set steady mode')
@@ -158,31 +167,118 @@ class UltimusVPressureController(PressureController):
             self.dispensing = not self.dispensing
         return result
 
-    def safe_idle(self):
-        """Set controller to safe idle state."""
-        self.set_mode_timed()
-        self.set_vacuum(0)
+    def dispense_on(self):
+        """Turn dispensing ON if not already on."""
+        if not self.dispensing:
+            result = self.dispense_toggle()
+            return result
+        return {'ok': True, 'cmd': '', 'raw': b''}
+
+    def dispense_off(self):
+        """Turn dispensing OFF if currently on."""
+        if self.dispensing:
+            result = self.dispense_toggle()
+            return result
+        return {'ok': True, 'cmd': '', 'raw': b''}
+
+    def initialize(self):
+        """
+        Initialize the controller to a safe state with RS232 control.
+        
+        Sets:
+        - Steady mode (MT) so RS232 has full control, front panel cannot override
+        - Pressure to 0
+        - Vacuum to 0
+        - Dispensing OFF
+        
+        Call this at startup before using the controller.
+        """
+        self._log('info', 'Initializing UltimusV controller to safe state')
+        # First, ensure dispensing is off (toggle twice if needed to sync state)
+        # We don't know the actual state, so we'll set pressure to 0 first for safety
+        try:
+            self.set_pressure(0)
+        except ValueError:
+            pass  # May fail if not connected yet, that's ok
+        
+        # Set steady mode for RS232 control
+        self.set_mode_steady()
+        
+        # Set pressure and vacuum to 0
         self.set_pressure(0)
+        self.set_vacuum(0)
+        
+        # Ensure dispense is off - toggle to sync state if needed
+        # Send DI to toggle, then check if we need to toggle again
         if self.dispensing:
             self.dispense_toggle()
-            self.dispensing = False
+        
+        self._log('info', 'UltimusV initialized: steady mode, P=0, V=0, dispense OFF')
+
+    def safe_idle(self):
+        """
+        Set controller to safe idle state.
+        
+        Stops dispensing, sets pressure and vacuum to 0, 
+        and keeps steady mode for RS232 control.
+        """
+        self._log('info', 'Setting UltimusV to safe idle')
+        
+        # First stop dispensing
+        self.dispense_off()
+        
+        # Then set pressure to 0 (no more output)
+        self.set_pressure(0)
+        
+        # Set vacuum to 0
+        self.set_vacuum(0)
+        
+        # Ensure we're in steady mode for RS232 control
+        self.set_mode_steady()
+
+    def stop(self):
+        """
+        Override base class stop to use safe_idle for complete shutdown.
+        
+        This ensures the controller is in a known safe state after every
+        dispense, with pressure=0, vacuum=0, dispense OFF, and steady mode.
+        """
+        self._log('info', 'Dispense stop called - entering safe idle')
+        self.safe_idle()
+        # Cancel any pending timer/thread from base class
+        try:
+            self.active_callback.cancel()
+        except AttributeError:
+            # This is a ramp thread, not a timer - set the stop flag
+            if hasattr(self, 'stop_flag'):
+                self.stop_flag.set()
 
     def set_P(self, pressure):
         '''
         Set pressure in PSI (backward compatibility method).
         
+        This method handles the full dispense cycle:
+        - To stop: turns dispense OFF, then sets pressure to 0
+        - To start: ensures steady mode, sets pressure FIRST (to avoid spit), 
+                    then turns dispense ON
+        
         Args:
             pressure (float): pressure to set in psi
         '''
-        if self.dispensing and pressure < 0.1:
-            r = self.dispense_toggle()
-            if r['ok']:
-                self.dispensing = False
-        if pressure > 0.1:
+        if pressure < 0.1:
+            # Stopping dispense: turn off FIRST, then set pressure to 0
+            self.dispense_off()
+            self.set_pressure(0)
+        else:
+            # Starting dispense: ensure steady mode, set pressure BEFORE turning on
+            if not self.dispensing:
+                # Ensure we're in steady mode for full RS232 control
+                self.set_mode_steady()
+            
+            # Set pressure BEFORE turning on dispense (prevents spit)
             r = self.set_pressure(pressure)
             if not r['ok']:
                 raise ValueError('Pressure set failed')
-            if not self.dispensing:
-                r = self.dispense_toggle()
-                if r['ok']:
-                    self.dispensing = True
+            
+            # Now turn on dispense
+            self.dispense_on()

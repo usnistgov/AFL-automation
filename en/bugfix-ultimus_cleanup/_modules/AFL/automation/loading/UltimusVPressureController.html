@@ -408,6 +408,7 @@
 <span></span><span class="kn">import</span> <span class="nn">lazy_loader</span> <span class="k">as</span> <span class="nn">lazy</span>
 <span class="n">serial</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;serial&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[serial]&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.loading.PressureController</span> <span class="kn">import</span> <span class="n">PressureController</span>
 
 <div class="viewcode-block" id="UltimusVPressureController">
@@ -738,6 +739,9 @@
             <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_pressure</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;ok&#39;</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Pressure set failed&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Allow regulator to settle to target pressure before opening valve</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.15</span><span class="p">)</span>
             
             <span class="c1"># Now turn on dispense</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dispense_on</span><span class="p">()</span></div>

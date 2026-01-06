@@ -128,14 +128,13 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
 
     @app.setter
     def app(self,app):
-        if app is None:
-            self._app = app
-        else:
-            self._app = app
+        self._app = app
+        if app is not None:
             self.pctrl.app = app
             self.relayboard.app = app
-            for ls in self.load_stopper:
-                ls.app = app
+            if self.load_stopper is not None:
+                for ls in self.load_stopper:
+                    ls.app = app
             
     @property
     def data(self):
@@ -143,14 +142,13 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
 
     @data.setter
     def data(self,data):
-        if data is None:
-            self._data = data
-        else:
-            self._data = data
+        self._data = data
+        if data is not None:
             self.pctrl.data = data
             self.relayboard.data = data
-            for ls in self.load_stopper:
-                ls.data = data
+            if self.load_stopper is not None:
+                for ls in self.load_stopper:
+                    ls.data = data
             
     def status(self):
         status = []
@@ -236,13 +234,15 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self._arm_down()
         time.sleep(self.config['vent_delay'])
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
-        print('setting state...')
+        if self.app is not None:
+            self.app.logger.info('setting state...')
         self.loadStoppedExternally = False
         if load_dest_label == '':
             self.state = 'LOAD IN PROGRESS'
         else:
             self.state = f'LOAD IN PROGRESS to {load_dest_label}'
-        print('sending dispense command')
+        if self.app is not None:
+            self.app.logger.info('sending dispense command')
         if self.config['load_mode'] == 'static':
             self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         elif self.config['load_mode'] == 'ramp':
@@ -280,12 +280,14 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             raise Exception('Tried to advance sample but no sample is loaded.')
         self.state = 'PREPARING TO Advance'
         self.relayboard.setChannels({'postsample':True})
-        print('setting state...')        
+        if self.app is not None:
+            self.app.logger.info('setting state...')
         if load_dest_label == '':
             self.state = 'LOAD IN PROGRESS'
         else:
             self.state = f'LOAD IN PROGRESS to {load_dest_label}'
-        print('sending dispense command')
+        if self.app is not None:
+            self.app.logger.info('sending dispense command')
         self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         self.loadStoppedExternally = False 
         while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
@@ -299,7 +301,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     
     @Driver.unqueued(render_hint='raw')
     def stopLoad(self,**kwargs):
-        print(kwargs)
+        if self.app is not None:
+            self.app.logger.info(f'stopLoad called with kwargs: {kwargs}')
         try:
             if kwargs['secret'] == 'xrays>neutrons':
                 if 'LOAD IN PROGRESS' not in self.state:
@@ -310,7 +313,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                     self.relayboard.setChannels({'postsample':False})
                     self.loadStoppedExternally=True
                     if self.data is not None:
-                        print(self.data)
+                        if self.app is not None:
+                            self.app.logger.info(f'Data packet: {self.data}')
                         try:
                             self.data['load_stop_source'] = 'external'
                         except AttributeError:
@@ -394,7 +398,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             out = []
             for ls in self.load_stopper:
                 output = np.transpose(ls.poll.read())
-                print('Serving sensor poll:',len(output),len(output[0]),len(output[1]))
+                if self.app is not None:
+                    self.app.logger.debug(f'Serving sensor poll: {len(output)}, {len(output[0])}, {len(output[1])}')
                 out.append(list(output))
             return out
 
@@ -405,12 +410,19 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             for ls in self.load_stopper:
                 out.append(list(np.transpose(ls.poll.read_load_buffer())))
             return out
+
+    @Driver.unqueued()
+    def get_load_traces(self):
+        """Return list of xr.Dataset traces from all load stoppers."""
+        if self.load_stopper is None:
+            return []
+        return [ls.get_last_trace_dataset() for ls in self.load_stopper]
     
     def set_sensor_config(self,**kwargs):
         if self.load_stopper is not None:
             if 'sensor_n' in kwargs:
-                self.load_stopper[kwargs[sensor_n]].update(kwargs)
-                self.load_stopper[kwargs[sensor_n]].reset()                        
+                self.load_stopper[kwargs['sensor_n']].update(kwargs)
+                self.load_stopper[kwargs['sensor_n']].reset()                        
             else: # assume it should apply to all
                 for ls in self.load_stopper:
                     ls.config.update(kwargs)
@@ -442,7 +454,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                 for ls in self.load_stopper:
                     ls.reset_poll()
                     ls.reset_stopper()
-                    if ls_app is not None:
+                    if ls._app is not None:
                         ls.poll.app = self._app
                         ls.stopper.app = self._app
                     if ls._data is not None:

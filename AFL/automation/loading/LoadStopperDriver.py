@@ -36,7 +36,7 @@ class LoadStopperDriver(Driver):
         if self.data is None:
             self.data = data
         
-        print(f'LoadStopperDriver started with data = {self.data}')
+        self.log_info(f'LoadStopperDriver started with data = {self.data}')
         self.load_object = load_object
         self.load_client = load_client
 
@@ -88,6 +88,13 @@ class LoadStopperDriver(Driver):
     def read_poll_load(self):
         output = np.transpose(self.poll.read_load_buffer())
         return list(output)
+
+    @Driver.unqueued()
+    def get_last_trace_dataset(self):
+        """Return the last load stop trace as an xr.Dataset with metadata in .attrs."""
+        if self.stopper is not None and hasattr(self.stopper, 'last_trace_dataset'):
+            return self.stopper.last_trace_dataset
+        return None
 
     #@Driver.unqueued()
     #@Driver.quickbar(qb={'button_text':'reset', 'params':{}})

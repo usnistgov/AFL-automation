@@ -49,7 +49,10 @@ class SensorPollingThread(threading.Thread):
     def run(self):
         i=0
         self._buffer_rolling_start = datetime.datetime.now()
-        print(f'Starting runloop for PollingThread:')
+        if self.app is not None and hasattr(self.app, 'logger'):
+            self.app.logger.info('Starting runloop for PollingThread:')
+        else:
+            print('Starting runloop for PollingThread:')
         while not self._stop:
             value = self.sensor.read()
 

@@ -69,7 +69,8 @@ class PressureController():
         '''
         Abort the current timed dispense action.
         '''
-        print(f'Dispense stop was called, callback status {self.dispenseRunning()}')
+        if hasattr(self, 'app') and self.app is not None:
+            self.app.logger.info(f'Dispense stop was called, callback status {self.dispenseRunning()}')
         self.set_P(0) 
         try:
             self.active_callback.cancel()   

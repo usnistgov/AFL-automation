@@ -18,6 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set lowercase repository name
+        run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -35,10 +38,10 @@ jobs:
           file: ./docker/Dockerfile.tiled
           push: true
           tags: |
-            ghcr.io/${{ github.repository | lower }}/tiled:latest
-            ghcr.io/${{ github.repository | lower }}/tiled:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/tiled:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/tiled:buildcache,mode=max
+            ghcr.io/${{ env.REPO_LOWER }}/tiled:latest
+            ghcr.io/${{ env.REPO_LOWER }}/tiled:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/tiled:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/tiled:buildcache,mode=max
 
   build-and-push-orchestrator:
     runs-on: ubuntu-latest
@@ -50,6 +53,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set lowercase repository name
+        run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -68,10 +74,10 @@ jobs:
           file: ./docker/Dockerfile.orchestrator
           push: true
           tags: |
-            ghcr.io/${{ github.repository | lower }}/orchestrator:latest
-            ghcr.io/${{ github.repository | lower }}/orchestrator:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/orchestrator:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/orchestrator:buildcache,mode=max
+            ghcr.io/${{ env.REPO_LOWER }}/orchestrator:latest
+            ghcr.io/${{ env.REPO_LOWER }}/orchestrator:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/orchestrator:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/orchestrator:buildcache,mode=max
 
   build-and-push-mixing:
     runs-on: ubuntu-latest
@@ -83,6 +89,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set lowercase repository name
+        run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -101,10 +110,10 @@ jobs:
           file: ./docker/Dockerfile.mixing
           push: true
           tags: |
-            ghcr.io/${{ github.repository | lower }}/mixing:latest
-            ghcr.io/${{ github.repository | lower }}/mixing:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/mixing:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/mixing:buildcache,mode=max
+            ghcr.io/${{ env.REPO_LOWER }}/mixing:latest
+            ghcr.io/${{ env.REPO_LOWER }}/mixing:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/mixing:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/mixing:buildcache,mode=max
 
   build-and-push-instrument:
     runs-on: ubuntu-latest
@@ -116,6 +125,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set lowercase repository name
+        run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -134,10 +146,10 @@ jobs:
           file: ./docker/Dockerfile.instrument
           push: true
           tags: |
-            ghcr.io/${{ github.repository | lower }}/instrument:latest
-            ghcr.io/${{ github.repository | lower }}/instrument:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/instrument:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/instrument:buildcache,mode=max
+            ghcr.io/${{ env.REPO_LOWER }}/instrument:latest
+            ghcr.io/${{ env.REPO_LOWER }}/instrument:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/instrument:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/instrument:buildcache,mode=max
 
   build-and-push-agent:
     runs-on: ubuntu-latest
@@ -149,6 +161,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set lowercase repository name
+        run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -167,7 +182,7 @@ jobs:
           file: ./docker/Dockerfile.agent
           push: true
           tags: |
-            ghcr.io/${{ github.repository | lower }}/agent:latest
-            ghcr.io/${{ github.repository | lower }}/agent:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/agent:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/agent:buildcache,mode=max
+            ghcr.io/${{ env.REPO_LOWER }}/agent:latest
+            ghcr.io/${{ env.REPO_LOWER }}/agent:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/agent:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/agent:buildcache,mode=max

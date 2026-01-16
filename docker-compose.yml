@@ -32,5 +32,21 @@ services:
       - ./docker/config/orchestrator-config.json:/root/.afl/config.json:ro
     command: ["python", "-m", "AFL.automation.orchestrator.OrchestratorDriver"]
 
+  mixing:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mixing
+    ports:
+      - "5002:5002"
+    environment:
+      - AFL_MIXING_PORT=5002
+      - TILED_SERVER=http://tiled:8000
+      - TILED_API_KEY=devkey
+    depends_on:
+      - tiled
+    volumes:
+      - ./docker/config/mixing-config.json:/root/.afl/config.json:ro
+    command: ["python", "-m", "AFL.automation.mixing.BioSANSPrepare"]
+
 volumes:
   tiled-data:

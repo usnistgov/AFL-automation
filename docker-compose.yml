@@ -48,5 +48,23 @@ services:
       - ./docker/config/mixing-config.json:/root/.afl/config.json:ro
     command: ["python", "-m", "AFL.automation.mixing.BioSANSPrepare"]
 
+  instrument:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.instrument
+    ports:
+      - "5001:5001"
+    environment:
+      - AFL_INSTRUMENT_PORT=5001
+      - TILED_SERVER=http://tiled:8000
+      - TILED_API_KEY=devkey
+      - EIC_TOKEN=1
+      - IPTS_NUMBER=1234
+    depends_on:
+      - tiled
+    volumes:
+      - ./docker/config/instrument-config.json:/root/.afl/config.json:ro
+    command: ["python", "-m", "AFL.automation.instrument.BioSANS"]
+
 volumes:
   tiled-data:

@@ -4,6 +4,7 @@ from typing import List, Union, Dict, Any
 from AFL.automation.mixing.MassBalance import MassBalanceDriver, MassBalance
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
+from AFL.automation.shared.mock_eic_client import MockEICClient
 
 # Optional import for EIC client
 try:
@@ -11,18 +12,6 @@ try:
 except ImportError:
     EICClient = None
 
-
-class MockEICClient:
-    """Minimal mock EIC client for testing and mock_mode."""
-
-    def __init__(self, *args, **kwargs):
-        warnings.warn("EICClient not available - using mock client", stacklevel=2)
-
-    def get_pv(self, *args, **kwargs):
-        return True, None, "mock"
-
-    def set_pv(self, *args, **kwargs):
-        return True, "mock"
 
 class BioSANSPrepare(MassBalanceDriver, Driver):
     defaults = {

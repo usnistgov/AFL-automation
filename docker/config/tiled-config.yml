@@ -3,6 +3,9 @@ authentication:
   # connect to _read_. An API key is still required to write.
   # Non-empty for docker deployment; change for production.
   single_user_api_key: "devkey"
+  single_user_api_key_scopes:
+    - "read:metadata"
+    - "read:data"
 uvicorn:
   host: "0.0.0.0"
   port: 8000

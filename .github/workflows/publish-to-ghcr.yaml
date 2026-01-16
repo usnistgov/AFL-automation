@@ -1,0 +1,272 @@
+name: Publish to GitHub Container Registry
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and start stack
+        run: |
+          docker compose up -d --build
+
+      - name: Wait for services to become healthy
+        run: |
+          set -euo pipefail
+          tiled_id=$(docker compose ps -q tiled)
+          orch_id=$(docker compose ps -q orchestrator)
+          mix_id=$(docker compose ps -q mixing)
+          inst_id=$(docker compose ps -q instrument)
+          agent_id=$(docker compose ps -q agent)
+          for i in $(seq 1 30); do
+            th=$(docker inspect --format '{{.State.Health.Status}}' "$tiled_id") || true
+            oh=$(docker inspect --format '{{.State.Health.Status}}' "$orch_id") || true
+            mh=$(docker inspect --format '{{.State.Health.Status}}' "$mix_id") || true
+            ih=$(docker inspect --format '{{.State.Health.Status}}' "$inst_id") || true
+            ah=$(docker inspect --format '{{.State.Health.Status}}' "$agent_id") || true
+            if [ "$th" = "healthy" ] && [ "$oh" = "healthy" ] && [ "$mh" = "healthy" ] && [ "$ih" = "healthy" ] && [ "$ah" = "healthy" ]; then
+              echo "Services healthy"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Services did not become healthy" >&2
+          docker compose ps
+          exit 1
+
+      - name: Smoke test Tiled API
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Tiled-Api-Key: devkey" http://localhost:8000/api/v1/metadata/)
+          if [ "$code" != "200" ] && [ "$code" != "401" ]; then
+            echo "Unexpected Tiled status: $code" >&2
+            exit 1
+          fi
+
+      - name: Smoke test Orchestrator tiled_config
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/tiled_config)
+          body=$(curl -s http://localhost:5000/tiled_config)
+          if [ "$code" != "200" ]; then
+            echo "Unexpected orchestrator status: $code" >&2
+            exit 1
+          fi
+          echo "$body" | grep -q "devkey"
+
+      - name: Smoke test Mixing tiled_config
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5002/tiled_config)
+          body=$(curl -s http://localhost:5002/tiled_config)
+          if [ "$code" != "200" ]; then
+            echo "Unexpected mixing status: $code" >&2
+            exit 1
+          fi
+          echo "$body" | grep -q "devkey"
+
+      - name: Smoke test Instrument driver status
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5001/driver_status)
+          body=$(curl -s http://localhost:5001/driver_status)
+          if [ "$code" != "200" ]; then
+            echo "Unexpected instrument status: $code" >&2
+            exit 1
+          fi
+          echo "$body" | grep -q "Status"
+
+      - name: Smoke test Agent driver status
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5003/driver_status)
+          body=$(curl -s http://localhost:5003/driver_status)
+          if [ "$code" != "200" ]; then
+            echo "Unexpected agent status: $code" >&2
+            exit 1
+          fi
+          echo "$body" | grep -q "mock_mode"
+
+      - name: Teardown
+        if: always()
+        run: docker compose down -v
+
+  build-and-push-tiled:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Tiled image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.tiled
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/tiled:latest
+            ghcr.io/${{ github.repository }}/tiled:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/tiled:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/tiled:buildcache,mode=max
+
+  build-and-push-orchestrator:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Orchestrator image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.orchestrator
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/orchestrator:latest
+            ghcr.io/${{ github.repository }}/orchestrator:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/orchestrator:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/orchestrator:buildcache,mode=max
+
+  build-and-push-mixing:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Mixing image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.mixing
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/mixing:latest
+            ghcr.io/${{ github.repository }}/mixing:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/mixing:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/mixing:buildcache,mode=max
+
+  build-and-push-instrument:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Instrument image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.instrument
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/instrument:latest
+            ghcr.io/${{ github.repository }}/instrument:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/instrument:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/instrument:buildcache,mode=max
+
+  build-and-push-agent:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Agent image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.agent
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/agent:latest
+            ghcr.io/${{ github.repository }}/agent:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/agent:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/agent:buildcache,mode=max

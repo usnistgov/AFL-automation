@@ -1,0 +1,62 @@
+name: Integration Tests
+
+# NOTE: During development, target the feature branch add-docker.
+# Update branches here when merging to main/master.
+on:
+  push:
+    branches: [ add-docker ]
+  pull_request:
+    branches: [ add-docker ]
+  workflow_dispatch: {}
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and start stack
+        run: |
+          docker compose up -d --build
+
+      - name: Wait for services to become healthy
+        run: |
+          set -euo pipefail
+          tiled_id=$(docker compose ps -q tiled)
+          orch_id=$(docker compose ps -q orchestrator)
+          for i in $(seq 1 30); do
+            th=$(docker inspect --format '{{.State.Health.Status}}' "$tiled_id") || true
+            oh=$(docker inspect --format '{{.State.Health.Status}}' "$orch_id") || true
+            if [ "$th" = "healthy" ] && [ "$oh" = "healthy" ]; then
+              echo "Services healthy"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Services did not become healthy" >&2
+          docker compose ps
+          exit 1
+
+      - name: Smoke test Tiled API
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Tiled-Api-Key: devkey" http://localhost:8000/api/v1/metadata/)
+          if [ "$code" != "200" ] && [ "$code" != "401" ]; then
+            echo "Unexpected Tiled status: $code" >&2
+            exit 1
+          fi
+
+      - name: Smoke test Orchestrator tiled_config
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/tiled_config)
+          body=$(curl -s http://localhost:5000/tiled_config)
+          if [ "$code" != "200" ]; then
+            echo "Unexpected orchestrator status: $code" >&2
+            exit 1
+          fi
+          echo "$body" | grep -q "devkey"
+
+      - name: Teardown
+        if: always()
+        run: docker compose down -v

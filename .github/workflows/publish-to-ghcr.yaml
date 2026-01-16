@@ -35,10 +35,10 @@ jobs:
           file: ./docker/Dockerfile.tiled
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/tiled:latest
-            ghcr.io/${{ github.repository }}/tiled:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/tiled:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/tiled:buildcache,mode=max
+            ghcr.io/${{ github.repository | lower }}/tiled:latest
+            ghcr.io/${{ github.repository | lower }}/tiled:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/tiled:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/tiled:buildcache,mode=max
 
   build-and-push-orchestrator:
     runs-on: ubuntu-latest
@@ -68,10 +68,10 @@ jobs:
           file: ./docker/Dockerfile.orchestrator
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/orchestrator:latest
-            ghcr.io/${{ github.repository }}/orchestrator:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/orchestrator:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/orchestrator:buildcache,mode=max
+            ghcr.io/${{ github.repository | lower }}/orchestrator:latest
+            ghcr.io/${{ github.repository | lower }}/orchestrator:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/orchestrator:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/orchestrator:buildcache,mode=max
 
   build-and-push-mixing:
     runs-on: ubuntu-latest
@@ -101,10 +101,10 @@ jobs:
           file: ./docker/Dockerfile.mixing
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/mixing:latest
-            ghcr.io/${{ github.repository }}/mixing:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/mixing:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/mixing:buildcache,mode=max
+            ghcr.io/${{ github.repository | lower }}/mixing:latest
+            ghcr.io/${{ github.repository | lower }}/mixing:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/mixing:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/mixing:buildcache,mode=max
 
   build-and-push-instrument:
     runs-on: ubuntu-latest
@@ -134,10 +134,10 @@ jobs:
           file: ./docker/Dockerfile.instrument
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/instrument:latest
-            ghcr.io/${{ github.repository }}/instrument:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/instrument:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/instrument:buildcache,mode=max
+            ghcr.io/${{ github.repository | lower }}/instrument:latest
+            ghcr.io/${{ github.repository | lower }}/instrument:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/instrument:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/instrument:buildcache,mode=max
 
   build-and-push-agent:
     runs-on: ubuntu-latest
@@ -167,7 +167,7 @@ jobs:
           file: ./docker/Dockerfile.agent
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/agent:latest
-            ghcr.io/${{ github.repository }}/agent:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/agent:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/agent:buildcache,mode=max
+            ghcr.io/${{ github.repository | lower }}/agent:latest
+            ghcr.io/${{ github.repository | lower }}/agent:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository | lower }}/agent:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository | lower }}/agent:buildcache,mode=max

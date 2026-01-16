@@ -11,10 +11,13 @@
     "driver_custom_configs": {
       "BioSANSPrepare": {
         "_classname": "AFL.automation.mixing.BioSANSPrepare.BioSANSPrepare",
-        "mixing_locations": [],
-        "stocks": [],
-        "stock_mix_order": [],
-        "deck": {}
+        "overrides": {
+          "mixing_locations": [],
+          "stocks": [],
+          "stock_mix_order": [],
+          "deck": {},
+          "mock_mode": true
+        }
       }
     },
     "ca_status_enabled": false,

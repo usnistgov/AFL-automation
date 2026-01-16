@@ -4,7 +4,25 @@ from typing import List, Union, Dict, Any
 from AFL.automation.mixing.MassBalance import MassBalanceDriver, MassBalance
 from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
-from eic_client.EICClient import EICClient
+
+# Optional import for EIC client
+try:
+    from eic_client.EICClient import EICClient
+except ImportError:
+    EICClient = None
+
+
+class MockEICClient:
+    """Minimal mock EIC client for testing and mock_mode."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn("EICClient not available - using mock client", stacklevel=2)
+
+    def get_pv(self, *args, **kwargs):
+        return True, None, "mock"
+
+    def set_pv(self, *args, **kwargs):
+        return True, "mock"
 
 class BioSANSPrepare(MassBalanceDriver, Driver):
     defaults = {
@@ -18,10 +36,12 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         'eic_token': '1',
         'ipts_number': '1234',
         'beamline': 'CG3',
+        'mock_mode': False,
     }
 
     def __init__(self, overrides=None):
         Driver.__init__(self, name='BioSANSPrepare', defaults=self.gather_defaults(), overrides=overrides)
+        self.mock_mode = bool(self.config.get('mock_mode', False))
         self._client = None
         self.stock_pv_map = {}
         self.stocks = []
@@ -276,11 +296,20 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
             The client instance for communicating with the instrument.
         """
         if self._client is None:
-            self._client = EICClient(
-                ipts_number=self.config['ipts_number'],
-                eic_token=self.config['eic_token'],
-                beamline=self.config['beamline']
-            )
+            if self.mock_mode:
+                self._client = MockEICClient(
+                    ipts_number=self.config['ipts_number'],
+                    eic_token=self.config['eic_token'],
+                    beamline=self.config['beamline']
+                )
+            else:
+                if EICClient is None:
+                    raise ImportError("eic_client is not available and mock_mode is False")
+                self._client = EICClient(
+                    ipts_number=self.config['ipts_number'],
+                    eic_token=self.config['eic_token'],
+                    beamline=self.config['beamline']
+                )
         return self._client
     
     def make_stock_pv_map(self):

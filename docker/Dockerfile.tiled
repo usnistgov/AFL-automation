@@ -1,0 +1,37 @@
+# Dockerfile for Tiled Data Catalog Server
+# Tiled provides a HTTP REST API for storing and querying time-series and tabular data
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Tiled server with optional dependencies for better database support
+RUN pip install --no-cache-dir \
+    tiled[server] \
+    aiosqlite
+
+# Create data directories
+RUN mkdir -p /app/data /root/.afl
+
+# Copy Tiled configuration for container use
+COPY docker/config/tiled-config.yml /app/config.yml
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    TILED_PORT=8000
+
+# Expose the Tiled server port
+EXPOSE 8000
+
+# Health check against root metadata endpoint; 200/404/403 all indicate server responding
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import requests; r = requests.get('http://localhost:8000'); exit(0 if r.status_code in [200, 404, 403] else 1)" || exit 1
+
+# Default entry point: run the Tiled server. Note: `tiled serve config <file>` is the correct syntax.
+CMD ["tiled", "serve", "config", "/app/config.yml"]

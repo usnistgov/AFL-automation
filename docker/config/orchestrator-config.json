@@ -1,0 +1,20 @@
+{
+  "26/16/01 10:50:00.000000": {
+    "owner_email": "",
+    "system_serial": "Default",
+    "tiled_server": "http://tiled:8000",
+    "tiled_api_key": "devkey",
+    "bind_address": "0.0.0.0",
+    "ports": {
+      "OrchestratorDriver": 5000
+    },
+    "driver_custom_configs": {
+      "OrchestratorDriver": {
+        "_classname": "AFL.automation.orchestrator.OrchestratorDriver.OrchestratorDriver",
+        "snapshot_directory": "/root/snaps"
+      }
+    },
+    "ca_status_enabled": false,
+    "ca_status_ports": {}
+  }
+}

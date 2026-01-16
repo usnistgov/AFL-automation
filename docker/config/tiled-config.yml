@@ -1,0 +1,15 @@
+authentication:
+  # The default is false. Set to true to enable any HTTP client that can
+  # connect to _read_. An API key is still required to write.
+  # Non-empty for docker deployment; change for production.
+  single_user_api_key: "devkey"
+uvicorn:
+  host: "0.0.0.0"
+  port: 8000
+trees:
+  - path: /
+    tree: catalog
+    args:
+      uri: "sqlite+aiosqlite:///catalog.db"
+      writable_storage: "data/"
+      init_if_not_exists: true

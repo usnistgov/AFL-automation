@@ -66,5 +66,21 @@ services:
       - ./docker/config/instrument-config.json:/root/.afl/config.json:ro
     command: ["python", "-m", "AFL.automation.instrument.BioSANS"]
 
+  agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.agent
+    ports:
+      - "5003:5003"
+    environment:
+      - AFL_AGENT_PORT=5003
+      - TILED_SERVER=http://tiled:8000
+      - TILED_API_KEY=devkey
+    depends_on:
+      - tiled
+    volumes:
+      - ./docker/config/agent-config.json:/root/.afl/config.json:ro
+    command: ["python", "-m", "AFL.automation.double_agent.AgentDriver"]
+
 volumes:
   tiled-data:

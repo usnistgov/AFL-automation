@@ -10,6 +10,60 @@ from AFL.automation.shared.exceptions import EmptyException
 from AFL.automation.shared.warnings import MixWarning
 
 
+@pytest.fixture(autouse=True)
+def ignore_pyparsing_setparseaction_deprecation(monkeypatch):
+    """Suppress the known pyparsing DeprecationWarning about setParseAction.
+
+    We monkeypatch warnings.simplefilter so that even when tests call
+    simplefilter("error") inside catch_warnings, the ignore filter is
+    re-inserted at the front.
+    """
+
+    original_simplefilter = warnings.simplefilter
+
+    def patched_simplefilter(action, *args, **kwargs):
+        original_simplefilter(action, *args, **kwargs)
+        warnings.filterwarnings(
+            "ignore",
+            message=".*setParseAction.*",
+            category=DeprecationWarning,
+            append=False,
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=".*setName.*",
+            category=DeprecationWarning,
+            append=False,
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=".*parseString.*",
+            category=DeprecationWarning,
+            append=False,
+        )
+
+    monkeypatch.setattr(warnings, "simplefilter", patched_simplefilter)
+    # Also seed the filter list before any tests run
+    warnings.filterwarnings(
+        "ignore",
+        message=".*setParseAction.*",
+        category=DeprecationWarning,
+        append=False,
+    )
+    warnings.filterwarnings(
+        "ignore",
+        message=".*setName.*",
+        category=DeprecationWarning,
+        append=False,
+    )
+    warnings.filterwarnings(
+        "ignore",
+        message=".*parseString.*",
+        category=DeprecationWarning,
+        append=False,
+    )
+
+
 @pytest.mark.usefixtures("mixdb")
 def test_solution_initialization():
     with warnings.catch_warnings():

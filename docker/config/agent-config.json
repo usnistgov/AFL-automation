@@ -1,0 +1,24 @@
+{
+  "26/16/01 11:00:00.000000": {
+    "owner_email": "",
+    "system_serial": "Default",
+    "tiled_server": "http://tiled:8000",
+    "tiled_api_key": "devkey",
+    "bind_address": "0.0.0.0",
+    "ports": {
+      "DoubleAgentDriver": 5003
+    },
+    "driver_custom_configs": {
+      "DoubleAgentDriver": {
+        "_classname": "AFL.automation.double_agent.AgentDriver.DoubleAgentDriver",
+        "overrides": {
+          "mock_mode": true,
+          "pipeline": {},
+          "tiled_input_groups": []
+        }
+      }
+    },
+    "ca_status_enabled": false,
+    "ca_status_ports": {}
+  }
+}

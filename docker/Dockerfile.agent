@@ -1,0 +1,37 @@
+# Dockerfile for DoubleAgent service
+FROM python:3.12-slim as builder
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY . .
+RUN python -m pip install --user --no-cache-dir --upgrade pip setuptools wheel
+RUN python -m pip install --user --no-cache-dir .
+
+FROM python:3.12-slim
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    AFL_AGENT_PORT=5003
+
+COPY . .
+RUN mkdir -p /root/.afl
+
+EXPOSE 5003
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=5 \
+    CMD python -c "import requests,sys; r=requests.get('http://localhost:5003/driver_status'); sys.exit(0 if r.status_code in (200,401,403,404) else 1)" || exit 1
+
+CMD ["python", "-m", "AFL.automation.double_agent.AgentDriver"]

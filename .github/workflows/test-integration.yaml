@@ -1,12 +1,10 @@
 name: Integration Tests
 
-# NOTE: During development, target the feature branch add-docker.
-# Update branches here when merging to main/master.
 on:
   push:
-    branches: [ add-docker ]
+    branches: [ main ]
   pull_request:
-    branches: [ add-docker ]
+    branches: [ main ]
   workflow_dispatch: {}
 
 jobs:

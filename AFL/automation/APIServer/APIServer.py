@@ -260,7 +260,7 @@ class APIServer:
 
     def is_server_live(self):
         self.app.logger.debug("Server is live.")
-        return 200
+        return "OK", 200
 
     def get_unqueued_commands(self):
         return jsonify(self.driver.unqueued.function_info),200

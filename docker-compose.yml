@@ -1,0 +1,86 @@
+services:
+  tiled:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tiled
+    ports:
+      - "8000:8000"
+    environment:
+      - TILED_PORT=8000
+    volumes:
+      - tiled-data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests,sys; r=requests.get('http://localhost:8000/api/v1/metadata', headers={'X-Tiled-Api-Key':'devkey'}); sys.exit(0 if r.status_code in (200,401,403,404) else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.orchestrator
+    ports:
+      - "5000:5000"
+    environment:
+      - AFL_ORCHESTRATOR_PORT=5000
+      - TILED_SERVER=http://tiled:8000
+      - TILED_API_KEY=devkey
+    depends_on:
+      - tiled
+    volumes:
+      - ./docker/config/orchestrator-config.json:/root/.afl/config.json:ro
+    command: ["python", "-m", "AFL.automation.orchestrator.OrchestratorDriver"]
+
+  mixing:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mixing
+    ports:
+      - "5002:5002"
+    environment:
+      - AFL_MIXING_PORT=5002
+      - TILED_SERVER=http://tiled:8000
+      - TILED_API_KEY=devkey
+    depends_on:
+      - tiled
+    volumes:
+      - ./docker/config/mixing-config.json:/root/.afl/config.json:ro
+    command: ["python", "-m", "AFL.automation.mixing.BioSANSPrepare"]
+
+  instrument:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.instrument
+    ports:
+      - "5001:5001"
+    environment:
+      - AFL_INSTRUMENT_PORT=5001
+      - TILED_SERVER=http://tiled:8000
+      - TILED_API_KEY=devkey
+      - EIC_TOKEN=1
+      - IPTS_NUMBER=1234
+    depends_on:
+      - tiled
+    volumes:
+      - ./docker/config/instrument-config.json:/root/.afl/config.json:ro
+    command: ["python", "-m", "AFL.automation.instrument.BioSANS"]
+
+  agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.agent
+    ports:
+      - "5003:5003"
+    environment:
+      - AFL_AGENT_PORT=5003
+      - TILED_SERVER=http://tiled:8000
+      - TILED_API_KEY=devkey
+    depends_on:
+      - tiled
+    volumes:
+      - ./docker/config/agent-config.json:/root/.afl/config.json:ro
+    command: ["python", "-m", "AFL.automation.double_agent.AgentDriver"]
+
+volumes:
+  tiled-data:

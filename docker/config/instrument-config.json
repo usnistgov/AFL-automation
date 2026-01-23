@@ -1,0 +1,28 @@
+{
+  "26/16/01 11:00:00.000000": {
+    "owner_email": "",
+    "system_serial": "Default",
+    "tiled_server": "http://tiled:8000",
+    "tiled_api_key": "devkey",
+    "bind_address": "0.0.0.0",
+    "ports": {
+      "BioSANS": 5001
+    },
+    "driver_custom_configs": {
+      "BioSANS": {
+        "_classname": "AFL.automation.instrument.BioSANS.BioSANS",
+        "overrides": {
+          "eic_token": "1",
+          "ipts_number": "1234",
+          "beamline": "CG3",
+          "run_cycle": "RC511",
+          "use_subtracted_data": true,
+          "config": "Config0",
+          "mock_mode": true
+        }
+      }
+    },
+    "ca_status_enabled": false,
+    "ca_status_ports": {}
+  }
+}

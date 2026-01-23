@@ -1,0 +1,53 @@
+# Multi-stage build for AFL-automation Orchestrator Service
+FROM python:3.12-slim as builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy source code
+COPY . .
+
+# Build the package
+RUN python -m pip install --user --no-cache-dir --upgrade pip setuptools wheel
+RUN python -m pip install --user --no-cache-dir .
+
+# Runtime stage
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python packages from builder
+COPY --from=builder /root/.local /root/.local
+
+# Set environment variables
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    AFL_ORCHESTRATOR_PORT=5000
+
+# Copy application source
+COPY . .
+
+# Create directory for AFL configuration if needed
+RUN mkdir -p /root/.afl
+
+# Expose the default orchestrator port
+EXPOSE 5000
+
+# Health check hits a lightweight endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests,sys; r=requests.get('http://localhost:5000/tiled_config'); sys.exit(0 if r.status_code in (200,401,403,404) else 1)" || exit 1
+
+# Default entry point: run the OrchestratorDriver with the launcher
+CMD ["python", "-m", "AFL.automation.orchestrator.OrchestratorDriver"]
+

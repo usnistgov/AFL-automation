@@ -11,6 +11,14 @@ from skimage.util import img_as_ubyte
 from skimage.color import rgb2gray
 from AFL.automation.APIServer.Driver import Driver
 import time
+import copy
+import warnings
+
+try:
+    from tiled.queries import Eq
+except ImportError:
+    Eq = None
+    warnings.warn("Cannot import from tiled...empty UUID lookup will not work", stacklevel=2)
 
 
 class OpticalTurbidity(Driver): 
@@ -22,6 +30,7 @@ class OpticalTurbidity(Driver):
     defaults['camera_interface'] = 'http'  # 'http' or 'opencv'
     defaults['camera_url'] = 'http://afl-video:8081/103/current'  # For http interface
     defaults['camera_index'] = 0  # For opencv interface
+    defaults['empty_uuid'] = ''  # sample_uuid in tiled
     
     def __init__(self,camera=None,overrides=None):
         '''
@@ -178,6 +187,8 @@ class OpticalTurbidity(Driver):
         if set_empty:
             self.empty_img = measurement_img
             print('setting empty image', measurement_img)
+            if self.data is not None and 'sample_uuid' in self.data:
+                self.config['empty_uuid'] = copy.deepcopy(self.data['sample_uuid'])
             return 0,[0,0]
         else:
             print('measuring turbidity')
@@ -185,10 +196,36 @@ class OpticalTurbidity(Driver):
         print('measurement image: ', measurement_img.shape, type(measurement_img))
 
         #empty SANS cell image for masking
+        empty_img = None
+        empty_from_measurement = False
         if self.empty_img is not None:
             empty_img = self.empty_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]
-        else:
-            raise ValueError('need to set empty before measuring')
+        elif self.config.get('empty_uuid'):
+            if Eq is None:
+                self.log_warning('Cannot load empty image without tiled. Using measurement image for mask.')
+            elif self.data is None or not hasattr(self.data, 'tiled_client') or self.data.tiled_client is None:
+                self.log_warning('No tiled client available. Using measurement image for mask.')
+            else:
+                tiled_result = self.data.tiled_client.search(Eq('sample_uuid', self.config['empty_uuid']))
+                if len(tiled_result) == 0:
+                    self.log_warning(f"No tiled entry found for empty_uuid={self.config['empty_uuid']}. Using measurement image for mask.")
+                else:
+                    item = tiled_result.items()[-1][-1]
+                    try:
+                        ds = item.read(optimize_wide_table=False)
+                    except TypeError:
+                        ds = item.read()
+                    if 'img_MT' in ds:
+                        empty_img = ds['img_MT'].values
+                    elif 'img' in ds:
+                        empty_img = ds['img'].values
+                    if empty_img is not None:
+                        empty_img = empty_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]
+
+        if empty_img is None:
+            self.log_warning('No empty image available. Using measurement image for mask and normalization.')
+            empty_img = measurement_img
+            empty_from_measurement = True
         
         #Place to fix edge detection
         edges = canny(empty_img, sigma=2, low_threshold=10, high_threshold=50)
@@ -253,6 +290,8 @@ class OpticalTurbidity(Driver):
         ds.attrs['located_center'] = [cx, cy]
         ds.attrs['name'] = name
         ds.attrs['turbidity_metric'] = turbidity_metric
+        ds.attrs['empty_uuid'] = self.config.get('empty_uuid', '')
+        ds.attrs['empty_available'] = not empty_from_measurement
         ds['turbidity'] = ('turbidity', [turbidity_metric])
         ds['img'] = (('px','py'),measurement_img)
         ds['img_MT'] = (('px','py'),empty_img)

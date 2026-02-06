@@ -2,9 +2,9 @@ name: Integration Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, add-docker ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, add-docker ]
   workflow_dispatch: {}
 
 jobs:

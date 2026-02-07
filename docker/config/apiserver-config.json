@@ -1,0 +1,8 @@
+{
+  "name": "DummyAPIServer",
+  "host": "0.0.0.0",
+  "port": 5500,
+  "tiled_server": "http://tiled:8000",
+  "tiled_api_key": "devkey",
+  "debug": false
+}

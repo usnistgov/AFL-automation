@@ -66,5 +66,27 @@ services:
       - ./docker/config/instrument-config.json:/root/.afl/config.json:ro
     command: ["python", "-m", "AFL.automation.instrument.BioSANS"]
 
+  apiserver:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.apiserver
+    ports:
+      - "5500:5500"
+    environment:
+      - AFL_APISERVER_PORT=5500
+      - TILED_SERVER=http://tiled:8000
+      - TILED_API_KEY=devkey
+    depends_on:
+      - tiled
+    volumes:
+      - ./docker/config/apiserver-config.json:/root/.afl/config.json:ro
+    command: ["python", "-m", "AFL.automation.APIServer.DummyDriver"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests,sys; r=requests.get('http://localhost:5500/status'); sys.exit(0 if r.status_code in (200, 401, 403, 404) else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
 volumes:
   tiled-data:

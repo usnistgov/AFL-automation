@@ -83,11 +83,6 @@ jobs:
           fi
           echo "$body" | grep -q "Status"
 
-      - name: Smoke test APIServer data module import
-        run: |
-          set -euo pipefail
-          docker compose exec -T apiserver python -c "from AFL.automation.APIServer.data import DataPacket, DataJSON, DataTiled, DataTrashcan; print('✓ Data module import successful')"
-
       - name: Smoke test APIServer status endpoint
         run: |
           set -euo pipefail

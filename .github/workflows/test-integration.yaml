@@ -25,12 +25,14 @@ jobs:
           orch_id=$(docker compose ps -q orchestrator)
           mix_id=$(docker compose ps -q mixing)
           inst_id=$(docker compose ps -q instrument)
+          api_id=$(docker compose ps -q apiserver)
           for i in $(seq 1 30); do
             th=$(docker inspect --format '{{.State.Health.Status}}' "$tiled_id") || true
             oh=$(docker inspect --format '{{.State.Health.Status}}' "$orch_id") || true
             mh=$(docker inspect --format '{{.State.Health.Status}}' "$mix_id") || true
             ih=$(docker inspect --format '{{.State.Health.Status}}' "$inst_id") || true
-            if [ "$th" = "healthy" ] && [ "$oh" = "healthy" ] && [ "$mh" = "healthy" ] && [ "$ih" = "healthy" ]; then
+            ah=$(docker inspect --format '{{.State.Health.Status}}' "$api_id") || true
+            if [ "$th" = "healthy" ] && [ "$oh" = "healthy" ] && [ "$mh" = "healthy" ] && [ "$ih" = "healthy" ] && [ "$ah" = "healthy" ]; then
               echo "Services healthy"; exit 0
             fi
             sleep 2
@@ -80,6 +82,20 @@ jobs:
             exit 1
           fi
           echo "$body" | grep -q "Status"
+
+      - name: Smoke test APIServer data module import
+        run: |
+          set -euo pipefail
+          docker compose exec -T apiserver python -c "from AFL.automation.APIServer.data import DataPacket, DataJSON, DataTiled, DataTrashcan; print('✓ Data module import successful')"
+
+      - name: Smoke test APIServer status endpoint
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5500/status)
+          if [ "$code" != "200" ]; then
+            echo "Unexpected apiserver status: $code" >&2
+            exit 1
+          fi
 
       - name: Teardown
         if: always()

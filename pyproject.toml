@@ -101,13 +101,18 @@ vision = ["opencv-python"]
 # You can add more extras as needed for other hardware modules.
 [tool.hatch.build]
 packages = ["AFL"]
-include-package-data = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["AFL"]
+include = [
+  "AFL/**/*.py",
+]
 
 [tool.hatch.build.targets.sdist]
 packages = ["AFL"]
+include = [
+  "AFL/**/*.py",
+]
 
 [tool.afl]
 custom_labware_dir = "support/labware"

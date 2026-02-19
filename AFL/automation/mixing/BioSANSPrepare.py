@@ -13,7 +13,7 @@ except ImportError:
     EICClient = None
 
 
-class BioSANSPrepare(MassBalanceDriver):
+class BioSANSPrepare(MassBalanceDriver, Driver):
     defaults = {
         'mixing_locations': [],
         'prepare_volume': '100 ul',

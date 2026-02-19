@@ -226,9 +226,9 @@ class MassBalanceDriver(MassBalanceBase, Driver):
     defaults = {'minimum_volume': '20 ul', 'stocks': [], 'targets': [], 'tol': 1e-3}
 
 
-    def __init__(self, overrides=None):
+    def __init__(self, overrides=None, name='MassBalance'):
         MassBalance.__init__(self)
-        Driver.__init__(self, name='MassBalance', defaults=self.gather_defaults(), overrides=overrides)
+        Driver.__init__(self, name=name, defaults=self.gather_defaults(), overrides=overrides)
         
         # Replace config with optimized settings for large stock configurations
         # This significantly improves performance when adding many stocks

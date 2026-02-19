@@ -2,7 +2,6 @@ import warnings
 import time
 from typing import List, Union, Dict, Any
 from AFL.automation.mixing.MassBalance import MassBalanceDriver, MassBalance
-from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.mock_eic_client import MockEICClient
 
@@ -13,7 +12,7 @@ except ImportError:
     EICClient = None
 
 
-class BioSANSPrepare(MassBalanceDriver, Driver):
+class BioSANSPrepare(MassBalanceDriver):
     defaults = {
         'mixing_locations': [],
         'prepare_volume': '100 ul',
@@ -29,7 +28,7 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
     }
 
     def __init__(self, overrides=None):
-        Driver.__init__(self, name='BioSANSPrepare', defaults=self.gather_defaults(), overrides=overrides)
+        MassBalanceDriver.__init__(self, overrides=overrides, name='BioSANSPrepare')
         self.mock_mode = bool(self.config.get('mock_mode', False))
         self._client = None
         self.stock_pv_map = {}

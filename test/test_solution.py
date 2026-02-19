@@ -26,19 +26,19 @@ def ignore_pyparsing_setparseaction_deprecation(monkeypatch):
         warnings.filterwarnings(
             "ignore",
             message=".*setParseAction.*",
-            category=DeprecationWarning,
+            category=Warning,
             append=False,
         )
         warnings.filterwarnings(
             "ignore",
             message=".*setName.*",
-            category=DeprecationWarning,
+            category=Warning,
             append=False,
         )
         warnings.filterwarnings(
             "ignore",
             message=".*parseString.*",
-            category=DeprecationWarning,
+            category=Warning,
             append=False,
         )
 
@@ -47,19 +47,19 @@ def ignore_pyparsing_setparseaction_deprecation(monkeypatch):
     warnings.filterwarnings(
         "ignore",
         message=".*setParseAction.*",
-        category=DeprecationWarning,
+        category=Warning,
         append=False,
     )
     warnings.filterwarnings(
         "ignore",
         message=".*setName.*",
-        category=DeprecationWarning,
+        category=Warning,
         append=False,
     )
     warnings.filterwarnings(
         "ignore",
         message=".*parseString.*",
-        category=DeprecationWarning,
+        category=Warning,
         append=False,
     )
 

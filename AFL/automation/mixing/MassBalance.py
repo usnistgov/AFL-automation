@@ -53,16 +53,53 @@ def _make_balanced_target(mass_transfers, target):
     return balanced_target
 
 
-def _balance(mass_fraction_matrix: np.ndarray, target_masses: np.ndarray, bounds: Bounds, stocks: List[Solution]) -> List[Dict[Solution, str]]:
+def _balance(mass_fraction_matrix: np.ndarray, target_masses: np.ndarray, bounds: Bounds, stocks: List[Solution], near_bound_tol: float = 0.1) -> List[Dict[Solution, str]]:
     result = lsq_linear(mass_fraction_matrix, target_masses, bounds=bounds)
     base_mass_transfer = {stock: f'{mass} g' for stock, mass in zip(stocks, result.x)}
     mass_transfers = [base_mass_transfer]
-    negative_one_indices = [i for i, x in enumerate(result.active_mask) if x == -1]
-    for combination in itertools.product(negative_one_indices):
-        adjusted_transfer = base_mass_transfer.copy()
-        for idx in combination:
-            adjusted_transfer[stocks[idx]] = '0 g'
-        mass_transfers.append(adjusted_transfer)
+
+    # Identify stocks that the solver pushed to or near their lower bound.
+    # These are candidates for exclusion (zeroing out) since the solver
+    # wanted to use less than or close to the minimum transfer volume.
+    # Using active_mask == -1 alone is insufficient: the solver may place
+    # a stock slightly above its lower bound (e.g., to reduce H2O residual
+    # from a mostly-water stock) even when the target calls for none of
+    # that stock's solute.  A relative tolerance catches these cases.
+    candidate_indices = [
+        i for i in range(len(stocks))
+        if result.active_mask[i] == -1
+        or (bounds.lb[i] > 0 and result.x[i] <= bounds.lb[i] * (1 + near_bound_tol))
+    ]
+
+    # Try all subsets of candidate stocks and re-solve each
+    # reduced problem so the remaining stocks are properly re-optimized.
+    for r in range(1, len(candidate_indices) + 1):
+        for combination in itertools.combinations(candidate_indices, r):
+            exclude = set(combination)
+            keep_indices = [i for i in range(len(stocks)) if i not in exclude]
+            if not keep_indices:
+                continue
+
+            reduced_matrix = mass_fraction_matrix[:, keep_indices]
+            reduced_bounds = Bounds(
+                lb=[bounds.lb[i] for i in keep_indices],
+                ub=[bounds.ub[i] for i in keep_indices],
+                keep_feasible=False,
+            )
+
+            reduced_result = lsq_linear(reduced_matrix, target_masses, bounds=reduced_bounds)
+
+            adjusted_transfer = {}
+            reduced_idx = 0
+            for i, stock in enumerate(stocks):
+                if i in exclude:
+                    adjusted_transfer[stock] = '0 g'
+                else:
+                    adjusted_transfer[stock] = f'{reduced_result.x[reduced_idx]} g'
+                    reduced_idx += 1
+
+            mass_transfers.append(adjusted_transfer)
+
     return mass_transfers
 
 # --- MassBalance Base Class ---
@@ -108,7 +145,7 @@ class MassBalanceBase:
 
     def balance_report(self):
         """
-        Returns a json serializable structure that has all of the balanced targets 
+        Returns a json serializable structure that has all of the balanced targets
         that can be reconstituted by the user back into solution objects.
         """
         report = []
@@ -119,7 +156,7 @@ class MassBalanceBase:
                     'name': item['target'].name,
                     'masses': {name: f"{c.mass.to('mg').magnitude} mg" for name, c in item['target']}
                 }
-            
+
             if item['balanced_target']:
                 entry['balanced_target'] = {
                     'name': item['balanced_target'].name,
@@ -127,17 +164,22 @@ class MassBalanceBase:
                 }
             else:
                 entry['balanced_target'] = None
-                
+
             if item['transfers']:
                 entry['transfers'] = {stock.name: mass for stock, mass in item['transfers'].items()}
             else:
                 entry['transfers'] = None
-                
+
             if item.get('difference') is not None:
                 entry['difference'] = item['difference'].tolist()
             else:
                 entry['difference'] = None
-            
+
+            if item.get('success') is not None:
+                entry['success'] = item['success']
+            else:
+                entry['success'] = None
+
             report.append(entry)
         return report
 
@@ -156,29 +198,57 @@ class MassBalanceBase:
             for transfers in mass_transfers:
                 balanced_target = _make_balanced_target(transfers, target)
                 _extract_masses(balanced_target, components, array=balanced_masses)
-                difference = abs(balanced_masses - target_masses) / target_masses
-                if all(np.abs(difference) < tol):
-                    balanced_targets.append({
-                        'target':balanced_target, 
-                        'difference':difference,
+
+                total_mass = sum(balanced_masses)
+                total_target_mass = sum(target_masses)
+
+                balanced_mass_fractions ={name:mass / total_mass for name, mass in zip(components, balanced_masses)}
+                target_mass_fractions = {name:mass / total_target_mass for name, mass in zip(components, target_masses)}
+
+                differences = []
+                for name in components:
+                    balanced_fraction = balanced_mass_fractions[name]
+                    target_fraction = target_mass_fractions[name]
+
+                    # Floor very small values to zero
+                    if balanced_fraction < 1e-6:
+                        balanced_fraction = 0.0
+                    if target_fraction < 1e-6:
+                        target_fraction = 0.0
+
+                    if target_fraction == 0.0:
+                        if balanced_fraction == 0.0:
+                            difference = 0.0
+                        else:
+                            difference = balanced_fraction
+                    else:
+                        difference = (balanced_fraction - target_fraction) / target_fraction
+
+                    differences.append(difference)
+
+                differences = np.array(differences)
+
+                success = all(np.abs(differences) < tol)
+
+                balanced_targets.append({
+                        'target':balanced_target,
+                        'difference':differences,
                         'transfers':transfers,
-                    })
-            if not balanced_targets:
-                warnings.warn(f'No suitable mass balance found for {target.name}')
-                self.balanced.append({
-                    'target':target, 
-                    'balanced_target':None, 
-                    'transfers':None,
-                    'difference': None,
-                    })
-            else:
-                balanced_target = min(balanced_targets, key=lambda x: sum(x['difference']))
-                self.balanced.append({
-                    'target':target, 
-                    'balanced_target':balanced_target['target'], 
-                    'transfers':balanced_target['transfers'],
-                    'difference': balanced_target['difference']
-                    })
+                        'success':success,
+                 })
+
+            if not any(b['success'] for b in balanced_targets):
+                warnings.warn(f'No suitable mass balance found for {target.name}\n')
+
+            balanced_target = min(balanced_targets, key=lambda x: np.sum(np.abs(x['difference'])))
+            self.balanced.append({
+                'target':target,
+                'balanced_target':balanced_target['target'],
+                'transfers':balanced_target['transfers'],
+                'difference': balanced_target['difference'],
+                'success': balanced_target['success']
+                })
+
         if return_report:
             return self.balance_report()
 
@@ -227,14 +297,14 @@ class MassBalanceDriver(MassBalanceBase, Driver):
 
 
     def __init__(self, overrides=None):
-        MassBalance.__init__(self)
+        MassBalanceBase.__init__(self)
         Driver.__init__(self, name='MassBalance', defaults=self.gather_defaults(), overrides=overrides)
-        
+
         # Replace config with optimized settings for large stock configurations
         # This significantly improves performance when adding many stocks
         # Note: PersistentConfig will automatically load existing values from disk
         from AFL.automation.shared.PersistentConfig import PersistentConfig
-        
+
         self.config = PersistentConfig(
             path=self.filepath,
             defaults=self.gather_defaults(),
@@ -244,7 +314,7 @@ class MassBalanceDriver(MassBalanceBase, Driver):
             write_debounce_seconds=0.5,  # Batch rapid stock additions (e.g., when adding many stocks)
             compact_json=True,  # Use compact JSON for large files
         )
-        
+
         self.minimum_transfer_volume = None
         self.stocks = []
         self.targets = []
@@ -342,12 +412,12 @@ class MassBalanceDriver(MassBalanceBase, Driver):
             ub=[np.inf] * len(self.stocks),
             keep_feasible=False
         )
-    
+
     def balance(self, return_report=False):
         self.process_stocks()
         self.process_targets()
         return super().balance(tol=self.config['tol'], return_report=return_report)
-    
+
 
     # --- Component database management ---
 
@@ -372,6 +442,5 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         self.mixdb.remove_component(name=name, uid=uid)
         self.mixdb.write()
         return 'OK'
-
 
     

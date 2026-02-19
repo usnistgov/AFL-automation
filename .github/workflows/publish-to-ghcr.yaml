@@ -39,6 +39,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.REPO_LOWER }}/tiled:latest
+            ghcr.io/${{ env.REPO_LOWER }}/tiled:${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
             ghcr.io/${{ env.REPO_LOWER }}/tiled:${{ github.sha }}
           cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/tiled:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/tiled:buildcache,mode=max
@@ -75,6 +76,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.REPO_LOWER }}/orchestrator:latest
+            ghcr.io/${{ env.REPO_LOWER }}/orchestrator:${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
             ghcr.io/${{ env.REPO_LOWER }}/orchestrator:${{ github.sha }}
           cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/orchestrator:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/orchestrator:buildcache,mode=max
@@ -111,6 +113,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.REPO_LOWER }}/mixing:latest
+            ghcr.io/${{ env.REPO_LOWER }}/mixing:${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
             ghcr.io/${{ env.REPO_LOWER }}/mixing:${{ github.sha }}
           cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/mixing:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/mixing:buildcache,mode=max
@@ -147,6 +150,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.REPO_LOWER }}/instrument:latest
+            ghcr.io/${{ env.REPO_LOWER }}/instrument:${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
             ghcr.io/${{ env.REPO_LOWER }}/instrument:${{ github.sha }}
           cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/instrument:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/instrument:buildcache,mode=max
@@ -183,6 +187,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.REPO_LOWER }}/apiserver:latest
+            ghcr.io/${{ env.REPO_LOWER }}/apiserver:${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
             ghcr.io/${{ env.REPO_LOWER }}/apiserver:${{ github.sha }}
           cache-from: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/apiserver:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ env.REPO_LOWER }}/apiserver:buildcache,mode=max

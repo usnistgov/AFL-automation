@@ -11,9 +11,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy source code
 COPY . .
+COPY docker/requirements-common.txt /tmp/requirements-common.txt
 
 # Build the package
 RUN python -m pip install --user --no-cache-dir --upgrade pip setuptools wheel
+RUN python -m pip install --user --no-cache-dir -r /tmp/requirements-common.txt
 RUN python -m pip install --user --no-cache-dir .
 
 # Runtime stage

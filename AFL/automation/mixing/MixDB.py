@@ -90,7 +90,7 @@ class MixDB:
         self.engine.update_component(serialized_dict)
         return serialized_dict['uid']
 
-    def get_component(self,name=None,uid=None,interactive=True):
+    def get_component(self,name=None,uid=None,interactive=False):
         if (name is None) == (uid is None): # XOR
             raise ValueError(
                 f"Must specify either name or uid. You passed name={name}, uid={uid}"

@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Tiled server
 RUN pip install --no-cache-dir \
-    tiled[server]==0.1.0b6 \
+    tiled[server]==0.2.4 \
     aiosqlite
 
 # Create data directories

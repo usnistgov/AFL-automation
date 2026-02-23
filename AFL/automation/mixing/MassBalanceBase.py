@@ -199,31 +199,38 @@ class MassBalanceBase:
                 total_mass = sum(balanced_masses)
                 total_target_mass = sum(target_masses)
 
-                balanced_mass_fractions ={name:mass / total_mass for name, mass in zip(components, balanced_masses)}
-                target_mass_fractions = {name:mass / total_target_mass for name, mass in zip(components, target_masses)}
-
                 differences = []
-                for name in components:
-                    balanced_fraction = balanced_mass_fractions[name]
-                    target_fraction = target_mass_fractions[name]
-
-                    # Floor very small values to zero
-                    if balanced_fraction < 1e-6:
-                        balanced_fraction = 0.0
-                    if target_fraction < 1e-6:
-                        target_fraction = 0.0
-
-                    if target_fraction == 0.0:
-                        if balanced_fraction == 0.0:
-                            difference = 0.0
-                        else:
-                            difference = balanced_fraction
+                if total_target_mass == 0:
+                    if total_mass == 0:
+                        differences = np.zeros(len(components))
                     else:
-                        difference = (balanced_fraction - target_fraction) / target_fraction
+                        # Zero-mass targets are expected; treat any nonzero balanced mass as full mismatch.
+                        differences = balanced_masses / total_mass
+                else:
+                    balanced_mass_fractions = {name: mass / total_mass for name, mass in zip(components, balanced_masses)}
+                    target_mass_fractions = {name: mass / total_target_mass for name, mass in zip(components, target_masses)}
 
-                    differences.append(difference)
+                    for name in components:
+                        balanced_fraction = balanced_mass_fractions[name]
+                        target_fraction = target_mass_fractions[name]
 
-                differences = np.array(differences)
+                        # Floor very small values to zero
+                        if balanced_fraction < 1e-6:
+                            balanced_fraction = 0.0
+                        if target_fraction < 1e-6:
+                            target_fraction = 0.0
+
+                        if target_fraction == 0.0:
+                            if balanced_fraction == 0.0:
+                                difference = 0.0
+                            else:
+                                difference = balanced_fraction
+                        else:
+                            difference = (balanced_fraction - target_fraction) / target_fraction
+
+                        differences.append(difference)
+
+                    differences = np.array(differences)
 
                 success = all(np.abs(differences) < tol)
 
@@ -237,7 +244,11 @@ class MassBalanceBase:
             if not any(b['success'] for b in balanced_targets):
                 warnings.warn(f'No suitable mass balance found for {target.name}\n')
 
-            balanced_target = min(balanced_targets, key=lambda x: np.sum(np.abs(x['difference'])))
+            successful_targets = [b for b in balanced_targets if b['success']]
+            if successful_targets:
+                balanced_target = min(successful_targets, key=lambda x: np.sum(np.abs(x['difference'])))
+            else:
+                balanced_target = min(balanced_targets, key=lambda x: np.sum(np.abs(x['difference'])))
             self.balanced.append({
                 'target':target,
                 'balanced_target':balanced_target['target'],

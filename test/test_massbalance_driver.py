@@ -1,5 +1,5 @@
 import pytest
-from AFL.automation.mixing.MassBalance import MassBalanceDriver
+from AFL.automation.mixing.MassBalanceDriver import MassBalanceDriver
 from AFL.automation.mixing.Solution import Solution
 from AFL.automation.shared.units import units
 

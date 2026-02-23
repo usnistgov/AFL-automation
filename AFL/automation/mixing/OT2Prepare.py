@@ -1,7 +1,8 @@
 import warnings
 import time
 from typing import List, Union, Dict, Any, Optional, Tuple
-from AFL.automation.mixing.MassBalance import MassBalanceDriver, MassBalance
+from AFL.automation.mixing.MassBalance import MassBalance
+from AFL.automation.mixing.MassBalanceDriver import MassBalanceDriver
 from AFL.automation.prepare.OT2HTTPDriver import OT2HTTPDriver
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.units import to_quantity, is_volume

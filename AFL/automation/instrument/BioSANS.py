@@ -1,9 +1,6 @@
 import time
 import pathlib
 import warnings
-import json
-import os
-import copy
 import numpy as np  # for return types in get data
 import xarray as xr
 import h5py  # for Nexus file writing
@@ -25,6 +22,16 @@ class BioSANS(Driver):
     defaults['run_cycle'] = 'RC511'
     defaults['use_subtracted_data'] = True
     defaults['config'] = 'Config0'
+
+    defaults['PVs_to_store'] = []
+    # defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Comp' for i in range(1,9)])
+    # defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Name' for i in range(1,9)])
+    # defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Conc' for i in range(1,9)])
+    # defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}ConcUnits' for i in range(1,9)])
+    defaults['PVs_to_store'].extend(['CG3:SE:CMP:S{i}Vol' for i in range(1,9)])
+    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SE:URMPI:143'])
+    # defaults['PVs_to_store'].extend(['CG3:SE:CMP:SMPLTotalVol'])
+    # defaults['PVs_to_store'].extend(['CG3:SE:CMP:SMPLFinalConc{i}' for i in range(1,9)])
 
 
     def __init__(self, overrides=None):
@@ -294,6 +301,14 @@ class BioSANS(Driver):
         ds['dI'] = ('q', data['dI'])
         ds['dQ'] = ('q', data['dQ'])
         ds.attrs['sample_transmission'] = transmission
+
+        for pv in self.config['PVs_to_store']:
+            try:
+                value = caget(pv)
+                ds.attrs[pv] = value
+            except Exception as e:
+                warnings.warn(f'Could not read PV {pv} to save in dataset attributes: {e}', stacklevel=2)
+                ds.attrs[pv] = None
 
         self.status_txt = 'Instrument Idle'
 

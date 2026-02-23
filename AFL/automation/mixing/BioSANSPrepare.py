@@ -7,11 +7,16 @@ from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 from eic_client.EICClient import EICClient
 
+
+
 class BioSANSPrepare(MassBalanceDriver, Driver):
     defaults = {
         'mixing_locations': [],
         'prepare_volume': '100 ul',
         'catch_volume': '10 ul',
+        'busy_initial_delay_s': 5.0,
+        'busy_poll_interval_s': 1.0,
+        'busy_timeout_s': 600.0,
         'deck': {},
         'stocks': [],
         'stock_mix_order': [],
@@ -22,19 +27,36 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
     }
 
     def __init__(self, overrides=None):
-        Driver.__init__(self, name='BioSANSPrepare', defaults=self.gather_defaults(), overrides=overrides)
+        MassBalanceDriver.__init__(self, overrides=overrides)
+
+        self.name = 'BioSANSPrepare'
+        self.filepath = self.path / (self.name + '.config.json')
+
+        from AFL.automation.shared.PersistentConfig import PersistentConfig
+
+        self.config = PersistentConfig(
+            path=self.filepath,
+            defaults=self.gather_defaults(),
+            overrides=overrides,
+            max_history=100,
+            max_history_size_mb=50,
+            write_debounce_seconds=0.5,
+            compact_json=True,
+        )
+
         self._client = None
         self.stock_pv_map = {}
         self.stocks = []
         self.targets = []
+        self.process_stocks()
     
     def status(self):
         """
         Get the status of the BioSANSPrepareDriver.
         """
         status = []
-        status.append(f'Stocks: {self.config["stocks"]}')
-        status.append(f'Stocks on BioSANS: {list(self.stock_pv_map.keys())}')
+        status.append(f'AFL Server Stocks: {self.config["stocks"]}')
+        status.append(f'BioSANS Stock PVs: {list(self.stock_pv_map.keys())}')
         status.append(f'{len(self.config["mixing_locations"])} mixing locations left')
         return status
             
@@ -61,9 +83,8 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
 
         targets_to_check = listify(targets)
             
-        # Process stocks from the driver if not already processed
-        if not self.stocks:
-            self.process_stocks()
+        # Always process stocks from config to avoid stale in-memory state.
+        self.process_stocks()
             
         # Get the minimum volume configuration
         minimum_volume = self.config.get('minimum_volume', '100 ul')
@@ -194,13 +215,16 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
             mixing_locations = self.config['mixing_locations']
             destination = mixing_locations.pop(0)
             self.config['mixing_locations'] = mixing_locations
+            popped_destination = True
         else:
             destination = dest
+            popped_destination = False
         try:
             self.set_pv("CG3:SE:URMPI:143",destination)
         except Exception as e:
             # If setting fails, put it back in the list if possible, though state might be inconsistent
-            self.config['mixing_locations'].insert(0, destination)
+            if popped_destination:
+                self.config['mixing_locations'].insert(0, destination)
             raise ValueError(f"Failed to set destination PV {destination} to CG3:SE:URMPI:143: {e}")
 
         # Configure the catch volume for the mixing process
@@ -229,9 +253,17 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
             raise RuntimeError(f"Failed to start process by setting CG3:SE:CMP:StartProcess: {e}")
 
         # Wait for the process to complete
-        time.sleep(5.0) # Pause before checking busy status
+        initial_delay_s = float(self.config.get('busy_initial_delay_s', 5.0))
+        poll_interval_s = float(self.config.get('busy_poll_interval_s', 1.0))
+        timeout_s = float(self.config.get('busy_timeout_s', 600.0))
+        start_wait = time.monotonic()
+
+        time.sleep(initial_delay_s)
         while True:
-            time.sleep(1.0) # Pause before checking busy status
+            if (time.monotonic() - start_wait) > timeout_s:
+                raise TimeoutError(f"Timed out waiting for CG3:SE:CMP:Busy to clear after {timeout_s} seconds")
+
+            time.sleep(poll_interval_s)
             try:
                 busy_status = self.get_pv("CG3:SE:CMP:Busy")
                 # PVs can return strings, ensure comparison is robust
@@ -262,6 +294,8 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         # Placeholder: implement reset logic
         self.reset_targets()
         self.reset_stocks()
+        self.stocks = []
+        self.targets = []
 
     @property
     def client(self):
@@ -290,11 +324,24 @@ class BioSANSPrepare(MassBalanceDriver, Driver):
         """
         self.stock_pv_map = {}
 
+        self.process_stocks()
+
         num_stocks = 8
+        desc_to_pv = {}
         for i in range(num_stocks):
             pv_name = f'CG3:SE:CMP:S{i+1}Vol'
-            stock_name = self.get_pv(pv_name + '.DESC')
-            self.stock_pv_map[stock_name] = pv_name
+            stock_desc = str(self.get_pv(pv_name + '.DESC')).strip()
+            if stock_desc:
+                desc_to_pv[stock_desc] = pv_name
+                self.stock_pv_map[stock_desc] = pv_name
+
+        for stock in self.stocks:
+            pv_name = desc_to_pv.get(stock.name)
+            if pv_name is None:
+                continue
+            if stock.location is not None:
+                self.stock_pv_map[str(stock.location)] = pv_name
+            self.stock_pv_map[str(stock.name)] = pv_name
     
     def set_pv(self, pv_name, value,timeout=10,wait=True):
         success_set, response_data_set = self.client.set_pv(pv_name, value,timeout,wait)

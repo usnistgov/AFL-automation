@@ -11,10 +11,11 @@ from pathlib import Path
 
 
 @pytest.fixture
-def epics_stub():
+def epics_stub(tmp_path):
     with patch('AFL.automation.instrument.BioSANS.caget', return_value=0), \
          patch('AFL.automation.instrument.BioSANS.caput', return_value=True), \
-         patch('AFL.automation.instrument.BioSANS.cainfo', return_value={}):
+         patch('AFL.automation.instrument.BioSANS.cainfo', return_value={}), \
+         patch('AFL.automation.APIServer.Driver.pathlib.Path.home', return_value=tmp_path):
         yield
 
 
@@ -112,6 +113,26 @@ class TestBioSANSClientManagement:
 
 class TestBioSANSFilePathGeneration:
     """Test file path generation for data files"""
+
+    def test_get_last_reduction_log_file_path_matches_default_template(self, epics_stub):
+        """Test reduction log path matches the default template exactly"""
+        from AFL.automation.instrument.BioSANS import BioSANS
+
+        with patch('AFL.automation.instrument.BioSANS.caget', return_value=24680):
+            driver = BioSANS(overrides={
+                'write_to_disk': False,
+                'ipts_number': '1234',
+                'beamline': 'CG3',
+                'run_cycle': 'RC511',
+                'config': 'Config0'
+            })
+
+            filepath = driver.getLastReductionLogFilePath()
+
+            assert filepath == Path(
+                '/HFIR/CG3/IPTS-1234/shared/autoreduce/RC511/Config0/'
+                'r24680_24680_reduction_log.hdf'
+            )
     
     def test_get_last_reduction_log_file_path(self, epics_stub):
         """Test reduction log file path generation"""
@@ -154,6 +175,68 @@ class TestBioSANSFilePathGeneration:
             assert isinstance(filepath, Path)
             assert '1D' in str(filepath)
             assert 'r67890_67890_1D_main.txt' in str(filepath)
+
+    def test_get_last_file_path_matches_default_template(self, epics_stub):
+        """Test reduced 1D path matches the default template exactly"""
+        from AFL.automation.instrument.BioSANS import BioSANS
+
+        with patch('AFL.automation.instrument.BioSANS.caget', return_value=24680):
+            driver = BioSANS(overrides={
+                'write_to_disk': False,
+                'ipts_number': '1234',
+                'beamline': 'CG3',
+                'run_cycle': 'RC511',
+                'config': 'Config0'
+            })
+
+            filepath = driver.getLastFilePath()
+
+            assert filepath == Path(
+                '/HFIR/CG3/IPTS-1234/shared/autoreduce/RC511/Config0/1D/'
+                'r24680_24680_1D_main.txt'
+            )
+
+    def test_get_last_reduction_log_file_path_uses_configured_data_path(self, epics_stub):
+        """Test reduction log path template can be overridden via config"""
+        from AFL.automation.instrument.BioSANS import BioSANS
+
+        with patch('AFL.automation.instrument.BioSANS.caget', return_value=13579):
+            driver = BioSANS(overrides={
+                'write_to_disk': False,
+                'ipts_number': '9876',
+                'beamline': 'CG3',
+                'run_cycle': 'RC999',
+                'config': 'ConfigX',
+                'reduction_log_data_path': '/tmp/custom/{INST}/IPTS-{IPTS}/{RUN_CYCLE}/{CONFIG}'
+            })
+
+            filepath = driver.getLastReductionLogFilePath()
+
+            assert filepath == Path(
+                '/tmp/custom/CG3/IPTS-9876/RC999/ConfigX/'
+                'r13579_13579_reduction_log.hdf'
+            )
+
+    def test_get_last_file_path_uses_configured_data_path(self, epics_stub):
+        """Test reduced 1D path template can be overridden via config"""
+        from AFL.automation.instrument.BioSANS import BioSANS
+
+        with patch('AFL.automation.instrument.BioSANS.caget', return_value=13579):
+            driver = BioSANS(overrides={
+                'write_to_disk': False,
+                'ipts_number': '9876',
+                'beamline': 'CG3',
+                'run_cycle': 'RC999',
+                'config': 'ConfigX',
+                'reduced_file_data_path': '/tmp/custom/{INST}/IPTS-{IPTS}/{RUN_CYCLE}/{CONFIG}/reduced'
+            })
+
+            filepath = driver.getLastFilePath()
+
+            assert filepath == Path(
+                '/tmp/custom/CG3/IPTS-9876/RC999/ConfigX/reduced/'
+                'r13579_13579_1D_main.txt'
+            )
 
 
 class TestBioSANSStatus:

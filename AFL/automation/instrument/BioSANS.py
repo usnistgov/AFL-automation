@@ -38,6 +38,8 @@ class BioSANS(Driver):
     defaults['use_subtracted_data'] = True
     defaults['config'] = 'Config0'
     defaults['mock_mode'] = False
+    defaults['reduction_log_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}'
+    defaults['reduced_file_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D'
 
 
     def __init__(self, overrides=None):
@@ -129,7 +131,7 @@ class BioSANS(Driver):
     @Driver.unqueued()
     def getLastReductionLogFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}' #path
+        data_path = self.config['reduction_log_data_path']
 
         path = pathlib.Path(
             data_path.format(
@@ -163,7 +165,7 @@ class BioSANS(Driver):
     @Driver.unqueued()
     def getLastFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D' #path
+        data_path = self.config['reduced_file_data_path']
 
         path = pathlib.Path(
             data_path.format(

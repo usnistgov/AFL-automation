@@ -18,6 +18,8 @@
           "run_cycle": "RC511",
           "use_subtracted_data": true,
           "config": "Config0",
+          "reduction_log_data_path": "/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}",
+          "reduced_file_data_path": "/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D",
           "mock_mode": true
         }
       }

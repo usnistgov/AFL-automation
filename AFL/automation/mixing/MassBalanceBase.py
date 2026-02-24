@@ -414,41 +414,27 @@ class MassBalanceBase:
                 balanced_target = _make_balanced_target(transfers, target)
                 _extract_masses(balanced_target, components, array=balanced_masses)
 
-                total_mass = sum(balanced_masses)
                 total_target_mass = sum(target_masses)
 
-                differences = []
-                if total_target_mass == 0:
-                    if total_mass == 0:
-                        differences = np.zeros(len(components))
-                    else:
-                        # Zero-mass targets are expected; treat any nonzero balanced mass as full mismatch.
-                        differences = balanced_masses / total_mass
-                else:
-                    balanced_mass_fractions = {name: mass / total_mass for name, mass in zip(components, balanced_masses)}
-                    target_mass_fractions = {name: mass / total_target_mass for name, mass in zip(components, target_masses)}
-
-                    for name in components:
-                        balanced_fraction = balanced_mass_fractions[name]
-                        target_fraction = target_mass_fractions[name]
-
-                        # Floor very small values to zero
-                        if balanced_fraction < 1e-6:
-                            balanced_fraction = 0.0
-                        if target_fraction < 1e-6:
-                            target_fraction = 0.0
-
-                        if target_fraction == 0.0:
-                            if balanced_fraction == 0.0:
-                                difference = 0.0
-                            else:
-                                difference = balanced_fraction
+                # Compute per-component relative differences using absolute
+                # masses so that total-mass deviations are detected.  Handle
+                # zero target masses gracefully to avoid division by zero.
+                differences = np.zeros(len(components))
+                for i in range(len(components)):
+                    t = target_masses[i]
+                    b = balanced_masses[i]
+                    if t == 0 and b == 0:
+                        differences[i] = 0.0
+                    elif t == 0:
+                        # Target is zero but balanced is not; express the
+                        # mismatch relative to the total target mass so the
+                        # tolerance comparison remains meaningful.
+                        if total_target_mass > 0:
+                            differences[i] = b / total_target_mass
                         else:
-                            difference = (balanced_fraction - target_fraction) / target_fraction
-
-                        differences.append(difference)
-
-                    differences = np.array(differences)
+                            differences[i] = 1.0
+                    else:
+                        differences[i] = abs(b - t) / t
 
                 success = all(np.abs(differences) < tol)
 
@@ -461,10 +447,13 @@ class MassBalanceBase:
 
             if not any(b['success'] for b in balanced_targets):
                 warnings.warn(f'No suitable mass balance found for {target.name}\n')
-
-            successful_targets = [b for b in balanced_targets if b['success']]
-            if successful_targets:
-                balanced_target = min(successful_targets, key=lambda x: np.sum(np.abs(x['difference'])))
+                self.balanced.append({
+                    'target':target,
+                    'balanced_target':None,
+                    'transfers':None,
+                    'difference': None,
+                    'success': False,
+                    })
             else:
                 balanced_target = min(balanced_targets, key=lambda x: np.sum(np.abs(x['difference'])))
 

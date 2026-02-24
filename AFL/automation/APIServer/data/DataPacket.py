@@ -112,7 +112,7 @@ class DataPacket(MutableMapping):
                     output_dict[key] = to_sanitize[key].tolist()
             elif isinstance(to_sanitize[key], pd.DataFrame):
                 # print(f'Sanitized dataframe {key}')
-                output_dict[key] = to_sanitize[key].tojson()
+                output_dict[key] = to_sanitize[key].to_json()
             elif isinstance(to_sanitize[key], dict):
                 # print(f'Sanitized dict {key}')
                 output_dict[key] = self._core_sanitize(to_sanitize[key])

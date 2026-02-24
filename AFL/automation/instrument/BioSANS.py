@@ -4,11 +4,23 @@ import warnings
 import numpy as np  # for return types in get data
 import xarray as xr
 import h5py  # for Nexus file writing
-from epics import caget, caput, cainfo
+
+from AFL.automation.shared.mock_eic_client import MockEICClient
+# Optional imports for hardware dependencies; real usage is gated by config
+try:
+    from epics import caget, caput, cainfo
+except ImportError:
+    caget = None
+    caput = None
+    cainfo = None
 
 from AFL.automation.APIServer.Driver import Driver
 
-from eic_client.EICClient import EICClient
+try:
+    from eic_client.EICClient import EICClient
+except ImportError:
+    EICClient = None
+
 
 class BioSANS(Driver):
     '''
@@ -22,6 +34,9 @@ class BioSANS(Driver):
     defaults['run_cycle'] = 'RC511'
     defaults['use_subtracted_data'] = True
     defaults['config'] = 'Config0'
+    defaults['mock_mode'] = False
+    defaults['reduction_log_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}'
+    defaults['reduced_file_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D'
 
     defaults['PVs_to_store'] = []
     defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Comp' for i in range(1,9)])
@@ -38,6 +53,9 @@ class BioSANS(Driver):
 
         self.app = None
         Driver.__init__(self, name='BioSANS', defaults=self.gather_defaults(), overrides=overrides)
+
+        self.mock_mode = bool(self.config.get('mock_mode', False))
+        self._caget, self._caput, self._cainfo = self._resolve_epics()
 
         self._client = None
 
@@ -64,11 +82,20 @@ class BioSANS(Driver):
             The client instance for communicating with the instrument.
         """
         if self._client is None:
-            self._client = EICClient(
-                ipts_number=self.config['ipts_number'],
-                eic_token=self.config['eic_token'],
-                beamline=self.config['beamline']
-            )
+            if self.mock_mode:
+                self._client = MockEICClient(
+                    ipts_number=self.config['ipts_number'],
+                    eic_token=self.config['eic_token'],
+                    beamline=self.config['beamline']
+                )
+            else:
+                if EICClient is None:
+                    raise ImportError("eic_client is not available and mock_mode is False")
+                self._client = EICClient(
+                    ipts_number=self.config['ipts_number'],
+                    eic_token=self.config['eic_token'],
+                    beamline=self.config['beamline']
+                )
         return self._client
     
     def reset_client(self):
@@ -77,8 +104,27 @@ class BioSANS(Driver):
         '''
         self._client = None
 
+    def _resolve_epics(self):
+        """Return EPICS accessors, honoring mock_mode and availability."""
+        if self.mock_mode:
+            def _mock_caget(*args, **kwargs):
+                warnings.warn("EPICS in mock mode - caget", stacklevel=2)
+                return 0
+            def _mock_caput(*args, **kwargs):
+                warnings.warn("EPICS in mock mode - caput", stacklevel=2)
+                return True
+            def _mock_cainfo(*args, **kwargs):
+                warnings.warn("EPICS in mock mode - cainfo", stacklevel=2)
+                return {}
+            return _mock_caget, _mock_caput, _mock_cainfo
+
+        if caget is None or caput is None or cainfo is None:
+            raise ImportError("epics is not available and mock_mode is False")
+
+        return caget, caput, cainfo
+
     def getLastRunNumber(self):
-        return caget('CG3:CS:RunControl:LastRunNumber')
+        return self._caget('CG3:CS:RunControl:LastRunNumber')
         
         # timeout = 120
         # success_get, pv_value_read, response_data_get = self.client.get_pv(pv_name, timeout)
@@ -92,7 +138,7 @@ class BioSANS(Driver):
     @Driver.unqueued()
     def getLastReductionLogFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}' #path
+        data_path = self.config['reduction_log_data_path']
 
         path = pathlib.Path(
             data_path.format(
@@ -126,7 +172,7 @@ class BioSANS(Driver):
     @Driver.unqueued()
     def getLastFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D' #path
+        data_path = self.config['reduced_file_data_path']
 
         path = pathlib.Path(
             data_path.format(

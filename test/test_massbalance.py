@@ -45,7 +45,8 @@ def test_mixed_solvents_mass():
         target = result['target']
         balanced = result['balanced_target']
 
-        if balanced is None:
+
+        if not result['success']:
             none_count += 1
             continue
         assert balanced.mass.to('mg').magnitude == pytest.approx(500)

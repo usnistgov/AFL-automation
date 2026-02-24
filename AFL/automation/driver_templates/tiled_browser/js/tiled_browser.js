@@ -17,6 +17,7 @@ let gridApi = null;
 let currentColumns = new Set();
 let totalCount = 0;
 let multiSelectInstances = {};  // Store multi-select state for each filter
+let currentCopyText = '';
 
 // Available search fields (excluding datetime columns)
 const SEARCH_FIELDS = [
@@ -29,6 +30,16 @@ const SEARCH_FIELDS = [
     'AL_uuid',
     'AL_components'
 ];
+
+const FILTER_FIELDS = [
+    'driver_name',
+    'sample_name',
+    'sample_uuid',
+    'AL_campaign_name',
+    'AL_uuid'
+];
+
+const filterLoadState = {};
 
 // =============================================================================
 // Utility Functions
@@ -199,35 +210,18 @@ async function checkConfig() {
 /**
  * Search Tiled database with pagination
  */
-async function performSearch(queries, offset, limit) {
+async function performSearch(queries, offset, limit, sortModel = []) {
     try {
-        // Combine filters and queries
-        const allQueries = [...queries];
-
-        // Add filters - for multi-value filters, add each value as a separate query
-        // Multiple values for the same field will be OR'd together on the backend
-        for (const [field, values] of Object.entries(currentFilters)) {
-            if (Array.isArray(values)) {
-                // Multi-select: add each value
-                values.forEach(value => {
-                    if (value) {
-                        allQueries.push({ field, value });
-                    }
-                });
-            } else if (values) {
-                // Single value
-                allQueries.push({ field, value: values });
-            }
-        }
-
         // Use proxy endpoint to avoid CORS issues
         const params = new URLSearchParams({
-            queries: JSON.stringify(allQueries),
+            queries: JSON.stringify(queries),
+            filters: JSON.stringify(currentFilters || {}),
+            sort: JSON.stringify(sortModel || []),
             offset: offset,
             limit: limit
         });
 
-        console.log('Calling /tiled_search with params:', { queries: allQueries, offset, limit });
+        console.log('Calling /tiled_search with params:', { queries, offset, limit });
 
         const response = await authenticatedFetch(`/tiled_search?${params}`);
 
@@ -449,139 +443,27 @@ class ActionsRenderer {
     }
 }
 
-/**
- * Check if columns have changed and need updating
- */
-function columnsChanged(newColumns) {
-    if (newColumns.length !== currentColumns.size) return true;
+function transformRows(items) {
+    return items.map(item => {
+        const metadata = item.attributes?.metadata || {};
+        const attrs = metadata.attrs || metadata;
+        const meta = attrs.meta || {};
 
-    for (const col of newColumns) {
-        if (!currentColumns.has(col)) return true;
-    }
-
-    return false;
-}
-
-/**
- * Update grid column definitions
- */
-function updateColumns(apiColumns) {
-    if (!columnsChanged(apiColumns)) return;
-
-    currentColumns = new Set(apiColumns);
-
-    const columnDefs = [
-        {
-            field: 'id',
-            headerName: 'Entry ID',
-            pinned: 'left',
-            width: 200,
-            sortable: false,
-            filter: false
-        }
-    ];
-
-    // Add metadata columns
-    for (const col of apiColumns) {
-        columnDefs.push({
-            field: col,
-            headerName: formatHeader(col),
-            valueGetter: params => {
-                const value = getNestedValue(params.data, col);
-                if (value === null || value === undefined) return '-';
-                if (typeof value === 'object') return JSON.stringify(value);
-                return value;
-            },
-            sortable: false,
-            filter: false,
-            width: 150,
-            resizable: true
-        });
-    }
-
-    // Add actions column
-    columnDefs.push({
-        field: 'actions',
-        headerName: 'Actions',
-        pinned: 'right',
-        width: 220,
-        cellRenderer: ActionsRenderer,
-        sortable: false,
-        filter: false
+        return {
+            id: item.id,
+            task_name: attrs.task_name || null,
+            driver_name: attrs.driver_name || null,
+            meta_started: meta.started || null,
+            meta_ended: meta.ended || null,
+            run_time_minutes: meta.run_time_minutes || null,
+            sample_uuid: attrs.sample_uuid || null,
+            sample_name: attrs.sample_name || null,
+            AL_campaign_name: attrs.AL_campaign_name || null,
+            AL_uuid: attrs.AL_uuid || null,
+            AL_components: attrs.AL_components || null,
+            _raw: item
+        };
     });
-
-    gridApi.setGridOption('columnDefs', columnDefs);
-}
-
-/**
- * Load all data for client-side row model
- */
-async function loadAllData() {
-    try {
-        updateConnectionStatus('loading');
-        showLoadingOverlay();
-
-        // Fetch all data (use a large limit)
-        const result = await performSearch(currentQueries, 0, 10000);
-
-        console.log('performSearch result:', result);
-
-        if (result.status === 'success') {
-            updateConnectionStatus('connected');
-
-            // Defensive check for data array
-            if (!result.data || !Array.isArray(result.data)) {
-                console.error('Invalid data format:', result);
-                updateConnectionStatus('error');
-                showError('Invalid data format received from server');
-                hideLoadingOverlay();
-                return [];
-            }
-
-            // Transform data for grid with specific columns
-            const rows = result.data.map(item => {
-                const metadata = item.attributes?.metadata || {};
-                // Check both direct metadata and attrs (Tiled may nest in attrs)
-                const attrs = metadata.attrs || metadata;
-                const meta = attrs.meta || {};
-
-                return {
-                    id: item.id,
-                    task_name: attrs.task_name || null,
-                    driver_name: attrs.driver_name || null,
-                    meta_started: meta.started || null,
-                    meta_ended: meta.ended || null,
-                    run_time_minutes: meta.run_time_minutes || null,
-                    sample_uuid: attrs.sample_uuid || null,
-                    sample_name: attrs.sample_name || null,
-                    AL_campaign_name: attrs.AL_campaign_name || null,
-                    AL_uuid: attrs.AL_uuid || null,
-                    AL_components: attrs.AL_components || null,
-                    _raw: item
-                };
-            });
-
-            // Update total count display
-            totalCount = result.total_count || 0;
-            updateInfoBar();
-
-            hideLoadingOverlay();
-            return rows;
-
-        } else {
-            updateConnectionStatus('error');
-            showError(result.message || 'Unknown error occurred');
-            hideLoadingOverlay();
-            return [];
-        }
-
-    } catch (error) {
-        console.error('Exception in loadAllData:', error);
-        updateConnectionStatus('error');
-        showError(`Error loading data: ${error.message}`);
-        hideLoadingOverlay();
-        return [];
-    }
 }
 
 /**
@@ -729,8 +611,8 @@ async function initializeGrid() {
             filter: false,
             resizable: true
         },
-        rowModelType: 'clientSide',
-        rowData: [],  // Will be populated after loading
+        rowModelType: 'infinite',
+        rowData: [],
         pagination: true,
         paginationPageSize: pageSize,
         paginationPageSizeSelector: [25, 50, 100, 200],
@@ -738,11 +620,11 @@ async function initializeGrid() {
         rowSelection: 'multiple',
         suppressRowClickSelection: false,  // Enable row click selection
         rowMultiSelectWithClick: true,  // Enable multi-select with Ctrl/Cmd click
-        onGridReady: async (params) => {
+        cacheBlockSize: pageSize,
+        maxBlocksInCache: 10,
+        onGridReady: (params) => {
             gridApi = params.api;
-            // Load initial data
-            const rows = await loadAllData();
-            gridApi.setGridOption('rowData', rows);
+            gridApi.setGridOption('datasource', createDatasource());
         },
         onPaginationChanged: () => {
             updateInfoBar();
@@ -887,11 +769,41 @@ function showMetadataModal(metadata) {
 }
 
 /**
+ * Show copy modal with provided text
+ */
+function showCopyModal(title, text) {
+    const modal = document.getElementById('copy-modal');
+    const titleEl = document.getElementById('copy-modal-title');
+    const textEl = document.getElementById('copy-modal-text');
+    const statusEl = document.getElementById('copy-modal-status');
+
+    currentCopyText = text;
+    titleEl.textContent = title;
+    textEl.value = text;
+    statusEl.textContent = '';
+    statusEl.classList.remove('copy-status--success', 'copy-status--error');
+
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Update copy modal status message
+ */
+function setCopyModalStatus(message, isSuccess) {
+    const statusEl = document.getElementById('copy-modal-status');
+    statusEl.textContent = message;
+    statusEl.classList.remove('copy-status--success', 'copy-status--error');
+    statusEl.classList.add(isSuccess ? 'copy-status--success' : 'copy-status--error');
+}
+
+/**
  * Close all modals
  */
 function closeModals() {
     document.getElementById('data-modal').style.display = 'none';
     document.getElementById('metadata-modal').style.display = 'none';
+    document.getElementById('copy-modal').style.display = 'none';
     document.body.style.overflow = '';
 }
 
@@ -947,11 +859,7 @@ async function performSearchAction() {
         }
     });
 
-    // Reload data with new queries
-    if (gridApi) {
-        const rows = await loadAllData();
-        gridApi.setGridOption('rowData', rows);
-    }
+    refreshDatasource();
 }
 
 /**
@@ -968,10 +876,7 @@ async function clearSearch() {
     // Clear current queries
     currentQueries = [];
 
-    if (gridApi) {
-        const rows = await loadAllData();
-        gridApi.setGridOption('rowData', rows);
-    }
+    refreshDatasource();
 }
 
 /**
@@ -1045,11 +950,7 @@ function copyEntryIds() {
     }
 
     const ids = selectedRows.map(row => row.id).join(', ');
-    navigator.clipboard.writeText(ids).then(() => {
-        showSuccess(`Copied ${selectedRows.length} entry ID(s) to clipboard`);
-    }).catch(err => {
-        showError(`Failed to copy to clipboard: ${err.message}`);
-    });
+    showCopyModal(`Copy Entry ID (${selectedRows.length})`, ids);
 }
 
 /**
@@ -1072,11 +973,29 @@ function copySampleUuids() {
         return;
     }
 
-    navigator.clipboard.writeText(uuids).then(() => {
-        const count = selectedRows.filter(row => row.sample_uuid).length;
-        showSuccess(`Copied ${count} sample UUID(s) to clipboard`);
+    const count = selectedRows.filter(row => row.sample_uuid).length;
+    showCopyModal(`Copy Sample UUID (${count})`, uuids);
+}
+
+/**
+ * Attempt to copy text from modal to clipboard
+ */
+function copyModalTextToClipboard() {
+    if (!currentCopyText) {
+        setCopyModalStatus('Nothing to copy.', false);
+        return;
+    }
+
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        setCopyModalStatus('Copy failed: clipboard API unavailable.', false);
+        return;
+    }
+
+    navigator.clipboard.writeText(currentCopyText).then(() => {
+        setCopyModalStatus('Copied to clipboard successfully.', true);
     }).catch(err => {
-        showError(`Failed to copy to clipboard: ${err.message}`);
+        const message = err && err.message ? err.message : 'Unknown error';
+        setCopyModalStatus(`Copy failed: ${message}`, false);
     });
 }
 
@@ -1145,6 +1064,7 @@ function handlePageSizeChange(newSize) {
             cacheBlockSize: pageSize,
             datasource: createDatasource()
         });
+        gridApi.purgeInfiniteCache();
     }
 }
 
@@ -1277,32 +1197,37 @@ function updateMultiSelectUI(fieldName) {
  * Load unique values into multi-select components
  */
 async function loadFilterDropdowns() {
-    const filterFields = [
-        { field: 'driver_name' },
-        { field: 'sample_name' },
-        { field: 'sample_uuid' },
-        { field: 'AL_campaign_name' },
-        { field: 'AL_uuid' }
-    ];
-
-    for (const { field } of filterFields) {
+    FILTER_FIELDS.forEach(field => {
         const container = document.querySelector(`.multiselect-search-box[data-filter="${field}"]`).parentElement;
-        const optionsContainer = container.querySelector('.multiselect-options');
+        const searchBox = container.querySelector('.multiselect-search-box');
+        const searchInput = container.querySelector('.multiselect-search');
+        const trigger = () => ensureFilterLoaded(field, container);
+        searchBox.addEventListener('click', trigger);
+        searchInput.addEventListener('focus', trigger);
+    });
+}
 
-        // Show loading state
-        optionsContainer.innerHTML = '<div class="multiselect-loading">Loading...</div>';
+async function ensureFilterLoaded(field, container) {
+    if (filterLoadState[field] === 'loading' || filterLoadState[field] === 'loaded') {
+        return;
+    }
+    filterLoadState[field] = 'loading';
 
-        // Load distinct values
-        const result = await loadDistinctValues(field);
+    const dropdown = container.querySelector('.multiselect-dropdown');
+    const optionsContainer = container.querySelector('.multiselect-options');
+    if (dropdown) {
+        dropdown.style.display = 'block';
+    }
+    optionsContainer.innerHTML = '<div class="multiselect-loading"><div class="loading-spinner"></div><div class="multiselect-loading-text">Loading...</div></div>';
 
-        if (result.status === 'success') {
-            // Initialize multi-select with values
-            initMultiSelect(container, field, result.values);
-        } else {
-            // Show error state
-            optionsContainer.innerHTML = '<div class="multiselect-empty">Error loading values</div>';
-            console.error(`Failed to load distinct values for ${field}:`, result.message);
-        }
+    const result = await loadDistinctValues(field);
+    if (result.status === 'success') {
+        initMultiSelect(container, field, result.values);
+        filterLoadState[field] = 'loaded';
+    } else {
+        optionsContainer.innerHTML = '<div class="multiselect-empty">Error loading values</div>';
+        console.error(`Failed to load distinct values for ${field}:`, result.message);
+        filterLoadState[field] = 'error';
     }
 }
 
@@ -1320,11 +1245,7 @@ async function applyFilters() {
         }
     }
 
-    // Refresh grid with new filters
-    if (gridApi) {
-        const rows = await loadAllData();
-        gridApi.setGridOption('rowData', rows);
-    }
+    refreshDatasource();
 }
 
 /**
@@ -1341,10 +1262,7 @@ async function clearFilters() {
     currentFilters = {};
 
     // Refresh grid
-    if (gridApi) {
-        const rows = await loadAllData();
-        gridApi.setGridOption('rowData', rows);
-    }
+    refreshDatasource();
 }
 
 /**
@@ -1362,9 +1280,7 @@ async function refreshData() {
     refreshBtn.disabled = true;
     refreshBtn.textContent = '⟳ Refreshing...';
 
-    // Reload data with current filters/queries
-    const rows = await loadAllData();
-    gridApi.setGridOption('rowData', rows);
+    refreshDatasource();
 
     // Reset button
     refreshBtn.disabled = false;
@@ -1472,6 +1388,10 @@ function setupEventListeners() {
     // Modal close buttons
     document.getElementById('data-modal-close').addEventListener('click', closeModals);
     document.getElementById('metadata-modal-close').addEventListener('click', closeModals);
+    document.getElementById('copy-modal-close').addEventListener('click', closeModals);
+
+    // Copy modal button
+    document.getElementById('copy-modal-copy-button').addEventListener('click', copyModalTextToClipboard);
 
     // Close modal on overlay click
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -1484,6 +1404,51 @@ function setupEventListeners() {
             closeModals();
         }
     });
+}
+
+function refreshDatasource() {
+    if (!gridApi) return;
+    gridApi.setGridOption('datasource', createDatasource());
+    gridApi.purgeInfiniteCache();
+}
+
+function createDatasource() {
+    return {
+        getRows: async (params) => {
+            try {
+                updateConnectionStatus('loading');
+                showLoadingOverlay();
+
+                const result = await performSearch(
+                    currentQueries,
+                    params.startRow,
+                    params.endRow - params.startRow,
+                    params.sortModel || []
+                );
+
+                if (result.status === 'success') {
+                    updateConnectionStatus('connected');
+
+                    const rows = transformRows(result.data || []);
+                    totalCount = result.total_count || 0;
+                    updateInfoBar();
+
+                    hideLoadingOverlay();
+                    params.successCallback(rows, totalCount);
+                } else {
+                    updateConnectionStatus('error');
+                    showError(result.message || 'Unknown error occurred');
+                    hideLoadingOverlay();
+                    params.failCallback();
+                }
+            } catch (error) {
+                updateConnectionStatus('error');
+                showError(`Error loading data: ${error.message}`);
+                hideLoadingOverlay();
+                params.failCallback();
+            }
+        }
+    };
 }
 
 // =============================================================================
@@ -1499,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Load unique values for filter dropdowns
+    // Lazy-load unique values for filter dropdowns
     loadFilterDropdowns();
 
     // Add initial query row

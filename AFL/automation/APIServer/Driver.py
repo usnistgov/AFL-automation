@@ -476,43 +476,100 @@ class Driver:
             }
 
     @unqueued()
-    def tiled_search(self, queries='', offset=0, limit=50, **kwargs):
+    def tiled_search(self, queries='', filters='', sort='', fields='', offset=0, limit=50, **kwargs):
         """Proxy endpoint for Tiled metadata search to avoid CORS issues.
 
         Args:
             queries: JSON string of query list: [{"field": "field_name", "value": "search_value"}, ...]
+            filters: JSON string mapping fields to arrays of values
+            sort: JSON string sort model list: [{"colId": "field", "sort": "asc|desc"}, ...]
+            fields: JSON string list of metadata fields to return
             offset: Result offset for pagination
             limit: Number of results to return
 
         Returns:
             dict with status, data, total_count, or error message
         """
-        # Get cached Tiled client
         client = self._get_tiled_client()
         if isinstance(client, dict) and client.get('status') == 'error':
             return client
 
-        # Convert offset and limit to integers (they come as strings from URL params)
         offset = int(offset)
         limit = int(limit)
 
-        try:
-            # Parse queries JSON
-            import json
-            if queries and queries != '[]':
-                query_list = json.loads(queries) if isinstance(queries, str) else queries
-            else:
-                query_list = []
+        def _parse_json_param(value, default):
+            if value in (None, '', '[]', '{}'):
+                return default
+            if isinstance(value, str):
+                return json.loads(value)
+            return value
 
-            # Start with root client
+        def _get_nested(obj, path):
+            current = obj
+            for part in path.split('.'):
+                if not isinstance(current, dict) or part not in current:
+                    return None
+                current = current[part]
+            return current
+
+        def _set_nested(obj, path, value):
+            current = obj
+            parts = path.split('.')
+            for part in parts[:-1]:
+                current = current.setdefault(part, {})
+            current[parts[-1]] = value
+
+        # Map UI fields to metadata paths for search/sort
+        field_path_map = {
+            'task_name': 'attrs.task_name',
+            'driver_name': 'attrs.driver_name',
+            'sample_uuid': 'attrs.sample_uuid',
+            'sample_name': 'attrs.sample_name',
+            'AL_campaign_name': 'attrs.AL_campaign_name',
+            'AL_uuid': 'attrs.AL_uuid',
+            'AL_components': 'attrs.AL_components',
+            'run_time_minutes': 'attrs.meta.run_time_minutes',
+            'meta_started': 'attrs.meta.started',
+            'meta_ended': 'attrs.meta.ended',
+            'id': 'id',
+        }
+
+        default_fields = [
+            'task_name',
+            'driver_name',
+            'sample_uuid',
+            'sample_name',
+            'AL_campaign_name',
+            'AL_uuid',
+            'AL_components',
+            'meta.started',
+            'meta.ended',
+            'meta.run_time_minutes',
+        ]
+
+        try:
+            query_list = _parse_json_param(queries, [])
+            filter_map = _parse_json_param(filters, {})
+            sort_list = _parse_json_param(sort, [])
+            requested_fields = _parse_json_param(fields, default_fields)
+
+            # Normalize filters into query_list entries
+            if isinstance(filter_map, dict):
+                for field, values in filter_map.items():
+                    if isinstance(values, list):
+                        for value in values:
+                            if value:
+                                query_list.append({'field': field, 'value': value})
+                    elif values:
+                        query_list.append({'field': field, 'value': values})
+
             results = client
 
-            # Group queries by field to handle multiple values (OR logic)
+            # Apply search filters
             if query_list:
                 from tiled.queries import Contains, In
                 from collections import defaultdict
 
-                # Group values by field
                 field_values = defaultdict(list)
                 for query_item in query_list:
                     field = query_item.get('field', '')
@@ -520,76 +577,58 @@ class Driver:
                     if field and value:
                         field_values[field].append(value)
 
-                # Apply queries - use In for multiple values, Contains for single
-                # Search in both metadata and attrs fields and collect unique keys
-                all_matching_keys = set()
-
                 for field, values in field_values.items():
-                    field_matching_keys = set()
-
+                    query_key = field_path_map.get(field, field)
                     if len(values) == 1:
-                        # Single value: use Contains
-                        try:
-                            metadata_results = results.search(Contains(field, values[0]))
-                            field_matching_keys.update(metadata_results.keys())
-                        except:
-                            pass
-
-                        try:
-                            attrs_results = results.search(Contains(f'attrs.{field}', values[0]))
-                            field_matching_keys.update(attrs_results.keys())
-                        except:
-                            pass
+                        results = results.search(Contains(query_key, values[0]))
                     else:
-                        # Multiple values: use In
-                        try:
-                            metadata_results = results.search(In(field, values))
-                            field_matching_keys.update(metadata_results.keys())
-                        except:
-                            pass
+                        results = results.search(In(query_key, values))
 
-                        try:
-                            attrs_results = results.search(In(f'attrs.{field}', values))
-                            field_matching_keys.update(attrs_results.keys())
-                        except:
-                            pass
+            # Apply sorting
+            if sort_list:
+                sort_items = []
+                for item in sort_list:
+                    field = item.get('colId') or item.get('field')
+                    direction = item.get('sort') or item.get('dir')
+                    if not field or direction not in ('asc', 'desc'):
+                        continue
+                    sort_key = field_path_map.get(field, field)
+                    sort_dir = 1 if direction == 'asc' else -1
+                    sort_items.append((sort_key, sort_dir))
+                if sort_items:
+                    results = results.sort(*sort_items)
 
-                    # Intersect with previous field results (AND logic between fields)
-                    if not all_matching_keys:
-                        all_matching_keys = field_matching_keys
-                    else:
-                        all_matching_keys &= field_matching_keys
+            total_count = len(results)
 
-            # Get keys to use based on whether we have filters
-            if query_list and field_values:
-                # Use filtered keys from combined search
-                all_keys = sorted(list(all_matching_keys))
-                total_count = len(all_keys)
-                paginated_keys = all_keys[offset:offset + limit]
-                # Use client as results for accessing items
-                results = client
-            else:
-                # No queries - use all keys
-                results = client
-                total_count = len(results)
-                all_keys = list(results.keys())
-                paginated_keys = all_keys[offset:offset + limit]
+            # Page results efficiently via ItemsView slicing
+            try:
+                items = list(results.items()[offset:offset + limit])
+            except Exception:
+                # Fallback to keys if items() is unavailable
+                keys = list(results.keys()[offset:offset + limit])
+                items = [(key, results[key]) for key in keys]
 
-            # Build entries list with metadata
             entries = []
-            for key in paginated_keys:
+            for key, item in items:
                 try:
-                    item = results[key]
-                    # Build entry in same format as Tiled HTTP API
+                    metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
+                    trimmed = {}
+                    for field in requested_fields:
+                        if not field:
+                            continue
+                        value = _get_nested(metadata, field)
+                        if value is None and not field.startswith('attrs.'):
+                            value = _get_nested(metadata, f'attrs.{field}')
+                        if value is not None:
+                            _set_nested(trimmed, field, value)
                     entry = {
                         'id': key,
                         'attributes': {
-                            'metadata': dict(item.metadata) if hasattr(item, 'metadata') else {}
+                            'metadata': trimmed
                         }
                     }
                     entries.append(entry)
                 except Exception as e:
-                    # Skip entries that can't be accessed
                     self.app.logger.warning(f'Could not access entry {key}: {str(e)}')
                     continue
 

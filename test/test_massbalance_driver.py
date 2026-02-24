@@ -42,7 +42,7 @@ def test_massbalance_driver_mixed_solvents_mass():
     for i, result in enumerate(mb.balanced):
         balanced = result['balanced_target']
 
-        if balanced is None:
+        if not result['success']:
             none_count += 1
             continue
         assert balanced.mass.to('mg').magnitude == pytest.approx(500)

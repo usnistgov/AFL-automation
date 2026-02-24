@@ -414,3 +414,363 @@ body {
 #status-message.visible {
     display: block;
 }
+
+/* ---- Tab bar ---- */
+#tab-bar {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    margin-bottom: -1px;
+}
+
+.tab-btn:hover {
+    color: #212529;
+    background: #e9ecef;
+}
+
+.tab-btn.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background: white;
+}
+
+/* ---- Tab panels ---- */
+.tab-panel {
+    display: none !important;
+}
+
+.tab-panel.active {
+    display: flex !important;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#balance-tab.active {
+    overflow: hidden;
+}
+
+#balance-tab #main-content {
+    flex: 1;
+    min-height: 0;
+}
+
+#stocks-tab.active {
+    overflow: hidden;
+}
+
+#stock-cards-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#sweeps-tab.active {
+    overflow-y: auto;
+    display: flex !important;
+    flex-direction: column;
+}
+
+/* ---- Shared toolbar ---- */
+.tab-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+
+/* ---- Primary button ---- */
+.primary-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    background: #007bff;
+    color: white;
+}
+
+.primary-btn:hover {
+    background: #0056b3;
+}
+
+.primary-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* ---- Balance tab toolbar overrides ---- */
+#balance-tab .tab-toolbar #balance-btn {
+    background: #007bff;
+    color: white;
+}
+
+#balance-tab .tab-toolbar #balance-btn:hover {
+    background: #0056b3;
+}
+
+#balance-tab .tab-toolbar #balance-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+#balance-tab .tab-toolbar #refresh-btn {
+    background: #6c757d;
+    color: white;
+}
+
+#balance-tab .tab-toolbar #refresh-btn:hover {
+    background: #5a6268;
+}
+
+/* ---- Stock card forms ---- */
+.stock-form-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 10px 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.stock-form-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.stock-name-input {
+    font-weight: bold;
+    font-size: 14px;
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    width: 180px;
+}
+
+.stock-location-input {
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    width: 100px;
+    font-family: monospace;
+}
+
+.stock-size-type,
+.stock-size-value {
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.stock-size-value {
+    width: 120px;
+}
+
+.stock-remove-btn {
+    margin-left: auto;
+    background: none;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 8px;
+}
+
+.stock-remove-btn:hover {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.stock-comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.stock-comp-table th {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 4px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+}
+
+.stock-comp-table td {
+    border: 1px solid #dee2e6;
+    padding: 3px 6px;
+}
+
+.stock-comp-table input,
+.stock-comp-table select {
+    width: 100%;
+    padding: 3px 6px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.add-comp-btn {
+    padding: 4px 10px;
+    border: 1px dashed #ced4da;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #495057;
+}
+
+.add-comp-btn:hover {
+    background: #e9ecef;
+}
+
+.remove-comp-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+}
+
+.remove-comp-btn:hover {
+    color: #dc3545;
+}
+
+/* ---- Sweep settings bar ---- */
+.sweep-settings-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+
+.sweep-settings-bar label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sweep-settings-bar input,
+.sweep-settings-bar select {
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* ---- Sweep table ---- */
+#sweep-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+#sweep-table th {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+}
+
+#sweep-table td {
+    border: 1px solid #dee2e6;
+    padding: 4px 6px;
+}
+
+#sweep-table input[type="text"],
+#sweep-table input[type="number"],
+#sweep-table select {
+    width: 100%;
+    padding: 3px 6px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+#sweep-table input[type="checkbox"] {
+    width: auto;
+}
+
+.sweep-row-remainder {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.sweep-row-remainder input[type="number"] {
+    background: #e9ecef;
+}
+
+.remove-sweep-row-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+}
+
+.remove-sweep-row-btn:hover {
+    color: #dc3545;
+}
+
+/* ---- Upload errors ---- */
+.upload-error-list {
+    background: #fff8f8;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 8px 12px;
+    font-size: 13px;
+    color: #721c24;
+}
+
+.upload-error-list ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+}
+
+/* ---- Sweep preview ---- */
+#sweep-preview-area {
+    padding: 12px;
+    overflow-x: auto;
+    flex: 1;
+}
+
+.preview-table {
+    min-width: 400px;
+    font-size: 12px;
+}

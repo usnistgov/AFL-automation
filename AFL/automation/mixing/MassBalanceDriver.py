@@ -172,7 +172,7 @@ def _solution_to_display_dict(solution):
 
 
 class MassBalanceDriver(MassBalanceBase, Driver):
-    defaults = {'minimum_volume': '20 ul', 'stocks': [], 'targets': [], 'tol': 1e-3}
+    defaults = {'minimum_volume': '20 ul', 'stocks': [], 'targets': [], 'tol': 1e-3, 'sweep_config': {}}
 
 
     def __init__(self, overrides=None):
@@ -274,6 +274,70 @@ class MassBalanceDriver(MassBalanceBase, Driver):
     def reset_targets(self):
         self.config['targets'] = []
         self.config._update_history()
+
+    def upload_stocks(self, stocks=None, reset=True):
+        if stocks is None:
+            stocks = []
+        prev_stocks = list(self.config['stocks'])
+        prev_locs = dict(self.config['stock_locations']) if 'stock_locations' in self.config else {}
+        try:
+            if reset:
+                self.reset_stocks()
+            for stock in stocks:
+                self.config['stocks'] = self.config['stocks'] + [stock]
+                if 'stock_locations' in self.config and stock.get('location') is not None:
+                    self.config['stock_locations'][stock['name']] = stock['location']
+            self.process_stocks()
+            return {'success': True, 'count': len(stocks)}
+        except Exception as e:
+            self.config['stocks'] = prev_stocks
+            if 'stock_locations' in self.config:
+                self.config['stock_locations'].clear()
+                self.config['stock_locations'].update(prev_locs)
+            try:
+                self.process_stocks()
+            except Exception:
+                pass
+            return {'success': False, 'error': str(e)}
+
+    @Driver.unqueued()
+    def compute_stock_properties(self, stock=None, **kwargs):
+        if not stock:
+            return {}
+        try:
+            if isinstance(stock, str):
+                import json
+                stock = json.loads(stock)
+            solution = Solution(**stock)
+            return _solution_to_display_dict(solution)
+        except Exception as e:
+            return {'error': str(e)}
+
+    def save_sweep_config(self, sweep_config=None):
+        if sweep_config is None:
+            sweep_config = {}
+        self.config['sweep_config'] = sweep_config
+        return {'success': True}
+
+    @Driver.unqueued()
+    def load_sweep_config(self):
+        return self.config['sweep_config'] if 'sweep_config' in self.config else {}
+
+    def upload_targets(self, targets=None, reset=True):
+        if targets is None:
+            targets = []
+        errors = []
+        for i, target in enumerate(targets):
+            try:
+                Solution(**target)
+            except Exception as e:
+                errors.append({'index': i, 'name': target.get('name', ''), 'error': str(e)})
+        if errors:
+            return {'success': False, 'errors': errors}
+        if reset:
+            self.reset_targets()
+        self.config['targets'] = self.config['targets'] + targets
+        return {'success': True, 'count': len(targets)}
 
     @Driver.unqueued()
     def list_stocks(self):

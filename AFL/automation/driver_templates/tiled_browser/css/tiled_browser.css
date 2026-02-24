@@ -243,6 +243,20 @@ body {
     text-align: center;
     color: #6c757d;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.multiselect-loading .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+.multiselect-loading-text {
+    line-height: 1;
 }
 
 .multiselect-empty {

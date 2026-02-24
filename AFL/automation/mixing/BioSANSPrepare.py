@@ -35,7 +35,7 @@ class BioSANSPrepare(MassBalanceDriver):
     }
 
     def __init__(self, overrides=None):
-        MassBalanceDriver.__init__(self, overrides=overrides, name='BioSANSPrepare')
+        MassBalanceDriver.__init__(self, overrides=overrides,)
         self.mock_mode = bool(self.config.get('mock_mode', False))
 
         self.name = 'BioSANSPrepare'

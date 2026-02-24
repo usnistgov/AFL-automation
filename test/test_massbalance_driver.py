@@ -56,4 +56,4 @@ def test_massbalance_driver_mixed_solvents_mass():
         assert sub_balanced.mass_fraction['H2O'] == pytest.approx(sub_target.mass_fraction['H2O'])
         assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'])
 
-    assert none_count == 1 
+    assert none_count == 1

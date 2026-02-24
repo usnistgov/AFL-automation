@@ -7,6 +7,9 @@ from AFL.automation.shared.units import units
 def test_massbalance_driver_mixed_solvents_mass():
     mb = MassBalanceDriver()
     mb.config.write = False # need to disable writing to config file for testing
+    # Ensure prior user config does not leak into test expectations
+    mb.reset_stocks()
+    mb.reset_targets()
     # Add stocks
     mb.add_stock({
         'name': "Stock1",

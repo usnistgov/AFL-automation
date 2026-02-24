@@ -445,38 +445,42 @@ class MassBalanceBase:
                         'success':success,
                  })
 
-            if not any(b['success'] for b in balanced_targets):
-                warnings.warn(f'No suitable mass balance found for {target.name}\n')
-                self.balanced.append({
-                    'target':target,
-                    'balanced_target':None,
-                    'transfers':None,
-                    'difference': None,
-                    'success': False,
-                    })
-            else:
-                balanced_target = min(balanced_targets, key=lambda x: np.sum(np.abs(x['difference'])))
+            best_candidate = min(
+                balanced_targets, key=lambda x: np.sum(np.abs(x['difference']))
+            )
 
             mfm = self.mass_fraction_matrix()
             diagnosis = _diagnose(
                 target=target,
-                transfers=balanced_target['transfers'],
-                differences=balanced_target['difference'],
+                transfers=best_candidate['transfers'],
+                differences=best_candidate['difference'],
                 components=components,
                 stocks=self.stocks,
                 bounds=self.bounds,
                 tol=tol,
                 mass_fraction_matrix=mfm,
                 target_masses=target_masses,
-                success=balanced_target['success'],
+                success=best_candidate['success'],
             )
-            self.balanced.append({
-                'target': target,
-                'balanced_target': balanced_target['target'],
-                'transfers': balanced_target['transfers'],
-                'difference': balanced_target['difference'],
-                'success': balanced_target['success'],
-                'diagnosis': diagnosis,
+
+            if not any(b['success'] for b in balanced_targets):
+                warnings.warn(f'No suitable mass balance found for {target.name}\n')
+                self.balanced.append({
+                    'target': target,
+                    'balanced_target': None,
+                    'transfers': None,
+                    'difference': None,
+                    'success': False,
+                    'diagnosis': diagnosis,
+                })
+            else:
+                self.balanced.append({
+                    'target': target,
+                    'balanced_target': best_candidate['target'],
+                    'transfers': best_candidate['transfers'],
+                    'difference': best_candidate['difference'],
+                    'success': best_candidate['success'],
+                    'diagnosis': diagnosis,
                 })
 
         if return_report:

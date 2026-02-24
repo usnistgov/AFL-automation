@@ -17,6 +17,7 @@ let gridApi = null;
 let currentColumns = new Set();
 let totalCount = 0;
 let multiSelectInstances = {};  // Store multi-select state for each filter
+let currentCopyText = '';
 
 // Available search fields (excluding datetime columns)
 const SEARCH_FIELDS = [
@@ -887,11 +888,41 @@ function showMetadataModal(metadata) {
 }
 
 /**
+ * Show copy modal with provided text
+ */
+function showCopyModal(title, text) {
+    const modal = document.getElementById('copy-modal');
+    const titleEl = document.getElementById('copy-modal-title');
+    const textEl = document.getElementById('copy-modal-text');
+    const statusEl = document.getElementById('copy-modal-status');
+
+    currentCopyText = text;
+    titleEl.textContent = title;
+    textEl.value = text;
+    statusEl.textContent = '';
+    statusEl.classList.remove('copy-status--success', 'copy-status--error');
+
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Update copy modal status message
+ */
+function setCopyModalStatus(message, isSuccess) {
+    const statusEl = document.getElementById('copy-modal-status');
+    statusEl.textContent = message;
+    statusEl.classList.remove('copy-status--success', 'copy-status--error');
+    statusEl.classList.add(isSuccess ? 'copy-status--success' : 'copy-status--error');
+}
+
+/**
  * Close all modals
  */
 function closeModals() {
     document.getElementById('data-modal').style.display = 'none';
     document.getElementById('metadata-modal').style.display = 'none';
+    document.getElementById('copy-modal').style.display = 'none';
     document.body.style.overflow = '';
 }
 
@@ -1045,11 +1076,7 @@ function copyEntryIds() {
     }
 
     const ids = selectedRows.map(row => row.id).join(', ');
-    navigator.clipboard.writeText(ids).then(() => {
-        showSuccess(`Copied ${selectedRows.length} entry ID(s) to clipboard`);
-    }).catch(err => {
-        showError(`Failed to copy to clipboard: ${err.message}`);
-    });
+    showCopyModal(`Copy Entry ID (${selectedRows.length})`, ids);
 }
 
 /**
@@ -1072,11 +1099,29 @@ function copySampleUuids() {
         return;
     }
 
-    navigator.clipboard.writeText(uuids).then(() => {
-        const count = selectedRows.filter(row => row.sample_uuid).length;
-        showSuccess(`Copied ${count} sample UUID(s) to clipboard`);
+    const count = selectedRows.filter(row => row.sample_uuid).length;
+    showCopyModal(`Copy Sample UUID (${count})`, uuids);
+}
+
+/**
+ * Attempt to copy text from modal to clipboard
+ */
+function copyModalTextToClipboard() {
+    if (!currentCopyText) {
+        setCopyModalStatus('Nothing to copy.', false);
+        return;
+    }
+
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        setCopyModalStatus('Copy failed: clipboard API unavailable.', false);
+        return;
+    }
+
+    navigator.clipboard.writeText(currentCopyText).then(() => {
+        setCopyModalStatus('Copied to clipboard successfully.', true);
     }).catch(err => {
-        showError(`Failed to copy to clipboard: ${err.message}`);
+        const message = err && err.message ? err.message : 'Unknown error';
+        setCopyModalStatus(`Copy failed: ${message}`, false);
     });
 }
 
@@ -1472,6 +1517,10 @@ function setupEventListeners() {
     // Modal close buttons
     document.getElementById('data-modal-close').addEventListener('click', closeModals);
     document.getElementById('metadata-modal-close').addEventListener('click', closeModals);
+    document.getElementById('copy-modal-close').addEventListener('click', closeModals);
+
+    // Copy modal button
+    document.getElementById('copy-modal-copy-button').addEventListener('click', copyModalTextToClipboard);
 
     // Close modal on overlay click
     document.querySelectorAll('.modal-overlay').forEach(overlay => {

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MixDoctor</title>
+    <style>{{ inline_css | safe }}</style>
+</head>
+<body>
+<div id="app-container">
+    <div id="header">
+        <h1>MixDoctor</h1>
+        <button class="toolbar-btn" id="refresh-btn">Refresh</button>
+        <button class="toolbar-btn" id="balance-btn">Balance</button>
+        <span id="balance-counter"></span>
+    </div>
+    <div id="main-content">
+        <div id="stocks-panel">
+            <div class="panel-title">Stocks</div>
+            <div id="stocks-list"></div>
+        </div>
+        <div id="targets-panel">
+            <div class="panel-title">Targets</div>
+            <div id="targets-list"></div>
+        </div>
+    </div>
+    <div id="status-message"></div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detail-modal-overlay">
+    <div id="detail-modal">
+        <div id="detail-modal-header">
+            <button id="modal-nav-prev" class="modal-nav-btn" title="Previous target">&larr;</button>
+            <button id="modal-nav-next" class="modal-nav-btn" title="Next target">&rarr;</button>
+            <span id="modal-title"></span>
+            <span id="modal-location-badge" class="location-badge"></span>
+            <button id="detail-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="detail-modal-summary"></div>
+        <div id="detail-modal-body">
+            <div id="modal-table"></div>
+            <div id="modal-balance-results"></div>
+        </div>
+    </div>
+</div>
+
+<script>{{ inline_js | safe }}</script>
+</body>
+</html>

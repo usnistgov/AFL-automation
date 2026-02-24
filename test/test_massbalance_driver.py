@@ -42,7 +42,7 @@ def test_massbalance_driver_mixed_solvents_mass():
     for i, result in enumerate(mb.balanced):
         balanced = result['balanced_target']
 
-        if balanced is None:
+        if not result['success']:
             none_count += 1
             continue
         assert balanced.mass.to('mg').magnitude == pytest.approx(500)
@@ -56,4 +56,4 @@ def test_massbalance_driver_mixed_solvents_mass():
         assert sub_balanced.mass_fraction['H2O'] == pytest.approx(sub_target.mass_fraction['H2O'])
         assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'])
 
-    assert none_count == 2 
+    assert none_count == 1 

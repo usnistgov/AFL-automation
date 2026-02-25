@@ -35,18 +35,18 @@ class BioSANS(Driver):
     defaults['use_subtracted_data'] = True
     defaults['config'] = 'Config0'
     defaults['mock_mode'] = False
-    defaults['reduction_log_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}'
-    defaults['reduced_file_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D'
+    defaults['reduction_log_data_path'] = f'/HFIR/{{INST}}/IPTS-{{IPTS}}/shared/autoreduce/{{RUN_CYCLE}}/{{CONFIG}}'
+    defaults['reduced_file_data_path'] = f'/HFIR/{{INST}}/IPTS-{{IPTS}}/shared/autoreduce/{{RUN_CYCLE}}/{{CONFIG}}/1D'
 
     defaults['PVs_to_store'] = []
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Comp' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Name' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Conc' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}ConcUnits' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:S{i}Vol' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SE:URMPI:143'])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SMPLTotalVol'])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SMPLFinalConc{i}' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SRC{i}Comp' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SRC{i}Name' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SRC{i}Conc' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SRC{i}ConcUnits' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:S{i}Vol' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SE:URMPI:143'])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SMPLTotalVol'])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SMPLFinalConc{i}' for i in range(1,9)])
 
 
     def __init__(self, overrides=None):

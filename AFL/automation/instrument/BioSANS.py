@@ -337,6 +337,10 @@ class BioSANS(Driver):
         self._simple_expose(exposure=exposure, name=name, exposure_type=exposure_type, block=block)
         time.sleep(15)
 
+        return self.process_data()
+
+    def process_data(self, **kwargs):
+        """Process the SANS data after exposure, writing the data to Tiled"""
         # Read data and create xarray Dataset
         data = self.readFileSafely(self._readLastReducedFile)
         transmission = self.readFileSafely(self._readLastTransmission)

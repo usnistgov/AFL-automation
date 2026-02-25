@@ -499,7 +499,7 @@ class OrchestratorDriver(Driver):
             last_entry = balance_report[-1]
             balanced_target_dict = last_entry.get('balanced_target')
 
-            if not balanced_target_dict:
+            if not last_entry['success']:
                 error_msg = f"No balanced_target in balance_report for {name}"
                 self.update_status(error_msg)
                 self.app.logger.error(error_msg)

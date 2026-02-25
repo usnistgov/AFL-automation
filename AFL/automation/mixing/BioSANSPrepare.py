@@ -47,7 +47,7 @@ class BioSANSPrepare(MassBalanceDriver):
     defaults = {
         'mixing_locations': [],
         'catch_volume': '10 ul',
-        'exposure': 10,
+        'exposure': 600,
         'cfenable_timeout_s': 1800.0,
         'stocks': [],
         'fixed_compositions': {},

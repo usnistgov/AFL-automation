@@ -339,7 +339,7 @@ class BioSANS(Driver):
 
         return self.process_data()
 
-    def process_data(self):
+    def process_data(self, **kwargs):
         """Process the SANS data after exposure, writing the data to Tiled"""
         # Read data and create xarray Dataset
         data = self.readFileSafely(self._readLastReducedFile)

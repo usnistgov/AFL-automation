@@ -15,8 +15,9 @@ epics = lazy.load("epics", require="AFL-automation[neutron-scattering]")
 # Global list of driver commands to inject as no-ops.
 NOOP_COMMANDS = [
     'transfer',
-    'transfer_to_catch'
+    'transfer_to_catch',
     'loadSample',
+    'advanceSample',
     'calibrate_sensor',
     'home',
     'rinseCell',

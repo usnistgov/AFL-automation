@@ -47,7 +47,7 @@ class BioSANSPrepare(MassBalanceDriver):
     defaults = {
         'mixing_locations': [],
         'catch_volume': '10 ul',
-        'mom144_timeout_s': 14400.0,
+        'exposure': 600,
         'cfenable_timeout_s': 1800.0,
         'stocks': [],
         'fixed_compositions': {},
@@ -75,6 +75,7 @@ class BioSANSPrepare(MassBalanceDriver):
         )
 
         self._client = None
+        self.last_scan_id = None
         self.stock_pv_map = {}
         self.stocks = []
         self.targets = []
@@ -241,9 +242,8 @@ class BioSANSPrepare(MassBalanceDriver):
         # Configure the destination for the preparation
         if not self.config.get('mixing_locations'):
             raise ValueError("No mixing locations configured. Cannot select a destination PV.")
-        
+
         # Pop the PV name that will be used to select the specific mixing destination/station
-        # Its value will be set to the actual target vial PV "CG3:SE:URMPI:143"
         if dest is None:
             # need to pop and then resend the locations list so that the persistant config triggers a write
             mixing_locations = self.config['mixing_locations']
@@ -253,72 +253,89 @@ class BioSANSPrepare(MassBalanceDriver):
         else:
             destination = dest
             popped_destination = False
+
         try:
-            self.set_pv("CG3:SE:URMPI:143",destination)
-        except Exception as e:
-            # If setting fails, put it back in the list if possible, though state might be inconsistent
+            # Build stock volumes dict defaulting all 8 slots to 0
+            stock_volumes = {f'CG3:SE:CMP:S{i}Vol': 0 for i in range(1, 9)}
+
+            # Fill non-zero values from balanced_target protocol using stock_pv_map
+            for pipette_action in balanced_target_solution_object.protocol:
+                source_stock_name = pipette_action.source
+                if source_stock_name not in self.stock_pv_map:
+                    raise ValueError(
+                        f"Stock PV for '{source_stock_name}' not found in stock_pv_map. "
+                        f"Available stocks in map: {list(self.stock_pv_map.keys())}"
+                    )
+                stock_volumes[self.stock_pv_map[source_stock_name]] = pipette_action.volume
+
+            catch_volume = self.config.get('catch_volume')
+            if catch_volume is None:
+                raise ValueError("Catch volume ('catch_volume') is not configured.")
+
+            target_name = target.get('name', 'Unnamed target')
+
+            headers = [
+                'Title',
+                'CG3:SE:CMP:S1Vol', 'CG3:SE:CMP:S2Vol', 'CG3:SE:CMP:S3Vol', 'CG3:SE:CMP:S4Vol',
+                'CG3:SE:CMP:S5Vol', 'CG3:SE:CMP:S6Vol', 'CG3:SE:CMP:S7Vol', 'CG3:SE:CMP:S8Vol',
+                'CG3:SE:URMPI:143', 'CG3:SE:URPI:MixFinalVolume', 'CG3:SE:URPI:ChangeTips',
+                'RobotProcess', 'URMPI147Wait', 'Delay', 'Wait For', 'Value',
+            ]
+            row = [
+                target_name,
+                stock_volumes['CG3:SE:CMP:S1Vol'], stock_volumes['CG3:SE:CMP:S2Vol'],
+                stock_volumes['CG3:SE:CMP:S3Vol'], stock_volumes['CG3:SE:CMP:S4Vol'],
+                stock_volumes['CG3:SE:CMP:S5Vol'], stock_volumes['CG3:SE:CMP:S6Vol'],
+                stock_volumes['CG3:SE:CMP:S7Vol'], stock_volumes['CG3:SE:CMP:S8Vol'],
+                destination, catch_volume, 1,
+                1, 1, 5, 'seconds', self.config['exposure'],
+            ]
+
+            success, self.last_scan_id, response_data = self.client.submit_table_scan(
+                parms={
+                    'run_mode': 0,
+                    'headers': headers,
+                    'rows': [row],
+                },
+                desc=f'AFL prepare table scan for {target_name}',
+                simulate_only=False,
+            )
+            if not success:
+                raise RuntimeError(f'Error in EIC table scan: {response_data}')
+
+            self.blockForTableScan()
+
+            # Submit rinse/MT-cell scan immediately after measurement, but don't block
+            rinse_headers = [
+                'Title', 'CG3:SE:URMPI:Mom144', 'CG3:SE:CMP:CFEnable', 'Delay',
+                'URMPI145Wait', 'CG3:SE:CMP:CFEnable', 'Wait For', 'Value',
+            ]
+            rinse_row = ['Clean cell and measure MT cell', 1, 1, 5, 1, 0, 'seconds', 10]
+            self.client.submit_table_scan(
+                parms={
+                    'run_mode': 0,
+                    'headers': rinse_headers,
+                    'rows': [rinse_row],
+                },
+                desc='AFL rinse cell table scan',
+                simulate_only=False,
+            )
+
+        except Exception:
             if popped_destination:
-                self.config['mixing_locations'].insert(0, destination)
-            raise ValueError(f"Failed to set destination PV {destination} to CG3:SE:URMPI:143: {e}")
-
-        # Configure the catch volume for the mixing process
-        catch_volume_value = self.config.get('catch_volume')
-        if catch_volume_value is None:
-            raise ValueError("Catch volume ('catch_volume') is not configured.")
-        try:
-            self.set_pv("CG3:SE:URPI:MixFinalVolume", catch_volume_value)
-        except Exception as e:
-            raise ValueError(f"Failed to set catch volume PV CG3:SE:URPI:MixFinalVolume to {catch_volume_value}: {e}")
-
-        # Validate that all source stocks in the protocol have PVs mapped
-        for pipette_action in balanced_target_solution_object.protocol:
-            source_stock_name = pipette_action.source
-            if source_stock_name not in self.stock_pv_map:
-                raise ValueError(
-                    f"Stock PV for '{source_stock_name}' not found in stock_pv_map. "
-                    f"Available stocks in map: {list(self.stock_pv_map.keys())}"
-                )
-            self.set_pv(self.stock_pv_map[source_stock_name], pipette_action.volume)
-
-        # Start the automated mixing process
-        try:
-            self.set_pv("CG3:SE:CMP:StartProcess", 1)
-        except Exception as e:
-            raise RuntimeError(f"Failed to start process by setting CG3:SE:CMP:StartProcess: {e}")
-
-        if not self.mock_mode:
-            timeout_s = float(self.config.get('mom144_timeout_s', 14400.0))
-            self._wait_for_mom144_pulse(timeout_s=timeout_s)
+                mixing_locations = self.config['mixing_locations']
+                mixing_locations.insert(0, destination)
+                self.config['mixing_locations'] = mixing_locations
+            raise
 
         return balanced_target_dict_from_feasible, destination
 
-    def _wait_for_mom144_pulse(self, timeout_s: float) -> None:
-        pv_name = "CG3:SE:URMPI:Mom144"
-        pulse_event = threading.Event()
-
-        def _on_pulse(**_kwargs):
-            pulse_event.set()
-
-        pv = None
-        callback_index = None
-        start_wait = time.monotonic()
-        try:
-            pv = epics.PV(pv_name)
-            callback_index = pv.add_callback(_on_pulse)
-            remaining = timeout_s
-            if not pulse_event.wait(timeout=remaining):
-                raise TimeoutError(f"Timed out waiting for {pv_name} pulse after {timeout_s} seconds")
-        finally:
-            if pv is not None:
-                if callback_index is not None:
-                    try:
-                        pv.remove_callback(callback_index)
-                    except Exception:
-                        pass
-                try:
-                    pv.disconnect()
-                except Exception:
-                    pass
+    def blockForTableScan(self):
+        """Block until the last submitted table scan is complete."""
+        status_success, is_done, state, status_response_data = self.client.get_scan_status(self.last_scan_id)
+        while not is_done:
+            time.sleep(0.1)
+            status_success, is_done, state, status_response_data = self.client.get_scan_status(self.last_scan_id)
 
     def _wait_for_cfenable_cycle(self, timeout_s: float) -> None:
         pv_name = "CG3:SE:CMP:CFEnable"

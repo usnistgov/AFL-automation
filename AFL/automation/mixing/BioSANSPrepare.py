@@ -1,5 +1,6 @@
 import warnings
 import time
+import threading
 from typing import List, Union, Dict, Any
 from AFL.automation.mixing.MassBalance import MassBalance
 from AFL.automation.mixing.MassBalanceDriver import MassBalanceDriver
@@ -7,6 +8,31 @@ from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.shared.utilities import listify
 from AFL.automation.shared.mock_eic_client import MockEICClient
 from AFL.automation.shared.PersistentConfig import PersistentConfig
+import lazy_loader as lazy
+epics = lazy.load("epics", require="AFL-automation[neutron-scattering]")
+
+
+# Global list of driver commands to inject as no-ops.
+NOOP_COMMANDS = [
+    'transfer',
+    'transfer_to_catch'
+    'loadSample',
+    'calibrate_sensor',
+    'home',
+    'rinseCell',
+]
+
+
+def _noop(*args, **kwargs):
+    """Default no-op handler for injected commands."""
+    return None
+
+
+def _inject_noop_methods(cls, command_names):
+    """Inject no-op methods for any missing command names on the class."""
+    for name in command_names:
+        if not hasattr(cls, name):
+            setattr(cls, name, _noop)
 
 
 # Optional import for EIC client
@@ -259,42 +285,106 @@ class BioSANSPrepare(MassBalanceDriver):
         except Exception as e:
             raise RuntimeError(f"Failed to start process by setting CG3:SE:CMP:StartProcess: {e}")
 
-        # Wait for the process to complete
-        initial_delay_s = float(self.config.get('busy_initial_delay_s', 5.0))
-        poll_interval_s = float(self.config.get('busy_poll_interval_s', 1.0))
-        timeout_s = float(self.config.get('busy_timeout_s', 600.0))
-        start_wait = time.monotonic()
-
-        time.sleep(initial_delay_s)
-        while True:
-            if (time.monotonic() - start_wait) > timeout_s:
-                raise TimeoutError(f"Timed out waiting for CG3:SE:CMP:Busy to clear after {timeout_s} seconds")
-
-            time.sleep(poll_interval_s)
-            try:
-                busy_status = self.get_pv("CG3:SE:CMP:Busy")
-                # PVs can return strings, ensure comparison is robust
-                if str(busy_status).strip() == "0":
-                    break 
-            except Exception as e:
-                warnings.warn(f"Could not get busy status from CG3:SE:CMP:Busy (continuing to wait): {e}")
-                # Decide on retry strategy or eventually timing out if necessary
+        if not self.mock_mode:
+            timeout_s = float(self.config.get('busy_timeout_s', 600.0))
+            self._wait_for_mom144_pulse(timeout_s=timeout_s)
+            self._wait_for_cfenable_cycle(timeout_s=timeout_s)
 
         return balanced_target_dict_from_feasible, destination
+
+    def _wait_for_mom144_pulse(self, timeout_s: float) -> None:
+        pv_name = "CG3:SE:URMPI:Mom144"
+        pulse_event = threading.Event()
+
+        def _on_pulse(**_kwargs):
+            pulse_event.set()
+
+        pv = None
+        callback_index = None
+        start_wait = time.monotonic()
+        try:
+            pv = epics.PV(pv_name)
+            callback_index = pv.add_callback(_on_pulse)
+            remaining = timeout_s
+            if not pulse_event.wait(timeout=remaining):
+                raise TimeoutError(f"Timed out waiting for {pv_name} pulse after {timeout_s} seconds")
+        finally:
+            if pv is not None:
+                if callback_index is not None:
+                    try:
+                        pv.remove_callback(callback_index)
+                    except Exception:
+                        pass
+                try:
+                    pv.disconnect()
+                except Exception:
+                    pass
+
+    def _wait_for_cfenable_cycle(self, timeout_s: float) -> None:
+        pv_name = "CG3:SE:CMP:CFEnable"
+        start_wait = time.monotonic()
+        high_event = threading.Event()
+        low_event = threading.Event()
+
+        def _on_change(value=None, **_kwargs):
+            try:
+                v = int(value)
+            except Exception:
+                return
+            if v == 1:
+                high_event.set()
+            elif v == 0:
+                low_event.set()
+
+        pv = None
+        callback_index = None
+        try:
+            pv = epics.PV(pv_name)
+            callback_index = pv.add_callback(_on_change)
+
+            try:
+                current = pv.get()
+            except Exception as e:
+                raise RuntimeError(f"Failed to read {pv_name}: {e}")
+
+            try:
+                current_int = int(current)
+            except Exception:
+                current_int = None
+
+            elapsed = time.monotonic() - start_wait
+            remaining = max(0.0, timeout_s - elapsed)
+            if remaining == 0.0:
+                raise TimeoutError(f"Timed out waiting for {pv_name} cycle after {timeout_s} seconds")
+
+            if current_int == 1:
+                # Already high: wait for it to drop to 0
+                if not low_event.wait(timeout=remaining):
+                    raise TimeoutError(f"Timed out waiting for {pv_name} to drop after {timeout_s} seconds")
+                return
+
+            # Not high: wait for rise to 1, then drop to 0
+            if not high_event.wait(timeout=remaining):
+                raise TimeoutError(f"Timed out waiting for {pv_name} to rise after {timeout_s} seconds")
+
+            elapsed = time.monotonic() - start_wait
+            remaining = max(0.0, timeout_s - elapsed)
+            if remaining == 0.0:
+                raise TimeoutError(f"Timed out waiting for {pv_name} cycle after {timeout_s} seconds")
+            if not low_event.wait(timeout=remaining):
+                raise TimeoutError(f"Timed out waiting for {pv_name} to drop after {timeout_s} seconds")
+        finally:
+            if pv is not None:
+                if callback_index is not None:
+                    try:
+                        pv.remove_callback(callback_index)
+                    except Exception:
+                        pass
+                try:
+                    pv.disconnect()
+                except Exception:
+                    pass
         
-
-    def transfer(self,*args,**kwargs):
-        """Transfer a specified volume from src to dest."""
-        pass
-
-    def loadSample(self,*args,**kwargs):
-        """Load a sample into the driver."""
-        pass
-
-    def rinseCell(self,*args,**kwargs):
-        """Load a sample into the driver."""
-        pass
-
 
     def reset(self):
         """Reset the driver state/configuration."""
@@ -371,8 +461,12 @@ class BioSANSPrepare(MassBalanceDriver):
         return pv_value_read
 
 
+_inject_noop_methods(BioSANSPrepare, NOOP_COMMANDS)
+
 _DEFAULT_PORT=5002
 if __name__ == '__main__':
     from AFL.automation.shared.launcher import *
+
+
 
     

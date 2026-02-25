@@ -46,14 +46,10 @@ except ImportError:
 class BioSANSPrepare(MassBalanceDriver):
     defaults = {
         'mixing_locations': [],
-        'prepare_volume': '100 ul',
         'catch_volume': '10 ul',
-        'busy_initial_delay_s': 5.0,
-        'busy_poll_interval_s': 1.0,
-        'busy_timeout_s': 600.0,
-        'deck': {},
+        'mom144_timeout_s': 14400.0,
+        'cfenable_timeout_s': 1800.0,
         'stocks': [],
-        'stock_mix_order': [],
         'fixed_compositions': {},
         'eic_token': '1',
         'ipts_number': '1234',
@@ -224,6 +220,10 @@ class BioSANSPrepare(MassBalanceDriver):
 
         balanced_target_dict_from_feasible = feasibility_results[0]
 
+        if not self.mock_mode:
+            timeout_s = float(self.config.get('cfenable_timeout_s', 1800.0))
+            self._wait_for_cfenable_cycle(timeout_s=timeout_s)
+
         self.reset_targets()
         # We need to re-add the original target, not the dict from is_feasible
         self.add_target(target) 
@@ -287,9 +287,8 @@ class BioSANSPrepare(MassBalanceDriver):
             raise RuntimeError(f"Failed to start process by setting CG3:SE:CMP:StartProcess: {e}")
 
         if not self.mock_mode:
-            timeout_s = float(self.config.get('busy_timeout_s', 600.0))
+            timeout_s = float(self.config.get('mom144_timeout_s', 14400.0))
             self._wait_for_mom144_pulse(timeout_s=timeout_s)
-            self._wait_for_cfenable_cycle(timeout_s=timeout_s)
 
         return balanced_target_dict_from_feasible, destination
 
@@ -324,7 +323,6 @@ class BioSANSPrepare(MassBalanceDriver):
     def _wait_for_cfenable_cycle(self, timeout_s: float) -> None:
         pv_name = "CG3:SE:CMP:CFEnable"
         start_wait = time.monotonic()
-        high_event = threading.Event()
         low_event = threading.Event()
 
         def _on_change(value=None, **_kwargs):
@@ -332,9 +330,7 @@ class BioSANSPrepare(MassBalanceDriver):
                 v = int(value)
             except Exception:
                 return
-            if v == 1:
-                high_event.set()
-            elif v == 0:
+            if v == 0:
                 low_event.set()
 
         pv = None
@@ -364,16 +360,10 @@ class BioSANSPrepare(MassBalanceDriver):
                     raise TimeoutError(f"Timed out waiting for {pv_name} to drop after {timeout_s} seconds")
                 return
 
-            # Not high: wait for rise to 1, then drop to 0
-            if not high_event.wait(timeout=remaining):
-                raise TimeoutError(f"Timed out waiting for {pv_name} to rise after {timeout_s} seconds")
+            if current_int == 0:
+                return
 
-            elapsed = time.monotonic() - start_wait
-            remaining = max(0.0, timeout_s - elapsed)
-            if remaining == 0.0:
-                raise TimeoutError(f"Timed out waiting for {pv_name} cycle after {timeout_s} seconds")
-            if not low_event.wait(timeout=remaining):
-                raise TimeoutError(f"Timed out waiting for {pv_name} to drop after {timeout_s} seconds")
+            raise RuntimeError(f"Unexpected value for {pv_name}: {current}")
         finally:
             if pv is not None:
                 if callback_index is not None:

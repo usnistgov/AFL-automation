@@ -306,11 +306,18 @@ class BioSANSPrepare(MassBalanceDriver):
             self.blockForTableScan()
 
             # Submit rinse/MT-cell scan immediately after measurement, but don't block
+            # rinse_headers = [
+            #     'Title', 'CG3:SE:URMPI:Mom144', 'CG3:SE:CMP:CFEnable', 'Delay',
+            #     'URMPI145Wait', 'CG3:SE:CMP:CFEnable', 'Wait For', 'Value',
+            # ]
+            # rinse_row = ['Clean cell and measure MT cell', 1, 1, 5, 1, 0, 'seconds', 10]
+
+            # Submit rinse/MT-cell scan immediately after measurement, but don't block
             rinse_headers = [
                 'Title', 'CG3:SE:URMPI:Mom144', 'CG3:SE:CMP:CFEnable', 'Delay',
-                'URMPI145Wait', 'CG3:SE:CMP:CFEnable', 'Wait For', 'Value',
+                'URMPI145Wait', 'CG3:SE:CMP:CFEnable'
             ]
-            rinse_row = ['Clean cell and measure MT cell', 1, 1, 5, 1, 0, 'seconds', 10]
+            rinse_row = ['Clean cell and measure MT cell', 1, 1, 5, 1, 0]
             self.client.submit_table_scan(
                 parms={
                     'run_mode': 0,

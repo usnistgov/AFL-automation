@@ -537,6 +537,7 @@ function createStockCard(prefill) {
         '    <option value="total_volume"' + (prefill.sizeType === 'total_volume' ? ' selected' : '') + '>Total Volume</option>',
         '  </select>',
         '  <input type="text" class="stock-size-value" placeholder="e.g. 500 mg" value="' + escHtml(prefill.sizeValue || '') + '"' + sizeDisabled + '>',
+        '  <button class="stock-duplicate-btn" title="Duplicate stock">&#x2398; Duplicate</button>',
         '  <button class="stock-remove-btn" title="Remove stock">&times;</button>',
         '</div>',
         '<table class="stock-comp-table">',
@@ -548,6 +549,9 @@ function createStockCard(prefill) {
 
     card.querySelector('.stock-remove-btn').addEventListener('click', function() {
         card.remove();
+    });
+    card.querySelector('.stock-duplicate-btn').addEventListener('click', function() {
+        duplicateStockCard(card);
     });
     card.querySelector('.add-comp-btn').addEventListener('click', function() {
         addStockComponentRow(card, null);
@@ -680,6 +684,34 @@ function addStockComponentRow(card, prefill) {
 
     tbody.appendChild(tr);
     return tr;
+}
+
+function extractStockCardPrefill(card) {
+    var prefill = {};
+    prefill.name = card.querySelector('.stock-name-input').value;
+    prefill.location = card.querySelector('.stock-location-input').value;
+    var sizeType = card.querySelector('.stock-size-type').value;
+    if (sizeType !== 'none') {
+        prefill.sizeType = sizeType;
+        prefill.sizeValue = card.querySelector('.stock-size-value').value;
+    }
+    prefill.components = [];
+    card.querySelectorAll('.stock-comp-row').forEach(function(row) {
+        var comp = {};
+        comp.name = row.querySelector('.comp-name-input').value;
+        comp.propType = row.querySelector('.comp-prop-type').value;
+        comp.value = row.querySelector('.comp-value-input').value;
+        comp.units = row.querySelector('.comp-units-input').value;
+        prefill.components.push(comp);
+    });
+    return prefill;
+}
+
+function duplicateStockCard(sourceCard) {
+    var prefill = extractStockCardPrefill(sourceCard);
+    var newCard = createStockCard(prefill);
+    // Scroll the new card into view
+    newCard.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 }
 
 function serializeStockCard(card) {

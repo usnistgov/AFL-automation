@@ -1,5 +1,6 @@
 import time
 import pathlib
+import re
 import warnings
 import numpy as np  # for return types in get data
 import xarray as xr
@@ -35,8 +36,8 @@ class BioSANS(Driver):
     defaults['use_subtracted_data'] = True
     defaults['config'] = 'Config0'
     defaults['mock_mode'] = False
-    defaults['reduction_log_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}'
-    defaults['reduced_file_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D'
+    defaults['reduction_log_data_path'] = f'/HFIR/{{INST}}/IPTS-{{IPTS}}/shared/autoreduce/{{RUN_CYCLE}}/{{CONFIG}}'
+    defaults['reduced_file_data_path'] = f'/HFIR/{{INST}}/IPTS-{{IPTS}}/shared/autoreduce/{{RUN_CYCLE}}/{{CONFIG}}/1D'
 
     defaults['PVs_to_store'] = []
     defaults['PVs_to_store'].extend([f'CG3:SE:SMPLINF:SRC{i}Comp' for i in range(1,9)])
@@ -134,24 +135,81 @@ class BioSANS(Driver):
     def lastMeasuredTransmission(self):
         return self.last_measured_transmission
 
+    def _resolve_data_path(self, config_key):
+        data_path = self.config[config_key]
+        return pathlib.Path(
+            data_path.format(
+                INST=self.config['beamline'],
+                IPTS=self.config['ipts_number'],
+                RUN_CYCLE=self.config['run_cycle'],
+                CONFIG=self.config['config']
+            )
+        )
+
+    def _latest_run_number_from_paths(self, paths):
+        run_numbers = []
+        pattern = re.compile(r'^(?:S_)?r(\d+)_(\d+)_(?:reduction_log\.hdf|1D_(?:main|combined)\.txt)$')
+        for path in paths:
+            if not path.exists() or not path.is_dir():
+                continue
+            for candidate in path.glob('*'):
+                match = pattern.match(candidate.name)
+                if match is None:
+                    continue
+                first = int(match.group(1))
+                second = int(match.group(2))
+                if first == second:
+                    run_numbers.append(first)
+        if not run_numbers:
+            return None
+        return max(run_numbers)
+
+    def _get_last_run_number_with_fallback(self):
+        run_number = self.getLastRunNumber()
+        try:
+            run_number = int(run_number)
+        except (TypeError, ValueError):
+            run_number = 0
+
+        if run_number > 0:
+            return run_number
+
+        fallback_run_number = self._latest_run_number_from_paths([
+            self._resolve_data_path('reduction_log_data_path'),
+            self._resolve_data_path('reduced_file_data_path'),
+        ])
+        if fallback_run_number is not None:
+            warnings.warn(
+                f'Using fallback run number {fallback_run_number} because EPICS returned {run_number}',
+                stacklevel=2,
+            )
+            return fallback_run_number
+
+        return run_number
+
+    def _candidate_reduced_filenames(self, run_number):
+        return [
+            f'r{run_number:d}_{run_number:d}_1D_main.txt',
+            f'S_r{run_number:d}_{run_number:d}_1D_combined.txt',
+            f'r{run_number:d}_{run_number:d}_1D_combined.txt',
+        ]
+
+    def _select_existing_file(self, base_path, filenames):
+        for filename in filenames:
+            filepath = pathlib.Path(base_path) / filename
+            if filepath.exists():
+                return filepath
+        return pathlib.Path(base_path) / filenames[0]
+
     @Driver.unqueued()
     def getLastReductionLogFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = self.config['reduction_log_data_path']
+        path = self._resolve_data_path('reduction_log_data_path')
 
-        path = pathlib.Path(
-            data_path.format(
-                INST=self.config['beamline'],
-                IPTS=self.config['ipts_number'], 
-                RUN_CYCLE=self.config['run_cycle'], 
-                CONFIG=self.config['config']
-                )
-                )
-
-        run_number = self.getLastRunNumber()
+        run_number = self._get_last_run_number_with_fallback()
         filename = f'r{run_number:d}_{run_number:d}_reduction_log.hdf'
         filepath = pathlib.Path(path) / filename
-        return filepath
+        return str(filepath)
 
     def _readLastTransmission(self):
         filepath = self.getLastReductionLogFilePath()
@@ -171,21 +229,11 @@ class BioSANS(Driver):
     @Driver.unqueued()
     def getLastFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = self.config['reduced_file_data_path']
+        path = self._resolve_data_path('reduced_file_data_path')
 
-        path = pathlib.Path(
-            data_path.format(
-                INST=self.config['beamline'],
-                IPTS=self.config['ipts_number'], 
-                RUN_CYCLE=self.config['run_cycle'], 
-                CONFIG=self.config['config']
-                )
-                )
-
-        run_number = self.getLastRunNumber()
-        filename = f'r{run_number:d}_{run_number:d}_1D_main.txt'
-        filepath = pathlib.Path(path) / filename
-        return filepath
+        run_number = self._get_last_run_number_with_fallback()
+        filepath = self._select_existing_file(path, self._candidate_reduced_filenames(run_number))
+        return str(filepath)
 
 
     def _readLastReducedFile(self):

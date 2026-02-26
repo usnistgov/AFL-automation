@@ -129,10 +129,10 @@ class TestBioSANSFilePathGeneration:
 
             filepath = driver.getLastReductionLogFilePath()
 
-            assert filepath == Path(
+            assert filepath == str(Path(
                 '/HFIR/CG3/IPTS-1234/shared/autoreduce/RC511/Config0/'
                 'r24680_24680_reduction_log.hdf'
-            )
+            ))
     
     def test_get_last_reduction_log_file_path(self, epics_stub):
         """Test reduction log file path generation"""
@@ -149,7 +149,7 @@ class TestBioSANSFilePathGeneration:
             
             filepath = driver.getLastReductionLogFilePath()
             
-            assert isinstance(filepath, Path)
+            assert isinstance(filepath, str)
             assert 'HFIR' in str(filepath)
             assert 'CG3' in str(filepath)
             assert 'IPTS-1234' in str(filepath)
@@ -172,7 +172,7 @@ class TestBioSANSFilePathGeneration:
             
             filepath = driver.getLastFilePath()
             
-            assert isinstance(filepath, Path)
+            assert isinstance(filepath, str)
             assert '1D' in str(filepath)
             assert 'r67890_67890_1D_main.txt' in str(filepath)
 
@@ -191,10 +191,10 @@ class TestBioSANSFilePathGeneration:
 
             filepath = driver.getLastFilePath()
 
-            assert filepath == Path(
+            assert filepath == str(Path(
                 '/HFIR/CG3/IPTS-1234/shared/autoreduce/RC511/Config0/1D/'
                 'r24680_24680_1D_main.txt'
-            )
+            ))
 
     def test_get_last_reduction_log_file_path_uses_configured_data_path(self, epics_stub):
         """Test reduction log path template can be overridden via config"""
@@ -212,10 +212,10 @@ class TestBioSANSFilePathGeneration:
 
             filepath = driver.getLastReductionLogFilePath()
 
-            assert filepath == Path(
+            assert filepath == str(Path(
                 '/tmp/custom/CG3/IPTS-9876/RC999/ConfigX/'
                 'r13579_13579_reduction_log.hdf'
-            )
+            ))
 
     def test_get_last_file_path_uses_configured_data_path(self, epics_stub):
         """Test reduced 1D path template can be overridden via config"""
@@ -233,10 +233,59 @@ class TestBioSANSFilePathGeneration:
 
             filepath = driver.getLastFilePath()
 
-            assert filepath == Path(
+            assert filepath == str(Path(
                 '/tmp/custom/CG3/IPTS-9876/RC999/ConfigX/reduced/'
                 'r13579_13579_1D_main.txt'
-            )
+            ))
+
+    @patch('AFL.automation.instrument.BioSANS.MockEICClient')
+    def test_fallback_run_number_from_latest_files(self, mock_client, tmp_path, epics_stub):
+        """If EPICS returns 0, driver falls back to latest run number on disk."""
+        from AFL.automation.instrument.BioSANS import BioSANS
+
+        data_dir = tmp_path / 'intersect-data'
+        data_dir.mkdir(parents=True, exist_ok=True)
+
+        (data_dir / 'r30503_30503_reduction_log.hdf').write_bytes(b'log')
+        (data_dir / 'S_r30504_30504_1D_combined.txt').write_text('#Q\n0.1 1 0.1 0.01\n')
+        (data_dir / 'r30500_30500_reduction_log.hdf').write_bytes(b'log')
+
+        with patch('AFL.automation.instrument.BioSANS.caget', return_value=0):
+            driver = BioSANS(overrides={
+                'write_to_disk': False,
+                'mock_mode': True,
+                'reduction_log_data_path': str(data_dir),
+                'reduced_file_data_path': str(data_dir),
+            })
+
+            _ = driver.client
+            log_path = driver.getLastReductionLogFilePath()
+
+        assert mock_client.called
+        assert log_path.endswith('r30504_30504_reduction_log.hdf')
+
+    @patch('AFL.automation.instrument.BioSANS.MockEICClient')
+    def test_reduced_file_prefers_existing_combined_file_when_main_missing(self, mock_client, tmp_path, epics_stub):
+        """Driver selects S_r..._1D_combined.txt when _1D_main.txt is absent."""
+        from AFL.automation.instrument.BioSANS import BioSANS
+
+        data_dir = tmp_path / 'intersect-data'
+        data_dir.mkdir(parents=True, exist_ok=True)
+
+        (data_dir / 'S_r30504_30504_1D_combined.txt').write_text('#Q\n0.1 1 0.1 0.01\n')
+
+        with patch('AFL.automation.instrument.BioSANS.caget', return_value=30504):
+            driver = BioSANS(overrides={
+                'write_to_disk': False,
+                'mock_mode': True,
+                'reduced_file_data_path': str(data_dir),
+            })
+
+            _ = driver.client
+            reduced_path = driver.getLastFilePath()
+
+        assert mock_client.called
+        assert reduced_path.endswith('S_r30504_30504_1D_combined.txt')
 
 
 class TestBioSANSStatus:

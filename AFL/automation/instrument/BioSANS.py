@@ -83,7 +83,7 @@ class BioSANS(Driver):
         if self._client is None:
             if self.config['mock_mode']:
                 self._client = MockEICClient(
-                    ipts_number=self.config['ipts_number'],
+                    ipts_number=str(self.config['ipts_number']),
                     eic_token=self.config['eic_token'],
                     beamline=self.config['beamline']
                 )
@@ -91,7 +91,7 @@ class BioSANS(Driver):
                 if EICClient is None:
                     raise ImportError("eic_client is not available and mock_mode is False")
                 self._client = EICClient(
-                    ipts_number=self.config['ipts_number'],
+                    ipts_number=str(self.config['ipts_number']),
                     eic_token=self.config['eic_token'],
                     beamline=self.config['beamline']
                 )

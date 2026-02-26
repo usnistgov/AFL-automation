@@ -124,6 +124,14 @@ def _solution_to_display_dict(solution):
     if mass_fractions:
         out['mass_fractions'] = mass_fractions
 
+    # Solute list
+    try:
+        solute_names = [name for name, comp in solution if comp.is_solute]
+        if solute_names:
+            out['solutes'] = solute_names
+    except Exception:
+        pass
+
     # ---- Bulk properties (OK to fail entirely) ----
 
     # Volume fractions (solvents only)

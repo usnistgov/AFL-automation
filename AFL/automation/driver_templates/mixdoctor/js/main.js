@@ -541,7 +541,7 @@ function createStockCard(prefill) {
         '  <button class="stock-remove-btn" title="Remove stock">&times;</button>',
         '</div>',
         '<table class="stock-comp-table">',
-        '  <thead><tr><th>Component</th><th>Property</th><th>Value</th><th>Units</th><th></th></tr></thead>',
+        '  <thead><tr><th>Component</th><th>Property</th><th>Value</th><th>Units</th><th>Solute</th><th></th></tr></thead>',
         '  <tbody class="stock-comp-tbody"></tbody>',
         '</table>',
         '<button class="add-comp-btn">+ Add Component</button>',
@@ -588,12 +588,14 @@ function addStockComponentRow(card, prefill) {
     var selectedType = STOCK_PROPERTY_TYPES.find(function(pt) { return pt.value === defaultPropType; }) || STOCK_PROPERTY_TYPES[0];
     var unitsDisabled = selectedType.needsUnits ? '' : ' disabled';
     var defaultUnit = prefill.units || (selectedType.needsUnits ? selectedType.defaultUnit : '');
+    var soluteChecked = prefill.isSolute ? ' checked' : '';
 
     tr.innerHTML = [
         '<td><input type="text" class="comp-name-input" list="component-names-datalist" placeholder="Component name" value="' + escHtml(prefill.name || '') + '"></td>',
         '<td><select class="comp-prop-type">' + propTypeOptions + '</select></td>',
         '<td><input type="number" class="comp-value-input" placeholder="Value" value="' + escHtml(prefill.value !== undefined ? String(prefill.value) : '') + '" step="any"></td>',
         '<td><input type="text" class="comp-units-input" placeholder="Units" value="' + escHtml(defaultUnit) + '"' + unitsDisabled + '></td>',
+        '<td><input type="checkbox" class="comp-solute"' + soluteChecked + '></td>',
         '<td><button class="remove-comp-btn" title="Remove">&times;</button></td>',
     ].join('');
 
@@ -702,6 +704,7 @@ function extractStockCardPrefill(card) {
         comp.propType = row.querySelector('.comp-prop-type').value;
         comp.value = row.querySelector('.comp-value-input').value;
         comp.units = row.querySelector('.comp-units-input').value;
+        comp.isSolute = row.querySelector('.comp-solute').checked;
         prefill.components.push(comp);
     });
     return prefill;
@@ -736,6 +739,7 @@ function serializeStockCard(card) {
     };
 
     var propGroups = {};
+    var solutes = [];
 
     card.querySelectorAll('.stock-comp-row').forEach(function(row) {
         var compName = row.querySelector('.comp-name-input').value.trim();
@@ -743,6 +747,7 @@ function serializeStockCard(card) {
         var propType = row.querySelector('.comp-prop-type').value;
         var value = row.querySelector('.comp-value-input').value.trim();
         var units = row.querySelector('.comp-units-input').value.trim();
+        var isSolute = row.querySelector('.comp-solute').checked;
         var groupKey = propTypeToGroup[propType];
         if (!groupKey || !value) return;
 
@@ -753,11 +758,15 @@ function serializeStockCard(card) {
         } else {
             propGroups[groupKey][compName] = parseFloat(value);
         }
+
+        if (isSolute) solutes.push(compName);
     });
 
     Object.keys(propGroups).forEach(function(key) {
         result[key] = propGroups[key];
     });
+
+    if (solutes.length > 0) result.solutes = solutes;
 
     return result;
 }
@@ -835,29 +844,36 @@ async function loadExistingStocksIntoCards() {
                 prefill.sizeValue = typeof tv === 'object' ? tv.value + ' ' + tv.units : String(tv);
             }
 
+            var soluteList = stock.solutes || [];
             var components = [];
             (stock.components || []).forEach(function(compName) {
+                var isSolute = soluteList.indexOf(compName) !== -1;
                 if (stock.masses && stock.masses[compName]) {
                     var m = stock.masses[compName];
                     components.push({name: compName, propType: 'mass',
                         value: typeof m === 'object' ? m.value : m,
-                        units: typeof m === 'object' ? m.units : ''});
+                        units: typeof m === 'object' ? m.units : '',
+                        isSolute: isSolute});
                 } else if (stock.volumes && stock.volumes[compName]) {
                     var vol = stock.volumes[compName];
                     components.push({name: compName, propType: 'volume',
                         value: typeof vol === 'object' ? vol.value : vol,
-                        units: typeof vol === 'object' ? vol.units : ''});
+                        units: typeof vol === 'object' ? vol.units : '',
+                        isSolute: isSolute});
                 } else if (stock.concentrations && stock.concentrations[compName]) {
                     var c = stock.concentrations[compName];
                     components.push({name: compName, propType: 'concentration',
                         value: typeof c === 'object' ? c.value : c,
-                        units: typeof c === 'object' ? c.units : ''});
+                        units: typeof c === 'object' ? c.units : '',
+                        isSolute: isSolute});
                 } else if (stock.mass_fractions && stock.mass_fractions[compName] != null) {
                     components.push({name: compName, propType: 'mass_fraction',
-                        value: stock.mass_fractions[compName]});
+                        value: stock.mass_fractions[compName],
+                        isSolute: isSolute});
                 } else if (stock.volume_fractions && stock.volume_fractions[compName] != null) {
                     components.push({name: compName, propType: 'volume_fraction',
-                        value: stock.volume_fractions[compName]});
+                        value: stock.volume_fractions[compName],
+                        isSolute: isSolute});
                 }
             });
             prefill.components = components;
@@ -895,6 +911,7 @@ function addSweepRow(prefill) {
     var unitsDisabled = selectedType.needsUnits ? '' : ' disabled';
     var defaultUnit = prefill.units || (selectedType.needsUnits ? selectedType.defaultUnit : '');
     var isRemainder = prefill.isRemainder ? ' checked' : '';
+    var isSolute = prefill.isSolute ? ' checked' : '';
     var useChecked = prefill.use === false ? '' : ' checked';
 
     tr.innerHTML = [
@@ -906,6 +923,7 @@ function addSweepRow(prefill) {
         '<td><input type="number" class="sweep-steps" placeholder="5" value="' + escHtml(prefill.steps !== undefined ? String(prefill.steps) : '5') + '" min="2" step="1"></td>',
         '<td><input type="text" class="sweep-units"' + unitsDisabled + ' placeholder="Units" value="' + escHtml(defaultUnit) + '"></td>',
         '<td><input type="checkbox" class="sweep-remainder"' + isRemainder + '></td>',
+        '<td><input type="checkbox" class="sweep-solute"' + isSolute + '></td>',
         '<td><button class="remove-sweep-row-btn" title="Remove">&times;</button></td>',
     ].join('');
 
@@ -973,14 +991,18 @@ function generateSweepTargets() {
 
     var activeRows = [];
     var remainderComponents = [];
+    var soluteNames = [];
 
     document.querySelectorAll('.sweep-row').forEach(function(row) {
         if (!row.querySelector('.sweep-use').checked) return;
         var compName = row.querySelector('.sweep-comp-name').value.trim();
         if (!compName) return;
         var isRemainder = row.querySelector('.sweep-remainder').checked;
+        var isSolute = row.querySelector('.sweep-solute').checked;
         var propType = row.querySelector('.sweep-prop-type').value;
         var units = row.querySelector('.sweep-units').value.trim();
+
+        if (isSolute && soluteNames.indexOf(compName) === -1) soluteNames.push(compName);
 
         if (isRemainder) {
             remainderComponents.push({name: compName, propType: propType, units: units});
@@ -1027,6 +1049,8 @@ function generateSweepTargets() {
             if (!target[key]) target[key] = {};
             target[key][rem.name] = null;
         });
+
+        if (soluteNames.length > 0) target.solutes = soluteNames.slice();
 
         return target;
     });
@@ -1084,7 +1108,8 @@ function serializeSweepConfig() {
             stop: row.querySelector('.sweep-stop').value,
             steps: row.querySelector('.sweep-steps').value,
             units: row.querySelector('.sweep-units').value,
-            is_remainder: row.querySelector('.sweep-remainder').checked
+            is_remainder: row.querySelector('.sweep-remainder').checked,
+            is_solute: row.querySelector('.sweep-solute').checked
         });
     });
     return {
@@ -1110,7 +1135,8 @@ function applySweepConfig(config) {
             stop: row.stop !== '' ? row.stop : undefined,
             steps: row.steps !== '' ? row.steps : undefined,
             units: row.units,
-            isRemainder: row.is_remainder
+            isRemainder: row.is_remainder,
+            isSolute: row.is_solute
         });
     });
 }

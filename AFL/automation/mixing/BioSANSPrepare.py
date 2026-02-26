@@ -284,7 +284,7 @@ class BioSANSPrepare(MassBalanceDriver):
             ]
             row = [
                 target_name,
-                2
+                2,
                 stock_volumes['CG3:SE:CMP:S1Vol'], stock_volumes['CG3:SE:CMP:S2Vol'],
                 stock_volumes['CG3:SE:CMP:S3Vol'], stock_volumes['CG3:SE:CMP:S4Vol'],
                 stock_volumes['CG3:SE:CMP:S5Vol'], stock_volumes['CG3:SE:CMP:S6Vol'],

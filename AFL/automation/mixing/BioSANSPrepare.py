@@ -293,7 +293,7 @@ class BioSANSPrepare(MassBalanceDriver):
                 1, 1, 5, 
                 2,
                 'seconds', self.config['exposure'],
-                1
+                6
             ]
 
             success, self.last_scan_id, response_data = self.client.submit_table_scan(

@@ -59,7 +59,6 @@ class BioSANSPrepare(MassBalanceDriver):
 
     def __init__(self, overrides=None):
         MassBalanceDriver.__init__(self, overrides=overrides,)
-        self.mock_mode = bool(self.config.get('mock_mode', False))
 
         self.name = 'BioSANSPrepare'
         self.filepath = self.path / (self.name + '.config.json')
@@ -221,7 +220,7 @@ class BioSANSPrepare(MassBalanceDriver):
 
         balanced_target_dict_from_feasible = feasibility_results[0]
 
-        if not self.mock_mode:
+        if not self.config['mock_mode']:
             timeout_s = float(self.config.get('cfenable_timeout_s', 1800.0))
             self._wait_for_cfenable_cycle(timeout_s=timeout_s)
 
@@ -423,7 +422,7 @@ class BioSANSPrepare(MassBalanceDriver):
             The client instance for communicating with the instrument.
         """
         if self._client is None:
-            if self.mock_mode:
+            if self.config['mock_mode']:
                 self._client = MockEICClient(
                     ipts_number=self.config['ipts_number'],
                     eic_token=self.config['eic_token'],

@@ -275,19 +275,23 @@ class BioSANSPrepare(MassBalanceDriver):
 
             headers = [
                 'Title',
+                'CG3:Mot:AttnPos:Menu',
                 'CG3:SE:CMP:S1Vol', 'CG3:SE:CMP:S2Vol', 'CG3:SE:CMP:S3Vol', 'CG3:SE:CMP:S4Vol',
                 'CG3:SE:CMP:S5Vol', 'CG3:SE:CMP:S6Vol', 'CG3:SE:CMP:S7Vol', 'CG3:SE:CMP:S8Vol',
                 'CG3:SE:URMPI:143', 'CG3:SE:URPI:MixFinalVolume', 'CG3:SE:URPI:ChangeTips',
                 'RobotProcess', 'URMPI147Wait', 'Delay', 'Wait For', 'Value',
+                'CG3:Mot:AttnPos:Menu',
             ]
             row = [
                 target_name,
+                2
                 stock_volumes['CG3:SE:CMP:S1Vol'], stock_volumes['CG3:SE:CMP:S2Vol'],
                 stock_volumes['CG3:SE:CMP:S3Vol'], stock_volumes['CG3:SE:CMP:S4Vol'],
                 stock_volumes['CG3:SE:CMP:S5Vol'], stock_volumes['CG3:SE:CMP:S6Vol'],
                 stock_volumes['CG3:SE:CMP:S7Vol'], stock_volumes['CG3:SE:CMP:S8Vol'],
-                destination, catch_volume, 1,
+                destination, catch_volume, 0,
                 1, 1, 5, 'seconds', self.config['exposure'],
+                1
             ]
 
             success, self.last_scan_id, response_data = self.client.submit_table_scan(

@@ -76,7 +76,7 @@ class BioSANSPrepare(MassBalanceDriver):
         self._client = None
         self.last_scan_id = None
         self.stock_pv_map = {}
-        self.stocks = []
+        self.stocks = self.config.get('stocks', [])
         self.targets = []
         self.process_stocks()
     
@@ -424,7 +424,7 @@ class BioSANSPrepare(MassBalanceDriver):
         if self._client is None:
             if self.config['mock_mode']:
                 self._client = MockEICClient(
-                    ipts_number=self.config['ipts_number'],
+                    ipts_number=str(self.config['ipts_number']),
                     eic_token=self.config['eic_token'],
                     beamline=self.config['beamline']
                 )
@@ -432,7 +432,7 @@ class BioSANSPrepare(MassBalanceDriver):
                 if EICClient is None:
                     raise ImportError("eic_client is not available and mock_mode is False")
                 self._client = EICClient(
-                    ipts_number=self.config['ipts_number'],
+                    ipts_number=str(self.config['ipts_number']),
                     eic_token=self.config['eic_token'],
                     beamline=self.config['beamline']
                 )

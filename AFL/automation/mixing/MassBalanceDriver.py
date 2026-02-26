@@ -371,6 +371,115 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         self.process_targets()
         return super().balance(tol=self.config['tol'], return_report=return_report)
 
+    def get_sample_composition(self, composition_format='mass_fraction'):
+        """Get the composition of the last balanced target in the requested format.
+
+        Uses the Solution objects in ``self.balanced`` which have full access
+        to the component database, avoiding the need for the caller to
+        reconstruct Solution objects.
+
+        Parameters
+        ----------
+        composition_format : str or dict
+            If str, a single format applied to all components.
+            If dict, maps component names to format strings; components not
+            listed default to ``'mass_fraction'``.
+            Valid formats: ``'mass_fraction'``, ``'volume_fraction'``,
+            ``'concentration'``, ``'molarity'``.
+
+        Returns
+        -------
+        dict
+            Composition dictionary with component names as keys and numeric
+            values in the requested format.
+        """
+        valid_formats = ['mass_fraction', 'volume_fraction', 'concentration', 'molarity']
+
+        if not self.balanced:
+            raise ValueError("No balanced targets available. Call balance() first.")
+
+        last_entry = self.balanced[-1]
+        balanced_target = last_entry.get('balanced_target')
+
+        if balanced_target is None:
+            raise ValueError("Last balance attempt failed — no balanced target available.")
+
+        sample_composition = {}
+
+        if isinstance(composition_format, str):
+            if composition_format not in valid_formats:
+                raise ValueError(
+                    f"Invalid composition_format '{composition_format}'. "
+                    f"Must be one of: {', '.join(valid_formats)}"
+                )
+            for component in balanced_target.components.keys():
+                sample_composition[component] = self._get_component_value(
+                    balanced_target, component, composition_format
+                )
+        elif isinstance(composition_format, dict):
+            for component in balanced_target.components.keys():
+                format_type = composition_format.get(component, 'mass_fraction')
+                if format_type not in valid_formats:
+                    raise ValueError(
+                        f"Invalid format '{format_type}' for component '{component}'. "
+                        f"Must be one of: {', '.join(valid_formats)}"
+                    )
+                sample_composition[component] = self._get_component_value(
+                    balanced_target, component, format_type
+                )
+        else:
+            raise ValueError(
+                f"composition_format must be str or dict, got {type(composition_format).__name__}"
+            )
+
+        return sample_composition
+
+    @staticmethod
+    def _get_component_value(solution, component, format_type):
+        """Extract a component value in the specified format from a Solution.
+
+        Parameters
+        ----------
+        solution : Solution
+            Solution object containing the component.
+        component : str
+            Component name.
+        format_type : str
+            One of: ``'mass_fraction'``, ``'volume_fraction'``,
+            ``'concentration'``, ``'molarity'``.
+
+        Returns
+        -------
+        float
+            Component value in the requested format (dimensionless or in
+            canonical units: mg/ml for concentration, mM for molarity).
+        """
+        if format_type == 'mass_fraction':
+            return solution.mass_fraction[component].magnitude
+
+        elif format_type == 'volume_fraction':
+            if solution[component].volume is None:
+                raise ValueError(
+                    f"Component {component} has no volume, cannot calculate volume_fraction. "
+                    f"Only solvents support volume_fraction."
+                )
+            return solution.volume_fraction[component].magnitude
+
+        elif format_type == 'concentration':
+            return solution.concentration[component].to('mg/ml').magnitude
+
+        elif format_type == 'molarity':
+            if not hasattr(solution[component], 'formula') or solution[component].formula is None:
+                raise ValueError(
+                    f"Component {component} has no formula, cannot calculate molarity"
+                )
+            return solution.molarity[component].to('mM').magnitude
+
+        else:
+            raise ValueError(
+                f"Invalid format_type '{format_type}'. "
+                f"Must be one of: 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'"
+            )
 
     # --- Component database management ---
 

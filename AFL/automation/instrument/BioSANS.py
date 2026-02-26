@@ -39,14 +39,14 @@ class BioSANS(Driver):
     defaults['reduced_file_data_path'] = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D'
 
     defaults['PVs_to_store'] = []
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Comp' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Name' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}Conc' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SRC{i}ConcUnits' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:S{i}Vol' for i in range(1,9)])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SE:URMPI:143'])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SMPLTotalVol'])
-    defaults['PVs_to_store'].extend(['CG3:SE:CMP:SMPLFinalConc{i}' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SRC{i}Comp' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SRC{i}Name' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SRC{i}Conc' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SRC{i}ConcUnits' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:S{i}Vol' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SE:URMPI:143'])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SMPLTotalVol'])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:SMPLFinalConc{i}' for i in range(1,9)])
 
 
     def __init__(self, overrides=None):
@@ -54,7 +54,6 @@ class BioSANS(Driver):
         self.app = None
         Driver.__init__(self, name='BioSANS', defaults=self.gather_defaults(), overrides=overrides)
 
-        self.mock_mode = bool(self.config.get('mock_mode', False))
         self._caget, self._caput, self._cainfo = self._resolve_epics()
 
         self._client = None
@@ -82,7 +81,7 @@ class BioSANS(Driver):
             The client instance for communicating with the instrument.
         """
         if self._client is None:
-            if self.mock_mode:
+            if self.config['mock_mode']:
                 self._client = MockEICClient(
                     ipts_number=self.config['ipts_number'],
                     eic_token=self.config['eic_token'],
@@ -106,7 +105,7 @@ class BioSANS(Driver):
 
     def _resolve_epics(self):
         """Return EPICS accessors, honoring mock_mode and availability."""
-        if self.mock_mode:
+        if self.config['mock_mode']:
             def _mock_caget(*args, **kwargs):
                 warnings.warn("EPICS in mock mode - caget", stacklevel=2)
                 return 0

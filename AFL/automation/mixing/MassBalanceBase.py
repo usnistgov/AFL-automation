@@ -247,9 +247,15 @@ def _diagnose(
     return BalanceDiagnosis(success=False, details=details, component_errors=component_errors)
 
 
-def _balance(mass_fraction_matrix: np.ndarray, target_masses: np.ndarray, bounds: Bounds, stocks: List[Solution], near_bound_tol: float = 0.1) -> List[Dict[Solution, str]]:
+def _balance(
+    mass_fraction_matrix: np.ndarray,
+    target_masses: np.ndarray,
+    bounds: Bounds,
+    stocks: List[Solution],
+    near_bound_tol: float = 0.1,
+) -> List[np.ndarray]:
     result = lsq_linear(mass_fraction_matrix, target_masses, bounds=bounds)
-    base_mass_transfer = {stock: f'{mass} g' for stock, mass in zip(stocks, result.x)}
+    base_mass_transfer = np.array(result.x, dtype=float)
     mass_transfers = [base_mass_transfer]
 
     # Identify stocks that the solver pushed to or near their lower bound.
@@ -283,18 +289,45 @@ def _balance(mass_fraction_matrix: np.ndarray, target_masses: np.ndarray, bounds
 
             reduced_result = lsq_linear(reduced_matrix, target_masses, bounds=reduced_bounds)
 
-            adjusted_transfer = {}
-            reduced_idx = 0
-            for i, stock in enumerate(stocks):
-                if i in exclude:
-                    adjusted_transfer[stock] = '0 g'
-                else:
-                    adjusted_transfer[stock] = f'{reduced_result.x[reduced_idx]} g'
-                    reduced_idx += 1
+            adjusted_transfer = np.zeros(len(stocks), dtype=float)
+            for reduced_idx, stock_idx in enumerate(keep_indices):
+                adjusted_transfer[stock_idx] = float(reduced_result.x[reduced_idx])
 
             mass_transfers.append(adjusted_transfer)
 
     return mass_transfers
+
+
+def _compute_differences(
+    target_masses: np.ndarray,
+    balanced_masses: np.ndarray,
+    total_target_mass: float,
+) -> np.ndarray:
+    t = target_masses
+    b = balanced_masses
+    differences = np.zeros_like(t, dtype=float)
+
+    zero_t = t == 0
+    zero_b = b == 0
+    both_zero = zero_t & zero_b
+
+    # Target is zero but balanced is not
+    if total_target_mass > 0:
+        differences[zero_t & ~zero_b] = b[zero_t & ~zero_b] / total_target_mass
+    else:
+        differences[zero_t & ~zero_b] = 1.0
+
+    # Target is non-zero
+    nonzero_t = ~zero_t
+    differences[nonzero_t] = np.abs(b[nonzero_t] - t[nonzero_t]) / t[nonzero_t]
+
+    # Both zero already set to 0
+    differences[both_zero] = 0.0
+    return differences
+
+
+def _make_transfer_dict(stocks: List[Solution], transfers: np.ndarray) -> Dict[Solution, str]:
+    return {stock: f'{float(mass)} g' for stock, mass in zip(stocks, transfers)}
 
 
 # --- MassBalance Base Class ---
@@ -403,56 +436,54 @@ class MassBalanceBase:
             raise ValueError("Some stocks don't have a location specified. This should be specified when the stocks are instantiated")
         self._set_bounds()
         components = list(self.components)
-        target_masses = np.zeros(len(components))
-        balanced_masses = np.zeros(len(components))
+        mfm = np.zeros((len(components), len(self.stocks)))
+        _extract_mass_fractions(self.stocks, components, mfm)
+
+        target_mass_matrix = np.zeros((len(self.targets), len(components)))
+        for idx, target in enumerate(self.targets):
+            _extract_masses(target, components, array=target_mass_matrix[idx])
+
         self.balanced = []
-        for target in self.targets:
-            _extract_masses(target, components, array=target_masses)
-            mass_transfers = _balance(self.mass_fraction_matrix(), target_masses, self.bounds, self.stocks)
-            balanced_targets = []
+        for target_idx, target in enumerate(self.targets):
+            target_masses = target_mass_matrix[target_idx]
+            mass_transfers = _balance(mfm, target_masses, self.bounds, self.stocks)
+            best_candidate = None
+            best_score = None
+            any_success = False
+
+            total_target_mass = float(np.sum(target_masses))
+
             for transfers in mass_transfers:
-                balanced_target = _make_balanced_target(transfers, target)
-                _extract_masses(balanced_target, components, array=balanced_masses)
+                balanced_masses = mfm @ transfers
+                differences = _compute_differences(
+                    target_masses=target_masses,
+                    balanced_masses=balanced_masses,
+                    total_target_mass=total_target_mass,
+                )
+                score = float(np.sum(np.abs(differences)))
+                success = bool(np.all(np.abs(differences) < tol))
 
-                total_target_mass = sum(target_masses)
+                if best_candidate is None or score < best_score:
+                    best_candidate = {
+                        'target': None,
+                        'difference': differences,
+                        'transfers': transfers,
+                        'success': success,
+                    }
+                    best_score = score
 
-                # Compute per-component relative differences using absolute
-                # masses so that total-mass deviations are detected.  Handle
-                # zero target masses gracefully to avoid division by zero.
-                differences = np.zeros(len(components))
-                for i in range(len(components)):
-                    t = target_masses[i]
-                    b = balanced_masses[i]
-                    if t == 0 and b == 0:
-                        differences[i] = 0.0
-                    elif t == 0:
-                        # Target is zero but balanced is not; express the
-                        # mismatch relative to the total target mass so the
-                        # tolerance comparison remains meaningful.
-                        if total_target_mass > 0:
-                            differences[i] = b / total_target_mass
-                        else:
-                            differences[i] = 1.0
-                    else:
-                        differences[i] = abs(b - t) / t
+                if success:
+                    any_success = True
 
-                success = all(np.abs(differences) < tol)
+            if best_candidate is None:
+                raise RuntimeError("Mass balance produced no candidates; this should not happen.")
 
-                balanced_targets.append({
-                        'target':balanced_target,
-                        'difference':differences,
-                        'transfers':transfers,
-                        'success':success,
-                 })
+            transfers_dict = _make_transfer_dict(self.stocks, best_candidate['transfers'])
+            balanced_target = _make_balanced_target(transfers_dict, target)
 
-            best_candidate = min(
-                balanced_targets, key=lambda x: np.sum(np.abs(x['difference']))
-            )
-
-            mfm = self.mass_fraction_matrix()
             diagnosis = _diagnose(
                 target=target,
-                transfers=best_candidate['transfers'],
+                transfers=transfers_dict,
                 differences=best_candidate['difference'],
                 components=components,
                 stocks=self.stocks,
@@ -463,7 +494,7 @@ class MassBalanceBase:
                 success=best_candidate['success'],
             )
 
-            if not any(b['success'] for b in balanced_targets):
+            if not any_success:
                 warnings.warn(f'No suitable mass balance found for {target.name}\n')
                 self.balanced.append({
                     'target': target,
@@ -476,8 +507,8 @@ class MassBalanceBase:
             else:
                 self.balanced.append({
                     'target': target,
-                    'balanced_target': best_candidate['target'],
-                    'transfers': best_candidate['transfers'],
+                    'balanced_target': balanced_target,
+                    'transfers': transfers_dict,
                     'difference': best_candidate['difference'],
                     'success': best_candidate['success'],
                     'diagnosis': diagnosis,

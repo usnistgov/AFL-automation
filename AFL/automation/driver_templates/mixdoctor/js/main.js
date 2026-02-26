@@ -46,7 +46,7 @@ function escHtml(str) {
 
 // ---- Polling ----
 async function pollForResult(token, uuid, timeoutMs) {
-    timeoutMs = timeoutMs || 30000;
+    timeoutMs = timeoutMs || 120000;
     var start = Date.now();
     while (Date.now() - start < timeoutMs) {
         await new Promise(function(resolve) { setTimeout(resolve, 500); });

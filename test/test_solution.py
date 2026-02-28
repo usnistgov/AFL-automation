@@ -10,6 +10,60 @@ from AFL.automation.shared.exceptions import EmptyException
 from AFL.automation.shared.warnings import MixWarning
 
 
+@pytest.fixture(autouse=True)
+def ignore_pyparsing_setparseaction_deprecation(monkeypatch):
+    """Suppress the known pyparsing DeprecationWarning about setParseAction.
+
+    We monkeypatch warnings.simplefilter so that even when tests call
+    simplefilter("error") inside catch_warnings, the ignore filter is
+    re-inserted at the front.
+    """
+
+    original_simplefilter = warnings.simplefilter
+
+    def patched_simplefilter(action, *args, **kwargs):
+        original_simplefilter(action, *args, **kwargs)
+        warnings.filterwarnings(
+            "ignore",
+            message=".*setParseAction.*",
+            category=Warning,
+            append=False,
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=".*setName.*",
+            category=Warning,
+            append=False,
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=".*parseString.*",
+            category=Warning,
+            append=False,
+        )
+
+    monkeypatch.setattr(warnings, "simplefilter", patched_simplefilter)
+    # Also seed the filter list before any tests run
+    warnings.filterwarnings(
+        "ignore",
+        message=".*setParseAction.*",
+        category=Warning,
+        append=False,
+    )
+    warnings.filterwarnings(
+        "ignore",
+        message=".*setName.*",
+        category=Warning,
+        append=False,
+    )
+    warnings.filterwarnings(
+        "ignore",
+        message=".*parseString.*",
+        category=Warning,
+        append=False,
+    )
+
+
 @pytest.mark.usefixtures("mixdb")
 def test_solution_initialization():
     with warnings.catch_warnings():
@@ -506,4 +560,60 @@ def test_molarities_without_volume_error():
             name="TestSolution",
             molarities={"NaCl": "100 mM"},
             solutes=["NaCl"],
+        )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_mass_fractions_with_total_volume():
+    """Test mass_fractions + total_volume (no total_mass) — key use case"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            mass_fractions={"H2O": 0.8, "Hexanes": 0.2},
+            total_volume="10 ml",
+        )
+    np.testing.assert_allclose(solution.volume.to("ml").magnitude, 10.0, rtol=1e-3)
+    np.testing.assert_allclose(solution.mass_fraction["H2O"].magnitude, 0.8, rtol=1e-6)
+    np.testing.assert_allclose(solution.mass_fraction["Hexanes"].magnitude, 0.2, rtol=1e-6)
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_mass_fractions_with_total_volume_and_solutes():
+    """Test mass_fractions + total_volume + solutes — NaCl/H2O scenario"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            mass_fractions={"NaCl": 0.1, "H2O": None},
+            total_volume="10 ml",
+            solutes=["NaCl"],
+        )
+    np.testing.assert_allclose(solution.volume.to("ml").magnitude, 10.0, rtol=1e-3)
+    np.testing.assert_allclose(solution.mass_fraction["NaCl"].magnitude, 0.1, rtol=1e-6)
+    np.testing.assert_allclose(solution.mass_fraction["H2O"].magnitude, 0.9, rtol=1e-6)
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_volume_fractions_with_total_mass():
+    """Test volume_fractions + total_mass (no total_volume)"""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        solution = Solution(
+            name="TestSolution",
+            volume_fractions={"H2O": 0.6, "Hexanes": 0.4},
+            total_mass="10 g",
+        )
+    np.testing.assert_allclose(solution.mass.to("g").magnitude, 10.0, rtol=1e-3)
+    np.testing.assert_allclose(solution.volume_fraction["H2O"], 0.6, rtol=1e-3)
+    np.testing.assert_allclose(solution.volume_fraction["Hexanes"], 0.4, rtol=1e-3)
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_mass_fractions_without_mass_or_volume_error():
+    """Test that mass_fractions still raises ValueError when neither total_mass nor total_volume is provided"""
+    with pytest.raises(ValueError, match="Cannot set mass_fraction"):
+        Solution(
+            name="TestSolution",
+            mass_fractions={"H2O": 0.8, "Hexanes": 0.2},
         )

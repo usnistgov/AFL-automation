@@ -12,6 +12,7 @@ permissions:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    if: github.repository == 'biosans-afl/AFL-automation'
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python

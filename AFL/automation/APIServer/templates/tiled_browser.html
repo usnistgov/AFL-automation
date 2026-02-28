@@ -172,6 +172,24 @@
         </div>
     </div>
 
+    <!-- Copy Modal -->
+    <div id="copy-modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="copy-modal-title">Copy</h3>
+                <button class="modal-close" id="copy-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="copy-modal-text" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <div class="copy-status" id="copy-modal-status"></div>
+                <button id="copy-modal-copy-button">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
     <!-- AG Grid JS -->
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
 

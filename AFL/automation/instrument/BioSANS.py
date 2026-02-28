@@ -1,17 +1,27 @@
 import time
 import pathlib
+import re
 import warnings
-import json
-import os
-import copy
 import numpy as np  # for return types in get data
 import xarray as xr
 import h5py  # for Nexus file writing
-from epics import caget, caput, cainfo
+
+from AFL.automation.shared.mock_eic_client import MockEICClient
+# Optional imports for hardware dependencies; real usage is gated by config
+try:
+    from epics import caget, caput, cainfo
+except ImportError:
+    caget = None
+    caput = None
+    cainfo = None
 
 from AFL.automation.APIServer.Driver import Driver
 
-from eic_client.EICClient import EICClient
+try:
+    from eic_client.EICClient import EICClient
+except ImportError:
+    EICClient = None
+
 
 class BioSANS(Driver):
     '''
@@ -25,12 +35,27 @@ class BioSANS(Driver):
     defaults['run_cycle'] = 'RC511'
     defaults['use_subtracted_data'] = True
     defaults['config'] = 'Config0'
+    defaults['mock_mode'] = False
+    defaults['reduction_log_data_path'] = f'/HFIR/{{INST}}/IPTS-{{IPTS}}/shared/autoreduce/{{RUN_CYCLE}}/{{CONFIG}}'
+    defaults['reduced_file_data_path'] = f'/HFIR/{{INST}}/IPTS-{{IPTS}}/shared/autoreduce/{{RUN_CYCLE}}/{{CONFIG}}/1D'
+
+    defaults['PVs_to_store'] = []
+    defaults['PVs_to_store'].extend([f'CG3:SE:SMPLINF:SRC{i}Comp' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:SMPLINF:SRC{i}Name' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:SMPLINF:SRC{i}Conc' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:SMPLINF:SRC{i}ConcUnits' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:CMP:S{i}Vol' for i in range(1,9)])
+    defaults['PVs_to_store'].extend([f'CG3:SE:URMPI:143'])
+    defaults['PVs_to_store'].extend([f'CG3:SE:SMPLINF:SMPLTotalVol'])
+    defaults['PVs_to_store'].extend([f'CG3:SE:SMPLINF:SMPLFinalConc{i}' for i in range(1,9)])
 
 
     def __init__(self, overrides=None):
 
         self.app = None
         Driver.__init__(self, name='BioSANS', defaults=self.gather_defaults(), overrides=overrides)
+
+        self._caget, self._caput, self._cainfo = self._resolve_epics()
 
         self._client = None
 
@@ -57,11 +82,20 @@ class BioSANS(Driver):
             The client instance for communicating with the instrument.
         """
         if self._client is None:
-            self._client = EICClient(
-                ipts_number=self.config['ipts_number'],
-                eic_token=self.config['eic_token'],
-                beamline=self.config['beamline']
-            )
+            if self.config['mock_mode']:
+                self._client = MockEICClient(
+                    ipts_number=str(self.config['ipts_number']),
+                    eic_token=self.config['eic_token'],
+                    beamline=self.config['beamline']
+                )
+            else:
+                if EICClient is None:
+                    raise ImportError("eic_client is not available and mock_mode is False")
+                self._client = EICClient(
+                    ipts_number=str(self.config['ipts_number']),
+                    eic_token=self.config['eic_token'],
+                    beamline=self.config['beamline']
+                )
         return self._client
     
     def reset_client(self):
@@ -70,8 +104,27 @@ class BioSANS(Driver):
         '''
         self._client = None
 
+    def _resolve_epics(self):
+        """Return EPICS accessors, honoring mock_mode and availability."""
+        if self.config['mock_mode']:
+            def _mock_caget(*args, **kwargs):
+                warnings.warn("EPICS in mock mode - caget", stacklevel=2)
+                return 0
+            def _mock_caput(*args, **kwargs):
+                warnings.warn("EPICS in mock mode - caput", stacklevel=2)
+                return True
+            def _mock_cainfo(*args, **kwargs):
+                warnings.warn("EPICS in mock mode - cainfo", stacklevel=2)
+                return {}
+            return _mock_caget, _mock_caput, _mock_cainfo
+
+        if caget is None or caput is None or cainfo is None:
+            raise ImportError("epics is not available and mock_mode is False")
+
+        return caget, caput, cainfo
+
     def getLastRunNumber(self):
-        return caget('CG3:CS:RunControl:LastRunNumber')
+        return self._caget('CG3:CS:RunControl:LastRunNumber')
         
         # timeout = 120
         # success_get, pv_value_read, response_data_get = self.client.get_pv(pv_name, timeout)
@@ -82,24 +135,81 @@ class BioSANS(Driver):
     def lastMeasuredTransmission(self):
         return self.last_measured_transmission
 
+    def _resolve_data_path(self, config_key):
+        data_path = self.config[config_key]
+        return pathlib.Path(
+            data_path.format(
+                INST=self.config['beamline'],
+                IPTS=self.config['ipts_number'],
+                RUN_CYCLE=self.config['run_cycle'],
+                CONFIG=self.config['config']
+            )
+        )
+
+    def _latest_run_number_from_paths(self, paths):
+        run_numbers = []
+        pattern = re.compile(r'^(?:S_)?r(\d+)_(\d+)_(?:reduction_log\.hdf|1D_(?:main|combined)\.txt)$')
+        for path in paths:
+            if not path.exists() or not path.is_dir():
+                continue
+            for candidate in path.glob('*'):
+                match = pattern.match(candidate.name)
+                if match is None:
+                    continue
+                first = int(match.group(1))
+                second = int(match.group(2))
+                if first == second:
+                    run_numbers.append(first)
+        if not run_numbers:
+            return None
+        return max(run_numbers)
+
+    def _get_last_run_number_with_fallback(self):
+        run_number = self.getLastRunNumber()
+        try:
+            run_number = int(run_number)
+        except (TypeError, ValueError):
+            run_number = 0
+
+        if run_number > 0:
+            return run_number
+
+        fallback_run_number = self._latest_run_number_from_paths([
+            self._resolve_data_path('reduction_log_data_path'),
+            self._resolve_data_path('reduced_file_data_path'),
+        ])
+        if fallback_run_number is not None:
+            warnings.warn(
+                f'Using fallback run number {fallback_run_number} because EPICS returned {run_number}',
+                stacklevel=2,
+            )
+            return fallback_run_number
+
+        return run_number
+
+    def _candidate_reduced_filenames(self, run_number):
+        return [
+            f'r{run_number:d}_{run_number:d}_1D_main.txt',
+            f'S_r{run_number:d}_{run_number:d}_1D_combined.txt',
+            f'r{run_number:d}_{run_number:d}_1D_combined.txt',
+        ]
+
+    def _select_existing_file(self, base_path, filenames):
+        for filename in filenames:
+            filepath = pathlib.Path(base_path) / filename
+            if filepath.exists():
+                return filepath
+        return pathlib.Path(base_path) / filenames[0]
+
     @Driver.unqueued()
     def getLastReductionLogFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}' #path
+        path = self._resolve_data_path('reduction_log_data_path')
 
-        path = pathlib.Path(
-            data_path.format(
-                INST=self.config['beamline'],
-                IPTS=self.config['ipts_number'], 
-                RUN_CYCLE=self.config['run_cycle'], 
-                CONFIG=self.config['config']
-                )
-                )
-
-        run_number = self.getLastRunNumber()
+        run_number = self._get_last_run_number_with_fallback()
         filename = f'r{run_number:d}_{run_number:d}_reduction_log.hdf'
         filepath = pathlib.Path(path) / filename
-        return filepath
+        return str(filepath)
 
     def _readLastTransmission(self):
         filepath = self.getLastReductionLogFilePath()
@@ -119,21 +229,11 @@ class BioSANS(Driver):
     @Driver.unqueued()
     def getLastFilePath(self, **kwargs):
         """ get the currently set file name """
-        data_path = '/HFIR/{INST}/IPTS-{IPTS}/shared/autoreduce/{RUN_CYCLE}/{CONFIG}/1D' #path
+        path = self._resolve_data_path('reduced_file_data_path')
 
-        path = pathlib.Path(
-            data_path.format(
-                INST=self.config['beamline'],
-                IPTS=self.config['ipts_number'], 
-                RUN_CYCLE=self.config['run_cycle'], 
-                CONFIG=self.config['config']
-                )
-                )
-
-        run_number = self.getLastRunNumber()
-        filename = f'r{run_number:d}_{run_number:d}_1D_main.txt'
-        filepath = pathlib.Path(path) / filename
-        return filepath
+        run_number = self._get_last_run_number_with_fallback()
+        filepath = self._select_existing_file(path, self._candidate_reduced_filenames(run_number))
+        return str(filepath)
 
 
     def _readLastReducedFile(self):
@@ -284,6 +384,10 @@ class BioSANS(Driver):
         self._simple_expose(exposure=exposure, name=name, exposure_type=exposure_type, block=block)
         time.sleep(15)
 
+        return self.process_data()
+
+    def process_data(self, **kwargs):
+        """Process the SANS data after exposure, writing the data to Tiled"""
         # Read data and create xarray Dataset
         data = self.readFileSafely(self._readLastReducedFile)
         transmission = self.readFileSafely(self._readLastTransmission)
@@ -294,6 +398,14 @@ class BioSANS(Driver):
         ds['dI'] = ('q', data['dI'])
         ds['dQ'] = ('q', data['dQ'])
         ds.attrs['sample_transmission'] = transmission
+
+        for pv in self.config['PVs_to_store']:
+            try:
+                value = caget(pv)
+                ds.attrs[pv] = value
+            except Exception as e:
+                warnings.warn(f'Could not read PV {pv} to save in dataset attributes: {e}', stacklevel=2)
+                ds.attrs[pv] = None
 
         self.status_txt = 'Instrument Idle'
 

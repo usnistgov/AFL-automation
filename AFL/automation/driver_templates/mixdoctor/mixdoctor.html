@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MixDoctor</title>
+    <style>{{ inline_css | safe }}</style>
+</head>
+<body>
+<div id="app-container">
+    <div id="header">
+        <h1>MixDoctor</h1>
+    </div>
+    <div id="tab-bar">
+        <button class="tab-btn active" data-tab="stocks-tab">Create Stocks</button>
+        <button class="tab-btn" data-tab="sweeps-tab">Create Sweeps</button>
+        <button class="tab-btn" data-tab="balance-tab">Balance</button>
+    </div>
+
+    <!-- Tab 1: Create Stocks -->
+    <div id="stocks-tab" class="tab-panel active">
+        <div class="tab-toolbar">
+            <button class="primary-btn" id="upload-stocks-btn">Upload Stocks</button>
+            <button class="toolbar-btn" id="add-stock-btn">+ Add Stock</button>
+            <button class="toolbar-btn" id="load-stocks-from-server-btn">Load from Server</button>
+        </div>
+        <div id="stocks-upload-errors"></div>
+        <div id="stock-cards-container"></div>
+    </div>
+
+    <!-- Tab 2: Create Sweeps -->
+    <div id="sweeps-tab" class="tab-panel">
+        <div class="sweep-settings-bar">
+            <label>Name prefix: <input type="text" id="sweep-prefix" value="target" style="width:120px"></label>
+            <label>Size type:
+                <select id="sweep-size-type">
+                    <option value="total_mass">Total Mass</option>
+                    <option value="total_volume">Total Volume</option>
+                </select>
+            </label>
+            <label>Size value: <input type="text" id="sweep-size-value" placeholder="e.g. 500 mg" style="width:120px"></label>
+        </div>
+        <table id="sweep-table">
+            <thead>
+                <tr>
+                    <th>Use</th>
+                    <th>Component</th>
+                    <th>Property</th>
+                    <th>Start</th>
+                    <th>Stop</th>
+                    <th>Steps</th>
+                    <th>Units</th>
+                    <th>Remainder</th>
+                    <th>Solute</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="add-sweep-row-btn">+ Add Row</button>
+            <button class="toolbar-btn" id="preview-sweep-btn">Preview</button>
+            <button class="primary-btn" id="upload-targets-btn">Upload Targets</button>
+        </div>
+        <div id="sweeps-upload-errors"></div>
+        <div id="sweep-preview-area"></div>
+    </div>
+
+    <!-- Tab 3: Balance -->
+    <div id="balance-tab" class="tab-panel">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="refresh-btn">Refresh</button>
+            <button class="toolbar-btn" id="balance-btn">Balance</button>
+            <span id="balance-counter"></span>
+        </div>
+        <div id="main-content">
+            <div id="stocks-panel">
+                <div class="panel-title">Stocks</div>
+                <div id="stocks-list"></div>
+            </div>
+            <div id="targets-panel">
+                <div class="panel-title">Targets</div>
+                <div id="targets-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-message"></div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detail-modal-overlay">
+    <div id="detail-modal">
+        <div id="detail-modal-header">
+            <button id="modal-nav-prev" class="modal-nav-btn" title="Previous target">&larr;</button>
+            <button id="modal-nav-next" class="modal-nav-btn" title="Next target">&rarr;</button>
+            <span id="modal-title"></span>
+            <span id="modal-location-badge" class="location-badge"></span>
+            <button id="detail-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="detail-modal-summary"></div>
+        <div id="detail-modal-body">
+            <div id="modal-table"></div>
+            <div id="modal-balance-results"></div>
+        </div>
+    </div>
+</div>
+
+<datalist id="component-names-datalist"></datalist>
+
+<script>{{ inline_js | safe }}</script>
+</body>
+</html>

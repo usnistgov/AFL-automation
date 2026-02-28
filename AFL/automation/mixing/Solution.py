@@ -133,11 +133,11 @@ class Solution(Context):
             self.components[component_name].volume = volume
 
         if len(mass_fractions) > 0:
-            if (total_mass is None) and (
+            if (total_mass is None) and (total_volume is None) and (
                     (self.mass is None) or (self.mass.magnitude == 0)
             ):
                 raise ValueError(
-                    "Cannot set mass_fraction without setting a component with mass or specifying the total_mass."
+                    "Cannot set mass_fraction without setting a component with mass or specifying total_mass or total_volume."
                 )
             else:
                 # need to initialize all components with a mass
@@ -148,11 +148,11 @@ class Solution(Context):
             self.mass_fraction = mass_fractions
 
         if len(volume_fractions) > 0:
-            if (total_volume is None) and (
+            if (total_volume is None) and (total_mass is None) and (
                     (self.volume is None) or (self.volume.magnitude == 0)
             ):
                 raise ValueError(
-                    "Cannot set volume_fraction without setting a component with volume or specifying the total_volume."
+                    "Cannot set volume_fraction without setting a component with volume or specifying total_volume or total_mass."
                 )
             else:
                 # need to initialize all components with a volume

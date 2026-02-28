@@ -21,7 +21,6 @@ from scipy.spatial.distance import cdist
 
 from AFL.automation.APIServer.Client import Client  # type: ignore
 from AFL.automation.APIServer.Driver import Driver  # type: ignore
-from AFL.automation.mixing.Solution import Solution  # type: ignore
 from AFL.automation.shared.units import units  # type: ignore
 
 
@@ -177,30 +176,23 @@ class OrchestratorDriver(Driver):
         if not isinstance(self.config['max_sample_transmission'], (int, float)):
             raise TypeError("self.config['max_sample_transmission'] must be a number")
 
-        # Validate composition_format if present
-        if 'composition_format' in self.config:
-            comp_fmt = self.config['composition_format']
-            valid_formats = ['mass_fraction', 'volume_fraction', 'concentration', 'molarity']
-
-            if isinstance(comp_fmt, str):
-                # Single format for all components
-                if comp_fmt not in valid_formats:
-                    raise ValueError(
-                        f"Invalid composition_format '{comp_fmt}'. "
-                        f"Must be one of: {', '.join(valid_formats)}"
-                    )
-            elif isinstance(comp_fmt, dict):
-                # Per-component format specification
-                for component, format_type in comp_fmt.items():
-                    if format_type not in valid_formats:
-                        raise ValueError(
-                            f"Invalid format '{format_type}' for component '{component}'. "
-                            f"Must be one of: {', '.join(valid_formats)}"
-                        )
-            else:
-                raise TypeError(
-                    f"composition_format must be str or dict, got {type(comp_fmt).__name__}"
+        allowed_formats = {'mass_fraction', 'volume_fraction', 'concentration', 'molarity'}
+        composition_format = self.config.get('composition_format')
+        if isinstance(composition_format, str):
+            if composition_format not in allowed_formats:
+                raise ValueError(
+                    f"Invalid composition_format '{composition_format}'. "
+                    f"Allowed formats: {sorted(allowed_formats)}"
                 )
+        elif isinstance(composition_format, dict):
+            for component, fmt in composition_format.items():
+                if fmt not in allowed_formats:
+                    raise ValueError(
+                        f"Invalid format '{fmt}' for component '{component}'. "
+                        f"Allowed formats: {sorted(allowed_formats)}"
+                    )
+        else:
+            raise TypeError("self.config['composition_format'] must be a string or dict")
 
         print("Configuration validation passed successfully.")
 
@@ -475,39 +467,46 @@ class OrchestratorDriver(Driver):
 
             self.take_snapshot(prefix=f'02-after-prep-{name}')
 
-            # Step 4: Call balance_report interactively to get actual composition
-            self.update_status(f'Getting balanced composition from prep robot...')
+            # Step 4: Get realized composition from prep server in configured format.
+            # The prep server has direct access to the balanced Solution objects
+            # and the component DB, so it performs the composition math.
+            self.update_status(f'Getting realized composition from prep server...')
+            composition_format = self.config.get('composition_format', 'mass_fraction')
+            comp_result = self.get_client('prep').enqueue(
+                task_name='get_sample_composition',
+                composition_format=composition_format,
+                interactive=True
+            )
+
+            if not comp_result or comp_result.get('status') == 'failed':
+                error_msg = f"Failed to get sample composition for {name}"
+                self.update_status(error_msg)
+                self.app.logger.error(error_msg)
+                return False
+
+            sample_composition = comp_result.get('return_val')
+            if not sample_composition:
+                error_msg = f"get_sample_composition returned empty for {name}"
+                self.update_status(error_msg)
+                self.app.logger.error(error_msg)
+                return False
+
+            # Also fetch the balance_report for success check and location fallback
             balance_result = self.get_client('prep').enqueue(
                 task_name='balance_report',
                 interactive=True
             )
-
-            if not balance_result or balance_result.get('status') == 'failed':
-                error_msg = f"Failed to get balance_report for {name}"
-                self.update_status(error_msg)
-                self.app.logger.error(error_msg)
-                return False
-
-            balance_report = balance_result.get('return_val')
-            if not balance_report or len(balance_report) == 0:
-                error_msg = f"balance_report returned empty for {name}"
-                self.update_status(error_msg)
-                self.app.logger.error(error_msg)
-                return False
-
-            # Extract the last balanced_target from report (most recent)
-            last_entry = balance_report[-1]
-            balanced_target_dict = last_entry.get('balanced_target')
-
-            if not balanced_target_dict:
-                error_msg = f"No balanced_target in balance_report for {name}"
-                self.update_status(error_msg)
-                self.app.logger.error(error_msg)
-                return False
-
-            # Step 5: Transform masses to configured composition format
-            masses = balanced_target_dict.get('masses', {})
-            sample_composition = self._transform_composition(masses)
+            balance_report = balance_result.get('return_val') if balance_result else None
+            if balance_report and len(balance_report) > 0:
+                last_entry = balance_report[-1]
+                balanced_target_dict = last_entry.get('balanced_target')
+                if not last_entry.get('success'):
+                    error_msg = f"Balance was not successful for {name}"
+                    self.update_status(error_msg)
+                    self.app.logger.error(error_msg)
+                    return False
+            else:
+                balanced_target_dict = None
 
             # Step 6: Store compositions in data for reference
             self.data['sample_composition_target'] = sample
@@ -530,8 +529,10 @@ class OrchestratorDriver(Driver):
             prepare_result = prep_task_result.get('return_val')
             if prepare_result and len(prepare_result) > 1:
                 solution_location = prepare_result[1]
-            else:
+            elif balanced_target_dict is not None:
                 solution_location = balanced_target_dict.get('location')
+            else:
+                solution_location = None
             
             self.update_status(f'Queueing sample {name} load into syringe loader')
             # Use transfer_to_catch method which handles catch protocol and destination internally
@@ -784,113 +785,6 @@ class OrchestratorDriver(Driver):
             sample_data['sample_composition'] = sample_composition
 
         return sample_data
-
-    def _transform_composition(self, masses_dict: Dict[str, str]) -> Dict:
-        """Transform mass dictionary to configured composition format.
-
-        Parameters
-        ----------
-        masses_dict : Dict[str, str]
-            Dictionary with component names as keys and mass strings as values
-            Example: {"H2O": "950 mg", "NaCl": "50 mg"}
-
-        Returns
-        -------
-        Dict
-            Composition dictionary with components in requested format
-
-        Raises
-        ------
-        ValueError
-            If composition_format is invalid or required data is missing
-        """
-        from AFL.automation.mixing.Solution import Solution
-
-        # Get composition_format from config (default to mass_fraction for all)
-        composition_format = self.config.get('composition_format', 'mass_fraction')
-
-        # Create a temporary Solution object from the masses
-        # This allows us to access all conversion methods
-        temp_solution = Solution(
-            name='temp',
-            masses=masses_dict,
-            sanity_check=False
-        )
-
-        sample_composition = {}
-
-        # Determine format for each component
-        if isinstance(composition_format, str):
-            # Single format for all components
-            for component in temp_solution.components.keys():
-                sample_composition[component] = self._get_component_value(
-                    temp_solution, component, composition_format
-                )
-        elif isinstance(composition_format, dict):
-            # Different format per component - include ALL components
-            for component in temp_solution.components.keys():
-                format_type = composition_format.get(component, 'mass_fraction')
-                sample_composition[component] = self._get_component_value(
-                    temp_solution, component, format_type
-                )
-        else:
-            raise ValueError(
-                f"composition_format must be str or dict, got {type(composition_format)}"
-            )
-
-        return sample_composition
-
-    def _get_component_value(self, solution: 'Solution', component: str, format_type: str) -> float:
-        """Extract component value in specified format from Solution object.
-
-        Parameters
-        ----------
-        solution : Solution
-            Solution object containing the component
-        component : str
-            Component name
-        format_type : str
-            One of: 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'
-
-        Returns
-        -------
-        float
-            Component value in requested format (dimensionless)
-
-        Raises
-        ------
-        ValueError
-            If format_type is invalid or component doesn't support the format
-        """
-        if format_type == 'mass_fraction':
-            return solution.mass_fraction[component].magnitude
-
-        elif format_type == 'volume_fraction':
-            # Only solvents have volume_fraction
-            if solution[component].volume is None:
-                raise ValueError(
-                    f"Component {component} has no volume, cannot calculate volume_fraction. "
-                    f"Only solvents support volume_fraction."
-                )
-            return solution.volume_fraction[component].magnitude
-
-        elif format_type == 'concentration':
-            # Returns mg/ml
-            return solution.concentration[component].to('mg/ml').magnitude
-
-        elif format_type == 'molarity':
-            # Returns mM (requires formula)
-            if not hasattr(solution[component], 'formula') or solution[component].formula is None:
-                raise ValueError(
-                    f"Component {component} has no formula, cannot calculate molarity"
-                )
-            return solution.molarity[component].to('mM').magnitude
-
-        else:
-            raise ValueError(
-                f"Invalid format_type '{format_type}'. "
-                f"Must be one of: 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'"
-            )
 
     def _get_last_tiled_entry_for_measurement(self, sample_uuid: str, task_name: str) -> Optional[str]:
         """Query tiled for the last entry matching sample_uuid and task_name.

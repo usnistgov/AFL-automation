@@ -243,6 +243,20 @@ body {
     text-align: center;
     color: #6c757d;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.multiselect-loading .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+.multiselect-loading-text {
+    line-height: 1;
 }
 
 .multiselect-empty {
@@ -443,6 +457,21 @@ body {
 
 #copy-sample-uuid-button:hover:not(:disabled) {
     background-color: #7d3c98;
+}
+
+#copy-modal-copy-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+    background-color: #27ae60;
+    color: white;
+}
+
+#copy-modal-copy-button:hover:not(:disabled) {
+    background-color: #229954;
 }
 
 #plot-selected-btn {
@@ -682,6 +711,15 @@ body {
     flex: 1;
 }
 
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px 16px;
+    border-top: 1px solid #e0e0e0;
+}
+
 #metadata-modal-body {
     background-color: #f8f9fa;
     padding: 16px;
@@ -691,6 +729,35 @@ body {
     line-height: 1.5;
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+#copy-modal-text {
+    width: 100%;
+    min-height: 180px;
+    max-height: 45vh;
+    resize: vertical;
+    padding: 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    background-color: #fbfbfb;
+    color: #222;
+}
+
+.copy-status {
+    font-size: 0.9rem;
+    color: #555;
+    min-height: 1.1rem;
+}
+
+.copy-status--success {
+    color: #1b6d2b;
+}
+
+.copy-status--error {
+    color: #a12622;
 }
 
 /* xarray HTML styling overrides */

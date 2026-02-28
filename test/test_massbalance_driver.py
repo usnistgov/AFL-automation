@@ -1,5 +1,5 @@
 import pytest
-from AFL.automation.mixing.MassBalance import MassBalanceDriver
+from AFL.automation.mixing.MassBalanceDriver import MassBalanceDriver
 from AFL.automation.mixing.Solution import Solution
 from AFL.automation.shared.units import units
 
@@ -7,6 +7,9 @@ from AFL.automation.shared.units import units
 def test_massbalance_driver_mixed_solvents_mass():
     mb = MassBalanceDriver()
     mb.config.write = False # need to disable writing to config file for testing
+    # Ensure prior user config does not leak into test expectations
+    mb.reset_stocks()
+    mb.reset_targets()
     # Add stocks
     mb.add_stock({
         'name': "Stock1",
@@ -42,7 +45,7 @@ def test_massbalance_driver_mixed_solvents_mass():
     for i, result in enumerate(mb.balanced):
         balanced = result['balanced_target']
 
-        if balanced is None:
+        if not result['success']:
             none_count += 1
             continue
         assert balanced.mass.to('mg').magnitude == pytest.approx(500)
@@ -56,4 +59,4 @@ def test_massbalance_driver_mixed_solvents_mass():
         assert sub_balanced.mass_fraction['H2O'] == pytest.approx(sub_target.mass_fraction['H2O'])
         assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'])
 
-    assert none_count == 2 
+    assert none_count == 1

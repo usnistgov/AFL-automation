@@ -743,9 +743,9 @@ function renderComponentsTable(components) {
         return [
             '<tr data-uid="', escHtml(uid), '">',
             '<td><input type="text" class="comp-name-input" value="', escHtml(name), '"></td>',
-            '<td><input type="text" class="comp-density-input" value="', escHtml(density), '"></td>',
-            '<td><input type="text" class="comp-formula-input" value="', escHtml(formula), '"></td>',
-            '<td><input type="text" class="comp-sld-input" value="', escHtml(sld), '"></td>',
+            '<td><input type="text" class="comp-density-input" placeholder="e.g. 1.0 g/ml" value="', escHtml(density), '"></td>',
+            '<td><input type="text" class="comp-formula-input" placeholder="optional (e.g. H2O)" value="', escHtml(formula), '"></td>',
+            '<td><input type="text" class="comp-sld-input" placeholder="optional (e.g. 6.35e-6 /A^2)" value="', escHtml(sld), '"></td>',
             '<td class="uid-cell">', escHtml(uid), '</td>',
             '<td><div class="components-actions">',
             '<button class="toolbar-btn comp-save-btn">Save</button>',
@@ -777,6 +777,15 @@ async function saveComponentRow(row) {
     var density = row.querySelector('.comp-density-input').value.trim();
     var formula = row.querySelector('.comp-formula-input').value.trim();
     var sld = row.querySelector('.comp-sld-input').value.trim();
+
+    if (density) {
+        var hasDigit = /[0-9]/.test(density);
+        var hasUnitLetters = /[a-zA-Z]/.test(density);
+        if (!hasDigit || !hasUnitLetters) {
+            showStatus('Density must include a numeric value and units (e.g. 1.0 g/ml).', true);
+            return;
+        }
+    }
 
     try {
         await queryDriver({

@@ -176,6 +176,24 @@ class OrchestratorDriver(Driver):
         if not isinstance(self.config['max_sample_transmission'], (int, float)):
             raise TypeError("self.config['max_sample_transmission'] must be a number")
 
+        allowed_formats = {'mass_fraction', 'volume_fraction', 'concentration', 'molarity'}
+        composition_format = self.config.get('composition_format')
+        if isinstance(composition_format, str):
+            if composition_format not in allowed_formats:
+                raise ValueError(
+                    f"Invalid composition_format '{composition_format}'. "
+                    f"Allowed formats: {sorted(allowed_formats)}"
+                )
+        elif isinstance(composition_format, dict):
+            for component, fmt in composition_format.items():
+                if fmt not in allowed_formats:
+                    raise ValueError(
+                        f"Invalid format '{fmt}' for component '{component}'. "
+                        f"Allowed formats: {sorted(allowed_formats)}"
+                    )
+        else:
+            raise TypeError("self.config['composition_format'] must be a string or dict")
+
         print("Configuration validation passed successfully.")
 
     @property

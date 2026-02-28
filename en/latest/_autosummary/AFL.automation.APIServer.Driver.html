@@ -367,6 +367,7 @@
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.DummyOT2Driver.html">AFL.automation.APIServer.DummyOT2Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.LoggerFilter.html">AFL.automation.APIServer.LoggerFilter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.QueueDaemon.html">AFL.automation.APIServer.QueueDaemon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.data.html">AFL.automation.APIServer.data</a></li>
 </ul>
 </details></li>
 </ul>
@@ -717,12 +718,15 @@ Returns dict with status and config values or helpful error message.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_search">
-<span class="sig-name descname"><span class="pre">tiled_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_search" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">tiled_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_search" title="Link to this definition">#</a></dt>
 <dd><p>Proxy endpoint for Tiled metadata search to avoid CORS issues.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>queries</strong> – JSON string of query list: [{“field”: “field_name”, “value”: “search_value”}, …]</p></li>
+<li><p><strong>filters</strong> – JSON string mapping fields to arrays of values</p></li>
+<li><p><strong>sort</strong> – JSON string sort model list: [{“colId”: “field”, “sort”: “asc|desc”}, …]</p></li>
+<li><p><strong>fields</strong> – JSON string list of metadata fields to return</p></li>
 <li><p><strong>offset</strong> – Result offset for pagination</p></li>
 <li><p><strong>limit</strong> – Number of results to return</p></li>
 </ul>

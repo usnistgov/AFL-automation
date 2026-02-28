@@ -17,6 +17,7 @@ AFL.automation.shared
    PersistentConfig
    ServerDiscovery
    exceptions
+   mock_eic_client
    serialization
    units
    utilities

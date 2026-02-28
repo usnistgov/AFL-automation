@@ -10,10 +10,13 @@ AFL.automation.mixing
    :toctree:
    :recursive:
 
+   BalanceDiagnosis
    BioSANSPrepare
    Component
    Context
    MassBalance
+   MassBalanceBase
+   MassBalanceDriver
    MixDB
    OT2Prepare
    PipetteAction

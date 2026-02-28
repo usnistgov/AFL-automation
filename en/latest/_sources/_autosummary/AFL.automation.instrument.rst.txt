@@ -36,6 +36,7 @@ AFL.automation.instrument
    USBCamera
    VirtualInstrument
    VirtualSANS_data
+   VirtualSAS
    VirtualSAS_theory
    VirtualSpec_data
    scatteringInterpolator

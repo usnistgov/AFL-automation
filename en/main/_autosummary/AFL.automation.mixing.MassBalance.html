@@ -50,7 +50,7 @@
     <link rel="icon" href="../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="AFL.automation.mixing.MixDB" href="AFL.automation.mixing.MixDB.html" />
+    <link rel="next" title="AFL.automation.mixing.MassBalanceBase" href="AFL.automation.mixing.MassBalanceBase.html" />
     <link rel="prev" title="AFL.automation.mixing.Context" href="AFL.automation.mixing.Context.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -364,9 +364,13 @@
 <li class="toctree-l3"><a class="reference internal" href="AFL.automation.instrument.html">AFL.automation.instrument</a></li>
 <li class="toctree-l3"><a class="reference internal" href="AFL.automation.loading.html">AFL.automation.loading</a></li>
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="AFL.automation.mixing.html">AFL.automation.mixing</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.BalanceDiagnosis.html">AFL.automation.mixing.BalanceDiagnosis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.BioSANSPrepare.html">AFL.automation.mixing.BioSANSPrepare</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.Component.html">AFL.automation.mixing.Component</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.Context.html">AFL.automation.mixing.Context</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">AFL.automation.mixing.MassBalance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.MassBalanceBase.html">AFL.automation.mixing.MassBalanceBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.MassBalanceDriver.html">AFL.automation.mixing.MassBalanceDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.MixDB.html">AFL.automation.mixing.MixDB</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.OT2Prepare.html">AFL.automation.mixing.OT2Prepare</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.PipetteAction.html">AFL.automation.mixing.PipetteAction</a></li>
@@ -466,95 +470,27 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">enforce_units</span></code>(value, unit_type)</p></td>
 <td><p>Ensure that a number has units and convert to the default_units</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">lsq_linear</span></code>(A, b[, bounds, method, tol, ...])</p></td>
-<td><p>Solve a linear least-squares problem with bounds on the variables.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code>(*args, **kwargs)</p></td>
-<td><p>Special type indicating an unconstrained type.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Bounds</span></code>([lb, ub, keep_feasible])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Bounds</span></code>([lb, ub, keep_feasible])</p></td>
 <td><p>Bounds constraint on the variables.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Context</span></code>(name)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Context</span></code>(name)</p></td>
 <td><p>Inherited by Pipeline to allow for context manager abuse</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code>(name[, defaults, overrides, useful_links])</p></td>
-<td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.mixing.MassBalance.MassBalance" title="AFL.automation.mixing.MassBalance.MassBalance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MassBalance</span></code></a>([name, minimum_volume])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.mixing.MassBalance.MassBalanceBase" title="AFL.automation.mixing.MassBalance.MassBalanceBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MassBalanceBase</span></code></a>()</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver" title="AFL.automation.mixing.MassBalance.MassBalanceDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MassBalanceDriver</span></code></a>([overrides])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MixDB</span></code>([db_spec])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PipetteAction</span></code>(source, dest, volume[, ...])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Solution</span></code>(name[, total_mass, total_volume, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MassBalanceBase</span></code>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<dl class="py class">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.mixing.MassBalance.</span></span><span class="sig-name descname"><span class="pre">MassBalanceBase</span></span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase" title="Link to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceBase.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.__init__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase.components">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">components</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.14)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.components" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase.stock_components">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stock_components</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.14)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.stock_components" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase.target_components">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target_components</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.14)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.target_components" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase.mass_fraction_matrix">
-<span class="sig-name descname"><span class="pre">mass_fraction_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceBase.mass_fraction_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.mass_fraction_matrix" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase.make_target_names">
-<span class="sig-name descname"><span class="pre">make_target_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_letters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceBase.make_target_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.make_target_names" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase.balance_report">
-<span class="sig-name descname"><span class="pre">balance_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceBase.balance_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.balance_report" title="Link to this definition">#</a></dt>
-<dd><p>Returns a json serializable structure that has all of the balanced targets
-that can be reconstituted by the user back into solution objects.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceBase.balance">
-<span class="sig-name descname"><span class="pre">balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_report</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceBase.balance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.balance" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalance">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.mixing.MassBalance.</span></span><span class="sig-name descname"><span class="pre">MassBalance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'MassBalance'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum_volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'20</span> <span class="pre">ul'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalance" title="Link to this definition">#</a></dt>
@@ -571,96 +507,6 @@ that can be reconstituted by the user back into solution objects.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalance.target_components">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target_components</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.14)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalance.target_components" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.mixing.MassBalance.</span></span><span class="sig-name descname"><span class="pre">MassBalanceDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver" title="Link to this definition">#</a></dt>
-<dd><dl class="py attribute">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'minimum_volume':</span> <span class="pre">'20</span> <span class="pre">ul',</span> <span class="pre">'stocks':</span> <span class="pre">[],</span> <span class="pre">'targets':</span> <span class="pre">[],</span> <span class="pre">'tol':</span> <span class="pre">0.001}</span></em><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.defaults" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.__init__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.stock_components">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stock_components</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.14)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.stock_components" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.target_components">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target_components</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.14)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.target_components" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.process_stocks">
-<span class="sig-name descname"><span class="pre">process_stocks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.process_stocks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.process_stocks" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.process_targets">
-<span class="sig-name descname"><span class="pre">process_targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.process_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.process_targets" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.add_stock">
-<span class="sig-name descname"><span class="pre">add_stock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.add_stock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_stock" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.add_target">
-<span class="sig-name descname"><span class="pre">add_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.add_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_target" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.add_targets">
-<span class="sig-name descname"><span class="pre">add_targets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.add_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_targets" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.reset_stocks">
-<span class="sig-name descname"><span class="pre">reset_stocks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.reset_stocks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.reset_stocks" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.reset_targets">
-<span class="sig-name descname"><span class="pre">reset_targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.reset_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.reset_targets" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.list_stocks">
-<span class="sig-name descname"><span class="pre">list_stocks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.list_stocks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.list_stocks" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.balance">
-<span class="sig-name descname"><span class="pre">balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_report</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.balance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.balance" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.list_components">
-<span class="sig-name descname"><span class="pre">list_components</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.list_components"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.list_components" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.add_component">
-<span class="sig-name descname"><span class="pre">add_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.add_component"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_component" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.update_component">
-<span class="sig-name descname"><span class="pre">update_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">component</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.update_component"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.update_component" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalance.MassBalanceDriver.remove_component">
-<span class="sig-name descname"><span class="pre">remove_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalance.html#MassBalanceDriver.remove_component"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.remove_component" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -687,11 +533,11 @@ that can be reconstituted by the user back into solution objects.</p>
       </div>
     </a>
     <a class="right-next"
-       href="AFL.automation.mixing.MixDB.html"
+       href="AFL.automation.mixing.MassBalanceBase.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">AFL.automation.mixing.MixDB</p>
+        <p class="prev-next-title">AFL.automation.mixing.MassBalanceBase</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -714,41 +560,10 @@ that can be reconstituted by the user back into solution objects.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.__init__"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.__init__()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.components"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.components</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.stock_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.stock_components</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.target_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.target_components</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.mass_fraction_matrix"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.mass_fraction_matrix()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.make_target_names"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.make_target_names()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.balance_report"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.balance_report()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceBase.balance"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.balance()</span></code></a></li>
-</ul>
-</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalance"><code class="docutils literal notranslate"><span class="pre">MassBalance</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalance.__init__"><code class="docutils literal notranslate"><span class="pre">MassBalance.__init__()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalance.stock_components"><code class="docutils literal notranslate"><span class="pre">MassBalance.stock_components</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalance.target_components"><code class="docutils literal notranslate"><span class="pre">MassBalance.target_components</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.defaults"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.defaults</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.__init__"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.__init__()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.stock_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.stock_components</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.target_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.target_components</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.process_stocks"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.process_stocks()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.process_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.process_targets()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_stock"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.add_stock()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_target"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.add_target()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.add_targets()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.reset_stocks"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.reset_stocks()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.reset_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.reset_targets()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.list_stocks"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_stocks()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.balance"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.balance()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.list_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_components()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.add_component"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.add_component()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.update_component"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.update_component()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalance.MassBalanceDriver.remove_component"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.remove_component()</span></code></a></li>
 </ul>
 </li>
 </ul>

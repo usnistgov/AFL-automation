@@ -971,43 +971,100 @@
 <div class="viewcode-block" id="Driver.tiled_search">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_search">[docs]</a>
     <span class="nd">@unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">tiled_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">tiled_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint for Tiled metadata search to avoid CORS issues.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            queries: JSON string of query list: [{&quot;field&quot;: &quot;field_name&quot;, &quot;value&quot;: &quot;search_value&quot;}, ...]</span>
+<span class="sd">            filters: JSON string mapping fields to arrays of values</span>
+<span class="sd">            sort: JSON string sort model list: [{&quot;colId&quot;: &quot;field&quot;, &quot;sort&quot;: &quot;asc|desc&quot;}, ...]</span>
+<span class="sd">            fields: JSON string list of metadata fields to return</span>
 <span class="sd">            offset: Result offset for pagination</span>
 <span class="sd">            limit: Number of results to return</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict with status, data, total_count, or error message</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Get cached Tiled client</span>
         <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">client</span>
 
-        <span class="c1"># Convert offset and limit to integers (they come as strings from URL params)</span>
         <span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
         <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># Parse queries JSON</span>
-            <span class="kn">import</span> <span class="nn">json</span>
-            <span class="k">if</span> <span class="n">queries</span> <span class="ow">and</span> <span class="n">queries</span> <span class="o">!=</span> <span class="s1">&#39;[]&#39;</span><span class="p">:</span>
-                <span class="n">query_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">queries</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">query_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">def</span> <span class="nf">_parse_json_param</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">default</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span>
 
-            <span class="c1"># Start with root client</span>
+        <span class="k">def</span> <span class="nf">_get_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">obj</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="n">part</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="p">[</span><span class="n">part</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">current</span>
+
+        <span class="k">def</span> <span class="nf">_set_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">obj</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">current</span><span class="p">[</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="c1"># Map UI fields to metadata paths for search/sort</span>
+        <span class="n">field_path_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.task_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;driver_name&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.driver_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.sample_uuid&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.sample_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.AL_campaign_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;AL_uuid&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.AL_uuid&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;AL_components&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.AL_components&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;run_time_minutes&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.meta.run_time_minutes&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;meta_started&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.meta.started&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;meta_ended&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.meta.ended&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">default_fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;task_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;driver_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;AL_uuid&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;AL_components&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;meta.started&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;meta.ended&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;meta.run_time_minutes&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">query_list</span> <span class="o">=</span> <span class="n">_parse_json_param</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">filter_map</span> <span class="o">=</span> <span class="n">_parse_json_param</span><span class="p">(</span><span class="n">filters</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">sort_list</span> <span class="o">=</span> <span class="n">_parse_json_param</span><span class="p">(</span><span class="n">sort</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">requested_fields</span> <span class="o">=</span> <span class="n">_parse_json_param</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">default_fields</span><span class="p">)</span>
+
+            <span class="c1"># Normalize filters into query_list entries</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_map</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">filter_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+                                <span class="n">query_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+                    <span class="k">elif</span> <span class="n">values</span><span class="p">:</span>
+                        <span class="n">query_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">values</span><span class="p">})</span>
+
             <span class="n">results</span> <span class="o">=</span> <span class="n">client</span>
 
-            <span class="c1"># Group queries by field to handle multiple values (OR logic)</span>
+            <span class="c1"># Apply search filters</span>
             <span class="k">if</span> <span class="n">query_list</span><span class="p">:</span>
                 <span class="kn">from</span> <span class="nn">tiled.queries</span> <span class="kn">import</span> <span class="n">Contains</span><span class="p">,</span> <span class="n">In</span>
                 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 
-                <span class="c1"># Group values by field</span>
                 <span class="n">field_values</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">query_item</span> <span class="ow">in</span> <span class="n">query_list</span><span class="p">:</span>
                     <span class="n">field</span> <span class="o">=</span> <span class="n">query_item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
@@ -1015,76 +1072,58 @@
                     <span class="k">if</span> <span class="n">field</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
                         <span class="n">field_values</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
-                <span class="c1"># Apply queries - use In for multiple values, Contains for single</span>
-                <span class="c1"># Search in both metadata and attrs fields and collect unique keys</span>
-                <span class="n">all_matching_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-
                 <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">field_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">field_matching_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-
+                    <span class="n">query_key</span> <span class="o">=</span> <span class="n">field_path_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="c1"># Single value: use Contains</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">metadata_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">Contains</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-                            <span class="n">field_matching_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">metadata_results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                        <span class="k">except</span><span class="p">:</span>
-                            <span class="k">pass</span>
-
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">attrs_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">Contains</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;attrs.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-                            <span class="n">field_matching_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs_results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                        <span class="k">except</span><span class="p">:</span>
-                            <span class="k">pass</span>
+                        <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">Contains</span><span class="p">(</span><span class="n">query_key</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="c1"># Multiple values: use In</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">metadata_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">In</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
-                            <span class="n">field_matching_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">metadata_results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                        <span class="k">except</span><span class="p">:</span>
-                            <span class="k">pass</span>
+                        <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">In</span><span class="p">(</span><span class="n">query_key</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
 
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">attrs_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">In</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;attrs.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
-                            <span class="n">field_matching_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs_results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                        <span class="k">except</span><span class="p">:</span>
-                            <span class="k">pass</span>
+            <span class="c1"># Apply sorting</span>
+            <span class="k">if</span> <span class="n">sort_list</span><span class="p">:</span>
+                <span class="n">sort_items</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sort_list</span><span class="p">:</span>
+                    <span class="n">field</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;colId&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">)</span>
+                    <span class="n">direction</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sort&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dir&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">field</span> <span class="ow">or</span> <span class="n">direction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;asc&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="n">sort_key</span> <span class="o">=</span> <span class="n">field_path_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+                    <span class="n">sort_dir</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;asc&#39;</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+                    <span class="n">sort_items</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">sort_key</span><span class="p">,</span> <span class="n">sort_dir</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">sort_items</span><span class="p">:</span>
+                    <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="o">*</span><span class="n">sort_items</span><span class="p">)</span>
 
-                    <span class="c1"># Intersect with previous field results (AND logic between fields)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">all_matching_keys</span><span class="p">:</span>
-                        <span class="n">all_matching_keys</span> <span class="o">=</span> <span class="n">field_matching_keys</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">all_matching_keys</span> <span class="o">&amp;=</span> <span class="n">field_matching_keys</span>
+            <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 
-            <span class="c1"># Get keys to use based on whether we have filters</span>
-            <span class="k">if</span> <span class="n">query_list</span> <span class="ow">and</span> <span class="n">field_values</span><span class="p">:</span>
-                <span class="c1"># Use filtered keys from combined search</span>
-                <span class="n">all_keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">all_matching_keys</span><span class="p">))</span>
-                <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_keys</span><span class="p">)</span>
-                <span class="n">paginated_keys</span> <span class="o">=</span> <span class="n">all_keys</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">limit</span><span class="p">]</span>
-                <span class="c1"># Use client as results for accessing items</span>
-                <span class="n">results</span> <span class="o">=</span> <span class="n">client</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># No queries - use all keys</span>
-                <span class="n">results</span> <span class="o">=</span> <span class="n">client</span>
-                <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
-                <span class="n">all_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                <span class="n">paginated_keys</span> <span class="o">=</span> <span class="n">all_keys</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">limit</span><span class="p">]</span>
+            <span class="c1"># Page results efficiently via ItemsView slicing</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">limit</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="c1"># Fallback to keys if items() is unavailable</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">limit</span><span class="p">])</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
 
-            <span class="c1"># Build entries list with metadata</span>
             <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">paginated_keys</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">item</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                    <span class="c1"># Build entry in same format as Tiled HTTP API</span>
+                    <span class="n">metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+                    <span class="n">trimmed</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">requested_fields</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">field</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">_get_nested</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">field</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;attrs.&#39;</span><span class="p">):</span>
+                            <span class="n">value</span> <span class="o">=</span> <span class="n">_get_nested</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;attrs.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">_set_nested</span><span class="p">(</span><span class="n">trimmed</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
                     <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span>
                         <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
                         <span class="s1">&#39;attributes&#39;</span><span class="p">:</span> <span class="p">{</span>
-                            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+                            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">trimmed</span>
                         <span class="p">}</span>
                     <span class="p">}</span>
                     <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="c1"># Skip entries that can&#39;t be accessed</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not access entry </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="k">continue</span>
 

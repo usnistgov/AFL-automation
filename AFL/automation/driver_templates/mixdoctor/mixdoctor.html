@@ -139,6 +139,7 @@
     <div id="balance-tab" class="tab-panel">
         <div class="tab-toolbar">
             <button class="toolbar-btn" id="refresh-btn">Refresh</button>
+            <button class="toolbar-btn" id="balance-upload-targets-btn">Upload Targets</button>
             <button class="toolbar-btn" id="balance-btn">Balance</button>
             <label class="balance-tol-control" for="balance-tol-input">
                 Tolerance
@@ -337,7 +338,6 @@
                     <div class="submit-section-title">process_sample kwargs</div>
                     <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-predict-next"> predict_next</label>
                     <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-enqueue-next"> enqueue_next</label>
-                    <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-calibrate-sensor"> calibrate_sensor</label>
                     <label>Name
                         <input type="text" id="submit-kw-name" placeholder="optional">
                     </label>
@@ -394,6 +394,36 @@
     </div>
 
     <div id="status-message"></div>
+</div>
+
+<!-- Target Upload Modal -->
+<div id="target-upload-modal-overlay">
+    <div id="target-upload-modal">
+        <div id="target-upload-modal-header">
+            <span id="target-upload-modal-title">Upload Targets</span>
+            <button id="target-upload-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="target-upload-modal-body">
+            <p class="target-upload-help">
+                Paste JSON, CSV, or TSV. For tables, use columns like <code>component.property.units</code>
+                (e.g. <code>PEG.concentration.mg/ml</code>) plus optional reserved columns:
+                <code>name</code>, <code>location</code>, <code>total_mass</code>, <code>total_volume</code>, <code>solutes</code>.
+            </p>
+            <textarea id="target-upload-input" spellcheck="false" placeholder='Examples:
+[{"name":"target-1","concentrations":{"PEG":"10 mg/ml"}}]
+
+name,PEG.concentration.mg/ml,Water.mass_fraction
+target-1,10,0.9'></textarea>
+            <div id="target-upload-summary"></div>
+            <div id="target-upload-errors"></div>
+            <div id="target-upload-preview"></div>
+        </div>
+        <div id="target-upload-modal-footer">
+            <button class="toolbar-btn" id="target-upload-cancel-btn">Cancel</button>
+            <button class="toolbar-btn" id="target-upload-parse-btn">Parse</button>
+            <button class="primary-btn" id="target-upload-submit-btn" disabled>Upload Targets</button>
+        </div>
+    </div>
 </div>
 
 <!-- Detail Modal -->

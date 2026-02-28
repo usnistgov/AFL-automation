@@ -1228,6 +1228,37 @@ var SWEEP_PROP_TYPE_TO_KEY = {
     'molarity': 'molarities',
     'molality': 'molalities',
 };
+var TARGET_UPLOAD_PROPERTY_TO_GROUP = {
+    'mass': 'masses',
+    'volume': 'volumes',
+    'concentration': 'concentrations',
+    'mass_fraction': 'mass_fractions',
+    'volume_fraction': 'volume_fractions',
+    'molarity': 'molarities',
+    'molality': 'molalities',
+};
+var TARGET_UPLOAD_UNIT_REQUIRED = {
+    'mass': true,
+    'volume': true,
+    'concentration': true,
+    'mass_fraction': false,
+    'volume_fraction': false,
+    'molarity': true,
+    'molality': true,
+};
+var TARGET_UPLOAD_RESERVED_COLUMNS = {
+    'name': true,
+    'location': true,
+    'total_mass': true,
+    'total_volume': true,
+    'solutes': true,
+};
+var targetUploadState = {
+    parsedTargets: [],
+    rowErrors: [],
+    warnings: [],
+    format: ''
+};
 var SWEEP_NAME_PROPERTY_TYPES = [
     {value: 'mass_fraction', label: 'Mass Fraction', short: 'mf', needsUnits: false},
     {value: 'volume_fraction', label: 'Volume Fraction', short: 'vf', needsUnits: false},
@@ -1824,6 +1855,395 @@ async function uploadTargets() {
         showStatus('Upload error: ' + e.message, true);
     } finally {
         btn.disabled = false;
+    }
+}
+
+// ---- Balance target upload modal ----
+function resetTargetUploadParseState() {
+    targetUploadState.parsedTargets = [];
+    targetUploadState.rowErrors = [];
+    targetUploadState.warnings = [];
+    targetUploadState.format = '';
+    var submitBtn = document.getElementById('target-upload-submit-btn');
+    if (submitBtn) submitBtn.disabled = true;
+}
+
+function openTargetUploadModal() {
+    resetTargetUploadParseState();
+    var summaryEl = document.getElementById('target-upload-summary');
+    var errorsEl = document.getElementById('target-upload-errors');
+    var previewEl = document.getElementById('target-upload-preview');
+    if (summaryEl) summaryEl.innerHTML = '';
+    if (errorsEl) errorsEl.innerHTML = '';
+    if (previewEl) previewEl.innerHTML = '<p class="empty-state">Paste input and click Parse.</p>';
+    document.getElementById('target-upload-modal-overlay').classList.add('visible');
+}
+
+function closeTargetUploadModal() {
+    document.getElementById('target-upload-modal-overlay').classList.remove('visible');
+}
+
+function parseDelimitedLine(line, delimiter) {
+    var out = [];
+    var cur = '';
+    var inQuotes = false;
+    for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') {
+            if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+                cur += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+            continue;
+        }
+        if (!inQuotes && ch === delimiter) {
+            out.push(cur);
+            cur = '';
+            continue;
+        }
+        cur += ch;
+    }
+    out.push(cur);
+    return out;
+}
+
+function parseSolutesCell(raw) {
+    var txt = (raw || '').trim();
+    if (!txt) return null;
+    if (txt[0] === '[') {
+        try {
+            var parsed = JSON.parse(txt);
+            if (Array.isArray(parsed)) return parsed.map(function(v) { return String(v).trim(); }).filter(Boolean);
+        } catch (e) {
+            // fall through to delimiter-based parsing
+        }
+    }
+    return txt.split(/[;,]/).map(function(v) { return v.trim(); }).filter(Boolean);
+}
+
+function parseDelimitedHeaderCell(header, idx) {
+    var h = (header || '').trim();
+    if (!h) {
+        throw new Error('Header column ' + (idx + 1) + ' is empty.');
+    }
+    var hLower = h.toLowerCase();
+    if (TARGET_UPLOAD_RESERVED_COLUMNS[hLower]) {
+        return {type: 'reserved', key: hLower, raw: h};
+    }
+    var parts = h.split('.');
+    if (parts.length < 2) {
+        throw new Error(
+            'Invalid header "' + h + '". Expected "component.property" or "component.property.units".'
+        );
+    }
+    var component = parts[0].trim();
+    var prop = parts[1].trim().toLowerCase();
+    var units = parts.slice(2).join('.').trim();
+    if (!component) {
+        throw new Error('Invalid header "' + h + '": missing component name.');
+    }
+    if (!TARGET_UPLOAD_PROPERTY_TO_GROUP[prop]) {
+        throw new Error(
+            'Invalid header "' + h + '": unsupported property "' + parts[1].trim() + '".'
+        );
+    }
+    return {
+        type: 'component',
+        component: component,
+        property: prop,
+        group: TARGET_UPLOAD_PROPERTY_TO_GROUP[prop],
+        units: units,
+        raw: h
+    };
+}
+
+function normalizeJsonTargetEntry(entry, idx) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+        throw new Error('JSON target #' + (idx + 1) + ' must be an object.');
+    }
+    var out = {};
+    Object.keys(entry).forEach(function(k) {
+        out[k] = entry[k];
+    });
+    if (!out.name) out.name = 'target-' + (idx + 1);
+    return out;
+}
+
+function parseTargetsFromJson(raw) {
+    var parsed = JSON.parse(raw);
+    var sourceTargets;
+    if (Array.isArray(parsed)) {
+        sourceTargets = parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.targets)) {
+        sourceTargets = parsed.targets;
+    } else {
+        throw new Error('JSON must be an array of targets or an object with a "targets" array.');
+    }
+    var targets = sourceTargets.map(function(entry, idx) {
+        return normalizeJsonTargetEntry(entry, idx);
+    });
+    return {
+        targets: targets,
+        rowErrors: [],
+        warnings: [],
+        format: 'json'
+    };
+}
+
+function buildTargetFromDelimitedRow(rowFields, headerMeta, rowNumber) {
+    var target = {};
+    var rowErrors = [];
+    var rowWarnings = [];
+
+    headerMeta.forEach(function(meta, idx) {
+        var raw = idx < rowFields.length ? rowFields[idx] : '';
+        var cell = (raw || '').trim();
+        if (!cell) return;
+
+        if (meta.type === 'reserved') {
+            if (meta.key === 'solutes') {
+                var solutes = parseSolutesCell(cell);
+                if (solutes && solutes.length > 0) target.solutes = solutes;
+            } else {
+                target[meta.key] = cell;
+            }
+            return;
+        }
+
+        if (!target[meta.group]) target[meta.group] = {};
+        if (target[meta.group][meta.component] !== undefined) {
+            rowErrors.push(
+                'Row ' + rowNumber + ': duplicate value for ' + meta.component + '.' + meta.property + '.'
+            );
+            return;
+        }
+
+        if (!TARGET_UPLOAD_UNIT_REQUIRED[meta.property]) {
+            var lower = cell.toLowerCase();
+            if (lower === 'null' || lower === 'none' || lower === 'remainder') {
+                target[meta.group][meta.component] = null;
+                return;
+            }
+            var frac = Number(cell);
+            if (!isFinite(frac)) {
+                rowErrors.push(
+                    'Row ' + rowNumber + ': non-numeric value "' + cell + '" for ' + meta.raw + '.'
+                );
+                return;
+            }
+            if (meta.units) {
+                rowWarnings.push(
+                    'Row ' + rowNumber + ': ignoring units in header "' + meta.raw + '" for unitless property.'
+                );
+            }
+            target[meta.group][meta.component] = frac;
+            return;
+        }
+
+        if (meta.units) {
+            var qty = parseQuantityString(cell);
+            var numeric = qty ? qty.value : Number(cell);
+            if (!isFinite(numeric)) {
+                rowErrors.push(
+                    'Row ' + rowNumber + ': expected numeric value for ' + meta.raw + ', got "' + cell + '".'
+                );
+                return;
+            }
+            target[meta.group][meta.component] = String(numeric) + ' ' + meta.units;
+            return;
+        }
+
+        var parsedQty = parseQuantityString(cell);
+        if (!parsedQty || !parsedQty.units) {
+            rowErrors.push(
+                'Row ' + rowNumber + ': missing units for ' + meta.raw + '. Add units in header or value.'
+            );
+            return;
+        }
+        target[meta.group][meta.component] = String(parsedQty.value) + ' ' + parsedQty.units;
+    });
+
+    if (!target.name) target.name = 'target-' + rowNumber;
+    return {target: target, rowErrors: rowErrors, rowWarnings: rowWarnings};
+}
+
+function parseTargetsFromDelimited(raw, delimiter) {
+    var lines = raw.split(/\r?\n/).filter(function(line) { return line.trim() !== ''; });
+    if (lines.length < 2) {
+        throw new Error('Delimited input must contain a header row and at least one data row.');
+    }
+    var headers = parseDelimitedLine(lines[0], delimiter).map(function(h) { return (h || '').trim(); });
+    if (headers.length === 0) {
+        throw new Error('Missing header row.');
+    }
+    var headerMeta = headers.map(parseDelimitedHeaderCell);
+    var targets = [];
+    var rowErrors = [];
+    var warnings = [];
+
+    for (var i = 1; i < lines.length; i++) {
+        var rowNumber = i + 1;
+        var fields = parseDelimitedLine(lines[i], delimiter);
+        if (fields.length > headers.length) {
+            rowErrors.push(
+                'Row ' + rowNumber + ': found ' + fields.length + ' columns but header has ' + headers.length + '.'
+            );
+            continue;
+        }
+        while (fields.length < headers.length) fields.push('');
+        var built = buildTargetFromDelimitedRow(fields, headerMeta, rowNumber);
+        if (built.rowErrors.length > 0) {
+            rowErrors = rowErrors.concat(built.rowErrors);
+            warnings = warnings.concat(built.rowWarnings);
+            continue;
+        }
+        warnings = warnings.concat(built.rowWarnings);
+        targets.push(built.target);
+    }
+
+    return {
+        targets: targets,
+        rowErrors: rowErrors,
+        warnings: warnings,
+        format: delimiter === '\t' ? 'tsv' : 'csv'
+    };
+}
+
+function parseTargetsFromText(raw) {
+    var text = (raw || '').trim();
+    if (!text) throw new Error('Input is empty.');
+    var first = text[0];
+    if (first === '{' || first === '[') {
+        return parseTargetsFromJson(text);
+    }
+    var firstLine = text.split(/\r?\n/, 1)[0] || '';
+    var delimiter = firstLine.indexOf('\t') !== -1 ? '\t' : ',';
+    return parseTargetsFromDelimited(text, delimiter);
+}
+
+function renderTargetUploadResult(result) {
+    var summaryEl = document.getElementById('target-upload-summary');
+    var errorsEl = document.getElementById('target-upload-errors');
+    var previewEl = document.getElementById('target-upload-preview');
+    if (!summaryEl || !errorsEl || !previewEl) return;
+
+    var summary = [];
+    summary.push('<strong>Format:</strong> ' + escHtml((result.format || '').toUpperCase()));
+    summary.push('<strong>Parsed targets:</strong> ' + result.targets.length);
+    summary.push('<strong>Row errors:</strong> ' + result.rowErrors.length);
+    if (result.warnings.length > 0) {
+        summary.push('<strong>Warnings:</strong> ' + result.warnings.length);
+    }
+    summaryEl.innerHTML = summary.join(' | ');
+
+    if (result.rowErrors.length > 0 || result.warnings.length > 0) {
+        var parts = [];
+        if (result.rowErrors.length > 0) {
+            parts.push('<div><strong>Errors:</strong><ul>'
+                + result.rowErrors.slice(0, 100).map(function(e) { return '<li>' + escHtml(e) + '</li>'; }).join('')
+                + '</ul></div>');
+        }
+        if (result.warnings.length > 0) {
+            parts.push('<div><strong>Warnings:</strong><ul>'
+                + result.warnings.slice(0, 100).map(function(w) { return '<li>' + escHtml(w) + '</li>'; }).join('')
+                + '</ul></div>');
+        }
+        errorsEl.innerHTML = '<div class="upload-error-list">' + parts.join('') + '</div>';
+    } else {
+        errorsEl.innerHTML = '';
+    }
+
+    if (!result.targets || result.targets.length === 0) {
+        previewEl.innerHTML = '<p class="empty-state">No valid targets parsed.</p>';
+        return;
+    }
+    var preview = result.targets.slice(0, 5);
+    var suffix = result.targets.length > 5 ? '\n... (' + (result.targets.length - 5) + ' more targets)' : '';
+    previewEl.innerHTML = '<pre class="diagnostic-pre">' + escHtml(JSON.stringify(preview, null, 2) + suffix) + '</pre>';
+}
+
+function parseTargetUploadInput() {
+    var input = document.getElementById('target-upload-input');
+    if (!input) return;
+    var raw = input.value;
+    var submitBtn = document.getElementById('target-upload-submit-btn');
+    resetTargetUploadParseState();
+    try {
+        var result = parseTargetsFromText(raw);
+        targetUploadState.parsedTargets = result.targets;
+        targetUploadState.rowErrors = result.rowErrors;
+        targetUploadState.warnings = result.warnings;
+        targetUploadState.format = result.format;
+        renderTargetUploadResult(result);
+        if (submitBtn) submitBtn.disabled = result.targets.length === 0;
+        if (result.targets.length === 0) {
+            showStatus('Parse complete: no valid targets found.', true);
+        } else if (result.rowErrors.length > 0) {
+            showStatus(
+                'Parsed ' + result.targets.length + ' target(s) with ' + result.rowErrors.length + ' row error(s).',
+                true
+            );
+        } else {
+            showStatus('Parsed ' + result.targets.length + ' target(s).');
+        }
+    } catch (e) {
+        document.getElementById('target-upload-summary').innerHTML = '';
+        document.getElementById('target-upload-errors').innerHTML =
+            '<div class="upload-error-list"><strong>Parse error:</strong> ' + escHtml(e.message) + '</div>';
+        document.getElementById('target-upload-preview').innerHTML =
+            '<p class="empty-state">Fix parse errors and try again.</p>';
+        if (submitBtn) submitBtn.disabled = true;
+        showStatus('Parse failed: ' + e.message, true);
+    }
+}
+
+async function uploadParsedTargetsFromModal() {
+    if (!targetUploadState.parsedTargets || targetUploadState.parsedTargets.length === 0) {
+        showStatus('No parsed targets to upload.', true);
+        return;
+    }
+    var submitBtn = document.getElementById('target-upload-submit-btn');
+    submitBtn.disabled = true;
+    showStatus('Uploading ' + targetUploadState.parsedTargets.length + ' targets...');
+    try {
+        var token = await login();
+        var r = await authedFetch('/enqueue', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                task_name: 'upload_targets',
+                targets: targetUploadState.parsedTargets,
+                reset: true
+            })
+        });
+        if (!r.ok) {
+            showStatus('Failed to enqueue upload.', true);
+            return;
+        }
+        var uuidText = await r.text();
+        var uuid = uuidText.trim().replace(/^"|"$/g, '');
+        var result = await pollForResult(token, uuid, 60000);
+        var errorsEl = document.getElementById('target-upload-errors');
+        if (result && result.success) {
+            showStatus('Uploaded ' + result.count + ' target(s).');
+            closeTargetUploadModal();
+            loadTargets();
+        } else if (result && result.errors) {
+            showStatus('Upload failed with ' + result.errors.length + ' error(s).', true);
+            errorsEl.innerHTML = '<div class="upload-error-list"><strong>Errors:</strong><ul>'
+                + result.errors.map(function(e) {
+                    return '<li>' + escHtml('[' + e.index + '] ' + e.name + ': ' + e.error) + '</li>';
+                }).join('')
+                + '</ul></div>';
+        } else {
+            showStatus('Upload failed.', true);
+        }
+    } catch (e) {
+        showStatus('Upload error: ' + e.message, true);
+    } finally {
+        submitBtn.disabled = false;
     }
 }
 
@@ -2668,7 +3088,6 @@ function collectProcessSampleKwargsFromUI() {
     var kwargs = {};
     kwargs.predict_next = !!document.getElementById('submit-kw-predict-next').checked;
     kwargs.enqueue_next = !!document.getElementById('submit-kw-enqueue-next').checked;
-    kwargs.calibrate_sensor = !!document.getElementById('submit-kw-calibrate-sensor').checked;
 
     var name = document.getElementById('submit-kw-name').value.trim();
     var sampleUuid = document.getElementById('submit-kw-sample-uuid').value.trim();
@@ -2951,7 +3370,7 @@ function initSubmitTab() {
     });
 
     var previewTriggers = [
-        'submit-kw-predict-next', 'submit-kw-enqueue-next', 'submit-kw-calibrate-sensor',
+        'submit-kw-predict-next', 'submit-kw-enqueue-next',
         'submit-kw-name', 'submit-kw-sample-uuid', 'submit-kw-al-campaign-name', 'submit-kw-al-uuid',
         'submit-kw-predict-combine', 'submit-kw-advanced-json',
         'submit-override-prepare-volume-enabled', 'submit-override-data-tag-enabled',
@@ -3032,7 +3451,26 @@ document.addEventListener('DOMContentLoaded', function() {
         loadTargets();
         showStatus('Refreshed.');
     });
+    document.getElementById('balance-upload-targets-btn').addEventListener('click', openTargetUploadModal);
     document.getElementById('balance-btn').addEventListener('click', runBalance);
+
+    // Target upload modal
+    document.getElementById('target-upload-modal-close').addEventListener('click', closeTargetUploadModal);
+    document.getElementById('target-upload-cancel-btn').addEventListener('click', closeTargetUploadModal);
+    document.getElementById('target-upload-parse-btn').addEventListener('click', parseTargetUploadInput);
+    document.getElementById('target-upload-submit-btn').addEventListener('click', uploadParsedTargetsFromModal);
+    document.getElementById('target-upload-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeTargetUploadModal();
+    });
+    document.getElementById('target-upload-input').addEventListener('input', function() {
+        var summaryEl = document.getElementById('target-upload-summary');
+        var errorsEl = document.getElementById('target-upload-errors');
+        var previewEl = document.getElementById('target-upload-preview');
+        resetTargetUploadParseState();
+        if (summaryEl) summaryEl.innerHTML = '';
+        if (errorsEl) errorsEl.innerHTML = '';
+        if (previewEl) previewEl.innerHTML = '<p class="empty-state">Input changed. Click Parse to refresh preview.</p>';
+    });
 
     // Modal close & navigation handlers
     document.getElementById('detail-modal-close').addEventListener('click', closeDetailModal);
@@ -3042,6 +3480,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === this) closeDetailModal();
     });
     document.addEventListener('keydown', function(e) {
+        var uploadModalOpen = document.getElementById('target-upload-modal-overlay').classList.contains('visible');
+        if (uploadModalOpen && e.key === 'Escape') {
+            closeTargetUploadModal();
+            return;
+        }
         var modalOpen = document.getElementById('detail-modal-overlay').classList.contains('visible');
         if (!modalOpen) return;
         if (e.key === 'Escape') closeDetailModal();

@@ -304,15 +304,18 @@ class APIServer:
             self.app.add_url_rule(route,name,response_function,methods=['GET'])
 
     def query_driver(self):
-        if request.json:
-            task = request.json
-        else:
+        task = request.get_json(silent=True)
+        if task is None:
             task = request.args
 
         self.app.logger.info(f'Request for {request.args}')
         if 'r' in task:
             if task['r'] in self.driver.unqueued.functions:
-                return getattr(self.driver,task['r'])(**task),200
+                fn_name = task['r']
+                call_kwargs = dict(task)
+                # Remove router control key before forwarding kwargs.
+                call_kwargs.pop('r', None)
+                return getattr(self.driver, fn_name)(**call_kwargs),200
             else:
                 return "No such task found as an unqueued function in driver"
         else:

@@ -12,13 +12,44 @@
         <h1>MixDoctor</h1>
     </div>
     <div id="tab-bar">
-        <button class="tab-btn active" data-tab="stocks-tab">Create Stocks</button>
-        <button class="tab-btn" data-tab="sweeps-tab">Create Sweeps</button>
+        <button class="tab-btn active" data-tab="components-tab">Components</button>
+        <button class="tab-btn" data-tab="stocks-tab">Stocks</button>
+        <button class="tab-btn" data-tab="sweeps-tab">Sweep</button>
         <button class="tab-btn" data-tab="balance-tab">Balance</button>
+        <button class="tab-btn" data-tab="plot-sweep-tab">Plot</button>
+        <button class="tab-btn" data-tab="submit-tab">Submit</button>
+    </div>
+
+    <!-- Tab 0: Components -->
+    <div id="components-tab" class="tab-panel active">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="components-refresh-btn">Refresh</button>
+            <button class="primary-btn" id="components-add-btn">+ Add Component</button>
+            <span id="components-status" class="components-status"></span>
+        </div>
+        <div id="components-editor">
+            <table class="data-table components-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Density</th>
+                        <th>Formula</th>
+                        <th>SLD</th>
+                        <th>UID</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="components-table-body">
+                    <tr>
+                        <td colspan="6" class="empty-state">Loading components...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Tab 1: Create Stocks -->
-    <div id="stocks-tab" class="tab-panel active">
+    <div id="stocks-tab" class="tab-panel">
         <div class="tab-toolbar">
             <button class="primary-btn" id="upload-stocks-btn">Upload Stocks</button>
             <button class="toolbar-btn" id="add-stock-btn">+ Add Stock</button>
@@ -26,6 +57,15 @@
         </div>
         <div id="stocks-upload-errors"></div>
         <div id="stock-cards-container"></div>
+        <div id="solution-diagnostics-panel">
+            <div class="diagnostics-header">
+                <div class="panel-title">Solution Creation Output</div>
+                <button class="toolbar-btn" id="solution-diagnostics-clear-btn">Clear</button>
+            </div>
+            <div id="solution-diagnostics-body">
+                <p class="empty-state">No diagnostics yet.</p>
+            </div>
+        </div>
     </div>
 
     <!-- Tab 2: Create Sweeps -->
@@ -85,6 +125,231 @@
         </div>
     </div>
 
+    <!-- Tab 4: Plot Sweep -->
+    <div id="plot-sweep-tab" class="tab-panel">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="plot-sweep-refresh-btn">Refresh Data</button>
+            <button class="primary-btn" id="plot-sweep-plot-btn">Plot</button>
+            <span id="plot-sweep-status" class="plot-sweep-status"></span>
+        </div>
+        <div id="plot-sweep-body">
+            <div id="plot-sweep-controls">
+                <div class="plot-sweep-section">
+                    <div class="plot-sweep-section-title">Plot Type</div>
+                    <label>Type
+                        <select id="plot-sweep-type">
+                            <option value="2d">2D</option>
+                            <option value="3d">3D</option>
+                            <option value="ternary">Ternary</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="plot-sweep-section">
+                    <div class="plot-sweep-section-title">Axes</div>
+                    <div class="plot-sweep-axes plot-sweep-axes-2d">
+                        <div class="plot-sweep-axis-row">
+                            <label>X component
+                                <select id="plot-sweep-x"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-x-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-x-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>Y component
+                                <select id="plot-sweep-y"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-y-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-y-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="plot-sweep-axes plot-sweep-axes-3d">
+                        <div class="plot-sweep-axis-row">
+                            <label>X component
+                                <select id="plot-sweep-x3"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-x3-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-x3-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>Y component
+                                <select id="plot-sweep-y3"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-y3-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-y3-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>Z component
+                                <select id="plot-sweep-z3"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-z3-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-z3-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="plot-sweep-axes plot-sweep-axes-ternary">
+                        <div class="plot-sweep-axis-row">
+                            <label>A component
+                                <select id="plot-sweep-a"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-a-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-a-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>B component
+                                <select id="plot-sweep-b"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-b-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-b-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>C component
+                                <select id="plot-sweep-c"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-c-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-c-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="plot-sweep-section">
+                    <div class="plot-sweep-section-title">Subsample Balanced</div>
+                    <div class="plot-sweep-axis-row subsample-row">
+                        <label>Count
+                            <input type="number" id="plot-sweep-subsample-count" min="1" step="1" placeholder="e.g. 50">
+                        </label>
+                        <button class="toolbar-btn" id="plot-sweep-subsample-btn">Select</button>
+                    </div>
+                    <div id="plot-sweep-subsample-status" class="plot-sweep-substatus"></div>
+                </div>
+                <div id="plot-sweep-note" class="plot-sweep-note"></div>
+            </div>
+            <div id="plot-sweep-plot" class="plot-sweep-plot"></div>
+        </div>
+    </div>
+
+    <!-- Tab 5: Submit -->
+    <div id="submit-tab" class="tab-panel">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="submit-refresh-context-btn">Refresh Orchestrator</button>
+            <button class="primary-btn" id="submit-run-btn">Submit Samples</button>
+            <span id="submit-status" class="submit-status"></span>
+        </div>
+        <div id="submit-body">
+            <div id="submit-controls">
+                <div class="submit-section">
+                    <div class="submit-section-title">Orchestrator</div>
+                    <label class="submit-inline-field"><span>URI</span>
+                        <input type="text" id="submit-orchestrator-uri" placeholder="e.g. 127.0.0.1:5001">
+                    </label>
+                    <div id="submit-context-status" class="submit-substatus"></div>
+                </div>
+
+                <div class="submit-section">
+                    <div class="submit-section-title">Sample Source</div>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-sample-mode" value="balanced_all" checked>
+                        Full balanced grid
+                    </label>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-sample-mode" value="plot_subsample">
+                        Plot tab random subset
+                    </label>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-sample-mode" value="no_sample">
+                        No sample (autonomous kickoff)
+                    </label>
+                </div>
+
+                <div class="submit-section">
+                    <div class="submit-section-title">process_sample kwargs</div>
+                    <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-predict-next"> predict_next</label>
+                    <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-enqueue-next"> enqueue_next</label>
+                    <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-calibrate-sensor"> calibrate_sensor</label>
+                    <label>Name
+                        <input type="text" id="submit-kw-name" placeholder="optional">
+                    </label>
+                    <label>sample_uuid
+                        <input type="text" id="submit-kw-sample-uuid" placeholder="optional">
+                    </label>
+                    <label>AL_campaign_name
+                        <input type="text" id="submit-kw-al-campaign-name" placeholder="optional">
+                    </label>
+                    <label>AL_uuid
+                        <input type="text" id="submit-kw-al-uuid" placeholder="optional">
+                    </label>
+                    <label>predict_combine_comps (JSON)
+                        <textarea id="submit-kw-predict-combine" rows="3" placeholder='{"groupA": ["A", "B"]}'></textarea>
+                    </label>
+                    <label>Advanced kwargs JSON (merged last)
+                        <textarea id="submit-kw-advanced-json" rows="5" placeholder='{"custom_kw": 123}'></textarea>
+                    </label>
+                </div>
+
+                <div class="submit-section">
+                    <div class="submit-section-title">Config Overrides</div>
+                    <label class="submit-override-row">
+                        <input type="checkbox" id="submit-override-prepare-volume-enabled">
+                        <span>prepare_volume</span>
+                    </label>
+                    <input type="text" id="submit-override-prepare-volume" placeholder="e.g. 1000 ul">
+
+                    <label class="submit-override-row">
+                        <input type="checkbox" id="submit-override-data-tag-enabled">
+                        <span>data_tag</span>
+                    </label>
+                    <input type="text" id="submit-override-data-tag" placeholder="e.g. campaign_01">
+
+                    <label class="submit-override-row">
+                        <input type="checkbox" id="submit-override-al-components-enabled">
+                        <span>AL_components (JSON array)</span>
+                    </label>
+                    <textarea id="submit-override-al-components" rows="2" placeholder='["A", "B"]'></textarea>
+
+                    <label class="submit-override-row">
+                        <input type="checkbox" id="submit-override-composition-format-enabled">
+                        <span>composition_format (str or JSON dict)</span>
+                    </label>
+                    <textarea id="submit-override-composition-format" rows="2" placeholder='"mass_fraction" or {"A":"mass_fraction"}'></textarea>
+                </div>
+            </div>
+
+            <div id="submit-preview">
+                <div class="panel-title" id="submit-preview-title">Samples to Submit (0)</div>
+                <div id="submit-preview-list"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="status-message"></div>
 </div>
 
@@ -108,6 +373,7 @@
 
 <datalist id="component-names-datalist"></datalist>
 
+<script>{{ inline_plotly | safe }}</script>
 <script>{{ inline_js | safe }}</script>
 </body>
 </html>

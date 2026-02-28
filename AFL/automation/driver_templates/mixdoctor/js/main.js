@@ -410,7 +410,7 @@ function closeDetailModal() {
 function updateModalNav() {
     var prevBtn = document.getElementById('modal-nav-prev');
     var nextBtn = document.getElementById('modal-nav-next');
-    if (currentModalType === 'target' && targetsData.length > 1) {
+    if (currentModalType === 'target' && currentModalIdx >= 0 && targetsData.length > 1) {
         prevBtn.style.display = '';
         nextBtn.style.display = '';
         prevBtn.disabled = currentModalIdx <= 0;
@@ -1212,6 +1212,332 @@ var SWEEP_PROPERTY_TYPES = [
     {value: 'molarity', label: 'Molarity', needsUnits: true, defaultUnit: 'mol/L'},
     {value: 'molality', label: 'Molality', needsUnits: true, defaultUnit: 'mol/kg'},
 ];
+var SWEEP_PROP_TYPE_TO_KEY = {
+    'mass_fraction': 'mass_fractions',
+    'volume_fraction': 'volume_fractions',
+    'concentration': 'concentrations',
+    'molarity': 'molarities',
+    'molality': 'molalities',
+};
+var SWEEP_NAME_PROPERTY_TYPES = [
+    {value: 'mass_fraction', label: 'Mass Fraction', short: 'mf', needsUnits: false},
+    {value: 'volume_fraction', label: 'Volume Fraction', short: 'vf', needsUnits: false},
+    {value: 'concentration', label: 'Concentration', short: 'conc', needsUnits: true, defaultUnit: 'mg/ml'},
+    {value: 'molarity', label: 'Molarity', short: 'mol', needsUnits: true, defaultUnit: 'mol/L'},
+    {value: 'molality', label: 'Molality', short: 'mlt', needsUnits: true, defaultUnit: 'mol/kg'},
+];
+
+var sweepPreviewTimer = null;
+
+function scheduleSweepPreview() {
+    if (sweepPreviewTimer) clearTimeout(sweepPreviewTimer);
+    sweepPreviewTimer = setTimeout(function() {
+        previewSweep();
+    }, 150);
+}
+
+function getSweepNamePropertyMeta(value) {
+    return SWEEP_NAME_PROPERTY_TYPES.find(function(p) { return p.value === value; }) || SWEEP_NAME_PROPERTY_TYPES[0];
+}
+
+function getSweepComponentOptions() {
+    var seen = {};
+    var names = [];
+    document.querySelectorAll('.sweep-row .sweep-comp-name').forEach(function(input) {
+        var name = (input.value || '').trim();
+        if (!name || seen[name]) return;
+        seen[name] = true;
+        names.push(name);
+    });
+    return names.sort();
+}
+
+function refreshSweepNameRuleComponentOptions() {
+    var components = getSweepComponentOptions();
+    document.querySelectorAll('.sweep-name-comp').forEach(function(sel) {
+        var current = sel.value;
+        sel.innerHTML = '<option value="">Select...</option>';
+        components.forEach(function(comp) {
+            var opt = document.createElement('option');
+            opt.value = comp;
+            opt.textContent = comp;
+            sel.appendChild(opt);
+        });
+        if (current && components.indexOf(current) === -1) {
+            var custom = document.createElement('option');
+            custom.value = current;
+            custom.textContent = current;
+            sel.appendChild(custom);
+        }
+        sel.value = current;
+    });
+}
+
+function addSweepNameRuleRow(prefill) {
+    prefill = prefill || {};
+    var body = document.getElementById('sweep-name-rule-body');
+    if (!body) return null;
+    var tr = document.createElement('tr');
+    tr.className = 'sweep-name-rule-row';
+
+    tr.innerHTML = [
+        '<td><select class="sweep-name-comp"></select></td>',
+        '<td style="text-align:center"><input type="checkbox" class="sweep-name-include-units"></td>',
+        '<td style="text-align:center"><input type="checkbox" class="sweep-name-show-component"></td>',
+        '<td style="text-align:center"><input type="checkbox" class="sweep-name-include-index"></td>',
+        '<td><input type="text" class="sweep-name-formatter"></td>',
+        '<td><button class="name-rule-remove-btn" title="Remove">&times;</button></td>'
+    ].join('');
+    body.appendChild(tr);
+    refreshSweepNameRuleComponentOptions();
+
+    var compSel = tr.querySelector('.sweep-name-comp');
+    var includeUnits = tr.querySelector('.sweep-name-include-units');
+    var showComponent = tr.querySelector('.sweep-name-show-component');
+    var includeIndex = tr.querySelector('.sweep-name-include-index');
+    var fmtInput = tr.querySelector('.sweep-name-formatter');
+
+    if (prefill.component) compSel.value = prefill.component;
+    fmtInput.value = prefill.formatter || '4.3f';
+    includeUnits.checked = !!prefill.include_units;
+    showComponent.checked = prefill.show_component !== false;
+    includeIndex.checked = !!prefill.include_index;
+    fmtInput.placeholder = '4.3f';
+
+    compSel.addEventListener('change', scheduleSweepPreview);
+    includeUnits.addEventListener('change', scheduleSweepPreview);
+    showComponent.addEventListener('change', scheduleSweepPreview);
+    includeIndex.addEventListener('change', scheduleSweepPreview);
+    fmtInput.addEventListener('input', scheduleSweepPreview);
+    tr.querySelector('.name-rule-remove-btn').addEventListener('click', function() {
+        tr.remove();
+        scheduleSweepPreview();
+    });
+    return tr;
+}
+
+function collectSweepNameRulesFromUI() {
+    var rules = [];
+    document.querySelectorAll('.sweep-name-rule-row').forEach(function(row) {
+        var component = row.querySelector('.sweep-name-comp').value.trim();
+        if (!component) return;
+        var includeUnits = row.querySelector('.sweep-name-include-units').checked;
+        var showComponent = row.querySelector('.sweep-name-show-component').checked;
+        var includeIndex = row.querySelector('.sweep-name-include-index').checked;
+        var formatter = row.querySelector('.sweep-name-formatter').value.trim() || '4.3f';
+        rules.push({
+            component: component,
+            include_units: includeUnits,
+            show_component: showComponent,
+            include_index: includeIndex,
+            formatter: formatter,
+        });
+    });
+    return rules;
+}
+
+function parseQuantityString(qty) {
+    if (!qty || typeof qty !== 'string') return null;
+    var m = qty.trim().match(/^([-+]?[\d.]+(?:e[-+]?\d+)?)\s*(.*)$/i);
+    if (!m) return null;
+    var val = Number(m[1]);
+    if (!isFinite(val)) return null;
+    return {value: val, units: (m[2] || '').trim()};
+}
+
+function formatSweepNameValue(value, formatter) {
+    if (!isFinite(value)) return null;
+    if (!formatter) return String(+Number(value).toPrecision(4));
+    var fmt = formatter.trim();
+    var match = fmt.match(/^(?:\d+)?(?:\.(\d+))?f$/i);
+    if (match) {
+        var decimals = match[1] ? parseInt(match[1], 10) : 6;
+        return Number(value).toFixed(decimals);
+    }
+    return String(+Number(value).toPrecision(4));
+}
+
+function getSweepNameSourceMap() {
+    var out = {};
+    document.querySelectorAll('.sweep-row').forEach(function(row) {
+        if (!row.querySelector('.sweep-use').checked) return;
+        var component = row.querySelector('.sweep-comp-name').value.trim();
+        if (!component || out[component]) return;
+        out[component] = {
+            prop_type: row.querySelector('.sweep-prop-type').value,
+            units: row.querySelector('.sweep-units').value.trim(),
+        };
+    });
+    return out;
+}
+
+function buildSweepNameFromTarget(target, idx, prefix, rules, sourceMap) {
+    var segments = [];
+    var includeIndex = false;
+    (rules || []).forEach(function(rule) {
+        var source = sourceMap ? sourceMap[rule.component] : null;
+        if (!source || !source.prop_type) return;
+        var key = SWEEP_PROP_TYPE_TO_KEY[source.prop_type];
+        if (!key || !target[key] || !(rule.component in target[key])) return;
+        var raw = target[key][rule.component];
+        if (raw === null || raw === undefined) return;
+
+        var meta = getSweepNamePropertyMeta(source.prop_type);
+        var value = null;
+        var unit = '';
+        if (meta.needsUnits) {
+            var parsed = parseQuantityString(raw);
+            if (!parsed) return;
+            value = parsed.value;
+            unit = source.units || parsed.units || '';
+            if (source.units && parsed.units && source.units !== parsed.units) {
+                var converted = convertPlotUnits(value, parsed.units, source.units, source.prop_type);
+                if (converted !== null && isFinite(converted)) {
+                    value = converted;
+                    unit = source.units;
+                } else {
+                    unit = parsed.units;
+                }
+            }
+        } else {
+            value = Number(raw);
+            if (!isFinite(value)) return;
+        }
+
+        var formatted = formatSweepNameValue(value, rule.formatter);
+        if (formatted === null) return;
+        var suffix = (meta.needsUnits && rule.include_units && unit) ? unit.replace(/\s+/g, '') : '';
+        if (rule.show_component === false) {
+            segments.push(formatted + suffix);
+        } else {
+            segments.push(rule.component + '_' + meta.short + formatted + suffix);
+        }
+        if (rule.include_index) includeIndex = true;
+    });
+
+    var base = '';
+    if (segments.length === 0) {
+        base = prefix + '-' + String(idx + 1).padStart(4, '0');
+    } else {
+        base = prefix + '-' + segments.join('-');
+    }
+    if (includeIndex && segments.length > 0) {
+        return base + '-' + String(idx + 1);
+    }
+    return base;
+}
+
+function evaluateSweepNameRuleOnTarget(target, rule, sourceMap) {
+    var source = sourceMap ? sourceMap[rule.component] : null;
+    if (!source || !source.prop_type) return {ok: false, reason: 'component not used in sweep'};
+    var key = SWEEP_PROP_TYPE_TO_KEY[source.prop_type];
+    if (!key || !target[key]) return {ok: false, reason: 'property not present'};
+    if (!(rule.component in target[key])) return {ok: false, reason: 'component not present'};
+    var raw = target[key][rule.component];
+    if (raw === null || raw === undefined) return {ok: false, reason: 'value unresolved'};
+    var meta = getSweepNamePropertyMeta(source.prop_type);
+    if (meta.needsUnits) {
+        var parsed = parseQuantityString(raw);
+        if (!parsed) return {ok: false, reason: 'invalid quantity'};
+    } else if (!isFinite(Number(raw))) {
+        return {ok: false, reason: 'non-numeric value'};
+    }
+    return {ok: true, reason: '', prop_type: source.prop_type};
+}
+
+function updateSweepNamePreview(targets) {
+    var el = document.getElementById('sweep-name-preview');
+    if (!el) return;
+    var rules = collectSweepNameRulesFromUI();
+    var sourceMap = getSweepNameSourceMap();
+    if (!rules.length) {
+        el.innerHTML = 'Name preview: <span class="empty">No rules. Using prefix-index naming.</span>';
+        return;
+    }
+    if (!targets || targets.length === 0) {
+        el.innerHTML = 'Name preview: <span class="empty">No targets yet.</span>';
+        return;
+    }
+    var names = targets.slice(0, 3).map(function(t) { return t.name; });
+    var suffix = targets.length > 3 ? ' ...' : '';
+    var firstTarget = targets[0];
+    var diagnostics = rules.map(function(rule) {
+        var check = evaluateSweepNameRuleOnTarget(firstTarget, rule, sourceMap);
+        var propLabel = check.prop_type ? getSweepNamePropertyMeta(check.prop_type).label : 'Sweep Property';
+        var ruleLabel = rule.component + ' / ' + propLabel;
+        if (check.ok) return '<span style="color:#155724">OK: ' + escHtml(ruleLabel) + '</span>';
+        return '<span style="color:#856404">Unmatched: ' + escHtml(ruleLabel + ' (' + check.reason + ')') + '</span>';
+    }).join(' | ');
+    el.innerHTML = 'Name preview: <code>' + escHtml(names.join(', ') + suffix) + '</code>'
+        + '<div style="margin-top:4px;font-size:11px;">' + diagnostics + '</div>';
+}
+
+function generateSweepTargets() {
+    var prefix = document.getElementById('sweep-prefix').value.trim() || 'target';
+    var sizeType = document.getElementById('sweep-size-type').value;
+    var sizeValue = document.getElementById('sweep-size-value').value.trim();
+
+    var activeRows = [];
+    var remainderComponents = [];
+    var soluteNames = [];
+
+    document.querySelectorAll('.sweep-row').forEach(function(row) {
+        if (!row.querySelector('.sweep-use').checked) return;
+        var compName = row.querySelector('.sweep-comp-name').value.trim();
+        if (!compName) return;
+        var isRemainder = row.querySelector('.sweep-remainder').checked;
+        var isSolute = row.querySelector('.sweep-solute').checked;
+        var propType = row.querySelector('.sweep-prop-type').value;
+        var units = row.querySelector('.sweep-units').value.trim();
+
+        if (isSolute && soluteNames.indexOf(compName) === -1) soluteNames.push(compName);
+
+        if (isRemainder) {
+            remainderComponents.push({name: compName, propType: propType, units: units});
+        } else {
+            var start = parseFloat(row.querySelector('.sweep-start').value);
+            var stop = parseFloat(row.querySelector('.sweep-stop').value);
+            var steps = parseInt(row.querySelector('.sweep-steps').value, 10);
+            if (isNaN(start) || isNaN(stop) || isNaN(steps) || steps < 1) return;
+            activeRows.push({name: compName, propType: propType, units: units, values: linspace(start, stop, steps)});
+        }
+    });
+
+    if (activeRows.length === 0) return [];
+
+    var grid = cartesianProduct(activeRows.map(function(row) { return row.values; }));
+    var nameRules = collectSweepNameRulesFromUI();
+    var sourceMap = getSweepNameSourceMap();
+
+    return grid.map(function(combo, i) {
+        var target = {name: ''};
+        if (sizeValue) target[sizeType] = sizeValue;
+
+        activeRows.forEach(function(row, j) {
+            var key = SWEEP_PROP_TYPE_TO_KEY[row.propType];
+            if (!key) return;
+            if (!target[key]) target[key] = {};
+            var pt = SWEEP_PROPERTY_TYPES.find(function(p) { return p.value === row.propType; });
+            if (pt && pt.needsUnits && row.units) {
+                target[key][row.name] = combo[j] + ' ' + row.units;
+            } else {
+                target[key][row.name] = combo[j];
+            }
+        });
+
+        remainderComponents.forEach(function(rem) {
+            var key = SWEEP_PROP_TYPE_TO_KEY[rem.propType];
+            if (!key) return;
+            if (!target[key]) target[key] = {};
+            target[key][rem.name] = null;
+        });
+
+        if (soluteNames.length > 0) target.solutes = soluteNames.slice();
+        target.name = buildSweepNameFromTarget(target, i, prefix, nameRules, sourceMap);
+
+        return target;
+    });
+}
 
 function addSweepRow(prefill) {
     prefill = prefill || {};
@@ -1254,6 +1580,7 @@ function addSweepRow(prefill) {
             unitsInput.disabled = true;
             unitsInput.value = '';
         }
+        scheduleSweepPreview();
     });
 
     tr.querySelector('.sweep-remainder').addEventListener('change', function() {
@@ -1262,6 +1589,7 @@ function addSweepRow(prefill) {
         tr.querySelector('.sweep-start').disabled = isRem;
         tr.querySelector('.sweep-stop').disabled = isRem;
         tr.querySelector('.sweep-steps').disabled = isRem;
+        scheduleSweepPreview();
     });
 
     if (prefill.isRemainder) {
@@ -1273,9 +1601,22 @@ function addSweepRow(prefill) {
 
     tr.querySelector('.remove-sweep-row-btn').addEventListener('click', function() {
         tr.remove();
+        refreshSweepNameRuleComponentOptions();
+        scheduleSweepPreview();
+    });
+
+    tr.querySelectorAll('input,select').forEach(function(el) {
+        el.addEventListener('change', scheduleSweepPreview);
+        el.addEventListener('input', function() {
+            if (el.classList.contains('sweep-comp-name')) {
+                refreshSweepNameRuleComponentOptions();
+            }
+            scheduleSweepPreview();
+        });
     });
 
     tbody.appendChild(tr);
+    refreshSweepNameRuleComponentOptions();
     return tr;
 }
 
@@ -1301,81 +1642,11 @@ function cartesianProduct(arrays) {
     }, [[]]);
 }
 
-function generateSweepTargets() {
-    var prefix = document.getElementById('sweep-prefix').value.trim() || 'target';
-    var sizeType = document.getElementById('sweep-size-type').value;
-    var sizeValue = document.getElementById('sweep-size-value').value.trim();
-
-    var activeRows = [];
-    var remainderComponents = [];
-    var soluteNames = [];
-
-    document.querySelectorAll('.sweep-row').forEach(function(row) {
-        if (!row.querySelector('.sweep-use').checked) return;
-        var compName = row.querySelector('.sweep-comp-name').value.trim();
-        if (!compName) return;
-        var isRemainder = row.querySelector('.sweep-remainder').checked;
-        var isSolute = row.querySelector('.sweep-solute').checked;
-        var propType = row.querySelector('.sweep-prop-type').value;
-        var units = row.querySelector('.sweep-units').value.trim();
-
-        if (isSolute && soluteNames.indexOf(compName) === -1) soluteNames.push(compName);
-
-        if (isRemainder) {
-            remainderComponents.push({name: compName, propType: propType, units: units});
-        } else {
-            var start = parseFloat(row.querySelector('.sweep-start').value);
-            var stop = parseFloat(row.querySelector('.sweep-stop').value);
-            var steps = parseInt(row.querySelector('.sweep-steps').value, 10);
-            if (isNaN(start) || isNaN(stop) || isNaN(steps) || steps < 1) return;
-            activeRows.push({name: compName, propType: propType, units: units, values: linspace(start, stop, steps)});
-        }
-    });
-
-    if (activeRows.length === 0) return [];
-
-    var grid = cartesianProduct(activeRows.map(function(row) { return row.values; }));
-
-    var propTypeToKey = {
-        'mass_fraction': 'mass_fractions',
-        'volume_fraction': 'volume_fractions',
-        'concentration': 'concentrations',
-        'molarity': 'molarities',
-        'molality': 'molalities',
-    };
-
-    return grid.map(function(combo, i) {
-        var target = {name: prefix + '-' + String(i + 1).padStart(4, '0')};
-        if (sizeValue) target[sizeType] = sizeValue;
-
-        activeRows.forEach(function(row, j) {
-            var key = propTypeToKey[row.propType];
-            if (!key) return;
-            if (!target[key]) target[key] = {};
-            var pt = SWEEP_PROPERTY_TYPES.find(function(p) { return p.value === row.propType; });
-            if (pt && pt.needsUnits && row.units) {
-                target[key][row.name] = combo[j] + ' ' + row.units;
-            } else {
-                target[key][row.name] = combo[j];
-            }
-        });
-
-        remainderComponents.forEach(function(rem) {
-            var key = propTypeToKey[rem.propType];
-            if (!key) return;
-            if (!target[key]) target[key] = {};
-            target[key][rem.name] = null;
-        });
-
-        if (soluteNames.length > 0) target.solutes = soluteNames.slice();
-
-        return target;
-    });
-}
 
 function previewSweep() {
     var targets = generateSweepTargets();
     var previewEl = document.getElementById('sweep-preview-area');
+    updateSweepNamePreview(targets);
 
     if (targets.length === 0) {
         previewEl.innerHTML = '<p class="empty-state">No sweep rows configured. Add rows with Use checked.</p>';
@@ -1433,6 +1704,7 @@ function serializeSweepConfig() {
         prefix: document.getElementById('sweep-prefix').value,
         size_type: document.getElementById('sweep-size-type').value,
         size_value: document.getElementById('sweep-size-value').value,
+        name_rules: collectSweepNameRulesFromUI(),
         rows: rows
     };
 }
@@ -1456,6 +1728,15 @@ function applySweepConfig(config) {
             isSolute: row.is_solute
         });
     });
+    var nameRuleBody = document.getElementById('sweep-name-rule-body');
+    if (nameRuleBody) {
+        nameRuleBody.innerHTML = '';
+        (config.name_rules || []).forEach(function(rule) {
+            addSweepNameRuleRow(rule);
+        });
+    }
+    refreshSweepNameRuleComponentOptions();
+    scheduleSweepPreview();
 }
 
 async function saveSweepConfig() {
@@ -2281,6 +2562,7 @@ var submitTabInitialized = false;
 var submitState = {
     context: null
 };
+var submitPreviewEntries = [];
 
 function setSubmitStatus(msg, isError) {
     var el = document.getElementById('submit-status');
@@ -2440,6 +2722,7 @@ function renderSubmitPreview() {
     if (!listEl || !titleEl) return;
     var mode = getSubmitSampleMode();
     var cards = [];
+    submitPreviewEntries = [];
     if (mode === 'no_sample') {
         cards.push({
             name: 'No Sample',
@@ -2451,6 +2734,7 @@ function renderSubmitPreview() {
         cards = entries.map(function(entry, i) {
             var modeLabel = mode === 'plot_subsample' ? 'Plot subset' : 'Balanced';
             var summary = modeLabel + ' #' + (i + 1);
+            submitPreviewEntries.push(entry);
             return {
                 name: entry.name || entry.source_target_name || ('sample-' + (i + 1)),
                 summary: summary,
@@ -2465,9 +2749,10 @@ function renderSubmitPreview() {
         listEl.innerHTML = '<p class="empty-state">No samples selected for this mode.</p>';
         return;
     }
-    listEl.innerHTML = cards.map(function(card) {
+    listEl.innerHTML = cards.map(function(card, idx) {
         var locBadge = card.location ? '<span class="location-badge">' + escHtml(card.location) + '</span>' : '';
-        return '<div class="card">'
+        var isClickable = mode !== 'no_sample';
+        return '<div class="card' + (isClickable ? ' clickable submit-preview-card' : '') + '"' + (isClickable ? (' data-idx="' + idx + '"') : '') + '>'
             + '<div class="card-header">'
             + '<span class="card-name">' + escHtml(card.name) + '</span>'
             + locBadge
@@ -2476,6 +2761,32 @@ function renderSubmitPreview() {
             + (card.componentHtml || '')
             + '</div>';
     }).join('');
+
+    if (mode !== 'no_sample') {
+        listEl.querySelectorAll('.submit-preview-card').forEach(function(cardEl) {
+            cardEl.addEventListener('click', function() {
+                var idx = parseInt(this.getAttribute('data-idx'), 10);
+                if (isNaN(idx) || idx < 0 || idx >= submitPreviewEntries.length) return;
+                var entry = submitPreviewEntries[idx];
+                var modalData = Object.assign({}, entry);
+                if (entry.source_target_name) {
+                    modalData.name = entry.source_target_name;
+                }
+                var reportIdx = -1;
+                if (entry.source_target_name) {
+                    for (var i = 0; i < balanceReportArray.length; i++) {
+                        var report = balanceReportArray[i];
+                        if (!report || !report.target) continue;
+                        if (report.target.name === entry.source_target_name) {
+                            reportIdx = i;
+                            break;
+                        }
+                    }
+                }
+                showDetailModal(modalData, 'target', reportIdx);
+            });
+        });
+    }
 }
 
 function applySubmitContextToUI(ctx) {
@@ -2686,9 +2997,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sweeps tab
     document.getElementById('add-sweep-row-btn').addEventListener('click', function() {
         addSweepRow(null);
+        scheduleSweepPreview();
     });
     document.getElementById('preview-sweep-btn').addEventListener('click', previewSweep);
     document.getElementById('upload-targets-btn').addEventListener('click', uploadTargets);
+    document.getElementById('add-sweep-name-rule-btn').addEventListener('click', function() {
+        addSweepNameRuleRow(null);
+        scheduleSweepPreview();
+    });
+    var sweepNameBuilder = document.getElementById('sweep-name-builder');
+    if (sweepNameBuilder) {
+        sweepNameBuilder.addEventListener('input', scheduleSweepPreview);
+        sweepNameBuilder.addEventListener('change', scheduleSweepPreview);
+    }
+    ['sweep-prefix', 'sweep-size-type', 'sweep-size-value'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', scheduleSweepPreview);
+        el.addEventListener('change', scheduleSweepPreview);
+    });
 
     // Balance tab
     document.getElementById('refresh-btn').addEventListener('click', function() {
@@ -2718,6 +3045,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadComponentsEditor();
     createStockCard(null);
     loadSweepConfig();
+    scheduleSweepPreview();
     loadBalanceSettings();
     fetchBalanceProgress().then(renderBalanceProgress);
 });

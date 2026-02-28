@@ -70,37 +70,66 @@
 
     <!-- Tab 2: Create Sweeps -->
     <div id="sweeps-tab" class="tab-panel">
-        <div class="sweep-settings-bar">
-            <label>Name prefix: <input type="text" id="sweep-prefix" value="target" style="width:120px"></label>
-            <label>Size type:
-                <select id="sweep-size-type">
-                    <option value="total_mass">Total Mass</option>
-                    <option value="total_volume">Total Volume</option>
-                </select>
-            </label>
-            <label>Size value: <input type="text" id="sweep-size-value" placeholder="e.g. 500 mg" style="width:120px"></label>
-        </div>
-        <table id="sweep-table">
-            <thead>
-                <tr>
-                    <th>Use</th>
-                    <th>Component</th>
-                    <th>Property</th>
-                    <th>Start</th>
-                    <th>Stop</th>
-                    <th>Steps</th>
-                    <th>Units</th>
-                    <th>Remainder</th>
-                    <th>Solute</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
         <div class="tab-toolbar">
             <button class="toolbar-btn" id="add-sweep-row-btn">+ Add Row</button>
             <button class="toolbar-btn" id="preview-sweep-btn">Preview</button>
             <button class="primary-btn" id="upload-targets-btn">Upload Targets</button>
+        </div>
+
+        <div id="sweep-name-builder">
+            <div class="sweep-name-builder-header">
+                <div class="panel-title">Name Builder</div>
+                <button class="toolbar-btn" id="add-sweep-name-rule-btn">+ Add Name Rule</button>
+            </div>
+            <table id="sweep-name-rule-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Include Units</th>
+                        <th>Show Component</th>
+                        <th>Include Index</th>
+                        <th>Formatter</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="sweep-name-rule-body"></tbody>
+            </table>
+            <div class="sweep-name-prefix-row">
+                <label>Target Prefix
+                    <input type="text" id="sweep-prefix" value="target" placeholder="e.g. campaignA">
+                </label>
+            </div>
+            <div id="sweep-name-preview">Name preview: <span class="empty">No rules. Using prefix-index naming.</span></div>
+        </div>
+
+        <div id="sweep-definition-panel">
+            <div class="panel-title">Sweep Definition</div>
+            <div class="sweep-settings-bar">
+                <label>Size type:
+                    <select id="sweep-size-type">
+                        <option value="total_mass">Total Mass</option>
+                        <option value="total_volume">Total Volume</option>
+                    </select>
+                </label>
+                <label>Size value: <input type="text" id="sweep-size-value" placeholder="e.g. 500 mg" style="width:120px"></label>
+            </div>
+            <table id="sweep-table">
+                <thead>
+                    <tr>
+                        <th>Use</th>
+                        <th>Component</th>
+                        <th>Property</th>
+                        <th>Start</th>
+                        <th>Stop</th>
+                        <th>Steps</th>
+                        <th>Units</th>
+                        <th>Remainder</th>
+                        <th>Solute</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
         <div id="sweeps-upload-errors"></div>
         <div id="sweep-preview-area"></div>

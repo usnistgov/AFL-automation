@@ -2,6 +2,7 @@ import contextlib
 import io
 import pathlib
 import sys
+import time
 import warnings
 from typing import List, Dict, Optional, Any, Tuple
 from urllib.parse import urlparse
@@ -219,6 +220,18 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         self.minimum_transfer_volume = None
         self.stocks = []
         self.targets = []
+        self._balance_progress = {
+            'active': False,
+            'completed': 0,
+            'total': 0,
+            'fraction': 0.0,
+            'eta_s': None,
+            'elapsed_s': 0.0,
+            'current_target': None,
+            'current_target_idx': None,
+            'message': 'idle',
+        }
+        self._balance_started_ts = None
         try:
             self.mixdb = MixDB.get_db()
         except ValueError:
@@ -725,12 +738,77 @@ class MassBalanceDriver(MassBalanceBase, Driver):
     def balance(self, return_report=False):
         self.process_stocks()
         self.process_targets()
-        result = super().balance(tol=self.config['tol'], return_report=return_report)
+        total = len(self.targets)
+        self._balance_started_ts = time.time()
+        self._balance_progress = {
+            'active': True,
+            'completed': 0,
+            'total': total,
+            'fraction': 0.0,
+            'eta_s': None,
+            'elapsed_s': 0.0,
+            'current_target': None,
+            'current_target_idx': None,
+            'message': 'starting',
+        }
+
+        def _progress_cb(stage=None, completed=0, total=0, target_idx=None, target_name=None, **kwargs):
+            now = time.time()
+            elapsed = max(0.0, now - self._balance_started_ts) if self._balance_started_ts is not None else 0.0
+            frac = (float(completed) / float(total)) if total else 1.0
+            eta = None
+            if completed > 0 and total > completed:
+                eta = max(0.0, elapsed * ((float(total - completed)) / float(completed)))
+            msg = stage if stage else 'running'
+            self._balance_progress = {
+                'active': True,
+                'completed': int(completed),
+                'total': int(total),
+                'fraction': float(frac),
+                'eta_s': eta,
+                'elapsed_s': float(elapsed),
+                'current_target': target_name,
+                'current_target_idx': int(target_idx) if target_idx is not None else None,
+                'message': msg,
+            }
+
         try:
-            self.config['balanced_targets_cache'] = self._collect_balanced_targets()
-        except Exception:
-            pass
-        return result
+            result = super().balance(
+                tol=self.config['tol'],
+                return_report=return_report,
+                progress_callback=_progress_cb,
+            )
+            try:
+                self.config['balanced_targets_cache'] = self._collect_balanced_targets()
+            except Exception:
+                pass
+            return result
+        finally:
+            now = time.time()
+            elapsed = max(0.0, now - self._balance_started_ts) if self._balance_started_ts is not None else 0.0
+            completed = self._balance_progress.get('completed', 0)
+            total = self._balance_progress.get('total', total)
+            frac = (float(completed) / float(total)) if total else 1.0
+            self._balance_progress = {
+                'active': False,
+                'completed': int(completed),
+                'total': int(total),
+                'fraction': float(frac),
+                'eta_s': 0.0 if completed >= total and total > 0 else None,
+                'elapsed_s': float(elapsed),
+                'current_target': self._balance_progress.get('current_target'),
+                'current_target_idx': self._balance_progress.get('current_target_idx'),
+                'message': 'done',
+            }
+            self._balance_started_ts = None
+
+    @Driver.unqueued()
+    def get_balance_progress(self):
+        return dict(self._balance_progress)
+
+    @Driver.unqueued()
+    def get_balance_settings(self):
+        return {'tol': self.config['tol']}
 
     def get_sample_composition(self, composition_format='mass_fraction'):
         """Get the composition of the last balanced target in the requested format.

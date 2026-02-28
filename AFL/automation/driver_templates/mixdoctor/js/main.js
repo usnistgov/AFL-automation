@@ -102,11 +102,14 @@ function clearSolutionDiagnostics() {
 }
 
 // ---- Polling ----
-async function pollForResult(token, uuid, timeoutMs) {
+async function pollForResult(token, uuid, timeoutMs, onTick) {
     timeoutMs = timeoutMs || 120000;
     var start = Date.now();
     while (Date.now() - start < timeoutMs) {
         await new Promise(function(resolve) { setTimeout(resolve, 500); });
+        if (onTick) {
+            await onTick();
+        }
         var resp = await fetch('/get_queue', {
             headers: {'Authorization': 'Bearer ' + token}
         });
@@ -120,6 +123,91 @@ async function pollForResult(token, uuid, timeoutMs) {
         }
     }
     throw new Error('timeout waiting for balance result');
+}
+
+function fmtDuration(seconds) {
+    if (seconds === null || seconds === undefined || !isFinite(seconds)) return '';
+    var s = Math.max(0, Math.round(seconds));
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    if (h > 0) return h + 'h ' + m + 'm ' + sec + 's';
+    if (m > 0) return m + 'm ' + sec + 's';
+    return sec + 's';
+}
+
+function renderBalanceProgress(progress) {
+    var textEl = document.getElementById('balance-progress-text');
+    var etaEl = document.getElementById('balance-progress-eta');
+    var barEl = document.getElementById('balance-progress-bar');
+    var targetEl = document.getElementById('balance-progress-target');
+    if (!textEl || !etaEl || !barEl || !targetEl) return;
+
+    if (!progress) {
+        textEl.textContent = 'Idle';
+        etaEl.textContent = '';
+        barEl.style.width = '0%';
+        targetEl.textContent = '';
+        return;
+    }
+
+    var total = progress.total || 0;
+    var completed = progress.completed || 0;
+    var fraction = progress.fraction || (total > 0 ? completed / total : 0);
+    if (!isFinite(fraction)) fraction = 0;
+    fraction = Math.max(0, Math.min(1, fraction));
+
+    var percent = Math.round(fraction * 100);
+    var status = progress.active ? 'Running' : (progress.message === 'done' ? 'Done' : 'Idle');
+    var elapsedText = fmtDuration(progress.elapsed_s);
+    textEl.textContent = status + ': ' + completed + '/' + total + ' (' + percent + '%)' + (elapsedText ? ' elapsed ' + elapsedText : '');
+    barEl.style.width = percent + '%';
+
+    var etaText = fmtDuration(progress.eta_s);
+    etaEl.textContent = etaText ? ('ETA ' + etaText) : '';
+
+    if (progress.current_target) {
+        var idx = (progress.current_target_idx !== null && progress.current_target_idx !== undefined)
+            ? (progress.current_target_idx + 1)
+            : null;
+        targetEl.textContent = idx ? ('Current target [' + idx + ']: ' + progress.current_target) : ('Current target: ' + progress.current_target);
+    } else {
+        targetEl.textContent = '';
+    }
+}
+
+async function fetchBalanceProgress() {
+    try {
+        var r = await fetch('/get_balance_progress');
+        if (!r.ok) return null;
+        return await r.json();
+    } catch (e) {
+        return null;
+    }
+}
+
+function parseToleranceInput() {
+    var tolEl = document.getElementById('balance-tol-input');
+    if (!tolEl) throw new Error('Tolerance input not found.');
+    var txt = tolEl.value.trim();
+    if (!txt) throw new Error('Tolerance is required.');
+    var tol = Number(txt);
+    if (!isFinite(tol) || tol <= 0) throw new Error('Tolerance must be a finite number > 0.');
+    return tol;
+}
+
+async function loadBalanceSettings() {
+    try {
+        var r = await fetch('/get_balance_settings');
+        if (!r.ok) return;
+        var settings = await r.json();
+        var tolEl = document.getElementById('balance-tol-input');
+        if (tolEl && settings && settings.tol !== undefined && settings.tol !== null) {
+            tolEl.value = String(settings.tol);
+        }
+    } catch (e) {
+        // Ignore; leave existing input value.
+    }
 }
 
 // ---- Quantity formatting ----
@@ -500,9 +588,44 @@ async function runBalance() {
     var btn = document.getElementById('balance-btn');
     btn.disabled = true;
     btn.textContent = 'Balancing...';
+    var tol = null;
+    try {
+        tol = parseToleranceInput();
+    } catch (e) {
+        showStatus(e.message, true);
+        btn.disabled = false;
+        btn.textContent = 'Balance';
+        return;
+    }
     showStatus('Running balance...');
     try {
         var token = await login();
+        renderBalanceProgress({
+            active: false,
+            completed: 0,
+            total: 0,
+            fraction: 0,
+            elapsed_s: 0,
+            eta_s: null,
+            current_target: null,
+            current_target_idx: null,
+            message: 'saving tolerance',
+        });
+        var setResp = await authedFetch('/enqueue', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({task_name: 'set_config', tol: tol})
+        });
+        if (!setResp.ok) {
+            showStatus('Failed to enqueue tolerance update.', true);
+            return;
+        }
+        var setUuid = (await setResp.text()).trim().replace(/^"|"$/g, '');
+        var setRet = await pollForResult(token, setUuid, 60000);
+        if (setRet && typeof setRet === 'string' && setRet.indexOf('Error:') === 0) {
+            throw new Error('Failed to set tolerance: ' + setRet);
+        }
+
         var r = await authedFetch('/enqueue', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -515,7 +638,16 @@ async function runBalance() {
         var uuidText = await r.text();
         var uuid = uuidText.trim().replace(/^"|"$/g, '');
         showStatus('Waiting for result...');
-        var returnVal = await pollForResult(token, uuid);
+        var returnVal = await pollForResult(token, uuid, 120000, async function() {
+            var progress = await fetchBalanceProgress();
+            if (progress) {
+                renderBalanceProgress(progress);
+            }
+        });
+        var finalProgress = await fetchBalanceProgress();
+        if (finalProgress) {
+            renderBalanceProgress(finalProgress);
+        }
         if (returnVal !== null && returnVal !== undefined) {
             buildBalanceResultsMap(returnVal);
             updateBalanceCounter(returnVal);
@@ -546,6 +678,8 @@ function switchTab(tabId) {
         loadComponentsEditor();
     }
     if (tabId === 'balance-tab') {
+        loadBalanceSettings();
+        fetchBalanceProgress().then(renderBalanceProgress);
         loadStocks();
         loadTargets();
     }
@@ -1417,13 +1551,13 @@ var plotSweepInitialized = false;
 var PLOT_SWEEP_SETTINGS_KEY = 'mixdoctor_plot_settings';
 
 var PLOT_PROPERTY_TYPES = [
-    {value: 'mass', label: 'Mass', key: 'masses', unitAware: true},
-    {value: 'volume', label: 'Volume', key: 'volumes', unitAware: true},
-    {value: 'concentration', label: 'Concentration', key: 'concentrations', unitAware: true},
+    {value: 'mass', label: 'Mass', key: 'masses', unitAware: true, defaultUnit: 'mg'},
+    {value: 'volume', label: 'Volume', key: 'volumes', unitAware: true, defaultUnit: 'ul'},
+    {value: 'concentration', label: 'Concentration', key: 'concentrations', unitAware: true, defaultUnit: 'mg/ml'},
     {value: 'mass_fraction', label: 'Mass Fraction', key: 'mass_fractions', unitAware: false},
     {value: 'volume_fraction', label: 'Volume Fraction', key: 'volume_fractions', unitAware: false},
-    {value: 'molarity', label: 'Molarity', key: 'molarities', unitAware: true},
-    {value: 'molality', label: 'Molality', key: 'molalities', unitAware: true},
+    {value: 'molarity', label: 'Molarity', key: 'molarities', unitAware: true, defaultUnit: 'mol/L'},
+    {value: 'molality', label: 'Molality', key: 'molalities', unitAware: true, defaultUnit: 'mol/kg'},
 ];
 
 function getPlotPropertyMeta(value) {
@@ -1662,6 +1796,103 @@ function findUnits(entries, propKey, component) {
     return '';
 }
 
+function _normalizeUnit(unit) {
+    if (!unit) return '';
+    return String(unit)
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/μ/g, 'u');
+}
+
+function _unitScale(unit, scaleMap) {
+    var n = _normalizeUnit(unit);
+    return (n in scaleMap) ? scaleMap[n] : null;
+}
+
+function _convertWithScale(value, fromUnit, toUnit, scaleMap) {
+    var from = _unitScale(fromUnit, scaleMap);
+    var to = _unitScale(toUnit, scaleMap);
+    if (from === null || to === null) return null;
+    return value * (from / to);
+}
+
+function convertPlotUnits(value, fromUnit, toUnit, propType) {
+    if (!toUnit || !fromUnit || _normalizeUnit(toUnit) === _normalizeUnit(fromUnit)) return value;
+
+    if (propType === 'mass') {
+        return _convertWithScale(value, fromUnit, toUnit, {
+            'kg': 1000.0, 'g': 1.0, 'mg': 1e-3, 'ug': 1e-6
+        });
+    }
+    if (propType === 'volume') {
+        return _convertWithScale(value, fromUnit, toUnit, {
+            'l': 1.0, 'ml': 1e-3, 'ul': 1e-6
+        });
+    }
+    if (propType === 'concentration') {
+        return _convertWithScale(value, fromUnit, toUnit, {
+            'g/l': 1.0,
+            'mg/ml': 1.0,
+            'kg/m^3': 1.0,
+            'g/ml': 1000.0,
+            'mg/l': 1e-3,
+            'ug/ml': 1e-3,
+            'ug/l': 1e-6
+        });
+    }
+    if (propType === 'molarity') {
+        return _convertWithScale(value, fromUnit, toUnit, {
+            'mol/l': 1.0,
+            'mmol/l': 1e-3,
+            'umol/l': 1e-6,
+            'm': 1.0,
+            'mm': 1e-3,
+            'um': 1e-6
+        });
+    }
+    if (propType === 'molality') {
+        return _convertWithScale(value, fromUnit, toUnit, {
+            'mol/kg': 1.0,
+            'mmol/kg': 1e-3,
+            'umol/kg': 1e-6
+        });
+    }
+    return null;
+}
+
+function getPlotAxisValue(entry, meta, component, requestedUnits, conversionWarnings) {
+    if (!entry || !meta || !component) return null;
+    var group = entry[meta.key];
+    if (!group || !(component in group)) return null;
+    var raw = group[component];
+    if (raw === null || raw === undefined) return null;
+
+    var v = null;
+    var srcUnits = '';
+    if (typeof raw === 'object' && raw.value !== undefined) {
+        v = parseFloat(raw.value);
+        srcUnits = raw.units || '';
+    } else if (typeof raw === 'number') {
+        v = raw;
+    } else {
+        v = parseFloat(raw);
+    }
+    if (!isFinite(v)) return null;
+
+    if (meta.unitAware && requestedUnits && srcUnits) {
+        var converted = convertPlotUnits(v, srcUnits, requestedUnits, meta.value);
+        if (converted !== null && isFinite(converted)) {
+            v = converted;
+        } else if (conversionWarnings) {
+            conversionWarnings.push(
+                meta.label + ': unsupported conversion "' + srcUnits + '" -> "' + requestedUnits + '"'
+            );
+        }
+    }
+    return v;
+}
+
 function renderPlotSweep(saveSettings) {
     if (saveSettings !== false) savePlotSweepSettings(getPlotSweepSettingsFromUI());
     var noteEl = document.getElementById('plot-sweep-note');
@@ -1702,6 +1933,7 @@ function renderPlotSweep(saveSettings) {
     datasets.push({label: 'Balanced', entries: plotSweepState.balancedTargets});
 
     var traces = [];
+    var conversionWarnings = [];
     var selectedSet = {};
     plotSweepState.selectedBalancedIds.forEach(function(id) { selectedSet[id] = true; });
     datasets.forEach(function(ds) {
@@ -1720,9 +1952,9 @@ function renderPlotSweep(saveSettings) {
         var sc = [];
         var stext = [];
         ds.entries.forEach(function(entry) {
-            var v1 = getPropertyValue(entry, propMeta[0].key, axes[0]);
-            var v2 = getPropertyValue(entry, propMeta[1].key, axes[1]);
-            var v3 = axes[2] ? getPropertyValue(entry, propMeta[2].key, axes[2]) : null;
+            var v1 = getPlotAxisValue(entry, propMeta[0], axes[0], units[0], conversionWarnings);
+            var v2 = getPlotAxisValue(entry, propMeta[1], axes[1], units[1], conversionWarnings);
+            var v3 = axes[2] ? getPlotAxisValue(entry, propMeta[2], axes[2], units[2], conversionWarnings) : null;
             if (v1 === null || v2 === null || (axes[2] && v3 === null)) return;
             var label = entry.name || entry.source_target_name || '';
             var isSelected = (ds.label === 'Balanced') && selectedSet[entry._balanced_idx];
@@ -1758,6 +1990,7 @@ function renderPlotSweep(saveSettings) {
                 a: a,
                 b: b,
                 c: c,
+                marker: {size: 10},
                 text: text,
                 hovertemplate: '%{text}<br>' +
                     axes[0] + ' (' + propMeta[0].label + ')= %{a}<br>' +
@@ -1772,6 +2005,7 @@ function renderPlotSweep(saveSettings) {
                 x: x,
                 y: y,
                 z: z,
+                marker: {size: 7},
                 text: text,
                 hovertemplate: '%{text}<br>' +
                     axes[0] + ' (' + propMeta[0].label + ')= %{x}<br>' +
@@ -1785,6 +2019,7 @@ function renderPlotSweep(saveSettings) {
                 name: ds.label,
                 x: x,
                 y: y,
+                marker: {size: 10},
                 text: text,
                 hovertemplate: '%{text}<br>' +
                     axes[0] + ' (' + propMeta[0].label + ')= %{x}<br>' +
@@ -1802,7 +2037,7 @@ function renderPlotSweep(saveSettings) {
                     b: sb,
                     c: sc,
                     text: stext,
-                    marker: {size: 10, symbol: 'circle-open', line: {width: 2, color: '#ff7f0e'}},
+                    marker: {size: 14, symbol: 'circle-open', line: {width: 2, color: '#ff7f0e'}},
                     hovertemplate: '%{text}<br>' +
                         axes[0] + ' (' + propMeta[0].label + ')= %{a}<br>' +
                         axes[1] + ' (' + propMeta[1].label + ')= %{b}<br>' +
@@ -1817,7 +2052,7 @@ function renderPlotSweep(saveSettings) {
                     y: sy,
                     z: sz,
                     text: stext,
-                    marker: {size: 6, symbol: 'circle-open', line: {width: 2, color: '#ff7f0e'}},
+                    marker: {size: 9, symbol: 'circle-open', line: {width: 2, color: '#ff7f0e'}},
                     hovertemplate: '%{text}<br>' +
                         axes[0] + ' (' + propMeta[0].label + ')= %{x}<br>' +
                         axes[1] + ' (' + propMeta[1].label + ')= %{y}<br>' +
@@ -1831,7 +2066,7 @@ function renderPlotSweep(saveSettings) {
                     x: sx,
                     y: sy,
                     text: stext,
-                    marker: {size: 10, symbol: 'circle-open', line: {width: 2, color: '#ff7f0e'}},
+                    marker: {size: 14, symbol: 'circle-open', line: {width: 2, color: '#ff7f0e'}},
                     hovertemplate: '%{text}<br>' +
                         axes[0] + ' (' + propMeta[0].label + ')= %{x}<br>' +
                         axes[1] + ' (' + propMeta[1].label + ')= %{y}<extra>Selected</extra>'
@@ -1895,8 +2130,8 @@ function renderPlotSweep(saveSettings) {
         if (units.some(function(u, idx) { return u && !propMeta[idx].unitAware; })) {
             notes.push('Units are ignored for fraction-based properties.');
         }
-        if (units.some(function(u) { return u; })) {
-            notes.push('Unit labels do not rescale values.');
+        if (conversionWarnings.length > 0) {
+            notes.push(conversionWarnings[0]);
         }
         noteEl.textContent = notes.join(' ');
     }
@@ -1979,6 +2214,16 @@ function updatePlotSweepUnitInputs() {
         var meta = getPlotPropertyMeta(propSel.value);
         unitInput.disabled = !meta.unitAware;
         unitInput.placeholder = meta.unitAware ? 'e.g. mg/ml' : 'n/a';
+        if (meta.unitAware) {
+            if (!unitInput.dataset.lastProp && !unitInput.value.trim()) {
+                unitInput.value = meta.defaultUnit || '';
+            } else if (unitInput.dataset.lastProp && unitInput.dataset.lastProp !== meta.value) {
+                unitInput.value = meta.defaultUnit || '';
+            }
+        } else {
+            unitInput.value = '';
+        }
+        unitInput.dataset.lastProp = meta.value;
     });
 }
 
@@ -2473,4 +2718,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loadComponentsEditor();
     createStockCard(null);
     loadSweepConfig();
+    loadBalanceSettings();
+    fetchBalanceProgress().then(renderBalanceProgress);
 });

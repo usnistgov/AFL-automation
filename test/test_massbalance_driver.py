@@ -60,3 +60,42 @@ def test_massbalance_driver_mixed_solvents_mass():
         assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'])
 
     assert none_count == 1
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_driver_balance_settings_and_progress():
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    mb.reset_stocks()
+    mb.reset_targets()
+
+    mb.set_config(tol=2e-3)
+    settings = mb.get_balance_settings()
+    assert settings['tol'] == pytest.approx(2e-3)
+
+    progress = mb.get_balance_progress()
+    assert progress['active'] is False
+    assert 'completed' in progress
+    assert 'total' in progress
+
+    mb.add_stock({
+        'name': "Stock1",
+        'masses': {"H2O": "20 g"},
+        'location': '1A1'
+    })
+    mb.add_stock({
+        'name': "Stock2",
+        'masses': {"Hexanes": "20 g"},
+        'location': '1A2'
+    })
+    mb.add_target({
+        'name': "SimpleTarget",
+        'mass_fractions': {"H2O": 0.5, "Hexanes": 0.5},
+        'total_mass': "500 mg",
+    })
+
+    mb.balance()
+    post = mb.get_balance_progress()
+    assert post['active'] is False
+    assert post['total'] == 1
+    assert post['completed'] == 1

@@ -111,7 +111,21 @@
         <div class="tab-toolbar">
             <button class="toolbar-btn" id="refresh-btn">Refresh</button>
             <button class="toolbar-btn" id="balance-btn">Balance</button>
+            <label class="balance-tol-control" for="balance-tol-input">
+                Tolerance
+                <input type="number" id="balance-tol-input" min="0" step="any" placeholder="e.g. 1e-3">
+            </label>
             <span id="balance-counter"></span>
+        </div>
+        <div id="balance-progress-panel">
+            <div class="balance-progress-header">
+                <span id="balance-progress-text">Idle</span>
+                <span id="balance-progress-eta"></span>
+            </div>
+            <div class="balance-progress-bar-wrap">
+                <div id="balance-progress-bar"></div>
+            </div>
+            <div id="balance-progress-target"></div>
         </div>
         <div id="main-content">
             <div id="stocks-panel">

@@ -1,0 +1,14 @@
+AFL.automation.loading.Sensor
+=============================
+
+.. automodule:: AFL.automation.loading.Sensor
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DummySensor1
+      DummySensor2
+      Sensor
+   

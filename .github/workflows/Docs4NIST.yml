@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.repository.fork == false
     steps:
-      - uses: usnistgov/Docs4NIST@0.7.2
+      - uses: usnistgov/Docs4NIST@0.8
         with:
           docs-folder: docs/
           pre-build-command: 'pip install -e .'

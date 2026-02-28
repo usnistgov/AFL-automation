@@ -476,25 +476,28 @@
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">BalanceDiagnosis</span></code>(success, details, ...)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code>(*args, **kwargs)</p></td>
+<td><p>Special type indicating an unconstrained type.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">BalanceDiagnosis</span></code>(success, details, ...)</p></td>
 <td><p>Full diagnosis of a single balance result.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Bounds</span></code>([lb, ub, keep_feasible])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Bounds</span></code>([lb, ub, keep_feasible])</p></td>
 <td><p>Bounds constraint on the variables.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">FailureCode</span></code>(value)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">FailureCode</span></code>(value)</p></td>
 <td><p>Machine-readable codes describing why a mass balance failed.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">FailureDetail</span></code>(code, description, ...)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">FailureDetail</span></code>(code, description, ...)</p></td>
 <td><p>One specific failure mode detected during diagnosis.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.mixing.MassBalanceBase.MassBalanceBase" title="AFL.automation.mixing.MassBalanceBase.MassBalanceBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MassBalanceBase</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.mixing.MassBalanceBase.MassBalanceBase" title="AFL.automation.mixing.MassBalanceBase.MassBalanceBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MassBalanceBase</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PipetteAction</span></code>(source, dest, volume[, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PipetteAction</span></code>(source, dest, volume[, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Solution</span></code>(name[, total_mass, total_volume, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Solution</span></code>(name[, total_mass, total_volume, ...])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -550,7 +553,7 @@ been run yet.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.mixing.MassBalanceBase.MassBalanceBase.balance">
-<span class="sig-name descname"><span class="pre">balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_report</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalanceBase.html#MassBalanceBase.balance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalanceBase.MassBalanceBase.balance" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_report</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalanceBase.html#MassBalanceBase.balance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalanceBase.MassBalanceBase.balance" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

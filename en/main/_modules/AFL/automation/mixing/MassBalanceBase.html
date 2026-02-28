@@ -407,7 +407,7 @@
   <h1>Source code for AFL.automation.mixing.MassBalanceBase</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">lsq_linear</span><span class="p">,</span> <span class="n">Bounds</span>
@@ -459,7 +459,7 @@
 
 <span class="k">def</span> <span class="nf">_diagnose</span><span class="p">(</span>
     <span class="n">target</span><span class="p">,</span>
-    <span class="n">transfers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">transfers</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">differences</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">components</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span>
@@ -468,6 +468,8 @@
     <span class="n">mass_fraction_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">max_stock_fractions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">missing_component_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BalanceDiagnosis</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Analyse a balance result and return a structured diagnosis.</span>
 
@@ -482,12 +484,16 @@
         <span class="k">return</span> <span class="n">BalanceDiagnosis</span><span class="p">(</span><span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">component_errors</span><span class="o">=</span><span class="n">component_errors</span><span class="p">)</span>
 
     <span class="n">details</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">max_stock_fractions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_stock_fractions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">mass_fraction_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">missing_component_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">missing_component_mask</span> <span class="o">=</span> <span class="n">max_stock_fractions</span> <span class="o">==</span> <span class="mf">0.0</span>
 
     <span class="c1"># --- Check 1: MISSING_STOCK_COMPONENT ---</span>
     <span class="c1"># A required component is absent from every stock — cannot be achieved regardless</span>
     <span class="c1"># of volumes or concentrations.</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">target_masses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1e-12</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">mass_fraction_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">target_masses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1e-12</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">(</span><span class="n">missing_component_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
             <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FailureDetail</span><span class="p">(</span>
                 <span class="n">code</span><span class="o">=</span><span class="n">FailureCode</span><span class="o">.</span><span class="n">MISSING_STOCK_COMPONENT</span><span class="p">,</span>
                 <span class="n">description</span><span class="o">=</span><span class="p">(</span>
@@ -506,7 +512,7 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">target_masses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="n">max_stock_frac</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">mass_fraction_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]))</span>
+            <span class="n">max_stock_frac</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_stock_fractions</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="n">target_frac</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">target_fracs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">target_frac</span> <span class="o">&gt;</span> <span class="n">max_stock_frac</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">:</span>
                 <span class="n">best_stock_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">mass_fraction_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]))</span>
@@ -564,7 +570,7 @@
     <span class="c1">#     the minimum, so it is forced up, but the constraint is still binding).</span>
     <span class="n">failed_comps</span> <span class="o">=</span> <span class="p">{</span><span class="n">components</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">))</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">differences</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">tol</span><span class="p">}</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">stock</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stocks</span><span class="p">):</span>
-        <span class="n">mass_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">transfers</span><span class="p">[</span><span class="n">stock</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">mass_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">transfers</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
         <span class="n">lb_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">lb</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">mass_val</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">lb_val</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="c1"># Case (a): stock excluded entirely.</span>
@@ -625,7 +631,7 @@
         <span class="n">contaminating</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">stock</span><span class="o">.</span><span class="n">name</span>
             <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">stock</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stocks</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">transfers</span><span class="p">[</span><span class="n">stock</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">mass_fraction_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+            <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">transfers</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">mass_fraction_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
         <span class="p">]</span>
         <span class="k">if</span> <span class="n">contaminating</span><span class="p">:</span>
             <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FailureDetail</span><span class="p">(</span>
@@ -644,26 +650,27 @@
     <span class="c1"># Lists every component whose relative error exceeds the tolerance.</span>
     <span class="n">tol_exceeded</span> <span class="o">=</span> <span class="p">[</span><span class="n">components</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">))</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">differences</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">tol</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">tol_exceeded</span><span class="p">:</span>
+        <span class="n">tol_exceeded_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">))</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">differences</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">tol</span><span class="p">]</span>
         <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FailureDetail</span><span class="p">(</span>
             <span class="n">code</span><span class="o">=</span><span class="n">FailureCode</span><span class="o">.</span><span class="n">TOLERANCE_EXCEEDED</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tol_exceeded</span><span class="p">)</span><span class="si">}</span><span class="s2"> component(s) exceed </span><span class="si">{</span><span class="n">tol</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">% tolerance.&quot;</span><span class="p">,</span>
             <span class="n">affected_components</span><span class="o">=</span><span class="n">tol_exceeded</span><span class="p">,</span>
-            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="n">comp</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">differences</span><span class="p">[</span><span class="n">components</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">comp</span><span class="p">)])</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">tol_exceeded</span><span class="p">},</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="n">components</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="nb">float</span><span class="p">(</span><span class="n">differences</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tol_exceeded_idx</span><span class="p">},</span>
         <span class="p">))</span>
 
     <span class="k">return</span> <span class="n">BalanceDiagnosis</span><span class="p">(</span><span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">,</span> <span class="n">component_errors</span><span class="o">=</span><span class="n">component_errors</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_balance</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_iter_balance_candidates</span><span class="p">(</span>
     <span class="n">mass_fraction_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">bounds</span><span class="p">:</span> <span class="n">Bounds</span><span class="p">,</span>
     <span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span>
     <span class="n">near_bound_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">lsq_linear</span><span class="p">(</span><span class="n">mass_fraction_matrix</span><span class="p">,</span> <span class="n">target_masses</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
     <span class="n">base_mass_transfer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-    <span class="n">mass_transfers</span> <span class="o">=</span> <span class="p">[</span><span class="n">base_mass_transfer</span><span class="p">]</span>
+    <span class="k">yield</span> <span class="n">base_mass_transfer</span>
 
     <span class="c1"># Identify stocks that the solver pushed to or near their lower bound.</span>
     <span class="c1"># These are candidates for exclusion (zeroing out) since the solver</span>
@@ -700,9 +707,17 @@
             <span class="k">for</span> <span class="n">reduced_idx</span><span class="p">,</span> <span class="n">stock_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keep_indices</span><span class="p">):</span>
                 <span class="n">adjusted_transfer</span><span class="p">[</span><span class="n">stock_idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">reduced_result</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">reduced_idx</span><span class="p">])</span>
 
-            <span class="n">mass_transfers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">adjusted_transfer</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">adjusted_transfer</span>
 
-    <span class="k">return</span> <span class="n">mass_transfers</span>
+
+<span class="k">def</span> <span class="nf">_balance</span><span class="p">(</span>
+    <span class="n">mass_fraction_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="p">:</span> <span class="n">Bounds</span><span class="p">,</span>
+    <span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span>
+    <span class="n">near_bound_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">_iter_balance_candidates</span><span class="p">(</span><span class="n">mass_fraction_matrix</span><span class="p">,</span> <span class="n">target_masses</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">stocks</span><span class="p">,</span> <span class="n">near_bound_tol</span><span class="p">))</span>
 
 
 <span class="k">def</span> <span class="nf">_compute_differences</span><span class="p">(</span>
@@ -857,29 +872,47 @@
 
 <div class="viewcode-block" id="MassBalanceBase.balance">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixing.MassBalanceBase.html#AFL.automation.mixing.MassBalanceBase.MassBalanceBase.balance">[docs]</a>
-    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">return_report</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">return_report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress_callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">]):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Some stocks don&#39;t have a location specified. This should be specified when the stocks are instantiated&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_bounds</span><span class="p">()</span>
         <span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
         <span class="n">mfm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)))</span>
         <span class="n">_extract_mass_fractions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">,</span> <span class="n">components</span><span class="p">,</span> <span class="n">mfm</span><span class="p">)</span>
+        <span class="n">max_stock_fractions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">mfm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">))</span>
+        <span class="n">missing_component_mask</span> <span class="o">=</span> <span class="n">max_stock_fractions</span> <span class="o">==</span> <span class="mf">0.0</span>
 
         <span class="n">target_mass_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">):</span>
             <span class="n">_extract_masses</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">components</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="n">target_mass_matrix</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
 
+        <span class="k">if</span> <span class="n">progress_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">progress_callback</span><span class="p">(</span>
+                <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;start&#39;</span><span class="p">,</span>
+                <span class="n">completed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span>
+                <span class="n">target_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">target_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">target_idx</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">progress_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">progress_callback</span><span class="p">(</span>
+                    <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;target_start&#39;</span><span class="p">,</span>
+                    <span class="n">completed</span><span class="o">=</span><span class="n">target_idx</span><span class="p">,</span>
+                    <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span>
+                    <span class="n">target_idx</span><span class="o">=</span><span class="n">target_idx</span><span class="p">,</span>
+                    <span class="n">target_name</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="n">target_masses</span> <span class="o">=</span> <span class="n">target_mass_matrix</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span>
-            <span class="n">mass_transfers</span> <span class="o">=</span> <span class="n">_balance</span><span class="p">(</span><span class="n">mfm</span><span class="p">,</span> <span class="n">target_masses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)</span>
             <span class="n">best_candidate</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">best_score</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">any_success</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="n">total_target_mass</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">target_masses</span><span class="p">))</span>
 
-            <span class="k">for</span> <span class="n">transfers</span> <span class="ow">in</span> <span class="n">mass_transfers</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">transfers</span> <span class="ow">in</span> <span class="n">_iter_balance_candidates</span><span class="p">(</span><span class="n">mfm</span><span class="p">,</span> <span class="n">target_masses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">):</span>
                 <span class="n">balanced_masses</span> <span class="o">=</span> <span class="n">mfm</span> <span class="o">@</span> <span class="n">transfers</span>
                 <span class="n">differences</span> <span class="o">=</span> <span class="n">_compute_differences</span><span class="p">(</span>
                     <span class="n">target_masses</span><span class="o">=</span><span class="n">target_masses</span><span class="p">,</span>
@@ -900,16 +933,15 @@
 
                 <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
                     <span class="n">any_success</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="n">best_score</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">break</span>
 
             <span class="k">if</span> <span class="n">best_candidate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Mass balance produced no candidates; this should not happen.&quot;</span><span class="p">)</span>
 
-            <span class="n">transfers_dict</span> <span class="o">=</span> <span class="n">_make_transfer_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">,</span> <span class="n">best_candidate</span><span class="p">[</span><span class="s1">&#39;transfers&#39;</span><span class="p">])</span>
-            <span class="n">balanced_target</span> <span class="o">=</span> <span class="n">_make_balanced_target</span><span class="p">(</span><span class="n">transfers_dict</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
             <span class="n">diagnosis</span> <span class="o">=</span> <span class="n">_diagnose</span><span class="p">(</span>
                 <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
-                <span class="n">transfers</span><span class="o">=</span><span class="n">transfers_dict</span><span class="p">,</span>
+                <span class="n">transfers</span><span class="o">=</span><span class="n">best_candidate</span><span class="p">[</span><span class="s1">&#39;transfers&#39;</span><span class="p">],</span>
                 <span class="n">differences</span><span class="o">=</span><span class="n">best_candidate</span><span class="p">[</span><span class="s1">&#39;difference&#39;</span><span class="p">],</span>
                 <span class="n">components</span><span class="o">=</span><span class="n">components</span><span class="p">,</span>
                 <span class="n">stocks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">,</span>
@@ -918,6 +950,8 @@
                 <span class="n">mass_fraction_matrix</span><span class="o">=</span><span class="n">mfm</span><span class="p">,</span>
                 <span class="n">target_masses</span><span class="o">=</span><span class="n">target_masses</span><span class="p">,</span>
                 <span class="n">success</span><span class="o">=</span><span class="n">best_candidate</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">],</span>
+                <span class="n">max_stock_fractions</span><span class="o">=</span><span class="n">max_stock_fractions</span><span class="p">,</span>
+                <span class="n">missing_component_mask</span><span class="o">=</span><span class="n">missing_component_mask</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">any_success</span><span class="p">:</span>
@@ -931,6 +965,8 @@
                     <span class="s1">&#39;diagnosis&#39;</span><span class="p">:</span> <span class="n">diagnosis</span><span class="p">,</span>
                 <span class="p">})</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="n">transfers_dict</span> <span class="o">=</span> <span class="n">_make_transfer_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">,</span> <span class="n">best_candidate</span><span class="p">[</span><span class="s1">&#39;transfers&#39;</span><span class="p">])</span>
+                <span class="n">balanced_target</span> <span class="o">=</span> <span class="n">_make_balanced_target</span><span class="p">(</span><span class="n">transfers_dict</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
                     <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span>
                     <span class="s1">&#39;balanced_target&#39;</span><span class="p">:</span> <span class="n">balanced_target</span><span class="p">,</span>
@@ -939,7 +975,24 @@
                     <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="n">best_candidate</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">],</span>
                     <span class="s1">&#39;diagnosis&#39;</span><span class="p">:</span> <span class="n">diagnosis</span><span class="p">,</span>
                 <span class="p">})</span>
+            <span class="k">if</span> <span class="n">progress_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">progress_callback</span><span class="p">(</span>
+                    <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;target_end&#39;</span><span class="p">,</span>
+                    <span class="n">completed</span><span class="o">=</span><span class="n">target_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span>
+                    <span class="n">target_idx</span><span class="o">=</span><span class="n">target_idx</span><span class="p">,</span>
+                    <span class="n">target_name</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">success</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">any_success</span><span class="p">),</span>
+                <span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">progress_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">progress_callback</span><span class="p">(</span>
+                <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;done&#39;</span><span class="p">,</span>
+                <span class="n">completed</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span>
+                <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span>
+                <span class="n">target_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">target_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="n">return_report</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">balance_report</span><span class="p">()</span></div>
 

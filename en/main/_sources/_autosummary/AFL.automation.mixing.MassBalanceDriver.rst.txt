@@ -9,12 +9,15 @@ AFL.automation.mixing.MassBalanceDriver
    .. autosummary::
    
       enforce_units
+      urlparse
    
    .. rubric:: Classes
 
    .. autosummary::
    
+      Any
       Bounds
+      Client
       Driver
       MassBalanceBase
       MassBalanceDriver

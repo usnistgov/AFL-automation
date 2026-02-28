@@ -304,17 +304,38 @@
     <!-- Tab 5: Submit -->
     <div id="submit-tab" class="tab-panel">
         <div class="tab-toolbar">
-            <button class="toolbar-btn" id="submit-refresh-context-btn">Refresh Orchestrator</button>
+            <button class="toolbar-btn" id="submit-refresh-context-btn">Refresh Context</button>
             <button class="primary-btn" id="submit-run-btn">Submit Samples</button>
             <span id="submit-status" class="submit-status"></span>
         </div>
         <div id="submit-body">
             <div id="submit-controls">
                 <div class="submit-section">
+                    <div class="submit-section-title">Submission Target</div>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-destination-mode" value="orchestrator" checked>
+                        Orchestrator (process_sample)
+                    </label>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-destination-mode" value="prepare">
+                        Prepare Server (prepare)
+                    </label>
+                </div>
+
+                <div class="submit-section" id="submit-orchestrator-section">
                     <div class="submit-section-title">Orchestrator</div>
                     <label class="submit-inline-field"><span>URI</span>
                         <input type="text" id="submit-orchestrator-uri" placeholder="e.g. 127.0.0.1:5001">
                     </label>
+                </div>
+
+                <div class="submit-section" id="submit-prepare-section" style="display:none;">
+                    <div class="submit-section-title">Prepare Server</div>
+                    <label class="submit-inline-field"><span>URI</span>
+                        <input type="text" id="submit-prepare-uri" placeholder="e.g. 127.0.0.1:5002">
+                    </label>
+                </div>
+                <div class="submit-section">
                     <div id="submit-context-status" class="submit-substatus"></div>
                 </div>
 
@@ -328,13 +349,13 @@
                         <input type="radio" name="submit-sample-mode" value="plot_subsample">
                         Plot tab random subset
                     </label>
-                    <label class="submit-inline-choice">
+                    <label class="submit-inline-choice" id="submit-no-sample-option">
                         <input type="radio" name="submit-sample-mode" value="no_sample">
                         No sample (autonomous kickoff)
                     </label>
                 </div>
 
-                <div class="submit-section">
+                <div class="submit-section" id="submit-process-kwargs-section">
                     <div class="submit-section-title">process_sample kwargs</div>
                     <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-predict-next"> predict_next</label>
                     <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-enqueue-next"> enqueue_next</label>
@@ -355,6 +376,16 @@
                     </label>
                     <label>Advanced kwargs JSON (merged last)
                         <textarea id="submit-kw-advanced-json" rows="5" placeholder='{"custom_kw": 123}'></textarea>
+                    </label>
+                </div>
+
+                <div class="submit-section" id="submit-prepare-kwargs-section" style="display:none;">
+                    <div class="submit-section-title">prepare kwargs</div>
+                    <label>dest
+                        <input type="text" id="submit-prepare-kw-dest" placeholder="optional destination">
+                    </label>
+                    <label>Advanced kwargs JSON (merged last)
+                        <textarea id="submit-prepare-kw-advanced-json" rows="5" placeholder='{"custom_kw": 123}'></textarea>
                     </label>
                 </div>
 

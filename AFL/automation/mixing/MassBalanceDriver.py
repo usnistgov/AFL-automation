@@ -195,6 +195,8 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         'sweep_config': {},
         'orchestrator_uri': '',
         'orchestrator_username': 'Orchestrator',
+        'prepare_uri': '',
+        'prepare_username': 'Prepare',
     }
 
 
@@ -551,29 +553,59 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         )
 
     @staticmethod
-    def _normalize_orchestrator_uri(orchestrator_uri: str) -> str:
-        uri = (orchestrator_uri or '').strip()
+    def _normalize_server_uri(uri: str, label: str = 'server') -> str:
+        uri = (uri or '').strip()
         if not uri:
-            raise ValueError("No orchestrator URI specified.")
+            raise ValueError(f"No {label} URI specified.")
         if not uri.startswith(('http://', 'https://')):
             uri = 'http://' + uri
         parsed = urlparse(uri)
         if not parsed.hostname:
-            raise ValueError(f"Invalid orchestrator URI: {orchestrator_uri}")
+            raise ValueError(f"Invalid {label} URI: {uri}")
         port = parsed.port or 5000
         return f"{parsed.hostname}:{port}"
 
-    def _get_orchestrator_client(self, orchestrator_uri: Optional[str] = None) -> Tuple[Client, str]:
-        raw_uri = orchestrator_uri if orchestrator_uri is not None else (
-            self.config['orchestrator_uri'] if 'orchestrator_uri' in self.config else ''
-        )
-        normalized_uri = self._normalize_orchestrator_uri(raw_uri)
+    @staticmethod
+    def _normalize_orchestrator_uri(orchestrator_uri: str) -> str:
+        return MassBalanceDriver._normalize_server_uri(orchestrator_uri, label='orchestrator')
+
+    @staticmethod
+    def _normalize_prepare_uri(prepare_uri: str) -> str:
+        return MassBalanceDriver._normalize_server_uri(prepare_uri, label='prepare')
+
+    def _get_remote_client(
+            self,
+            uri: Optional[str],
+            uri_config_key: str,
+            username_config_key: str,
+            default_username: str,
+            label: str) -> Tuple[Client, str]:
+        raw_uri = uri if uri is not None else (self.config[uri_config_key] if uri_config_key in self.config else '')
+        normalized_uri = self._normalize_server_uri(raw_uri, label=label)
         host, port = normalized_uri.split(':', 1)
         client = Client(host, port=port)
-        username = self.config['orchestrator_username'] if 'orchestrator_username' in self.config else 'Orchestrator'
+        username = self.config[username_config_key] if username_config_key in self.config else default_username
         client.login(username)
-        self.config['orchestrator_uri'] = normalized_uri
+        self.config[uri_config_key] = normalized_uri
         return client, normalized_uri
+
+    def _get_orchestrator_client(self, orchestrator_uri: Optional[str] = None) -> Tuple[Client, str]:
+        return self._get_remote_client(
+            uri=orchestrator_uri,
+            uri_config_key='orchestrator_uri',
+            username_config_key='orchestrator_username',
+            default_username='Orchestrator',
+            label='orchestrator',
+        )
+
+    def _get_prepare_client(self, prepare_uri: Optional[str] = None) -> Tuple[Client, str]:
+        return self._get_remote_client(
+            uri=prepare_uri,
+            uri_config_key='prepare_uri',
+            username_config_key='prepare_username',
+            default_username='Prepare',
+            label='prepare',
+        )
 
     @staticmethod
     def _remote_get_config(client: Client, name: str) -> Any:
@@ -586,6 +618,17 @@ class MassBalanceDriver(MassBalanceBase, Driver):
         if meta.get('exit_state') == 'Error!':
             raise RuntimeError(meta.get('return_val'))
         return meta.get('return_val')
+
+    @staticmethod
+    def _remote_get_config_many(client: Client, cfg_keys: List[str]) -> Tuple[Dict[str, Any], Dict[str, str]]:
+        config_snapshot = {}
+        config_errors = {}
+        for key in cfg_keys:
+            try:
+                config_snapshot[key] = MassBalanceDriver._remote_get_config(client, key)
+            except Exception as e:
+                config_errors[key] = str(e)
+        return config_snapshot, config_errors
 
     @Driver.unqueued()
     def get_orchestrator_context(self, orchestrator_uri: Optional[str] = None):
@@ -603,16 +646,7 @@ class MassBalanceDriver(MassBalanceBase, Driver):
             'instrument',
             'max_sample_transmission',
         ]
-        config_snapshot = {}
-        try:
-            for key in cfg_keys:
-                config_snapshot[key] = self._remote_get_config(client, key)
-        except Exception as e:
-            return {
-                'success': False,
-                'error': f"Failed to fetch orchestrator config: {e}",
-                'orchestrator_uri': normalized_uri,
-            }
+        config_snapshot, config_errors = self._remote_get_config_many(client, cfg_keys)
 
         kw_meta = []
         try:
@@ -647,6 +681,52 @@ class MassBalanceDriver(MassBalanceBase, Driver):
             },
             'health': health,
             'process_sample_kwargs': kw_meta,
+            'config_errors': config_errors,
+        }
+
+    @Driver.unqueued()
+    def get_prepare_context(self, prepare_uri: Optional[str] = None):
+        try:
+            client, normalized_uri = self._get_prepare_client(prepare_uri)
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+        cfg_keys = [
+            'prepare_volume',
+            'data_tag',
+            'AL_components',
+            'composition_format',
+            'prep_targets',
+            'mixing_locations',
+            'catch_volume',
+            'mock_mode',
+        ]
+        config_snapshot, config_errors = self._remote_get_config_many(client, cfg_keys)
+        prep_targets = config_snapshot.get('prep_targets')
+        mixing_locations = config_snapshot.get('mixing_locations')
+        health = {
+            'prep_targets_count': len(prep_targets) if isinstance(prep_targets, list) else None,
+            'mixing_locations_count': len(mixing_locations) if isinstance(mixing_locations, list) else None,
+        }
+
+        return {
+            'success': True,
+            'prepare_uri': normalized_uri,
+            'config': {
+                'prepare_volume': config_snapshot.get('prepare_volume'),
+                'data_tag': config_snapshot.get('data_tag'),
+                'AL_components': config_snapshot.get('AL_components'),
+                'composition_format': config_snapshot.get('composition_format'),
+                'prep_targets': prep_targets,
+                'mixing_locations': mixing_locations,
+                'catch_volume': config_snapshot.get('catch_volume'),
+                'mock_mode': config_snapshot.get('mock_mode'),
+            },
+            'health': health,
+            'prepare_kwargs': [
+                {'name': 'dest', 'default': None},
+            ],
+            'config_errors': config_errors,
         }
 
     @Driver.queued()
@@ -731,6 +811,80 @@ class MassBalanceDriver(MassBalanceBase, Driver):
             'count': len(task_uuids),
             'task_uuids': task_uuids,
             'orchestrator_uri': normalized_uri,
+            'sample_mode': sample_mode,
+            'config_overrides_applied': cleaned_overrides,
+        }
+
+    @Driver.queued()
+    def submit_prepare_grid(
+            self,
+            sample_mode: str = 'balanced_all',
+            samples: Optional[List[Dict]] = None,
+            prepare_kwargs: Optional[Dict] = None,
+            config_overrides: Optional[Dict] = None,
+            prepare_uri: Optional[str] = None):
+        if isinstance(samples, str):
+            import json
+            samples = json.loads(samples)
+        if isinstance(prepare_kwargs, str):
+            import json
+            prepare_kwargs = json.loads(prepare_kwargs)
+        if isinstance(config_overrides, str):
+            import json
+            config_overrides = json.loads(config_overrides)
+
+        samples = samples or []
+        prepare_kwargs = prepare_kwargs or {}
+        config_overrides = config_overrides or {}
+
+        if sample_mode not in ('balanced_all', 'plot_subsample', 'no_sample'):
+            return {'success': False, 'error': f'Invalid sample_mode: {sample_mode}'}
+        if sample_mode == 'no_sample':
+            return {'success': False, 'error': 'Prepare submissions require at least one sample.'}
+
+        samples_to_submit = [s for s in samples if isinstance(s, dict)]
+        if len(samples_to_submit) == 0:
+            return {'success': False, 'error': 'No samples selected for submission.'}
+
+        try:
+            client, normalized_uri = self._get_prepare_client(prepare_uri)
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+        cleaned_overrides = {}
+        for k, v in config_overrides.items():
+            if v is not None:
+                cleaned_overrides[k] = v
+
+        if cleaned_overrides:
+            try:
+                set_meta = client.enqueue(task_name='set_config', interactive=True, **cleaned_overrides)
+                if set_meta.get('exit_state') == 'Error!':
+                    return {
+                        'success': False,
+                        'error': f"Failed to set prepare config overrides: {set_meta.get('return_val')}"
+                    }
+            except Exception as e:
+                return {'success': False, 'error': f"Failed to apply config overrides: {e}"}
+
+        task_uuids = []
+        try:
+            for sample in samples_to_submit:
+                task = {'task_name': 'prepare', 'target': sample}
+                for k, v in prepare_kwargs.items():
+                    if k in ('task_name', 'target'):
+                        continue
+                    task[k] = v
+                task_uuid = client.enqueue(interactive=False, **task)
+                task_uuids.append(task_uuid)
+        except Exception as e:
+            return {'success': False, 'error': f"Failed while enqueuing prepare tasks: {e}"}
+
+        return {
+            'success': True,
+            'count': len(task_uuids),
+            'task_uuids': task_uuids,
+            'prepare_uri': normalized_uri,
             'sample_mode': sample_mode,
             'config_overrides_applied': cleaned_overrides,
         }

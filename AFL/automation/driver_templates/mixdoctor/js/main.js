@@ -3007,6 +3007,11 @@ function setSubmitContextStatus(msg, isError) {
     el.style.color = isError ? '#dc3545' : '#6c757d';
 }
 
+function getSubmitDestinationMode() {
+    var selected = document.querySelector('input[name="submit-destination-mode"]:checked');
+    return selected ? selected.value : 'orchestrator';
+}
+
 function getSubmitSampleMode() {
     var selected = document.querySelector('input[name="submit-sample-mode"]:checked');
     return selected ? selected.value : 'balanced_all';
@@ -3113,6 +3118,23 @@ function collectProcessSampleKwargsFromUI() {
     return kwargs;
 }
 
+function collectPrepareKwargsFromUI() {
+    var kwargs = {};
+    var dest = document.getElementById('submit-prepare-kw-dest').value.trim();
+    if (dest) kwargs.dest = dest;
+
+    var advanced = parseJsonText(document.getElementById('submit-prepare-kw-advanced-json').value, 'prepare advanced kwargs');
+    if (advanced !== null) {
+        if (typeof advanced !== 'object' || Array.isArray(advanced)) {
+            throw new Error('Prepare advanced kwargs JSON must be an object.');
+        }
+        Object.keys(advanced).forEach(function(k) {
+            kwargs[k] = advanced[k];
+        });
+    }
+    return kwargs;
+}
+
 function collectConfigOverridesFromUI() {
     var overrides = {};
     if (document.getElementById('submit-override-prepare-volume-enabled').checked) {
@@ -3144,17 +3166,44 @@ function collectConfigOverridesFromUI() {
     return overrides;
 }
 
+function syncSubmitDestinationUI() {
+    var mode = getSubmitDestinationMode();
+    var orchestratorSection = document.getElementById('submit-orchestrator-section');
+    var prepareSection = document.getElementById('submit-prepare-section');
+    var processKwargsSection = document.getElementById('submit-process-kwargs-section');
+    var prepareKwargsSection = document.getElementById('submit-prepare-kwargs-section');
+    var noSampleOption = document.getElementById('submit-no-sample-option');
+    var refreshBtn = document.getElementById('submit-refresh-context-btn');
+
+    if (orchestratorSection) orchestratorSection.style.display = mode === 'orchestrator' ? '' : 'none';
+    if (prepareSection) prepareSection.style.display = mode === 'prepare' ? '' : 'none';
+    if (processKwargsSection) processKwargsSection.style.display = mode === 'orchestrator' ? '' : 'none';
+    if (prepareKwargsSection) prepareKwargsSection.style.display = mode === 'prepare' ? '' : 'none';
+    if (noSampleOption) noSampleOption.style.display = mode === 'orchestrator' ? '' : 'none';
+    if (refreshBtn) refreshBtn.textContent = mode === 'orchestrator' ? 'Refresh Orchestrator' : 'Refresh Prepare Server';
+
+    if (mode === 'prepare') {
+        var selected = document.querySelector('input[name="submit-sample-mode"]:checked');
+        if (selected && selected.value === 'no_sample') {
+            var fallback = document.querySelector('input[name="submit-sample-mode"][value="balanced_all"]');
+            if (fallback) fallback.checked = true;
+        }
+    }
+}
+
 function renderSubmitPreview() {
     var listEl = document.getElementById('submit-preview-list');
     var titleEl = document.getElementById('submit-preview-title');
     if (!listEl || !titleEl) return;
     var mode = getSubmitSampleMode();
+    var destinationMode = getSubmitDestinationMode();
+    var destinationVerb = destinationMode === 'prepare' ? 'prepare' : 'process_sample';
     var cards = [];
     submitPreviewEntries = [];
     if (mode === 'no_sample') {
         cards.push({
             name: 'No Sample',
-            summary: 'Will call process_sample with an empty sample payload.',
+            summary: 'Will call ' + destinationVerb + ' with an empty sample payload.',
             componentHtml: '<span class="component-chip">predict/enqueue flow only</span>'
         });
     } else {
@@ -3222,6 +3271,9 @@ function applySubmitContextToUI(ctx) {
     if (ctx.orchestrator_uri) {
         document.getElementById('submit-orchestrator-uri').value = ctx.orchestrator_uri;
     }
+    if (ctx.prepare_uri) {
+        document.getElementById('submit-prepare-uri').value = ctx.prepare_uri;
+    }
     var cfg = ctx.config || {};
     if (cfg.prepare_volume !== undefined && cfg.prepare_volume !== null) {
         document.getElementById('submit-override-prepare-volume').value = String(cfg.prepare_volume);
@@ -3246,16 +3298,25 @@ function applySubmitContextToUI(ctx) {
     if (health.client_has_prep !== undefined) statusParts.push('prep=' + (health.client_has_prep ? 'ok' : 'missing'));
     if (health.client_has_agent !== undefined) statusParts.push('agent=' + (health.client_has_agent ? 'ok' : 'missing'));
     if (health.instrument_count !== undefined) statusParts.push('instrument=' + health.instrument_count);
+    if (health.prep_targets_count !== undefined) statusParts.push('prep_targets=' + health.prep_targets_count);
+    if (health.mixing_locations_count !== undefined) statusParts.push('mixing_locations=' + health.mixing_locations_count);
     setSubmitContextStatus(statusParts.join(' | '), !(ctx.success !== false));
 }
 
 async function loadSubmitContext() {
-    var uri = document.getElementById('submit-orchestrator-uri').value.trim();
+    var destinationMode = getSubmitDestinationMode();
+    var uri = destinationMode === 'orchestrator'
+        ? document.getElementById('submit-orchestrator-uri').value.trim()
+        : document.getElementById('submit-prepare-uri').value.trim();
+    var destinationLabel = destinationMode === 'orchestrator' ? 'orchestrator' : 'prepare server';
     setSubmitStatus('');
-    setSubmitContextStatus('Loading orchestrator context...', false);
+    setSubmitContextStatus('Loading ' + destinationLabel + ' context...', false);
     try {
-        var params = { r: 'get_orchestrator_context' };
-        if (uri) params.orchestrator_uri = uri;
+        var params = { r: destinationMode === 'orchestrator' ? 'get_orchestrator_context' : 'get_prepare_context' };
+        if (uri) {
+            if (destinationMode === 'orchestrator') params.orchestrator_uri = uri;
+            else params.prepare_uri = uri;
+        }
         var resp = await queryDriver(params);
         if (!resp.ok) {
             throw new Error('context request failed');
@@ -3267,17 +3328,18 @@ async function loadSubmitContext() {
             return;
         }
         applySubmitContextToUI(data);
-        setSubmitStatus('Orchestrator context refreshed.', false);
+        setSubmitStatus((destinationMode === 'orchestrator' ? 'Orchestrator' : 'Prepare server') + ' context refreshed.', false);
     } catch (e) {
         setSubmitContextStatus('Failed: ' + e.message, true);
     }
 }
 
-async function submitSamplesToOrchestrator() {
+async function submitSamples() {
+    var destinationMode = getSubmitDestinationMode();
     var mode = getSubmitSampleMode();
     var sampleEntries = collectSubmitSourceEntries();
     var samples = [];
-    if (mode === 'no_sample') {
+    if (mode === 'no_sample' && destinationMode === 'orchestrator') {
         samples = [{}];
     } else {
         samples = sampleEntries.map(function(entry, idx) {
@@ -3289,24 +3351,39 @@ async function submitSamplesToOrchestrator() {
         return;
     }
 
-    var kwargs;
+    var processSampleKwargs = {};
+    var prepareKwargs = {};
     var overrides;
     try {
-        kwargs = collectProcessSampleKwargsFromUI();
+        if (destinationMode === 'orchestrator') {
+            processSampleKwargs = collectProcessSampleKwargsFromUI();
+        } else {
+            prepareKwargs = collectPrepareKwargsFromUI();
+        }
         overrides = collectConfigOverridesFromUI();
     } catch (e) {
         showStatus(e.message, true);
         return;
     }
 
-    if (mode === 'no_sample' && !kwargs.predict_next && !kwargs.enqueue_next) {
-        showStatus('No Sample mode requires predict_next or enqueue_next.', true);
+    if (destinationMode === 'orchestrator') {
+        if (mode === 'no_sample' && !processSampleKwargs.predict_next && !processSampleKwargs.enqueue_next) {
+            showStatus('No Sample mode requires predict_next or enqueue_next.', true);
+            return;
+        }
+    } else if (mode === 'no_sample') {
+        showStatus('Prepare submissions require at least one sample.', true);
         return;
     }
 
     var orchestratorUri = document.getElementById('submit-orchestrator-uri').value.trim();
-    if (!orchestratorUri) {
+    var prepareUri = document.getElementById('submit-prepare-uri').value.trim();
+    if (destinationMode === 'orchestrator' && !orchestratorUri) {
         showStatus('Orchestrator URI is required.', true);
+        return;
+    }
+    if (destinationMode === 'prepare' && !prepareUri) {
+        showStatus('Prepare server URI is required.', true);
         return;
     }
 
@@ -3315,14 +3392,26 @@ async function submitSamplesToOrchestrator() {
     setSubmitStatus('Submitting...', false);
     try {
         var token = await login();
-        var payload = {
-            task_name: 'submit_orchestrator_grid',
-            orchestrator_uri: orchestratorUri,
-            sample_mode: mode,
-            samples: samples,
-            process_sample_kwargs: kwargs,
-            config_overrides: overrides
-        };
+        var payload;
+        if (destinationMode === 'orchestrator') {
+            payload = {
+                task_name: 'submit_orchestrator_grid',
+                orchestrator_uri: orchestratorUri,
+                sample_mode: mode,
+                samples: samples,
+                process_sample_kwargs: processSampleKwargs,
+                config_overrides: overrides
+            };
+        } else {
+            payload = {
+                task_name: 'submit_prepare_grid',
+                prepare_uri: prepareUri,
+                sample_mode: mode,
+                samples: samples,
+                prepare_kwargs: prepareKwargs,
+                config_overrides: overrides
+            };
+        }
         var r = await authedFetch('/enqueue', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -3338,11 +3427,13 @@ async function submitSamplesToOrchestrator() {
             showStatus('Submission failed.', true);
             return;
         }
-        setSubmitStatus(
-            'Submitted ' + (result.count || 0) + ' task(s) to orchestrator.',
-            false
-        );
-        showStatus('Orchestrator submission complete.');
+        if (destinationMode === 'orchestrator') {
+            setSubmitStatus('Submitted ' + (result.count || 0) + ' task(s) to orchestrator.', false);
+            showStatus('Orchestrator submission complete.');
+        } else {
+            setSubmitStatus('Submitted ' + (result.count || 0) + ' task(s) to prepare server.', false);
+            showStatus('Prepare server submission complete.');
+        }
     } catch (e) {
         setSubmitStatus('Submit error: ' + e.message, true);
         showStatus('Submit error: ' + e.message, true);
@@ -3362,7 +3453,14 @@ function initSubmitTab() {
         loadSubmitContext();
     });
     document.getElementById('submit-run-btn').addEventListener('click', function() {
-        submitSamplesToOrchestrator();
+        submitSamples();
+    });
+    document.querySelectorAll('input[name="submit-destination-mode"]').forEach(function(el) {
+        el.addEventListener('change', function() {
+            syncSubmitDestinationUI();
+            renderSubmitPreview();
+            loadSubmitContext();
+        });
     });
 
     document.querySelectorAll('input[name="submit-sample-mode"]').forEach(function(el) {
@@ -3373,6 +3471,8 @@ function initSubmitTab() {
         'submit-kw-predict-next', 'submit-kw-enqueue-next',
         'submit-kw-name', 'submit-kw-sample-uuid', 'submit-kw-al-campaign-name', 'submit-kw-al-uuid',
         'submit-kw-predict-combine', 'submit-kw-advanced-json',
+        'submit-prepare-kw-dest', 'submit-prepare-kw-advanced-json',
+        'submit-orchestrator-uri', 'submit-prepare-uri',
         'submit-override-prepare-volume-enabled', 'submit-override-data-tag-enabled',
         'submit-override-al-components-enabled', 'submit-override-composition-format-enabled',
         'submit-override-prepare-volume', 'submit-override-data-tag',
@@ -3388,6 +3488,7 @@ function initSubmitTab() {
     if (!plotSweepState.loaded) {
         loadPlotSweepData();
     }
+    syncSubmitDestinationUI();
     renderSubmitPreview();
     loadSubmitContext();
 }

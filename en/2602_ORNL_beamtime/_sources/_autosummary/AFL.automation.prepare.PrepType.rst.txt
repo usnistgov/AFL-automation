@@ -1,0 +1,21 @@
+AFL.automation.prepare.PrepType
+===============================
+
+.. automodule:: AFL.automation.prepare.PrepType
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      makeRegistar
+      prepRegistrar
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Enum
+      PrepType
+      auto
+   

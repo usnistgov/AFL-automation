@@ -1,6 +1,6 @@
 import itertools
 import warnings
-from typing import List, Optional, Dict, Set
+from typing import List, Optional, Dict, Set, Callable, Any, Iterator
 
 import numpy as np
 from scipy.optimize import lsq_linear, Bounds
@@ -52,7 +52,7 @@ def _make_balanced_target(mass_transfers, target):
 
 def _diagnose(
     target,
-    transfers: Dict,
+    transfers: np.ndarray,
     differences: np.ndarray,
     components: List[str],
     stocks: List[Solution],
@@ -61,6 +61,8 @@ def _diagnose(
     mass_fraction_matrix: np.ndarray,
     target_masses: np.ndarray,
     success: bool,
+    max_stock_fractions: Optional[np.ndarray] = None,
+    missing_component_mask: Optional[np.ndarray] = None,
 ) -> BalanceDiagnosis:
     """Analyse a balance result and return a structured diagnosis.
 
@@ -75,12 +77,16 @@ def _diagnose(
         return BalanceDiagnosis(success=True, component_errors=component_errors)
 
     details = []
+    if max_stock_fractions is None:
+        max_stock_fractions = np.max(mass_fraction_matrix, axis=1)
+    if missing_component_mask is None:
+        missing_component_mask = max_stock_fractions == 0.0
 
     # --- Check 1: MISSING_STOCK_COMPONENT ---
     # A required component is absent from every stock — cannot be achieved regardless
     # of volumes or concentrations.
     for i, comp in enumerate(components):
-        if target_masses[i] > 1e-12 and np.all(mass_fraction_matrix[i, :] == 0.0):
+        if target_masses[i] > 1e-12 and bool(missing_component_mask[i]):
             details.append(FailureDetail(
                 code=FailureCode.MISSING_STOCK_COMPONENT,
                 description=(
@@ -99,7 +105,7 @@ def _diagnose(
         for i, comp in enumerate(components):
             if target_masses[i] < 1e-12:
                 continue
-            max_stock_frac = float(np.max(mass_fraction_matrix[i, :]))
+            max_stock_frac = float(max_stock_fractions[i])
             target_frac = float(target_fracs[i])
             if target_frac > max_stock_frac + 1e-9:
                 best_stock_idx = int(np.argmax(mass_fraction_matrix[i, :]))
@@ -157,7 +163,7 @@ def _diagnose(
     #     the minimum, so it is forced up, but the constraint is still binding).
     failed_comps = {components[i] for i in range(len(components)) if abs(differences[i]) >= tol}
     for idx, stock in enumerate(stocks):
-        mass_val = float(transfers[stock].split()[0])
+        mass_val = float(transfers[idx])
         lb_val = float(bounds.lb[idx])
         if mass_val == 0.0 and lb_val > 0.0:
             # Case (a): stock excluded entirely.
@@ -218,7 +224,7 @@ def _diagnose(
         contaminating = [
             stock.name
             for idx, stock in enumerate(stocks)
-            if float(transfers[stock].split()[0]) > 0.0 and mass_fraction_matrix[i, idx] > 0.0
+            if float(transfers[idx]) > 0.0 and mass_fraction_matrix[i, idx] > 0.0
         ]
         if contaminating:
             details.append(FailureDetail(
@@ -237,26 +243,27 @@ def _diagnose(
     # Lists every component whose relative error exceeds the tolerance.
     tol_exceeded = [components[i] for i in range(len(components)) if abs(differences[i]) >= tol]
     if tol_exceeded:
+        tol_exceeded_idx = [i for i in range(len(components)) if abs(differences[i]) >= tol]
         details.append(FailureDetail(
             code=FailureCode.TOLERANCE_EXCEEDED,
             description=f"{len(tol_exceeded)} component(s) exceed {tol * 100:.1f}% tolerance.",
             affected_components=tol_exceeded,
-            data={comp: float(differences[components.index(comp)]) for comp in tol_exceeded},
+            data={components[i]: float(differences[i]) for i in tol_exceeded_idx},
         ))
 
     return BalanceDiagnosis(success=False, details=details, component_errors=component_errors)
 
 
-def _balance(
+def _iter_balance_candidates(
     mass_fraction_matrix: np.ndarray,
     target_masses: np.ndarray,
     bounds: Bounds,
     stocks: List[Solution],
     near_bound_tol: float = 0.1,
-) -> List[np.ndarray]:
+) -> Iterator[np.ndarray]:
     result = lsq_linear(mass_fraction_matrix, target_masses, bounds=bounds)
     base_mass_transfer = np.array(result.x, dtype=float)
-    mass_transfers = [base_mass_transfer]
+    yield base_mass_transfer
 
     # Identify stocks that the solver pushed to or near their lower bound.
     # These are candidates for exclusion (zeroing out) since the solver
@@ -293,9 +300,17 @@ def _balance(
             for reduced_idx, stock_idx in enumerate(keep_indices):
                 adjusted_transfer[stock_idx] = float(reduced_result.x[reduced_idx])
 
-            mass_transfers.append(adjusted_transfer)
+            yield adjusted_transfer
 
-    return mass_transfers
+
+def _balance(
+    mass_fraction_matrix: np.ndarray,
+    target_masses: np.ndarray,
+    bounds: Bounds,
+    stocks: List[Solution],
+    near_bound_tol: float = 0.1,
+) -> List[np.ndarray]:
+    return list(_iter_balance_candidates(mass_fraction_matrix, target_masses, bounds, stocks, near_bound_tol))
 
 
 def _compute_differences(
@@ -431,29 +446,47 @@ class MassBalanceBase:
                 lines.append("")
         return "\n".join(lines).rstrip()
 
-    def balance(self, tol=0.05, return_report=False):
+    def balance(self, tol=0.05, return_report=False, progress_callback: Optional[Callable[..., Any]] = None):
         if any([stock.location is None for stock in self.stocks]):
             raise ValueError("Some stocks don't have a location specified. This should be specified when the stocks are instantiated")
         self._set_bounds()
         components = list(self.components)
         mfm = np.zeros((len(components), len(self.stocks)))
         _extract_mass_fractions(self.stocks, components, mfm)
+        max_stock_fractions = np.max(mfm, axis=1) if len(self.stocks) > 0 else np.zeros(len(components))
+        missing_component_mask = max_stock_fractions == 0.0
 
         target_mass_matrix = np.zeros((len(self.targets), len(components)))
         for idx, target in enumerate(self.targets):
             _extract_masses(target, components, array=target_mass_matrix[idx])
 
+        if progress_callback is not None:
+            progress_callback(
+                stage='start',
+                completed=0,
+                total=len(self.targets),
+                target_idx=None,
+                target_name=None,
+            )
+
         self.balanced = []
         for target_idx, target in enumerate(self.targets):
+            if progress_callback is not None:
+                progress_callback(
+                    stage='target_start',
+                    completed=target_idx,
+                    total=len(self.targets),
+                    target_idx=target_idx,
+                    target_name=target.name,
+                )
             target_masses = target_mass_matrix[target_idx]
-            mass_transfers = _balance(mfm, target_masses, self.bounds, self.stocks)
             best_candidate = None
             best_score = None
             any_success = False
 
             total_target_mass = float(np.sum(target_masses))
 
-            for transfers in mass_transfers:
+            for transfers in _iter_balance_candidates(mfm, target_masses, self.bounds, self.stocks):
                 balanced_masses = mfm @ transfers
                 differences = _compute_differences(
                     target_masses=target_masses,
@@ -474,16 +507,15 @@ class MassBalanceBase:
 
                 if success:
                     any_success = True
+                if best_score == 0.0:
+                    break
 
             if best_candidate is None:
                 raise RuntimeError("Mass balance produced no candidates; this should not happen.")
 
-            transfers_dict = _make_transfer_dict(self.stocks, best_candidate['transfers'])
-            balanced_target = _make_balanced_target(transfers_dict, target)
-
             diagnosis = _diagnose(
                 target=target,
-                transfers=transfers_dict,
+                transfers=best_candidate['transfers'],
                 differences=best_candidate['difference'],
                 components=components,
                 stocks=self.stocks,
@@ -492,6 +524,8 @@ class MassBalanceBase:
                 mass_fraction_matrix=mfm,
                 target_masses=target_masses,
                 success=best_candidate['success'],
+                max_stock_fractions=max_stock_fractions,
+                missing_component_mask=missing_component_mask,
             )
 
             if not any_success:
@@ -505,6 +539,8 @@ class MassBalanceBase:
                     'diagnosis': diagnosis,
                 })
             else:
+                transfers_dict = _make_transfer_dict(self.stocks, best_candidate['transfers'])
+                balanced_target = _make_balanced_target(transfers_dict, target)
                 self.balanced.append({
                     'target': target,
                     'balanced_target': balanced_target,
@@ -513,7 +549,24 @@ class MassBalanceBase:
                     'success': best_candidate['success'],
                     'diagnosis': diagnosis,
                 })
+            if progress_callback is not None:
+                progress_callback(
+                    stage='target_end',
+                    completed=target_idx + 1,
+                    total=len(self.targets),
+                    target_idx=target_idx,
+                    target_name=target.name,
+                    success=bool(any_success),
+                )
 
+        if progress_callback is not None:
+            progress_callback(
+                stage='done',
+                completed=len(self.targets),
+                total=len(self.targets),
+                target_idx=None,
+                target_name=None,
+            )
         if return_report:
             return self.balance_report()
 

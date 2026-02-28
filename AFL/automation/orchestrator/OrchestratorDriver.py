@@ -347,17 +347,39 @@ class OrchestratorDriver(Driver):
         else:
             self.AL_campaign_name = AL_campaign_name
        
-        # Ensure sample has total_volume set
-        sample_target = sample.copy()
-        if 'total_volume' not in sample_target:
-            sample_target['total_volume'] = self.config['prepare_volume']
-        
-        # Ensure sample has name set
-        if 'name' not in sample_target:
-            sample_target['name'] = self.sample_name
+        if sample is None:
+            sample = {}
+        if not isinstance(sample, dict):
+            raise TypeError(f"sample must be a dict, got {type(sample).__name__}")
 
-        print(f'Sample: {sample_target}')
-        if sample_target: # sample is not empty
+        # Determine whether this request carries an actual composition to prepare.
+        composition_keys = (
+            'masses', 'volumes', 'concentrations', 'mass_fractions',
+            'volume_fractions', 'molarities', 'molalities'
+        )
+        has_composition = False
+        for key in composition_keys:
+            if key not in sample:
+                continue
+            val = sample.get(key)
+            if isinstance(val, dict) and len(val) == 0:
+                continue
+            if val is None:
+                continue
+            has_composition = True
+            break
+
+        if has_composition:
+            # Ensure sample has total_volume set
+            sample_target = sample.copy()
+            if 'total_volume' not in sample_target:
+                sample_target['total_volume'] = self.config['prepare_volume']
+
+            # Ensure sample has name set
+            if 'name' not in sample_target:
+                sample_target['name'] = self.sample_name
+
+            print(f'Sample: {sample_target}')
             # Check if the requested composition is feasible
             feasibility_result = self.get_client('prep').enqueue(
                 task_name='is_feasible',
@@ -374,6 +396,10 @@ class OrchestratorDriver(Driver):
                 name=self.sample_name,
                 sample=sample_target,
                 calibrate_sensor=calibrate_sensor
+            )
+        else:
+            self.update_status(
+                'No sample composition provided; skipping prep/measurement and running predict/enqueue flow only.'
             )
 
         if enqueue_next or predict_next:

@@ -32,6 +32,7 @@ Potential Reasons:
 
 class Solution(Context):
     _stack_name = "stocks"
+    _component_init_keys = {'name', 'mass', 'volume', 'density', 'formula', 'sld', 'uid', 'solute'}
 
     def __init__(
         self,
@@ -472,9 +473,11 @@ class Solution(Context):
                 solute = False
 
             try:
-                self.components[name] = Component(
-                    solute=solute, **mixdb.get_component(name)
-                )
+                component_data = mixdb.get_component(name)
+                # Ignore unexpected DB fields so control/query keys do not break
+                # Component initialization.
+                component_data = {k: v for k, v in component_data.items() if k in self._component_init_keys}
+                self.components[name] = Component(solute=solute, **component_data)
             except NotFoundError:
                 raise
 

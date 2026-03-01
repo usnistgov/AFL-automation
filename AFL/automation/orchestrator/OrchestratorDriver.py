@@ -4,7 +4,7 @@ import pathlib
 import shutil
 import traceback
 import uuid
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any, Tuple
 import warnings
 import os
 import time
@@ -82,6 +82,7 @@ class OrchestratorDriver(Driver):
     defaults['prepare_volume'] = '1000 ul'
     defaults['empty_prefix'] = 'MT-'
     defaults['composition_format'] = 'mass_fraction'
+    defaults['next_samples_variable'] = 'next_samples'
     def __init__(
             self,
             camera_urls: Optional[List[str]] = None,
@@ -407,11 +408,12 @@ class OrchestratorDriver(Driver):
 
         # Look away ... here be dragons ...
         if enqueue_next:
-            ag_result = self.get_client('agent').retrieve_obj(uid=self.uuid['agent'])
-            next_samples = ag_result['next_samples']
-            
-            # Convert next_samples to Solution-compatible format
-            new_sample = next_samples.to_pandas().squeeze().to_dict()
+            entry_id, entry = self._get_latest_predict_tiled_entry(sample_uuid=self.uuid['sample'])
+            new_sample = self._extract_next_sample_from_tiled_entry(
+                entry=entry,
+                variable_name=self.config['next_samples_variable'],
+                entry_id=entry_id,
+            )
             # Convert to concentrations format for Solution
             new_sample_dict = {
                 'concentrations': {k: f"{v} mg/ml" for k, v in new_sample.items()},
@@ -434,6 +436,126 @@ class OrchestratorDriver(Driver):
 
             queue_loc = self._queue.qsize() #append at end of queue
             self._queue.put(package,queue_loc)
+
+    @staticmethod
+    def _get_nested_metadata_value(metadata: Dict[str, Any], path: str) -> Any:
+        current: Any = metadata
+        for part in path.split('.'):
+            if not isinstance(current, dict):
+                return None
+            if part not in current:
+                return None
+            current = current[part]
+        return current
+
+    def _iter_predict_entries_for_sample(self, sample_uuid: str) -> List[Tuple[str, Any]]:
+        """Find predict-task tiled entries for a sample UUID using metadata key variants."""
+        sample_uuid_fields = ('sample_uuid', 'attrs.sample_uuid', 'attr.sample_uuid')
+        task_name_fields = ('task_name', 'attrs.task_name', 'attr.task_name')
+
+        candidate_entries: Dict[str, Any] = {}
+        query_errors = []
+
+        for sample_field in sample_uuid_fields:
+            for task_field in task_name_fields:
+                try:
+                    results = (
+                        self.tiled_client
+                        .search(Eq(sample_field, sample_uuid))
+                        .search(Eq(task_field, 'predict'))
+                    )
+                    for entry_id, entry in results.items():
+                        candidate_entries[entry_id] = entry
+                except Exception as exc:
+                    query_errors.append(str(exc))
+                    continue
+
+        if candidate_entries:
+            return list(candidate_entries.items())
+
+        error_msg = (
+            f"No predict entries found in Tiled for sample_uuid={sample_uuid} "
+            f"using keys {sample_uuid_fields} and task keys {task_name_fields}."
+        )
+        if query_errors:
+            error_msg = f"{error_msg} Query errors: {' | '.join(query_errors)}"
+        self.app.logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    def _entry_sort_timestamp(self, entry: Any) -> datetime.datetime:
+        metadata = dict(getattr(entry, 'metadata', {}) or {})
+        timestamp_paths = (
+            'meta.ended',
+            'attrs.meta.ended',
+            'attr.meta.ended',
+            'meta.started',
+            'attrs.meta.started',
+            'attr.meta.started',
+            'timestamp',
+            'attrs.timestamp',
+            'attr.timestamp',
+        )
+        for path in timestamp_paths:
+            value = self._get_nested_metadata_value(metadata, path)
+            if isinstance(value, datetime.datetime):
+                return value
+            if isinstance(value, str):
+                try:
+                    return datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
+                except ValueError:
+                    continue
+        return datetime.datetime.min
+
+    def _get_latest_predict_tiled_entry(self, sample_uuid: str) -> Tuple[str, Any]:
+        entries = self._iter_predict_entries_for_sample(sample_uuid=sample_uuid)
+        entries_with_index = list(enumerate(entries))
+        latest = max(
+            entries_with_index,
+            key=lambda indexed: (
+                self._entry_sort_timestamp(indexed[1][1]),
+                indexed[0],
+            )
+        )
+        return latest[1]
+
+    def _extract_next_sample_from_tiled_entry(self, entry: Any, variable_name: str, entry_id: str) -> Dict[str, Any]:
+        try:
+            dataset = entry.read()
+        except Exception as exc:
+            error_msg = f"Failed to read tiled predict entry '{entry_id}': {exc}"
+            self.app.logger.error(error_msg)
+            raise ValueError(error_msg) from exc
+
+        if not isinstance(dataset, xr.Dataset):
+            error_msg = (
+                f"Predict tiled entry '{entry_id}' did not return an xarray.Dataset "
+                f"(got {type(dataset).__name__})."
+            )
+            self.app.logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        if variable_name not in dataset.data_vars:
+            error_msg = (
+                f"Predict tiled entry '{entry_id}' is missing data variable '{variable_name}'. "
+                f"Available variables: {list(dataset.data_vars.keys())}"
+            )
+            self.app.logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        variable = dataset[variable_name]
+        extracted = variable.to_pandas().squeeze()
+        if isinstance(extracted, dict):
+            return extracted
+        if hasattr(extracted, 'to_dict'):
+            extracted = extracted.to_dict()
+        if not isinstance(extracted, dict):
+            error_msg = (
+                f"Could not convert '{variable_name}' in tiled entry '{entry_id}' to dict; "
+                f"got {type(extracted).__name__}."
+            )
+            self.app.logger.error(error_msg)
+            raise ValueError(error_msg)
+        return extracted
 
     def make_and_measure(
             self,

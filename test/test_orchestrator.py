@@ -14,6 +14,7 @@ import json
 import tempfile
 import pathlib
 from unittest.mock import Mock, patch, MagicMock
+import xarray as xr
 
 from AFL.automation.orchestrator.OrchestratorDriver import OrchestratorDriver
 
@@ -379,6 +380,215 @@ class TestOrchestratorDriverDefaults:
     def test_default_composition_format_is_mass_fraction(self):
         """Test that composition_format defaults to mass_fraction"""
         assert OrchestratorDriver.defaults['composition_format'] == 'mass_fraction'
+
+    def test_default_next_samples_variable(self):
+        """Test that next_samples_variable defaults to next_samples"""
+        assert OrchestratorDriver.defaults['next_samples_variable'] == 'next_samples'
+
+
+class _FakeTiledResults:
+    def __init__(self, entries):
+        self._entries = entries
+
+    def search(self, query):
+        key = query.key
+        value = query.value
+        filtered = {}
+        for entry_id, entry in self._entries.items():
+            metadata = dict(getattr(entry, 'metadata', {}) or {})
+            current = metadata
+            found = True
+            for part in key.split('.'):
+                if not isinstance(current, dict) or part not in current:
+                    found = False
+                    break
+                current = current[part]
+            if found and current == value:
+                filtered[entry_id] = entry
+        return _FakeTiledResults(filtered)
+
+    def items(self):
+        return list(self._entries.items())
+
+
+class _FakeTiledEntry:
+    def __init__(self, metadata, dataset):
+        self.metadata = metadata
+        self._dataset = dataset
+
+    def read(self):
+        return self._dataset
+
+
+class TestOrchestratorDriverPredictFromTiled:
+    def _driver_with_minimal_config(self):
+        driver = OrchestratorDriver(overrides={
+            'client': {
+                'load': 'localhost:5000',
+                'prep': 'localhost:5001',
+                'agent': 'localhost:5002',
+            },
+            'instrument': [
+                {
+                    'name': 'inst1',
+                    'client_name': 'inst_client',
+                    'measure_base_kw': {},
+                    'empty_base_kw': {},
+                    'concat_dim': 'sample',
+                }
+            ],
+            'ternary': False,
+            'data_tag': 'test',
+            'components': [],
+            'AL_components': [],
+            'snapshot_directory': '/tmp',
+            'max_sample_transmission': 0.6,
+            'mix_order': [],
+            'camera_urls': [],
+            'composition_format': 'mass_fraction',
+            'next_samples_variable': 'next_samples',
+        })
+        driver.app = Mock()
+        driver.app.logger = Mock()
+        return driver
+
+    def test_get_latest_predict_entry_matches_sample_uuid(self):
+        driver = self._driver_with_minimal_config()
+        ds = xr.Dataset({'next_samples': ('component', [1.0])}, coords={'component': ['A']})
+        entry = _FakeTiledEntry(
+            metadata={
+                'sample_uuid': 'SAM-123',
+                'task_name': 'predict',
+                'meta': {'ended': '2026-02-28T01:00:00'},
+            },
+            dataset=ds,
+        )
+        driver.data = Mock()
+        driver.data.tiled_client = _FakeTiledResults({'entry-1': entry})
+
+        entry_id, returned_entry = driver._get_latest_predict_tiled_entry(sample_uuid='SAM-123')
+        assert entry_id == 'entry-1'
+        assert returned_entry is entry
+
+    def test_get_latest_predict_entry_matches_attrs_sample_uuid(self):
+        driver = self._driver_with_minimal_config()
+        ds = xr.Dataset({'next_samples': ('component', [2.0])}, coords={'component': ['B']})
+        entry = _FakeTiledEntry(
+            metadata={
+                'attrs': {
+                    'sample_uuid': 'SAM-456',
+                    'task_name': 'predict',
+                    'meta': {'ended': '2026-02-28T01:01:00'},
+                }
+            },
+            dataset=ds,
+        )
+        driver.data = Mock()
+        driver.data.tiled_client = _FakeTiledResults({'entry-2': entry})
+
+        entry_id, returned_entry = driver._get_latest_predict_tiled_entry(sample_uuid='SAM-456')
+        assert entry_id == 'entry-2'
+        assert returned_entry is entry
+
+    def test_process_sample_enqueue_next_uses_tiled_and_not_retrieve_obj(self):
+        driver = self._driver_with_minimal_config()
+        driver.data = Mock()
+        ds = xr.Dataset(
+            {'next_samples': ('component', [1.2, 3.4])},
+            coords={'component': ['comp_a', 'comp_b']}
+        )
+        entry = _FakeTiledEntry(
+            metadata={
+                'sample_uuid': 'SAM-XYZ',
+                'task_name': 'predict',
+                'meta': {'ended': '2026-02-28T01:02:00'},
+            },
+            dataset=ds,
+        )
+        driver.data.tiled_client = _FakeTiledResults({'entry-3': entry})
+
+        agent_client = Mock()
+        agent_client.enqueue.return_value = {'return_val': 'AGENT-UUID'}
+        agent_client.retrieve_obj.side_effect = AssertionError("retrieve_obj should not be called")
+
+        driver.get_client = Mock(return_value=agent_client)
+        driver.make_and_measure = Mock()
+        driver.validate_config = Mock()
+        driver._queue = Mock()
+        driver._queue.qsize.return_value = 0
+
+        driver.process_sample(
+            sample={},
+            predict_next=True,
+            enqueue_next=True,
+            sample_uuid='SAM-XYZ',
+            AL_uuid='AL-XYZ',
+            AL_campaign_name='camp',
+        )
+
+        assert driver._queue.put.call_count == 1
+        queued_package, _ = driver._queue.put.call_args[0]
+        assert queued_package['task']['task_name'] == 'process_sample'
+        concentrations = queued_package['task']['sample']['concentrations']
+        assert concentrations['comp_a'] == '1.2 mg/ml'
+        assert concentrations['comp_b'] == '3.4 mg/ml'
+
+    def test_process_sample_enqueue_next_raises_when_tiled_entry_missing(self):
+        driver = self._driver_with_minimal_config()
+        driver.data = Mock()
+        driver.data.tiled_client = _FakeTiledResults({})
+
+        agent_client = Mock()
+        agent_client.enqueue.return_value = {'return_val': 'AGENT-UUID'}
+
+        driver.get_client = Mock(return_value=agent_client)
+        driver.make_and_measure = Mock()
+        driver.validate_config = Mock()
+        driver._queue = Mock()
+        driver._queue.qsize.return_value = 0
+
+        with pytest.raises(ValueError):
+            driver.process_sample(
+                sample={},
+                predict_next=True,
+                enqueue_next=True,
+                sample_uuid='SAM-MISSING',
+                AL_uuid='AL-XYZ',
+                AL_campaign_name='camp',
+            )
+
+    def test_process_sample_enqueue_next_raises_when_variable_missing(self):
+        driver = self._driver_with_minimal_config()
+        driver.data = Mock()
+        ds = xr.Dataset({'not_next_samples': ('component', [5.0])}, coords={'component': ['comp_a']})
+        entry = _FakeTiledEntry(
+            metadata={
+                'sample_uuid': 'SAM-ABC',
+                'task_name': 'predict',
+                'meta': {'ended': '2026-02-28T01:05:00'},
+            },
+            dataset=ds,
+        )
+        driver.data.tiled_client = _FakeTiledResults({'entry-4': entry})
+
+        agent_client = Mock()
+        agent_client.enqueue.return_value = {'return_val': 'AGENT-UUID'}
+
+        driver.get_client = Mock(return_value=agent_client)
+        driver.make_and_measure = Mock()
+        driver.validate_config = Mock()
+        driver._queue = Mock()
+        driver._queue.qsize.return_value = 0
+
+        with pytest.raises(ValueError):
+            driver.process_sample(
+                sample={},
+                predict_next=True,
+                enqueue_next=True,
+                sample_uuid='SAM-ABC',
+                AL_uuid='AL-XYZ',
+                AL_campaign_name='camp',
+            )
 
 
 if __name__ == '__main__':

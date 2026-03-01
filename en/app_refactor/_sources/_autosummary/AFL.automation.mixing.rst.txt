@@ -17,6 +17,7 @@ AFL.automation.mixing
    MassBalance
    MassBalanceBase
    MassBalanceDriver
+   MassBalanceWebAppMixin
    MixDB
    OT2Prepare
    PipetteAction

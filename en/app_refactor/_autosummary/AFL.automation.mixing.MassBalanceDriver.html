@@ -50,7 +50,7 @@
     <link rel="icon" href="../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="AFL.automation.mixing.MixDB" href="AFL.automation.mixing.MixDB.html" />
+    <link rel="next" title="AFL.automation.mixing.MassBalanceWebAppMixin" href="AFL.automation.mixing.MassBalanceWebAppMixin.html" />
     <link rel="prev" title="AFL.automation.mixing.MassBalanceBase" href="AFL.automation.mixing.MassBalanceBase.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -372,6 +372,7 @@
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.MassBalance.html">AFL.automation.mixing.MassBalance</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.MassBalanceBase.html">AFL.automation.mixing.MassBalanceBase</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">AFL.automation.mixing.MassBalanceDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.MassBalanceWebAppMixin.html">AFL.automation.mixing.MassBalanceWebAppMixin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.MixDB.html">AFL.automation.mixing.MixDB</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.OT2Prepare.html">AFL.automation.mixing.OT2Prepare</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.mixing.PipetteAction.html">AFL.automation.mixing.PipetteAction</a></li>
@@ -471,23 +472,14 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">enforce_units</span></code>(value, unit_type)</p></td>
 <td><p>Ensure that a number has units and convert to the default_units</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">urlparse</span></code>(url[, scheme, allow_fragments])</p></td>
-<td><p>Parse a URL into 6 components: &lt;scheme&gt;://&lt;netloc&gt;/&lt;path&gt;;&lt;params&gt;?&lt;query&gt;#&lt;fragment&gt;</p></td>
-</tr>
 </tbody>
 </table>
 </div>
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code>(*args, **kwargs)</p></td>
-<td><p>Special type indicating an unconstrained type.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Bounds</span></code>([lb, ub, keep_feasible])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Bounds</span></code>([lb, ub, keep_feasible])</p></td>
 <td><p>Bounds constraint on the variables.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Client</span></code>([ip, port, username, interactive])</p></td>
-<td><p>Communicate with APIServer</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code>(name[, defaults, overrides, useful_links])</p></td>
 <td><p></p></td>
@@ -498,10 +490,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver" title="AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MassBalanceDriver</span></code></a>([overrides])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MixDB</span></code>([db_spec])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MassBalanceWebAppMixin</span></code>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Solution</span></code>(name[, total_mass, total_volume, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MixDB</span></code>([db_spec])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Solution</span></code>(name[, total_mass, total_volume, ...])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -606,31 +601,6 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.mixdoctor">
-<span class="sig-name descname"><span class="pre">mixdoctor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalanceDriver.html#MassBalanceDriver.mixdoctor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.mixdoctor" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.get_orchestrator_context">
-<span class="sig-name descname"><span class="pre">get_orchestrator_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orchestrator_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalanceDriver.html#MassBalanceDriver.get_orchestrator_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.get_orchestrator_context" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.get_prepare_context">
-<span class="sig-name descname"><span class="pre">get_prepare_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prepare_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalanceDriver.html#MassBalanceDriver.get_prepare_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.get_prepare_context" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.submit_orchestrator_grid">
-<span class="sig-name descname"><span class="pre">submit_orchestrator_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'balanced_all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_sample_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orchestrator_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalanceDriver.html#MassBalanceDriver.submit_orchestrator_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.submit_orchestrator_grid" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.submit_prepare_grid">
-<span class="sig-name descname"><span class="pre">submit_prepare_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'balanced_all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepare_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepare_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalanceDriver.html#MassBalanceDriver.submit_prepare_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.submit_prepare_grid" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.balance">
 <span class="sig-name descname"><span class="pre">balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_report</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixing/MassBalanceDriver.html#MassBalanceDriver.balance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.balance" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -714,11 +684,11 @@ values in the requested format.</p>
       </div>
     </a>
     <a class="right-next"
-       href="AFL.automation.mixing.MixDB.html"
+       href="AFL.automation.mixing.MassBalanceWebAppMixin.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">AFL.automation.mixing.MixDB</p>
+        <p class="prev-next-title">AFL.automation.mixing.MassBalanceWebAppMixin</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -761,11 +731,6 @@ values in the requested format.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.list_stocks"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_stocks()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.list_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_targets()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.list_balanced_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_balanced_targets()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.mixdoctor"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.mixdoctor()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.get_orchestrator_context"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.get_orchestrator_context()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.get_prepare_context"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.get_prepare_context()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.submit_orchestrator_grid"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.submit_orchestrator_grid()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.submit_prepare_grid"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.submit_prepare_grid()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.balance"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.balance()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.get_balance_progress"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.get_balance_progress()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.mixing.MassBalanceDriver.MassBalanceDriver.get_balance_settings"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.get_balance_settings()</span></code></a></li>

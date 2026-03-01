@@ -39,6 +39,7 @@ AFL.automation.prepare
    DeckBuilderWidget
    Dummy_OT2_Driver
    OT2Client
+   OT2DeckWebAppMixin
    OT2_Driver
    PrepType
    PrepareWidget

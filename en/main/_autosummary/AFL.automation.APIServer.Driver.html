@@ -50,7 +50,7 @@
     <link rel="icon" href="../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="AFL.automation.APIServer.DummyDriver" href="AFL.automation.APIServer.DummyDriver.html" />
+    <link rel="next" title="AFL.automation.APIServer.DriverWebAppsMixin" href="AFL.automation.APIServer.DriverWebAppsMixin.html" />
     <link rel="prev" title="AFL.automation.APIServer.Client" href="AFL.automation.APIServer.Client.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -363,6 +363,7 @@
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="AFL.automation.APIServer.html">AFL.automation.APIServer</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.Client.html">AFL.automation.APIServer.Client</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">AFL.automation.APIServer.Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.DriverWebAppsMixin.html">AFL.automation.APIServer.DriverWebAppsMixin</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.DummyDriver.html">AFL.automation.APIServer.DummyDriver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.DummyOT2Driver.html">AFL.automation.APIServer.DummyOT2Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.APIServer.LoggerFilter.html">AFL.automation.APIServer.LoggerFilter</a></li>
@@ -453,26 +454,8 @@
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ceil</span></code>(x, /)</p></td>
-<td><p>Return the ceiling of x as an Integral.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_uri</span></code>(uri[, structure_clients, cache, ...])</p></td>
-<td><p>Connect to a Node on a local or remote server.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">jsonify</span></code>(*args, **kwargs)</p></td>
-<td><p>Serialize the given arguments as JSON, and return a <code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code> object with the <code class="docutils literal notranslate"><span class="pre">application/json</span></code> mimetype.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">listify</span></code>(obj)</p></td>
-<td><p></p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.APIServer.Driver.makeRegistrar" title="AFL.automation.APIServer.Driver.makeRegistrar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">makeRegistrar</span></code></a>()</p></td>
 <td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_template</span></code>(template_name_or_list, **context)</p></td>
-<td><p>Render a template by name with the given context.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sqrt</span></code>(x, /)</p></td>
-<td><p>Return the square root of x.</p></td>
 </tr>
 </tbody>
 </table>
@@ -483,7 +466,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.APIServer.Driver.Driver" title="AFL.automation.APIServer.Driver.Driver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code></a>(name[, defaults, overrides, useful_links])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PersistentConfig</span></code>(path[, defaults, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DriverWebAppsMixin</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PersistentConfig</span></code>(path[, defaults, ...])</p></td>
 <td><p>A dictionary-like class that serializes changes to disk</p></td>
 </tr>
 </tbody>
@@ -519,7 +505,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.static_dirs">
-<span class="sig-name descname"><span class="pre">static_dirs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'tiled_browser_css':</span> <span class="pre">PosixPath('/github/workspace/AFL/automation/driver_templates/tiled_browser/css'),</span> <span class="pre">'tiled_browser_js':</span> <span class="pre">PosixPath('/github/workspace/AFL/automation/driver_templates/tiled_browser/js')}</span></em><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.static_dirs" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">static_dirs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'tiled_browser_css':</span> <span class="pre">PosixPath('/github/workspace/AFL/automation/apps/tiled_browser/css'),</span> <span class="pre">'tiled_browser_js':</span> <span class="pre">PosixPath('/github/workspace/AFL/automation/apps/tiled_browser/js')}</span></em><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.static_dirs" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -712,168 +698,60 @@ is expected that this method be overridden by subclasses.</p>
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_config">
 <span class="sig-name descname"><span class="pre">tiled_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_config" title="Link to this definition">#</a></dt>
 <dd><p>Return Tiled server configuration from shared config file.</p>
-<p>Reads tiled_server and tiled_api_key from ~/.afl/config.json.
-Returns dict with status and config values or helpful error message.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_search">
 <span class="sig-name descname"><span class="pre">tiled_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_search" title="Link to this definition">#</a></dt>
 <dd><p>Proxy endpoint for Tiled metadata search to avoid CORS issues.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>queries</strong> – JSON string of query list: [{“field”: “field_name”, “value”: “search_value”}, …]</p></li>
-<li><p><strong>filters</strong> – JSON string mapping fields to arrays of values</p></li>
-<li><p><strong>sort</strong> – JSON string sort model list: [{“colId”: “field”, “sort”: “asc|desc”}, …]</p></li>
-<li><p><strong>fields</strong> – JSON string list of metadata fields to return</p></li>
-<li><p><strong>offset</strong> – Result offset for pagination</p></li>
-<li><p><strong>limit</strong> – Number of results to return</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict with status, data, total_count, or error message</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_get_data">
 <span class="sig-name descname"><span class="pre">tiled_get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_data" title="Link to this definition">#</a></dt>
 <dd><p>Proxy endpoint to get xarray HTML representation from Tiled.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry_id</strong> – Tiled entry ID</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict with status and html, or error message</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_get_metadata">
 <span class="sig-name descname"><span class="pre">tiled_get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_metadata" title="Link to this definition">#</a></dt>
 <dd><p>Proxy endpoint to get metadata from Tiled.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry_id</strong> – Tiled entry ID</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict with status and metadata, or error message</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_get_distinct_values">
 <span class="sig-name descname"><span class="pre">tiled_get_distinct_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_get_distinct_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_distinct_values" title="Link to this definition">#</a></dt>
-<dd><p>Get distinct/unique values for a metadata field using Tiled’s distinct() method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>field</strong> – Metadata field name (e.g., ‘sample_name’, ‘sample_uuid’, ‘AL_campaign_name’, ‘AL_uuid’)</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict with status and list of unique values, or error message</p>
-</dd>
-</dl>
+<dd><p>Get distinct values for a metadata field from Tiled.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_concat_datasets">
-<span class="sig-name descname"><span class="pre">tiled_concat_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concat_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'index'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_concat_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_concat_datasets" title="Link to this definition">#</a></dt>
-<dd><p>Gather datasets from Tiled entries and concatenate them along a dimension.</p>
-<p>This method fetches multiple datasets from a Tiled server, extracts metadata
-(sample_name, sample_uuid, sample_composition), and concatenates them along
-the specified dimension. It also supports prefixing variable names.</p>
-<p>For a single entry, the dataset is returned as-is without concatenation,
-and the sample dimension is auto-detected from existing dimensions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>entry_ids</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – List of Tiled entry IDs to fetch and concatenate</p></li>
-<li><p><strong>concat_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=&quot;index&quot;</em>) – Dimension name along which to concatenate the datasets (ignored for single entry)</p></li>
-<li><p><strong>variable_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default=&quot;&quot;</em>) – Optional prefix to prepend to variable, coordinate, and dimension names
-(except the concat_dim itself)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>For single entry: The original dataset with metadata added as attributes
-For multiple entries: Concatenated dataset with:
-- All original data variables and coordinates from individual datasets
-- Additional coordinates along concat_dim:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>sample_name: Sample name from metadata or entry_id</p></li>
-<li><p>sample_uuid: Sample UUID from metadata or empty string</p></li>
-<li><p>entry_id: The Tiled entry ID for each dataset</p></li>
-</ul>
-</div></blockquote>
-<ul class="simple">
-<li><dl class="simple">
-<dt>If sample_composition metadata exists:</dt><dd><ul>
-<li><p>composition: DataArray with dims [concat_dim, “components”]
-containing composition values for each sample</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>xr.Dataset</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If entry_ids is empty
-    If any entry_id is not found in Tiled
-    If datasets cannot be fetched or concatenated</p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_get_plot_manifest">
+<span class="sig-name descname"><span class="pre">tiled_get_plot_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_get_plot_manifest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_plot_manifest" title="Link to this definition">#</a></dt>
+<dd><p>Return lightweight plotting manifest without eager data materialization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_get_plot_variable_data">
+<span class="sig-name descname"><span class="pre">tiled_get_plot_variable_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cast_float32</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'true'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_get_plot_variable_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_plot_variable_data" title="Link to this definition">#</a></dt>
+<dd><p>Return one variable payload for plotting, fetched lazily.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_get_combined_plot_data">
 <span class="sig-name descname"><span class="pre">tiled_get_combined_plot_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_get_combined_plot_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_combined_plot_data" title="Link to this definition">#</a></dt>
-<dd><p>Get concatenated xarray datasets from multiple Tiled entries.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry_ids</strong> – JSON string array of entry IDs to concatenate</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict with combined dataset structure ready for plotting</p>
-</dd>
-</dl>
+<dd><p>Legacy eager endpoint for combined plot payloads.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_get_gantt_metadata">
 <span class="sig-name descname"><span class="pre">tiled_get_gantt_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_get_gantt_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_gantt_metadata" title="Link to this definition">#</a></dt>
 <dd><p>Get metadata for Gantt chart from multiple Tiled entries.</p>
-<p>This is a lightweight endpoint that only fetches metadata without
-loading or combining the actual datasets.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry_ids</strong> – JSON string array of entry IDs</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict with list of metadata for each entry</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.Driver.tiled_download_combined_dataset">
 <span class="sig-name descname"><span class="pre">tiled_download_combined_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#Driver.tiled_download_combined_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.Driver.tiled_download_combined_dataset" title="Link to this definition">#</a></dt>
-<dd><p>Download the concatenated xarray dataset as NetCDF file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry_ids</strong> – JSON string array of entry IDs (to regenerate dataset if needed)</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>NetCDF file download with appropriate headers</p>
-</dd>
-</dl>
+<dd><p>Download concatenated xarray dataset as NetCDF.</p>
 </dd></dl>
 
 </dd></dl>
@@ -900,11 +778,11 @@ loading or combining the actual datasets.</p>
       </div>
     </a>
     <a class="right-next"
-       href="AFL.automation.APIServer.DummyDriver.html"
+       href="AFL.automation.APIServer.DriverWebAppsMixin.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">AFL.automation.APIServer.DummyDriver</p>
+        <p class="prev-next-title">AFL.automation.APIServer.DriverWebAppsMixin</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -964,7 +842,8 @@ loading or combining the actual datasets.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_data"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_data()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_metadata"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_metadata()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_distinct_values"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_distinct_values()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_concat_datasets"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_concat_datasets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_plot_manifest"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_plot_manifest()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_plot_variable_data"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_plot_variable_data()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_combined_plot_data"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_combined_plot_data()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_gantt_metadata"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_gantt_metadata()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_download_combined_dataset"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_download_combined_dataset()</span></code></a></li>

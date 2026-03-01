@@ -19,6 +19,7 @@ AFL.automation.APIServer
 
    Client
    Driver
+   DriverWebAppsMixin
    DummyDriver
    DummyOT2Driver
    LoggerFilter

@@ -17,6 +17,7 @@
    :recursive:
 
    APIServer
+   apps
    driver_templates
    instrument
    loading

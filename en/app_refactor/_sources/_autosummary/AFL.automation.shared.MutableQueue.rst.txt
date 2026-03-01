@@ -1,0 +1,19 @@
+AFL.automation.shared.MutableQueue
+==================================
+
+.. automodule:: AFL.automation.shared.MutableQueue
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MutableQueue
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      Empty
+      Full
+   

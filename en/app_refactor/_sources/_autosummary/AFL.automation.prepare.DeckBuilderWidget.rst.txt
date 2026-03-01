@@ -1,0 +1,29 @@
+AFL.automation.prepare.DeckBuilderWidget
+========================================
+
+.. automodule:: AFL.automation.prepare.DeckBuilderWidget
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      sqrt
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Button
+      Checkbox
+      Client
+      DeckBuilderWidget
+      DeckBuilderWidget_Model
+      DeckBuilderWidget_View
+      Dropdown
+      HBox
+      Label
+      Layout
+      Text
+      VBox
+   

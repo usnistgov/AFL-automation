@@ -1,0 +1,23 @@
+AFL.automation.mixing.BalanceDiagnosis
+======================================
+
+.. automodule:: AFL.automation.mixing.BalanceDiagnosis
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      dataclass
+      field
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Any
+      BalanceDiagnosis
+      Enum
+      FailureCode
+      FailureDetail
+   

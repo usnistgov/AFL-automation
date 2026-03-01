@@ -38,6 +38,10 @@ const AppState = {
     logX: true,
     logY: true
 };
+const VariableCache = new Map();
+const InflightVariableRequests = new Map();
+let scatterRenderToken = 0;
+let compositionRenderToken = 0;
 
 // =============================================================================
 // Utility Functions
@@ -112,57 +116,30 @@ function setLoading(isLoading) {
 // =============================================================================
 
 /**
- * Load combined plot data from server
+ * Load plot manifest from server (metadata/schema only).
  */
-async function loadCombinedPlotData(entryIdsList) {
+async function loadPlotManifest(entryIdsList) {
     try {
         setLoading(true);
-        setStatus('loading', 'Loading data...');
+        setStatus('loading', 'Loading manifest...');
 
         const params = new URLSearchParams({
             entry_ids: JSON.stringify(entryIdsList)
         });
 
-        console.log('=== FETCHING DATA ===');
-        console.log('URL:', `/tiled_get_combined_plot_data?${params}`);
-
-        const response = await authenticatedFetch(`/tiled_get_combined_plot_data?${params}`);
-
-        console.log('Response status:', response.status);
-        console.log('Response headers:', [...response.headers.entries()]);
+        const response = await authenticatedFetch(`/tiled_get_plot_manifest?${params}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
         }
 
-        // Get the raw text first to see what we're trying to parse
-        const responseText = await response.text();
-        console.log('Response length:', responseText.length, 'chars');
-        console.log('Response preview:', responseText.substring(0, 500));
-
-        let result;
-        try {
-            result = JSON.parse(responseText);
-            console.log('✓ JSON parse successful');
-            console.log('Result keys:', Object.keys(result));
-        } catch (parseError) {
-            console.error('✗ JSON parse FAILED:', parseError);
-            console.error('Error at position:', parseError.message);
-            // Try to find the problematic area
-            const errorMatch = parseError.message.match(/position (\d+)/);
-            if (errorMatch) {
-                const pos = parseInt(errorMatch[1]);
-                console.error('Context around error:', responseText.substring(Math.max(0, pos - 100), Math.min(responseText.length, pos + 100)));
-            }
-            throw parseError;
-        }
+        const result = await response.json();
 
         if (result.status === 'error') {
             throw new Error(result.message);
         }
 
-        plotData = result;
-        setStatus('success', `Loaded ${result.num_datasets} dataset(s)`);
+        setStatus('success', `Loaded manifest for ${result.num_datasets} dataset(s)`);
 
         // Update dataset count
         document.getElementById('dataset-count').textContent =
@@ -179,6 +156,93 @@ async function loadCombinedPlotData(entryIdsList) {
     } finally {
         setLoading(false);
     }
+}
+
+/**
+ * Fetch one variable payload lazily and merge it into the working dataset.
+ */
+async function fetchVariableData(varName, options = {}) {
+    const dataset = AppState.workingDataset;
+    if (!dataset) {
+        throw new Error('No dataset loaded');
+    }
+
+    if (VariableCache.has(varName)) {
+        return VariableCache.get(varName);
+    }
+
+    const existing = dataset.data && dataset.data[varName];
+    if (existing && !existing.error && Array.isArray(existing.values)) {
+        VariableCache.set(varName, existing);
+        return existing;
+    }
+
+    if (InflightVariableRequests.has(varName)) {
+        return InflightVariableRequests.get(varName);
+    }
+
+    const requestPromise = (async () => {
+        const params = new URLSearchParams({
+            entry_ids: JSON.stringify(entryIds),
+            var_name: varName,
+            cast_float32: options.castFloat32 === false ? 'false' : 'true'
+        });
+
+        const response = await authenticatedFetch(`/tiled_get_plot_variable_data?${params}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.status === 'error') {
+            throw new Error(result.message || `Failed to fetch variable ${varName}`);
+        }
+
+        if (!dataset.data) dataset.data = {};
+        dataset.data[varName] = {
+            values: result.values,
+            dims: result.dims,
+            shape: result.shape,
+            dtype: result.dtype
+        };
+        VariableCache.set(varName, dataset.data[varName]);
+
+        if (!dataset.variable_info) dataset.variable_info = {};
+        dataset.variable_info[varName] = {
+            name: varName,
+            dims: result.dims,
+            shape: result.shape,
+            dtype: result.dtype,
+            size: result.shape.reduce((acc, v) => acc * v, 1)
+        };
+
+        if (!dataset.coords) dataset.coords = {};
+        if (result.related_coords) {
+            for (const [coordName, coordValue] of Object.entries(result.related_coords)) {
+                if (!dataset.coords[coordName] || dataset.coords[coordName].summary || dataset.coords[coordName].error) {
+                    dataset.coords[coordName] = coordValue;
+                }
+            }
+        }
+
+        return dataset.data[varName];
+    })();
+
+    InflightVariableRequests.set(varName, requestPromise);
+    try {
+        return await requestPromise;
+    } finally {
+        InflightVariableRequests.delete(varName);
+    }
+}
+
+/**
+ * Ensure a set of variables are loaded before plotting.
+ */
+async function ensureVariablesLoaded(varNames) {
+    const required = (varNames || []).filter(v => !!v);
+    if (required.length === 0) return;
+    await Promise.all(required.map(varName => fetchVariableData(varName)));
 }
 
 // =============================================================================
@@ -199,10 +263,10 @@ function categorizeVariables(dataset, sampleDim) {
     }
 
     for (const varName of dataset.variables) {
-        const varData = dataset.data[varName];
-        if (!varData || varData.error) continue;
+        const varMeta = (dataset.variable_info && dataset.variable_info[varName]) || (dataset.data && dataset.data[varName]);
+        if (!varMeta || varMeta.error) continue;
 
-        const dims = varData.dims || [];
+        const dims = varMeta.dims || [];
 
         // 1D variable with only sample dimension
         if (dims.length === 1 && dims[0] === sampleDim) {
@@ -758,7 +822,8 @@ function renderPlot() {
 /**
  * Render scattering plot with multi-trace overlay
  */
-function renderScatteringPlot() {
+async function renderScatteringPlot() {
+    const renderToken = ++scatterRenderToken;
     const scatterVarsSelect = document.getElementById('scatter-vars');
     const selectedVars = Array.from(scatterVarsSelect.selectedOptions).map(opt => opt.value);
     const dataset = AppState.workingDataset;
@@ -766,6 +831,16 @@ function renderScatteringPlot() {
 
     if (!dataset || selectedVars.length === 0 || selectedVars[0] === '') {
         Plotly.purge('scattering-plot');
+        return;
+    }
+
+    try {
+        await ensureVariablesLoaded(selectedVars);
+    } catch (error) {
+        showError(`Failed to load scattering variable: ${error.message}`);
+        return;
+    }
+    if (renderToken !== scatterRenderToken) {
         return;
     }
 
@@ -815,13 +890,28 @@ function renderScatteringPlot() {
 /**
  * Render composition plot (2D or 3D) with color mapping
  */
-function renderCompositionPlot() {
+async function renderCompositionPlot() {
+    const renderToken = ++compositionRenderToken;
     const compVar = AppState.compositionVariable;
     const colorVar = AppState.compositionColorVariable;
     const dataset = AppState.workingDataset;
 
     if (!dataset || !compVar) {
         Plotly.purge('composition-plot');
+        return;
+    }
+
+    const requiredVars = [compVar];
+    if (colorVar && colorVar !== '') {
+        requiredVars.push(colorVar);
+    }
+    try {
+        await ensureVariablesLoaded(requiredVars);
+    } catch (error) {
+        showError(`Failed to load composition variable: ${error.message}`);
+        return;
+    }
+    if (renderToken !== compositionRenderToken) {
         return;
     }
 
@@ -1000,7 +1090,18 @@ function updateColorScale() {
  */
 function updatePlots() {
     renderScatteringPlot();
-    updateSelectedPoint();
+    const compVar = AppState.compositionVariable;
+    const compLoaded = AppState.workingDataset &&
+        AppState.workingDataset.data &&
+        compVar &&
+        AppState.workingDataset.data[compVar] &&
+        Array.isArray(AppState.workingDataset.data[compVar].values);
+
+    if (compLoaded) {
+        updateSelectedPoint();
+    } else {
+        renderCompositionPlot();
+    }
 }
 
 /**
@@ -1268,6 +1369,8 @@ function resetDataset() {
 
     // Deep clone original dataset
     AppState.workingDataset = JSON.parse(JSON.stringify(AppState.originalDataset));
+    VariableCache.clear();
+    InflightVariableRequests.clear();
 
     updateAfterDataChange();
 }
@@ -1524,10 +1627,12 @@ async function initialize() {
         initializeEventListeners();
         initializeDatasetWidgetListeners();
 
-        // Load data from server
-        const data = await loadCombinedPlotData(entryIds);
+        // Load lightweight manifest from server.
+        const data = await loadPlotManifest(entryIds);
 
         // Initialize AppState with dataset
+        VariableCache.clear();
+        InflightVariableRequests.clear();
         AppState.originalDataset = JSON.parse(JSON.stringify(data)); // Deep clone
         AppState.workingDataset = data;
 
@@ -1546,15 +1651,8 @@ async function initialize() {
                     break;
                 }
             }
-            // If no *_sample pattern found, use first dimension with size > 1
-            if (AppState.sampleDim === 'index' && data.dim_sizes) {
-                for (const dim of data.dims) {
-                    if (data.dim_sizes[dim] > 1) {
-                        AppState.sampleDim = dim;
-                        console.log(`Using first multi-valued dimension as sample dim: ${dim}`);
-                        break;
-                    }
-                }
+            if (AppState.sampleDim === 'index') {
+                console.log('No explicit sample dimension found; leaving sample dim as index.');
             }
         }
 

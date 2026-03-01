@@ -21,7 +21,7 @@ from scipy.spatial.distance import cdist
 
 from AFL.automation.APIServer.Client import Client  # type: ignore
 from AFL.automation.APIServer.Driver import Driver  # type: ignore
-from AFL.automation.mixing.Solution import Solution  # type: ignore
+from AFL.automation.mixcalc.Solution import Solution  # type: ignore
 from AFL.automation.shared.units import units  # type: ignore
 from AFL.automation.orchestrator.OrchestratorDriver import OrchestratorDriver  # type: ignore
 

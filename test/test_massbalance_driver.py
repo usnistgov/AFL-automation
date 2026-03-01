@@ -1,12 +1,15 @@
 import pytest
-from AFL.automation.mixing.MassBalanceDriver import MassBalanceDriver
-from AFL.automation.mixing.Solution import Solution
+from AFL.automation.mixcalc.MassBalanceDriver import MassBalanceDriver
+from AFL.automation.mixcalc.Solution import Solution
 from AFL.automation.shared.units import units
 
 @pytest.mark.usefixtures("mixdb")
 def test_massbalance_driver_mixed_solvents_mass():
     mb = MassBalanceDriver()
     mb.config.write = False # need to disable writing to config file for testing
+    # Isolate test behavior from any persisted user config in ~/.afl.
+    mb.config['minimum_volume'] = '20 ul'
+    mb.config['tol'] = 1e-3
     # Ensure prior user config does not leak into test expectations
     mb.reset_stocks()
     mb.reset_targets()
@@ -66,6 +69,9 @@ def test_massbalance_driver_mixed_solvents_mass():
 def test_massbalance_driver_balance_settings_and_progress():
     mb = MassBalanceDriver()
     mb.config.write = False
+    # Isolate test behavior from any persisted user config in ~/.afl.
+    mb.config['minimum_volume'] = '20 ul'
+    mb.config['tol'] = 1e-3
     mb.reset_stocks()
     mb.reset_targets()
 

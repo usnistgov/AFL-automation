@@ -1,6 +1,6 @@
 # test_component.py
 import pytest
-from AFL.automation.mixing.Component import Component
+from AFL.automation.mixcalc.Component import Component
 from AFL.automation.shared.units import units
 
 def test_component_initialization():

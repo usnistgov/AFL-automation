@@ -2,8 +2,8 @@ import warnings
 
 import numpy as np
 import pytest
-from AFL.automation.mixing.Solution import Solution
-from AFL.automation.mixing.Component import Component
+from AFL.automation.mixcalc.Solution import Solution
+from AFL.automation.mixcalc.Component import Component
 from AFL.automation.shared.units import units
 from AFL.automation.shared.exceptions import EmptyException
 

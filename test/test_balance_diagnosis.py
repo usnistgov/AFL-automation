@@ -1,9 +1,9 @@
 import pytest
 
-from AFL.automation.mixing.MassBalance import MassBalance
-from AFL.automation.mixing.Solution import Solution
-from AFL.automation.mixing.TargetSolution import TargetSolution
-from AFL.automation.mixing.BalanceDiagnosis import BalanceDiagnosis, FailureCode
+from AFL.automation.mixcalc.MassBalance import MassBalance
+from AFL.automation.mixcalc.Solution import Solution
+from AFL.automation.mixcalc.TargetSolution import TargetSolution
+from AFL.automation.mixcalc.BalanceDiagnosis import BalanceDiagnosis, FailureCode
 
 
 # ---------------------------------------------------------------------------

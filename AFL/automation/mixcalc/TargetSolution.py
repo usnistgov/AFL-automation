@@ -5,7 +5,7 @@ from typing import Optional, Dict
 
 import pint
 
-from AFL.automation.mixing.Solution import Solution
+from AFL.automation.mixcalc.Solution import Solution
 
 class TargetSolution(Solution):
     """ """

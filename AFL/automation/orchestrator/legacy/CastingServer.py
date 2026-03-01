@@ -1,5 +1,4 @@
 from AFL.automation.APIServer.Client import Client
-from AFL.automation.prepare.OT2Client import OT2Client
 from AFL.automation.shared.utilities import listify
 from AFL.automation.APIServer.Driver import Driver
 
@@ -34,7 +33,7 @@ class CastingServer(Driver):
             raise ArgumentError('Need to specify both ip and port on prep_url')
 
         #prepare samples
-        self.prep_client = OT2Client(prep_url.split(':')[0],port=prep_url.split(':')[1])
+        self.prep_client = Client(prep_url.split(':')[0],port=prep_url.split(':')[1])
         self.prep_client.login('SampleServer_PrepClient')
         self.prep_client.debug(False)
         
@@ -129,7 +128,7 @@ class CastingServer(Driver):
         
         for sample_name,task in zip(sample_names,protocol):
             self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
-            self.last_prep = self.prep_client.transfer(interactive=True,**task)
+            self.last_prep = self.prep_client.enqueue(task_name='transfer', interactive=True, **task)
             self.last_prep_time = self.last_prep['ended'] 
             
             self.last_prep['event_type'] = 'prep'
@@ -151,7 +150,7 @@ class CastingServer(Driver):
         
         for sample_name,plate_name,task in zip(sample_names,plate_names,protocol):
             self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
-            self.last_prep = self.prep_client.transfer(interactive=True,**task)
+            self.last_prep = self.prep_client.enqueue(task_name='transfer', interactive=True, **task)
             self.last_prep_time = self.last_prep['ended'] 
             
             self.last_prep['event_type'] = 'cast'
@@ -172,7 +171,7 @@ class CastingServer(Driver):
         self.update_status(f'Preparing sample: {sample_name}')
         for task in protocols['prep_protocol']:
             self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
-            self.last_prep = self.prep_client.transfer(interactive=True,**task)
+            self.last_prep = self.prep_client.enqueue(task_name='transfer', interactive=True, **task)
             self.last_prep_time = self.last_prep['ended'] 
             
             self.last_prep['event_type'] = 'prep'
@@ -206,7 +205,7 @@ class CastingServer(Driver):
             # actual_mix_time = datetime.datetime.now()-self.last_prep['ended']
                 
             self.update_status(f'Transferring {task["volume"]} uL from {task["source"]} to {task["dest"]}')
-            self.last_prep = self.prep_client.transfer(**task,interactive=True)
+            self.last_prep = self.prep_client.enqueue(task_name='transfer', interactive=True, **task)
 
             self.last_prep['event_type'] = 'cast'
             self.last_prep['sample_name'] = sample_name
@@ -222,7 +221,7 @@ class CastingServer(Driver):
 
 
 _DEFAULT_CUSTOM_CONFIG = {
-        '_classname': 'AFL.automation.sample.CastingServer.CastingServer',
+        '_classname': 'AFL.automation.orchestrator.legacy.CastingServer.CastingServer',
         'prep_url': 'localhost:5000'
 }
 _DEFAULT_CUSTOM_PORT = 5050

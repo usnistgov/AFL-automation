@@ -1,0 +1,13 @@
+AFL.automation.loading.LabJackDigitalOut
+========================================
+
+.. automodule:: AFL.automation.loading.LabJackDigitalOut
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LabJackDigitalOut
+      Sensor
+   

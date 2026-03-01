@@ -16,7 +16,11 @@ class DataTiled(DataPacket):
 
     def __init__(self,server,api_key,backup_path):
         self.backup_path = backup_path
-        self.tiled_client = tiled.client.from_uri(server,api_key=api_key)
+        self.tiled_client = tiled.client.from_uri(
+            server,
+            api_key=api_key,
+            structure_clients="dask",
+        )
         super().__init__()
         
         self.arrays = {}
@@ -139,4 +143,3 @@ class DataTiled(DataPacket):
             filename = str(datetime.datetime.now()).replace(' ','-')
             with open(f'{self.backup_path}/{filename}.json','w') as f:
                 json.dump(self._dict(),f)
-

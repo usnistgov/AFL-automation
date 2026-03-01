@@ -466,7 +466,8 @@ class Driver:
             # Create and cache client
             self._tiled_client = from_uri(
                 config['tiled_server'],
-                api_key=config['tiled_api_key']
+                api_key=config['tiled_api_key'],
+                structure_clients="dask",
             )
             return self._tiled_client
         except Exception as e:

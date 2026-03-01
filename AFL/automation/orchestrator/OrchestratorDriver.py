@@ -836,7 +836,7 @@ class OrchestratorDriver(Driver):
             from tiled.client import from_uri
 
             # Connect to tiled
-            client = from_uri(self.config['tiled_uri'])
+            client = from_uri(self.config['tiled_uri'], structure_clients="dask")
 
             # Search for entries with matching sample_uuid in metadata
             matching_entries = []

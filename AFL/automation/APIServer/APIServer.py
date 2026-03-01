@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 
 from flask_cors import CORS
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 #authentication module
 from flask_jwt_extended import (
@@ -74,6 +75,23 @@ class APIServer:
         #allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
         self.app = Flask(name,root_path=root_path)
+
+        # Allow app templates to live with their frontend assets under AFL/automation/apps.
+        apps_path = pathlib.Path(__file__).parent.parent / "apps"
+        template_paths = [
+            apps_path,
+            apps_path / "tiled_browser",
+            apps_path / "mixdoctor",
+        ]
+        loaders = []
+        if self.app.jinja_loader is not None:
+            loaders.append(self.app.jinja_loader)
+        loaders.extend(
+            FileSystemLoader(str(path))
+            for path in template_paths
+            if path.exists()
+        )
+        self.app.jinja_loader = ChoiceLoader(loaders)
         self.init_logging()
 
         self.queue_daemon = None

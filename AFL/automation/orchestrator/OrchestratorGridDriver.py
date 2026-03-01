@@ -201,7 +201,7 @@ class OrchestratorGridDriver(OrchestratorDriver):
             
             entry_id = self.config['grid_entry_id']
             try:
-                self.grid_data = client[entry_id].read()
+                self.grid_data = self._read_tiled_item(client[entry_id])
                 self.grid_sample_count = 0
                 num_samples = self.grid_data.sizes.get('sample', 0)
                 if self.app:

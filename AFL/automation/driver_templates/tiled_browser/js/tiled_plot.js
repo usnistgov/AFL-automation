@@ -1651,15 +1651,8 @@ async function initialize() {
                     break;
                 }
             }
-            // If no *_sample pattern found, use first dimension with size > 1
-            if (AppState.sampleDim === 'index' && data.dim_sizes) {
-                for (const dim of data.dims) {
-                    if (data.dim_sizes[dim] > 1) {
-                        AppState.sampleDim = dim;
-                        console.log(`Using first multi-valued dimension as sample dim: ${dim}`);
-                        break;
-                    }
-                }
+            if (AppState.sampleDim === 'index') {
+                console.log('No explicit sample dimension found; leaving sample dim as index.');
             }
         }
 

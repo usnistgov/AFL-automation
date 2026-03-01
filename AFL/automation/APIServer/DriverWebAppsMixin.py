@@ -558,12 +558,21 @@ class DriverWebAppsMixin:
 
         return dataset, metadata
 
-    def _detect_sample_dimension(self, dataset):
+    def _detect_sample_dimension(self, dataset, allow_size_fallback=True):
         """Detect the sample dimension from a dataset.
         
         Looks for dimensions matching patterns like '*_sample' or 'sample'.
-        Falls back to the first dimension with size > 1.
+        Optionally falls back to the first dimension with size > 1.
         
+        Parameters
+        ----------
+        dataset : xr.Dataset
+            Dataset to inspect.
+        allow_size_fallback : bool, default=True
+            If True, use the first dimension with size > 1 when no explicit
+            sample-like dimension name is found. If False, return None when no
+            explicit sample-like dimension name is present.
+
         Returns
         -------
         str or None
@@ -572,7 +581,7 @@ class DriverWebAppsMixin:
         import re
         
         # Pattern priority: exact 'sample', then '*_sample', then first multi-valued dim
-        dims = list(dataset.dims.keys())
+        dims = list(dataset.sizes.keys())
         
         # Check for exact 'sample' first
         if 'sample' in dims:
@@ -584,13 +593,15 @@ class DriverWebAppsMixin:
             if sample_pattern.match(dim):
                 return dim
         
-        # Fallback: first dimension with size > 1
-        for dim in dims:
-            if dataset.dims[dim] > 1:
-                return dim
-        
-        # Last resort: first dimension
-        return dims[0] if dims else None
+        if allow_size_fallback:
+            # Fallback: first dimension with size > 1
+            for dim in dims:
+                if dataset.sizes[dim] > 1:
+                    return dim
+
+            # Last resort: first dimension
+            return dims[0] if dims else None
+        return None
 
     def tiled_concat_datasets(self, entry_ids, concat_dim='index', variable_prefix=''):
         """Gather datasets from Tiled entries and concatenate them along a dimension.
@@ -659,7 +670,8 @@ class DriverWebAppsMixin:
             metadata = metadata_list[0]
             
             # Detect the sample dimension from the dataset
-            sample_dim = self._detect_sample_dimension(dataset)
+            # For single entries, avoid guessing a random axis as "sample".
+            sample_dim = self._detect_sample_dimension(dataset, allow_size_fallback=False)
             
             # Add metadata as dataset attributes (not coordinates, since we don't have a new dim)
             dataset.attrs['sample_name'] = metadata['sample_name']
@@ -895,7 +907,7 @@ class DriverWebAppsMixin:
             if is_single_entry:
                 sample_dim = combined_dataset.attrs.get('_detected_sample_dim', None)
                 if not sample_dim:
-                    sample_dim = self._detect_sample_dimension(combined_dataset)
+                    sample_dim = self._detect_sample_dimension(combined_dataset, allow_size_fallback=False)
                 num_datasets = int(combined_dataset.dims.get(sample_dim, 1)) if sample_dim else 1
             else:
                 sample_dim = 'index'
@@ -1166,7 +1178,7 @@ class DriverWebAppsMixin:
                 sample_dim = combined_dataset.attrs.get('_detected_sample_dim', None)
                 if not sample_dim:
                     # Fallback detection
-                    sample_dim = self._detect_sample_dimension(combined_dataset)
+                    sample_dim = self._detect_sample_dimension(combined_dataset, allow_size_fallback=False)
                 num_datasets = combined_dataset.dims.get(sample_dim, 1) if sample_dim else 1
             else:
                 sample_dim = 'index'

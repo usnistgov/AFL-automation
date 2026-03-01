@@ -1,0 +1,32 @@
+AFL.automation.prepare.PrepareWidget
+====================================
+
+.. automodule:: AFL.automation.prepare.PrepareWidget
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      sqrt
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Button
+      Checkbox
+      DeckBuilderWidget
+      Dropdown
+      HBox
+      Label
+      Layout
+      PrepareWidget
+      PrepareWidget_Model
+      PrepareWidget_View
+      SampleSeriesWidget
+      StockBuilderWidget
+      SweepBuilderWidget
+      Text
+      VBox
+   

@@ -1,0 +1,12 @@
+AFL.automation.loading.SensorPollingThread
+==========================================
+
+.. automodule:: AFL.automation.loading.SensorPollingThread
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SensorPollingThread
+   

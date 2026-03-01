@@ -238,8 +238,6 @@ class MassBalanceDriver(MassBalanceBase, Driver):
             self.mixdb = MixDB.get_db()
         except ValueError:
             self.mixdb = MixDB()
-        self.useful_links['Edit Components DB'] = 'static/components.html'
-        self.useful_links['Configure Stocks'] = 'static/stocks.html'
         self.useful_links['MixDoctor'] = 'mixdoctor'
         try:
             self.process_stocks()
@@ -537,7 +535,7 @@ class MassBalanceDriver(MassBalanceBase, Driver):
     @Driver.unqueued(render_hint='html')
     def mixdoctor(self, **kwargs):
         from jinja2 import Template
-        base = pathlib.Path(__file__).parent.parent / "driver_templates" / "mixdoctor"
+        base = pathlib.Path(__file__).parent.parent / "apps" / "mixdoctor"
         html = Template((base / "mixdoctor.html").read_text())
         css = (base / "css" / "style.css").read_text()
         plotly = (base / "js" / "plotly.min.js").read_text()

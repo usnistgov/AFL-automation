@@ -118,4 +118,4 @@ include = [
 custom_labware_dir = "support/labware"
 
 [tool.setuptools]
-package-data = { "AFL.automation.driver_templates" = ["*.html"] }
+package-data = { "AFL.automation.apps" = ["*.html", "**/*.html", "**/*.css", "**/*.js"] }

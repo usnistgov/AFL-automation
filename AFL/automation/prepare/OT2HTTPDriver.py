@@ -2286,7 +2286,7 @@ class OT2HTTPDriver(Driver):
                     )
                 slot_infos[str(slot)] = info
 
-        template_path = files('AFL.automation.driver_templates').joinpath('ot2_deck.html')
+        template_path = files('AFL.automation.apps').joinpath('ot2_deck.html')
         template = Template(template_path.read_text())
         html = template.render(
             slot_layout=slot_layout,

@@ -47,8 +47,8 @@ class Driver(DriverWebAppsMixin):
     # Example: {'docs': '/path/to/docs', 'assets': pathlib.Path(__file__).parent / 'assets'}
     # Files will be served at /static/{subpath}/{filename}
     static_dirs = {
-        "tiled_browser_js": pathlib.Path(__file__).parent.parent / "driver_templates" / "tiled_browser" / "js",
-        "tiled_browser_css": pathlib.Path(__file__).parent.parent / "driver_templates" / "tiled_browser" / "css",
+        "tiled_browser_js": pathlib.Path(__file__).parent.parent / "apps" / "tiled_browser" / "js",
+        "tiled_browser_css": pathlib.Path(__file__).parent.parent / "apps" / "tiled_browser" / "css",
     }
 
     def __init__(self, name, defaults=None, overrides=None, useful_links=None):

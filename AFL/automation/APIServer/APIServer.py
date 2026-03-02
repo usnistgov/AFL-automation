@@ -254,6 +254,8 @@ class APIServer:
                               methods=['POST', 'GET'])
         self.app.add_url_rule('/retrieve_obj', 'retrieve_obj', self.retrieve_obj,
                               methods=['POST', 'GET'])
+        self.app.add_url_rule('/tiled_upload_data', 'tiled_upload_data', self.tiled_upload_data,
+                              methods=['POST'])
 
         # self.init is now called from run()/run_threaded due to Flask 3 removal
         # of the before_first_request hook
@@ -598,6 +600,59 @@ class APIServer:
             del self.driver.dropbox[task['uuid']]
         result = serialization.serialize(result)
         return jsonify({'obj':result}),200
+
+    def tiled_upload_data(self):
+        """Upload an xarray/csv/tsv payload to Tiled via multipart form data."""
+        upload_file = request.files.get('file')
+        if upload_file is None:
+            return jsonify({
+                'status': 'error',
+                'message': 'No file payload provided in form field "file".',
+            }), 400
+
+        upload_bytes = upload_file.read()
+        if not upload_bytes:
+            return jsonify({
+                'status': 'error',
+                'message': 'Uploaded file is empty.',
+            }), 400
+
+        form = request.form
+        metadata_payload = form.get('metadata', '')
+
+        upload_kwargs = {
+            'upload_bytes': upload_bytes,
+            'filename': upload_file.filename or '',
+            'file_format': form.get('file_format', ''),
+            'coordinate_column': form.get('coordinate_column', ''),
+            'metadata': metadata_payload,
+            'delimiter': form.get('delimiter', ''),
+        }
+
+        # Allow direct metadata fields in form without requiring JSON blob.
+        metadata_keys = [
+            'sample_name',
+            'sample_uuid',
+            'AL_campaign_name',
+            'AL_uuid',
+            'task_name',
+            'driver_name',
+        ]
+        for key in metadata_keys:
+            value = form.get(key, '')
+            if value:
+                upload_kwargs[key] = value
+
+        result = self.driver.tiled_upload_dataset(**upload_kwargs)
+        if isinstance(result, dict) and result.get('status') == 'success':
+            return jsonify(result), 200
+
+        if isinstance(result, dict):
+            return jsonify(result), 400
+        return jsonify({
+            'status': 'error',
+            'message': 'Unexpected response from tiled upload handler.',
+        }), 500
 
 
     @jwt_required()

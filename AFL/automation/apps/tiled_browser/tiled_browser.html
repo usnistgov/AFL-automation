@@ -30,6 +30,7 @@
                 <div class="tab-buttons">
                     <button class="tab-button active" data-tab="filters">Quick Filters</button>
                     <button class="tab-button" data-tab="advanced">Advanced Search</button>
+                    <button class="tab-button" data-tab="upload">Upload</button>
                 </div>
 
                 <!-- Filters Tab -->
@@ -109,6 +110,59 @@
                         <button id="add-query-button">+ Add Query</button>
                         <button id="search-button">Search</button>
                         <button id="clear-search-button">Clear All</button>
+                    </div>
+                </div>
+
+                <!-- Upload Tab -->
+                <div id="upload-tab" class="tab-content">
+                    <div id="upload-form">
+                        <div class="upload-row">
+                            <label for="upload-file-input">Data File (.nc, .csv, .tsv):</label>
+                            <input id="upload-file-input" type="file" accept=".nc,.csv,.tsv">
+                        </div>
+                        <div class="upload-row">
+                            <label for="upload-file-format">Format:</label>
+                            <input id="upload-file-format" type="text" value="Auto-detect from file extension" readonly>
+                        </div>
+                        <div class="upload-row">
+                            <label for="upload-delimiter">Delimiter <span class="field-note">(Optional, CSV/TSV only)</span>:</label>
+                            <input id="upload-delimiter" type="text" placeholder="Auto" maxlength="1">
+                        </div>
+                        <div class="upload-row">
+                            <label for="upload-coordinate-column">Coordinate Column <span class="field-note">(Optional, CSV/TSV only)</span>:</label>
+                            <select id="upload-coordinate-column" disabled>
+                                <option value="">None (row index)</option>
+                            </select>
+                        </div>
+                        <div class="upload-grid">
+                            <div class="upload-row">
+                                <label for="upload-sample-name">Sample Name <span class="field-note">(Optional)</span>:</label>
+                                <input id="upload-sample-name" type="text">
+                            </div>
+                            <div class="upload-row">
+                                <label for="upload-sample-uuid">Sample UUID <span class="field-note">(Optional)</span>:</label>
+                                <input id="upload-sample-uuid" type="text">
+                            </div>
+                            <div class="upload-row">
+                                <label for="upload-al-campaign-name">AL Campaign <span class="field-note">(Optional)</span>:</label>
+                                <input id="upload-al-campaign-name" type="text">
+                            </div>
+                            <div class="upload-row">
+                                <label for="upload-al-uuid">AL UUID <span class="field-note">(Optional)</span>:</label>
+                                <input id="upload-al-uuid" type="text">
+                            </div>
+                            <div class="upload-row">
+                                <label for="upload-task-name">Task Name <span class="field-note">(Optional)</span>:</label>
+                                <input id="upload-task-name" type="text" value="manual_upload">
+                            </div>
+                            <div class="upload-row">
+                                <label for="upload-driver-name">Driver Name <span class="field-note">(Optional)</span>:</label>
+                                <input id="upload-driver-name" type="text" value="manual_upload">
+                            </div>
+                        </div>
+                        <div class="upload-buttons">
+                            <button id="upload-submit-button">Upload Dataset</button>
+                        </div>
                     </div>
                 </div>
             </div>

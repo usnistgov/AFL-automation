@@ -682,7 +682,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/deposit_obj&#39;</span><span class="p">,</span> <span class="s1">&#39;deposit_obj&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deposit_obj</span><span class="p">,</span>
                               <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/retrieve_obj&#39;</span><span class="p">,</span> <span class="s1">&#39;retrieve_obj&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieve_obj</span><span class="p">,</span>
-                              <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">])</span></div>
+                              <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/tiled_upload_data&#39;</span><span class="p">,</span> <span class="s1">&#39;tiled_upload_data&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiled_upload_data</span><span class="p">,</span>
+                              <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span></div>
 
 
         <span class="c1"># self.init is now called from run()/run_threaded due to Flask 3 removal</span>
@@ -1087,6 +1089,62 @@
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">dropbox</span><span class="p">[</span><span class="n">task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]]</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;obj&#39;</span><span class="p">:</span><span class="n">result</span><span class="p">}),</span><span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="APIServer.tiled_upload_data">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.tiled_upload_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">tiled_upload_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upload an xarray/csv/tsv payload to Tiled via multipart form data.&quot;&quot;&quot;</span>
+        <span class="n">upload_file</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">upload_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;No file payload provided in form field &quot;file&quot;.&#39;</span><span class="p">,</span>
+            <span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="n">upload_bytes</span> <span class="o">=</span> <span class="n">upload_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">upload_bytes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Uploaded file is empty.&#39;</span><span class="p">,</span>
+            <span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="n">form</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span>
+        <span class="n">metadata_payload</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="n">upload_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;upload_bytes&#39;</span><span class="p">:</span> <span class="n">upload_bytes</span><span class="p">,</span>
+            <span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="n">upload_file</span><span class="o">.</span><span class="n">filename</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;file_format&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file_format&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;coordinate_column&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;coordinate_column&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata_payload</span><span class="p">,</span>
+            <span class="s1">&#39;delimiter&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;delimiter&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Allow direct metadata fields in form without requiring JSON blob.</span>
+        <span class="n">metadata_keys</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;sample_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;AL_uuid&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;task_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;driver_name&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">metadata_keys</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">upload_kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">tiled_upload_dataset</span><span class="p">(</span><span class="o">**</span><span class="n">upload_kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;success&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="mi">200</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="mi">400</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span>
+            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Unexpected response from tiled upload handler.&#39;</span><span class="p">,</span>
+        <span class="p">}),</span> <span class="mi">500</span></div>
 
 
 

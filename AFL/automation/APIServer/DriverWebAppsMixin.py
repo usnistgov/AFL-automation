@@ -1,4 +1,5 @@
 import datetime
+import io
 import json
 import pathlib
 
@@ -99,6 +100,183 @@ class DriverWebAppsMixin:
         Returns dict with status and config values or helpful error message.
         """
         return self._read_tiled_config()
+
+    def tiled_upload_dataset(
+        self,
+        dataset=None,
+        upload_bytes=None,
+        filename='',
+        file_format='',
+        coordinate_column='',
+        metadata=None,
+        delimiter='',
+        **kwargs,
+    ):
+        """Upload a dataset to Tiled from xarray, NetCDF bytes, CSV, or TSV.
+
+        Args:
+            dataset: Optional xarray.Dataset provided directly by Python callers.
+            upload_bytes: Optional bytes payload for file uploads.
+            filename: Original upload filename (used for format inference).
+            file_format: Optional explicit format ('xarray', 'nc', 'csv', 'tsv').
+            coordinate_column: Optional column name used to populate sample coordinate.
+            metadata: Optional dict of metadata merged into dataset attrs.
+            delimiter: Optional delimiter override for table formats.
+
+        Returns:
+            dict with status/message and dataset summary.
+        """
+        import numpy as np
+        import pandas as pd
+        import xarray as xr
+        from tiled.client.xarray import write_xarray_dataset
+
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        normalized_metadata = {}
+        if isinstance(metadata, dict):
+            normalized_metadata.update(metadata)
+        elif isinstance(metadata, str) and metadata.strip():
+            try:
+                parsed = json.loads(metadata)
+                if isinstance(parsed, dict):
+                    normalized_metadata.update(parsed)
+            except Exception:
+                return {
+                    'status': 'error',
+                    'message': 'Invalid metadata JSON payload.',
+                }
+
+        # Merge kwargs metadata fields, excluding routing/internal keys.
+        excluded_keys = {
+            'dataset',
+            'upload_bytes',
+            'filename',
+            'file_format',
+            'coordinate_column',
+            'metadata',
+            'delimiter',
+            'self',
+        }
+        for key, value in kwargs.items():
+            if key in excluded_keys:
+                continue
+            if value is None:
+                continue
+            if isinstance(value, str) and value == '':
+                continue
+            normalized_metadata[key] = value
+
+        inferred_format = (file_format or '').strip().lower()
+        filename_lower = (filename or '').strip().lower()
+
+        if not inferred_format and filename_lower:
+            if filename_lower.endswith('.nc'):
+                inferred_format = 'nc'
+            elif filename_lower.endswith('.csv'):
+                inferred_format = 'csv'
+            elif filename_lower.endswith('.tsv'):
+                inferred_format = 'tsv'
+
+        if dataset is not None:
+            if not isinstance(dataset, xr.Dataset):
+                return {
+                    'status': 'error',
+                    'message': 'Provided dataset is not an xarray.Dataset.',
+                }
+            dataset_to_write = dataset.copy(deep=True)
+        else:
+            if upload_bytes is None:
+                return {
+                    'status': 'error',
+                    'message': 'No dataset object or file payload provided.',
+                }
+            if not inferred_format:
+                return {
+                    'status': 'error',
+                    'message': 'Could not infer upload format. Please provide file_format.',
+                }
+
+            if inferred_format in ('xarray', 'nc', 'netcdf'):
+                try:
+                    dataset_to_write = xr.open_dataset(io.BytesIO(upload_bytes)).load()
+                except Exception as exc:
+                    return {
+                        'status': 'error',
+                        'message': f'Failed to read NetCDF upload: {str(exc)}',
+                    }
+            elif inferred_format in ('csv', 'tsv'):
+                csv_delimiter = delimiter if delimiter else (',' if inferred_format == 'csv' else '\t')
+                try:
+                    df = pd.read_csv(io.BytesIO(upload_bytes), sep=csv_delimiter)
+                except Exception as exc:
+                    return {
+                        'status': 'error',
+                        'message': f'Failed to parse table upload: {str(exc)}',
+                    }
+                if df.empty:
+                    return {
+                        'status': 'error',
+                        'message': 'Table upload contains no rows.',
+                    }
+
+                if coordinate_column and coordinate_column not in df.columns:
+                    return {
+                        'status': 'error',
+                        'message': f'Coordinate column "{coordinate_column}" is not in uploaded table headers.',
+                    }
+
+                sample_dim = 'sample'
+                coords = {sample_dim: np.arange(len(df))}
+                if coordinate_column:
+                    coords[sample_dim] = df[coordinate_column].to_numpy()
+
+                data_vars = {}
+                for column in df.columns:
+                    data_vars[column] = ((sample_dim,), df[column].to_numpy())
+
+                dataset_to_write = xr.Dataset(data_vars=data_vars, coords=coords)
+            else:
+                return {
+                    'status': 'error',
+                    'message': f'Unsupported file format "{inferred_format}". Supported formats: nc, csv, tsv.',
+                }
+
+        if not hasattr(dataset_to_write, 'attrs') or dataset_to_write.attrs is None:
+            dataset_to_write.attrs = {}
+        dataset_to_write.attrs.update(normalized_metadata)
+
+        try:
+            write_result = write_xarray_dataset(client, dataset_to_write)
+        except Exception as exc:
+            error_msg = str(exc) if str(exc) else repr(exc)
+            self.app.logger.error(f'Tiled upload error: {error_msg}', exc_info=True)
+            return {
+                'status': 'error',
+                'message': f'Failed to write dataset to Tiled: {error_msg}',
+            }
+
+        entry_id = ''
+        try:
+            if hasattr(write_result, 'item'):
+                entry_id = str(write_result.item.get('id', ''))
+            elif hasattr(write_result, 'metadata') and isinstance(write_result.metadata, dict):
+                entry_id = str(write_result.metadata.get('id', ''))
+        except Exception:
+            entry_id = ''
+
+        return {
+            'status': 'success',
+            'message': 'Dataset uploaded to Tiled.',
+            'entry_id': entry_id,
+            'dataset_summary': {
+                'dims': {k: int(v) for k, v in dataset_to_write.sizes.items()},
+                'data_vars': sorted(list(dataset_to_write.data_vars.keys())),
+                'coords': sorted(list(dataset_to_write.coords.keys())),
+            },
+        }
 
     def _get_tiled_client(self):
         """Get or create cached Tiled client.

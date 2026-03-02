@@ -18,6 +18,8 @@ let currentColumns = new Set();
 let totalCount = 0;
 let multiSelectInstances = {};  // Store multi-select state for each filter
 let currentCopyText = '';
+let uploadColumnHeaders = [];
+const DEFAULT_SORT_MODEL = [{ colId: 'meta_ended', sort: 'desc' }];
 
 // Available search fields (excluding datetime columns)
 const SEARCH_FIELDS = [
@@ -166,6 +168,34 @@ function flattenMetadata(metadata, prefix = '') {
     }
 
     return result;
+}
+
+function splitCsvLikeLine(line, delimiter) {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+        const ch = line[i];
+        if (ch === '"') {
+            // Handle escaped double quote inside quoted field.
+            if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+                current += '"';
+                i += 1;
+            } else {
+                inQuotes = !inQuotes;
+            }
+            continue;
+        }
+        if (ch === delimiter && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+            continue;
+        }
+        current += ch;
+    }
+    values.push(current.trim());
+    return values;
 }
 
 // =============================================================================
@@ -823,6 +853,7 @@ function addQueryRow() {
     fieldSelect.className = 'query-field';
     fieldSelect.innerHTML = '<option value="">Select field...</option>' +
         SEARCH_FIELDS.map(f => `<option value="${f}">${f}</option>`).join('');
+    fieldSelect.value = 'task_name';
 
     const valueInput = document.createElement('input');
     valueInput.type = 'text';
@@ -1288,6 +1319,151 @@ async function refreshData() {
     showSuccess('Data refreshed');
 }
 
+function inferUploadFormat(filename) {
+    if (!filename) return '';
+    const lower = filename.toLowerCase();
+    if (lower.endsWith('.nc')) return 'nc';
+    if (lower.endsWith('.csv')) return 'csv';
+    if (lower.endsWith('.tsv')) return 'tsv';
+    return '';
+}
+
+function resetUploadCoordinateSelector() {
+    uploadColumnHeaders = [];
+    const selectEl = document.getElementById('upload-coordinate-column');
+    selectEl.innerHTML = '<option value="">None (row index)</option>';
+    selectEl.disabled = true;
+}
+
+function populateUploadCoordinateSelector(columns) {
+    const selectEl = document.getElementById('upload-coordinate-column');
+    selectEl.innerHTML = '<option value="">None (row index)</option>';
+    columns.forEach(column => {
+        const option = document.createElement('option');
+        option.value = column;
+        option.textContent = column;
+        selectEl.appendChild(option);
+    });
+    selectEl.disabled = columns.length === 0;
+}
+
+async function handleUploadFileSelection() {
+    const fileInput = document.getElementById('upload-file-input');
+    const formatEl = document.getElementById('upload-file-format');
+    const delimiterEl = document.getElementById('upload-delimiter');
+
+    resetUploadCoordinateSelector();
+
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        formatEl.value = 'Auto-detect from file extension';
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const format = inferUploadFormat(file.name);
+    formatEl.value = format || 'Unsupported format';
+
+    if (!format || format === 'nc') {
+        return;
+    }
+
+    try {
+        const text = await file.text();
+        const firstLine = text.split(/\r?\n/).find(line => line.trim().length > 0) || '';
+        if (!firstLine) {
+            showError('Uploaded table appears empty.');
+            return;
+        }
+        const delimiter = delimiterEl.value || (format === 'csv' ? ',' : '\t');
+        const columns = splitCsvLikeLine(firstLine, delimiter).filter(name => name.length > 0);
+        uploadColumnHeaders = columns;
+        populateUploadCoordinateSelector(columns);
+    } catch (error) {
+        showError(`Failed to read file headers: ${error.message}`);
+    }
+}
+
+function gatherUploadMetadata() {
+    return {
+        sample_name: document.getElementById('upload-sample-name').value.trim(),
+        sample_uuid: document.getElementById('upload-sample-uuid').value.trim(),
+        AL_campaign_name: document.getElementById('upload-al-campaign-name').value.trim(),
+        AL_uuid: document.getElementById('upload-al-uuid').value.trim(),
+        task_name: document.getElementById('upload-task-name').value.trim(),
+        driver_name: document.getElementById('upload-driver-name').value.trim()
+    };
+}
+
+async function submitDatasetUpload() {
+    const fileInput = document.getElementById('upload-file-input');
+    const uploadBtn = document.getElementById('upload-submit-button');
+    const formatEl = document.getElementById('upload-file-format');
+    const delimiterEl = document.getElementById('upload-delimiter');
+    const coordEl = document.getElementById('upload-coordinate-column');
+
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        showError('Please choose a file to upload.');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const format = inferUploadFormat(file.name);
+    if (!format) {
+        showError('Unsupported file extension. Use .nc, .csv, or .tsv.');
+        return;
+    }
+
+    if ((format === 'csv' || format === 'tsv') && coordEl.value && uploadColumnHeaders.length > 0 && !uploadColumnHeaders.includes(coordEl.value)) {
+        showError('Selected coordinate column is not present in the table headers.');
+        return;
+    }
+
+    const metadata = gatherUploadMetadata();
+    const payload = new FormData();
+    payload.append('file', file);
+    payload.append('file_format', format);
+    payload.append('metadata', JSON.stringify(metadata));
+
+    const coordValue = coordEl.value || '';
+    if (coordValue) {
+        payload.append('coordinate_column', coordValue);
+    }
+
+    if (format === 'csv' || format === 'tsv') {
+        const delimiter = delimiterEl.value || '';
+        if (delimiter) {
+            payload.append('delimiter', delimiter);
+        }
+    }
+
+    const originalText = uploadBtn.textContent;
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Uploading...';
+
+    try {
+        const response = await authenticatedFetch('/tiled_upload_data', {
+            method: 'POST',
+            body: payload
+        });
+        const result = await response.json();
+        if (!response.ok || result.status === 'error') {
+            const message = result.message || `Upload failed with HTTP ${response.status}`;
+            showError(message);
+            return;
+        }
+
+        const summaryVars = result.dataset_summary?.data_vars?.length || 0;
+        const entryMsg = result.entry_id ? ` Entry: ${result.entry_id}.` : '';
+        showSuccess(`Upload complete (${summaryVars} variables).${entryMsg}`);
+        refreshDatasource();
+    } catch (error) {
+        showError(`Upload failed: ${error.message}`);
+    } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = originalText;
+    }
+}
+
 /**
  * Switch between tabs
  */
@@ -1382,6 +1558,20 @@ function setupEventListeners() {
         ganttSelectedBtn.addEventListener('click', ganttSelected);
     }
 
+    // Upload controls
+    const uploadFileInput = document.getElementById('upload-file-input');
+    const uploadDelimiter = document.getElementById('upload-delimiter');
+    const uploadSubmitButton = document.getElementById('upload-submit-button');
+    if (uploadFileInput) {
+        uploadFileInput.addEventListener('change', handleUploadFileSelection);
+    }
+    if (uploadDelimiter) {
+        uploadDelimiter.addEventListener('input', handleUploadFileSelection);
+    }
+    if (uploadSubmitButton) {
+        uploadSubmitButton.addEventListener('click', submitDatasetUpload);
+    }
+
     // Error close button
     document.getElementById('error-close').addEventListener('click', hideError);
 
@@ -1423,7 +1613,7 @@ function createDatasource() {
                     currentQueries,
                     params.startRow,
                     params.endRow - params.startRow,
-                    params.sortModel || []
+                    (params.sortModel && params.sortModel.length > 0) ? params.sortModel : DEFAULT_SORT_MODEL
                 );
 
                 if (result.status === 'success') {

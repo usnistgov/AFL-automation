@@ -423,3 +423,27 @@ class Driver(DriverWebAppsMixin):
     def tiled_download_combined_dataset(self, entry_ids, **kwargs):
         """Download concatenated xarray dataset as NetCDF."""
         return super().tiled_download_combined_dataset(entry_ids, **kwargs)
+
+    @unqueued()
+    def tiled_upload_dataset(
+        self,
+        dataset=None,
+        upload_bytes=None,
+        filename='',
+        file_format='',
+        coordinate_column='',
+        metadata=None,
+        delimiter='',
+        **kwargs,
+    ):
+        """Upload xarray/csv/tsv data into Tiled."""
+        return super().tiled_upload_dataset(
+            dataset=dataset,
+            upload_bytes=upload_bytes,
+            filename=filename,
+            file_format=file_format,
+            coordinate_column=coordinate_column,
+            metadata=metadata,
+            delimiter=delimiter,
+            **kwargs,
+        )

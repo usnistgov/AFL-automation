@@ -347,7 +347,7 @@ class Driver(DriverWebAppsMixin):
             uid = 'DB-' + str(uuid.uuid4())
         if self.dropbox is None:
             self.dropbox = {}
-        self.app.logger.info(f'Storing object in dropbox as {uuid}')
+        self.app.logger.info(f'Storing object in dropbox as {uid}')
         self.dropbox[uid] = obj
         return uid
 

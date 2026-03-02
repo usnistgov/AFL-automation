@@ -131,6 +131,9 @@ class DriverWebAppsMixin:
         import xarray as xr
         from tiled.client.xarray import write_xarray_dataset
 
+        queued_time = datetime.datetime.now()
+        start_time = datetime.datetime.now()
+
         client = self._get_tiled_client()
         if isinstance(client, dict) and client.get('status') == 'error':
             return client
@@ -208,9 +211,49 @@ class DriverWebAppsMixin:
                         'message': f'Failed to read NetCDF upload: {str(exc)}',
                     }
             elif inferred_format in ('csv', 'tsv'):
-                csv_delimiter = delimiter if delimiter else (',' if inferred_format == 'csv' else '\t')
+                delimiter_token = (delimiter or '').strip().lower()
                 try:
-                    df = pd.read_csv(io.BytesIO(upload_bytes), sep=csv_delimiter)
+                    text = upload_bytes.decode('utf-8-sig')
+                    nonempty_lines = [line for line in text.splitlines() if line.strip()]
+
+                    def _resolve_table_separator():
+                        if delimiter_token:
+                            if delimiter_token in ('whitespace', 'space', r'\s+', 'ws'):
+                                return (r'\s+', 'python')
+                            return (delimiter, None)
+
+                        if inferred_format == 'csv':
+                            return (',', None)
+
+                        # TSV defaults to tab, but support whitespace-delimited text
+                        # files with .tsv extension.
+                        first = nonempty_lines[0] if nonempty_lines else ''
+                        sample_data_lines = nonempty_lines[1:11] if len(nonempty_lines) > 1 else []
+
+                        # Count actual tab usage in data rows, not just header row.
+                        data_lines_with_tabs = sum(1 for line in sample_data_lines if '\t' in line)
+
+                        if '\t' in first and data_lines_with_tabs > 0:
+                            return ('\t', None)
+
+                        # Support mixed files where header may be tab-separated
+                        # but data rows are whitespace-separated.
+                        probe_lines = sample_data_lines if sample_data_lines else [first]
+                        if any(len(line.split()) > 1 for line in probe_lines):
+                            return (r'\s+', 'python')
+                        return ('\t', None)
+
+                    separator, parser_engine = _resolve_table_separator()
+
+                    # Read as raw strings first to avoid pandas NA coercion turning
+                    # valid coordinate tokens into NaN.
+                    df = pd.read_csv(
+                        io.StringIO(text),
+                        sep=separator,
+                        engine=parser_engine,
+                        dtype=str,
+                        keep_default_na=False,
+                    )
                 except Exception as exc:
                     return {
                         'status': 'error',
@@ -228,14 +271,31 @@ class DriverWebAppsMixin:
                         'message': f'Coordinate column "{coordinate_column}" is not in uploaded table headers.',
                     }
 
-                sample_dim = 'sample'
-                coords = {sample_dim: np.arange(len(df))}
-                if coordinate_column:
-                    coords[sample_dim] = df[coordinate_column].to_numpy()
+                # Normalize whitespace in column names and cell contents.
+                df.columns = [str(col).strip() for col in df.columns]
+                for column in df.columns:
+                    df[column] = df[column].map(lambda x: x.strip() if isinstance(x, str) else x)
 
+                # Best-effort numeric coercion that preserves non-empty strings.
+                def _coerce_series(series):
+                    numeric = pd.to_numeric(series, errors='coerce')
+                    nonempty_mask = series.astype(str).str.strip() != ''
+                    # Use numeric values when at least one non-empty value parsed and
+                    # not all parsed values are NaN.
+                    if nonempty_mask.any() and not numeric[nonempty_mask].isna().all():
+                        return numeric
+                    return series
+
+                for column in df.columns:
+                    df[column] = _coerce_series(df[column])
+
+                dim_name = coordinate_column if coordinate_column else 'sample'
+                coords = {dim_name: (df[coordinate_column].to_numpy() if coordinate_column else np.arange(len(df)))}
                 data_vars = {}
                 for column in df.columns:
-                    data_vars[column] = ((sample_dim,), df[column].to_numpy())
+                    if coordinate_column and column == coordinate_column:
+                        continue
+                    data_vars[column] = ((dim_name,), df[column].to_numpy())
 
                 dataset_to_write = xr.Dataset(data_vars=data_vars, coords=coords)
             else:
@@ -244,9 +304,41 @@ class DriverWebAppsMixin:
                     'message': f'Unsupported file format "{inferred_format}". Supported formats: nc, csv, tsv.',
                 }
 
+        # Tiled+dask cannot auto-rechunk object dtype arrays. Coerce object
+        # variables/coordinates to strings for robust uploads.
+        for var_name in list(dataset_to_write.data_vars.keys()):
+            var = dataset_to_write[var_name]
+            if getattr(var.dtype, 'kind', None) == 'O':
+                dataset_to_write[var_name] = var.astype(str)
+        for coord_name in list(dataset_to_write.coords.keys()):
+            coord = dataset_to_write.coords[coord_name]
+            if getattr(coord.dtype, 'kind', None) == 'O':
+                dataset_to_write = dataset_to_write.assign_coords({coord_name: coord.astype(str)})
+
         if not hasattr(dataset_to_write, 'attrs') or dataset_to_write.attrs is None:
             dataset_to_write.attrs = {}
         dataset_to_write.attrs.update(normalized_metadata)
+
+        end_time = datetime.datetime.now()
+        run_time = end_time - start_time
+
+        generated_meta = {
+            'queued': queued_time.strftime('%m/%d/%y %H:%M:%S-%f %Z%z'),
+            'started': start_time.strftime('%m/%d/%y %H:%M:%S-%f %Z%z'),
+            'ended': end_time.strftime('%m/%d/%y %H:%M:%S-%f %Z%z'),
+            'run_time_seconds': run_time.seconds,
+            'run_time_minutes': run_time.seconds / 60,
+            'exit_state': 'Success!',
+            'return_val': 'xarray.Dataset',
+        }
+
+        if not hasattr(dataset_to_write, 'attrs') or dataset_to_write.attrs is None:
+            dataset_to_write.attrs = {}
+        existing_meta = {}
+        if isinstance(dataset_to_write.attrs.get('meta'), dict):
+            existing_meta.update(dataset_to_write.attrs.get('meta', {}))
+        existing_meta.update(generated_meta)
+        dataset_to_write.attrs['meta'] = existing_meta
 
         try:
             write_result = write_xarray_dataset(client, dataset_to_write)
@@ -360,6 +452,33 @@ class DriverWebAppsMixin:
                 current = current.setdefault(part, {})
             current[parts[-1]] = value
 
+        def _parse_datetime_value(value):
+            if value is None:
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+
+            # QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ]
+            match = __import__('re').match(
+                r'^(\d{2})/(\d{2})/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})',
+                text,
+            )
+            if match:
+                month, day, year, hour, minute, second = map(int, match.groups())
+                return datetime.datetime(2000 + year, month, day, hour, minute, second)
+
+            # Display-style/legacy: YYYY-MM-DD HH:MM:SS
+            match = __import__('re').match(
+                r'^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})',
+                text,
+            )
+            if match:
+                year, month, day, hour, minute, second = map(int, match.groups())
+                return datetime.datetime(year, month, day, hour, minute, second)
+
+            return None
+
         # Map UI fields to metadata paths for search/sort
         field_path_map = {
             'task_name': 'attrs.task_name',
@@ -437,7 +556,83 @@ class DriverWebAppsMixin:
                     sort_dir = 1 if direction == 'asc' else -1
                     sort_items.append((sort_key, sort_dir))
                 if sort_items:
-                    results = results.sort(*sort_items)
+                    temporal_sort_fields = {'attrs.meta.started', 'attrs.meta.ended', 'meta.started', 'meta.ended'}
+                    requires_temporal_sort = any(sort_key in temporal_sort_fields for sort_key, _ in sort_items)
+
+                    if not requires_temporal_sort:
+                        results = results.sort(*sort_items)
+                    else:
+                        # For temporal fields, sort in Python by parsed datetime to avoid
+                        # lexicographic ordering artifacts from string timestamps.
+                        try:
+                            items_for_sort = list(results.items())
+                        except Exception:
+                            keys_for_sort = list(results.keys())
+                            items_for_sort = [(key, results[key]) for key in keys_for_sort]
+
+                        for sort_key, sort_dir in reversed(sort_items):
+                            reverse = sort_dir == -1
+                            is_temporal = sort_key in temporal_sort_fields
+
+                            def _extract_sort_value(item_pair):
+                                _, item_obj = item_pair
+                                metadata_obj = dict(item_obj.metadata) if hasattr(item_obj, 'metadata') else {}
+                                value_obj = _get_nested(metadata_obj, sort_key)
+                                if is_temporal:
+                                    parsed = _parse_datetime_value(value_obj)
+                                    if parsed is not None:
+                                        return parsed
+                                return value_obj
+
+                            if reverse:
+                                items_for_sort.sort(
+                                    key=lambda kv: (
+                                        _extract_sort_value(kv) is not None,
+                                        _extract_sort_value(kv) if _extract_sort_value(kv) is not None else '',
+                                    ),
+                                    reverse=True,
+                                )
+                            else:
+                                items_for_sort.sort(
+                                    key=lambda kv: (
+                                        _extract_sort_value(kv) is None,
+                                        _extract_sort_value(kv) if _extract_sort_value(kv) is not None else '',
+                                    ),
+                                )
+
+                        sorted_ids = [key for key, _ in items_for_sort]
+                        total_count = len(items_for_sort)
+                        paged_ids = sorted_ids[offset:offset + limit]
+                        items = [(key, results[key]) for key in paged_ids]
+                        entries = []
+                        for key, item in items:
+                            try:
+                                metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
+                                trimmed = {}
+                                for field in requested_fields:
+                                    if not field:
+                                        continue
+                                    value = _get_nested(metadata, field)
+                                    if value is None and not field.startswith('attrs.'):
+                                        value = _get_nested(metadata, f'attrs.{field}')
+                                    if value is not None:
+                                        _set_nested(trimmed, field, value)
+                                entry = {
+                                    'id': key,
+                                    'attributes': {
+                                        'metadata': trimmed
+                                    }
+                                }
+                                entries.append(entry)
+                            except Exception as e:
+                                self.app.logger.warning(f'Could not access entry {key}: {str(e)}')
+                                continue
+
+                        return {
+                            'status': 'success',
+                            'data': entries,
+                            'total_count': total_count
+                        }
 
             total_count = len(results)
 
@@ -852,6 +1047,16 @@ class DriverWebAppsMixin:
             # Detect the sample dimension from the dataset
             # For single entries, avoid guessing a random axis as "sample".
             sample_dim = self._detect_sample_dimension(dataset, allow_size_fallback=False)
+            if sample_dim is None:
+                # Ensure plotter paths have a sample dimension even for one entry.
+                # Use concat_dim for consistency with multi-entry flow.
+                sample_dim = concat_dim
+                dataset = dataset.expand_dims({sample_dim: [0]})
+                dataset = dataset.assign_coords({
+                    'sample_name': (sample_dim, [metadata['sample_name']]),
+                    'sample_uuid': (sample_dim, [metadata['sample_uuid']]),
+                    'entry_id': (sample_dim, [metadata['entry_id']]),
+                })
             
             # Add metadata as dataset attributes (not coordinates, since we don't have a new dim)
             dataset.attrs['sample_name'] = metadata['sample_name']

@@ -146,3 +146,24 @@ def test_tiled_search_quick_filters_use_in_query_and_chunk_pagination():
     assert response["status"] == "success"
     assert response["total_count"] == 2
     assert [row["id"] for row in response["data"]] == ["e3"]
+
+
+def test_tiled_search_temporal_sort_parses_queue_daemon_timestamps():
+    results = _FakeResults(
+        [
+            ("old", _FakeItem({"attrs": {"meta": {"ended": "12/06/25 15:37:52-000000 "}}})),
+            ("new", _FakeItem({"attrs": {"meta": {"ended": "03/01/26 21:58:51-000000 "}}})),
+            ("mid", _FakeItem({"attrs": {"meta": {"ended": "12/07/25 10:32:34-000000 "}}})),
+        ]
+    )
+    driver = _DummyDriverWebApps(results)
+
+    response = driver.tiled_search(
+        queries="[]",
+        sort=json.dumps([{"colId": "meta_ended", "sort": "desc"}]),
+        offset=0,
+        limit=10,
+    )
+
+    assert response["status"] == "success"
+    assert [row["id"] for row in response["data"]] == ["new", "mid", "old"]

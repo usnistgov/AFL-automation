@@ -198,6 +198,27 @@ function splitCsvLikeLine(line, delimiter) {
     return values;
 }
 
+function detectTableDelimiter(format, firstLine, userDelimiter = '') {
+    const manual = (userDelimiter || '').trim();
+    if (manual.length > 0) {
+        return manual;
+    }
+    if (format === 'csv') {
+        return ',';
+    }
+    if (format === 'tsv') {
+        if (firstLine.includes('\t')) {
+            return '\t';
+        }
+        const tokens = firstLine.trim().split(/\s+/).filter(Boolean);
+        if (tokens.length > 1) {
+            return '__whitespace__';
+        }
+        return '\t';
+    }
+    return ',';
+}
+
 // =============================================================================
 // Configuration Loading
 // =============================================================================
@@ -506,28 +527,29 @@ function parseDateToTimestamp(dateString) {
     if (!dateString) return 0;
 
     try {
-        // Extract date/time portion before the microseconds
-        const match = dateString.match(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
-
-        if (!match) {
-            return 0; // Return 0 for invalid format
+        // QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ]
+        let match = dateString.match(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+        if (match) {
+            const [_, month, day, year, hours, minutes, seconds] = match;
+            const fullYear = '20' + year;
+            const isoString = `${fullYear}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+            const date = new Date(isoString);
+            if (!isNaN(date.getTime())) {
+                return date.getTime();
+            }
         }
 
-        const [_, month, day, year, hours, minutes, seconds] = match;
-
-        // Convert 2-digit year to 4-digit year (assuming 20xx)
-        const fullYear = '20' + year;
-
-        // Format as ISO string for Date parsing: YYYY-MM-DDTHH:MM:SS
-        const isoString = `${fullYear}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-        const date = new Date(isoString);
-
-        // Validate the date is valid
-        if (isNaN(date.getTime())) {
-            return 0;
+        // Display-style/legacy: YYYY-MM-DD HH:MM:SS
+        match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+        if (match) {
+            const [_, year, month, day, hours, minutes, seconds] = match;
+            const isoString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+            const date = new Date(isoString);
+            if (!isNaN(date.getTime())) {
+                return date.getTime();
+            }
         }
-
-        return date.getTime();
+        return 0;
     } catch (e) {
         return 0;
     }
@@ -1374,8 +1396,10 @@ async function handleUploadFileSelection() {
             showError('Uploaded table appears empty.');
             return;
         }
-        const delimiter = delimiterEl.value || (format === 'csv' ? ',' : '\t');
-        const columns = splitCsvLikeLine(firstLine, delimiter).filter(name => name.length > 0);
+        const delimiter = detectTableDelimiter(format, firstLine, delimiterEl.value);
+        const columns = delimiter === '__whitespace__'
+            ? firstLine.trim().split(/\s+/).filter(name => name.length > 0)
+            : splitCsvLikeLine(firstLine, delimiter).filter(name => name.length > 0);
         uploadColumnHeaders = columns;
         populateUploadCoordinateSelector(columns);
     } catch (error) {

@@ -601,7 +601,6 @@ class APIServer:
         result = serialization.serialize(result)
         return jsonify({'obj':result}),200
 
-    @jwt_required()
     def tiled_upload_data(self):
         """Upload an xarray/csv/tsv payload to Tiled via multipart form data."""
         upload_file = request.files.get('file')

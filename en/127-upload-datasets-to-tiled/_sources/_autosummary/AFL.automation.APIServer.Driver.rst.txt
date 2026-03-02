@@ -1,0 +1,20 @@
+AFL.automation.APIServer.Driver
+===============================
+
+.. automodule:: AFL.automation.APIServer.Driver
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      makeRegistrar
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      DriverWebAppsMixin
+      PersistentConfig
+   

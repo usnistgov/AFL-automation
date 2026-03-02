@@ -1,0 +1,14 @@
+AFL.automation.loading.DummyPump
+================================
+
+.. automodule:: AFL.automation.loading.DummyPump
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DummyPump
+      SerialDevice
+      SyringePump
+   

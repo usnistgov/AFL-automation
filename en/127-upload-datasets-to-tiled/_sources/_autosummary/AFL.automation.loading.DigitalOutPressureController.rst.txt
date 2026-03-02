@@ -1,0 +1,13 @@
+AFL.automation.loading.DigitalOutPressureController
+===================================================
+
+.. automodule:: AFL.automation.loading.DigitalOutPressureController
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DigitalOutPressureController
+      PressureController
+   

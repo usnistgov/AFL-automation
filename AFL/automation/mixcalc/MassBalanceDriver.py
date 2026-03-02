@@ -8,11 +8,11 @@ from typing import List, Dict
 import numpy as np
 from scipy.optimize import Bounds
 
-from AFL.automation.mixing.MassBalanceBase import MassBalanceBase
-from AFL.automation.mixing.MassBalanceWebAppMixin import MassBalanceWebAppMixin
+from AFL.automation.mixcalc.MassBalanceBase import MassBalanceBase
+from AFL.automation.mixcalc.MassBalanceWebAppMixin import MassBalanceWebAppMixin
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.mixing.Solution import Solution
-from AFL.automation.mixing.MixDB import MixDB
+from AFL.automation.mixcalc.Solution import Solution
+from AFL.automation.mixcalc.MixDB import MixDB
 from AFL.automation.shared.units import enforce_units
 
 

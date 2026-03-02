@@ -6,9 +6,9 @@ from typing import Optional, Dict, List
 import numpy as np
 import pint
 
-from AFL.automation.mixing.Component import Component
-from AFL.automation.mixing.Context import Context
-from AFL.automation.mixing.MixDB import MixDB
+from AFL.automation.mixcalc.Component import Component
+from AFL.automation.mixcalc.Context import Context
+from AFL.automation.mixcalc.MixDB import MixDB
 from AFL.automation.shared.exceptions import EmptyException, NotFoundError
 from AFL.automation.shared.units import (
     units,

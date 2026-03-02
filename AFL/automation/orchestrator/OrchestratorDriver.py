@@ -204,6 +204,16 @@ class OrchestratorDriver(Driver):
             raise ValueError("No DataTiled object added to this class...was it instantiated correctly?")
         return self.data.tiled_client
 
+    def _read_tiled_item(self, item: Any):
+        """Read a Tiled item, disabling wide-table optimization when supported."""
+        try:
+            return item.read(optimize_wide_table=False)
+        except TypeError as exc:
+            message = str(exc)
+            if 'optimize_wide_table' in message or 'unexpected keyword' in message:
+                return item.read()
+            raise
+
     def status(self):
         status = []
         status.append(f'Snapshots: {self.config["snapshot_directory"]}')
@@ -520,7 +530,7 @@ class OrchestratorDriver(Driver):
 
     def _extract_next_sample_from_tiled_entry(self, entry: Any, variable_name: str, entry_id: str) -> Dict[str, Any]:
         try:
-            dataset = entry.read()
+            dataset = self._read_tiled_item(entry)
         except Exception as exc:
             error_msg = f"Failed to read tiled predict entry '{entry_id}': {exc}"
             self.app.logger.error(error_msg)

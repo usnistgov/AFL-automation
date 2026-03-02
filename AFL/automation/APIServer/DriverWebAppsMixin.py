@@ -128,6 +128,17 @@ class DriverWebAppsMixin:
                 'message': f'Failed to connect to Tiled: {str(e)}'
             }
 
+    def _read_tiled_item(self, item):
+        """Read a Tiled item, disabling wide-table optimization when supported."""
+        try:
+            return item.read(optimize_wide_table=False)
+        except TypeError as exc:
+            # Some non-xarray clients do not accept optimize_wide_table.
+            message = str(exc)
+            if 'optimize_wide_table' in message or 'unexpected keyword' in message:
+                return item.read()
+            raise
+
     def tiled_search(self, queries='', filters='', sort='', fields='', offset=0, limit=50, **kwargs):
         """Proxy endpoint for Tiled metadata search to avoid CORS issues.
 
@@ -324,12 +335,7 @@ class DriverWebAppsMixin:
 
             # Try to get xarray dataset representation
             try:
-                # Check if this is a DatasetClient and read with optimization
-                from tiled.client.xarray import DatasetClient
-                if isinstance(item, DatasetClient):
-                    dataset = item.read(optimize_wide_table=False)
-                else:
-                    dataset = item.read()
+                dataset = self._read_tiled_item(item)
 
                 # Get HTML representation
                 if hasattr(dataset, '_repr_html_'):
@@ -489,12 +495,8 @@ class DriverWebAppsMixin:
 
         item = client[entry_id]
 
-        # Fetch dataset
-        from tiled.client.xarray import DatasetClient
-        if isinstance(item, DatasetClient):
-            dataset = item.read(optimize_wide_table=False)
-        else:
-            dataset = item.read()
+        # Fetch dataset with wide-table optimization disabled for xarray clients.
+        dataset = self._read_tiled_item(item)
 
         # Extract metadata from tiled item
         tiled_metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}

@@ -5,9 +5,9 @@ from typing import List, Optional, Dict, Set, Callable, Any, Iterator
 import numpy as np
 from scipy.optimize import lsq_linear, Bounds
 
-from AFL.automation.mixing.PipetteAction import PipetteAction
-from AFL.automation.mixing.Solution import Solution
-from AFL.automation.mixing.BalanceDiagnosis import BalanceDiagnosis, FailureCode, FailureDetail
+from AFL.automation.mixcalc.PipetteAction import PipetteAction
+from AFL.automation.mixcalc.Solution import Solution
+from AFL.automation.mixcalc.BalanceDiagnosis import BalanceDiagnosis, FailureCode, FailureDetail
 
 
 # --- Shared utility functions ---

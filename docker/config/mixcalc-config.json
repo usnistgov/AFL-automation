@@ -10,7 +10,7 @@
     },
     "driver_custom_configs": {
       "BioSANSPrepare": {
-        "_classname": "AFL.automation.mixing.BioSANSPrepare.BioSANSPrepare",
+        "_classname": "AFL.automation.prepare.BioSANSPrepare.BioSANSPrepare",
         "overrides": {
           "mixing_locations": [],
           "stocks": [],

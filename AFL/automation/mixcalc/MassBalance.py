@@ -3,8 +3,8 @@ from typing import Set
 import numpy as np
 from scipy.optimize import Bounds
 
-from AFL.automation.mixing.MassBalanceBase import MassBalanceBase
-from AFL.automation.mixing.Context import Context
+from AFL.automation.mixcalc.MassBalanceBase import MassBalanceBase
+from AFL.automation.mixcalc.Context import Context
 from AFL.automation.shared.units import enforce_units
 
 

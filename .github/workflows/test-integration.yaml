@@ -23,12 +23,12 @@ jobs:
           set -euo pipefail
           tiled_id=$(docker compose ps -q tiled)
           orch_id=$(docker compose ps -q orchestrator)
-          mix_id=$(docker compose ps -q mixing)
+          mixcalc_id=$(docker compose ps -q mixcalc)
           inst_id=$(docker compose ps -q instrument)
           for i in $(seq 1 30); do
             th=$(docker inspect --format '{{.State.Health.Status}}' "$tiled_id") || true
             oh=$(docker inspect --format '{{.State.Health.Status}}' "$orch_id") || true
-            mh=$(docker inspect --format '{{.State.Health.Status}}' "$mix_id") || true
+            mh=$(docker inspect --format '{{.State.Health.Status}}' "$mixcalc_id") || true
             ih=$(docker inspect --format '{{.State.Health.Status}}' "$inst_id") || true
             if [ "$th" = "healthy" ] && [ "$oh" = "healthy" ] && [ "$mh" = "healthy" ] && [ "$ih" = "healthy" ]; then
               echo "Services healthy"; exit 0
@@ -59,13 +59,13 @@ jobs:
           fi
           echo "$body" | grep -q "devkey"
 
-      - name: Smoke test Mixing tiled_config
+      - name: Smoke test Mixcalc tiled_config
         run: |
           set -euo pipefail
           code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5002/tiled_config)
           body=$(curl -s http://localhost:5002/tiled_config)
           if [ "$code" != "200" ]; then
-            echo "Unexpected mixing status: $code" >&2
+            echo "Unexpected mixcalc status: $code" >&2
             exit 1
           fi
           echo "$body" | grep -q "devkey"

@@ -406,6 +406,7 @@
                   
   <h1>Source code for AFL.automation.APIServer.DriverWebAppsMixin</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 
@@ -521,6 +522,278 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_config</span><span class="p">()</span></div>
 
 
+<div class="viewcode-block" id="DriverWebAppsMixin.tiled_upload_dataset">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_upload_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">tiled_upload_dataset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upload_bytes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">coordinate_column</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upload a dataset to Tiled from xarray, NetCDF bytes, CSV, or TSV.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dataset: Optional xarray.Dataset provided directly by Python callers.</span>
+<span class="sd">            upload_bytes: Optional bytes payload for file uploads.</span>
+<span class="sd">            filename: Original upload filename (used for format inference).</span>
+<span class="sd">            file_format: Optional explicit format (&#39;xarray&#39;, &#39;nc&#39;, &#39;csv&#39;, &#39;tsv&#39;).</span>
+<span class="sd">            coordinate_column: Optional column name used to populate sample coordinate.</span>
+<span class="sd">            metadata: Optional dict of metadata merged into dataset attrs.</span>
+<span class="sd">            delimiter: Optional delimiter override for table formats.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with status/message and dataset summary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+        <span class="kn">from</span> <span class="nn">tiled.client.xarray</span> <span class="kn">import</span> <span class="n">write_xarray_dataset</span>
+
+        <span class="n">queued_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span>
+
+        <span class="n">normalized_metadata</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">normalized_metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">metadata</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">parsed</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">normalized_metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid metadata JSON payload.&#39;</span><span class="p">,</span>
+                <span class="p">}</span>
+
+        <span class="c1"># Merge kwargs metadata fields, excluding routing/internal keys.</span>
+        <span class="n">excluded_keys</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;dataset&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;upload_bytes&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;filename&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;file_format&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;coordinate_column&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;metadata&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;delimiter&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;self&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">excluded_keys</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">normalized_metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="n">inferred_format</span> <span class="o">=</span> <span class="p">(</span><span class="n">file_format</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">filename_lower</span> <span class="o">=</span> <span class="p">(</span><span class="n">filename</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inferred_format</span> <span class="ow">and</span> <span class="n">filename_lower</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">filename_lower</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.nc&#39;</span><span class="p">):</span>
+                <span class="n">inferred_format</span> <span class="o">=</span> <span class="s1">&#39;nc&#39;</span>
+            <span class="k">elif</span> <span class="n">filename_lower</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+                <span class="n">inferred_format</span> <span class="o">=</span> <span class="s1">&#39;csv&#39;</span>
+            <span class="k">elif</span> <span class="n">filename_lower</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.tsv&#39;</span><span class="p">):</span>
+                <span class="n">inferred_format</span> <span class="o">=</span> <span class="s1">&#39;tsv&#39;</span>
+
+        <span class="k">if</span> <span class="n">dataset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Provided dataset is not an xarray.Dataset.&#39;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="n">dataset_to_write</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">upload_bytes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;No dataset object or file payload provided.&#39;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">inferred_format</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Could not infer upload format. Please provide file_format.&#39;</span><span class="p">,</span>
+                <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">inferred_format</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;xarray&#39;</span><span class="p">,</span> <span class="s1">&#39;nc&#39;</span><span class="p">,</span> <span class="s1">&#39;netcdf&#39;</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">dataset_to_write</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">upload_bytes</span><span class="p">))</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">{</span>
+                        <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Failed to read NetCDF upload: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="p">}</span>
+            <span class="k">elif</span> <span class="n">inferred_format</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;csv&#39;</span><span class="p">,</span> <span class="s1">&#39;tsv&#39;</span><span class="p">):</span>
+                <span class="n">delimiter_token</span> <span class="o">=</span> <span class="p">(</span><span class="n">delimiter</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">upload_bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8-sig&#39;</span><span class="p">)</span>
+                    <span class="n">nonempty_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+
+                    <span class="k">def</span> <span class="nf">_resolve_table_separator</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">delimiter_token</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">delimiter_token</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;whitespace&#39;</span><span class="p">,</span> <span class="s1">&#39;space&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39;ws&#39;</span><span class="p">):</span>
+                                <span class="k">return</span> <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39;python&#39;</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="p">(</span><span class="n">delimiter</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="n">inferred_format</span> <span class="o">==</span> <span class="s1">&#39;csv&#39;</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                        <span class="c1"># TSV defaults to tab, but support whitespace-delimited text</span>
+                        <span class="c1"># files with .tsv extension.</span>
+                        <span class="n">first</span> <span class="o">=</span> <span class="n">nonempty_lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">nonempty_lines</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                        <span class="n">sample_data_lines</span> <span class="o">=</span> <span class="n">nonempty_lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nonempty_lines</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[]</span>
+
+                        <span class="c1"># Count actual tab usage in data rows, not just header row.</span>
+                        <span class="n">data_lines_with_tabs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">sample_data_lines</span> <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">first</span> <span class="ow">and</span> <span class="n">data_lines_with_tabs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                        <span class="c1"># Support mixed files where header may be tab-separated</span>
+                        <span class="c1"># but data rows are whitespace-separated.</span>
+                        <span class="n">probe_lines</span> <span class="o">=</span> <span class="n">sample_data_lines</span> <span class="k">if</span> <span class="n">sample_data_lines</span> <span class="k">else</span> <span class="p">[</span><span class="n">first</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">probe_lines</span><span class="p">):</span>
+                            <span class="k">return</span> <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39;python&#39;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                    <span class="n">separator</span><span class="p">,</span> <span class="n">parser_engine</span> <span class="o">=</span> <span class="n">_resolve_table_separator</span><span class="p">()</span>
+
+                    <span class="c1"># Read as raw strings first to avoid pandas NA coercion turning</span>
+                    <span class="c1"># valid coordinate tokens into NaN.</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+                        <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span>
+                        <span class="n">sep</span><span class="o">=</span><span class="n">separator</span><span class="p">,</span>
+                        <span class="n">engine</span><span class="o">=</span><span class="n">parser_engine</span><span class="p">,</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">keep_default_na</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">{</span>
+                        <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Failed to parse table upload: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">{</span>
+                        <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Table upload contains no rows.&#39;</span><span class="p">,</span>
+                    <span class="p">}</span>
+
+                <span class="k">if</span> <span class="n">coordinate_column</span> <span class="ow">and</span> <span class="n">coordinate_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">{</span>
+                        <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Coordinate column &quot;</span><span class="si">{</span><span class="n">coordinate_column</span><span class="si">}</span><span class="s1">&quot; is not in uploaded table headers.&#39;</span><span class="p">,</span>
+                    <span class="p">}</span>
+
+                <span class="c1"># Normalize whitespace in column names and cell contents.</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">)</span>
+
+                <span class="c1"># Best-effort numeric coercion that preserves non-empty strings.</span>
+                <span class="k">def</span> <span class="nf">_coerce_series</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+                    <span class="n">numeric</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+                    <span class="n">nonempty_mask</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="c1"># Use numeric values when at least one non-empty value parsed and</span>
+                    <span class="c1"># not all parsed values are NaN.</span>
+                    <span class="k">if</span> <span class="n">nonempty_mask</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">numeric</span><span class="p">[</span><span class="n">nonempty_mask</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                        <span class="k">return</span> <span class="n">numeric</span>
+                    <span class="k">return</span> <span class="n">series</span>
+
+                <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">_coerce_series</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
+
+                <span class="n">dim_name</span> <span class="o">=</span> <span class="n">coordinate_column</span> <span class="k">if</span> <span class="n">coordinate_column</span> <span class="k">else</span> <span class="s1">&#39;sample&#39;</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="n">dim_name</span><span class="p">:</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">coordinate_column</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="k">if</span> <span class="n">coordinate_column</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)))}</span>
+                <span class="n">data_vars</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">coordinate_column</span> <span class="ow">and</span> <span class="n">column</span> <span class="o">==</span> <span class="n">coordinate_column</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">data_vars</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">dim_name</span><span class="p">,),</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+
+                <span class="n">dataset_to_write</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">data_vars</span><span class="o">=</span><span class="n">data_vars</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Unsupported file format &quot;</span><span class="si">{</span><span class="n">inferred_format</span><span class="si">}</span><span class="s1">&quot;. Supported formats: nc, csv, tsv.&#39;</span><span class="p">,</span>
+                <span class="p">}</span>
+
+        <span class="c1"># Tiled+dask cannot auto-rechunk object dtype arrays. Coerce object</span>
+        <span class="c1"># variables/coordinates to strings for robust uploads.</span>
+        <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset_to_write</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">dataset_to_write</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+                <span class="n">dataset_to_write</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">coord_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset_to_write</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">coord</span> <span class="o">=</span> <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+                <span class="n">dataset_to_write</span> <span class="o">=</span> <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span><span class="n">coord_name</span><span class="p">:</span> <span class="n">coord</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)})</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset_to_write</span><span class="p">,</span> <span class="s1">&#39;attrs&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">normalized_metadata</span><span class="p">)</span>
+
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">run_time</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+
+        <span class="n">generated_meta</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;queued&#39;</span><span class="p">:</span> <span class="n">queued_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%y %H:%M:%S-</span><span class="si">%f</span><span class="s1"> %Z%z&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;started&#39;</span><span class="p">:</span> <span class="n">start_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%y %H:%M:%S-</span><span class="si">%f</span><span class="s1"> %Z%z&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;ended&#39;</span><span class="p">:</span> <span class="n">end_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%y %H:%M:%S-</span><span class="si">%f</span><span class="s1"> %Z%z&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;run_time_seconds&#39;</span><span class="p">:</span> <span class="n">run_time</span><span class="o">.</span><span class="n">seconds</span><span class="p">,</span>
+            <span class="s1">&#39;run_time_minutes&#39;</span><span class="p">:</span> <span class="n">run_time</span><span class="o">.</span><span class="n">seconds</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
+            <span class="s1">&#39;exit_state&#39;</span><span class="p">:</span> <span class="s1">&#39;Success!&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;return_val&#39;</span><span class="p">:</span> <span class="s1">&#39;xarray.Dataset&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset_to_write</span><span class="p">,</span> <span class="s1">&#39;attrs&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">existing_meta</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">existing_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="n">existing_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">generated_meta</span><span class="p">)</span>
+        <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">existing_meta</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">write_result</span> <span class="o">=</span> <span class="n">write_xarray_dataset</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">dataset_to_write</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="k">else</span> <span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tiled upload error: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Failed to write dataset to Tiled: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="n">entry_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">write_result</span><span class="p">,</span> <span class="s1">&#39;item&#39;</span><span class="p">):</span>
+                <span class="n">entry_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">write_result</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">write_result</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">write_result</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">entry_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">write_result</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">entry_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Dataset uploaded to Tiled.&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
+            <span class="s1">&#39;dataset_summary&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">sizes</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                <span class="s1">&#39;data_vars&#39;</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">dataset_to_write</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())),</span>
+                <span class="s1">&#39;coords&#39;</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">dataset_to_write</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">())),</span>
+            <span class="p">},</span>
+        <span class="p">}</span></div>
+
+
     <span class="k">def</span> <span class="nf">_get_tiled_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get or create cached Tiled client.</span>
 
@@ -605,6 +878,33 @@
                 <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">{})</span>
             <span class="n">current</span><span class="p">[</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
 
+        <span class="k">def</span> <span class="nf">_parse_datetime_value</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="c1"># QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ]</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s1">&#39;re&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s1">&#39;^(\d</span><span class="si">{2}</span><span class="s1">)/(\d</span><span class="si">{2}</span><span class="s1">)/(\d</span><span class="si">{2}</span><span class="s1">)\s+(\d</span><span class="si">{2}</span><span class="s1">):(\d</span><span class="si">{2}</span><span class="s1">):(\d</span><span class="si">{2}</span><span class="s1">)&#39;</span><span class="p">,</span>
+                <span class="n">text</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span>
+                <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span> <span class="o">+</span> <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
+
+            <span class="c1"># Display-style/legacy: YYYY-MM-DD HH:MM:SS</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s1">&#39;re&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s1">&#39;^(\d</span><span class="si">{4}</span><span class="s1">)-(\d</span><span class="si">{2}</span><span class="s1">)-(\d</span><span class="si">{2}</span><span class="s1">)\s+(\d</span><span class="si">{2}</span><span class="s1">):(\d</span><span class="si">{2}</span><span class="s1">):(\d</span><span class="si">{2}</span><span class="s1">)&#39;</span><span class="p">,</span>
+                <span class="n">text</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span>
+                <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="kc">None</span>
+
         <span class="c1"># Map UI fields to metadata paths for search/sort</span>
         <span class="n">field_path_map</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="s1">&#39;attrs.task_name&#39;</span><span class="p">,</span>
@@ -682,7 +982,83 @@
                     <span class="n">sort_dir</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;asc&#39;</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
                     <span class="n">sort_items</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">sort_key</span><span class="p">,</span> <span class="n">sort_dir</span><span class="p">))</span>
                 <span class="k">if</span> <span class="n">sort_items</span><span class="p">:</span>
-                    <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="o">*</span><span class="n">sort_items</span><span class="p">)</span>
+                    <span class="n">temporal_sort_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;attrs.meta.started&#39;</span><span class="p">,</span> <span class="s1">&#39;attrs.meta.ended&#39;</span><span class="p">,</span> <span class="s1">&#39;meta.started&#39;</span><span class="p">,</span> <span class="s1">&#39;meta.ended&#39;</span><span class="p">}</span>
+                    <span class="n">requires_temporal_sort</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">sort_key</span> <span class="ow">in</span> <span class="n">temporal_sort_fields</span> <span class="k">for</span> <span class="n">sort_key</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">sort_items</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">requires_temporal_sort</span><span class="p">:</span>
+                        <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="o">*</span><span class="n">sort_items</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># For temporal fields, sort in Python by parsed datetime to avoid</span>
+                        <span class="c1"># lexicographic ordering artifacts from string timestamps.</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">items_for_sort</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                            <span class="n">keys_for_sort</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                            <span class="n">items_for_sort</span> <span class="o">=</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys_for_sort</span><span class="p">]</span>
+
+                        <span class="k">for</span> <span class="n">sort_key</span><span class="p">,</span> <span class="n">sort_dir</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">sort_items</span><span class="p">):</span>
+                            <span class="n">reverse</span> <span class="o">=</span> <span class="n">sort_dir</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
+                            <span class="n">is_temporal</span> <span class="o">=</span> <span class="n">sort_key</span> <span class="ow">in</span> <span class="n">temporal_sort_fields</span>
+
+                            <span class="k">def</span> <span class="nf">_extract_sort_value</span><span class="p">(</span><span class="n">item_pair</span><span class="p">):</span>
+                                <span class="n">_</span><span class="p">,</span> <span class="n">item_obj</span> <span class="o">=</span> <span class="n">item_pair</span>
+                                <span class="n">metadata_obj</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item_obj</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item_obj</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+                                <span class="n">value_obj</span> <span class="o">=</span> <span class="n">_get_nested</span><span class="p">(</span><span class="n">metadata_obj</span><span class="p">,</span> <span class="n">sort_key</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">is_temporal</span><span class="p">:</span>
+                                    <span class="n">parsed</span> <span class="o">=</span> <span class="n">_parse_datetime_value</span><span class="p">(</span><span class="n">value_obj</span><span class="p">)</span>
+                                    <span class="k">if</span> <span class="n">parsed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">parsed</span>
+                                <span class="k">return</span> <span class="n">value_obj</span>
+
+                            <span class="k">if</span> <span class="n">reverse</span><span class="p">:</span>
+                                <span class="n">items_for_sort</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+                                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="p">(</span>
+                                        <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                        <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="k">if</span> <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                                    <span class="p">),</span>
+                                    <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                <span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">items_for_sort</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+                                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="p">(</span>
+                                        <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span>
+                                        <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="k">if</span> <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                                    <span class="p">),</span>
+                                <span class="p">)</span>
+
+                        <span class="n">sorted_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">items_for_sort</span><span class="p">]</span>
+                        <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">items_for_sort</span><span class="p">)</span>
+                        <span class="n">paged_ids</span> <span class="o">=</span> <span class="n">sorted_ids</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">limit</span><span class="p">]</span>
+                        <span class="n">items</span> <span class="o">=</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">paged_ids</span><span class="p">]</span>
+                        <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+                                <span class="n">trimmed</span> <span class="o">=</span> <span class="p">{}</span>
+                                <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">requested_fields</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="ow">not</span> <span class="n">field</span><span class="p">:</span>
+                                        <span class="k">continue</span>
+                                    <span class="n">value</span> <span class="o">=</span> <span class="n">_get_nested</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+                                    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">field</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;attrs.&#39;</span><span class="p">):</span>
+                                        <span class="n">value</span> <span class="o">=</span> <span class="n">_get_nested</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;attrs.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                        <span class="n">_set_nested</span><span class="p">(</span><span class="n">trimmed</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                                <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span>
+                                    <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+                                    <span class="s1">&#39;attributes&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                        <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">trimmed</span>
+                                    <span class="p">}</span>
+                                <span class="p">}</span>
+                                <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not access entry </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                <span class="k">continue</span>
+
+                        <span class="k">return</span> <span class="p">{</span>
+                            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">entries</span><span class="p">,</span>
+                            <span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="n">total_count</span>
+                        <span class="p">}</span>
 
             <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 
@@ -1109,6 +1485,16 @@
             <span class="c1"># Detect the sample dimension from the dataset</span>
             <span class="c1"># For single entries, avoid guessing a random axis as &quot;sample&quot;.</span>
             <span class="n">sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_sample_dimension</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">allow_size_fallback</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Ensure plotter paths have a sample dimension even for one entry.</span>
+                <span class="c1"># Use concat_dim for consistency with multi-entry flow.</span>
+                <span class="n">sample_dim</span> <span class="o">=</span> <span class="n">concat_dim</span>
+                <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">({</span><span class="n">sample_dim</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+                <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span>
+                    <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]]),</span>
+                    <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]]),</span>
+                    <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;entry_id&#39;</span><span class="p">]]),</span>
+                <span class="p">})</span>
             
             <span class="c1"># Add metadata as dataset attributes (not coordinates, since we don&#39;t have a new dim)</span>
             <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span>

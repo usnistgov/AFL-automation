@@ -9,6 +9,6 @@ This page provides an overview of the main modules in the AFL-automation framewo
    modules/apiserver
    modules/instrument
    modules/loading
+   modules/mixcalc
    modules/prepare
-   modules/sample
    modules/shared

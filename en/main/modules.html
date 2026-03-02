@@ -51,7 +51,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Server" href="modules/apiserver.html" />
-    <link rel="prev" title="AFL.automation.sample.SampleDriver" href="_autosummary/AFL.automation.sample.SampleDriver.html" />
+    <link rel="prev" title="AFL.automation.prepare.utilities" href="_autosummary/AFL.automation.prepare.utilities.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -362,8 +362,8 @@
 <li class="toctree-l2"><a class="reference internal" href="modules/apiserver.html">API Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/instrument.html">Instrument</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/loading.html">Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/mixcalc.html">Mixcalc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/prepare.html">Prepare</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/sample.html">Sample</a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules/shared.html">Shared</a></li>
 </ul>
 </details></li>
@@ -820,28 +820,194 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mixcalc.html">Mixcalc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html">AFL.automation.mixcalc</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis"><code class="docutils literal notranslate"><span class="pre">BalanceDiagnosis</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.__init__"><code class="docutils literal notranslate"><span class="pre">BalanceDiagnosis.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.summary"><code class="docutils literal notranslate"><span class="pre">BalanceDiagnosis.summary()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.to_dict"><code class="docutils literal notranslate"><span class="pre">BalanceDiagnosis.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.success"><code class="docutils literal notranslate"><span class="pre">BalanceDiagnosis.success</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.details"><code class="docutils literal notranslate"><span class="pre">BalanceDiagnosis.details</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.component_errors"><code class="docutils literal notranslate"><span class="pre">BalanceDiagnosis.component_errors</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureCode"><code class="docutils literal notranslate"><span class="pre">FailureCode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureCode.MISSING_STOCK_COMPONENT"><code class="docutils literal notranslate"><span class="pre">FailureCode.MISSING_STOCK_COMPONENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureCode.STOCK_CONCENTRATION_TOO_LOW"><code class="docutils literal notranslate"><span class="pre">FailureCode.STOCK_CONCENTRATION_TOO_LOW</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureCode.TARGET_OUTSIDE_REACHABLE_COMPOSITIONS"><code class="docutils literal notranslate"><span class="pre">FailureCode.TARGET_OUTSIDE_REACHABLE_COMPOSITIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureCode.BELOW_MINIMUM_PIPETTE_VOLUME"><code class="docutils literal notranslate"><span class="pre">FailureCode.BELOW_MINIMUM_PIPETTE_VOLUME</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureCode.UNWANTED_STOCK_COMPONENT"><code class="docutils literal notranslate"><span class="pre">FailureCode.UNWANTED_STOCK_COMPONENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureCode.TOLERANCE_EXCEEDED"><code class="docutils literal notranslate"><span class="pre">FailureCode.TOLERANCE_EXCEEDED</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureDetail"><code class="docutils literal notranslate"><span class="pre">FailureDetail</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureDetail.__init__"><code class="docutils literal notranslate"><span class="pre">FailureDetail.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureDetail.to_dict"><code class="docutils literal notranslate"><span class="pre">FailureDetail.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureDetail.code"><code class="docutils literal notranslate"><span class="pre">FailureDetail.code</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureDetail.description"><code class="docutils literal notranslate"><span class="pre">FailureDetail.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureDetail.affected_components"><code class="docutils literal notranslate"><span class="pre">FailureDetail.affected_components</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureDetail.affected_stocks"><code class="docutils literal notranslate"><span class="pre">FailureDetail.affected_stocks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.FailureDetail.data"><code class="docutils literal notranslate"><span class="pre">FailureDetail.data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component"><code class="docutils literal notranslate"><span class="pre">Component</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.__hash__"><code class="docutils literal notranslate"><span class="pre">Component.__hash__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.__init__"><code class="docutils literal notranslate"><span class="pre">Component.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.__iter__"><code class="docutils literal notranslate"><span class="pre">Component.__iter__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.copy"><code class="docutils literal notranslate"><span class="pre">Component.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.density"><code class="docutils literal notranslate"><span class="pre">Component.density</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.emit"><code class="docutils literal notranslate"><span class="pre">Component.emit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.formula"><code class="docutils literal notranslate"><span class="pre">Component.formula</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.has_density"><code class="docutils literal notranslate"><span class="pre">Component.has_density</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.has_formula"><code class="docutils literal notranslate"><span class="pre">Component.has_formula</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.has_mass"><code class="docutils literal notranslate"><span class="pre">Component.has_mass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.has_sld"><code class="docutils literal notranslate"><span class="pre">Component.has_sld</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.has_volume"><code class="docutils literal notranslate"><span class="pre">Component.has_volume</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.is_solute"><code class="docutils literal notranslate"><span class="pre">Component.is_solute</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.is_solvent"><code class="docutils literal notranslate"><span class="pre">Component.is_solvent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.mass"><code class="docutils literal notranslate"><span class="pre">Component.mass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.moles"><code class="docutils literal notranslate"><span class="pre">Component.moles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.set_mass"><code class="docutils literal notranslate"><span class="pre">Component.set_mass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.set_volume"><code class="docutils literal notranslate"><span class="pre">Component.set_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.sld"><code class="docutils literal notranslate"><span class="pre">Component.sld</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.volume"><code class="docutils literal notranslate"><span class="pre">Component.volume</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Context"><code class="docutils literal notranslate"><span class="pre">Context</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Context.__init__"><code class="docutils literal notranslate"><span class="pre">Context.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Context.add_self_to_context"><code class="docutils literal notranslate"><span class="pre">Context.add_self_to_context()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Context.contexts"><code class="docutils literal notranslate"><span class="pre">Context.contexts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Context.get_context"><code class="docutils literal notranslate"><span class="pre">Context.get_context()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Context.get_contexts"><code class="docutils literal notranslate"><span class="pre">Context.get_contexts()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.NoContextException"><code class="docutils literal notranslate"><span class="pre">NoContextException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalance"><code class="docutils literal notranslate"><span class="pre">MassBalance</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalance.__init__"><code class="docutils literal notranslate"><span class="pre">MassBalance.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalance.stock_components"><code class="docutils literal notranslate"><span class="pre">MassBalance.stock_components</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalance.target_components"><code class="docutils literal notranslate"><span class="pre">MassBalance.target_components</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.__init__"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.balance"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.balance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.balance_report"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.balance_report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.components"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.components</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.failure_summary"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.failure_summary()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.make_target_names"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.make_target_names()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.mass_fraction_matrix"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.mass_fraction_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.stock_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.stock_components</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.target_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceBase.target_components</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.__init__"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.add_component"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.add_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.add_stock"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.add_stock()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.add_target"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.add_target()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.add_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.add_targets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.balance"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.balance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.compute_stock_properties"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.compute_stock_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.defaults"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.defaults</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_balance_progress"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.get_balance_progress()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_balance_settings"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.get_balance_settings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_sample_composition"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.get_sample_composition()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_balanced_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_balanced_targets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_components()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_stocks"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_stocks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.list_targets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.load_sweep_config"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.load_sweep_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.process_stocks"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.process_stocks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.process_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.process_targets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.remove_component"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.remove_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.reset_stocks"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.reset_stocks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.reset_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.reset_targets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.save_sweep_config"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.save_sweep_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.stock_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.stock_components</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.target_components"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.target_components</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.update_component"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.update_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.upload_stocks"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.upload_stocks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.upload_targets"><code class="docutils literal notranslate"><span class="pre">MassBalanceDriver.upload_targets()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceWebAppMixin"><code class="docutils literal notranslate"><span class="pre">MassBalanceWebAppMixin</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceWebAppMixin.get_orchestrator_context"><code class="docutils literal notranslate"><span class="pre">MassBalanceWebAppMixin.get_orchestrator_context()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceWebAppMixin.get_prepare_context"><code class="docutils literal notranslate"><span class="pre">MassBalanceWebAppMixin.get_prepare_context()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceWebAppMixin.mixdoctor"><code class="docutils literal notranslate"><span class="pre">MassBalanceWebAppMixin.mixdoctor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceWebAppMixin.submit_orchestrator_grid"><code class="docutils literal notranslate"><span class="pre">MassBalanceWebAppMixin.submit_orchestrator_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceWebAppMixin.submit_prepare_grid"><code class="docutils literal notranslate"><span class="pre">MassBalanceWebAppMixin.submit_prepare_grid()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB"><code class="docutils literal notranslate"><span class="pre">MixDB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.__init__"><code class="docutils literal notranslate"><span class="pre">MixDB.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.add_component"><code class="docutils literal notranslate"><span class="pre">MixDB.add_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.add_component_interactive"><code class="docutils literal notranslate"><span class="pre">MixDB.add_component_interactive()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.get_component"><code class="docutils literal notranslate"><span class="pre">MixDB.get_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.get_db"><code class="docutils literal notranslate"><span class="pre">MixDB.get_db()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.list_components"><code class="docutils literal notranslate"><span class="pre">MixDB.list_components()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.remove_component"><code class="docutils literal notranslate"><span class="pre">MixDB.remove_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.set_db"><code class="docutils literal notranslate"><span class="pre">MixDB.set_db()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.update_component"><code class="docutils literal notranslate"><span class="pre">MixDB.update_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.write"><code class="docutils literal notranslate"><span class="pre">MixDB.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction"><code class="docutils literal notranslate"><span class="pre">PipetteAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction.__init__"><code class="docutils literal notranslate"><span class="pre">PipetteAction.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction.emit_protocol"><code class="docutils literal notranslate"><span class="pre">PipetteAction.emit_protocol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction.get_kwargs"><code class="docutils literal notranslate"><span class="pre">PipetteAction.get_kwargs()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution"><code class="docutils literal notranslate"><span class="pre">Solution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.__eq__"><code class="docutils literal notranslate"><span class="pre">Solution.__eq__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.__hash__"><code class="docutils literal notranslate"><span class="pre">Solution.__hash__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.__init__"><code class="docutils literal notranslate"><span class="pre">Solution.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.add_component"><code class="docutils literal notranslate"><span class="pre">Solution.add_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.all_components_have_mass"><code class="docutils literal notranslate"><span class="pre">Solution.all_components_have_mass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.concentration"><code class="docutils literal notranslate"><span class="pre">Solution.concentration</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.contains"><code class="docutils literal notranslate"><span class="pre">Solution.contains()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.copy"><code class="docutils literal notranslate"><span class="pre">Solution.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.mass"><code class="docutils literal notranslate"><span class="pre">Solution.mass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.mass_fraction"><code class="docutils literal notranslate"><span class="pre">Solution.mass_fraction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.measure_out"><code class="docutils literal notranslate"><span class="pre">Solution.measure_out()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.molality"><code class="docutils literal notranslate"><span class="pre">Solution.molality</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.molarity"><code class="docutils literal notranslate"><span class="pre">Solution.molarity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.rename_component"><code class="docutils literal notranslate"><span class="pre">Solution.rename_component()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.set_mass"><code class="docutils literal notranslate"><span class="pre">Solution.set_mass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.set_properties_from_dict"><code class="docutils literal notranslate"><span class="pre">Solution.set_properties_from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.set_volume"><code class="docutils literal notranslate"><span class="pre">Solution.set_volume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.size"><code class="docutils literal notranslate"><span class="pre">Solution.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.solutes"><code class="docutils literal notranslate"><span class="pre">Solution.solutes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.solvent_density"><code class="docutils literal notranslate"><span class="pre">Solution.solvent_density</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.solvent_mass"><code class="docutils literal notranslate"><span class="pre">Solution.solvent_mass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.solvent_sld"><code class="docutils literal notranslate"><span class="pre">Solution.solvent_sld</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.solvent_volume"><code class="docutils literal notranslate"><span class="pre">Solution.solvent_volume</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.solvents"><code class="docutils literal notranslate"><span class="pre">Solution.solvents</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.to_dict"><code class="docutils literal notranslate"><span class="pre">Solution.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.volume"><code class="docutils literal notranslate"><span class="pre">Solution.volume</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.volume_fraction"><code class="docutils literal notranslate"><span class="pre">Solution.volume_fraction</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.TargetSolution"><code class="docutils literal notranslate"><span class="pre">TargetSolution</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="modules/prepare.html">Prepare</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="_autosummary/AFL.automation.prepare.html">AFL.automation.prepare</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.Component.html">AFL.automation.prepare.Component</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.Component.html#AFL.automation.prepare.Component.Component"><code class="docutils literal notranslate"><span class="pre">Component</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.DeckBuilderWidget.html">AFL.automation.prepare.DeckBuilderWidget</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.DeckBuilderWidget.html#AFL.automation.prepare.DeckBuilderWidget.DeckBuilderWidget"><code class="docutils literal notranslate"><span class="pre">DeckBuilderWidget</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.DeckBuilderWidget.html#AFL.automation.prepare.DeckBuilderWidget.DeckBuilderWidget_Model"><code class="docutils literal notranslate"><span class="pre">DeckBuilderWidget_Model</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.DeckBuilderWidget.html#AFL.automation.prepare.DeckBuilderWidget.DeckBuilderWidget_View"><code class="docutils literal notranslate"><span class="pre">DeckBuilderWidget_View</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html">AFL.automation.prepare.Dummy_OT2_Driver</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.Dummy_OT2_Driver.html#AFL.automation.prepare.Dummy_OT2_Driver.Dummy_OT2_Driver"><code class="docutils literal notranslate"><span class="pre">Dummy_OT2_Driver</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2Client.html">AFL.automation.prepare.OT2Client</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2Client.html#AFL.automation.prepare.OT2Client.OT2Client"><code class="docutils literal notranslate"><span class="pre">OT2Client</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.BioSANSPrepare.html">AFL.automation.prepare.BioSANSPrepare</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.BioSANSPrepare.html#AFL.automation.prepare.BioSANSPrepare.BioSANSPrepare"><code class="docutils literal notranslate"><span class="pre">BioSANSPrepare</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2DeckWebAppMixin.html">AFL.automation.prepare.OT2DeckWebAppMixin</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2DeckWebAppMixin.html#AFL.automation.prepare.OT2DeckWebAppMixin.OT2DeckWebAppMixin"><code class="docutils literal notranslate"><span class="pre">OT2DeckWebAppMixin</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html">AFL.automation.prepare.OT2HTTPDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2Prepare.html">AFL.automation.prepare.OT2Prepare</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare"><code class="docutils literal notranslate"><span class="pre">OT2Prepare</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a><ul>
@@ -850,63 +1016,21 @@
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.argmin"><code class="docutils literal notranslate"><span class="pre">argmin()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PrepType.html">AFL.automation.prepare.PrepType</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PrepType.html#AFL.automation.prepare.PrepType.PrepType"><code class="docutils literal notranslate"><span class="pre">PrepType</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PipetteAction.html">AFL.automation.prepare.PipetteAction</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.prepare.PipetteAction.PipetteAction"><code class="docutils literal notranslate"><span class="pre">PipetteAction</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PrepareWidget.html">AFL.automation.prepare.PrepareWidget</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PrepareWidget.html#AFL.automation.prepare.PrepareWidget.PrepareWidget"><code class="docutils literal notranslate"><span class="pre">PrepareWidget</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PrepareWidget.html#AFL.automation.prepare.PrepareWidget.PrepareWidget_Model"><code class="docutils literal notranslate"><span class="pre">PrepareWidget_Model</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PrepareWidget.html#AFL.automation.prepare.PrepareWidget.PrepareWidget_View"><code class="docutils literal notranslate"><span class="pre">PrepareWidget_View</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PrepareDriver.html">AFL.automation.prepare.PrepareDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver"><code class="docutils literal notranslate"><span class="pre">PrepareDriver</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.SampleSeriesWidget.html">AFL.automation.prepare.SampleSeriesWidget</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.SampleSeriesWidget.html#AFL.automation.prepare.SampleSeriesWidget.SampleSeriesWidget"><code class="docutils literal notranslate"><span class="pre">SampleSeriesWidget</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.SampleSeriesWidget.html#AFL.automation.prepare.SampleSeriesWidget.SampleSeriesWidget_Model"><code class="docutils literal notranslate"><span class="pre">SampleSeriesWidget_Model</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.SampleSeriesWidget.html#AFL.automation.prepare.SampleSeriesWidget.SampleSeriesWidget_View"><code class="docutils literal notranslate"><span class="pre">SampleSeriesWidget_View</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.StockBuilderWidget.html">AFL.automation.prepare.StockBuilderWidget</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.StockBuilderWidget.html#AFL.automation.prepare.StockBuilderWidget.StockBuilderWidget"><code class="docutils literal notranslate"><span class="pre">StockBuilderWidget</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.StockBuilderWidget.html#AFL.automation.prepare.StockBuilderWidget.StockBuilderWidget_Model"><code class="docutils literal notranslate"><span class="pre">StockBuilderWidget_Model</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.StockBuilderWidget.html#AFL.automation.prepare.StockBuilderWidget.StockBuilderWidget_View"><code class="docutils literal notranslate"><span class="pre">StockBuilderWidget_View</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.SweepBuilderWidget.html">AFL.automation.prepare.SweepBuilderWidget</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.SweepBuilderWidget.html#AFL.automation.prepare.SweepBuilderWidget.SweepBuilderWidget"><code class="docutils literal notranslate"><span class="pre">SweepBuilderWidget</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.SweepBuilderWidget.html#AFL.automation.prepare.SweepBuilderWidget.SweepBuilderWidget_Model"><code class="docutils literal notranslate"><span class="pre">SweepBuilderWidget_Model</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.SweepBuilderWidget.html#AFL.automation.prepare.SweepBuilderWidget.SweepBuilderWidget_View"><code class="docutils literal notranslate"><span class="pre">SweepBuilderWidget_View</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.factory.html">AFL.automation.prepare.factory</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.factory.html#AFL.automation.prepare.factory.HD2OFactory"><code class="docutils literal notranslate"><span class="pre">HD2OFactory()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.factory.html#AFL.automation.prepare.factory.compositionSweepFactory"><code class="docutils literal notranslate"><span class="pre">compositionSweepFactory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.VirtualOT2HTTPDriver.html">AFL.automation.prepare.VirtualOT2HTTPDriver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.VirtualOT2HTTPDriver.html#AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver"><code class="docutils literal notranslate"><span class="pre">VirtualOT2HTTPDriver</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.prepare.utilities.html">AFL.automation.prepare.utilities</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.utilities.html#AFL.automation.prepare.utilities.make_locs"><code class="docutils literal notranslate"><span class="pre">make_locs()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.prepare.utilities.html#AFL.automation.prepare.utilities.make_wellplate_locs"><code class="docutils literal notranslate"><span class="pre">make_wellplate_locs()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="modules/sample.html">Sample</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="_autosummary/AFL.automation.sample.html">AFL.automation.sample</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.sample.CastingServer.html">AFL.automation.sample.CastingServer</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.sample.CastingServer.html#AFL.automation.sample.CastingServer.CastingServer"><code class="docutils literal notranslate"><span class="pre">CastingServer</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.sample.SampleDriver.html">AFL.automation.sample.SampleDriver</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.sample.SampleDriver.html#AFL.automation.sample.SampleDriver.SampleDriver"><code class="docutils literal notranslate"><span class="pre">SampleDriver</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="_autosummary/AFL.automation.sample_env.html">AFL.automation.sample_env</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/AFL.automation.sample_env.TemperatureDeck.html">AFL.automation.sample_env.TemperatureDeck</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/AFL.automation.sample_env.TemperatureDeck.html#AFL.automation.sample_env.TemperatureDeck.TemperatureDeck"><code class="docutils literal notranslate"><span class="pre">TemperatureDeck</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1013,12 +1137,12 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="_autosummary/AFL.automation.sample.SampleDriver.html"
+       href="_autosummary/AFL.automation.prepare.utilities.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">AFL.automation.sample.SampleDriver</p>
+        <p class="prev-next-title">AFL.automation.prepare.utilities</p>
       </div>
     </a>
     <a class="right-next"

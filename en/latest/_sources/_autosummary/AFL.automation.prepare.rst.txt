@@ -1,33 +1,8 @@
-AFL.automation.prepare
+﻿AFL.automation.prepare
 ======================
 
 .. automodule:: AFL.automation.prepare
 
-   
-   .. rubric:: Functions
-
-   .. autosummary::
-   
-      HD2OFactory
-      compositionSweepFactory
-      make_locs
-      make_wellplate_locs
-   
-   .. rubric:: Classes
-
-   .. autosummary::
-   
-      ComponentDB
-      Deck
-      MassBalance
-      OT2HTTPDriver
-      PipetteAction
-      Sample
-      SampleSeries
-      Solute
-      Solution
-      Solvent
-      VirtualOT2HTTPDriver
    
 .. rubric:: Modules
 
@@ -35,16 +10,12 @@ AFL.automation.prepare
    :toctree:
    :recursive:
 
-   Component
-   DeckBuilderWidget
-   Dummy_OT2_Driver
-   OT2Client
+   BioSANSPrepare
    OT2DeckWebAppMixin
+   OT2HTTPDriver
+   OT2Prepare
    OT2_Driver
-   PrepType
-   PrepareWidget
-   SampleSeriesWidget
-   StockBuilderWidget
-   SweepBuilderWidget
-   factory
+   PipetteAction
+   PrepareDriver
+   VirtualOT2HTTPDriver
    utilities

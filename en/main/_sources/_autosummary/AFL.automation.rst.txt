@@ -18,10 +18,8 @@
 
    APIServer
    apps
-   driver_templates
    instrument
    loading
-   mixing
-   prepare
+   mixcalc
    sample_env
    shared

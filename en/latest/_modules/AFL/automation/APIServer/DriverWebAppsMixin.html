@@ -549,6 +549,17 @@
                 <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Failed to connect to Tiled: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
             <span class="p">}</span>
 
+    <span class="k">def</span> <span class="nf">_read_tiled_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a Tiled item, disabling wide-table optimization when supported.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">optimize_wide_table</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="c1"># Some non-xarray clients do not accept optimize_wide_table.</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;optimize_wide_table&#39;</span> <span class="ow">in</span> <span class="n">message</span> <span class="ow">or</span> <span class="s1">&#39;unexpected keyword&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">raise</span>
+
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_search">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_search">[docs]</a>
     <span class="k">def</span> <span class="nf">tiled_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -750,12 +761,7 @@
 
             <span class="c1"># Try to get xarray dataset representation</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># Check if this is a DatasetClient and read with optimization</span>
-                <span class="kn">from</span> <span class="nn">tiled.client.xarray</span> <span class="kn">import</span> <span class="n">DatasetClient</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">DatasetClient</span><span class="p">):</span>
-                    <span class="n">dataset</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">optimize_wide_table</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">dataset</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
                 <span class="c1"># Get HTML representation</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s1">&#39;_repr_html_&#39;</span><span class="p">):</span>
@@ -922,12 +928,8 @@
 
         <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
 
-        <span class="c1"># Fetch dataset</span>
-        <span class="kn">from</span> <span class="nn">tiled.client.xarray</span> <span class="kn">import</span> <span class="n">DatasetClient</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">DatasetClient</span><span class="p">):</span>
-            <span class="n">dataset</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">optimize_wide_table</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">dataset</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="c1"># Fetch dataset with wide-table optimization disabled for xarray clients.</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
         <span class="c1"># Extract metadata from tiled item</span>
         <span class="n">tiled_metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>

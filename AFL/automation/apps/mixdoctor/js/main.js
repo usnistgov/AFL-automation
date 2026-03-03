@@ -196,6 +196,20 @@ function parseToleranceInput() {
     return tol;
 }
 
+function getBalanceMultistepEnabled() {
+    var el = document.getElementById('balance-enable-multistep-input');
+    if (!el) return false;
+    return !!el.checked;
+}
+
+function parseMinimumVolumeInput() {
+    var minVolEl = document.getElementById('balance-min-volume-input');
+    if (!minVolEl) throw new Error('Minimum volume input not found.');
+    var txt = minVolEl.value.trim();
+    if (!txt) throw new Error('Minimum volume is required.');
+    return txt;
+}
+
 async function loadBalanceSettings() {
     try {
         var r = await fetch('/get_balance_settings');
@@ -204,6 +218,14 @@ async function loadBalanceSettings() {
         var tolEl = document.getElementById('balance-tol-input');
         if (tolEl && settings && settings.tol !== undefined && settings.tol !== null) {
             tolEl.value = String(settings.tol);
+        }
+        var minVolEl = document.getElementById('balance-min-volume-input');
+        if (minVolEl && settings && settings.minimum_volume !== undefined && settings.minimum_volume !== null) {
+            minVolEl.value = String(settings.minimum_volume);
+        }
+        var multistepEl = document.getElementById('balance-enable-multistep-input');
+        if (multistepEl && settings && settings.enable_multistep_dilution !== undefined && settings.enable_multistep_dilution !== null) {
+            multistepEl.checked = !!settings.enable_multistep_dilution;
         }
     } catch (e) {
         // Ignore; leave existing input value.
@@ -589,8 +611,12 @@ async function runBalance() {
     btn.disabled = true;
     btn.textContent = 'Balancing...';
     var tol = null;
+    var minimumVolume = null;
+    var enableMultistep = false;
     try {
         tol = parseToleranceInput();
+        minimumVolume = parseMinimumVolumeInput();
+        enableMultistep = getBalanceMultistepEnabled();
     } catch (e) {
         showStatus(e.message, true);
         btn.disabled = false;
@@ -614,7 +640,12 @@ async function runBalance() {
         var setResp = await authedFetch('/enqueue', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({task_name: 'set_config', tol: tol})
+            body: JSON.stringify({
+                task_name: 'set_config',
+                tol: tol,
+                minimum_volume: minimumVolume,
+                enable_multistep_dilution: enableMultistep
+            })
         });
         if (!setResp.ok) {
             showStatus('Failed to enqueue tolerance update.', true);
@@ -629,7 +660,11 @@ async function runBalance() {
         var r = await authedFetch('/enqueue', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({task_name: 'balance', return_report: true})
+            body: JSON.stringify({
+                task_name: 'balance',
+                return_report: true,
+                enable_multistep_dilution: enableMultistep
+            })
         });
         if (!r.ok) {
             showStatus('Failed to enqueue balance', true);
@@ -3120,6 +3155,7 @@ function collectProcessSampleKwargsFromUI() {
 
 function collectPrepareKwargsFromUI() {
     var kwargs = {};
+    kwargs.enable_multistep_dilution = !!document.getElementById('submit-prepare-kw-enable-multistep').checked;
     var dest = document.getElementById('submit-prepare-kw-dest').value.trim();
     if (dest) kwargs.dest = dest;
 
@@ -3290,6 +3326,9 @@ function applySubmitContextToUI(ctx) {
         } else {
             document.getElementById('submit-override-composition-format').value = JSON.stringify(cfg.composition_format);
         }
+    }
+    if (cfg.enable_multistep_dilution !== undefined && cfg.enable_multistep_dilution !== null) {
+        document.getElementById('submit-prepare-kw-enable-multistep').checked = !!cfg.enable_multistep_dilution;
     }
 
     var health = ctx.health || {};
@@ -3471,7 +3510,7 @@ function initSubmitTab() {
         'submit-kw-predict-next', 'submit-kw-enqueue-next',
         'submit-kw-name', 'submit-kw-sample-uuid', 'submit-kw-al-campaign-name', 'submit-kw-al-uuid',
         'submit-kw-predict-combine', 'submit-kw-advanced-json',
-        'submit-prepare-kw-dest', 'submit-prepare-kw-advanced-json',
+        'submit-prepare-kw-enable-multistep', 'submit-prepare-kw-dest', 'submit-prepare-kw-advanced-json',
         'submit-orchestrator-uri', 'submit-prepare-uri',
         'submit-override-prepare-volume-enabled', 'submit-override-data-tag-enabled',
         'submit-override-al-components-enabled', 'submit-override-composition-format-enabled',

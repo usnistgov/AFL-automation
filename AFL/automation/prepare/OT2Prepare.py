@@ -71,6 +71,73 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
         self.last_target_location = destination
         return True
 
+    def _resolve_stage_source(self, source_location, intermediate_map):
+        if isinstance(source_location, str) and source_location.startswith("@intermediate:"):
+            key = source_location.split(":", 1)[1]
+            if key not in intermediate_map:
+                raise ValueError(f"Unknown intermediate source token: {source_location}")
+            return intermediate_map[key]
+        return source_location
+
+    def _transfer_stage(self, source, dest, volume_ul):
+        stock_name = self.config.get("deck", {}).get(source)
+        transfer_params = self.get_transfer_params(stock_name) if stock_name is not None else self.get_transfer_params("default")
+        self.transfer(source=source, dest=dest, volume=volume_ul, **transfer_params)
+
+    def execute_preparation_plan(self, target, balanced_target, destination, procedure_plan, intermediate_destinations):
+        intermediate_ids = procedure_plan.get("intermediate_ids", [])
+        if len(intermediate_ids) != len(intermediate_destinations):
+            raise ValueError(
+                f"Intermediate destination mismatch. Need {len(intermediate_ids)}, got {len(intermediate_destinations)}."
+            )
+        intermediate_map = {
+            intermediate_id: intermediate_destinations[i]
+            for i, intermediate_id in enumerate(intermediate_ids)
+        }
+
+        stages = procedure_plan.get("stages", [])
+        for stage in stages:
+            stage_type = stage.get("stage_type")
+            if stage_type == "dilution":
+                dest_token = stage.get("destination_token")
+                if not isinstance(dest_token, str) or not dest_token.startswith("@intermediate:"):
+                    raise ValueError(f"Invalid dilution destination token: {dest_token}")
+                intermediate_id = dest_token.split(":", 1)[1]
+                if intermediate_id not in intermediate_map:
+                    raise ValueError(f"No destination assigned for intermediate '{intermediate_id}'")
+                stage_dest = intermediate_map[intermediate_id]
+
+                source_loc = self._resolve_stage_source(stage.get("source_location"), intermediate_map)
+                diluent_loc = self._resolve_stage_source(stage.get("diluent_location"), intermediate_map)
+                source_mass_g = float(stage.get("total_source_mass_g", 0.0))
+                diluent_mass_g = float(stage.get("total_diluent_mass_g", 0.0))
+                if source_mass_g > 0:
+                    source_stock = self.stocks_by_location(source_loc)
+                    source_volume = source_stock.measure_out(f"{source_mass_g} g").volume.to("ul").magnitude
+                    self._transfer_stage(source_loc, stage_dest, source_volume)
+                if diluent_mass_g > 0:
+                    diluent_stock = self.stocks_by_location(diluent_loc)
+                    diluent_volume = diluent_stock.measure_out(f"{diluent_mass_g} g").volume.to("ul").magnitude
+                    self._transfer_stage(diluent_loc, stage_dest, diluent_volume)
+            elif stage_type == "final_mix":
+                for transfer in stage.get("transfers", []):
+                    source_loc = self._resolve_stage_source(transfer.get("source_location"), intermediate_map)
+                    vol_ul = float(transfer.get("required_volume_ul", 0.0))
+                    if vol_ul <= 0:
+                        continue
+                    self._transfer_stage(source_loc, destination, vol_ul)
+            else:
+                raise ValueError(f"Unknown stage type '{stage_type}' in procedure plan")
+
+        self.last_target_location = destination
+        return True
+
+    def stocks_by_location(self, location):
+        for stock in self.stocks:
+            if stock.location == location:
+                return stock
+        raise ValueError(f"No stock configured at location '{location}'")
+
     def build_prepare_result(self, feasible_result, balanced_target):
         result_dict = balanced_target.to_dict()
         if hasattr(balanced_target, "volume") and balanced_target.volume is not None:

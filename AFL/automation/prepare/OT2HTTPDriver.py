@@ -1371,6 +1371,12 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 if mix_dispense_rate is not None:
                     self.set_dispense_rate(mix_dispense_rate, pipette_mount)
 
+                # Mix after transfer should be performed from the bottom of the destination well
+                mix_well_location = {
+                    "origin": "bottom",
+                    "offset": {"x": 0, "y": 0, "z": 0},
+                }
+
                 # Mix after transfer - implement by executing multiple aspirate/dispense
                 for _ in range(n_mixes):
                     self._execute_atomic_command(
@@ -1380,10 +1386,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                             "volume": mix_volume,
                             "labwareId": dest_well["labwareId"],
                             "wellName": dest_well["wellName"],
-                            "wellLocation": {
-                                "origin": dest_position,
-                                "offset": {"x": 0, "y": 0, "z": 0},
-                            },
+                            "wellLocation": mix_well_location,
                             "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                         },
                         check_run_status=False,
@@ -1396,10 +1399,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                             "volume": mix_volume,
                             "labwareId": dest_well["labwareId"],
                             "wellName": dest_well["wellName"],
-                            "wellLocation": {
-                                "origin": dest_position,
-                                "offset": {"x": 0, "y": 0, "z": 0},
-                            },
+                            "wellLocation": mix_well_location,
                             "flowRate": self.pipette_info[pipette_mount]['dispense_flow_rate'],
                         },
                         check_run_status=False,

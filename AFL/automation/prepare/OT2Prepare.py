@@ -211,6 +211,15 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
             )
             raise
 
+    def load_gen1_p10(self, mount, tip_rack_slots, **kwargs):
+        """Convenience wrapper for loading a GEN1 P10 single-channel pipette."""
+        return self.load_instrument(
+            name="p10_single",
+            mount=mount,
+            tip_rack_slots=tip_rack_slots,
+            **kwargs,
+        )
+
     def reset(self):
         self.reset_targets()
         self.reset_stocks()

@@ -1998,12 +1998,41 @@ function normalizeJsonTargetEntry(entry, idx) {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
         throw new Error('JSON target #' + (idx + 1) + ' must be an object.');
     }
-    var out = {};
-    Object.keys(entry).forEach(function(k) {
-        out[k] = entry[k];
-    });
+    var out = pruneEmptyStringKeys(entry);
+    if (!out || typeof out !== 'object' || Array.isArray(out)) out = {};
     if (!out.name) out.name = 'target-' + (idx + 1);
     return out;
+}
+
+function pruneEmptyStringKeys(value) {
+    if (value === null || value === undefined) return value;
+
+    if (typeof value === 'string') {
+        var trimmed = value.trim();
+        return trimmed ? trimmed : undefined;
+    }
+
+    if (Array.isArray(value)) {
+        var arr = value.map(pruneEmptyStringKeys).filter(function(item) {
+            return item !== undefined;
+        });
+        return arr.length > 0 ? arr : undefined;
+    }
+
+    if (typeof value === 'object') {
+        var out = {};
+        Object.keys(value).forEach(function(rawKey) {
+            var key = (rawKey || '').trim();
+            if (!key) return;
+            var pruned = pruneEmptyStringKeys(value[rawKey]);
+            if (pruned === undefined) return;
+            if (pruned && typeof pruned === 'object' && !Array.isArray(pruned) && Object.keys(pruned).length === 0) return;
+            out[key] = pruned;
+        });
+        return Object.keys(out).length > 0 ? out : undefined;
+    }
+
+    return value;
 }
 
 function parseTargetsFromJson(raw) {

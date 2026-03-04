@@ -1537,6 +1537,12 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">max_smallest_pipette</span>
                 <span class="p">)</span>  <span class="c1"># Use smaller pipette at max capacity</span>
 
+            <span class="k">if</span> <span class="n">transfer</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Computed nonpositive transfer volume </span><span class="si">{</span><span class="n">transfer</span><span class="si">}</span><span class="s2">uL while splitting </span><span class="si">{</span><span class="n">vol</span><span class="si">}</span><span class="s2">uL; stopping split.&quot;</span>
+                <span class="p">)</span>
+                <span class="k">break</span>
+
             <span class="n">transfers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transfer</span><span class="p">)</span>
 
             <span class="c1"># Exit condition - we&#39;ve reached the target volume</span>
@@ -1589,6 +1595,11 @@
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Transfer fluid from one location to another using atomic HTTP API commands&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transferring </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">volume_ul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">volume_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping transfer with nonpositive volume </span><span class="si">{</span><span class="n">volume_ul</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
         
         <span class="c1"># Verify run exists once at the start, then skip checks for all atomic commands</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
@@ -1601,7 +1612,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">set_dispense_rate</span><span class="p">(</span><span class="n">dispense_rate</span><span class="p">)</span>
 
         <span class="c1"># Get pipette based on volume</span>
-        <span class="n">pipette</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+        <span class="n">pipette</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span>
         <span class="n">pipette_mount</span> <span class="o">=</span> <span class="n">pipette</span><span class="p">[</span><span class="s2">&quot;mount&quot;</span><span class="p">]</span>  <span class="c1"># Get the mount from the pipette object</span>
 
         <span class="c1"># Get the pipette ID</span>
@@ -1637,9 +1648,14 @@
             <span class="n">dest_position</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span>
 
         <span class="c1"># Split transfers if needed</span>
-        <span class="n">transfers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_up_transfers</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+        <span class="n">transfers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_up_transfers</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">sub_volume</span> <span class="ow">in</span> <span class="n">transfers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sub_volume</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Skipping nonpositive sub-transfer volume </span><span class="si">{</span><span class="n">sub_volume</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">continue</span>
             <span class="c1"># 1. Always pick up a new tip for each transfer</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
                 <span class="s2">&quot;pickUpTip&quot;</span><span class="p">,</span>

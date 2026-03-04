@@ -1842,6 +1842,12 @@
                 <span class="k">if</span> <span class="n">mix_dispense_rate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_dispense_rate</span><span class="p">(</span><span class="n">mix_dispense_rate</span><span class="p">,</span> <span class="n">pipette_mount</span><span class="p">)</span>
 
+                <span class="c1"># Mix after transfer should be performed from the bottom of the destination well</span>
+                <span class="n">mix_well_location</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+                <span class="p">}</span>
+
                 <span class="c1"># Mix after transfer - implement by executing multiple aspirate/dispense</span>
                 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_mixes</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
@@ -1851,10 +1857,7 @@
                             <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">mix_volume</span><span class="p">,</span>
                             <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
                             <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
-                            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="n">dest_position</span><span class="p">,</span>
-                                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
-                            <span class="p">},</span>
+                            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="n">mix_well_location</span><span class="p">,</span>
                             <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">],</span>
                         <span class="p">},</span>
                         <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1867,10 +1870,7 @@
                             <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">mix_volume</span><span class="p">,</span>
                             <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
                             <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
-                            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="n">dest_position</span><span class="p">,</span>
-                                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
-                            <span class="p">},</span>
+                            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="n">mix_well_location</span><span class="p">,</span>
                             <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;dispense_flow_rate&#39;</span><span class="p">],</span>
                         <span class="p">},</span>
                         <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>

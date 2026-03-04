@@ -281,6 +281,37 @@ var balanceResultsByTarget = {};
 // Ordered array of balance report entries (same order as targets list)
 var balanceReportArray = [];
 
+function invalidateBalanceResults() {
+    balanceResultsByTarget = {};
+    balanceReportArray = [];
+}
+
+function normalizeQtyDictForCompare(dict) {
+    if (!dict || typeof dict !== 'object') return null;
+    var out = {};
+    Object.keys(dict).sort().forEach(function(k) {
+        out[k] = String(dict[k]);
+    });
+    return out;
+}
+
+function shouldInvalidateBalanceForTargets(targets) {
+    if (!Array.isArray(targets) || !Array.isArray(balanceReportArray) || balanceReportArray.length === 0) return false;
+    if (balanceReportArray.length !== targets.length) return true;
+    for (var i = 0; i < targets.length; i++) {
+        var live = targets[i] || {};
+        var reported = balanceReportArray[i] && balanceReportArray[i].target ? balanceReportArray[i].target : null;
+        if (!reported) return true;
+        if ((reported.name || '') !== (live.name || '')) return true;
+        if (reported.masses && live.masses) {
+            var reportedMasses = JSON.stringify(normalizeQtyDictForCompare(reported.masses));
+            var liveMasses = JSON.stringify(normalizeQtyDictForCompare(live.masses));
+            if (reportedMasses !== liveMasses) return true;
+        }
+    }
+    return false;
+}
+
 function updateBalanceCounter(report) {
     // Clear the header counter -- balance info is now shown in the panel title
     var el = document.getElementById('balance-counter');
@@ -337,6 +368,119 @@ function balanceCardIndicator(name, idx) {
         : '<span class="card-status card-status-fail">&#10007;</span>';
 }
 
+function renderCompositionTableHtml(data, options) {
+    options = options || {};
+    var title = options.title || '';
+    var forceCoreColumns = options.forceCoreColumns !== false;
+    var activeColsOverride = Array.isArray(options.activeCols) ? options.activeCols : null;
+    var rowData = data || {};
+    var components = Array.isArray(rowData.components) ? rowData.components.slice() : [];
+    if (components.length === 0) {
+        var compSet = {};
+        ['masses', 'volumes', 'concentrations', 'mass_fractions', 'volume_fractions', 'molarities', 'molalities'].forEach(function(groupKey) {
+            var group = rowData[groupKey];
+            if (!group || typeof group !== 'object') return;
+            Object.keys(group).forEach(function(comp) { compSet[comp] = true; });
+        });
+        components = Object.keys(compSet).sort();
+    }
+
+    var colDefs = [
+        {key: 'masses',           label: 'Mass',          required: true},
+        {key: 'volumes',          label: 'Volume',        required: false},
+        {key: 'concentrations',   label: 'Concentration', required: true},
+        {key: 'mass_fractions',   label: 'Mass Fraction', required: true},
+        {key: 'volume_fractions', label: 'Vol. Fraction', required: false},
+        {key: 'molarities',       label: 'Molarity',      required: false},
+        {key: 'molalities',       label: 'Molality',      required: false},
+    ];
+
+    var activeCols = activeColsOverride || colDefs.filter(function(col) {
+        if (forceCoreColumns && col.required) return true;
+        return rowData[col.key] && Object.keys(rowData[col.key]).length > 0;
+    });
+    if (activeCols.length === 0) {
+        activeCols = [{key: 'masses', label: 'Mass', required: true}];
+    }
+
+    var bodyHtml = '<p class="empty-state">No components.</p>';
+    if (components.length > 0) {
+        var thead = '<tr><th>Component</th>'
+            + activeCols.map(function(c) { return '<th>' + c.label + '</th>'; }).join('')
+            + '</tr>';
+        var tbody = components.map(function(comp) {
+            var cells = activeCols.map(function(col) {
+                var dict = rowData[col.key];
+                if (!dict || !(comp in dict) || dict[comp] === null) return '<td>\u2014</td>';
+                return '<td>' + fmtQty(dict[comp]) + '</td>';
+            }).join('');
+            return '<tr><td><strong>' + escHtml(comp) + '</strong></td>' + cells + '</tr>';
+        }).join('');
+        bodyHtml = '<table class="data-table"><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
+    }
+
+    return '<div class="modal-composition-panel">'
+        + (title ? ('<div class="modal-composition-title">' + escHtml(title) + '</div>') : '')
+        + bodyHtml
+        + '</div>';
+}
+
+function getSharedCompositionColumns(rows, forceCoreColumns) {
+    var colDefs = [
+        {key: 'masses', label: 'Mass', required: true},
+        {key: 'volumes', label: 'Volume', required: false},
+        {key: 'concentrations', label: 'Concentration', required: true},
+        {key: 'mass_fractions', label: 'Mass Fraction', required: true},
+        {key: 'volume_fractions', label: 'Vol. Fraction', required: false},
+        {key: 'molarities', label: 'Molarity', required: false},
+        {key: 'molalities', label: 'Molality', required: false},
+    ];
+    return colDefs;
+}
+
+function hasExtendedComposition(data) {
+    if (!data || typeof data !== 'object') return false;
+    return ['volumes', 'concentrations', 'mass_fractions', 'volume_fractions', 'molarities', 'molalities']
+        .some(function(key) {
+            return data[key] && Object.keys(data[key]).length > 0;
+        });
+}
+
+async function enrichBalancedTargetForModal(balanceEntry) {
+    if (!balanceEntry || !balanceEntry.balanced_target) return null;
+    if (balanceEntry._balanced_target_enriched) return balanceEntry._balanced_target_enriched;
+    if (balanceEntry._balanced_target_enrich_promise) return balanceEntry._balanced_target_enrich_promise;
+
+    var source = balanceEntry.balanced_target;
+    if (hasExtendedComposition(source)) {
+        balanceEntry._balanced_target_enriched = source;
+        return source;
+    }
+
+    balanceEntry._balanced_target_enrich_promise = (async function() {
+        try {
+            var r = await fetch(
+                '/compute_stock_properties?stock=' +
+                encodeURIComponent(JSON.stringify(source))
+            );
+            if (!r.ok) return source;
+            var computed = await r.json();
+            if (!computed || computed.error) return source;
+            var merged = Object.assign({}, computed);
+            if (!merged.name && source.name) merged.name = source.name;
+            if (!merged.location && source.location) merged.location = source.location;
+            balanceEntry._balanced_target_enriched = merged;
+            return merged;
+        } catch (e) {
+            return source;
+        } finally {
+            balanceEntry._balanced_target_enrich_promise = null;
+        }
+    })();
+
+    return balanceEntry._balanced_target_enrich_promise;
+}
+
 // ---- Detail Modal ----
 var stocksData = [];
 var targetsData = [];
@@ -379,39 +523,39 @@ function showDetailModal(data, type, idx) {
             ? summaryParts.join('')
             : '<span class="summary-item" style="color:#6c757d">No summary available</span>';
 
-    // ---- Composition table ----
-    var components = data.components || [];
-    var colDefs = [
-        {key: 'masses',           label: 'Mass',          required: true},
-        {key: 'volumes',          label: 'Volume',         required: false},
-        {key: 'concentrations',   label: 'Concentration',  required: true},
-        {key: 'mass_fractions',   label: 'Mass Fraction',  required: true},
-        {key: 'volume_fractions', label: 'Vol. Fraction',  required: false},
-        {key: 'molarities',       label: 'Molarity',       required: false},
-        {key: 'molalities',       label: 'Molality',       required: false},
-    ];
-
-    var activeCols = colDefs.filter(function(col) {
-        if (col.required) return true;
-        return data[col.key] && Object.keys(data[col.key]).length > 0;
+    // ---- Composition table(s) ----
+    var targetCompHtml = renderCompositionTableHtml(data, {
+        title: 'Target Composition',
+        forceCoreColumns: true
     });
+    var modalTableHtml = targetCompHtml;
+    if (type === 'target' && br && br.balanced_target) {
+        var realizedData = br._balanced_target_enriched || br.balanced_target;
+        var sharedCols = getSharedCompositionColumns([data, realizedData], true);
+        targetCompHtml = renderCompositionTableHtml(data, {
+            title: 'Target Composition',
+            activeCols: sharedCols,
+            forceCoreColumns: true
+        });
+        var realizedCompHtml = renderCompositionTableHtml(realizedData, {
+            title: 'Realized Composition',
+            activeCols: sharedCols,
+            forceCoreColumns: true
+        });
+        modalTableHtml = '<div class="modal-composition-stack">'
+            + targetCompHtml
+            + realizedCompHtml
+            + '</div>';
+    }
+    document.getElementById('modal-table').innerHTML = modalTableHtml;
 
-    var thead = '<tr><th>Component</th>'
-        + activeCols.map(function(c) { return '<th>' + c.label + '</th>'; }).join('')
-        + '</tr>';
-
-    var tbody = components.map(function(comp) {
-        var cells = activeCols.map(function(col) {
-            var dict = data[col.key];
-            if (!dict || !(comp in dict) || dict[comp] === null) return '<td>\u2014</td>';
-            return '<td>' + fmtQty(dict[comp]) + '</td>';
-        }).join('');
-        return '<tr><td><strong>' + escHtml(comp) + '</strong></td>' + cells + '</tr>';
-    }).join('');
-
-    document.getElementById('modal-table').innerHTML = components.length > 0
-        ? '<table class="data-table"><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>'
-        : '<p class="empty-state">No components.</p>';
+    if (type === 'target' && br && br.balanced_target && !br._balanced_target_enriched) {
+        enrichBalancedTargetForModal(br).then(function(enriched) {
+            if (!enriched) return;
+            if (currentModalType !== 'target' || currentModalIdx !== idx) return;
+            showDetailModal(data, type, idx);
+        });
+    }
 
     // ---- Balance results (targets only, if balance has run) ----
     var balanceHtml = '';
@@ -1250,6 +1394,8 @@ async function loadExistingStocksIntoCards() {
 
 // ---- Sweep table management ----
 var SWEEP_PROPERTY_TYPES = [
+    {value: 'mass', label: 'Mass', needsUnits: true, defaultUnit: 'mg'},
+    {value: 'volume', label: 'Volume', needsUnits: true, defaultUnit: 'ul'},
     {value: 'mass_fraction', label: 'Mass Fraction', needsUnits: false},
     {value: 'volume_fraction', label: 'Volume Fraction', needsUnits: false},
     {value: 'concentration', label: 'Concentration', needsUnits: true, defaultUnit: 'mg/ml'},
@@ -1257,6 +1403,8 @@ var SWEEP_PROPERTY_TYPES = [
     {value: 'molality', label: 'Molality', needsUnits: true, defaultUnit: 'mol/kg'},
 ];
 var SWEEP_PROP_TYPE_TO_KEY = {
+    'mass': 'masses',
+    'volume': 'volumes',
     'mass_fraction': 'mass_fractions',
     'volume_fraction': 'volume_fractions',
     'concentration': 'concentrations',
@@ -1295,6 +1443,8 @@ var targetUploadState = {
     format: ''
 };
 var SWEEP_NAME_PROPERTY_TYPES = [
+    {value: 'mass', label: 'Mass', short: 'm', needsUnits: true, defaultUnit: 'mg'},
+    {value: 'volume', label: 'Volume', short: 'v', needsUnits: true, defaultUnit: 'ul'},
     {value: 'mass_fraction', label: 'Mass Fraction', short: 'mf', needsUnits: false},
     {value: 'volume_fraction', label: 'Volume Fraction', short: 'vf', needsUnits: false},
     {value: 'concentration', label: 'Concentration', short: 'conc', needsUnits: true, defaultUnit: 'mg/ml'},
@@ -1875,6 +2025,7 @@ async function uploadTargets() {
         if (result && result.success) {
             showStatus('Uploaded ' + result.count + ' target(s).');
             errEl.innerHTML = '';
+            invalidateBalanceResults();
             saveSweepConfig();
         } else if (result && result.errors) {
             showStatus('Upload failed with ' + result.errors.length + ' error(s).', true);
@@ -2292,6 +2443,7 @@ async function uploadParsedTargetsFromModal() {
         var errorsEl = document.getElementById('target-upload-errors');
         if (result && result.success) {
             showStatus('Uploaded ' + result.count + ' target(s).');
+            invalidateBalanceResults();
             closeTargetUploadModal();
             loadTargets();
         } else if (result && result.errors) {

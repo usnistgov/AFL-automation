@@ -278,8 +278,10 @@ body {
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 2000;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding: 24px 0;
+    overflow-y: auto;
 }
 
 #detail-modal-overlay.visible {
@@ -296,6 +298,21 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+.modal-composition-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-composition-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #495057;
+    margin: 0 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 #detail-modal-header {

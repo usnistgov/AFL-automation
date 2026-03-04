@@ -1,4 +1,5 @@
 import itertools
+import math
 import warnings
 from typing import List, Optional, Dict, Set, Callable, Any, Iterator
 
@@ -426,6 +427,7 @@ class MassBalanceBase:
             entry['diagnosis'] = (
                 item['diagnosis'].to_dict() if item.get('diagnosis') is not None else None
             )
+            entry['procedure_plan'] = item.get('procedure_plan')
 
             report.append(entry)
         return report
@@ -446,19 +448,306 @@ class MassBalanceBase:
                 lines.append("")
         return "\n".join(lines).rstrip()
 
-    def balance(self, tol=0.05, return_report=False, progress_callback: Optional[Callable[..., Any]] = None):
+    def _minimum_transfer_volume(self):
+        return getattr(self, 'minimum_transfer_volume', getattr(self, 'minimum_volume', None))
+
+    def _bounds_for_stocks(self, stocks: List[Solution], minimum_transfer_volume) -> Bounds:
+        return Bounds(
+            lb=[stock.measure_out(minimum_transfer_volume).mass.to('g').magnitude for stock in stocks],
+            ub=[np.inf] * len(stocks),
+            keep_feasible=False,
+        )
+
+    @staticmethod
+    def _is_virtual_stock(stock: Solution) -> bool:
+        return bool(getattr(stock, '_is_virtual_dilution_stock', False))
+
+    @staticmethod
+    def _virtual_recipe(stock: Solution) -> Optional[Dict[str, Any]]:
+        return getattr(stock, '_dilution_recipe', None)
+
+    @staticmethod
+    def _find_primary_solvent_name(target: Solution) -> Optional[str]:
+        best_name = None
+        best_mass = None
+        for name, comp in target:
+            if not comp.is_solvent:
+                continue
+            m = comp.mass.to('g').magnitude
+            if best_name is None or m > best_mass:
+                best_name = name
+                best_mass = m
+        return best_name
+
+    def _select_diluent_stock(
+        self,
+        target: Solution,
+        source_stock: Solution,
+        candidate_stocks: List[Solution],
+        policy: str,
+    ) -> Optional[Solution]:
+        solvent_name = self._find_primary_solvent_name(target)
+        viable = []
+        for stock in candidate_stocks:
+            if stock is source_stock:
+                continue
+            if solvent_name is not None and stock.contains(solvent_name):
+                viable.append((stock.mass_fraction[solvent_name].to('').magnitude, stock))
+        if viable:
+            viable.sort(key=lambda x: x[0], reverse=True)
+            return viable[0][1]
+
+        fallback = []
+        for stock in candidate_stocks:
+            if stock is source_stock:
+                continue
+            solvent_mass = sum(
+                comp.mass.to('g').magnitude for _, comp in stock.solvents
+            ) if len(stock.solvents) > 0 else 0.0
+            fallback.append((solvent_mass, stock))
+        if not fallback:
+            return None
+        fallback.sort(key=lambda x: x[0], reverse=True)
+        return fallback[0][1]
+
+    def _make_virtual_dilution_stock(
+        self,
+        source_stock: Solution,
+        diluent_stock: Solution,
+        dilution_factor: int,
+        minimum_transfer_volume,
+        step_index: int,
+    ) -> Solution:
+        source_batch = source_stock.measure_out(minimum_transfer_volume).mass.to('g').magnitude
+        diluent_batch = source_batch * max(1, dilution_factor - 1)
+        virtual_name = f"{source_stock.name}__d{int(dilution_factor)}x_s{step_index}"
+        intermediate_id = f"intermediate::{virtual_name}"
+        source_measured = source_stock.measure_out(f"{source_batch} g")
+        diluent_measured = diluent_stock.measure_out(f"{diluent_batch} g")
+        virtual = source_measured + diluent_measured
+        virtual.name = virtual_name
+        virtual.location = f"@intermediate:{intermediate_id}"
+        virtual._is_virtual_dilution_stock = True
+        virtual._dilution_recipe = {
+            'intermediate_id': intermediate_id,
+            'source_stock_name': source_stock.name,
+            'source_location': source_stock.location,
+            'diluent_stock_name': diluent_stock.name,
+            'diluent_location': diluent_stock.location,
+            'dilution_factor': int(dilution_factor),
+            'batch_source_mass_g': float(source_batch),
+            'batch_diluent_mass_g': float(diluent_batch),
+            'batch_total_mass_g': float(source_batch + diluent_batch),
+        }
+        return virtual
+
+    def _build_procedure_plan(
+        self,
+        target: Solution,
+        stocks: List[Solution],
+        transfers: np.ndarray,
+        enabled: bool,
+    ) -> Dict[str, Any]:
+        transfer_items = []
+        dilution_stages = []
+        intermediate_ids = []
+        for idx, stock in enumerate(stocks):
+            mass_g = float(transfers[idx])
+            if mass_g <= 0:
+                continue
+            measured = stock.measure_out(f"{mass_g} g")
+            transfer_items.append({
+                'source_stock_name': stock.name,
+                'source_location': stock.location,
+                'required_mass_g': mass_g,
+                'required_volume_ul': float(measured.volume.to('ul').magnitude),
+            })
+
+            recipe = self._virtual_recipe(stock)
+            if recipe is None:
+                continue
+            batches = int(math.ceil(mass_g / max(recipe['batch_total_mass_g'], 1e-12)))
+            dilution_stages.append({
+                'stage_type': 'dilution',
+                'intermediate_id': recipe['intermediate_id'],
+                'destination_token': f"@intermediate:{recipe['intermediate_id']}",
+                'source_stock_name': recipe['source_stock_name'],
+                'source_location': recipe['source_location'],
+                'diluent_stock_name': recipe['diluent_stock_name'],
+                'diluent_location': recipe['diluent_location'],
+                'dilution_factor': int(recipe['dilution_factor']),
+                'batches': batches,
+                'total_source_mass_g': float(recipe['batch_source_mass_g'] * batches),
+                'total_diluent_mass_g': float(recipe['batch_diluent_mass_g'] * batches),
+            })
+            intermediate_ids.append(recipe['intermediate_id'])
+
+        stages = dilution_stages + [{
+            'stage_type': 'final_mix',
+            'destination_location': target.location,
+            'transfers': transfer_items,
+        }]
+        return {
+            'enabled': bool(enabled),
+            'required_intermediate_targets': len(intermediate_ids),
+            'intermediate_ids': intermediate_ids,
+            'stages': stages,
+        }
+
+    def _solve_single_target(
+        self,
+        target: Solution,
+        target_masses: np.ndarray,
+        components: List[str],
+        tol: float,
+        enable_multistep_dilution: bool,
+        multistep_max_steps: int,
+        multistep_diluent_policy: str,
+        minimum_transfer_volume,
+    ) -> Dict[str, Any]:
+        planning_stocks = list(self.stocks)
+        max_rounds = int(multistep_max_steps) if enable_multistep_dilution else 0
+        rounds_completed = 0
+
+        while True:
+            bounds = self._bounds_for_stocks(planning_stocks, minimum_transfer_volume)
+            mfm = np.zeros((len(components), len(planning_stocks)))
+            _extract_mass_fractions(planning_stocks, components, mfm)
+            max_stock_fractions = np.max(mfm, axis=1) if len(planning_stocks) > 0 else np.zeros(len(components))
+            missing_component_mask = max_stock_fractions == 0.0
+
+            best_candidate = None
+            best_score = None
+            any_success = False
+            total_target_mass = float(np.sum(target_masses))
+            for transfers in _iter_balance_candidates(mfm, target_masses, bounds, planning_stocks):
+                balanced_masses = mfm @ transfers
+                differences = _compute_differences(
+                    target_masses=target_masses,
+                    balanced_masses=balanced_masses,
+                    total_target_mass=total_target_mass,
+                )
+                score = float(np.sum(np.abs(differences)))
+                success = bool(np.all(np.abs(differences) < tol))
+                if best_candidate is None or score < best_score:
+                    best_candidate = {
+                        'difference': differences,
+                        'transfers': transfers,
+                        'success': success,
+                    }
+                    best_score = score
+                if success:
+                    any_success = True
+                if best_score == 0.0:
+                    break
+
+            if best_candidate is None:
+                raise RuntimeError("Mass balance produced no candidates; this should not happen.")
+
+            if any_success or (not enable_multistep_dilution) or rounds_completed >= max_rounds:
+                diagnosis = _diagnose(
+                    target=target,
+                    transfers=best_candidate['transfers'],
+                    differences=best_candidate['difference'],
+                    components=components,
+                    stocks=planning_stocks,
+                    bounds=bounds,
+                    tol=tol,
+                    mass_fraction_matrix=mfm,
+                    target_masses=target_masses,
+                    success=best_candidate['success'],
+                    max_stock_fractions=max_stock_fractions,
+                    missing_component_mask=missing_component_mask,
+                )
+                return {
+                    'stocks': planning_stocks,
+                    'candidate': best_candidate,
+                    'any_success': any_success,
+                    'diagnosis': diagnosis,
+                }
+
+            unconstrained = lsq_linear(
+                mfm,
+                target_masses,
+                bounds=Bounds(lb=[0.0] * len(planning_stocks), ub=[np.inf] * len(planning_stocks)),
+            )
+            ideal = np.array(unconstrained.x, dtype=float)
+            added = False
+            new_virtual_stocks = []
+            for i, stock in enumerate(planning_stocks):
+                if self._is_virtual_stock(stock):
+                    continue
+                lower_bound = float(bounds.lb[i])
+                ideal_mass = float(ideal[i])
+                if ideal_mass <= 0.0 or ideal_mass >= lower_bound:
+                    continue
+                factor = max(2, int(math.ceil(lower_bound / max(ideal_mass, 1e-12))))
+                diluent = self._select_diluent_stock(
+                    target=target,
+                    source_stock=stock,
+                    candidate_stocks=self.stocks,
+                    policy=multistep_diluent_policy,
+                )
+                if diluent is None:
+                    continue
+                virtual = self._make_virtual_dilution_stock(
+                    source_stock=stock,
+                    diluent_stock=diluent,
+                    dilution_factor=factor,
+                    minimum_transfer_volume=minimum_transfer_volume,
+                    step_index=rounds_completed + 1,
+                )
+                if any(s.name == virtual.name for s in planning_stocks + new_virtual_stocks):
+                    continue
+                new_virtual_stocks.append(virtual)
+                added = True
+
+            if not added:
+                diagnosis = _diagnose(
+                    target=target,
+                    transfers=best_candidate['transfers'],
+                    differences=best_candidate['difference'],
+                    components=components,
+                    stocks=planning_stocks,
+                    bounds=bounds,
+                    tol=tol,
+                    mass_fraction_matrix=mfm,
+                    target_masses=target_masses,
+                    success=best_candidate['success'],
+                    max_stock_fractions=max_stock_fractions,
+                    missing_component_mask=missing_component_mask,
+                )
+                return {
+                    'stocks': planning_stocks,
+                    'candidate': best_candidate,
+                    'any_success': any_success,
+                    'diagnosis': diagnosis,
+                }
+
+            planning_stocks.extend(new_virtual_stocks)
+            rounds_completed += 1
+
+    def balance(
+        self,
+        tol=0.05,
+        return_report=False,
+        progress_callback: Optional[Callable[..., Any]] = None,
+        enable_multistep_dilution: bool = False,
+        multistep_max_steps: int = 2,
+        multistep_diluent_policy: str = 'primary_solvent',
+    ):
         if any([stock.location is None for stock in self.stocks]):
             raise ValueError("Some stocks don't have a location specified. This should be specified when the stocks are instantiated")
         self._set_bounds()
         components = list(self.components)
-        mfm = np.zeros((len(components), len(self.stocks)))
-        _extract_mass_fractions(self.stocks, components, mfm)
-        max_stock_fractions = np.max(mfm, axis=1) if len(self.stocks) > 0 else np.zeros(len(components))
-        missing_component_mask = max_stock_fractions == 0.0
 
         target_mass_matrix = np.zeros((len(self.targets), len(components)))
         for idx, target in enumerate(self.targets):
             _extract_masses(target, components, array=target_mass_matrix[idx])
+
+        minimum_transfer_volume = self._minimum_transfer_volume()
+        if minimum_transfer_volume is None:
+            enable_multistep_dilution = False
 
         if progress_callback is not None:
             progress_callback(
@@ -480,53 +769,20 @@ class MassBalanceBase:
                     target_name=target.name,
                 )
             target_masses = target_mass_matrix[target_idx]
-            best_candidate = None
-            best_score = None
-            any_success = False
-
-            total_target_mass = float(np.sum(target_masses))
-
-            for transfers in _iter_balance_candidates(mfm, target_masses, self.bounds, self.stocks):
-                balanced_masses = mfm @ transfers
-                differences = _compute_differences(
-                    target_masses=target_masses,
-                    balanced_masses=balanced_masses,
-                    total_target_mass=total_target_mass,
-                )
-                score = float(np.sum(np.abs(differences)))
-                success = bool(np.all(np.abs(differences) < tol))
-
-                if best_candidate is None or score < best_score:
-                    best_candidate = {
-                        'target': None,
-                        'difference': differences,
-                        'transfers': transfers,
-                        'success': success,
-                    }
-                    best_score = score
-
-                if success:
-                    any_success = True
-                if best_score == 0.0:
-                    break
-
-            if best_candidate is None:
-                raise RuntimeError("Mass balance produced no candidates; this should not happen.")
-
-            diagnosis = _diagnose(
+            solved = self._solve_single_target(
                 target=target,
-                transfers=best_candidate['transfers'],
-                differences=best_candidate['difference'],
-                components=components,
-                stocks=self.stocks,
-                bounds=self.bounds,
-                tol=tol,
-                mass_fraction_matrix=mfm,
                 target_masses=target_masses,
-                success=best_candidate['success'],
-                max_stock_fractions=max_stock_fractions,
-                missing_component_mask=missing_component_mask,
+                components=components,
+                tol=tol,
+                enable_multistep_dilution=bool(enable_multistep_dilution),
+                multistep_max_steps=int(multistep_max_steps),
+                multistep_diluent_policy=str(multistep_diluent_policy),
+                minimum_transfer_volume=minimum_transfer_volume,
             )
+            best_candidate = solved['candidate']
+            any_success = solved['any_success']
+            diagnosis = solved['diagnosis']
+            planning_stocks = solved['stocks']
 
             if not any_success:
                 warnings.warn(f'No suitable mass balance found for {target.name}\n')
@@ -537,9 +793,15 @@ class MassBalanceBase:
                     'difference': None,
                     'success': False,
                     'diagnosis': diagnosis,
+                    'procedure_plan': self._build_procedure_plan(
+                        target=target,
+                        stocks=planning_stocks,
+                        transfers=best_candidate['transfers'],
+                        enabled=bool(enable_multistep_dilution),
+                    ),
                 })
             else:
-                transfers_dict = _make_transfer_dict(self.stocks, best_candidate['transfers'])
+                transfers_dict = _make_transfer_dict(planning_stocks, best_candidate['transfers'])
                 balanced_target = _make_balanced_target(transfers_dict, target)
                 self.balanced.append({
                     'target': target,
@@ -548,6 +810,12 @@ class MassBalanceBase:
                     'difference': best_candidate['difference'],
                     'success': best_candidate['success'],
                     'diagnosis': diagnosis,
+                    'procedure_plan': self._build_procedure_plan(
+                        target=target,
+                        stocks=planning_stocks,
+                        transfers=best_candidate['transfers'],
+                        enabled=bool(enable_multistep_dilution),
+                    ),
                 })
             if progress_callback is not None:
                 progress_callback(

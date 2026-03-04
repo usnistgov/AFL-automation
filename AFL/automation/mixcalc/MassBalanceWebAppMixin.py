@@ -166,6 +166,9 @@ class MassBalanceWebAppMixin:
             'mixing_locations',
             'catch_volume',
             'mock_mode',
+            'enable_multistep_dilution',
+            'multistep_max_steps',
+            'multistep_diluent_policy',
         ]
         config_snapshot, config_errors = self._remote_get_config_many(client, cfg_keys)
         prep_targets = config_snapshot.get('prep_targets')
@@ -187,6 +190,9 @@ class MassBalanceWebAppMixin:
                 'mixing_locations': mixing_locations,
                 'catch_volume': config_snapshot.get('catch_volume'),
                 'mock_mode': config_snapshot.get('mock_mode'),
+                'enable_multistep_dilution': config_snapshot.get('enable_multistep_dilution'),
+                'multistep_max_steps': config_snapshot.get('multistep_max_steps'),
+                'multistep_diluent_policy': config_snapshot.get('multistep_diluent_policy'),
             },
             'health': health,
             'prepare_kwargs': [

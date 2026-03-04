@@ -189,6 +189,9 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         'stocks': [],
         'targets': [],
         'tol': 1e-3,
+        'enable_multistep_dilution': False,
+        'multistep_max_steps': 2,
+        'multistep_diluent_policy': 'primary_solvent',
         'sweep_config': {},
         'orchestrator_uri': '',
         'orchestrator_username': 'Orchestrator',
@@ -537,7 +540,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             keep_feasible=False
         )
 
-    def balance(self, return_report=False):
+    def balance(self, return_report=False, enable_multistep_dilution=None):
         self.process_stocks()
         self.process_targets()
         total = len(self.targets)
@@ -574,10 +577,16 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
                 'message': msg,
             }
 
+        if enable_multistep_dilution is None:
+            enable_multistep_dilution = bool(self.config.get('enable_multistep_dilution', False))
+
         try:
             result = super().balance(
                 tol=self.config['tol'],
                 return_report=return_report,
+                enable_multistep_dilution=bool(enable_multistep_dilution),
+                multistep_max_steps=int(self.config.get('multistep_max_steps', 2)),
+                multistep_diluent_policy=str(self.config.get('multistep_diluent_policy', 'primary_solvent')),
                 progress_callback=_progress_cb,
             )
             try:
@@ -610,7 +619,13 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
 
     @Driver.unqueued()
     def get_balance_settings(self):
-        return {'tol': self.config['tol']}
+        return {
+            'tol': self.config['tol'],
+            'minimum_volume': self.config.get('minimum_volume', '20 ul'),
+            'enable_multistep_dilution': bool(self.config.get('enable_multistep_dilution', False)),
+            'multistep_max_steps': int(self.config.get('multistep_max_steps', 2)),
+            'multistep_diluent_policy': str(self.config.get('multistep_diluent_policy', 'primary_solvent')),
+        }
 
     def get_sample_composition(self, composition_format='mass_fraction'):
         """Get the composition of the last balanced target in the requested format.

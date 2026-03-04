@@ -76,32 +76,6 @@
             <button class="primary-btn" id="upload-targets-btn">Upload Targets</button>
         </div>
 
-        <div id="sweep-name-builder">
-            <div class="sweep-name-builder-header">
-                <div class="panel-title">Name Builder</div>
-                <button class="toolbar-btn" id="add-sweep-name-rule-btn">+ Add Name Rule</button>
-            </div>
-            <table id="sweep-name-rule-table">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Include Units</th>
-                        <th>Show Component</th>
-                        <th>Include Index</th>
-                        <th>Formatter</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="sweep-name-rule-body"></tbody>
-            </table>
-            <div class="sweep-name-prefix-row">
-                <label>Target Prefix
-                    <input type="text" id="sweep-prefix" value="target" placeholder="e.g. campaignA">
-                </label>
-            </div>
-            <div id="sweep-name-preview">Name preview: <span class="empty">No rules. Using prefix-index naming.</span></div>
-        </div>
-
         <div id="sweep-definition-panel">
             <div class="panel-title">Sweep Definition</div>
             <div class="sweep-settings-bar">
@@ -131,6 +105,32 @@
                 <tbody></tbody>
             </table>
         </div>
+
+        <div id="sweep-name-builder">
+            <div class="sweep-name-builder-header">
+                <div class="panel-title">Name Builder</div>
+                <button class="toolbar-btn" id="add-sweep-name-rule-btn">+ Add Name Rule</button>
+            </div>
+            <table id="sweep-name-rule-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Include Units</th>
+                        <th>Show Component</th>
+                        <th>Include Index</th>
+                        <th>Formatter</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="sweep-name-rule-body"></tbody>
+            </table>
+            <div class="sweep-name-prefix-row">
+                <label>Target Prefix
+                    <input type="text" id="sweep-prefix" value="target" placeholder="e.g. campaignA">
+                </label>
+            </div>
+            <div id="sweep-name-preview">Name preview: <span class="empty">No rules. Using prefix-index naming.</span></div>
+        </div>
         <div id="sweeps-upload-errors"></div>
         <div id="sweep-preview-area"></div>
     </div>
@@ -144,6 +144,14 @@
             <label class="balance-tol-control" for="balance-tol-input">
                 Tolerance
                 <input type="number" id="balance-tol-input" min="0" step="any" placeholder="e.g. 1e-3">
+            </label>
+            <label class="balance-tol-control" for="balance-min-volume-input">
+                Minimum Volume
+                <input type="text" id="balance-min-volume-input" placeholder="e.g. 20 ul">
+            </label>
+            <label class="balance-tol-control" for="balance-enable-multistep-input">
+                Multistep Dilution
+                <input type="checkbox" id="balance-enable-multistep-input">
             </label>
             <span id="balance-counter"></span>
         </div>
@@ -381,6 +389,10 @@
 
                 <div class="submit-section" id="submit-prepare-kwargs-section" style="display:none;">
                     <div class="submit-section-title">prepare kwargs</div>
+                    <label class="submit-inline-choice">
+                        <input type="checkbox" id="submit-prepare-kw-enable-multistep">
+                        enable_multistep_dilution
+                    </label>
                     <label>dest
                         <input type="text" id="submit-prepare-kw-dest" placeholder="optional destination">
                     </label>

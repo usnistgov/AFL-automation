@@ -1,0 +1,12 @@
+AFL.automation.instrument.NetworkCamera
+=======================================
+
+.. automodule:: AFL.automation.instrument.NetworkCamera
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NetworkCamera
+   

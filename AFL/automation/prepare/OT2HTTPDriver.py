@@ -1119,10 +1119,17 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         to_center=False,
         to_top_z_offset=0,
         fast_mixing=False,
+        touch_tip=False,
         **kwargs,
     ):
         """Transfer fluid from one location to another using atomic HTTP API commands"""
         self.log_info(f"Transferring {volume}uL from {source} to {dest}")
+
+        # Accept common aliases used by different callers.
+        if "blowout" in kwargs and not blow_out:
+            blow_out = bool(kwargs["blowout"])
+        if "touchTip" in kwargs and not touch_tip:
+            touch_tip = bool(kwargs["touchTip"])
 
         volume_ul = float(volume)
         if volume_ul <= 0:
@@ -1425,6 +1432,10 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     check_run_status=False,
                 )
 
+            # 10b. Optionally touch the tip to destination well edge.
+            if touch_tip:
+                self._touch_tip_well(pipette_id=pipette_id, well=dest_well)
+
                 
             if was_shaking:
                 self.set_shake(shake_rpm)
@@ -1450,6 +1461,32 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                                                         check_run_status=False)
             # Update last pipette
             self.last_pipette = pipette
+
+    def _touch_tip_well(self, pipette_id, well):
+        """Touch tip at a well edge if supported by robot-server; otherwise move to well top."""
+        params = {
+            "pipetteId": pipette_id,
+            "labwareId": well["labwareId"],
+            "wellName": well["wellName"],
+            "wellLocation": {"origin": "top", "offset": {"x": 0, "y": 0, "z": 0}},
+            "mmFromEdge": 1,
+        }
+        try:
+            self._execute_atomic_command("touchTip", params, check_run_status=False)
+        except RuntimeError as exc:
+            self.log_warning(
+                f"touchTip command unavailable; using moveToWell fallback. Error: {exc}"
+            )
+            self._execute_atomic_command(
+                "moveToWell",
+                {
+                    "pipetteId": pipette_id,
+                    "labwareId": well["labwareId"],
+                    "wellName": well["wellName"],
+                    "wellLocation": {"origin": "top", "offset": {"x": 0, "y": 0, "z": -2}},
+                },
+                check_run_status=False,
+            )
 
     def _execute_atomic_command(
         self, command_type, params=None, wait_until_complete=True, timeout=None, check_run_status=True

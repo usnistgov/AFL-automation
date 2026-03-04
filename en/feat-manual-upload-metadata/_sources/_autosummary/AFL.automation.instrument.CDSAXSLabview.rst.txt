@@ -1,0 +1,15 @@
+AFL.automation.instrument.CDSAXSLabview
+=======================================
+
+.. automodule:: AFL.automation.instrument.CDSAXSLabview
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CDSAXSLabview
+      Driver
+      LabviewConnection
+      ScatteringInstrument
+   

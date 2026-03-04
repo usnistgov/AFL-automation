@@ -1,0 +1,21 @@
+﻿AFL.automation.prepare
+======================
+
+.. automodule:: AFL.automation.prepare
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   BioSANSPrepare
+   OT2DeckWebAppMixin
+   OT2HTTPDriver
+   OT2Prepare
+   OT2_Driver
+   PipetteAction
+   PrepareDriver
+   VirtualOT2HTTPDriver
+   utilities

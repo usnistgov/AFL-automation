@@ -1,0 +1,16 @@
+AFL.automation.loading.SensorCallbackThread
+===========================================
+
+.. automodule:: AFL.automation.loading.SensorCallbackThread
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LoaderCommunication
+      SensorCallbackThread
+      SimpleThresholdCB
+      StopLoadCBv1
+      StopLoadCBv2
+   

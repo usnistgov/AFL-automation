@@ -1067,6 +1067,12 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     self.max_smallest_pipette
                 )  # Use smaller pipette at max capacity
 
+            if transfer <= 0:
+                self.log_warning(
+                    f"Computed nonpositive transfer volume {transfer}uL while splitting {vol}uL; stopping split."
+                )
+                break
+
             transfers.append(transfer)
 
             # Exit condition - we've reached the target volume
@@ -1117,6 +1123,11 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
     ):
         """Transfer fluid from one location to another using atomic HTTP API commands"""
         self.log_info(f"Transferring {volume}uL from {source} to {dest}")
+
+        volume_ul = float(volume)
+        if volume_ul <= 0:
+            self.log_info(f"Skipping transfer with nonpositive volume {volume_ul}uL from {source} to {dest}")
+            return
         
         # Verify run exists once at the start, then skip checks for all atomic commands
         self._ensure_run_exists()
@@ -1129,7 +1140,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             self.set_dispense_rate(dispense_rate)
 
         # Get pipette based on volume
-        pipette = self.get_pipette(volume)
+        pipette = self.get_pipette(volume_ul)
         pipette_mount = pipette["mount"]  # Get the mount from the pipette object
 
         # Get the pipette ID
@@ -1165,9 +1176,14 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             dest_position = "center"
 
         # Split transfers if needed
-        transfers = self._split_up_transfers(volume)
+        transfers = self._split_up_transfers(volume_ul)
 
         for sub_volume in transfers:
+            if sub_volume <= 0:
+                self.log_warning(
+                    f"Skipping nonpositive sub-transfer volume {sub_volume}uL from {source} to {dest}"
+                )
+                continue
             # 1. Always pick up a new tip for each transfer
             self._execute_atomic_command(
                 "pickUpTip",

@@ -1591,10 +1591,17 @@
         <span class="n">to_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">to_top_z_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">fast_mixing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">touch_tip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Transfer fluid from one location to another using atomic HTTP API commands&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transferring </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Accept common aliases used by different callers.</span>
+        <span class="k">if</span> <span class="s2">&quot;blowout&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">blow_out</span><span class="p">:</span>
+            <span class="n">blow_out</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;blowout&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;touchTip&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">touch_tip</span><span class="p">:</span>
+            <span class="n">touch_tip</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;touchTip&quot;</span><span class="p">])</span>
 
         <span class="n">volume_ul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">volume_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -1897,6 +1904,10 @@
                     <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="p">)</span>
 
+            <span class="c1"># 10b. Optionally touch the tip to destination well edge.</span>
+            <span class="k">if</span> <span class="n">touch_tip</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_touch_tip_well</span><span class="p">(</span><span class="n">pipette_id</span><span class="o">=</span><span class="n">pipette_id</span><span class="p">,</span> <span class="n">well</span><span class="o">=</span><span class="n">dest_well</span><span class="p">)</span>
+
                 
             <span class="k">if</span> <span class="n">was_shaking</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_shake</span><span class="p">(</span><span class="n">shake_rpm</span><span class="p">)</span>
@@ -1923,6 +1934,32 @@
             <span class="c1"># Update last pipette</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="n">pipette</span></div>
 
+
+    <span class="k">def</span> <span class="nf">_touch_tip_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette_id</span><span class="p">,</span> <span class="n">well</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Touch tip at a well edge if supported by robot-server; otherwise move to well top.&quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
+            <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+            <span class="s2">&quot;mmFromEdge&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span><span class="s2">&quot;touchTip&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;touchTip command unavailable; using moveToWell fallback. Error: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
+                <span class="s2">&quot;moveToWell&quot;</span><span class="p">,</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
+                    <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">}},</span>
+                <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_atomic_command</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">command_type</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wait_until_complete</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span>

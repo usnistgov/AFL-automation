@@ -1185,22 +1185,71 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         # Split transfers if needed
         transfers = self._split_up_transfers(volume_ul)
 
-        for sub_volume in transfers:
+        for i, sub_volume in enumerate(transfers):
             if sub_volume <= 0:
                 self.log_warning(
                     f"Skipping nonpositive sub-transfer volume {sub_volume}uL from {source} to {dest}"
                 )
                 continue
-            # 1. Always pick up a new tip for each transfer
-            self._execute_atomic_command(
-                "pickUpTip",
-                {
-                    "pipetteId": pipette_id,
-                    "pipetteMount": pipette_mount,
-                    "wellLocation": None,  # Use next available tip in rack, will be updated in _execute_atomic_command
-                },
-                check_run_status=False,
-            )
+
+            # Intermediate split transfers should not drop the tip unless explicitly forced.
+            is_last_subtransfer = i == (len(transfers) - 1)
+            effective_drop_tip = drop_tip if (is_last_subtransfer or force_new_tip) else False
+
+            # Keep tip handling consistent with the non-HTTP driver:
+            # reuse the current tip across split transfers unless force_new_tip is set.
+            if force_new_tip and self.has_tip:
+                tip_mount = self.last_pipette if self.last_pipette is not None else pipette_mount
+                tip_pipette_id = self.pipette_info.get(tip_mount, {}).get("id", pipette_id)
+                self._execute_atomic_command(
+                    "moveToAddressableAreaForDropTip",
+                    {
+                        "pipetteId": tip_pipette_id,
+                        "addressableAreaName": "fixedTrash",
+                        "offset": {"x": 0, "y": 0, "z": 10},
+                        "alternateDropLocation": False,
+                    },
+                    check_run_status=False,
+                )
+                self._execute_atomic_command(
+                    "dropTipInPlace",
+                    {"pipetteId": tip_pipette_id},
+                    check_run_status=False,
+                )
+                self.has_tip = False
+
+            # If a tip is on a different mount, drop it before switching mounts.
+            if self.has_tip and self.last_pipette not in (None, pipette_mount):
+                tip_pipette_id = self.pipette_info.get(self.last_pipette, {}).get("id", pipette_id)
+                self._execute_atomic_command(
+                    "moveToAddressableAreaForDropTip",
+                    {
+                        "pipetteId": tip_pipette_id,
+                        "addressableAreaName": "fixedTrash",
+                        "offset": {"x": 0, "y": 0, "z": 10},
+                        "alternateDropLocation": False,
+                    },
+                    check_run_status=False,
+                )
+                self._execute_atomic_command(
+                    "dropTipInPlace",
+                    {"pipetteId": tip_pipette_id},
+                    check_run_status=False,
+                )
+                self.has_tip = False
+
+            if not self.has_tip:
+                self._execute_atomic_command(
+                    "pickUpTip",
+                    {
+                        "pipetteId": pipette_id,
+                        "pipetteMount": pipette_mount,
+                        "wellLocation": None,  # Use next available tip in rack, will be updated in _execute_atomic_command
+                    },
+                    check_run_status=False,
+                )
+                self.has_tip = True
+                self.last_pipette = pipette_mount
             
             # 1a. If destination is on a heater-shaker, stop the shaking and latch the latch pre-flight
             was_shaking = False
@@ -1442,7 +1491,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 # back to running :)
                 
             # 11. Drop tip if specified
-            if drop_tip:
+            if effective_drop_tip:
                 # see https://github.com/Opentrons/opentrons/issues/14590 for the absolute bullshit that led to this.
                 # in it: Opentrons incompetence
                 self._execute_atomic_command("moveToAddressableAreaForDropTip", {
@@ -1459,8 +1508,9 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 self._execute_atomic_command("dropTipInPlace", {"pipetteId": pipette_id, 
                                                         },
                                                         check_run_status=False)
+                self.has_tip = False
             # Update last pipette
-            self.last_pipette = pipette
+            self.last_pipette = pipette_mount
 
     def _touch_tip_well(self, pipette_id, well):
         """Touch tip at a well edge if supported by robot-server; otherwise move to well top."""

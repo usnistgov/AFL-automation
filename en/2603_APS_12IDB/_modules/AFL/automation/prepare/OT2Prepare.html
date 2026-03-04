@@ -653,6 +653,18 @@
             <span class="k">raise</span></div>
 
 
+<div class="viewcode-block" id="OT2Prepare.load_gen1_p10">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.load_gen1_p10">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_gen1_p10</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience wrapper for loading a GEN1 P10 single-channel pipette.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_instrument</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;p10_single&quot;</span><span class="p">,</span>
+            <span class="n">mount</span><span class="o">=</span><span class="n">mount</span><span class="p">,</span>
+            <span class="n">tip_rack_slots</span><span class="o">=</span><span class="n">tip_rack_slots</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="OT2Prepare.reset">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.reset">[docs]</a>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

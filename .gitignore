@@ -22,7 +22,7 @@ __pycache__/
 *.tif
 *.tiff
 *.poni
-data/
+/data/
 
 # Tiled database specific
 tiled/data/

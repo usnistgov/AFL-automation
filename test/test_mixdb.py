@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 import pandas as pd
-from AFL.automation.mixing.MixDB import MixDB
+from AFL.automation.mixcalc.MixDB import MixDB
 from AFL.automation.shared.exceptions import NotFoundError
 
 

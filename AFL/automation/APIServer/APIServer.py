@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 
 from flask_cors import CORS
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 #authentication module
 from flask_jwt_extended import (
@@ -74,6 +75,23 @@ class APIServer:
         #allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
         self.app = Flask(name,root_path=root_path)
+
+        # Allow app templates to live with their frontend assets under AFL/automation/apps.
+        apps_path = pathlib.Path(__file__).parent.parent / "apps"
+        template_paths = [
+            apps_path,
+            apps_path / "tiled_browser",
+            apps_path / "mixdoctor",
+        ]
+        loaders = []
+        if self.app.jinja_loader is not None:
+            loaders.append(self.app.jinja_loader)
+        loaders.extend(
+            FileSystemLoader(str(path))
+            for path in template_paths
+            if path.exists()
+        )
+        self.app.jinja_loader = ChoiceLoader(loaders)
         self.init_logging()
 
         self.queue_daemon = None
@@ -236,6 +254,8 @@ class APIServer:
                               methods=['POST', 'GET'])
         self.app.add_url_rule('/retrieve_obj', 'retrieve_obj', self.retrieve_obj,
                               methods=['POST', 'GET'])
+        self.app.add_url_rule('/tiled_upload_data', 'tiled_upload_data', self.tiled_upload_data,
+                              methods=['POST'])
 
         # self.init is now called from run()/run_threaded due to Flask 3 removal
         # of the before_first_request hook
@@ -260,7 +280,7 @@ class APIServer:
 
     def is_server_live(self):
         self.app.logger.debug("Server is live.")
-        return 200
+        return "OK", 200
 
     def get_unqueued_commands(self):
         return jsonify(self.driver.unqueued.function_info),200
@@ -304,15 +324,18 @@ class APIServer:
             self.app.add_url_rule(route,name,response_function,methods=['GET'])
 
     def query_driver(self):
-        if request.json:
-            task = request.json
-        else:
+        task = request.get_json(silent=True)
+        if task is None:
             task = request.args
 
         self.app.logger.info(f'Request for {request.args}')
         if 'r' in task:
             if task['r'] in self.driver.unqueued.functions:
-                return getattr(self.driver,task['r'])(**task),200
+                fn_name = task['r']
+                call_kwargs = dict(task)
+                # Remove router control key before forwarding kwargs.
+                call_kwargs.pop('r', None)
+                return getattr(self.driver, fn_name)(**call_kwargs),200
             else:
                 return "No such task found as an unqueued function in driver"
         else:
@@ -577,6 +600,59 @@ class APIServer:
             del self.driver.dropbox[task['uuid']]
         result = serialization.serialize(result)
         return jsonify({'obj':result}),200
+
+    def tiled_upload_data(self):
+        """Upload an xarray/csv/tsv payload to Tiled via multipart form data."""
+        upload_file = request.files.get('file')
+        if upload_file is None:
+            return jsonify({
+                'status': 'error',
+                'message': 'No file payload provided in form field "file".',
+            }), 400
+
+        upload_bytes = upload_file.read()
+        if not upload_bytes:
+            return jsonify({
+                'status': 'error',
+                'message': 'Uploaded file is empty.',
+            }), 400
+
+        form = request.form
+        metadata_payload = form.get('metadata', '')
+
+        upload_kwargs = {
+            'upload_bytes': upload_bytes,
+            'filename': upload_file.filename or '',
+            'file_format': form.get('file_format', ''),
+            'coordinate_column': form.get('coordinate_column', ''),
+            'metadata': metadata_payload,
+            'delimiter': form.get('delimiter', ''),
+        }
+
+        # Allow direct metadata fields in form without requiring JSON blob.
+        metadata_keys = [
+            'sample_name',
+            'sample_uuid',
+            'AL_campaign_name',
+            'AL_uuid',
+            'task_name',
+            'driver_name',
+        ]
+        for key in metadata_keys:
+            value = form.get(key, '')
+            if value:
+                upload_kwargs[key] = value
+
+        result = self.driver.tiled_upload_dataset(**upload_kwargs)
+        if isinstance(result, dict) and result.get('status') == 'success':
+            return jsonify(result), 200
+
+        if isinstance(result, dict):
+            return jsonify(result), 400
+        return jsonify({
+            'status': 'error',
+            'message': 'Unexpected response from tiled upload handler.',
+        }), 500
 
 
     @jwt_required()

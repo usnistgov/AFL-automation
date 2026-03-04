@@ -1,7 +1,7 @@
 import pytest
 import datetime
 import pandas as pd
-from AFL.automation.mixing.MixDB import MixDB
+from AFL.automation.mixcalc.MixDB import MixDB
 import json
 
 @pytest.fixture

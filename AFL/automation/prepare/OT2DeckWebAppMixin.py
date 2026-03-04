@@ -6,6 +6,7 @@ from AFL.automation.APIServer.Driver import Driver
 
 # Limited set of labware options for quick loading via the dashboard.
 LABWARE_OPTIONS = {
+    "opentrons/opentrons_96_tiprack_10ul": "Opentrons 96 Tiprack 10uL",
     "opentrons/opentrons_96_tiprack_300ul": "Opentrons 96 Tiprack 300uL",
     "opentrons/opentrons_96_tiprack_1000ul": "Opentrons 96 Tiprack 1000uL",
     "opentrons/corning_96_wellplate_360ul_flat": "Corning 96 Well Plate",

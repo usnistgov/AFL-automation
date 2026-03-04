@@ -31,6 +31,20 @@ LABWARE_OPTIONS = {
 }
 
 class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
+    PIPETTE_NAME_ALIASES = {
+        "p10": "p10_single",
+        "p10_single": "p10_single",
+        "p10_single_gen1": "p10_single",
+        "p300": "p300_single",
+        "p300_single": "p300_single",
+        "p1000": "p1000_single",
+        "p1000_single": "p1000_single",
+    }
+    EXPECTED_TIPRACK_TOKEN = {
+        "p10_single": "10ul",
+        "p300_single": "300ul",
+        "p1000_single": "1000ul",
+    }
     defaults = {}
     defaults["robot_ip"] = "127.0.0.1"  # Default to localhost, should be overridden
     defaults["robot_port"] = "31950"  # Default Opentrons HTTP API port
@@ -781,8 +795,28 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                              Passed to _ensure_run_exists for optimization.
             update_pipettes: If False, skip calling _update_pipettes (for optimization during reload).
         """
+        pipette_name = self._normalize_pipette_name(name)
+        mount = str(mount).strip().lower()
+        if mount not in {"left", "right"}:
+            raise ValueError(f"Mount must be 'left' or 'right'. Received: {mount!r}")
+        tip_rack_slots = [str(slot) for slot in listify(tip_rack_slots)]
+        if len(tip_rack_slots) == 0:
+            raise ValueError("At least one tip rack slot must be provided.")
+
+        for slot in tip_rack_slots:
+            if slot not in self.config["loaded_labware"]:
+                raise ValueError(
+                    f"Tip rack slot {slot!r} is not loaded. Load a tiprack first."
+                )
+            labware_name = str(self.config["loaded_labware"][slot][1]).lower()
+            if "tiprack" not in labware_name:
+                self.log_warning(
+                    f"Slot {slot} contains labware '{labware_name}', which may not be a tiprack."
+                )
+        self._warn_on_tiprack_mismatch(pipette_name, tip_rack_slots)
+
         self.log_debug(
-            f"Loading pipette '{name}' on '{mount}' mount with tip_racks in slots {tip_rack_slots}"
+            f"Loading pipette '{pipette_name}' on '{mount}' mount with tip_racks in slots {tip_rack_slots}"
         )
 
         # Ensure we have a valid run
@@ -794,7 +828,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 "data": {
                     "commandType": "loadPipette",
                     "params": {
-                        "pipetteName": name,
+                        "pipetteName": pipette_name,
                         "mount": mount,
                         "tip_racks": [self.config["loaded_labware"][str(slot)][0] for slot in tip_rack_slots],
                     },
@@ -844,7 +878,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
             # Store the instrument information 
             self.config["loaded_instruments"][mount] = {
-                "name": name,
+                "name": pipette_name,
                 "pipette_id": pipette_id,
                 "tip_racks": tip_racks,
             }
@@ -866,7 +900,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             self._update_pipette_ranges()
 
             self.log_info(
-                f"Successfully loaded pipette '{name}' on {mount} mount with ID {pipette_id}"
+                f"Successfully loaded pipette '{pipette_name}' on {mount} mount with ID {pipette_id}"
             )
             self.config._update_history()
             return pipette_id
@@ -874,6 +908,29 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         except (requests.exceptions.RequestException, KeyError) as e:
             self.log_error(f"Error loading pipette: {str(e)}")
             raise RuntimeError(f"Error loading pipette: {str(e)}")
+
+    def _normalize_pipette_name(self, name):
+        key = str(name).strip().lower()
+        normalized = self.PIPETTE_NAME_ALIASES.get(key, key)
+        return normalized
+
+    def _warn_on_tiprack_mismatch(self, pipette_name, tip_rack_slots):
+        token = self.EXPECTED_TIPRACK_TOKEN.get(pipette_name)
+        if token is None:
+            return
+        mismatched_slots = []
+        for slot in tip_rack_slots:
+            labware_info = self.config["loaded_labware"].get(str(slot))
+            if labware_info is None:
+                continue
+            labware_name = str(labware_info[1]).lower()
+            if "tiprack" in labware_name and token not in labware_name:
+                mismatched_slots.append(slot)
+        if mismatched_slots:
+            self.log_warning(
+                f"Loaded pipette '{pipette_name}' with potentially mismatched tipracks in slots {mismatched_slots}. "
+                f"Expected tiprack names containing '{token}'."
+            )
 
     def _update_pipette_ranges(self):
         """Update the min/max values for largest and smallest pipettes"""

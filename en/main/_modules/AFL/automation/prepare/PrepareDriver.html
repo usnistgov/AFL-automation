@@ -427,6 +427,9 @@
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;stocks&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">&quot;fixed_compositions&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;enable_multistep_dilution&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;multistep_max_steps&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;multistep_diluent_policy&quot;</span><span class="p">:</span> <span class="s2">&quot;primary_solvent&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
 <div class="viewcode-block" id="PrepareDriver.__init__">
@@ -466,10 +469,16 @@
 
 <div class="viewcode-block" id="PrepareDriver.is_feasible">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.is_feasible">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_feasible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">is_feasible</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">targets</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+        <span class="n">enable_multistep_dilution</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="n">targets_to_check</span> <span class="o">=</span> <span class="n">listify</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
         <span class="n">minimum_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;minimum_volume&quot;</span><span class="p">,</span> <span class="s2">&quot;100 ul&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">enable_multistep_dilution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">enable_multistep_dilution</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enable_multistep_dilution&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
 
         <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets_to_check</span><span class="p">:</span>
@@ -481,7 +490,12 @@
                 <span class="n">target_with_fixed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_fixed_comps</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
                 <span class="n">target_solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="n">target_with_fixed</span><span class="p">)</span>
                 <span class="n">mb</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_solution</span><span class="p">)</span>
-                <span class="n">mb</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tol&quot;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">))</span>
+                <span class="n">mb</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span>
+                    <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tol&quot;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">),</span>
+                    <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">),</span>
+                    <span class="n">multistep_max_steps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;multistep_max_steps&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+                    <span class="n">multistep_diluent_policy</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;multistep_diluent_policy&quot;</span><span class="p">,</span> <span class="s2">&quot;primary_solvent&quot;</span><span class="p">)),</span>
+                <span class="p">)</span>
 
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="n">mb</span><span class="o">.</span><span class="n">balanced</span>
@@ -556,6 +570,23 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;PrepareDriver subclasses must implement execute_preparation().&quot;</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="PrepareDriver.execute_preparation_plan">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.execute_preparation_plan">[docs]</a>
+    <span class="k">def</span> <span class="nf">execute_preparation_plan</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">balanced_target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
+        <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">procedure_plan</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">intermediate_destinations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">procedure_plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;required_intermediate_targets&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;This prepare backend does not implement multi-step execution.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_preparation</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="PrepareDriver.on_prepare_exception">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.on_prepare_exception">[docs]</a>
     <span class="k">def</span> <span class="nf">on_prepare_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_was_none</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -569,12 +600,62 @@
         <span class="k">return</span> <span class="n">feasible_result</span></div>
 
 
+    <span class="k">def</span> <span class="nf">_destination_queue_key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;prep_targets&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;prep_targets&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;mixing_locations&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;mixing_locations&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_reserve_destinations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">required_intermediate_targets</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">required_intermediate_targets</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolve_destination</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">destination</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="kc">None</span>
+
+        <span class="n">queue_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_destination_queue_key</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">queue_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Multi-step prepare requires a configured destination queue (prep_targets or mixing_locations).&quot;</span>
+            <span class="p">)</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">queue_key</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="n">needed</span> <span class="o">=</span> <span class="n">required_intermediate_targets</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">needed</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Not enough </span><span class="si">{</span><span class="n">queue_key</span><span class="si">}</span><span class="s2"> entries for multi-step preparation. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Need </span><span class="si">{</span><span class="n">needed</span><span class="si">}</span><span class="s2">, found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">consumed</span> <span class="o">=</span> <span class="n">queue</span><span class="p">[:</span><span class="n">needed</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">queue_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span><span class="p">[</span><span class="n">needed</span><span class="p">:]</span>
+        <span class="n">intermediate_destinations</span> <span class="o">=</span> <span class="n">consumed</span><span class="p">[:</span><span class="n">required_intermediate_targets</span><span class="p">]</span>
+        <span class="n">destination</span> <span class="o">=</span> <span class="n">dest</span> <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">consumed</span><span class="p">[</span><span class="n">required_intermediate_targets</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">destination</span><span class="p">,</span> <span class="n">intermediate_destinations</span><span class="p">,</span> <span class="n">consumed</span><span class="p">,</span> <span class="n">queue_key</span>
+
+    <span class="k">def</span> <span class="nf">_restore_reserved_destinations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">consumed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">queue_key</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">consumed</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">queue_key</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">queue_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">consumed</span> <span class="o">+</span> <span class="n">queue</span>
+
 <div class="viewcode-block" id="PrepareDriver.prepare">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.prepare">[docs]</a>
-    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">enable_multistep_dilution</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_fixed_comps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">enable_multistep_dilution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">enable_multistep_dilution</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enable_multistep_dilution&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
 
-        <span class="n">feasibility_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_feasible</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="n">feasibility_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_feasible</span><span class="p">(</span>
+            <span class="n">target</span><span class="p">,</span>
+            <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">),</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">feasibility_results</span> <span class="ow">or</span> <span class="n">feasibility_results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Target composition </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unnamed target&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not feasible &quot;</span>
@@ -589,7 +670,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">balance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">):</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -599,14 +680,31 @@
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="n">balanced_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span>
-        <span class="n">destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolve_destination</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+        <span class="n">procedure_plan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;procedure_plan&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">required_intermediate_targets</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">procedure_plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;required_intermediate_targets&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">destination</span><span class="p">,</span> <span class="n">intermediate_destinations</span><span class="p">,</span> <span class="n">consumed</span><span class="p">,</span> <span class="n">queue_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_destinations</span><span class="p">(</span>
+            <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span>
+            <span class="n">required_intermediate_targets</span><span class="o">=</span><span class="n">required_intermediate_targets</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_preparation</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">required_intermediate_targets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_preparation_plan</span><span class="p">(</span>
+                    <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                    <span class="n">balanced_target</span><span class="o">=</span><span class="n">balanced_target</span><span class="p">,</span>
+                    <span class="n">destination</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span>
+                    <span class="n">procedure_plan</span><span class="o">=</span><span class="n">procedure_plan</span><span class="p">,</span>
+                    <span class="n">intermediate_destinations</span><span class="o">=</span><span class="n">intermediate_destinations</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_preparation</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">success</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">on_prepare_exception</span><span class="p">(</span><span class="n">destination</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span> <span class="n">dest_was_none</span><span class="o">=</span><span class="p">(</span><span class="n">dest</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">required_intermediate_targets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_restore_reserved_destinations</span><span class="p">(</span><span class="n">queue_key</span><span class="o">=</span><span class="n">queue_key</span><span class="p">,</span> <span class="n">consumed</span><span class="o">=</span><span class="n">consumed</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">on_prepare_exception</span><span class="p">(</span><span class="n">destination</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span> <span class="n">dest_was_none</span><span class="o">=</span><span class="p">(</span><span class="n">dest</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">))</span>
             <span class="k">raise</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_prepare_result</span><span class="p">(</span><span class="n">feasible_result</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">),</span> <span class="n">destination</span></div>

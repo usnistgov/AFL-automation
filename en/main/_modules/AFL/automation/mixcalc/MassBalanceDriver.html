@@ -598,6 +598,9 @@
         <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s1">&#39;targets&#39;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s1">&#39;tol&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
+        <span class="s1">&#39;enable_multistep_dilution&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s1">&#39;multistep_diluent_policy&#39;</span><span class="p">:</span> <span class="s1">&#39;primary_solvent&#39;</span><span class="p">,</span>
         <span class="s1">&#39;sweep_config&#39;</span><span class="p">:</span> <span class="p">{},</span>
         <span class="s1">&#39;orchestrator_uri&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
         <span class="s1">&#39;orchestrator_username&#39;</span><span class="p">:</span> <span class="s1">&#39;Orchestrator&#39;</span><span class="p">,</span>
@@ -996,7 +999,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.balance">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.balance">[docs]</a>
-    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_report</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_targets</span><span class="p">()</span>
         <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span>
@@ -1033,10 +1036,16 @@
                 <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">msg</span><span class="p">,</span>
             <span class="p">}</span>
 
+        <span class="k">if</span> <span class="n">enable_multistep_dilution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">enable_multistep_dilution</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_multistep_dilution&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span>
                 <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;tol&#39;</span><span class="p">],</span>
                 <span class="n">return_report</span><span class="o">=</span><span class="n">return_report</span><span class="p">,</span>
+                <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">),</span>
+                <span class="n">multistep_max_steps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+                <span class="n">multistep_diluent_policy</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multistep_diluent_policy&#39;</span><span class="p">,</span> <span class="s1">&#39;primary_solvent&#39;</span><span class="p">)),</span>
                 <span class="n">progress_callback</span><span class="o">=</span><span class="n">_progress_cb</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
@@ -1075,7 +1084,13 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_balance_settings">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">get_balance_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;tol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;tol&#39;</span><span class="p">]}</span></div>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;tol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;tol&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;minimum_volume&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;minimum_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;20 ul&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;enable_multistep_dilution&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_multistep_dilution&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
+            <span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="s1">&#39;multistep_diluent_policy&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multistep_diluent_policy&#39;</span><span class="p">,</span> <span class="s1">&#39;primary_solvent&#39;</span><span class="p">)),</span>
+        <span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="MassBalanceDriver.get_sample_composition">

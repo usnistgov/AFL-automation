@@ -583,6 +583,9 @@
             <span class="s1">&#39;mixing_locations&#39;</span><span class="p">,</span>
             <span class="s1">&#39;catch_volume&#39;</span><span class="p">,</span>
             <span class="s1">&#39;mock_mode&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;enable_multistep_dilution&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;multistep_diluent_policy&#39;</span><span class="p">,</span>
         <span class="p">]</span>
         <span class="n">config_snapshot</span><span class="p">,</span> <span class="n">config_errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_get_config_many</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">cfg_keys</span><span class="p">)</span>
         <span class="n">prep_targets</span> <span class="o">=</span> <span class="n">config_snapshot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prep_targets&#39;</span><span class="p">)</span>
@@ -604,6 +607,9 @@
                 <span class="s1">&#39;mixing_locations&#39;</span><span class="p">:</span> <span class="n">mixing_locations</span><span class="p">,</span>
                 <span class="s1">&#39;catch_volume&#39;</span><span class="p">:</span> <span class="n">config_snapshot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;catch_volume&#39;</span><span class="p">),</span>
                 <span class="s1">&#39;mock_mode&#39;</span><span class="p">:</span> <span class="n">config_snapshot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mock_mode&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;enable_multistep_dilution&#39;</span><span class="p">:</span> <span class="n">config_snapshot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_multistep_dilution&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">:</span> <span class="n">config_snapshot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;multistep_diluent_policy&#39;</span><span class="p">:</span> <span class="n">config_snapshot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multistep_diluent_policy&#39;</span><span class="p">),</span>
             <span class="p">},</span>
             <span class="s1">&#39;health&#39;</span><span class="p">:</span> <span class="n">health</span><span class="p">,</span>
             <span class="s1">&#39;prepare_kwargs&#39;</span><span class="p">:</span> <span class="p">[</span>

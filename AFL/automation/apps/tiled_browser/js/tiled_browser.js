@@ -19,6 +19,7 @@ let totalCount = 0;
 let multiSelectInstances = {};  // Store multi-select state for each filter
 let currentCopyText = '';
 let uploadColumnHeaders = [];
+let lastUploadFormState = null;
 const DEFAULT_SORT_MODEL = [{ colId: 'meta_ended', sort: 'desc' }];
 
 // Available search fields (excluding datetime columns)
@@ -1407,8 +1408,149 @@ async function handleUploadFileSelection() {
     }
 }
 
-function gatherUploadMetadata() {
+function isNumericUploadCompositionValue(value) {
+    return /^[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?$/.test(value);
+}
+
+function createUploadCompositionRow(component = '', value = '') {
+    const row = document.createElement('div');
+    row.className = 'upload-composition-row';
+
+    const componentInput = document.createElement('input');
+    componentInput.type = 'text';
+    componentInput.className = 'upload-composition-component';
+    componentInput.placeholder = 'Component name (e.g. PEG)';
+    componentInput.value = component;
+
+    const valueInput = document.createElement('input');
+    valueInput.type = 'text';
+    valueInput.className = 'upload-composition-value';
+    valueInput.placeholder = 'Value (e.g. 0.35)';
+    valueInput.value = value;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'upload-composition-remove';
+    removeBtn.textContent = 'x';
+    removeBtn.title = 'Remove component row';
+    removeBtn.addEventListener('click', () => {
+        row.remove();
+    });
+
+    row.appendChild(componentInput);
+    row.appendChild(valueInput);
+    row.appendChild(removeBtn);
+    return row;
+}
+
+function initializeUploadCompositionEditor() {
+    const rowsContainer = document.getElementById('upload-composition-rows');
+    const addButton = document.getElementById('upload-add-composition-button');
+    if (!rowsContainer || !addButton) {
+        return;
+    }
+
+    addButton.addEventListener('click', () => {
+        rowsContainer.appendChild(createUploadCompositionRow());
+    });
+
+    if (!rowsContainer.children.length) {
+        rowsContainer.appendChild(createUploadCompositionRow());
+    }
+}
+
+function getUploadCompositionRows() {
+    return Array.from(document.querySelectorAll('#upload-composition-rows .upload-composition-row'));
+}
+
+function gatherSampleComposition() {
+    const composition = {};
+    const rows = getUploadCompositionRows();
+
+    for (const row of rows) {
+        const compInput = row.querySelector('.upload-composition-component');
+        const valueInput = row.querySelector('.upload-composition-value');
+        const compName = compInput ? compInput.value.trim() : '';
+        const rawValue = valueInput ? valueInput.value.trim() : '';
+
+        if (!compName && !rawValue) {
+            continue;
+        }
+        if (!compName || !rawValue) {
+            throw new Error('Each sample composition row needs both component name and value.');
+        }
+
+        composition[compName] = isNumericUploadCompositionValue(rawValue) ? Number(rawValue) : rawValue;
+    }
+
+    return composition;
+}
+
+function getUploadFormState() {
+    const rows = getUploadCompositionRows().map(row => ({
+        component: (row.querySelector('.upload-composition-component')?.value || '').trim(),
+        value: (row.querySelector('.upload-composition-value')?.value || '').trim()
+    }));
+
     return {
+        delimiter: document.getElementById('upload-delimiter').value,
+        coordinate_column: document.getElementById('upload-coordinate-column').value,
+        sample_name: document.getElementById('upload-sample-name').value,
+        sample_uuid: document.getElementById('upload-sample-uuid').value,
+        AL_campaign_name: document.getElementById('upload-al-campaign-name').value,
+        AL_uuid: document.getElementById('upload-al-uuid').value,
+        task_name: document.getElementById('upload-task-name').value,
+        driver_name: document.getElementById('upload-driver-name').value,
+        composition_rows: rows
+    };
+}
+
+function restoreUploadFormState(state) {
+    if (!state || typeof state !== 'object') {
+        return;
+    }
+
+    const byId = {
+        'upload-delimiter': state.delimiter,
+        'upload-sample-name': state.sample_name,
+        'upload-sample-uuid': state.sample_uuid,
+        'upload-al-campaign-name': state.AL_campaign_name,
+        'upload-al-uuid': state.AL_uuid,
+        'upload-task-name': state.task_name,
+        'upload-driver-name': state.driver_name
+    };
+
+    Object.entries(byId).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el && value !== undefined && value !== null) {
+            el.value = value;
+        }
+    });
+
+    const coordEl = document.getElementById('upload-coordinate-column');
+    if (coordEl && state.coordinate_column) {
+        const option = Array.from(coordEl.options).find(opt => opt.value === state.coordinate_column);
+        if (option) {
+            coordEl.value = state.coordinate_column;
+        }
+    }
+
+    const rowsContainer = document.getElementById('upload-composition-rows');
+    if (rowsContainer) {
+        rowsContainer.innerHTML = '';
+        const rows = Array.isArray(state.composition_rows) ? state.composition_rows : [];
+        if (rows.length) {
+            rows.forEach(row => {
+                rowsContainer.appendChild(createUploadCompositionRow(row.component || '', row.value || ''));
+            });
+        } else {
+            rowsContainer.appendChild(createUploadCompositionRow());
+        }
+    }
+}
+
+function gatherUploadMetadata() {
+    const metadata = {
         sample_name: document.getElementById('upload-sample-name').value.trim(),
         sample_uuid: document.getElementById('upload-sample-uuid').value.trim(),
         AL_campaign_name: document.getElementById('upload-al-campaign-name').value.trim(),
@@ -1416,14 +1558,21 @@ function gatherUploadMetadata() {
         task_name: document.getElementById('upload-task-name').value.trim(),
         driver_name: document.getElementById('upload-driver-name').value.trim()
     };
+
+    const sampleComposition = gatherSampleComposition();
+    if (Object.keys(sampleComposition).length > 0) {
+        metadata.sample_composition = sampleComposition;
+    }
+
+    return metadata;
 }
 
 async function submitDatasetUpload() {
     const fileInput = document.getElementById('upload-file-input');
     const uploadBtn = document.getElementById('upload-submit-button');
-    const formatEl = document.getElementById('upload-file-format');
     const delimiterEl = document.getElementById('upload-delimiter');
     const coordEl = document.getElementById('upload-coordinate-column');
+    lastUploadFormState = getUploadFormState();
 
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
         showError('Please choose a file to upload.');
@@ -1442,7 +1591,13 @@ async function submitDatasetUpload() {
         return;
     }
 
-    const metadata = gatherUploadMetadata();
+    let metadata;
+    try {
+        metadata = gatherUploadMetadata();
+    } catch (error) {
+        showError(error.message);
+        return;
+    }
     const payload = new FormData();
     payload.append('file', file);
     payload.append('file_format', format);
@@ -1485,6 +1640,7 @@ async function submitDatasetUpload() {
     } finally {
         uploadBtn.disabled = false;
         uploadBtn.textContent = originalText;
+        restoreUploadFormState(lastUploadFormState);
     }
 }
 
@@ -1586,6 +1742,8 @@ function setupEventListeners() {
     const uploadFileInput = document.getElementById('upload-file-input');
     const uploadDelimiter = document.getElementById('upload-delimiter');
     const uploadSubmitButton = document.getElementById('upload-submit-button');
+    initializeUploadCompositionEditor();
+
     if (uploadFileInput) {
         uploadFileInput.addEventListener('change', handleUploadFileSelection);
     }

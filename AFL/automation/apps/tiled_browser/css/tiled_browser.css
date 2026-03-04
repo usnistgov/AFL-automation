@@ -429,6 +429,97 @@ body {
     gap: 8px;
 }
 
+.upload-composition-section {
+    border: 1px solid #e3e7eb;
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: #fafcfd;
+}
+
+.upload-composition-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+}
+
+#upload-add-composition-button {
+    padding: 6px 12px;
+    border: 1px solid #cfd8dc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #0b7285;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#upload-add-composition-button:hover {
+    background-color: #f1f6f8;
+}
+
+#upload-composition-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.upload-composition-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.upload-composition-row input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.upload-composition-row input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.upload-composition-remove {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background-color: #e74c3c;
+    color: #fff;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.upload-composition-remove:hover {
+    background-color: #c0392b;
+}
+
+@media (max-width: 900px) {
+    .upload-composition-row {
+        grid-template-columns: 1fr;
+    }
+
+    .upload-composition-remove {
+        width: 100%;
+        height: auto;
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
+
 #upload-submit-button {
     padding: 10px 20px;
     border: none;

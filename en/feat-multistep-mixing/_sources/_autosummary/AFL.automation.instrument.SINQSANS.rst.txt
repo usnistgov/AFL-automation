@@ -1,0 +1,15 @@
+AFL.automation.instrument.SINQSANS
+==================================
+
+.. automodule:: AFL.automation.instrument.SINQSANS
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      SICSTelnetClient
+      SINQSANS
+      ScatteringInstrument
+   

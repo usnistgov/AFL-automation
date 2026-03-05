@@ -1094,7 +1094,7 @@
 <div class="viewcode-block" id="APIServer.tiled_upload_data">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.tiled_upload_data">[docs]</a>
     <span class="k">def</span> <span class="nf">tiled_upload_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upload an xarray/csv/tsv payload to Tiled via multipart form data.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upload an xarray/nc/csv/tsv/dat payload to Tiled via multipart form data.&quot;&quot;&quot;</span>
         <span class="n">upload_file</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">upload_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span>
@@ -1119,6 +1119,8 @@
             <span class="s1">&#39;coordinate_column&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;coordinate_column&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
             <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata_payload</span><span class="p">,</span>
             <span class="s1">&#39;delimiter&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;delimiter&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;comment_prefix&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;comment_prefix&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;last_comment_as_header&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;last_comment_as_header&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
         <span class="p">}</span>
 
         <span class="c1"># Allow direct metadata fields in form without requiring JSON blob.</span>

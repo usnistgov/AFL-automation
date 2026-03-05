@@ -117,19 +117,30 @@
                 <div id="upload-tab" class="tab-content">
                     <div id="upload-form">
                         <div class="upload-row">
-                            <label for="upload-file-input">Data File (.nc, .csv, .tsv):</label>
-                            <input id="upload-file-input" type="file" accept=".nc,.csv,.tsv">
+                            <label for="upload-file-input">Data File (.nc, .csv, .tsv, .dat):</label>
+                            <input id="upload-file-input" type="file" accept=".nc,.csv,.tsv,.dat">
                         </div>
                         <div class="upload-row">
                             <label for="upload-file-format">Format:</label>
                             <input id="upload-file-format" type="text" value="Auto-detect from file extension" readonly>
                         </div>
                         <div class="upload-row">
-                            <label for="upload-delimiter">Delimiter <span class="field-note">(Optional, CSV/TSV only)</span>:</label>
+                            <label for="upload-delimiter">Delimiter <span class="field-note">(Optional, CSV/TSV/DAT only)</span>:</label>
                             <input id="upload-delimiter" type="text" placeholder="Auto" maxlength="1">
                         </div>
                         <div class="upload-row">
-                            <label for="upload-coordinate-column">Coordinate Column <span class="field-note">(Optional, CSV/TSV only)</span>:</label>
+                            <label for="upload-comment-prefix">Comment Prefix <span class="field-note">(Optional, table uploads)</span>:</label>
+                            <input id="upload-comment-prefix" type="text" value="#" maxlength="8">
+                        </div>
+                        <div class="upload-row">
+                            <label for="upload-last-comment-header">Header Source <span class="field-note">(Optional, table uploads)</span>:</label>
+                            <label>
+                                <input id="upload-last-comment-header" type="checkbox">
+                                Use last comment row as header
+                            </label>
+                        </div>
+                        <div class="upload-row">
+                            <label for="upload-coordinate-column">Coordinate Column <span class="field-note">(Optional, CSV/TSV/DAT only)</span>:</label>
                             <select id="upload-coordinate-column" disabled>
                                 <option value="">None (row index)</option>
                             </select>

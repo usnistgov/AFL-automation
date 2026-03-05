@@ -217,6 +217,16 @@ function detectTableDelimiter(format, firstLine, userDelimiter = '') {
         }
         return '\t';
     }
+    if (format === 'dat') {
+        if (firstLine.includes('\t')) {
+            return '\t';
+        }
+        const tokens = firstLine.trim().split(/\s+/).filter(Boolean);
+        if (tokens.length > 1) {
+            return '__whitespace__';
+        }
+        return '\t';
+    }
     return ',';
 }
 
@@ -1348,7 +1358,50 @@ function inferUploadFormat(filename) {
     if (lower.endsWith('.nc')) return 'nc';
     if (lower.endsWith('.csv')) return 'csv';
     if (lower.endsWith('.tsv')) return 'tsv';
+    if (lower.endsWith('.dat')) return 'dat';
     return '';
+}
+
+function getUploadCommentPrefix() {
+    const input = document.getElementById('upload-comment-prefix');
+    return input ? input.value : '';
+}
+
+function useLastCommentAsHeader() {
+    const input = document.getElementById('upload-last-comment-header');
+    return !!(input && input.checked);
+}
+
+function extractUploadHeaderLine(fileText, commentPrefix = '', headerFromLastComment = false) {
+    const lines = fileText.split(/\r?\n/).filter(line => line.trim().length > 0);
+    if (lines.length === 0) {
+        return '';
+    }
+
+    const prefix = (commentPrefix || '').trim();
+    if (!prefix) {
+        return lines[0];
+    }
+
+    const commentLines = [];
+    const dataLines = [];
+    lines.forEach(line => {
+        const trimmedStart = line.trimStart();
+        if (trimmedStart.startsWith(prefix)) {
+            commentLines.push(trimmedStart.slice(prefix.length).trim());
+        } else {
+            dataLines.push(line);
+        }
+    });
+
+    if (headerFromLastComment) {
+        const header = commentLines.length > 0 ? commentLines[commentLines.length - 1] : '';
+        if (header) {
+            return header;
+        }
+    }
+
+    return dataLines.length > 0 ? dataLines[0] : '';
 }
 
 function resetUploadCoordinateSelector() {
@@ -1374,6 +1427,8 @@ async function handleUploadFileSelection() {
     const fileInput = document.getElementById('upload-file-input');
     const formatEl = document.getElementById('upload-file-format');
     const delimiterEl = document.getElementById('upload-delimiter');
+    const commentPrefix = getUploadCommentPrefix();
+    const headerFromLastComment = useLastCommentAsHeader();
 
     resetUploadCoordinateSelector();
 
@@ -1392,15 +1447,15 @@ async function handleUploadFileSelection() {
 
     try {
         const text = await file.text();
-        const firstLine = text.split(/\r?\n/).find(line => line.trim().length > 0) || '';
-        if (!firstLine) {
+        const headerLine = extractUploadHeaderLine(text, commentPrefix, headerFromLastComment);
+        if (!headerLine) {
             showError('Uploaded table appears empty.');
             return;
         }
-        const delimiter = detectTableDelimiter(format, firstLine, delimiterEl.value);
+        const delimiter = detectTableDelimiter(format, headerLine, delimiterEl.value);
         const columns = delimiter === '__whitespace__'
-            ? firstLine.trim().split(/\s+/).filter(name => name.length > 0)
-            : splitCsvLikeLine(firstLine, delimiter).filter(name => name.length > 0);
+            ? headerLine.trim().split(/\s+/).filter(name => name.length > 0)
+            : splitCsvLikeLine(headerLine, delimiter).filter(name => name.length > 0);
         uploadColumnHeaders = columns;
         populateUploadCoordinateSelector(columns);
     } catch (error) {
@@ -1494,6 +1549,8 @@ function getUploadFormState() {
 
     return {
         delimiter: document.getElementById('upload-delimiter').value,
+        comment_prefix: getUploadCommentPrefix(),
+        last_comment_as_header: useLastCommentAsHeader(),
         coordinate_column: document.getElementById('upload-coordinate-column').value,
         sample_name: document.getElementById('upload-sample-name').value,
         sample_uuid: document.getElementById('upload-sample-uuid').value,
@@ -1512,6 +1569,7 @@ function restoreUploadFormState(state) {
 
     const byId = {
         'upload-delimiter': state.delimiter,
+        'upload-comment-prefix': state.comment_prefix,
         'upload-sample-name': state.sample_name,
         'upload-sample-uuid': state.sample_uuid,
         'upload-al-campaign-name': state.AL_campaign_name,
@@ -1526,6 +1584,11 @@ function restoreUploadFormState(state) {
             el.value = value;
         }
     });
+
+    const lastCommentHeaderEl = document.getElementById('upload-last-comment-header');
+    if (lastCommentHeaderEl && state.last_comment_as_header !== undefined) {
+        lastCommentHeaderEl.checked = !!state.last_comment_as_header;
+    }
 
     const coordEl = document.getElementById('upload-coordinate-column');
     if (coordEl && state.coordinate_column) {
@@ -1571,6 +1634,8 @@ async function submitDatasetUpload() {
     const fileInput = document.getElementById('upload-file-input');
     const uploadBtn = document.getElementById('upload-submit-button');
     const delimiterEl = document.getElementById('upload-delimiter');
+    const commentPrefix = getUploadCommentPrefix();
+    const headerFromLastComment = useLastCommentAsHeader();
     const coordEl = document.getElementById('upload-coordinate-column');
     lastUploadFormState = getUploadFormState();
 
@@ -1582,11 +1647,11 @@ async function submitDatasetUpload() {
     const file = fileInput.files[0];
     const format = inferUploadFormat(file.name);
     if (!format) {
-        showError('Unsupported file extension. Use .nc, .csv, or .tsv.');
+        showError('Unsupported file extension. Use .nc, .csv, .tsv, or .dat.');
         return;
     }
 
-    if ((format === 'csv' || format === 'tsv') && coordEl.value && uploadColumnHeaders.length > 0 && !uploadColumnHeaders.includes(coordEl.value)) {
+    if ((format === 'csv' || format === 'tsv' || format === 'dat') && coordEl.value && uploadColumnHeaders.length > 0 && !uploadColumnHeaders.includes(coordEl.value)) {
         showError('Selected coordinate column is not present in the table headers.');
         return;
     }
@@ -1608,11 +1673,13 @@ async function submitDatasetUpload() {
         payload.append('coordinate_column', coordValue);
     }
 
-    if (format === 'csv' || format === 'tsv') {
+    if (format === 'csv' || format === 'tsv' || format === 'dat') {
         const delimiter = delimiterEl.value || '';
         if (delimiter) {
             payload.append('delimiter', delimiter);
         }
+        payload.append('comment_prefix', commentPrefix);
+        payload.append('last_comment_as_header', headerFromLastComment ? 'true' : 'false');
     }
 
     const originalText = uploadBtn.textContent;
@@ -1741,6 +1808,8 @@ function setupEventListeners() {
     // Upload controls
     const uploadFileInput = document.getElementById('upload-file-input');
     const uploadDelimiter = document.getElementById('upload-delimiter');
+    const uploadCommentPrefix = document.getElementById('upload-comment-prefix');
+    const uploadLastCommentHeader = document.getElementById('upload-last-comment-header');
     const uploadSubmitButton = document.getElementById('upload-submit-button');
     initializeUploadCompositionEditor();
 
@@ -1749,6 +1818,12 @@ function setupEventListeners() {
     }
     if (uploadDelimiter) {
         uploadDelimiter.addEventListener('input', handleUploadFileSelection);
+    }
+    if (uploadCommentPrefix) {
+        uploadCommentPrefix.addEventListener('input', handleUploadFileSelection);
+    }
+    if (uploadLastCommentHeader) {
+        uploadLastCommentHeader.addEventListener('change', handleUploadFileSelection);
     }
     if (uploadSubmitButton) {
         uploadSubmitButton.addEventListener('click', submitDatasetUpload);

@@ -15,7 +15,6 @@ from AFL.automation.shared.utilities import listify
 # Add this constant at the top of the file, after the imports
 TIPRACK_WELLS = [f"{row}{col}" for col in range(1, 13) for row in "ABCDEFGH"]
 
-
 class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
     PIPETTE_NAME_ALIASES = {
         "p10": "p10_single",

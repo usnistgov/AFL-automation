@@ -16,6 +16,8 @@ LABWARE_OPTIONS = {
     "custom_beta/nist_6_20ml_vials": "NIST 6 x 20mL vial carrier",
     "custom_beta/nist_2_100ml_bottles": "NIST 2 x 100mL bottle carrier",
     "heaterShakerModuleV1": "HeaterShaker Module (still needs labware atop it!)",
+    "abgenestorage_96_wellplate_1200ul": "Abgenestorage 96 Wellplate 1200 ul",
+    "aps1296wellon300ulrack_96_wellplate_300ul": "12IDB Sample Collection Plate (in tiprack!!!)",
 }
 
 

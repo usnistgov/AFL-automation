@@ -405,7 +405,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.APIServer.Client</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">requests</span><span class="o">,</span><span class="nn">uuid</span><span class="o">,</span><span class="nn">time</span><span class="o">,</span><span class="nn">copy</span><span class="o">,</span><span class="nn">inspect</span>
+<span></span><span class="kn">import</span> <span class="nn">requests</span><span class="o">,</span><span class="nn">uuid</span><span class="o">,</span><span class="nn">time</span><span class="o">,</span><span class="nn">copy</span><span class="o">,</span><span class="nn">inspect</span><span class="o">,</span><span class="nn">io</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">AFL.automation.shared</span> <span class="kn">import</span> <span class="n">serialization</span>
 <span class="k">try</span><span class="p">:</span>
@@ -592,6 +592,8 @@
             <span class="c1">#XXX Need to find a cleaner way to do this. It works reasonbly</span>
             <span class="c1">#XXX well, but it doesn&#39;t support tab completions</span>
             <span class="k">for</span> <span class="n">function_name</span><span class="p">,</span><span class="n">info</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">function_name</span><span class="p">):</span>
+                    <span class="k">continue</span>
                 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">parameter_name</span><span class="p">,</span><span class="n">default</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;kwargs&#39;</span><span class="p">]:</span>
                     <span class="n">p</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">parameter_name</span><span class="p">,</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span>
@@ -616,6 +618,8 @@
             <span class="c1">#XXX Need to find a cleaner way to do this. It works reasonbly</span>
             <span class="c1">#XXX well, but it doesn&#39;t support tab completions</span>
             <span class="k">for</span> <span class="n">function_name</span><span class="p">,</span><span class="n">info</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">function_name</span><span class="p">):</span>
+                    <span class="k">continue</span>
                 <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">parameter_name</span><span class="p">,</span><span class="n">default</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;kwargs&#39;</span><span class="p">]:</span>
                     <span class="n">p</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">parameter_name</span><span class="p">,</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span>
@@ -685,6 +689,92 @@
         <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;API call to query_driver command failed with status_code </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="Client.tiled_upload_dataset">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.tiled_upload_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">tiled_upload_dataset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upload_bytes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">file_format</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">coordinate_column</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">comment_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">last_comment_as_header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">metadata_fields</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upload xarray/csv/tsv/dat payloads to /tiled_upload_data using multipart form-data.</span>
+
+<span class="sd">        Exactly one of dataset/filepath/upload_bytes must be provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">provided_sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">dataset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filepath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">upload_bytes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">provided_sources</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Provide exactly one of dataset, filepath, or upload_bytes&#39;</span><span class="p">)</span>
+
+        <span class="n">payload_bytes</span> <span class="o">=</span> <span class="n">upload_bytes</span>
+        <span class="n">payload_filename</span> <span class="o">=</span> <span class="n">filename</span>
+
+        <span class="k">if</span> <span class="n">dataset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+            <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;xarray is required to upload dataset objects&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;dataset must be an xarray.Dataset&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">payload_filename</span><span class="p">:</span>
+                <span class="n">payload_filename</span> <span class="o">=</span> <span class="s1">&#39;dataset.nc&#39;</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+            <span class="n">payload_bytes</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">filepath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">payload_bytes</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">payload_filename</span><span class="p">:</span>
+                <span class="n">payload_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">upload_bytes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">payload_filename</span><span class="p">:</span>
+            <span class="n">payload_filename</span> <span class="o">=</span> <span class="s1">&#39;upload.dat&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">payload_bytes</span><span class="p">,</span> <span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;upload payload must be bytes&#39;</span><span class="p">)</span>
+
+        <span class="n">form</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;file_format&#39;</span><span class="p">:</span> <span class="n">file_format</span><span class="p">,</span>
+            <span class="s1">&#39;coordinate_column&#39;</span><span class="p">:</span> <span class="n">coordinate_column</span><span class="p">,</span>
+            <span class="s1">&#39;delimiter&#39;</span><span class="p">:</span> <span class="n">delimiter</span><span class="p">,</span>
+            <span class="s1">&#39;comment_prefix&#39;</span><span class="p">:</span> <span class="n">comment_prefix</span><span class="p">,</span>
+            <span class="s1">&#39;last_comment_as_header&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">last_comment_as_header</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">form</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">form</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata_fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">form</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">payload_filename</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">payload_bytes</span><span class="p">)),</span>
+        <span class="p">}</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">+</span> <span class="s1">&#39;/tiled_upload_data&#39;</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
+            <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">form</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;API call to tiled_upload_data failed with status_code </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="Client.reset_queue_daemon">

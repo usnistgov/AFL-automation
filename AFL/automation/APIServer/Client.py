@@ -1,4 +1,4 @@
-import requests,uuid,time,copy,inspect
+import requests,uuid,time,copy,inspect,io,os,json
 import logging
 from AFL.automation.shared import serialization
 try:
@@ -148,6 +148,8 @@ class Client:
             #XXX Need to find a cleaner way to do this. It works reasonbly
             #XXX well, but it doesn't support tab completions
             for function_name,info in response.json().items():
+                if hasattr(self.__class__, function_name):
+                    continue
                 parameters = []
                 for parameter_name,default in info['kwargs']:
                     p = inspect.Parameter(parameter_name,inspect.Parameter.KEYWORD_ONLY,default=default)
@@ -169,6 +171,8 @@ class Client:
             #XXX Need to find a cleaner way to do this. It works reasonbly
             #XXX well, but it doesn't support tab completions
             for function_name,info in response.json().items():
+                if hasattr(self.__class__, function_name):
+                    continue
                 parameters = []
                 for parameter_name,default in info['kwargs']:
                     p = inspect.Parameter(parameter_name,inspect.Parameter.KEYWORD_ONLY,default=default)
@@ -223,6 +227,89 @@ class Client:
         if response.status_code != 200:
             raise RuntimeError(f'API call to query_driver command failed with status_code {response.status_code}\n{response.text}')
         return response.text
+
+    def tiled_upload_dataset(
+        self,
+        dataset=None,
+        filepath=None,
+        upload_bytes=None,
+        filename='',
+        file_format='',
+        coordinate_column='',
+        metadata=None,
+        delimiter='',
+        comment_prefix='',
+        last_comment_as_header=False,
+        **metadata_fields,
+    ):
+        """Upload xarray/csv/tsv/dat payloads to /tiled_upload_data using multipart form-data.
+
+        Exactly one of dataset/filepath/upload_bytes must be provided.
+        """
+        provided_sources = [dataset is not None, filepath is not None, upload_bytes is not None]
+        if sum(provided_sources) != 1:
+            raise ValueError('Provide exactly one of dataset, filepath, or upload_bytes')
+
+        payload_bytes = upload_bytes
+        payload_filename = filename
+
+        if dataset is not None:
+            try:
+                import xarray as xr
+            except ImportError as exc:
+                raise RuntimeError('xarray is required to upload dataset objects') from exc
+            if not isinstance(dataset, xr.Dataset):
+                raise TypeError('dataset must be an xarray.Dataset')
+            if not payload_filename:
+                payload_filename = 'dataset.nc'
+            stream = io.BytesIO()
+            dataset.to_netcdf(stream)
+            payload_bytes = stream.getvalue()
+        elif filepath is not None:
+            with open(filepath, 'rb') as f:
+                payload_bytes = f.read()
+            if not payload_filename:
+                payload_filename = os.path.basename(filepath)
+        elif upload_bytes is not None and not payload_filename:
+            payload_filename = 'upload.dat'
+
+        if not isinstance(payload_bytes, (bytes, bytearray)):
+            raise TypeError('upload payload must be bytes')
+
+        form = {
+            'file_format': file_format,
+            'coordinate_column': coordinate_column,
+            'delimiter': delimiter,
+            'comment_prefix': comment_prefix,
+            'last_comment_as_header': str(bool(last_comment_as_header)).lower(),
+        }
+
+        if metadata is not None:
+            if isinstance(metadata, dict):
+                form['metadata'] = json.dumps(metadata)
+            else:
+                form['metadata'] = str(metadata)
+
+        for key, value in metadata_fields.items():
+            if value is None:
+                continue
+            form[key] = str(value)
+
+        files = {
+            'file': (payload_filename, bytes(payload_bytes)),
+        }
+
+        response = requests.post(
+            self.url + '/tiled_upload_data',
+            headers=self.headers,
+            files=files,
+            data=form,
+        )
+        if response.status_code != 200:
+            raise RuntimeError(
+                f'API call to tiled_upload_data failed with status_code {response.status_code}\n{response.text}'
+            )
+        return response.json()
 
     def reset_queue_daemon(self):
         response = requests.post(self.url+'/reset_queue_daemon',headers=self.headers)

@@ -4,6 +4,7 @@ import threading
 import time
 import datetime
 import pathlib
+import xarray as xr
 
             
 class SensorCallbackThread(threading.Thread):
@@ -30,7 +31,7 @@ class SensorCallbackThread(threading.Thread):
 
     def update_status(self,value):
         self.status_str = value
-        if self.app is not None:
+        if self.app is not None and hasattr(self.app, 'logger'):
             self.app.logger.info(value)
         else:
             print(value)
@@ -43,7 +44,10 @@ class SensorCallbackThread(threading.Thread):
         pass
         
     def run(self):
-        print('Starting runloop for CallbackThread:')
+        if self.app is not None and hasattr(self.app, 'logger'):
+            self.app.logger.info('Starting runloop for CallbackThread:')
+        else:
+            print('Starting runloop for CallbackThread:')
         while not self._stop:
             dt = datetime.datetime.now()-self.thread_start
             # print(f'Running for {dt.seconds:010d} seconds',end='\r')
@@ -112,7 +116,10 @@ class StopLoadCBv1(SensorCallbackThread):
                     
                     time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
                     
-                    print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep*100} %')
+                    if self.app is not None and hasattr(self.app, 'logger'):
+                        self.app.logger.debug(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep*100} %')
+                    else:
+                        print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep*100} %')
                     self.load_client.server_cmd(cmd='stopLoad',secret='xrays>neutrons')
 
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
@@ -160,8 +167,30 @@ class StopLoadCBv2(SensorCallbackThread):
         self.baseline_duration = baseline_duration
         self.trigger_on_end = trigger_on_end
         self.instatrigger = instatrigger
+        self.last_trace_dataset = None
 
-        print(f'StopLoad thread starting with data = {self.data} and sensor label = {self.sensorlabel}')
+        if self.app is not None:
+            self.app.logger.info(f'StopLoad thread starting with data = {self.data} and sensor label = {self.sensorlabel}')
+        else:
+            print(f'StopLoad thread starting with data = {self.data} and sensor label = {self.sensorlabel}')
+
+    def _build_trace_dataset(self, signal: np.ndarray, metadata: dict) -> xr.Dataset:
+        """Build xr.Dataset from load trace with metadata in attrs."""
+        ds = xr.Dataset(
+            {
+                'voltage': (['time'], signal[:, 1]),
+            },
+            coords={
+                'time': (['time'], signal[:, 0]),  # seconds since load start
+            },
+            attrs={
+                'sensorlabel': self.sensorlabel,
+                'units_time': 'seconds',
+                'units_voltage': 'V',
+                **metadata
+            }
+        )
+        return ds
 
     def process_signal(self):
         if ('PROGRESS' in self.loader_comm.getServerState()) and (self.sensorlabel in self.loader_comm.getServerState()): #make sure this sensor is queued for this load
@@ -237,7 +266,10 @@ class StopLoadCBv2(SensorCallbackThread):
                     
                         time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
 
-                        print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
+                        if self.app is not None and hasattr(self.app, 'logger'):
+                            self.app.logger.debug(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
+                        else:
+                            print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
 
                     self.loader_comm.stopLoad()
                     try:
@@ -245,12 +277,29 @@ class StopLoadCBv2(SensorCallbackThread):
                         # self.update_status(f'Saving signal data to {filename}')
                         np.savetxt(filename,signal)
                     except Exception as e:
-                        print(f"Could not write load trace to {filename}, {e}")
+                        if self.app is not None and hasattr(self.app, 'logger'):
+                            self.app.logger.error(f"Could not write load trace to {filename}, {e}")
+                        else:
+                            print(f"Could not write load trace to {filename}, {e}")
 
-                    if self.data is not None:
-                        self.data[f'{self.sensorlabel}_load_stop_trace'] = signal
-                        self.data[f'{self.sensorlabel}_final_voltage'] = np.mean(signal[-self.threshold_npts:,1])
-                        self.data[f'{self.sensorlabel}_final_std'] = np.std(signal[-self.threshold_npts:,1])
+                    # Build metadata dict
+                    metadata = {
+                        'baseline_voltage': baseline_val,
+                        'final_voltage': np.mean(signal[-self.threshold_npts:, 1]),
+                        'final_std': np.std(signal[-self.threshold_npts:, 1]),
+                        'elapsed_time': elapsed_time.total_seconds(),
+                        'timed_out': timed_out,
+                        'timestamp': datestr,
+                    }
+                    # Add second trigger metadata if available
+                    if self.trigger_on_end and self.data is not None:
+                        if f'{self.sensorlabel}_elapsed_time_at_second_trigger' in self.data:
+                            metadata['second_trigger_voltage'] = self.data.get(f'{self.sensorlabel}_second_trigger_voltage', None)
+                            metadata['second_trigger_std'] = self.data.get(f'{self.sensorlabel}_second_trigger_std', None)
+                            metadata['elapsed_time_at_second_trigger'] = self.data.get(f'{self.sensorlabel}_elapsed_time_at_second_trigger', None)
+
+                    # Build and store as Dataset
+                    self.last_trace_dataset = self._build_trace_dataset(signal, metadata)
 
                     time.sleep(self.loadstop_cooldown)
                     break

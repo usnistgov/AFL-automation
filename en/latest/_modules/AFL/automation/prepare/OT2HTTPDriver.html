@@ -422,10 +422,23 @@
 <span class="c1"># Add this constant at the top of the file, after the imports</span>
 <span class="n">TIPRACK_WELLS</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="si">}{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="s2">&quot;ABCDEFGH&quot;</span><span class="p">]</span>
 
-
 <div class="viewcode-block" id="OT2HTTPDriver">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver">[docs]</a>
 <span class="k">class</span> <span class="nc">OT2HTTPDriver</span><span class="p">(</span><span class="n">OT2DeckWebAppMixin</span><span class="p">,</span> <span class="n">Driver</span><span class="p">):</span>
+    <span class="n">PIPETTE_NAME_ALIASES</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;p10&quot;</span><span class="p">:</span> <span class="s2">&quot;p10_single&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;p10_single&quot;</span><span class="p">:</span> <span class="s2">&quot;p10_single&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;p10_single_gen1&quot;</span><span class="p">:</span> <span class="s2">&quot;p10_single&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;p300&quot;</span><span class="p">:</span> <span class="s2">&quot;p300_single&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;p300_single&quot;</span><span class="p">:</span> <span class="s2">&quot;p300_single&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;p1000&quot;</span><span class="p">:</span> <span class="s2">&quot;p1000_single&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;p1000_single&quot;</span><span class="p">:</span> <span class="s2">&quot;p1000_single&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">EXPECTED_TIPRACK_TOKEN</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;p10_single&quot;</span><span class="p">:</span> <span class="s2">&quot;10ul&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;p300_single&quot;</span><span class="p">:</span> <span class="s2">&quot;300ul&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;p1000_single&quot;</span><span class="p">:</span> <span class="s2">&quot;1000ul&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;robot_ip&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span>  <span class="c1"># Default to localhost, should be overridden</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;robot_port&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;31950&quot;</span>  <span class="c1"># Default Opentrons HTTP API port</span>
@@ -1232,8 +1245,28 @@
 <span class="sd">                             Passed to _ensure_run_exists for optimization.</span>
 <span class="sd">            update_pipettes: If False, skip calling _update_pipettes (for optimization during reload).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pipette_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_pipette_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">mount</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">mount</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mount</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mount must be &#39;left&#39; or &#39;right&#39;. Received: </span><span class="si">{</span><span class="n">mount</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">tip_rack_slots</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span> <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">listify</span><span class="p">(</span><span class="n">tip_rack_slots</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tip_rack_slots</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one tip rack slot must be provided.&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">tip_rack_slots</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">slot</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Tip rack slot </span><span class="si">{</span><span class="n">slot</span><span class="si">!r}</span><span class="s2"> is not loaded. Load a tiprack first.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">labware_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">][</span><span class="n">slot</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;tiprack&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">labware_name</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Slot </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2"> contains labware &#39;</span><span class="si">{</span><span class="n">labware_name</span><span class="si">}</span><span class="s2">&#39;, which may not be a tiprack.&quot;</span>
+                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warn_on_tiprack_mismatch</span><span class="p">(</span><span class="n">pipette_name</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Loading pipette &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; on &#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39; mount with tip_racks in slots </span><span class="si">{</span><span class="n">tip_rack_slots</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Loading pipette &#39;</span><span class="si">{</span><span class="n">pipette_name</span><span class="si">}</span><span class="s2">&#39; on &#39;</span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2">&#39; mount with tip_racks in slots </span><span class="si">{</span><span class="n">tip_rack_slots</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
 
         <span class="c1"># Ensure we have a valid run</span>
@@ -1245,7 +1278,7 @@
                 <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
                     <span class="s2">&quot;commandType&quot;</span><span class="p">:</span> <span class="s2">&quot;loadPipette&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;pipetteName&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                        <span class="s2">&quot;pipetteName&quot;</span><span class="p">:</span> <span class="n">pipette_name</span><span class="p">,</span>
                         <span class="s2">&quot;mount&quot;</span><span class="p">:</span> <span class="n">mount</span><span class="p">,</span>
                         <span class="s2">&quot;tip_racks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">][</span><span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">tip_rack_slots</span><span class="p">],</span>
                     <span class="p">},</span>
@@ -1295,7 +1328,7 @@
 
             <span class="c1"># Store the instrument information </span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">][</span><span class="n">mount</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">pipette_name</span><span class="p">,</span>
                 <span class="s2">&quot;pipette_id&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
                 <span class="s2">&quot;tip_racks&quot;</span><span class="p">:</span> <span class="n">tip_racks</span><span class="p">,</span>
             <span class="p">}</span>
@@ -1317,7 +1350,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_pipette_ranges</span><span class="p">()</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Successfully loaded pipette &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; on </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2"> mount with ID </span><span class="si">{</span><span class="n">pipette_id</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Successfully loaded pipette &#39;</span><span class="si">{</span><span class="n">pipette_name</span><span class="si">}</span><span class="s2">&#39; on </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2"> mount with ID </span><span class="si">{</span><span class="n">pipette_id</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">pipette_id</span>
@@ -1326,6 +1359,29 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading pipette: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading pipette: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
+
+    <span class="k">def</span> <span class="nf">_normalize_pipette_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PIPETTE_NAME_ALIASES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">normalized</span>
+
+    <span class="k">def</span> <span class="nf">_warn_on_tiprack_mismatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette_name</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">):</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EXPECTED_TIPRACK_TOKEN</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pipette_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">mismatched_slots</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">slot</span> <span class="ow">in</span> <span class="n">tip_rack_slots</span><span class="p">:</span>
+            <span class="n">labware_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">slot</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">labware_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">labware_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">labware_info</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;tiprack&quot;</span> <span class="ow">in</span> <span class="n">labware_name</span> <span class="ow">and</span> <span class="n">token</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">labware_name</span><span class="p">:</span>
+                <span class="n">mismatched_slots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mismatched_slots</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Loaded pipette &#39;</span><span class="si">{</span><span class="n">pipette_name</span><span class="si">}</span><span class="s2">&#39; with potentially mismatched tipracks in slots </span><span class="si">{</span><span class="n">mismatched_slots</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected tiprack names containing &#39;</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+            <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_update_pipette_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the min/max values for largest and smallest pipettes&quot;&quot;&quot;</span>
@@ -1480,6 +1536,12 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">max_smallest_pipette</span>
                 <span class="p">)</span>  <span class="c1"># Use smaller pipette at max capacity</span>
 
+            <span class="k">if</span> <span class="n">transfer</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Computed nonpositive transfer volume </span><span class="si">{</span><span class="n">transfer</span><span class="si">}</span><span class="s2">uL while splitting </span><span class="si">{</span><span class="n">vol</span><span class="si">}</span><span class="s2">uL; stopping split.&quot;</span>
+                <span class="p">)</span>
+                <span class="k">break</span>
+
             <span class="n">transfers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transfer</span><span class="p">)</span>
 
             <span class="c1"># Exit condition - we&#39;ve reached the target volume</span>
@@ -1528,10 +1590,22 @@
         <span class="n">to_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">to_top_z_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">fast_mixing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">touch_tip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Transfer fluid from one location to another using atomic HTTP API commands&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transferring </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Accept common aliases used by different callers.</span>
+        <span class="k">if</span> <span class="s2">&quot;blowout&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">blow_out</span><span class="p">:</span>
+            <span class="n">blow_out</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;blowout&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;touchTip&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">touch_tip</span><span class="p">:</span>
+            <span class="n">touch_tip</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;touchTip&quot;</span><span class="p">])</span>
+
+        <span class="n">volume_ul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">volume_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping transfer with nonpositive volume </span><span class="si">{</span><span class="n">volume_ul</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
         
         <span class="c1"># Verify run exists once at the start, then skip checks for all atomic commands</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
@@ -1544,7 +1618,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">set_dispense_rate</span><span class="p">(</span><span class="n">dispense_rate</span><span class="p">)</span>
 
         <span class="c1"># Get pipette based on volume</span>
-        <span class="n">pipette</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+        <span class="n">pipette</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span>
         <span class="n">pipette_mount</span> <span class="o">=</span> <span class="n">pipette</span><span class="p">[</span><span class="s2">&quot;mount&quot;</span><span class="p">]</span>  <span class="c1"># Get the mount from the pipette object</span>
 
         <span class="c1"># Get the pipette ID</span>
@@ -1580,19 +1654,73 @@
             <span class="n">dest_position</span> <span class="o">=</span> <span class="s2">&quot;center&quot;</span>
 
         <span class="c1"># Split transfers if needed</span>
-        <span class="n">transfers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_up_transfers</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+        <span class="n">transfers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_up_transfers</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">sub_volume</span> <span class="ow">in</span> <span class="n">transfers</span><span class="p">:</span>
-            <span class="c1"># 1. Always pick up a new tip for each transfer</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
-                <span class="s2">&quot;pickUpTip&quot;</span><span class="p">,</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
-                    <span class="s2">&quot;pipetteMount&quot;</span><span class="p">:</span> <span class="n">pipette_mount</span><span class="p">,</span>
-                    <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Use next available tip in rack, will be updated in _execute_atomic_command</span>
-                <span class="p">},</span>
-                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sub_volume</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">transfers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">sub_volume</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Skipping nonpositive sub-transfer volume </span><span class="si">{</span><span class="n">sub_volume</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Intermediate split transfers should not drop the tip unless explicitly forced.</span>
+            <span class="n">is_last_subtransfer</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">transfers</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">effective_drop_tip</span> <span class="o">=</span> <span class="n">drop_tip</span> <span class="k">if</span> <span class="p">(</span><span class="n">is_last_subtransfer</span> <span class="ow">or</span> <span class="n">force_new_tip</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
+
+            <span class="c1"># Keep tip handling consistent with the non-HTTP driver:</span>
+            <span class="c1"># reuse the current tip across split transfers unless force_new_tip is set.</span>
+            <span class="k">if</span> <span class="n">force_new_tip</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span><span class="p">:</span>
+                <span class="n">tip_mount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">pipette_mount</span>
+                <span class="n">tip_pipette_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tip_mount</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">pipette_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
+                    <span class="s2">&quot;moveToAddressableAreaForDropTip&quot;</span><span class="p">,</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">tip_pipette_id</span><span class="p">,</span>
+                        <span class="s2">&quot;addressableAreaName&quot;</span><span class="p">:</span> <span class="s2">&quot;fixedTrash&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                        <span class="s2">&quot;alternateDropLocation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="p">},</span>
+                    <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
+                    <span class="s2">&quot;dropTipInPlace&quot;</span><span class="p">,</span>
+                    <span class="p">{</span><span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">tip_pipette_id</span><span class="p">},</span>
+                    <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># If a tip is on a different mount, drop it before switching mounts.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">pipette_mount</span><span class="p">):</span>
+                <span class="n">tip_pipette_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">pipette_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
+                    <span class="s2">&quot;moveToAddressableAreaForDropTip&quot;</span><span class="p">,</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">tip_pipette_id</span><span class="p">,</span>
+                        <span class="s2">&quot;addressableAreaName&quot;</span><span class="p">:</span> <span class="s2">&quot;fixedTrash&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                        <span class="s2">&quot;alternateDropLocation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="p">},</span>
+                    <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
+                    <span class="s2">&quot;dropTipInPlace&quot;</span><span class="p">,</span>
+                    <span class="p">{</span><span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">tip_pipette_id</span><span class="p">},</span>
+                    <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
+                    <span class="s2">&quot;pickUpTip&quot;</span><span class="p">,</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
+                        <span class="s2">&quot;pipetteMount&quot;</span><span class="p">:</span> <span class="n">pipette_mount</span><span class="p">,</span>
+                        <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Use next available tip in rack, will be updated in _execute_atomic_command</span>
+                    <span class="p">},</span>
+                    <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="n">pipette_mount</span>
             
             <span class="c1"># 1a. If destination is on a heater-shaker, stop the shaking and latch the latch pre-flight</span>
             <span class="n">was_shaking</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1769,6 +1897,12 @@
                 <span class="k">if</span> <span class="n">mix_dispense_rate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_dispense_rate</span><span class="p">(</span><span class="n">mix_dispense_rate</span><span class="p">,</span> <span class="n">pipette_mount</span><span class="p">)</span>
 
+                <span class="c1"># Mix after transfer should be performed from the bottom of the destination well</span>
+                <span class="n">mix_well_location</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+                <span class="p">}</span>
+
                 <span class="c1"># Mix after transfer - implement by executing multiple aspirate/dispense</span>
                 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_mixes</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
@@ -1778,10 +1912,7 @@
                             <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">mix_volume</span><span class="p">,</span>
                             <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
                             <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
-                            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="n">dest_position</span><span class="p">,</span>
-                                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
-                            <span class="p">},</span>
+                            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="n">mix_well_location</span><span class="p">,</span>
                             <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">],</span>
                         <span class="p">},</span>
                         <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1794,10 +1925,7 @@
                             <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">mix_volume</span><span class="p">,</span>
                             <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
                             <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
-                            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="n">dest_position</span><span class="p">,</span>
-                                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
-                            <span class="p">},</span>
+                            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="n">mix_well_location</span><span class="p">,</span>
                             <span class="s2">&quot;flowRate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="n">pipette_mount</span><span class="p">][</span><span class="s1">&#39;dispense_flow_rate&#39;</span><span class="p">],</span>
                         <span class="p">},</span>
                         <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1824,13 +1952,17 @@
                     <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="p">)</span>
 
+            <span class="c1"># 10b. Optionally touch the tip to destination well edge.</span>
+            <span class="k">if</span> <span class="n">touch_tip</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_touch_tip_well</span><span class="p">(</span><span class="n">pipette_id</span><span class="o">=</span><span class="n">pipette_id</span><span class="p">,</span> <span class="n">well</span><span class="o">=</span><span class="n">dest_well</span><span class="p">)</span>
+
                 
             <span class="k">if</span> <span class="n">was_shaking</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_shake</span><span class="p">(</span><span class="n">shake_rpm</span><span class="p">)</span>
                 <span class="c1"># back to running :)</span>
                 
             <span class="c1"># 11. Drop tip if specified</span>
-            <span class="k">if</span> <span class="n">drop_tip</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">effective_drop_tip</span><span class="p">:</span>
                 <span class="c1"># see https://github.com/Opentrons/opentrons/issues/14590 for the absolute bullshit that led to this.</span>
                 <span class="c1"># in it: Opentrons incompetence</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span><span class="s2">&quot;moveToAddressableAreaForDropTip&quot;</span><span class="p">,</span> <span class="p">{</span>
@@ -1847,9 +1979,36 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span><span class="s2">&quot;dropTipInPlace&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span> 
                                                         <span class="p">},</span>
                                                         <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="c1"># Update last pipette</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="n">pipette</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="n">pipette_mount</span></div>
 
+
+    <span class="k">def</span> <span class="nf">_touch_tip_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette_id</span><span class="p">,</span> <span class="n">well</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Touch tip at a well edge if supported by robot-server; otherwise move to well top.&quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
+            <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+            <span class="s2">&quot;mmFromEdge&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span><span class="s2">&quot;touchTip&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;touchTip command unavailable; using moveToWell fallback. Error: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_atomic_command</span><span class="p">(</span>
+                <span class="s2">&quot;moveToWell&quot;</span><span class="p">,</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
+                    <span class="s2">&quot;labwareId&quot;</span><span class="p">:</span> <span class="n">well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;wellName&quot;</span><span class="p">:</span> <span class="n">well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;wellLocation&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">}},</span>
+                <span class="p">},</span>
+                <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_atomic_command</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">command_type</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wait_until_complete</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span>

@@ -110,18 +110,22 @@ class DriverWebAppsMixin:
         coordinate_column='',
         metadata=None,
         delimiter='',
+        comment_prefix='',
+        last_comment_as_header='',
         **kwargs,
     ):
-        """Upload a dataset to Tiled from xarray, NetCDF bytes, CSV, or TSV.
+        """Upload a dataset to Tiled from xarray, NetCDF bytes, CSV, TSV, or DAT.
 
         Args:
             dataset: Optional xarray.Dataset provided directly by Python callers.
             upload_bytes: Optional bytes payload for file uploads.
             filename: Original upload filename (used for format inference).
-            file_format: Optional explicit format ('xarray', 'nc', 'csv', 'tsv').
+            file_format: Optional explicit format ('xarray', 'nc', 'csv', 'tsv', 'dat').
             coordinate_column: Optional column name used to populate sample coordinate.
             metadata: Optional dict of metadata merged into dataset attrs.
             delimiter: Optional delimiter override for table formats.
+            comment_prefix: Optional table comment prefix (e.g. '#').
+            last_comment_as_header: If truthy, use the last comment row as headers.
 
         Returns:
             dict with status/message and dataset summary.
@@ -161,6 +165,8 @@ class DriverWebAppsMixin:
             'coordinate_column',
             'metadata',
             'delimiter',
+            'comment_prefix',
+            'last_comment_as_header',
             'self',
         }
         for key, value in kwargs.items():
@@ -182,6 +188,8 @@ class DriverWebAppsMixin:
                 inferred_format = 'csv'
             elif filename_lower.endswith('.tsv'):
                 inferred_format = 'tsv'
+            elif filename_lower.endswith('.dat'):
+                inferred_format = 'dat'
 
         if dataset is not None:
             if not isinstance(dataset, xr.Dataset):
@@ -210,11 +218,29 @@ class DriverWebAppsMixin:
                         'status': 'error',
                         'message': f'Failed to read NetCDF upload: {str(exc)}',
                     }
-            elif inferred_format in ('csv', 'tsv'):
+            elif inferred_format in ('csv', 'tsv', 'dat'):
                 delimiter_token = (delimiter or '').strip().lower()
+                normalized_comment_prefix = '#' if comment_prefix is None else str(comment_prefix).strip()
+                header_from_last_comment = str(last_comment_as_header).strip().lower() in (
+                    '1', 'true', 't', 'yes', 'y', 'on'
+                )
                 try:
                     text = upload_bytes.decode('utf-8-sig')
                     nonempty_lines = [line for line in text.splitlines() if line.strip()]
+
+                    comment_header_line = ''
+                    if normalized_comment_prefix:
+                        noncomment_lines = []
+                        comment_lines = []
+                        for line in nonempty_lines:
+                            stripped = line.lstrip()
+                            if stripped.startswith(normalized_comment_prefix):
+                                comment_lines.append(stripped[len(normalized_comment_prefix):].strip())
+                            else:
+                                noncomment_lines.append(line)
+                        nonempty_lines = noncomment_lines
+                        if header_from_last_comment and comment_lines:
+                            comment_header_line = comment_lines[-1]
 
                     def _resolve_table_separator():
                         if delimiter_token:
@@ -225,9 +251,8 @@ class DriverWebAppsMixin:
                         if inferred_format == 'csv':
                             return (',', None)
 
-                        # TSV defaults to tab, but support whitespace-delimited text
-                        # files with .tsv extension.
-                        first = nonempty_lines[0] if nonempty_lines else ''
+                        # TSV/DAT defaults to tab, but support whitespace-delimited text.
+                        first = comment_header_line or (nonempty_lines[0] if nonempty_lines else '')
                         sample_data_lines = nonempty_lines[1:11] if len(nonempty_lines) > 1 else []
 
                         # Count actual tab usage in data rows, not just header row.
@@ -245,10 +270,14 @@ class DriverWebAppsMixin:
 
                     separator, parser_engine = _resolve_table_separator()
 
+                    read_text = '\n'.join(nonempty_lines)
+                    if comment_header_line:
+                        read_text = f'{comment_header_line}\n{read_text}' if read_text else comment_header_line
+
                     # Read as raw strings first to avoid pandas NA coercion turning
                     # valid coordinate tokens into NaN.
                     df = pd.read_csv(
-                        io.StringIO(text),
+                        io.StringIO(read_text),
                         sep=separator,
                         engine=parser_engine,
                         dtype=str,
@@ -301,7 +330,7 @@ class DriverWebAppsMixin:
             else:
                 return {
                     'status': 'error',
-                    'message': f'Unsupported file format "{inferred_format}". Supported formats: nc, csv, tsv.',
+                    'message': f'Unsupported file format "{inferred_format}". Supported formats: nc, csv, tsv, dat.',
                 }
 
         # Tiled+dask cannot auto-rechunk object dtype arrays. Coerce object

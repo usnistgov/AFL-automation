@@ -434,9 +434,11 @@ class Driver(DriverWebAppsMixin):
         coordinate_column='',
         metadata=None,
         delimiter='',
+        comment_prefix='',
+        last_comment_as_header='',
         **kwargs,
     ):
-        """Upload xarray/csv/tsv data into Tiled."""
+        """Upload xarray/csv/tsv/dat data into Tiled."""
         return super().tiled_upload_dataset(
             dataset=dataset,
             upload_bytes=upload_bytes,
@@ -445,5 +447,7 @@ class Driver(DriverWebAppsMixin):
             coordinate_column=coordinate_column,
             metadata=metadata,
             delimiter=delimiter,
+            comment_prefix=comment_prefix,
+            last_comment_as_header=last_comment_as_header,
             **kwargs,
         )

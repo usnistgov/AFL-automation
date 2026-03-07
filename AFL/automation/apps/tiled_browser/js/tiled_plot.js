@@ -481,21 +481,15 @@ function initializeControls(data) {
         });
     }
 
-    // Initialize Slim Select for legend variable
-    if (legendMultiSelect) {
-        legendMultiSelect.destroy();
-    }
-
-    legendMultiSelect = new SlimSelect({
-        select: '#legend-variable',
-        settings: {
-            placeholderText: 'Select legend labels...',
-            searchText: 'No results',
-            searchPlaceholder: 'Search...',
-            searchHighlight: true,
-            allowDeselect: false  // Always require at least one selection
-        },
-        data: legendOptions
+    // Populate native select as a fallback (no external UI dependency required).
+    legendOptions.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.text;
+        if (option.selected) {
+            opt.selected = true;
+        }
+        legendSelect.appendChild(opt);
     });
 
     // Auto-select default legend variable
@@ -1505,13 +1499,9 @@ function updateConfigFromUI() {
 
     currentPlotType = document.getElementById('plot-type').value;
 
-    // Get selected legend variable from Slim Select
-    if (legendMultiSelect) {
-        const selected = legendMultiSelect.getSelected();
-        // Use the selected variable name as the legend variable
-        if (selected.length > 0) {
-            currentConfig.legendVar = selected[0];
-        }
+    const legendSelect = document.getElementById('legend-variable');
+    if (legendSelect && legendSelect.value) {
+        currentConfig.legendVar = legendSelect.value;
     }
 
     // For now, don't filter traces - show all

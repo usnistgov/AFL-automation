@@ -15,8 +15,21 @@ from AFL.automation.shared.utilities import listify
 # Add this constant at the top of the file, after the imports
 TIPRACK_WELLS = [f"{row}{col}" for col in range(1, 13) for row in "ABCDEFGH"]
 
-
 class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
+    PIPETTE_NAME_ALIASES = {
+        "p10": "p10_single",
+        "p10_single": "p10_single",
+        "p10_single_gen1": "p10_single",
+        "p300": "p300_single",
+        "p300_single": "p300_single",
+        "p1000": "p1000_single",
+        "p1000_single": "p1000_single",
+    }
+    EXPECTED_TIPRACK_TOKEN = {
+        "p10_single": "10ul",
+        "p300_single": "300ul",
+        "p1000_single": "1000ul",
+    }
     defaults = {}
     defaults["robot_ip"] = "127.0.0.1"  # Default to localhost, should be overridden
     defaults["robot_port"] = "31950"  # Default Opentrons HTTP API port
@@ -767,8 +780,28 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                              Passed to _ensure_run_exists for optimization.
             update_pipettes: If False, skip calling _update_pipettes (for optimization during reload).
         """
+        pipette_name = self._normalize_pipette_name(name)
+        mount = str(mount).strip().lower()
+        if mount not in {"left", "right"}:
+            raise ValueError(f"Mount must be 'left' or 'right'. Received: {mount!r}")
+        tip_rack_slots = [str(slot) for slot in listify(tip_rack_slots)]
+        if len(tip_rack_slots) == 0:
+            raise ValueError("At least one tip rack slot must be provided.")
+
+        for slot in tip_rack_slots:
+            if slot not in self.config["loaded_labware"]:
+                raise ValueError(
+                    f"Tip rack slot {slot!r} is not loaded. Load a tiprack first."
+                )
+            labware_name = str(self.config["loaded_labware"][slot][1]).lower()
+            if "tiprack" not in labware_name:
+                self.log_warning(
+                    f"Slot {slot} contains labware '{labware_name}', which may not be a tiprack."
+                )
+        self._warn_on_tiprack_mismatch(pipette_name, tip_rack_slots)
+
         self.log_debug(
-            f"Loading pipette '{name}' on '{mount}' mount with tip_racks in slots {tip_rack_slots}"
+            f"Loading pipette '{pipette_name}' on '{mount}' mount with tip_racks in slots {tip_rack_slots}"
         )
 
         # Ensure we have a valid run
@@ -780,7 +813,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 "data": {
                     "commandType": "loadPipette",
                     "params": {
-                        "pipetteName": name,
+                        "pipetteName": pipette_name,
                         "mount": mount,
                         "tip_racks": [self.config["loaded_labware"][str(slot)][0] for slot in tip_rack_slots],
                     },
@@ -830,7 +863,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
             # Store the instrument information 
             self.config["loaded_instruments"][mount] = {
-                "name": name,
+                "name": pipette_name,
                 "pipette_id": pipette_id,
                 "tip_racks": tip_racks,
             }
@@ -852,7 +885,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             self._update_pipette_ranges()
 
             self.log_info(
-                f"Successfully loaded pipette '{name}' on {mount} mount with ID {pipette_id}"
+                f"Successfully loaded pipette '{pipette_name}' on {mount} mount with ID {pipette_id}"
             )
             self.config._update_history()
             return pipette_id
@@ -860,6 +893,29 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         except (requests.exceptions.RequestException, KeyError) as e:
             self.log_error(f"Error loading pipette: {str(e)}")
             raise RuntimeError(f"Error loading pipette: {str(e)}")
+
+    def _normalize_pipette_name(self, name):
+        key = str(name).strip().lower()
+        normalized = self.PIPETTE_NAME_ALIASES.get(key, key)
+        return normalized
+
+    def _warn_on_tiprack_mismatch(self, pipette_name, tip_rack_slots):
+        token = self.EXPECTED_TIPRACK_TOKEN.get(pipette_name)
+        if token is None:
+            return
+        mismatched_slots = []
+        for slot in tip_rack_slots:
+            labware_info = self.config["loaded_labware"].get(str(slot))
+            if labware_info is None:
+                continue
+            labware_name = str(labware_info[1]).lower()
+            if "tiprack" in labware_name and token not in labware_name:
+                mismatched_slots.append(slot)
+        if mismatched_slots:
+            self.log_warning(
+                f"Loaded pipette '{pipette_name}' with potentially mismatched tipracks in slots {mismatched_slots}. "
+                f"Expected tiprack names containing '{token}'."
+            )
 
     def _update_pipette_ranges(self):
         """Update the min/max values for largest and smallest pipettes"""
@@ -1011,6 +1067,12 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     self.max_smallest_pipette
                 )  # Use smaller pipette at max capacity
 
+            if transfer <= 0:
+                self.log_warning(
+                    f"Computed nonpositive transfer volume {transfer}uL while splitting {vol}uL; stopping split."
+                )
+                break
+
             transfers.append(transfer)
 
             # Exit condition - we've reached the target volume
@@ -1057,10 +1119,22 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         to_center=False,
         to_top_z_offset=0,
         fast_mixing=False,
+        touch_tip=False,
         **kwargs,
     ):
         """Transfer fluid from one location to another using atomic HTTP API commands"""
         self.log_info(f"Transferring {volume}uL from {source} to {dest}")
+
+        # Accept common aliases used by different callers.
+        if "blowout" in kwargs and not blow_out:
+            blow_out = bool(kwargs["blowout"])
+        if "touchTip" in kwargs and not touch_tip:
+            touch_tip = bool(kwargs["touchTip"])
+
+        volume_ul = float(volume)
+        if volume_ul <= 0:
+            self.log_info(f"Skipping transfer with nonpositive volume {volume_ul}uL from {source} to {dest}")
+            return
         
         # Verify run exists once at the start, then skip checks for all atomic commands
         self._ensure_run_exists()
@@ -1073,7 +1147,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             self.set_dispense_rate(dispense_rate)
 
         # Get pipette based on volume
-        pipette = self.get_pipette(volume)
+        pipette = self.get_pipette(volume_ul)
         pipette_mount = pipette["mount"]  # Get the mount from the pipette object
 
         # Get the pipette ID
@@ -1109,19 +1183,73 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             dest_position = "center"
 
         # Split transfers if needed
-        transfers = self._split_up_transfers(volume)
+        transfers = self._split_up_transfers(volume_ul)
 
-        for sub_volume in transfers:
-            # 1. Always pick up a new tip for each transfer
-            self._execute_atomic_command(
-                "pickUpTip",
-                {
-                    "pipetteId": pipette_id,
-                    "pipetteMount": pipette_mount,
-                    "wellLocation": None,  # Use next available tip in rack, will be updated in _execute_atomic_command
-                },
-                check_run_status=False,
-            )
+        for i, sub_volume in enumerate(transfers):
+            if sub_volume <= 0:
+                self.log_warning(
+                    f"Skipping nonpositive sub-transfer volume {sub_volume}uL from {source} to {dest}"
+                )
+                continue
+
+            # Intermediate split transfers should not drop the tip unless explicitly forced.
+            is_last_subtransfer = i == (len(transfers) - 1)
+            effective_drop_tip = drop_tip if (is_last_subtransfer or force_new_tip) else False
+
+            # Keep tip handling consistent with the non-HTTP driver:
+            # reuse the current tip across split transfers unless force_new_tip is set.
+            if force_new_tip and self.has_tip:
+                tip_mount = self.last_pipette if self.last_pipette is not None else pipette_mount
+                tip_pipette_id = self.pipette_info.get(tip_mount, {}).get("id", pipette_id)
+                self._execute_atomic_command(
+                    "moveToAddressableAreaForDropTip",
+                    {
+                        "pipetteId": tip_pipette_id,
+                        "addressableAreaName": "fixedTrash",
+                        "offset": {"x": 0, "y": 0, "z": 10},
+                        "alternateDropLocation": False,
+                    },
+                    check_run_status=False,
+                )
+                self._execute_atomic_command(
+                    "dropTipInPlace",
+                    {"pipetteId": tip_pipette_id},
+                    check_run_status=False,
+                )
+                self.has_tip = False
+
+            # If a tip is on a different mount, drop it before switching mounts.
+            if self.has_tip and self.last_pipette not in (None, pipette_mount):
+                tip_pipette_id = self.pipette_info.get(self.last_pipette, {}).get("id", pipette_id)
+                self._execute_atomic_command(
+                    "moveToAddressableAreaForDropTip",
+                    {
+                        "pipetteId": tip_pipette_id,
+                        "addressableAreaName": "fixedTrash",
+                        "offset": {"x": 0, "y": 0, "z": 10},
+                        "alternateDropLocation": False,
+                    },
+                    check_run_status=False,
+                )
+                self._execute_atomic_command(
+                    "dropTipInPlace",
+                    {"pipetteId": tip_pipette_id},
+                    check_run_status=False,
+                )
+                self.has_tip = False
+
+            if not self.has_tip:
+                self._execute_atomic_command(
+                    "pickUpTip",
+                    {
+                        "pipetteId": pipette_id,
+                        "pipetteMount": pipette_mount,
+                        "wellLocation": None,  # Use next available tip in rack, will be updated in _execute_atomic_command
+                    },
+                    check_run_status=False,
+                )
+                self.has_tip = True
+                self.last_pipette = pipette_mount
             
             # 1a. If destination is on a heater-shaker, stop the shaking and latch the latch pre-flight
             was_shaking = False
@@ -1298,6 +1426,12 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 if mix_dispense_rate is not None:
                     self.set_dispense_rate(mix_dispense_rate, pipette_mount)
 
+                # Mix after transfer should be performed from the bottom of the destination well
+                mix_well_location = {
+                    "origin": "bottom",
+                    "offset": {"x": 0, "y": 0, "z": 0},
+                }
+
                 # Mix after transfer - implement by executing multiple aspirate/dispense
                 for _ in range(n_mixes):
                     self._execute_atomic_command(
@@ -1307,10 +1441,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                             "volume": mix_volume,
                             "labwareId": dest_well["labwareId"],
                             "wellName": dest_well["wellName"],
-                            "wellLocation": {
-                                "origin": dest_position,
-                                "offset": {"x": 0, "y": 0, "z": 0},
-                            },
+                            "wellLocation": mix_well_location,
                             "flowRate": self.pipette_info[pipette_mount]['aspirate_flow_rate'],
                         },
                         check_run_status=False,
@@ -1323,10 +1454,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                             "volume": mix_volume,
                             "labwareId": dest_well["labwareId"],
                             "wellName": dest_well["wellName"],
-                            "wellLocation": {
-                                "origin": dest_position,
-                                "offset": {"x": 0, "y": 0, "z": 0},
-                            },
+                            "wellLocation": mix_well_location,
                             "flowRate": self.pipette_info[pipette_mount]['dispense_flow_rate'],
                         },
                         check_run_status=False,
@@ -1353,13 +1481,17 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     check_run_status=False,
                 )
 
+            # 10b. Optionally touch the tip to destination well edge.
+            if touch_tip:
+                self._touch_tip_well(pipette_id=pipette_id, well=dest_well)
+
                 
             if was_shaking:
                 self.set_shake(shake_rpm)
                 # back to running :)
                 
             # 11. Drop tip if specified
-            if drop_tip:
+            if effective_drop_tip:
                 # see https://github.com/Opentrons/opentrons/issues/14590 for the absolute bullshit that led to this.
                 # in it: Opentrons incompetence
                 self._execute_atomic_command("moveToAddressableAreaForDropTip", {
@@ -1376,8 +1508,35 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 self._execute_atomic_command("dropTipInPlace", {"pipetteId": pipette_id, 
                                                         },
                                                         check_run_status=False)
+                self.has_tip = False
             # Update last pipette
-            self.last_pipette = pipette
+            self.last_pipette = pipette_mount
+
+    def _touch_tip_well(self, pipette_id, well):
+        """Touch tip at a well edge if supported by robot-server; otherwise move to well top."""
+        params = {
+            "pipetteId": pipette_id,
+            "labwareId": well["labwareId"],
+            "wellName": well["wellName"],
+            "wellLocation": {"origin": "top", "offset": {"x": 0, "y": 0, "z": 0}},
+            "mmFromEdge": 1,
+        }
+        try:
+            self._execute_atomic_command("touchTip", params, check_run_status=False)
+        except RuntimeError as exc:
+            self.log_warning(
+                f"touchTip command unavailable; using moveToWell fallback. Error: {exc}"
+            )
+            self._execute_atomic_command(
+                "moveToWell",
+                {
+                    "pipetteId": pipette_id,
+                    "labwareId": well["labwareId"],
+                    "wellName": well["wellName"],
+                    "wellLocation": {"origin": "top", "offset": {"x": 0, "y": 0, "z": -2}},
+                },
+                check_run_status=False,
+            )
 
     def _execute_atomic_command(
         self, command_type, params=None, wait_until_complete=True, timeout=None, check_run_status=True

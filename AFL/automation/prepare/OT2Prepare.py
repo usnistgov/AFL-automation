@@ -52,6 +52,8 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
         for step in protocol:
             source = step.source
             volume_ul = step.volume
+            if float(volume_ul) <= 0:
+                continue
             stock_name = self.config.get("deck", {}).get(source)
             if stock_name is None:
                 raise ValueError(f"No stock name found for deck location: {source}")
@@ -80,6 +82,8 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
         return source_location
 
     def _transfer_stage(self, source, dest, volume_ul):
+        if float(volume_ul) <= 0:
+            return
         stock_name = self.config.get("deck", {}).get(source)
         transfer_params = self.get_transfer_params(stock_name) if stock_name is not None else self.get_transfer_params("default")
         self.transfer(source=source, dest=dest, volume=volume_ul, **transfer_params)
@@ -210,6 +214,15 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
                 stacklevel=2,
             )
             raise
+
+    def load_gen1_p10(self, mount, tip_rack_slots, **kwargs):
+        """Convenience wrapper for loading a GEN1 P10 single-channel pipette."""
+        return self.load_instrument(
+            name="p10_single",
+            mount=mount,
+            tip_rack_slots=tip_rack_slots,
+            **kwargs,
+        )
 
     def reset(self):
         self.reset_targets()

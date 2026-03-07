@@ -602,7 +602,7 @@ class APIServer:
         return jsonify({'obj':result}),200
 
     def tiled_upload_data(self):
-        """Upload an xarray/csv/tsv payload to Tiled via multipart form data."""
+        """Upload an xarray/nc/csv/tsv/dat payload to Tiled via multipart form data."""
         upload_file = request.files.get('file')
         if upload_file is None:
             return jsonify({
@@ -627,6 +627,8 @@ class APIServer:
             'coordinate_column': form.get('coordinate_column', ''),
             'metadata': metadata_payload,
             'delimiter': form.get('delimiter', ''),
+            'comment_prefix': form.get('comment_prefix', ''),
+            'last_comment_as_header': form.get('last_comment_as_header', ''),
         }
 
         # Allow direct metadata fields in form without requiring JSON blob.

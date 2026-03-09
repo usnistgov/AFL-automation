@@ -28,12 +28,11 @@
             <!-- Tab Navigation -->
             <div class="tab-container">
                 <div class="tab-buttons">
-                    <button class="tab-button active" data-tab="filters">Quick Filters</button>
-                    <button class="tab-button" data-tab="advanced">Advanced Search</button>
+                    <button class="tab-button active" data-tab="filters">Search</button>
                     <button class="tab-button" data-tab="upload">Upload</button>
                 </div>
 
-                <!-- Filters Tab -->
+                <!-- Search Tab -->
                 <div id="filters-tab" class="tab-content active">
                     <div id="filter-selects">
                         <div class="filter-group">
@@ -101,10 +100,9 @@
                         <button id="apply-filters-button">Apply Filters</button>
                         <button id="clear-filters-button">Clear Filters</button>
                     </div>
-                </div>
 
-                <!-- Advanced Search Tab -->
-                <div id="advanced-tab" class="tab-content">
+                    <div class="search-section-divider"></div>
+                    <div class="search-section-heading">Advanced Search</div>
                     <div id="query-rows"></div>
                     <div id="search-buttons">
                         <button id="add-query-button">+ Add Query</button>
@@ -266,6 +264,7 @@
     <script src="/static/ag-grid-community/dist/ag-grid-community.min.js"></script>
 
     <!-- Main Application JS -->
+    <script src="/static/tiled_browser_js/tiled_http_client.js"></script>
     <script src="/static/tiled_browser_js/tiled_browser.js"></script>
 </body>
 </html>

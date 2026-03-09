@@ -390,9 +390,19 @@ class Driver(DriverWebAppsMixin):
         return super().tiled_get_data(entry_id, **kwargs)
 
     @unqueued()
+    def tiled_get_xarray_html(self, entry_ids, **kwargs):
+        """Return xarray _repr_html_() for one or more Tiled entries."""
+        return super().tiled_get_xarray_html(entry_ids, **kwargs)
+
+    @unqueued()
     def tiled_get_metadata(self, entry_id, **kwargs):
         """Proxy endpoint to get metadata from Tiled."""
         return super().tiled_get_metadata(entry_id, **kwargs)
+
+    @unqueued()
+    def tiled_get_full_json(self, entry_id, **kwargs):
+        """Proxy endpoint to get JSON-serializable full data for one entry."""
+        return super().tiled_get_full_json(entry_id, **kwargs)
 
     @unqueued()
     def tiled_get_distinct_values(self, field, **kwargs):

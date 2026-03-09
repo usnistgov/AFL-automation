@@ -10,6 +10,7 @@
 // =============================================================================
 
 let tiledConfig = null;  // { tiled_server, tiled_api_key }
+let tiledClient = null;
 let currentQueries = [];  // Array of {field, value} query objects
 let currentFilters = {};  // Object mapping filter field names to arrays of selected values
 let pageSize = 50;
@@ -21,6 +22,8 @@ let currentCopyText = '';
 let uploadColumnHeaders = [];
 let lastUploadFormState = null;
 const DEFAULT_SORT_MODEL = [{ colId: 'meta_ended', sort: 'desc' }];
+let activeTabName = 'filters';
+let tabsCollapsed = false;
 
 // Available search fields (excluding datetime columns)
 const SEARCH_FIELDS = [
@@ -43,6 +46,16 @@ const FILTER_FIELDS = [
 ];
 
 const filterLoadState = {};
+const FIELD_CANDIDATES = window.TiledHttpClient.DEFAULT_FIELD_CANDIDATES;
+const searchRequestState = {
+    sequence: 0,
+    controller: null
+};
+const chronologicalSortCache = {
+    key: null,
+    rows: [],
+    totalCount: 0
+};
 
 // =============================================================================
 // Utility Functions
@@ -52,52 +65,24 @@ const filterLoadState = {};
  * Get authentication token from cookies for Driver API calls
  */
 function getAuthToken() {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'access_token_cookie') {
-            return value;
-        }
-    }
-    return null;
+    return window.TiledHttpClient.getAuthToken();
 }
 
 /**
  * Wrapper for Driver API calls with JWT token
  */
 async function authenticatedFetch(url, options = {}) {
-    const token = getAuthToken();
-    const headers = { ...options.headers };
-
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return fetch(url, { ...options, headers });
+    return window.TiledHttpClient.authenticatedFetch(url, options);
 }
 
 /**
  * Wrapper for Tiled API calls with API key header
  */
 async function tiledFetch(endpoint, options = {}) {
-    if (!tiledConfig) {
+    if (!tiledClient || !tiledConfig) {
         throw new Error('Tiled configuration not loaded');
     }
-
-    const url = tiledConfig.tiled_server + endpoint;
-    const headers = {
-        'Authorization': `Apikey ${tiledConfig.tiled_api_key}`,
-        'Content-Type': 'application/json',
-        ...options.headers
-    };
-
-    const response = await fetch(url, { ...options, headers });
-
-    if (!response.ok) {
-        throw new Error(`Tiled API error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
+    return tiledClient.search(new URLSearchParams(), { path: endpoint, ...options });
 }
 
 /**
@@ -241,19 +226,8 @@ async function checkConfig() {
     try {
         updateConnectionStatus('loading');
 
-        const response = await authenticatedFetch('/tiled_config');
-        const data = await response.json();
-
-        if (data.status === 'error') {
-            showError(data.message);
-            updateConnectionStatus('error');
-            return false;
-        }
-
-        tiledConfig = {
-            tiled_server: data.tiled_server,
-            tiled_api_key: data.tiled_api_key
-        };
+        tiledConfig = await window.TiledHttpClient.loadConfig();
+        tiledClient = await window.TiledHttpClient.createClientFromConfig(tiledConfig);
 
         updateConnectionStatus('connected');
         return true;
@@ -272,73 +246,75 @@ async function checkConfig() {
 /**
  * Search Tiled database with pagination
  */
-async function performSearch(queries, offset, limit, sortModel = []) {
+async function performSearch(queries, offset, limit, sortModel = [], signal = null) {
     try {
-        // Use proxy endpoint to avoid CORS issues
-        const params = new URLSearchParams({
-            queries: JSON.stringify(queries),
-            filters: JSON.stringify(currentFilters || {}),
-            sort: JSON.stringify(sortModel || []),
-            offset: offset,
-            limit: limit
+        const params = window.TiledHttpClient.buildSearchParams({
+            offset,
+            limit,
+            sortModel: sortModel || [],
+            queryRows: queries || [],
+            quickFilters: currentFilters || {},
+            candidatesMap: FIELD_CANDIDATES
         });
+        const primaryPayload = await tiledClient.search(params, {
+            signal,
+            legacyPayload: {
+                queryRows: queries || [],
+                quickFilters: currentFilters || {},
+                sortModel: sortModel || [],
+                offset,
+                limit
+            }
+        });
+        const primary = window.TiledHttpClient.normalizeSearchResponse(primaryPayload);
+        let items = primary.data;
+        let totalCount = primary.totalCount;
 
-        console.log('Calling /tiled_search with params:', { queries, offset, limit });
-
-        const response = await authenticatedFetch(`/tiled_search?${params}`);
-
-        if (!response.ok) {
-            console.error('HTTP error response:', response.status, response.statusText);
-            throw new Error(`HTTP error: ${response.status}`);
+        const hasConstrainedFields =
+            (queries && queries.length > 0) || Object.keys(currentFilters || {}).length > 0;
+        if (hasConstrainedFields && primary.data.length === 0) {
+            const altParams = window.TiledHttpClient.buildSearchParams({
+                offset,
+                limit,
+                sortModel: sortModel || [],
+                queryRows: queries || [],
+                quickFilters: currentFilters || {},
+                candidatesMap: FIELD_CANDIDATES,
+                useAlternate: true
+            });
+            const secondaryPayload = await tiledClient.search(altParams, {
+                signal,
+                legacyPayload: {
+                    queryRows: queries || [],
+                    quickFilters: currentFilters || {},
+                    sortModel: sortModel || [],
+                    offset,
+                    limit
+                }
+            });
+            const secondary = window.TiledHttpClient.normalizeSearchResponse(secondaryPayload);
+            items = window.TiledHttpClient.mergeSearchData(primary.data, secondary.data);
+            totalCount = Math.max(primary.totalCount, secondary.totalCount, items.length);
         }
 
-        const result = await response.json();
-        console.log('Raw response from /tiled_search:', result);
-
-        if (result.status === 'error') {
-            console.error('Error status in response:', result.message);
-            return result;
-        }
-
-        // Defensive check for data
-        if (!result.data) {
-            console.error('No data field in response:', result);
-            return {
-                status: 'error',
-                message: 'No data field in server response'
-            };
-        }
-
-        if (!Array.isArray(result.data)) {
-            console.error('Data field is not an array:', typeof result.data, result.data);
-            return {
-                status: 'error',
-                message: `Invalid data format: expected array, got ${typeof result.data}`
-            };
-        }
-
-        // Extract all unique metadata keys from response
         const allKeys = new Set();
-        const items = result.data;
-
         for (const item of items) {
-            const metadata = item.attributes?.metadata || {};
-            const keys = extractNestedKeys(metadata);
-            keys.forEach(k => allKeys.add(k));
+            const metadata = item?.attributes?.metadata || {};
+            extractNestedKeys(metadata).forEach(k => allKeys.add(k));
         }
 
         const finalResult = {
             status: 'success',
             data: items,
-            total_count: result.total_count || 0,
+            total_count: totalCount,
             columns: Array.from(allKeys).sort()
         };
-
-        console.log('Returning from performSearch:', finalResult);
         return finalResult;
 
     } catch (error) {
-        console.error('Exception in performSearch:', error);
+        if (error && error.name === 'AbortError') {
+            return { status: 'aborted' };
+        }
         return {
             status: 'error',
             message: error.message
@@ -351,24 +327,30 @@ async function performSearch(queries, offset, limit, sortModel = []) {
  */
 async function loadData(entryId) {
     try {
-        // Use proxy endpoint to avoid CORS issues
-        const params = new URLSearchParams({ entry_id: entryId });
-        const response = await authenticatedFetch(`/tiled_get_data?${params}`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
+        const metaResponse = await tiledClient.metadata(entryId);
+        const fullLink = metaResponse?.data?.links?.full;
+        if (!fullLink) {
+            throw new Error('Missing links.full on metadata response');
         }
 
-        const result = await response.json();
-
-        if (result.status === 'error') {
-            return result;
+        try {
+            const html = await tiledClient.full(fullLink, {
+                format: 'text/html',
+                responseType: 'text',
+                entryId
+            });
+            return { status: 'success', html };
+        } catch (_htmlError) {
+            const jsonData = await tiledClient.full(fullLink, {
+                format: 'application/json',
+                responseType: 'json',
+                entryId
+            });
+            return {
+                status: 'success',
+                html: `<pre>${JSON.stringify(jsonData, null, 2)}</pre>`
+            };
         }
-
-        return {
-            status: 'success',
-            html: result.html
-        };
 
     } catch (error) {
         return {
@@ -383,23 +365,11 @@ async function loadData(entryId) {
  */
 async function loadMetadata(entryId) {
     try {
-        // Use proxy endpoint to avoid CORS issues
-        const params = new URLSearchParams({ entry_id: entryId });
-        const response = await authenticatedFetch(`/tiled_get_metadata?${params}`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (result.status === 'error') {
-            return result;
-        }
+        const result = await tiledClient.metadata(entryId);
 
         return {
             status: 'success',
-            metadata: result.metadata
+            metadata: result?.data?.attributes?.metadata || {}
         };
 
     } catch (error) {
@@ -415,22 +385,25 @@ async function loadMetadata(entryId) {
  */
 async function loadDistinctValues(field) {
     try {
-        const params = new URLSearchParams({ field });
-        const response = await authenticatedFetch(`/tiled_get_distinct_values?${params}`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (result.status === 'error') {
-            return result;
+        const params = window.TiledHttpClient.buildDistinctParams({
+            metadataKeys: [field],
+            activeFilters: currentFilters || {},
+            candidatesMap: FIELD_CANDIDATES
+        });
+        const result = await tiledClient.distinct(params, { legacyField: field });
+        const metadataMap = result?.metadata || {};
+        const candidates = window.TiledHttpClient.candidatePathsForField(field, FIELD_CANDIDATES);
+        const values = [];
+        for (const path of candidates) {
+            const items = metadataMap[path] || [];
+            for (const item of items) {
+                values.push(item?.value);
+            }
         }
 
         return {
             status: 'success',
-            values: result.values || []
+            values: window.TiledHttpClient.uniqueValues(values).sort((a, b) => String(a).localeCompare(String(b)))
         };
 
     } catch (error) {
@@ -507,22 +480,20 @@ class ActionsRenderer {
 
 function transformRows(items) {
     return items.map(item => {
-        const metadata = item.attributes?.metadata || {};
-        const attrs = metadata.attrs || metadata;
-        const meta = attrs.meta || {};
+        const metadata = item?.attributes?.metadata || {};
 
         return {
             id: item.id,
-            task_name: attrs.task_name || null,
-            driver_name: attrs.driver_name || null,
-            meta_started: meta.started || null,
-            meta_ended: meta.ended || null,
-            run_time_minutes: meta.run_time_minutes || null,
-            sample_uuid: attrs.sample_uuid || null,
-            sample_name: attrs.sample_name || null,
-            AL_campaign_name: attrs.AL_campaign_name || null,
-            AL_uuid: attrs.AL_uuid || null,
-            AL_components: attrs.AL_components || null,
+            task_name: window.TiledHttpClient.resolveMetadataValue(metadata, 'task_name', FIELD_CANDIDATES),
+            driver_name: window.TiledHttpClient.resolveMetadataValue(metadata, 'driver_name', FIELD_CANDIDATES),
+            meta_started: window.TiledHttpClient.resolveMetadataValue(metadata, 'meta_started', FIELD_CANDIDATES),
+            meta_ended: window.TiledHttpClient.resolveMetadataValue(metadata, 'meta_ended', FIELD_CANDIDATES),
+            run_time_minutes: window.TiledHttpClient.resolveMetadataValue(metadata, 'run_time_minutes', FIELD_CANDIDATES),
+            sample_uuid: window.TiledHttpClient.resolveMetadataValue(metadata, 'sample_uuid', FIELD_CANDIDATES),
+            sample_name: window.TiledHttpClient.resolveMetadataValue(metadata, 'sample_name', FIELD_CANDIDATES),
+            AL_campaign_name: window.TiledHttpClient.resolveMetadataValue(metadata, 'AL_campaign_name', FIELD_CANDIDATES),
+            AL_uuid: window.TiledHttpClient.resolveMetadataValue(metadata, 'AL_uuid', FIELD_CANDIDATES),
+            AL_components: window.TiledHttpClient.resolveMetadataValue(metadata, 'AL_components', FIELD_CANDIDATES),
             _raw: item
         };
     });
@@ -538,12 +509,17 @@ function parseDateToTimestamp(dateString) {
     if (!dateString) return 0;
 
     try {
-        // QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ]
-        let match = dateString.match(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+        // QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ][+-HHMM]
+        // Example: 12/07/25 14:30:45-123456 EST-0500
+        let match = dateString.match(
+            /^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})(?:-(\d{1,6}))?(?:\s+[A-Za-z_]+)?(?:([+-]\d{4}))?\s*$/
+        );
         if (match) {
-            const [_, month, day, year, hours, minutes, seconds] = match;
+            const [_, month, day, year, hours, minutes, seconds, microseconds, tzOffset] = match;
             const fullYear = '20' + year;
-            const isoString = `${fullYear}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+            const fractional = microseconds ? `.${microseconds.padEnd(6, '0').slice(0, 6)}` : '';
+            const tz = tzOffset ? `${tzOffset.slice(0, 3)}:${tzOffset.slice(3, 5)}` : '';
+            const isoString = `${fullYear}-${month}-${day}T${hours}:${minutes}:${seconds}${fractional}${tz}`;
             const date = new Date(isoString);
             if (!isNaN(date.getTime())) {
                 return date.getTime();
@@ -611,7 +587,7 @@ function formatDateTime(dateString) {
 }
 
 /**
- * Initialize AG Grid with client-side row model for sorting support
+ * Initialize AG Grid with infinite row model backed by server-side paging.
  */
 async function initializeGrid() {
     const gridDiv = document.getElementById('grid-container');
@@ -622,9 +598,7 @@ async function initializeGrid() {
                 field: 'id',
                 headerName: 'Entry ID',
                 pinned: 'left',
-                width: 100,
-                checkboxSelection: true,
-                headerCheckboxSelection: true
+                width: 100
             },
             { field: 'task_name', headerName: 'Task Name', width: 200 },
             { field: 'driver_name', headerName: 'Driver Name', width: 150 },
@@ -675,14 +649,17 @@ async function initializeGrid() {
             resizable: true
         },
         rowModelType: 'infinite',
-        rowData: [],
         pagination: true,
         paginationPageSize: pageSize,
         paginationPageSizeSelector: [25, 50, 100, 200],
         animateRows: true,
-        rowSelection: 'multiple',
-        suppressRowClickSelection: false,  // Enable row click selection
-        rowMultiSelectWithClick: true,  // Enable multi-select with Ctrl/Cmd click
+        rowSelection: {
+            mode: 'multiRow',
+            checkboxes: true,
+            headerCheckbox: false,
+            enableClickSelection: true,
+            enableSelectionWithoutKeys: true
+        },
         cacheBlockSize: pageSize,
         maxBlocksInCache: 10,
         onGridReady: (params) => {
@@ -1073,6 +1050,10 @@ function plotSelected() {
         showError('Please select at least one row to plot');
         return;
     }
+    if (selectedRows.length > 25) {
+        showError(`Plot selection capped at 25 entries (selected ${selectedRows.length}).`);
+        return;
+    }
 
     // Extract entry IDs
     const entryIds = selectedRows.map(row => row.id);
@@ -1098,6 +1079,10 @@ function ganttSelected() {
 
     if (selectedRows.length === 0) {
         showError('Please select at least one row for Gantt chart');
+        return;
+    }
+    if (selectedRows.length > 200) {
+        showError(`Gantt selection capped at 200 entries (selected ${selectedRows.length}).`);
         return;
     }
 
@@ -1715,6 +1700,19 @@ async function submitDatasetUpload() {
  * Switch between tabs
  */
 function switchTab(tabName) {
+    const tabContainer = document.querySelector('.tab-container');
+    const isActiveTab = tabName === activeTabName;
+
+    if (isActiveTab) {
+        tabsCollapsed = !tabsCollapsed;
+        tabContainer.classList.toggle('collapsed', tabsCollapsed);
+        return;
+    }
+
+    activeTabName = tabName;
+    tabsCollapsed = false;
+    tabContainer.classList.remove('collapsed');
+
     // Update tab buttons
     document.querySelectorAll('.tab-button').forEach(btn => {
         if (btn.dataset.tab === tabName) {
@@ -1738,6 +1736,11 @@ function switchTab(tabName) {
  * Set up all event listeners
  */
 function setupEventListeners() {
+    const initialActiveButton = document.querySelector('.tab-button.active');
+    if (initialActiveButton && initialActiveButton.dataset.tab) {
+        activeTabName = initialActiveButton.dataset.tab;
+    }
+
     // Tab buttons
     document.querySelectorAll('.tab-button').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
@@ -1855,33 +1858,180 @@ function setupEventListeners() {
 
 function refreshDatasource() {
     if (!gridApi) return;
+    chronologicalSortCache.key = null;
+    chronologicalSortCache.rows = [];
+    chronologicalSortCache.totalCount = 0;
     gridApi.setGridOption('datasource', createDatasource());
     gridApi.purgeInfiniteCache();
+}
+
+function shouldUseChronologicalEndedSort(sortModel) {
+    return Array.isArray(sortModel)
+        && sortModel.length === 1
+        && sortModel[0]
+        && sortModel[0].colId === 'meta_ended'
+        && (sortModel[0].sort === 'desc' || sortModel[0].sort === 'asc')
+        && (!currentQueries || currentQueries.length === 0)
+        && Object.keys(currentFilters || {}).length === 0;
+}
+
+function chronologicalCacheKey() {
+    return JSON.stringify({
+        queries: currentQueries || [],
+        filters: currentFilters || {}
+    });
+}
+
+async function getChronologicallySortedRows(sortModel, signal) {
+    const direction = sortModel[0].sort;
+    const key = chronologicalCacheKey();
+    if (chronologicalSortCache.key === key) {
+        const rows = direction === 'asc'
+            ? chronologicalSortCache.rows.slice().reverse()
+            : chronologicalSortCache.rows;
+        return {
+            status: 'success',
+            rows,
+            total_count: chronologicalSortCache.totalCount
+        };
+    }
+
+    const countResult = await performSearch(currentQueries, 0, 1, [], signal);
+    if (countResult.status !== 'success') {
+        return countResult;
+    }
+
+    const allCount = Number(countResult.total_count || 0);
+    if (allCount === 0) {
+        chronologicalSortCache.key = key;
+        chronologicalSortCache.rows = [];
+        chronologicalSortCache.totalCount = 0;
+        return {
+            status: 'success',
+            rows: [],
+            total_count: 0
+        };
+    }
+
+    const descResult = await performSearch(
+        currentQueries,
+        0,
+        allCount,
+        [{ colId: 'meta_ended', sort: 'desc' }],
+        signal
+    );
+    if (descResult.status !== 'success') {
+        return descResult;
+    }
+
+    const ascResult = await performSearch(
+        currentQueries,
+        0,
+        allCount,
+        [{ colId: 'meta_ended', sort: 'asc' }],
+        signal
+    );
+    if (ascResult.status !== 'success') {
+        return ascResult;
+    }
+
+    const mergedById = new Map();
+    for (const item of (descResult.data || [])) {
+        if (item && item.id) mergedById.set(item.id, item);
+    }
+    for (const item of (ascResult.data || [])) {
+        if (item && item.id && !mergedById.has(item.id)) {
+            mergedById.set(item.id, item);
+        }
+    }
+
+    const rows = transformRows(Array.from(mergedById.values()));
+    rows.sort((a, b) => parseDateToTimestamp(b.meta_ended) - parseDateToTimestamp(a.meta_ended));
+
+    chronologicalSortCache.key = key;
+    chronologicalSortCache.rows = rows;  // always stored sorted desc
+    chronologicalSortCache.totalCount = Math.max(
+        Number(descResult.total_count || 0),
+        Number(ascResult.total_count || 0),
+        rows.length
+    );
+
+    const returnRows = direction === 'asc' ? rows.slice().reverse() : rows;
+    return {
+        status: 'success',
+        rows: returnRows,
+        total_count: chronologicalSortCache.totalCount
+    };
 }
 
 function createDatasource() {
     return {
         getRows: async (params) => {
+            const sequence = ++searchRequestState.sequence;
+            if (searchRequestState.controller) {
+                searchRequestState.controller.abort();
+            }
+            searchRequestState.controller = new AbortController();
             try {
                 updateConnectionStatus('loading');
                 showLoadingOverlay();
+                const effectiveSortModel = (params.sortModel && params.sortModel.length > 0)
+                    ? params.sortModel
+                    : DEFAULT_SORT_MODEL;
+
+                if (shouldUseChronologicalEndedSort(effectiveSortModel)) {
+                    const chronResult = await getChronologicallySortedRows(
+                        effectiveSortModel,
+                        searchRequestState.controller.signal
+                    );
+                    if (sequence !== searchRequestState.sequence) {
+                        return;
+                    }
+
+                    if (chronResult.status === 'success') {
+                        updateConnectionStatus('connected');
+                        totalCount = chronResult.total_count || 0;
+                        updateInfoBar();
+
+                        const start = params.startRow || 0;
+                        const end = params.endRow || (start + pageSize);
+                        const pagedRows = (chronResult.rows || []).slice(start, end);
+
+                        hideLoadingOverlay();
+                        params.successCallback(pagedRows, totalCount);
+                    } else if (chronResult.status === 'aborted') {
+                        return;
+                    } else {
+                        updateConnectionStatus('error');
+                        showError(chronResult.message || 'Unknown error occurred');
+                        hideLoadingOverlay();
+                        params.failCallback();
+                    }
+                    return;
+                }
 
                 const result = await performSearch(
                     currentQueries,
                     params.startRow,
                     params.endRow - params.startRow,
-                    (params.sortModel && params.sortModel.length > 0) ? params.sortModel : DEFAULT_SORT_MODEL
+                    effectiveSortModel,
+                    searchRequestState.controller.signal
                 );
+                if (sequence !== searchRequestState.sequence) {
+                    return;
+                }
 
                 if (result.status === 'success') {
                     updateConnectionStatus('connected');
-
                     const rows = transformRows(result.data || []);
                     totalCount = result.total_count || 0;
                     updateInfoBar();
 
                     hideLoadingOverlay();
                     params.successCallback(rows, totalCount);
+                } else if (result.status === 'aborted') {
+                    // Newer request superseded this one.
+                    return;
                 } else {
                     updateConnectionStatus('error');
                     showError(result.message || 'Unknown error occurred');

@@ -488,14 +488,17 @@ class DriverWebAppsMixin:
             if not text:
                 return None
 
-            # QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ]
+            # QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ][+-HHMM]
+            # Example: 12/07/25 14:30:45-123456 EST-0500
             match = __import__('re').match(
-                r'^(\d{2})/(\d{2})/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})',
+                r'^(\d{2})/(\d{2})/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})(?:-(\d{1,6}))?(?:\s+[A-Za-z_]+)?(?:([+-]\d{4}))?\s*$',
                 text,
             )
             if match:
-                month, day, year, hour, minute, second = map(int, match.groups())
-                return datetime.datetime(2000 + year, month, day, hour, minute, second)
+                month, day, year, hour, minute, second = map(int, match.groups()[:6])
+                microseconds = match.group(7) or '0'
+                microsecond = int(microseconds.ljust(6, '0')[:6])
+                return datetime.datetime(2000 + year, month, day, hour, minute, second, microsecond)
 
             # Display-style/legacy: YYYY-MM-DD HH:MM:SS
             match = __import__('re').match(
@@ -775,6 +778,114 @@ class DriverWebAppsMixin:
             return {
                 'status': 'error',
                 'message': f'Error fetching data: {str(e)}'
+            }
+
+    def tiled_get_xarray_html(self, entry_ids, **kwargs):
+        """Return xarray _repr_html_() for one or more Tiled entries.
+
+        Reuses the combined-dataset cache shared with the plot manifest endpoint,
+        so if the plot has already been rendered this call is effectively free.
+
+        Args:
+            entry_ids: JSON-encoded list of entry IDs
+
+        Returns:
+            dict with 'status' and 'html' (xarray HTML string)
+        """
+        try:
+            entry_ids_list = self._parse_entry_ids_param(entry_ids)
+        except (json.JSONDecodeError, ValueError) as e:
+            return {'status': 'error', 'message': f'Invalid entry_ids: {str(e)}'}
+
+        if not entry_ids_list:
+            return {'status': 'error', 'message': 'entry_ids must contain at least one entry'}
+
+        try:
+            ds = self._get_or_create_combined_dataset(entry_ids_list)
+        except Exception as e:
+            return {'status': 'error', 'message': f'Error loading dataset: {str(e)}'}
+
+        try:
+            html = ds._repr_html_()
+        except Exception:
+            html = f'<pre>{str(ds)}</pre>'
+
+        return {'status': 'success', 'html': html}
+
+    def tiled_get_full_json(self, entry_id, **kwargs):
+        """Proxy endpoint to get JSON-serializable full data payload for one entry.
+
+        This endpoint is intended as a same-origin fallback for browser clients
+        when direct browser->Tiled CORS access is not available.
+        """
+        import numpy as np
+        import pandas as pd
+
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        try:
+            if entry_id not in client:
+                return {
+                    'status': 'error',
+                    'message': f'Entry "{entry_id}" not found'
+                }
+
+            item = client[entry_id]
+            payload = self._read_tiled_item(item)
+
+            # xarray datasets: flatten into column->list payload
+            if hasattr(payload, 'to_dataframe'):
+                dataframe = payload.to_dataframe().reset_index()
+                data = {}
+                for column in dataframe.columns:
+                    series = dataframe[column]
+                    converted = []
+                    for value in series.tolist():
+                        if isinstance(value, (np.floating, float)):
+                            converted.append(None if np.isnan(value) else float(value))
+                        elif isinstance(value, (np.integer, int)):
+                            converted.append(int(value))
+                        elif isinstance(value, (np.bool_, bool)):
+                            converted.append(bool(value))
+                        elif isinstance(value, np.ndarray):
+                            converted.append(value.tolist())
+                        else:
+                            converted.append(value)
+                    data[str(column)] = converted
+                return {
+                    'status': 'success',
+                    'data': data
+                }
+
+            # pandas tables
+            if isinstance(payload, pd.DataFrame):
+                dataframe = payload.reset_index()
+                return {
+                    'status': 'success',
+                    'data': {
+                        str(col): dataframe[col].tolist()
+                        for col in dataframe.columns
+                    }
+                }
+
+            # arrays and scalars
+            if isinstance(payload, np.ndarray):
+                return {
+                    'status': 'success',
+                    'data': {'value': payload.tolist()}
+                }
+
+            return {
+                'status': 'success',
+                'data': {'value': payload}
+            }
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error fetching full data: {str(e)}'
             }
 
     def tiled_get_metadata(self, entry_id, **kwargs):

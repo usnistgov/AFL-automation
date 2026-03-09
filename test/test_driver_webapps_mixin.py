@@ -94,6 +94,27 @@ class _DummyUploadDriver(DriverWebAppsMixin):
         return self._client
 
 
+class _FakeTiledItem:
+    def __init__(self, payload):
+        self._payload = payload
+
+    def read(self, **kwargs):
+        return self._payload
+
+
+class _FakeTiledClient(dict):
+    pass
+
+
+class _DummyFullJsonDriver(DriverWebAppsMixin):
+    def __init__(self, client):
+        self._client = client
+        self.app = SimpleNamespace(logger=logging.getLogger("test_full_json_driver"))
+
+    def _get_tiled_client(self):
+        return self._client
+
+
 def test_tiled_upload_dataset_csv_all_columns_as_vars_and_coord(monkeypatch):
     driver = _DummyUploadDriver()
     captured = {}
@@ -123,6 +144,25 @@ def test_tiled_upload_dataset_csv_all_columns_as_vars_and_coord(monkeypatch):
     assert dataset.sizes["time"] == 2
     assert dataset["label"].dtype.kind != "O"
     assert dataset.coords["time"].dtype.kind != "O"
+
+
+def test_tiled_get_full_json_returns_columnar_payload():
+    dataset = xr.Dataset(
+        data_vars={
+            "I": (("q",), [1.0, 2.0, 3.0]),
+            "dI": (("q",), [0.1, 0.2, 0.3]),
+        },
+        coords={"q": [0.01, 0.02, 0.03]},
+    )
+    client = _FakeTiledClient({"entry-1": _FakeTiledItem(dataset)})
+    driver = _DummyFullJsonDriver(client)
+
+    result = driver.tiled_get_full_json("entry-1")
+
+    assert result["status"] == "success"
+    assert set(result["data"].keys()) >= {"q", "I", "dI"}
+    assert result["data"]["q"] == [0.01, 0.02, 0.03]
+    assert result["data"]["I"] == [1.0, 2.0, 3.0]
 
 
 def test_tiled_upload_dataset_rejects_unknown_coordinate(monkeypatch):

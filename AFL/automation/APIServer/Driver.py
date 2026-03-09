@@ -4,6 +4,7 @@ import logging
 import inspect
 import pathlib
 import uuid
+import os
 
 from AFL.automation.APIServer.DriverWebAppsMixin import DriverWebAppsMixin
 
@@ -51,7 +52,7 @@ class Driver(DriverWebAppsMixin):
         "tiled_browser_css": pathlib.Path(__file__).parent.parent / "apps" / "tiled_browser" / "css",
     }
 
-    def __init__(self, name, defaults=None, overrides=None, useful_links=None):
+    def __init__(self, name, defaults=None, overrides=None, useful_links=None, afl_home=None):
         self.app = None
         self.data = None
         self.dropbox = None
@@ -73,7 +74,10 @@ class Driver(DriverWebAppsMixin):
             useful_links["Tiled Browser"] = "/tiled_browser"
             self.useful_links = useful_links
 
-        self.path = pathlib.Path.home() / '.afl'
+        resolved_afl_home = afl_home if afl_home is not None else os.environ.get('AFL_HOME')
+        if resolved_afl_home is None or str(resolved_afl_home).strip() == '':
+            resolved_afl_home = pathlib.Path.home() / '.afl'
+        self.path = pathlib.Path(resolved_afl_home).expanduser()
         self.path.mkdir(exist_ok=True,parents=True)
         self.filepath = self.path / (name + '.config.json')
 

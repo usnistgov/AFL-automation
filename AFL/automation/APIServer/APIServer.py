@@ -61,7 +61,7 @@ except (ModuleNotFoundError,ImportError):
     _ADVERTISE_ZEROCONF=False
 
 class APIServer:
-    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',new_index_template='index-new.html',plot_template='simple-bokeh.html'):
+    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',new_index_template='index-new.html',plot_template='simple-bokeh.html',afl_home=None):
         self.name = name
         self.experiment = experiment
         self.contact = contact
@@ -69,6 +69,7 @@ class APIServer:
         self.new_index_template = new_index_template
         self.plot_template = plot_template
         self.data = data
+        self.afl_home = afl_home
 
         self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status','get_server_time','get_info')
 
@@ -348,7 +349,10 @@ class APIServer:
 
         # SMTP email handling has been removed. The `toaddrs` argument is now
         # ignored and retained only for backwards compatibility.
-        path = pathlib.Path.home() / '.afl'
+        resolved_afl_home = self.afl_home if self.afl_home is not None else os.environ.get('AFL_HOME')
+        if resolved_afl_home is None or str(resolved_afl_home).strip() == '':
+            resolved_afl_home = pathlib.Path.home() / '.afl'
+        path = pathlib.Path(resolved_afl_home).expanduser()
         path.mkdir(exist_ok=True,parents=True)
         filepath = path / f'{self.name}.log'
         file_handler = FileHandler(filepath)

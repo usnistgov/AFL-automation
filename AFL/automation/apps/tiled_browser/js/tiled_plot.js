@@ -16,6 +16,7 @@ const AppState = {
     compositionVariable: 'sample_composition',
     compositionColorVariable: null,
     metadataNumericFields: [],
+    _lastAutoRangedColorVar: undefined,  // sentinel: auto-range only when color variable changes
     cmin: 0.0,
     cmax: 1.0,
     colorscale: 'Bluered',
@@ -715,7 +716,8 @@ async function renderCompositionPlot() {
 
     const colors = await compositionColorArray(points);
     const validColors = colors.filter(v => Number.isFinite(v));
-    if (validColors.length > 0) {
+    if (validColors.length > 0 && AppState.compositionColorVariable !== AppState._lastAutoRangedColorVar) {
+        AppState._lastAutoRangedColorVar = AppState.compositionColorVariable;
         AppState.cmin = Math.min(...validColors);
         AppState.cmax = Math.max(...validColors);
         document.getElementById('cmin').value = AppState.cmin.toFixed(2);
@@ -939,7 +941,7 @@ function initializeEventListeners() {
         await renderAllPlots();
     });
 
-    document.getElementById('reset-dataset').addEventListener('click', async () => {
+    document.getElementById('reset-dataset')?.addEventListener('click', async () => {
         for (const entry of AppState.entries) {
             entry.table = null;
             entry.numericColumns = [];

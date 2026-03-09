@@ -62,30 +62,6 @@ const chronologicalSortCache = {
 // =============================================================================
 
 /**
- * Get authentication token from cookies for Driver API calls
- */
-function getAuthToken() {
-    return window.TiledHttpClient.getAuthToken();
-}
-
-/**
- * Wrapper for Driver API calls with JWT token
- */
-async function authenticatedFetch(url, options = {}) {
-    return window.TiledHttpClient.authenticatedFetch(url, options);
-}
-
-/**
- * Wrapper for Tiled API calls with API key header
- */
-async function tiledFetch(endpoint, options = {}) {
-    if (!tiledClient || !tiledConfig) {
-        throw new Error('Tiled configuration not loaded');
-    }
-    return tiledClient.search(new URLSearchParams(), { path: endpoint, ...options });
-}
-
-/**
  * Recursively extract all nested keys from an object with dot notation
  */
 function extractNestedKeys(obj, prefix = '') {
@@ -1672,7 +1648,7 @@ async function submitDatasetUpload() {
     uploadBtn.textContent = 'Uploading...';
 
     try {
-        const response = await authenticatedFetch('/tiled_upload_data', {
+        const response = await window.TiledHttpClient.authenticatedFetch('/tiled_upload_data', {
             method: 'POST',
             body: payload
         });

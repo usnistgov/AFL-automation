@@ -56,38 +56,6 @@
             <!-- Tab 1: Dataset -->
             <div id="dataset-tab" class="tab-content">
                 <div class="dataset-operations">
-                    <!-- Filtering Operations -->
-                    <div class="operation-group">
-                        <label for="sel-dim">Filter by:</label>
-                        <select id="sel-dim" class="control-select">
-                            <option value="">Select dimension...</option>
-                        </select>
-                        <input type="text" id="sel-value" class="control-input" placeholder="Value (e.g., 0, 0.75, 'T1')">
-                        <button id="apply-sel" class="secondary-button">Apply sel</button>
-                        <button id="apply-isel" class="secondary-button">Apply isel</button>
-                    </div>
-
-                    <!-- Combine Variables -->
-                    <div class="operation-group">
-                        <label>Combine Variables:</label>
-                        <input type="text" id="combined-var" class="control-input" placeholder="New variable name (e.g., 'comps')">
-                        <input type="text" id="to-combine" class="control-input" placeholder="Variables to combine (JSON array)">
-                        <button id="combine-vars" class="secondary-button">Combine Vars</button>
-                    </div>
-
-                    <!-- Extract Variable -->
-                    <div class="operation-group">
-                        <label>Extract Variable:</label>
-                        <select id="extract-from-var" class="control-select">
-                            <option value="">Select variable...</option>
-                        </select>
-                        <select id="extract-from-coord" class="control-select">
-                            <option value="">Select coordinate...</option>
-                        </select>
-                        <button id="extract-var" class="secondary-button">Extract Var</button>
-                    </div>
-
-                    <!-- Reset Dataset -->
                     <div class="operation-group">
                         <button id="reset-dataset" class="warning-button">Reset Dataset</button>
                     </div>

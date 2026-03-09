@@ -60,10 +60,7 @@ class Driver(DriverWebAppsMixin):
         self._tiled_client = None  # Cached Tiled client
         self._combined_dataset_cache = {}
         self._combined_dataset_cache_order = []
-        self._plot_variable_payload_cache = {}
-        self._plot_variable_payload_cache_order = []
         self._max_combined_dataset_cache = 3
-        self._max_variable_payload_cache = 64
 
         if name is None:
             self.name = 'Driver'
@@ -408,31 +405,6 @@ class Driver(DriverWebAppsMixin):
     def tiled_get_distinct_values(self, field, **kwargs):
         """Get distinct values for a metadata field from Tiled."""
         return super().tiled_get_distinct_values(field, **kwargs)
-
-    @unqueued()
-    def tiled_get_plot_manifest(self, entry_ids, **kwargs):
-        """Return lightweight plotting manifest without eager data materialization."""
-        return super().tiled_get_plot_manifest(entry_ids, **kwargs)
-
-    @unqueued()
-    def tiled_get_plot_variable_data(self, entry_ids, var_name, cast_float32='true', **kwargs):
-        """Return one variable payload for plotting, fetched lazily."""
-        return super().tiled_get_plot_variable_data(entry_ids, var_name, cast_float32=cast_float32, **kwargs)
-
-    @unqueued()
-    def tiled_get_combined_plot_data(self, entry_ids, **kwargs):
-        """Legacy eager endpoint for combined plot payloads."""
-        return super().tiled_get_combined_plot_data(entry_ids, **kwargs)
-
-    @unqueued()
-    def tiled_get_gantt_metadata(self, entry_ids, **kwargs):
-        """Get metadata for Gantt chart from multiple Tiled entries."""
-        return super().tiled_get_gantt_metadata(entry_ids, **kwargs)
-
-    @unqueued()
-    def tiled_download_combined_dataset(self, entry_ids, **kwargs):
-        """Download concatenated xarray dataset as NetCDF."""
-        return super().tiled_download_combined_dataset(entry_ids, **kwargs)
 
     @unqueued()
     def tiled_upload_dataset(

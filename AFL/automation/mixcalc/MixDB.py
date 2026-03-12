@@ -42,6 +42,7 @@ class MixDB:
         Dict
             Component dictionary with Quantity objects converted to strings
         """
+        component_dict = MixDB._normalize_component(component_dict)
         serialized = {}
         for key, value in component_dict.items():
             if has_units(value):
@@ -49,6 +50,29 @@ class MixDB:
             else:
                 serialized[key] = value
         return serialized
+
+    @staticmethod
+    def _is_missing_value(value) -> bool:
+        if value is None:
+            return True
+        if isinstance(value, str):
+            return value.strip() == ''
+        # Guard pd.isna() for scalars only; containers can return arrays.
+        if isinstance(value, (dict, list, tuple, set)):
+            return False
+        try:
+            return bool(pd.isna(value))
+        except Exception:
+            return False
+
+    @staticmethod
+    def _normalize_component(component_dict: Dict) -> Dict:
+        normalized = {}
+        for key, value in component_dict.items():
+            if MixDB._is_missing_value(value):
+                continue
+            normalized[key] = value
+        return normalized
 
     @staticmethod
     def get_db():
@@ -80,7 +104,7 @@ class MixDB:
     def list_components(self):
         components = self.engine.list_components()
         # Serialize any Quantity objects that might exist in the returned data
-        return [self._serialize_component(comp) for comp in components]
+        return [self._serialize_component(self._normalize_component(comp)) for comp in components]
 
     def update_component(self, component_dict: Dict) -> str:
         if 'uid' not in component_dict:
@@ -97,6 +121,7 @@ class MixDB:
             )
         try:
             component = self.engine.get_component(name=name,uid=uid)
+            component = self._serialize_component(self._normalize_component(component))
         except NotFoundError:
             if interactive:
                 component = self.add_component_interactive(name=name,uid=uid)

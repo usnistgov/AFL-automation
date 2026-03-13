@@ -8,6 +8,7 @@ import os
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import importlib
 
 from AFL.automation.APIServer.data import DataPacket, DataJSON, DataTiled, DataTrashcan
 
@@ -427,6 +428,22 @@ class TestDataTiled:
             assert 'array_name' not in dp.keys()
             # Other data should remain
             assert dp['test_key'] == 'test_value'
+
+    def test_tiled_writes_use_run_document_prefix(self, mock_tiled_server, monkeypatch):
+        """Test that DataTiled writes are keyed under run_document/<uuid>."""
+        captured = {}
+
+        def fake_write_xarray_dataset(client, dataset, key=None):
+            captured['key'] = key
+
+        tiled_mod = importlib.import_module('AFL.automation.APIServer.data.DataTiled')
+        monkeypatch.setattr(tiled_mod, 'write_xarray_dataset', fake_write_xarray_dataset)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dp = DataTiled('http://localhost:8000', 'test-api-key', tmpdir)
+            dp['uuid'] = 'QD-123'
+            dp.subtransmit_array('test_array', np.array([1, 2, 3]))
+            assert captured['key'] == 'run_document/QD-123'
 
 
 # Integration test to verify import works

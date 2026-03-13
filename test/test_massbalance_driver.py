@@ -105,3 +105,37 @@ def test_massbalance_driver_balance_settings_and_progress():
     assert post['active'] is False
     assert post['total'] == 1
     assert post['completed'] == 1
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_stock_history_local_fallback(monkeypatch):
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    mb.reset_stocks()
+    mb.config['stock_history'] = []
+
+    monkeypatch.setattr(
+        mb,
+        '_get_tiled_client',
+        lambda: {'status': 'error', 'message': 'tiled unavailable for test'},
+    )
+
+    upload_result = mb.upload_stocks(
+        stocks=[{'name': 'StockA', 'masses': {'H2O': '1 g'}}],
+        reset=True,
+        tags=['campaign-a', 'seed'],
+    )
+    assert upload_result['success'] is True
+    assert upload_result['history_source'] == 'local'
+
+    history = mb.list_stock_history()
+    assert history['source'] == 'local'
+    assert len(history['history']) == 1
+    assert history['history'][0]['tags'] == ['campaign-a', 'seed']
+
+    snapshot_id = history['history'][0]['id']
+    loaded = mb.load_stock_history(snapshot_id=snapshot_id)
+    assert loaded['success'] is True
+    assert loaded['source'] == 'local'
+    assert len(loaded['stocks']) == 1
+    assert loaded['stocks'][0]['name'] == 'StockA'

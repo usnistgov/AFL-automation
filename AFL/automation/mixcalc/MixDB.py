@@ -2,9 +2,12 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Optional, Dict
 import pathlib
-from xml.dom import NotFoundErr
+import json
+import os
 
 import pandas as pd  # type: ignore
+import numpy as np
+import tiled.client
 
 from AFL.automation.shared.PersistentConfig import PersistentConfig
 from AFL.automation.shared.exceptions import NotFoundError
@@ -15,11 +18,15 @@ _MIXDB = None
 
 class MixDB:
     def __init__(self,db_spec: Optional[str | pathlib.Path | pd.DataFrame]=None):
+        self.default_local_spec = _resolve_afl_home() / 'component.config.json'
         if db_spec is None:
-            db_spec = pathlib.Path.home()/'.afl/component.config.json'
+            db_spec = self.default_local_spec
 
         self.db_spec = db_spec
-        self.engine = _get_engine(db_spec)
+        if db_spec == self.default_local_spec:
+            self.engine = _get_default_engine_with_tiled_fallback(db_spec)
+        else:
+            self.engine = _get_engine(db_spec)
         self.set_db()
 
     def set_db(self):
@@ -176,6 +183,11 @@ class MixDB:
     def write(self):
         self.engine.write(self.db_spec)
 
+    def get_source(self) -> str:
+        if hasattr(self.engine, 'source'):
+            return str(self.engine.source)
+        return 'local'
+
 
 class DBEngine(ABC):
     @abstractmethod
@@ -310,8 +322,329 @@ class PersistentConfig_DBEngine(DBEngine):
     def write(self, filename: str, writer: str = 'json') -> None:
         self.config.flush()
 
+
+class Tiled_DBEngine(DBEngine):
+    def __init__(self, server: str, api_key: str = '', fallback_engine: Optional[DBEngine] = None):
+        self.server = server
+        self.api_key = api_key
+        self.fallback_engine = fallback_engine
+        self.source = 'tiled'
+        self._components_cache = None
+        self._components_cache_by_uid = {}
+        self._components_cache_by_name = {}
+        self._components_cache_source = 'unknown'
+        try:
+            self.client = tiled.client.from_uri(
+                server,
+                api_key=api_key,
+                structure_clients="dask",
+            )
+        except Exception:
+            self.client = None
+            self.source = 'local'
+
+    @staticmethod
+    def _entry_key(uid: str) -> str:
+        return f'components/{uid}'
+
+    @staticmethod
+    def _extract_payload(metadata: Dict) -> Optional[Dict]:
+        if not isinstance(metadata, dict):
+            return None
+        if isinstance(metadata.get('component'), dict):
+            return dict(metadata['component'])
+        if metadata.get('type') == 'component':
+            out = dict(metadata)
+            out.pop('type', None)
+            return out
+        return None
+
+    @staticmethod
+    def _fetch_item_metadata(item) -> Optional[Dict]:
+        # Fast path: metadata already present on the client object.
+        try:
+            metadata = getattr(item, 'metadata', None)
+            if isinstance(metadata, dict) and metadata:
+                return metadata
+        except Exception:
+            pass
+
+        # Fallback: explicitly request metadata fields from the item's self link.
+        try:
+            item_doc = getattr(item, 'item', None)
+            if not isinstance(item_doc, dict):
+                return None
+            links = item_doc.get('links', {})
+            if not isinstance(links, dict):
+                return None
+            self_link = links.get('self')
+            if not self_link:
+                return None
+            resp = item.context.http_client.get(
+                self_link,
+                params={
+                    'fields': ['metadata'],
+                },
+            )
+            if not resp.is_success:
+                return None
+            payload = resp.json()
+            data = payload.get('data', {}) if isinstance(payload, dict) else {}
+            attrs = data.get('attributes', {}) if isinstance(data, dict) else {}
+            metadata = attrs.get('metadata')
+            if isinstance(metadata, dict):
+                return metadata
+        except Exception:
+            pass
+        return None
+
+    def _iter_tiled_components(self):
+        if self.client is None:
+            return []
+        out = []
+        try:
+            components_container = self._get_components_container(create=False)
+        except Exception:
+            return []
+        if components_container is None:
+            return []
+        try:
+            keys = list(components_container.keys())
+        except Exception:
+            return []
+        for key in keys:
+            try:
+                item = components_container[str(key)]
+                metadata = self._fetch_item_metadata(item)
+                payload = self._extract_payload(metadata)
+                if not payload or 'uid' not in payload:
+                    continue
+                out.append(payload)
+            except Exception:
+                continue
+        return out
+
+    def _get_components_container(self, create: bool = False):
+        if self.client is None:
+            return None
+        try:
+            return self.client['components']
+        except Exception:
+            if not create:
+                return None
+        # Container is missing. Create it at root so component entries live under components/*.
+        self.client.create_container(key='components', metadata={'type': 'components'})
+        return self.client['components']
+
+    def _write_component(self, component_dict: Dict):
+        if self.client is None:
+            raise RuntimeError('No tiled client available.')
+        uid = str(component_dict['uid'])
+        components_container = self._get_components_container(create=True)
+        if components_container is None:
+            raise RuntimeError('Unable to access or create tiled components container.')
+        self._delete_component_uid(uid)
+        metadata = {
+            'type': 'component',
+            'uid': uid,
+            'name': component_dict.get('name', ''),
+            'component': component_dict,
+        }
+        components_container.write_array(np.array([1], dtype=np.int8), key=uid, metadata=metadata)
+
+    def _delete_component_uid(self, uid: str) -> bool:
+        components_container = self._get_components_container(create=False)
+        if components_container is None:
+            return False
+        uid = str(uid)
+        deleted = False
+        try:
+            del components_container[uid]
+            deleted = True
+        except Exception:
+            pass
+        if not deleted:
+            try:
+                obj = components_container[uid]
+                if hasattr(obj, 'delete'):
+                    obj.delete()
+                    deleted = True
+            except Exception:
+                pass
+        return deleted
+
+    def _delete_key(self, key: str) -> bool:
+        if self.client is None:
+            return False
+        deleted = False
+        try:
+            del self.client[key]
+            deleted = True
+        except Exception:
+            pass
+        if not deleted:
+            try:
+                obj = self.client[key]
+                if hasattr(obj, 'delete'):
+                    obj.delete()
+                    deleted = True
+            except Exception:
+                pass
+        return deleted
+
+    def _list_components_with_source(self):
+        # Only fall back to local when we cannot connect to tiled at all.
+        if self.client is None and self.fallback_engine is not None:
+            self.source = 'local'
+            return self.fallback_engine.list_components(), 'local'
+        tiled_components = self._iter_tiled_components()
+        self.source = 'tiled'
+        return tiled_components, 'tiled'
+
+    def _invalidate_component_cache(self):
+        self._components_cache = None
+        self._components_cache_by_uid = {}
+        self._components_cache_by_name = {}
+        self._components_cache_source = 'unknown'
+
+    def _populate_component_cache(self):
+        components, source = self._list_components_with_source()
+        self._components_cache = list(components)
+        by_uid = {}
+        by_name = {}
+        for comp in self._components_cache:
+            if not isinstance(comp, dict):
+                continue
+            uid = comp.get('uid')
+            name = comp.get('name')
+            if uid:
+                by_uid[str(uid)] = comp
+            if name:
+                by_name.setdefault(str(name), []).append(comp)
+        self._components_cache_by_uid = by_uid
+        self._components_cache_by_name = by_name
+        self._components_cache_source = source
+
+    def _ensure_component_cache(self):
+        if self._components_cache is None:
+            self._populate_component_cache()
+        self.source = self._components_cache_source
+
+    def add_component(self, component_dict: Dict) -> str:
+        uid = component_dict.get('uid', str(uuid.uuid4()))
+        component_dict = dict(component_dict)
+        component_dict['uid'] = uid
+        try:
+            self._write_component(component_dict)
+            self.source = 'tiled'
+            self._invalidate_component_cache()
+            return uid
+        except Exception:
+            if self.client is None and self.fallback_engine is not None:
+                self.source = 'local'
+                out_uid = self.fallback_engine.add_component(component_dict)
+                self._invalidate_component_cache()
+                return out_uid
+            raise
+
+    def update_component(self, component_dict: Dict) -> str:
+        uid = component_dict['uid']
+        try:
+            self._write_component(component_dict)
+            self.source = 'tiled'
+            self._invalidate_component_cache()
+            return uid
+        except Exception:
+            if self.client is None and self.fallback_engine is not None:
+                self.source = 'local'
+                out_uid = self.fallback_engine.update_component(component_dict)
+                self._invalidate_component_cache()
+                return out_uid
+            raise
+
+    def remove_component(self,name=None,uid=None):
+        if (name is None) == (uid is None):
+            raise ValueError("Must specify either name or uid")
+        if uid is None:
+            component = self.get_component(name=name)
+            uid = component['uid']
+        deleted = self._delete_component_uid(str(uid))
+        if deleted:
+            self.source = 'tiled'
+            self._invalidate_component_cache()
+            return
+        if self.client is None and self.fallback_engine is not None:
+            self.source = 'local'
+            self.fallback_engine.remove_component(name=name, uid=uid)
+            self._invalidate_component_cache()
+            return
+        raise NotFoundError(f"Component not found: name={name}, uid={uid}")
+
+    def list_components(self):
+        self._ensure_component_cache()
+        return list(self._components_cache)
+
+    def get_component(self, name=None, uid=None) -> Dict:
+        if (name is None) == (uid is None):  # XOR
+            raise ValueError("Must specify either name or uid.")
+        self._ensure_component_cache()
+        if uid is not None:
+            comp = self._components_cache_by_uid.get(str(uid))
+            if comp:
+                return comp
+        else:
+            matches = self._components_cache_by_name.get(str(name), [])
+            if matches:
+                return matches[-1]
+        raise NotFoundError(f"Component not found: name={name}, uid={uid}")
+
+    def write(self, filename: str, writer: str = 'json') -> None:
+        if self.source == 'local' and self.fallback_engine is not None:
+            self.fallback_engine.write(filename, writer=writer)
+
+def _resolve_afl_home() -> pathlib.Path:
+    home = os.environ.get('AFL_HOME', '')
+    if home.strip():
+        return pathlib.Path(home).expanduser()
+    return pathlib.Path.home() / '.afl'
+
+
+def _read_global_tiled_config() -> tuple[str, str]:
+    config_path = _resolve_afl_home() / 'config.json'
+    if not config_path.exists():
+        return '', ''
+    try:
+        with open(config_path, 'r') as f:
+            config_data = json.load(f)
+    except Exception:
+        return '', ''
+    if not isinstance(config_data, dict) or not config_data:
+        return '', ''
+    for key in sorted(config_data.keys(), reverse=True):
+        entry = config_data.get(key, {})
+        if not isinstance(entry, dict):
+            continue
+        server = str(entry.get('tiled_server', '')).strip()
+        api_key = str(entry.get('tiled_api_key', '')).strip()
+        if server:
+            return server, api_key
+    return '', ''
+
+
+def _get_default_engine_with_tiled_fallback(default_local_spec: pathlib.Path) -> DBEngine:
+    local_engine = PersistentConfig_DBEngine(str(default_local_spec))
+    server, api_key = _read_global_tiled_config()
+    if not server:
+        return local_engine
+    return Tiled_DBEngine(server=server, api_key=api_key, fallback_engine=local_engine)
+
+
 def _get_engine(db_spec: str | pathlib.Path | pd.DataFrame) -> DBEngine:
     if isinstance(db_spec, str):
+        if db_spec.startswith("http"):
+            server = db_spec
+            _, api_key = _read_global_tiled_config()
+            return Tiled_DBEngine(server=server, api_key=api_key, fallback_engine=None)
         db_spec = pathlib.Path(db_spec)
 
     db = None
@@ -324,8 +657,8 @@ def _get_engine(db_spec: str | pathlib.Path | pd.DataFrame) -> DBEngine:
     elif db_spec.suffix == 'csv':
         db = Pandas_DBEngine.read_csv(db_spec)
     elif str(db_spec).startswith("http"):
-        raise NotImplementedError("HTTP not yet implemented")
-        # db = Tiled_DBEngine(db_spec)
+        _, api_key = _read_global_tiled_config()
+        db = Tiled_DBEngine(server=str(db_spec), api_key=api_key, fallback_engine=None)
     else:
         raise ValueError(f'Unable to open or connect to db: {db_spec}')
     return db

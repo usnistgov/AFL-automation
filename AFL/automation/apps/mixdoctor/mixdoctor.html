@@ -26,6 +26,7 @@
             <button class="toolbar-btn" id="components-refresh-btn">Refresh</button>
             <button class="primary-btn" id="components-add-btn">+ Add Component</button>
             <span id="components-status" class="components-status"></span>
+            <span id="components-source-badge" class="source-badge">Source: unknown</span>
         </div>
         <div id="components-editor">
             <table class="data-table components-table">
@@ -54,16 +55,31 @@
             <button class="primary-btn" id="upload-stocks-btn">Upload Stocks</button>
             <button class="toolbar-btn" id="add-stock-btn">+ Add Stock</button>
             <button class="toolbar-btn" id="load-stocks-from-server-btn">Load from Server</button>
+            <label class="stocks-tags-input-wrap">Tags
+                <input type="text" id="stocks-tags-input" placeholder="comma-separated tags">
+            </label>
         </div>
-        <div id="stocks-upload-errors"></div>
-        <div id="stock-cards-container"></div>
-        <div id="solution-diagnostics-panel">
-            <div class="diagnostics-header">
-                <div class="panel-title">Solution Creation Output</div>
-                <button class="toolbar-btn" id="solution-diagnostics-clear-btn">Clear</button>
+        <div id="stocks-page-layout">
+            <div id="stocks-editor-column">
+                <div id="stocks-upload-errors"></div>
+                <div id="stock-cards-container"></div>
+                <div id="solution-diagnostics-panel">
+                    <div class="diagnostics-header">
+                        <div class="panel-title">Solution Creation Output</div>
+                        <button class="toolbar-btn" id="solution-diagnostics-clear-btn">Clear</button>
+                    </div>
+                    <div id="solution-diagnostics-body">
+                        <p class="empty-state">No diagnostics yet.</p>
+                    </div>
+                </div>
             </div>
-            <div id="solution-diagnostics-body">
-                <p class="empty-state">No diagnostics yet.</p>
+            <div id="stocks-history-column">
+                <div class="panel-title">Stock History</div>
+                <div id="stocks-history-source" class="source-badge">Source: unknown</div>
+                <input type="text" id="stocks-history-filter-input" placeholder="Filter by date, tag, component, or stock">
+                <div id="stocks-history-list">
+                    <p class="empty-state">No stock history yet.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -437,6 +453,32 @@
     </div>
 
     <div id="status-message"></div>
+</div>
+
+<!-- Stock History Modal -->
+<div id="stock-history-modal-overlay">
+    <div id="stock-history-modal">
+        <div id="stock-history-modal-header">
+            <span id="stock-history-modal-title">Stock Snapshot</span>
+            <button id="stock-history-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="stock-history-modal-body">
+            <div id="stock-history-modal-meta"></div>
+            <div id="stock-history-modal-tags"></div>
+            <div>
+                <div class="stock-history-modal-section-title">Unique Components</div>
+                <div id="stock-history-modal-components"></div>
+            </div>
+            <div>
+                <div class="stock-history-modal-section-title">Stocks</div>
+                <div id="stock-history-modal-stocks"></div>
+            </div>
+        </div>
+        <div id="stock-history-modal-footer">
+            <button class="toolbar-btn" id="stock-history-modal-cancel-btn">Cancel</button>
+            <button class="primary-btn" id="stock-history-modal-load-btn">Load</button>
+        </div>
+    </div>
 </div>
 
 <!-- Target Upload Modal -->

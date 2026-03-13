@@ -49,7 +49,17 @@ async function queryDriver(params) {
     var qs = new URLSearchParams(params);
     var url = '/query_driver?' + qs.toString();
     var r = await authedFetch(url, { method: 'GET' });
-    if (!r.ok) throw new Error('Driver query failed');
+    if (!r.ok) {
+        var detail = '';
+        try {
+            detail = (await r.text()).trim();
+        } catch (e) {
+            detail = '';
+        }
+        var msg = 'Driver query failed (' + r.status + ')';
+        if (detail) msg += ': ' + detail;
+        throw new Error(msg);
+    }
     return r;
 }
 
@@ -484,8 +494,43 @@ async function enrichBalancedTargetForModal(balanceEntry) {
 // ---- Detail Modal ----
 var stocksData = [];
 var targetsData = [];
+var stockHistoryEntries = [];
+var stockHistoryFilterText = '';
+var selectedStockHistoryEntry = null;
 var currentModalIdx = -1;
 var currentModalType = null;
+var storageSources = {
+    components: 'unknown',
+    stock_history: 'unknown',
+    stocks: 'local',
+};
+
+function setSourceBadge(elId, source) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    el.textContent = 'Source: ' + (source || 'unknown');
+}
+
+function applyStorageSourceBadges() {
+    setSourceBadge('components-source-badge', storageSources.components);
+    setSourceBadge('stocks-history-source', storageSources.stock_history);
+}
+
+async function refreshStorageSources() {
+    try {
+        var r = await fetch('/get_storage_sources');
+        if (!r.ok) return;
+        var data = await r.json();
+        if (data && typeof data === 'object') {
+            storageSources.components = data.components || storageSources.components;
+            storageSources.stock_history = data.stock_history || storageSources.stock_history;
+            storageSources.stocks = data.stocks || storageSources.stocks;
+            applyStorageSourceBadges();
+        }
+    } catch (e) {
+        // ignore source refresh failures
+    }
+}
 
 function showDetailModal(data, type, idx) {
     currentModalIdx = (idx !== undefined) ? idx : -1;
@@ -855,6 +900,11 @@ function switchTab(tabId) {
     });
     if (tabId === 'components-tab') {
         loadComponentsEditor();
+        refreshStorageSources();
+    }
+    if (tabId === 'stocks-tab') {
+        loadStockHistorySidebar();
+        refreshStorageSources();
     }
     if (tabId === 'balance-tab') {
         loadBalanceSettings();
@@ -901,6 +951,7 @@ async function loadComponentsEditor() {
         }
         var components = await r.json();
         renderComponentsTable(components);
+        refreshStorageSources();
     } catch (e) {
         body.innerHTML = '<tr><td colspan="6" class="empty-state">Error loading components.</td></tr>';
     }
@@ -913,49 +964,22 @@ function renderComponentsTable(components) {
         body.innerHTML = '<tr><td colspan="6" class="empty-state">No components in database.</td></tr>';
         return;
     }
-    body.innerHTML = components.map(function(comp) {
-        var name = comp.name || '';
-        var density = comp.density || '';
-        var formula = comp.formula || '';
-        var sld = comp.sld || '';
-        var uid = comp.uid || '';
-        return [
-            '<tr data-uid="', escHtml(uid), '">',
-            '<td><input type="text" class="comp-name-input" value="', escHtml(name), '"></td>',
-            '<td><input type="text" class="comp-density-input" placeholder="e.g. 1.0 g/ml" value="', escHtml(density), '"></td>',
-            '<td><input type="text" class="comp-formula-input" placeholder="optional (e.g. H2O)" value="', escHtml(formula), '"></td>',
-            '<td><input type="text" class="comp-sld-input" placeholder="optional (e.g. 6.35e-6 /A^2)" value="', escHtml(sld), '"></td>',
-            '<td class="uid-cell">', escHtml(uid), '</td>',
-            '<td><div class="components-actions">',
-            '<button class="toolbar-btn comp-save-btn">Save</button>',
-            '<button class="toolbar-btn comp-delete-btn">Delete</button>',
-            '</div></td>',
-            '</tr>'
-        ].join('');
-    }).join('');
-
-    body.querySelectorAll('.comp-save-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var row = this.closest('tr');
-            saveComponentRow(row);
-        });
-    });
-    body.querySelectorAll('.comp-delete-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var row = this.closest('tr');
-            deleteComponentRow(row);
-        });
-    });
+    body.innerHTML = components.map(componentRowHtml).join('');
+    bindComponentRowHandlers(body);
 }
 
 async function saveComponentRow(row) {
     if (!row) return;
     var uid = row.getAttribute('data-uid');
-    if (!uid) return;
     var name = row.querySelector('.comp-name-input').value.trim();
     var density = row.querySelector('.comp-density-input').value.trim();
     var formula = row.querySelector('.comp-formula-input').value.trim();
     var sld = row.querySelector('.comp-sld-input').value.trim();
+
+    if (!name) {
+        showStatus('Component name is required.', true);
+        return;
+    }
 
     if (density) {
         var hasDigit = /[0-9]/.test(density);
@@ -967,9 +991,9 @@ async function saveComponentRow(row) {
     }
 
     var payload = {
-        r: 'update_component',
-        uid: uid,
+        r: uid ? 'update_component' : 'add_component',
     };
+    if (uid) payload.uid = uid;
 
     [
         ['name', name],
@@ -983,11 +1007,20 @@ async function saveComponentRow(row) {
     });
 
     try {
-        await queryDriver(payload);
-        showStatus('Component updated.');
+        var r = await queryDriver(payload);
+        if (!uid) {
+            var newUid = (await r.text()).trim().replace(/^"|"$/g, '');
+            row.setAttribute('data-uid', newUid);
+            var uidCell = row.querySelector('.uid-cell');
+            if (uidCell) uidCell.textContent = newUid;
+            showStatus('Component added.');
+        } else {
+            showStatus('Component updated.');
+        }
+        loadComponentsEditor();
         loadComponentNames();
     } catch (e) {
-        showStatus('Update failed: ' + e.message, true);
+        showStatus('Save failed: ' + e.message, true);
     }
 }
 
@@ -995,7 +1028,10 @@ async function deleteComponentRow(row) {
     if (!row) return;
     var uid = row.getAttribute('data-uid');
     var name = row.querySelector('.comp-name-input').value.trim();
-    if (!uid) return;
+    if (!uid) {
+        row.remove();
+        return;
+    }
     if (!confirm('Delete component "' + name + '"?')) return;
     try {
         await queryDriver({ r: 'remove_component', uid: uid });
@@ -1007,14 +1043,64 @@ async function deleteComponentRow(row) {
     }
 }
 
-async function addComponentRow() {
-    try {
-        await queryDriver({ r: 'add_component' });
-        showStatus('Component added.');
-        loadComponentsEditor();
-        loadComponentNames();
-    } catch (e) {
-        showStatus('Add failed: ' + e.message, true);
+function componentRowHtml(comp) {
+    comp = comp || {};
+    var name = comp.name || '';
+    var density = comp.density || '';
+    var formula = comp.formula || '';
+    var sld = comp.sld || '';
+    var uid = comp.uid || '';
+    return [
+        '<tr data-uid="', escHtml(uid), '">',
+        '<td><input type="text" class="comp-name-input" value="', escHtml(name), '"></td>',
+        '<td><input type="text" class="comp-density-input" placeholder="e.g. 1.0 g/ml" value="', escHtml(density), '"></td>',
+        '<td><input type="text" class="comp-formula-input" placeholder="optional (e.g. H2O)" value="', escHtml(formula), '"></td>',
+        '<td><input type="text" class="comp-sld-input" placeholder="optional (e.g. 6.35e-6 /A^2)" value="', escHtml(sld), '"></td>',
+        '<td class="uid-cell">', escHtml(uid), '</td>',
+        '<td><div class="components-actions">',
+        '<button class="toolbar-btn comp-save-btn">Save</button>',
+        '<button class="toolbar-btn comp-delete-btn">Delete</button>',
+        '</div></td>',
+        '</tr>'
+    ].join('');
+}
+
+function bindComponentRowHandlers(body) {
+    if (!body) return;
+    body.querySelectorAll('.comp-save-btn').forEach(function(btn) {
+        if (btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', function() {
+            var row = this.closest('tr');
+            saveComponentRow(row);
+        });
+    });
+    body.querySelectorAll('.comp-delete-btn').forEach(function(btn) {
+        if (btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', function() {
+            var row = this.closest('tr');
+            deleteComponentRow(row);
+        });
+    });
+}
+
+function addComponentRow() {
+    var body = document.getElementById('components-table-body');
+    if (!body) return;
+
+    var emptyRow = body.querySelector('.empty-state');
+    if (emptyRow) {
+        body.innerHTML = '';
+    }
+
+    body.insertAdjacentHTML('afterbegin', componentRowHtml({}));
+    bindComponentRowHandlers(body);
+
+    var firstRow = body.querySelector('tr');
+    if (firstRow) {
+        var nameInput = firstRow.querySelector('.comp-name-input');
+        if (nameInput) nameInput.focus();
     }
 }
 
@@ -1284,6 +1370,101 @@ function serializeStockCard(card) {
     return result;
 }
 
+function parseStockTagsInput() {
+    var el = document.getElementById('stocks-tags-input');
+    if (!el) return [];
+    var raw = el.value.trim();
+    if (!raw) return [];
+    return raw.split(',').map(function(tag) {
+        return tag.trim();
+    }).filter(function(tag) {
+        return tag.length > 0;
+    });
+}
+
+function stockToPrefill(stock) {
+    var prefill = {
+        name: stock.name || '',
+        location: stock.location || '',
+    };
+
+    if (stock.total_mass) {
+        prefill.sizeType = 'total_mass';
+        var tm = stock.total_mass;
+        prefill.sizeValue = typeof tm === 'object' ? tm.value + ' ' + tm.units : String(tm);
+    } else if (stock.total_volume) {
+        prefill.sizeType = 'total_volume';
+        var tv = stock.total_volume;
+        prefill.sizeValue = typeof tv === 'object' ? tv.value + ' ' + tv.units : String(tv);
+    }
+
+    var soluteList = stock.solutes || [];
+    var rawComponentNames = stock.components || [];
+    if ((!rawComponentNames || rawComponentNames.length === 0) && stock && typeof stock === 'object') {
+        var componentSet = {};
+        ['masses', 'volumes', 'concentrations', 'mass_fractions', 'volume_fractions', 'molarities', 'molalities'].forEach(function(groupKey) {
+            var group = stock[groupKey];
+            if (!group || typeof group !== 'object') return;
+            Object.keys(group).forEach(function(name) {
+                componentSet[name] = true;
+            });
+        });
+        rawComponentNames = Object.keys(componentSet);
+    }
+    var components = [];
+    rawComponentNames.forEach(function(compName) {
+        var isSolute = soluteList.indexOf(compName) !== -1;
+        if (stock.masses && stock.masses[compName]) {
+            var m = stock.masses[compName];
+            components.push({name: compName, propType: 'mass',
+                value: typeof m === 'object' ? m.value : m,
+                units: typeof m === 'object' ? m.units : '',
+                isSolute: isSolute});
+        } else if (stock.volumes && stock.volumes[compName]) {
+            var vol = stock.volumes[compName];
+            components.push({name: compName, propType: 'volume',
+                value: typeof vol === 'object' ? vol.value : vol,
+                units: typeof vol === 'object' ? vol.units : '',
+                isSolute: isSolute});
+        } else if (stock.concentrations && stock.concentrations[compName]) {
+            var c = stock.concentrations[compName];
+            components.push({name: compName, propType: 'concentration',
+                value: typeof c === 'object' ? c.value : c,
+                units: typeof c === 'object' ? c.units : '',
+                isSolute: isSolute});
+        } else if (stock.mass_fractions && stock.mass_fractions[compName] != null) {
+            components.push({name: compName, propType: 'mass_fraction',
+                value: stock.mass_fractions[compName],
+                isSolute: isSolute});
+        } else if (stock.volume_fractions && stock.volume_fractions[compName] != null) {
+            components.push({name: compName, propType: 'volume_fraction',
+                value: stock.volume_fractions[compName],
+                isSolute: isSolute});
+        } else if (stock.molarities && stock.molarities[compName]) {
+            var molarity = stock.molarities[compName];
+            components.push({name: compName, propType: 'molarity',
+                value: typeof molarity === 'object' ? molarity.value : molarity,
+                units: typeof molarity === 'object' ? molarity.units : '',
+                isSolute: isSolute});
+        } else if (stock.molalities && stock.molalities[compName]) {
+            var molality = stock.molalities[compName];
+            components.push({name: compName, propType: 'molality',
+                value: typeof molality === 'object' ? molality.value : molality,
+                units: typeof molality === 'object' ? molality.units : '',
+                isSolute: isSolute});
+        }
+    });
+    prefill.components = components;
+    return prefill;
+}
+
+function loadStocksIntoCards(stocks) {
+    document.getElementById('stock-cards-container').innerHTML = '';
+    (stocks || []).forEach(function(stock) {
+        createStockCard(stockToPrefill(stock));
+    });
+}
+
 async function uploadStocks() {
     var cards = document.querySelectorAll('.stock-form-card');
     var stocks = [];
@@ -1300,13 +1481,14 @@ async function uploadStocks() {
     var btn = document.getElementById('upload-stocks-btn');
     btn.disabled = true;
     showStatus('Uploading stocks...');
+    var tags = parseStockTagsInput();
 
     try {
         var token = await login();
         var r = await authedFetch('/enqueue', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({task_name: 'upload_stocks', stocks: stocks, reset: true})
+            body: JSON.stringify({task_name: 'upload_stocks', stocks: stocks, reset: true, tags: tags})
         });
         if (!r.ok) {
             showStatus('Failed to enqueue upload.', true);
@@ -1320,6 +1502,8 @@ async function uploadStocks() {
         if (result && result.success) {
             showStatus('Uploaded ' + result.count + ' stock(s).');
             errEl.innerHTML = '';
+            loadStockHistorySidebar();
+            refreshStorageSources();
         } else {
             var errMsg = (result && result.error) ? result.error : 'Unknown error';
             showStatus('Upload failed.', true);
@@ -1339,65 +1523,303 @@ async function loadExistingStocksIntoCards() {
         var r = await fetch('/list_stocks');
         if (!r.ok) { showStatus('Failed to load stocks.', true); return; }
         var stocks = await r.json();
-
-        document.getElementById('stock-cards-container').innerHTML = '';
-
-        stocks.forEach(function(stock) {
-            var prefill = {
-                name: stock.name || '',
-                location: stock.location || '',
-            };
-
-            if (stock.total_mass) {
-                prefill.sizeType = 'total_mass';
-                var tm = stock.total_mass;
-                prefill.sizeValue = typeof tm === 'object' ? tm.value + ' ' + tm.units : String(tm);
-            } else if (stock.total_volume) {
-                prefill.sizeType = 'total_volume';
-                var tv = stock.total_volume;
-                prefill.sizeValue = typeof tv === 'object' ? tv.value + ' ' + tv.units : String(tv);
-            }
-
-            var soluteList = stock.solutes || [];
-            var components = [];
-            (stock.components || []).forEach(function(compName) {
-                var isSolute = soluteList.indexOf(compName) !== -1;
-                if (stock.masses && stock.masses[compName]) {
-                    var m = stock.masses[compName];
-                    components.push({name: compName, propType: 'mass',
-                        value: typeof m === 'object' ? m.value : m,
-                        units: typeof m === 'object' ? m.units : '',
-                        isSolute: isSolute});
-                } else if (stock.volumes && stock.volumes[compName]) {
-                    var vol = stock.volumes[compName];
-                    components.push({name: compName, propType: 'volume',
-                        value: typeof vol === 'object' ? vol.value : vol,
-                        units: typeof vol === 'object' ? vol.units : '',
-                        isSolute: isSolute});
-                } else if (stock.concentrations && stock.concentrations[compName]) {
-                    var c = stock.concentrations[compName];
-                    components.push({name: compName, propType: 'concentration',
-                        value: typeof c === 'object' ? c.value : c,
-                        units: typeof c === 'object' ? c.units : '',
-                        isSolute: isSolute});
-                } else if (stock.mass_fractions && stock.mass_fractions[compName] != null) {
-                    components.push({name: compName, propType: 'mass_fraction',
-                        value: stock.mass_fractions[compName],
-                        isSolute: isSolute});
-                } else if (stock.volume_fractions && stock.volume_fractions[compName] != null) {
-                    components.push({name: compName, propType: 'volume_fraction',
-                        value: stock.volume_fractions[compName],
-                        isSolute: isSolute});
-                }
-            });
-            prefill.components = components;
-
-            createStockCard(prefill);
-        });
+        loadStocksIntoCards(stocks);
 
         showStatus('Loaded ' + stocks.length + ' stock(s) from server.');
     } catch (e) {
         showStatus('Error loading stocks: ' + e.message, true);
+    }
+}
+
+function getUniqueHistoryComponents(entry) {
+    if (!entry || !Array.isArray(entry.components)) return [];
+    var seen = {};
+    var out = [];
+    entry.components.forEach(function(name) {
+        var trimmed = String(name || '').trim();
+        if (!trimmed || seen[trimmed]) return;
+        seen[trimmed] = true;
+        out.push(trimmed);
+    });
+    out.sort();
+    return out;
+}
+
+function getFilteredStockHistoryEntries() {
+    var needle = String(stockHistoryFilterText || '').trim().toLowerCase();
+    if (!needle) return stockHistoryEntries.slice();
+    return stockHistoryEntries.filter(function(entry) {
+        var parts = [];
+        parts.push(entry.created_at || '');
+        parts.push(String(entry.count || 0));
+        if (Array.isArray(entry.tags)) {
+            parts.push(entry.tags.join(' '));
+        }
+        if (Array.isArray(entry.components)) {
+            parts.push(entry.components.join(' '));
+        }
+        if (Array.isArray(entry.stock_names)) {
+            parts.push(entry.stock_names.join(' '));
+        }
+        return parts.join(' ').toLowerCase().indexOf(needle) !== -1;
+    });
+}
+
+function quantityTextForMeta(val) {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'object' && val.value !== undefined) {
+        return String(val.value) + (val.units ? (' ' + String(val.units)) : '');
+    }
+    return String(val);
+}
+
+function formatStockHistoryModalMeta(stock) {
+    var parts = [];
+    if (stock.location) parts.push('location: ' + stock.location);
+    if (stock.total_mass) parts.push('total_mass: ' + quantityTextForMeta(stock.total_mass));
+    if (stock.total_volume) parts.push('total_volume: ' + quantityTextForMeta(stock.total_volume));
+    if (Array.isArray(stock.solutes) && stock.solutes.length > 0) {
+        parts.push('solutes: ' + stock.solutes.join(', '));
+    }
+    return parts;
+}
+
+function renderStockHistoryModalStocks(stocks) {
+    var container = document.getElementById('stock-history-modal-stocks');
+    if (!container) return;
+    if (!Array.isArray(stocks) || stocks.length === 0) {
+        container.innerHTML = '<p class="empty-state">No stocks in this snapshot.</p>';
+        return;
+    }
+    container.innerHTML = stocks.map(function(stock, idx) {
+        var title = stock.name ? stock.name : ('Stock #' + (idx + 1));
+        var location = stock.location ? ('<span class="location-badge">' + escHtml(stock.location) + '</span>') : '';
+        var metaParts = formatStockHistoryModalMeta(stock);
+        var metaHtml = metaParts.length > 0
+            ? ('<div class="stock-history-modal-stock-meta">' + metaParts.map(function(text) {
+                return escHtml(text);
+            }).join(' | ') + '</div>')
+            : '';
+        var tableHtml = renderCompositionTableHtml(stock, {
+            title: '',
+            forceCoreColumns: true
+        });
+        return '<div class="stock-history-modal-stock-entry">'
+            + '<div class="stock-history-modal-stock-header">'
+            + '<span class="stock-history-modal-stock-name">' + escHtml(title) + '</span>'
+            + location
+            + '</div>'
+            + metaHtml
+            + tableHtml
+            + '</div>';
+    }).join('');
+}
+
+async function fetchStockHistorySnapshotData(snapshotId) {
+    if (!snapshotId) throw new Error('snapshot_id is required');
+    var r = await fetch('/load_stock_history?snapshot_id=' + encodeURIComponent(snapshotId));
+    if (!r.ok) throw new Error('Failed to load stock snapshot.');
+    var payload = await r.json();
+    if (!payload || !payload.success) {
+        throw new Error((payload && payload.error) ? payload.error : 'Invalid stock snapshot response.');
+    }
+    return payload;
+}
+
+async function populateStockHistoryModalDetails(entry) {
+    var stockContainer = document.getElementById('stock-history-modal-stocks');
+    if (!stockContainer || !entry || !entry.id) return;
+    stockContainer.innerHTML = '<p class="empty-state">Loading stocks...</p>';
+    try {
+        if (!entry._snapshotPayload || !Array.isArray(entry._snapshotPayload.stocks)) {
+            entry._snapshotPayload = await fetchStockHistorySnapshotData(entry.id);
+        }
+        renderStockHistoryModalStocks(entry._snapshotPayload.stocks || []);
+    } catch (e) {
+        stockContainer.innerHTML = '<p class="empty-state">Failed to load stock details.</p>';
+    }
+}
+
+function openStockHistoryModal(entry) {
+    if (!entry) return;
+    selectedStockHistoryEntry = entry;
+    var createdAt = entry.created_at || 'unknown time';
+    var count = Number(entry.count || 0);
+    var tags = Array.isArray(entry.tags) ? entry.tags.filter(function(tag) { return !!String(tag).trim(); }) : [];
+    var components = getUniqueHistoryComponents(entry);
+
+    var titleEl = document.getElementById('stock-history-modal-title');
+    var metaEl = document.getElementById('stock-history-modal-meta');
+    var tagsEl = document.getElementById('stock-history-modal-tags');
+    var compsEl = document.getElementById('stock-history-modal-components');
+    if (!titleEl || !metaEl || !tagsEl || !compsEl) return;
+
+    titleEl.textContent = createdAt;
+    metaEl.innerHTML = '<strong>' + escHtml(String(count)) + '</strong> stock(s)';
+    tagsEl.innerHTML = tags.length > 0
+        ? ('<strong>tags:</strong> ' + escHtml(tags.join(', ')))
+        : '<span class="empty-state">No tags.</span>';
+    compsEl.innerHTML = components.length > 0
+        ? components.map(function(name) {
+            return '<span class="stock-history-comp-chip">' + escHtml(name) + '</span>';
+        }).join('')
+        : '<p class="empty-state">No component summary available.</p>';
+
+    var stocksEl = document.getElementById('stock-history-modal-stocks');
+    if (stocksEl) {
+        stocksEl.innerHTML = '<p class="empty-state">Loading stocks...</p>';
+    }
+    document.getElementById('stock-history-modal-overlay').classList.add('visible');
+    populateStockHistoryModalDetails(entry);
+}
+
+function closeStockHistoryModal() {
+    document.getElementById('stock-history-modal-overlay').classList.remove('visible');
+    selectedStockHistoryEntry = null;
+    var loadBtn = document.getElementById('stock-history-modal-load-btn');
+    if (loadBtn) {
+        loadBtn.disabled = false;
+        loadBtn.textContent = 'Load';
+    }
+}
+
+async function loadStockHistorySnapshot(snapshotId, options) {
+    if (!snapshotId) return false;
+    options = options || {};
+    var setServerConfig = options.setServerConfig !== false;
+    var switchToStocksTab = options.switchToStocksTab !== false;
+    showStatus('Loading stock snapshot...');
+    try {
+        var payload = await fetchStockHistorySnapshotData(snapshotId);
+
+        var stocks = Array.isArray(payload.stocks) ? payload.stocks : [];
+        if (setServerConfig) {
+            var token = await login();
+            var setResp = await authedFetch('/enqueue', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    task_name: 'set_config',
+                    stocks: stocks
+                })
+            });
+            if (!setResp.ok) {
+                showStatus('Failed to enqueue stock snapshot load.', true);
+                return false;
+            }
+            var setUuid = (await setResp.text()).trim().replace(/^"|"$/g, '');
+            var setRet = await pollForResult(token, setUuid, 60000);
+            if (setRet && typeof setRet === 'string' && setRet.indexOf('Error:') === 0) {
+                showStatus('Failed to apply stock snapshot config.', true);
+                return false;
+            }
+        }
+
+        loadStocksIntoCards(stocks);
+        var tagsEl = document.getElementById('stocks-tags-input');
+        if (tagsEl && payload.snapshot && Array.isArray(payload.snapshot.tags)) {
+            tagsEl.value = payload.snapshot.tags.join(', ');
+        }
+        if (switchToStocksTab) {
+            switchTab('stocks-tab');
+        }
+        loadStocks();
+        showStatus('Loaded stock snapshot with ' + (payload.snapshot ? payload.snapshot.count : 0) + ' stock(s).');
+        return true;
+    } catch (e) {
+        showStatus('Error loading stock snapshot: ' + e.message, true);
+        return false;
+    }
+}
+
+async function loadSelectedStockHistoryFromModal() {
+    if (!selectedStockHistoryEntry || !selectedStockHistoryEntry.id) {
+        showStatus('No stock snapshot selected.', true);
+        return;
+    }
+    var loadBtn = document.getElementById('stock-history-modal-load-btn');
+    if (loadBtn) {
+        loadBtn.disabled = true;
+        loadBtn.textContent = 'Loading...';
+    }
+    try {
+        var ok = await loadStockHistorySnapshot(selectedStockHistoryEntry.id, {
+            setServerConfig: true,
+            switchToStocksTab: true
+        });
+        if (ok) closeStockHistoryModal();
+    } finally {
+        if (loadBtn) {
+            loadBtn.disabled = false;
+            loadBtn.textContent = 'Load';
+        }
+    }
+}
+
+function renderStockHistorySidebar(payload) {
+    var container = document.getElementById('stocks-history-list');
+    if (!container) return;
+    var history = (payload && payload.history) ? payload.history : [];
+    var source = (payload && payload.source) ? payload.source : 'unknown';
+    storageSources.stock_history = source;
+    applyStorageSourceBadges();
+
+    if (!history || history.length === 0) {
+        stockHistoryEntries = [];
+        container.innerHTML = '<p class="empty-state">No stock history yet.</p>';
+        return;
+    }
+
+    stockHistoryEntries = history.slice();
+    var filteredHistory = getFilteredStockHistoryEntries();
+    if (filteredHistory.length === 0) {
+        container.innerHTML = '<p class="empty-state">No history entries match the filter.</p>';
+        return;
+    }
+
+    container.innerHTML = filteredHistory.map(function(entry) {
+        var tags = Array.isArray(entry.tags) && entry.tags.length > 0
+            ? ('<div class="stocks-history-tags">tags: ' + escHtml(entry.tags.join(', ')) + '</div>')
+            : '';
+        var components = getUniqueHistoryComponents(entry);
+        var componentsHtml = components.length > 0
+            ? ('<div class="stocks-history-components">components: ' + escHtml(components.join(', ')) + '</div>')
+            : '';
+        return '<div class="stocks-history-entry" data-stock-snapshot-id="' + escHtml(entry.id || '') + '">'
+            + '<div class="stocks-history-title">' + escHtml(entry.created_at || 'unknown time') + '</div>'
+            + '<div class="stocks-history-meta">' + escHtml(String(entry.count || 0)) + ' stock(s)</div>'
+            + tags
+            + componentsHtml
+            + '</div>';
+    }).join('');
+
+    container.querySelectorAll('.stocks-history-entry').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var snapshotId = this.getAttribute('data-stock-snapshot-id');
+            var entry = stockHistoryEntries.find(function(item) {
+                return item && item.id === snapshotId;
+            });
+            if (entry) {
+                openStockHistoryModal(entry);
+            }
+        });
+    });
+}
+
+async function loadStockHistorySidebar() {
+    var container = document.getElementById('stocks-history-list');
+    if (!container) return;
+    container.innerHTML = '<p class="empty-state">Loading stock history...</p>';
+    try {
+        var r = await fetch('/list_stock_history');
+        if (!r.ok) {
+            container.innerHTML = '<p class="empty-state">Failed to load stock history.</p>';
+            return;
+        }
+        var payload = await r.json();
+        renderStockHistorySidebar(payload);
+    } catch (e) {
+        container.innerHTML = '<p class="empty-state">Error loading stock history.</p>';
     }
 }
 
@@ -3737,6 +4159,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('upload-stocks-btn').addEventListener('click', uploadStocks);
     document.getElementById('load-stocks-from-server-btn').addEventListener('click', loadExistingStocksIntoCards);
+    var stockHistoryFilterInput = document.getElementById('stocks-history-filter-input');
+    if (stockHistoryFilterInput) {
+        stockHistoryFilterInput.addEventListener('input', function() {
+            stockHistoryFilterText = this.value || '';
+            renderStockHistorySidebar({
+                history: stockHistoryEntries,
+                source: storageSources.stock_history
+            });
+        });
+    }
     var clearDiagBtn = document.getElementById('solution-diagnostics-clear-btn');
     if (clearDiagBtn) {
         clearDiagBtn.addEventListener('click', clearSolutionDiagnostics);
@@ -3784,6 +4216,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('balance-upload-targets-btn').addEventListener('click', openTargetUploadModal);
     document.getElementById('balance-btn').addEventListener('click', runBalance);
 
+    // Stock history modal
+    document.getElementById('stock-history-modal-close').addEventListener('click', closeStockHistoryModal);
+    document.getElementById('stock-history-modal-cancel-btn').addEventListener('click', closeStockHistoryModal);
+    document.getElementById('stock-history-modal-load-btn').addEventListener('click', loadSelectedStockHistoryFromModal);
+    document.getElementById('stock-history-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeStockHistoryModal();
+    });
+
     // Target upload modal
     document.getElementById('target-upload-modal-close').addEventListener('click', closeTargetUploadModal);
     document.getElementById('target-upload-cancel-btn').addEventListener('click', closeTargetUploadModal);
@@ -3810,6 +4250,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === this) closeDetailModal();
     });
     document.addEventListener('keydown', function(e) {
+        var stockHistoryModalOpen = document.getElementById('stock-history-modal-overlay').classList.contains('visible');
+        if (stockHistoryModalOpen && e.key === 'Escape') {
+            closeStockHistoryModal();
+            return;
+        }
         var uploadModalOpen = document.getElementById('target-upload-modal-overlay').classList.contains('visible');
         if (uploadModalOpen && e.key === 'Escape') {
             closeTargetUploadModal();
@@ -3826,8 +4271,10 @@ document.addEventListener('DOMContentLoaded', function() {
     loadComponentNames();
     loadComponentsEditor();
     createStockCard(null);
+    loadStockHistorySidebar();
     loadSweepConfig();
     scheduleSweepPreview();
     loadBalanceSettings();
     fetchBalanceProgress().then(renderBalanceProgress);
+    refreshStorageSources();
 });

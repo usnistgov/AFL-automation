@@ -10,6 +10,8 @@ from tiled.queries import Contains, In
 
 
 class DriverWebAppsMixin:
+    TILED_RUN_DOCUMENTS_NODE = 'run_documents'
+
     def tiled_browser(self, **kwargs):
         """Serve the Tiled database browser HTML interface."""
         return render_template('tiled_browser.html')
@@ -372,7 +374,8 @@ class DriverWebAppsMixin:
         dataset_to_write.attrs['meta'] = existing_meta
 
         try:
-            write_result = write_xarray_dataset(client, dataset_to_write)
+            run_documents = self._get_tiled_run_documents_container(create=True)
+            write_result = write_xarray_dataset(run_documents, dataset_to_write)
         except Exception as exc:
             error_msg = str(exc) if str(exc) else repr(exc)
             self.app.logger.error(f'Tiled upload error: {error_msg}', exc_info=True)
@@ -428,6 +431,38 @@ class DriverWebAppsMixin:
                 'status': 'error',
                 'message': f'Failed to connect to Tiled: {str(e)}'
             }
+
+    def _get_tiled_run_documents_container(self, create=False):
+        """Get run_documents container, optionally creating it when missing."""
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            raise RuntimeError(client.get('message', 'Failed to connect to Tiled.'))
+        try:
+            return client[self.TILED_RUN_DOCUMENTS_NODE]
+        except Exception:
+            if not create:
+                return None
+        client.create_container(
+            key=self.TILED_RUN_DOCUMENTS_NODE,
+            metadata={'type': self.TILED_RUN_DOCUMENTS_NODE},
+        )
+        return client[self.TILED_RUN_DOCUMENTS_NODE]
+
+    def _normalize_run_document_entry_id(self, entry_id):
+        entry_id = str(entry_id or '').strip()
+        prefix = f'{self.TILED_RUN_DOCUMENTS_NODE}/'
+        if entry_id.startswith(prefix):
+            entry_id = entry_id[len(prefix):]
+        return entry_id.strip('/')
+
+    def _get_tiled_run_document_item(self, entry_id):
+        normalized_id = self._normalize_run_document_entry_id(entry_id)
+        if not normalized_id:
+            raise KeyError(entry_id)
+        container = self._get_tiled_run_documents_container(create=False)
+        if container is None:
+            raise KeyError(normalized_id)
+        return normalized_id, container[normalized_id]
 
     def _read_tiled_item(self, item):
         """Read a Tiled item, disabling wide-table optimization when supported."""
@@ -557,7 +592,14 @@ class DriverWebAppsMixin:
                     elif values:
                         query_list.append({'field': field, 'value': values})
 
-            results = client
+            run_documents = self._get_tiled_run_documents_container(create=False)
+            if run_documents is None:
+                return {
+                    'status': 'success',
+                    'data': [],
+                    'total_count': 0
+                }
+            results = run_documents
 
             # Apply search filters
             if query_list:
@@ -722,14 +764,7 @@ class DriverWebAppsMixin:
             return client
 
         try:
-            # Get the entry
-            if entry_id not in client:
-                return {
-                    'status': 'error',
-                    'message': f'Entry "{entry_id}" not found'
-                }
-
-            item = client[entry_id]
+            normalized_id, item = self._get_tiled_run_document_item(entry_id)
 
             # Try to get xarray dataset representation
             try:
@@ -749,7 +784,7 @@ class DriverWebAppsMixin:
             except Exception as e:
                 # If can't read as dataset, provide basic info
                 html = '<div class="data-display">'
-                html += f'<p><strong>Entry ID:</strong> {entry_id}</p>'
+                html += f'<p><strong>Entry ID:</strong> {normalized_id}</p>'
                 html += f'<p><strong>Type:</strong> {type(item).__name__}</p>'
                 if hasattr(item, 'metadata'):
                     html += '<h4>Metadata:</h4>'
@@ -819,13 +854,7 @@ class DriverWebAppsMixin:
             return client
 
         try:
-            if entry_id not in client:
-                return {
-                    'status': 'error',
-                    'message': f'Entry "{entry_id}" not found'
-                }
-
-            item = client[entry_id]
+            _, item = self._get_tiled_run_document_item(entry_id)
             payload = self._read_tiled_item(item)
 
             # xarray datasets: flatten into column->list payload
@@ -896,14 +925,7 @@ class DriverWebAppsMixin:
             return client
 
         try:
-            # Get the entry
-            if entry_id not in client:
-                return {
-                    'status': 'error',
-                    'message': f'Entry "{entry_id}" not found'
-                }
-
-            item = client[entry_id]
+            _, item = self._get_tiled_run_document_item(entry_id)
 
             # Extract metadata
             metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
@@ -939,8 +961,17 @@ class DriverWebAppsMixin:
             return client
 
         try:
-            # Use Tiled's distinct() method to get unique values for this field
-            distinct_result = client.distinct(field)
+            run_documents = self._get_tiled_run_documents_container(create=False)
+            if run_documents is None:
+                return {
+                    'status': 'success',
+                    'field': field,
+                    'values': [],
+                    'count': 0
+                }
+
+            # Use Tiled's distinct() method scoped to run_documents.
+            distinct_result = run_documents.distinct(field)
 
             # Extract the values from the metadata
             # distinct() returns {'metadata': {field: [{'value': ..., 'count': ...}, ...]}}
@@ -991,15 +1022,10 @@ class DriverWebAppsMixin:
         """
         import xarray as xr
 
-        # Get tiled client
-        client = self._get_tiled_client()
-        if isinstance(client, dict) and client.get('status') == 'error':
-            raise ValueError(f"Failed to get tiled client: {client.get('message', 'Unknown error')}")
-
-        if entry_id not in client:
-            raise ValueError(f'Entry "{entry_id}" not found in tiled')
-
-        item = client[entry_id]
+        try:
+            normalized_id, item = self._get_tiled_run_document_item(entry_id)
+        except Exception:
+            raise ValueError(f'Entry "{entry_id}" not found in tiled {self.TILED_RUN_DOCUMENTS_NODE}') from None
 
         # Fetch dataset with wide-table optimization disabled for xarray clients.
         dataset = self._read_tiled_item(item)
@@ -1013,8 +1039,8 @@ class DriverWebAppsMixin:
         # Build metadata dict, preferring tiled metadata over dataset attrs
         # Include ALL metadata fields for Gantt chart
         metadata = {
-            'entry_id': entry_id,
-            'sample_name': tiled_metadata.get('sample_name') or ds_attrs.get('sample_name') or entry_id,
+            'entry_id': normalized_id,
+            'sample_name': tiled_metadata.get('sample_name') or ds_attrs.get('sample_name') or normalized_id,
             'sample_uuid': tiled_metadata.get('sample_uuid') or ds_attrs.get('sample_uuid') or '',
             'sample_composition': None,
             # Add full metadata for Gantt chart and other uses

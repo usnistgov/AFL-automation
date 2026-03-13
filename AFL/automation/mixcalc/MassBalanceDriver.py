@@ -4,6 +4,10 @@ import sys
 import time
 import warnings
 from typing import List, Dict
+import datetime
+import uuid
+import json
+import hashlib
 
 import numpy as np
 from scipy.optimize import Bounds
@@ -193,6 +197,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         'multistep_max_steps': 2,
         'multistep_diluent_policy': 'primary_solvent',
         'sweep_config': {},
+        'stock_history': [],
         'orchestrator_uri': '',
         'orchestrator_username': 'Orchestrator',
         'prepare_uri': '',
@@ -222,6 +227,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         self.minimum_transfer_volume = None
         self.stocks = []
         self.targets = []
+        self._targets_signature = None
         self._balance_progress = {
             'active': False,
             'completed': 0,
@@ -329,10 +335,20 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         return solution, diag
 
     def process_targets(self):
-        self.targets = []
-        for target_config in self.config['targets']:
+        targets_config = self.config['targets']
+        try:
+            signature_payload = json.dumps(targets_config, sort_keys=True, default=str, separators=(',', ':'))
+        except Exception:
+            signature_payload = str(targets_config)
+        signature = hashlib.sha1(signature_payload.encode('utf-8')).hexdigest()
+        if self._targets_signature == signature and len(self.targets) == len(targets_config):
+            return
+        new_targets = []
+        for target_config in targets_config:
             target = Solution(**target_config)
-            self.targets.append(target)
+            new_targets.append(target)
+        self.targets = new_targets
+        self._targets_signature = signature
 
     def add_stock(self, solution: Dict, reset: bool = False):
         if reset:
@@ -355,12 +371,14 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         if reset:
             self.reset_targets()
         self.config['targets'] = self.config['targets'] + [target]
+        self._targets_signature = None
         self.config._update_history()
 
     def add_targets(self, targets: List[Dict], reset: bool = False):
         if reset:
             self.reset_targets()
         self.config['targets'] = self.config['targets'] + targets
+        self._targets_signature = None
         self.config._update_history()
 
     def reset_stocks(self):
@@ -371,9 +389,157 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
 
     def reset_targets(self):
         self.config['targets'] = []
+        self._targets_signature = None
+        self.targets = []
         self.config._update_history()
 
-    def upload_stocks(self, stocks=None, reset=True):
+    @staticmethod
+    def _normalize_tags(tags):
+        if tags is None:
+            return []
+        if isinstance(tags, str):
+            text = tags.strip()
+            if not text:
+                return []
+            try:
+                parsed = json.loads(text)
+                if isinstance(parsed, list):
+                    tags = parsed
+                else:
+                    tags = text.split(',')
+            except Exception:
+                tags = text.split(',')
+        if not isinstance(tags, list):
+            tags = [tags]
+        out = []
+        seen = set()
+        for tag in tags:
+            tag = str(tag).strip()
+            if not tag or tag in seen:
+                continue
+            out.append(tag)
+            seen.add(tag)
+        return out
+
+    def _make_stock_snapshot(self, stocks, tags):
+        snapshot_id = str(uuid.uuid4())
+        created_at = datetime.datetime.now().isoformat(timespec='seconds')
+        return {
+            'id': snapshot_id,
+            'created_at': created_at,
+            'count': len(stocks),
+            'tags': self._normalize_tags(tags),
+            'stocks': stocks,
+        }
+
+    def _write_stock_snapshot_tiled(self, snapshot: Dict):
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            raise RuntimeError(client.get('message', 'Unable to connect to tiled server.'))
+        stocks_container = self._get_or_create_tiled_container('stocks')
+        metadata = {
+            'type': 'stock_history',
+            'snapshot': snapshot,
+        }
+        stocks_container.write_array(np.array([1], dtype=np.int8), key=str(snapshot['id']), metadata=metadata)
+
+    def _get_or_create_tiled_container(self, node_name: str):
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            raise RuntimeError(client.get('message', 'Unable to connect to tiled server.'))
+        try:
+            return client[node_name]
+        except Exception:
+            pass
+        client.create_container(key=node_name, metadata={'type': node_name})
+        return client[node_name]
+
+    @staticmethod
+    def _get_tiled_item_metadata(item):
+        try:
+            metadata = getattr(item, 'metadata', None)
+            if isinstance(metadata, dict) and metadata:
+                return metadata
+        except Exception:
+            pass
+        try:
+            item_doc = getattr(item, 'item', None)
+            if not isinstance(item_doc, dict):
+                return {}
+            links = item_doc.get('links', {})
+            if not isinstance(links, dict):
+                return {}
+            self_link = links.get('self')
+            if not self_link:
+                return {}
+            resp = item.context.http_client.get(
+                self_link,
+                params={'fields': ['metadata']},
+            )
+            if not resp.is_success:
+                return {}
+            payload = resp.json()
+            data = payload.get('data', {}) if isinstance(payload, dict) else {}
+            attrs = data.get('attributes', {}) if isinstance(data, dict) else {}
+            metadata = attrs.get('metadata')
+            if isinstance(metadata, dict):
+                return metadata
+        except Exception:
+            pass
+        return {}
+
+    def _write_stock_snapshot_local(self, snapshot: Dict):
+        history = list(self.config.get('stock_history', []))
+        history.append(snapshot)
+        self.config['stock_history'] = history[-200:]
+        self.config._update_history()
+
+    def _save_stock_snapshot(self, stocks, tags):
+        snapshot = self._make_stock_snapshot(stocks, tags)
+        try:
+            self._write_stock_snapshot_tiled(snapshot)
+            return 'tiled'
+        except Exception:
+            self._write_stock_snapshot_local(snapshot)
+            return 'local'
+
+    def _list_stock_history_tiled(self):
+        try:
+            stocks_container = self._get_or_create_tiled_container('stocks')
+        except Exception:
+            return []
+        out = []
+        try:
+            keys = list(stocks_container.keys())
+        except Exception:
+            return []
+        for key in keys:
+            try:
+                item = stocks_container[str(key)]
+                metadata = self._get_tiled_item_metadata(item)
+                snapshot = metadata.get('snapshot', None)
+                if isinstance(snapshot, dict) and snapshot.get('id'):
+                    out.append(snapshot)
+            except Exception:
+                continue
+        out.sort(key=lambda entry: entry.get('created_at', ''), reverse=True)
+        return out
+
+    def _list_stock_history_local(self):
+        history = self.config.get('stock_history', [])
+        if not isinstance(history, list):
+            return []
+        out = [entry for entry in history if isinstance(entry, dict) and entry.get('id')]
+        out.sort(key=lambda entry: entry.get('created_at', ''), reverse=True)
+        return out
+
+    def _get_stock_history_with_source(self):
+        tiled_history = self._list_stock_history_tiled()
+        if tiled_history:
+            return tiled_history, 'tiled'
+        return self._list_stock_history_local(), 'local'
+
+    def upload_stocks(self, stocks=None, reset=True, tags=None):
         if stocks is None:
             stocks = []
         prev_stocks = list(self.config['stocks'])
@@ -386,7 +552,8 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
                 if 'stock_locations' in self.config and stock.get('location') is not None:
                     self.config['stock_locations'][stock['name']] = stock['location']
             diagnostics = self._process_stocks_with_diagnostics(True)
-            return {'success': True, 'count': len(stocks), 'diagnostics': diagnostics}
+            history_source = self._save_stock_snapshot(stocks=stocks, tags=tags)
+            return {'success': True, 'count': len(stocks), 'diagnostics': diagnostics, 'history_source': history_source}
         except Exception as e:
             self.config['stocks'] = prev_stocks
             if 'stock_locations' in self.config:
@@ -487,12 +654,99 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         if reset:
             self.reset_targets()
         self.config['targets'] = self.config['targets'] + targets
+        self._targets_signature = None
         return {'success': True, 'count': len(targets)}
 
     @Driver.unqueued()
     def list_stocks(self):
         self.process_stocks()
         return [_solution_to_display_dict(stock) for stock in self.stocks]
+
+    @Driver.unqueued()
+    def list_stock_history(self):
+        history, source = self._get_stock_history_with_source()
+        summary = []
+        component_group_keys = (
+            'masses',
+            'volumes',
+            'concentrations',
+            'mass_fractions',
+            'volume_fractions',
+            'molarities',
+            'molalities',
+        )
+        for entry in history:
+            component_names = set()
+            stock_names = set()
+            stocks = entry.get('stocks', [])
+            if isinstance(stocks, list):
+                for stock in stocks:
+                    if not isinstance(stock, dict):
+                        continue
+                    stock_name = str(stock.get('name', '')).strip()
+                    if stock_name:
+                        stock_names.add(stock_name)
+                    stock_components = stock.get('components', [])
+                    if isinstance(stock_components, list):
+                        for comp in stock_components:
+                            comp_name = str(comp).strip()
+                            if comp_name:
+                                component_names.add(comp_name)
+                    for key in component_group_keys:
+                        group = stock.get(key)
+                        if not isinstance(group, dict):
+                            continue
+                        for comp in group.keys():
+                            comp_name = str(comp).strip()
+                            if comp_name:
+                                component_names.add(comp_name)
+            summary.append({
+                'id': entry.get('id'),
+                'created_at': entry.get('created_at'),
+                'count': entry.get('count', 0),
+                'tags': entry.get('tags', []),
+                'components': sorted(component_names),
+                'stock_names': sorted(stock_names),
+            })
+        return {
+            'source': source,
+            'history': summary,
+        }
+
+    @Driver.unqueued()
+    def load_stock_history(self, snapshot_id=None):
+        if not snapshot_id:
+            return {'success': False, 'error': 'snapshot_id is required.'}
+        history, source = self._get_stock_history_with_source()
+        for entry in history:
+            if entry.get('id') != snapshot_id:
+                continue
+            stocks = entry.get('stocks', [])
+            if not isinstance(stocks, list):
+                return {'success': False, 'error': 'Invalid snapshot payload.'}
+            return {
+                'success': True,
+                'source': source,
+                'snapshot': {
+                    'id': entry.get('id'),
+                    'created_at': entry.get('created_at'),
+                    'count': entry.get('count', len(stocks)),
+                    'tags': entry.get('tags', []),
+                },
+                'stocks': stocks,
+            }
+        return {'success': False, 'error': f'No stock snapshot found for id {snapshot_id}.'}
+
+    @Driver.unqueued()
+    def get_storage_sources(self):
+        # Trigger source resolution for component storage by doing a lightweight list.
+        self.mixdb.list_components()
+        _, stock_history_source = self._get_stock_history_with_source()
+        return {
+            'components': self.mixdb.get_source(),
+            'stock_history': stock_history_source,
+            'stocks': 'local',
+        }
 
     @Driver.unqueued()
     def list_targets(self):

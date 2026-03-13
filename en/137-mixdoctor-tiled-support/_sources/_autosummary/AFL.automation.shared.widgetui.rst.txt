@@ -1,0 +1,20 @@
+AFL.automation.shared.widgetui
+==============================
+
+.. automodule:: AFL.automation.shared.widgetui
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      clear_output
+      client_construct_ui
+      display
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Markdown
+   

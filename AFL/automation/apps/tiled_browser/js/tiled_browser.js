@@ -11,6 +11,7 @@
 
 let tiledConfig = null;  // { tiled_server, tiled_api_key }
 let tiledClient = null;
+let connectionMode = 'unknown'; // 'direct' | 'proxy' | 'unknown'
 let currentQueries = [];  // Array of {field, value} query objects
 let currentFilters = {};  // Object mapping filter field names to arrays of selected values
 let pageSize = 50;
@@ -204,11 +205,13 @@ async function checkConfig() {
 
         tiledConfig = await window.TiledHttpClient.loadConfig();
         tiledClient = await window.TiledHttpClient.createClientFromConfig(tiledConfig);
+        connectionMode = tiledClient?.mode || 'unknown';
 
-        updateConnectionStatus('connected');
+        updateConnectionStatus(connectionMode === 'proxy' ? 'proxy' : 'connected');
         return true;
 
     } catch (error) {
+        connectionMode = 'unknown';
         showError(`Failed to load configuration: ${error.message}`);
         updateConnectionStatus('error');
         return false;
@@ -671,9 +674,15 @@ function updateConnectionStatus(status) {
             statusEl.classList.add('status-connected');
             textEl.textContent = 'Connected';
             break;
+        case 'proxy':
+            statusEl.classList.add('status-proxy');
+            textEl.textContent = 'Connected via same-origin proxy (reduced performance)';
+            break;
         case 'loading':
             statusEl.classList.add('status-loading');
-            textEl.textContent = 'Loading...';
+            textEl.textContent = connectionMode === 'proxy'
+                ? 'Loading via same-origin proxy...'
+                : 'Loading...';
             break;
         case 'error':
             statusEl.classList.add('status-disconnected');
@@ -683,6 +692,10 @@ function updateConnectionStatus(status) {
             statusEl.classList.add('status-disconnected');
             textEl.textContent = 'Not Connected';
     }
+}
+
+function showOperationalConnectionStatus() {
+    updateConnectionStatus(connectionMode === 'proxy' ? 'proxy' : 'connected');
 }
 
 /**
@@ -1965,7 +1978,7 @@ function createDatasource() {
                     }
 
                     if (chronResult.status === 'success') {
-                        updateConnectionStatus('connected');
+                        showOperationalConnectionStatus();
                         totalCount = chronResult.total_count || 0;
                         updateInfoBar();
 
@@ -1998,7 +2011,7 @@ function createDatasource() {
                 }
 
                 if (result.status === 'success') {
-                    updateConnectionStatus('connected');
+                    showOperationalConnectionStatus();
                     const rows = transformRows(result.data || []);
                     totalCount = result.total_count || 0;
                     updateInfoBar();

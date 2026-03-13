@@ -41,6 +41,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
+    max-width: 520px;
 }
 
 .status-indicator {
@@ -58,6 +59,11 @@ body {
 .status-loading .status-indicator {
     background-color: #f39c12;
     animation: pulse 0.5s infinite;
+}
+
+.status-proxy .status-indicator {
+    background-color: #f39c12;
+    animation: pulse 2s infinite;
 }
 
 @keyframes pulse {

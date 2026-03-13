@@ -43,6 +43,33 @@
         return `${normalizedBase}/${normalizedPath}`;
     }
 
+    function isLikelyCorsFailure(details) {
+        const text = String(details || '').toLowerCase();
+        return (
+            text.includes('cors') ||
+            text.includes('failed to fetch') ||
+            text.includes('networkerror') ||
+            text.includes('load failed') ||
+            text.includes('origin')
+        );
+    }
+
+    function corsConfigHint(tiledServer) {
+        const appOrigin = global?.location?.origin || 'the URI of this app';
+        const serverLabel = tiledServer || 'configured Tiled server';
+        return `This looks like a CORS configuration issue between ${appOrigin} and ${serverLabel}. Add "${appOrigin}" to the Tiled "allow_origins" list in config.yml (typically ~/.config/tiled/config.yml, sometimes /etc/tiled/config.yml), then restart the Tiled server.`;
+    }
+
+    function withCorsHint(message, details, tiledServer) {
+        if (typeof message === 'string' && message.includes('allow_origins')) {
+            return message;
+        }
+        if (isLikelyCorsFailure(message) || isLikelyCorsFailure(details)) {
+            return `${message} ${corsConfigHint(tiledServer)}`;
+        }
+        return message;
+    }
+
     function parseJsonValue(value) {
         try {
             return JSON.parse(value);
@@ -194,8 +221,17 @@
     }
 
     function normalizeSearchResponse(payload) {
+        if (payload?.status === 'error') {
+            const message = payload?.message || 'Search failed';
+            throw new Error(message);
+        }
         const data = Array.isArray(payload?.data) ? payload.data : [];
-        const count = Number(payload?.meta?.count || 0);
+        const count = Number(
+            payload?.meta?.count
+            ?? payload?.total_count
+            ?? payload?.meta?.total_count
+            ?? 0
+        );
         return { data, totalCount: Number.isFinite(count) ? count : 0 };
     }
 
@@ -227,17 +263,24 @@
         async function tiledFetch(path, { params, headers = {}, signal, responseType = 'json' } = {}) {
             const url = joinUrl(base, path);
             const finalUrl = params ? `${url}?${params.toString()}` : url;
-            const response = await fetch(finalUrl, {
-                method: 'GET',
-                headers: {
-                    Authorization: `Apikey ${apiKey}`,
-                    ...headers
-                },
-                signal
-            });
+            let response;
+            try {
+                response = await fetch(finalUrl, {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Apikey ${apiKey}`,
+                        ...headers
+                    },
+                    signal
+                });
+            } catch (error) {
+                const message = error?.message || 'Tiled request failed';
+                throw new Error(withCorsHint(message, error, base));
+            }
             if (!response.ok) {
                 const text = await response.text();
-                throw new Error(`Tiled request failed (${response.status}): ${text || response.statusText}`);
+                const baseMessage = `Tiled request failed (${response.status}): ${text || response.statusText}`;
+                throw new Error(withCorsHint(baseMessage, text || response.statusText, base));
             }
             if (responseType === 'text') {
                 return response.text();
@@ -260,7 +303,11 @@
             if (!response.ok) {
                 throw new Error(`Legacy search failed (${response.status})`);
             }
-            return response.json();
+            const payload = await response.json();
+            if (payload?.status === 'error') {
+                throw new Error(payload.message || 'Legacy search failed');
+            }
+            return payload;
         }
 
         async function legacyDistinct(field, { signal } = {}) {
@@ -269,7 +316,11 @@
             if (!response.ok) {
                 throw new Error(`Legacy distinct failed (${response.status})`);
             }
-            return response.json();
+            const payload = await response.json();
+            if (payload?.status === 'error') {
+                throw new Error(payload.message || 'Legacy distinct failed');
+            }
+            return payload;
         }
 
         async function legacyMetadata(entryId, { signal } = {}) {
@@ -403,7 +454,7 @@
                     }
                     return payload.data || {};
                 }
-                throw error;
+                throw new Error(withCorsHint(error?.message || 'Tiled full-link request failed', error, base));
             }
         }
 

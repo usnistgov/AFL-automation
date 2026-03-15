@@ -44,6 +44,10 @@ function escHtml(str) {
         .replace(/"/g, '&quot;');
 }
 
+var componentsUploadState = {
+    parsedComponents: []
+};
+
 // ---- Driver query helper (unqueued) ----
 async function queryDriver(params) {
     var qs = new URLSearchParams(params);
@@ -891,7 +895,27 @@ async function runBalance() {
 }
 
 // ---- Tab switching ----
+var MIXDOCTOR_ACTIVE_TAB_KEY = 'mixdoctor-active-tab';
+
+function getInitialTabId() {
+    var defaultTabId = 'components-tab';
+    try {
+        var savedTabId = localStorage.getItem(MIXDOCTOR_ACTIVE_TAB_KEY);
+        if (savedTabId && document.querySelector('.tab-btn[data-tab="' + savedTabId + '"]')) {
+            return savedTabId;
+        }
+    } catch (e) {
+        // Ignore storage errors and fall back to the default tab.
+    }
+    return defaultTabId;
+}
+
 function switchTab(tabId) {
+    try {
+        localStorage.setItem(MIXDOCTOR_ACTIVE_TAB_KEY, tabId);
+    } catch (e) {
+        // Ignore storage errors; tab switching should still work.
+    }
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
         btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
     });
@@ -1040,6 +1064,245 @@ async function deleteComponentRow(row) {
         loadComponentNames();
     } catch (e) {
         showStatus('Delete failed: ' + e.message, true);
+    }
+}
+
+function resetComponentsUploadParseState() {
+    componentsUploadState.parsedComponents = [];
+    var submitBtn = document.getElementById('components-upload-submit-btn');
+    if (submitBtn) submitBtn.disabled = true;
+}
+
+function openComponentsUploadModal() {
+    resetComponentsUploadParseState();
+    var summaryEl = document.getElementById('components-upload-summary');
+    var errorsEl = document.getElementById('components-upload-errors');
+    var previewEl = document.getElementById('components-upload-preview');
+    var fileInput = document.getElementById('components-upload-file-input');
+    if (summaryEl) summaryEl.innerHTML = '';
+    if (errorsEl) errorsEl.innerHTML = '';
+    if (previewEl) previewEl.innerHTML = '<p class="empty-state">Paste JSON and click Parse.</p>';
+    if (fileInput) fileInput.value = '';
+    document.getElementById('components-upload-modal-overlay').classList.add('visible');
+}
+
+function closeComponentsUploadModal() {
+    document.getElementById('components-upload-modal-overlay').classList.remove('visible');
+}
+
+function resetComponentsUploadPreviewMessage(message) {
+    var summaryEl = document.getElementById('components-upload-summary');
+    var errorsEl = document.getElementById('components-upload-errors');
+    var previewEl = document.getElementById('components-upload-preview');
+    if (summaryEl) summaryEl.innerHTML = '';
+    if (errorsEl) errorsEl.innerHTML = '';
+    if (previewEl) previewEl.innerHTML = '<p class="empty-state">' + escHtml(message) + '</p>';
+}
+
+function handleComponentsUploadFileSelection(event) {
+    var inputEl = event && event.target ? event.target : null;
+    var file = inputEl && inputEl.files && inputEl.files[0] ? inputEl.files[0] : null;
+    if (!file) return;
+
+    var textInput = document.getElementById('components-upload-input');
+    if (!textInput) return;
+
+    resetComponentsUploadParseState();
+    resetComponentsUploadPreviewMessage('Loading file. Click Parse to refresh preview.');
+
+    var reader = new FileReader();
+    reader.onload = function(loadEvent) {
+        textInput.value = typeof loadEvent.target.result === 'string' ? loadEvent.target.result : '';
+        resetComponentsUploadPreviewMessage('File loaded. Click Parse to refresh preview.');
+        showStatus('Loaded component JSON file: ' + file.name);
+    };
+    reader.onerror = function() {
+        resetComponentsUploadPreviewMessage('File load failed. Choose another file or paste JSON manually.');
+        showStatus('Failed to read file: ' + file.name, true);
+    };
+    reader.readAsText(file);
+}
+
+function validateComponentDensity(density, label) {
+    if (!density) return;
+    var hasDigit = /[0-9]/.test(density);
+    var hasUnitLetters = /[a-zA-Z]/.test(density);
+    if (!hasDigit || !hasUnitLetters) {
+        throw new Error(label + ' density must include a numeric value and units (e.g. 1.0 g/ml).');
+    }
+}
+
+function normalizeJsonComponentEntry(entry, idx) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+        throw new Error('JSON component #' + (idx + 1) + ' must be an object.');
+    }
+    var out = {};
+    ['uid', 'name', 'density', 'formula', 'sld'].forEach(function(key) {
+        if (entry[key] === null || entry[key] === undefined) return;
+        var value = String(entry[key]).trim();
+        if (!value) return;
+        out[key] = value;
+    });
+    if (!out.name) {
+        throw new Error('JSON component #' + (idx + 1) + ' is missing a name.');
+    }
+    validateComponentDensity(out.density || '', 'Component "' + out.name + '"');
+    return out;
+}
+
+function parseComponentsFromJson(raw) {
+    var text = (raw || '').trim();
+    if (!text) {
+        throw new Error('Input is empty.');
+    }
+    var parsed = JSON.parse(text);
+    var sourceComponents;
+    if (Array.isArray(parsed)) {
+        sourceComponents = parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.components)) {
+        sourceComponents = parsed.components;
+    } else {
+        throw new Error('JSON must be an array of components or an object with a "components" array.');
+    }
+    return {
+        components: sourceComponents.map(function(entry, idx) {
+            return normalizeJsonComponentEntry(entry, idx);
+        })
+    };
+}
+
+function renderComponentsUploadResult(result) {
+    var summaryEl = document.getElementById('components-upload-summary');
+    var errorsEl = document.getElementById('components-upload-errors');
+    var previewEl = document.getElementById('components-upload-preview');
+    if (!summaryEl || !errorsEl || !previewEl) return;
+
+    summaryEl.innerHTML = '<strong>Parsed components:</strong> ' + result.components.length;
+    errorsEl.innerHTML = '';
+
+    if (!result.components || result.components.length === 0) {
+        previewEl.innerHTML = '<p class="empty-state">No valid components parsed.</p>';
+        return;
+    }
+
+    var preview = result.components.slice(0, 5);
+    var suffix = result.components.length > 5 ? '\n... (' + (result.components.length - 5) + ' more components)' : '';
+    previewEl.innerHTML = '<pre class="diagnostic-pre">' + escHtml(JSON.stringify(preview, null, 2) + suffix) + '</pre>';
+}
+
+function parseComponentsUploadInput() {
+    var input = document.getElementById('components-upload-input');
+    if (!input) return;
+    var submitBtn = document.getElementById('components-upload-submit-btn');
+    resetComponentsUploadParseState();
+    try {
+        var result = parseComponentsFromJson(input.value);
+        componentsUploadState.parsedComponents = result.components;
+        renderComponentsUploadResult(result);
+        if (submitBtn) submitBtn.disabled = result.components.length === 0;
+        if (result.components.length === 0) {
+            showStatus('Parse complete: no valid components found.', true);
+        } else {
+            showStatus('Parsed ' + result.components.length + ' component(s).');
+        }
+    } catch (e) {
+        document.getElementById('components-upload-summary').innerHTML = '';
+        document.getElementById('components-upload-errors').innerHTML =
+            '<div class="upload-error-list"><strong>Parse error:</strong> ' + escHtml(e.message) + '</div>';
+        document.getElementById('components-upload-preview').innerHTML =
+            '<p class="empty-state">Fix parse errors and try again.</p>';
+        if (submitBtn) submitBtn.disabled = true;
+        showStatus('Parse failed: ' + e.message, true);
+    }
+}
+
+async function uploadParsedComponentsFromModal() {
+    if (!componentsUploadState.parsedComponents || componentsUploadState.parsedComponents.length === 0) {
+        showStatus('No parsed components to upload.', true);
+        return;
+    }
+    var submitBtn = document.getElementById('components-upload-submit-btn');
+    submitBtn.disabled = true;
+    showStatus('Uploading ' + componentsUploadState.parsedComponents.length + ' components...');
+    try {
+        var existingResp = await fetch('/list_components');
+        if (!existingResp.ok) {
+            throw new Error('Failed to load current components.');
+        }
+        var existingComponents = await existingResp.json();
+        var existingByUid = {};
+        existingComponents.forEach(function(existingComponent) {
+            if (!existingComponent || typeof existingComponent !== 'object' || !existingComponent.uid) return;
+            existingByUid[String(existingComponent.uid)] = existingComponent;
+        });
+
+        for (var i = 0; i < componentsUploadState.parsedComponents.length; i++) {
+            var component = componentsUploadState.parsedComponents[i];
+            var existingComponent = component.uid ? existingByUid[String(component.uid)] : null;
+            var payload;
+            if (existingComponent) {
+                payload = Object.assign({}, existingComponent, component, {
+                    r: 'update_component',
+                    uid: component.uid
+                });
+            } else {
+                payload = {
+                    r: 'add_component'
+                };
+                if (component.uid) payload.uid = component.uid;
+                ['name', 'density', 'formula', 'sld'].forEach(function(key) {
+                    if (component[key]) payload[key] = component[key];
+                });
+            }
+            await queryDriver(payload);
+        }
+        closeComponentsUploadModal();
+        document.getElementById('components-upload-input').value = '';
+        await loadComponentsEditor();
+        await loadComponentNames();
+        showStatus('Uploaded ' + componentsUploadState.parsedComponents.length + ' component(s).');
+    } catch (e) {
+        showStatus('Upload failed: ' + e.message, true);
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
+
+function buildComponentsDownloadFilename() {
+    var now = new Date();
+    function pad(value) {
+        return String(value).padStart(2, '0');
+    }
+    return 'mixdoctor-components-'
+        + now.getFullYear()
+        + pad(now.getMonth() + 1)
+        + pad(now.getDate())
+        + '-'
+        + pad(now.getHours())
+        + pad(now.getMinutes())
+        + pad(now.getSeconds())
+        + '.json';
+}
+
+async function downloadComponentsJson() {
+    try {
+        var r = await fetch('/list_components');
+        if (!r.ok) {
+            throw new Error('Failed to load components for download.');
+        }
+        var components = await r.json();
+        var blob = new Blob([JSON.stringify(components, null, 2)], {type: 'application/json'});
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = buildComponentsDownloadFilename();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showStatus('Components JSON downloaded.');
+    } catch (e) {
+        showStatus('Download failed: ' + e.message, true);
     }
 }
 
@@ -1460,7 +1723,11 @@ function stockToPrefill(stock) {
 
 function loadStocksIntoCards(stocks) {
     document.getElementById('stock-cards-container').innerHTML = '';
-    (stocks || []).forEach(function(stock) {
+    if (!stocks || stocks.length === 0) {
+        createStockCard(null);
+        return;
+    }
+    stocks.forEach(function(stock) {
         createStockCard(stockToPrefill(stock));
     });
 }
@@ -4179,6 +4446,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (compRefreshBtn) {
         compRefreshBtn.addEventListener('click', loadComponentsEditor);
     }
+    var compUploadBtn = document.getElementById('components-upload-json-btn');
+    if (compUploadBtn) {
+        compUploadBtn.addEventListener('click', openComponentsUploadModal);
+    }
+    var compDownloadBtn = document.getElementById('components-download-json-btn');
+    if (compDownloadBtn) {
+        compDownloadBtn.addEventListener('click', downloadComponentsJson);
+    }
     var compAddBtn = document.getElementById('components-add-btn');
     if (compAddBtn) {
         compAddBtn.addEventListener('click', addComponentRow);
@@ -4242,6 +4517,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (previewEl) previewEl.innerHTML = '<p class="empty-state">Input changed. Click Parse to refresh preview.</p>';
     });
 
+    // Components upload modal
+    document.getElementById('components-upload-modal-close').addEventListener('click', closeComponentsUploadModal);
+    document.getElementById('components-upload-cancel-btn').addEventListener('click', closeComponentsUploadModal);
+    document.getElementById('components-upload-parse-btn').addEventListener('click', parseComponentsUploadInput);
+    document.getElementById('components-upload-submit-btn').addEventListener('click', uploadParsedComponentsFromModal);
+    document.getElementById('components-upload-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeComponentsUploadModal();
+    });
+    document.getElementById('components-upload-file-input').addEventListener('change', handleComponentsUploadFileSelection);
+    document.getElementById('components-upload-input').addEventListener('input', function() {
+        resetComponentsUploadParseState();
+        resetComponentsUploadPreviewMessage('Input changed. Click Parse to refresh preview.');
+    });
+
     // Modal close & navigation handlers
     document.getElementById('detail-modal-close').addEventListener('click', closeDetailModal);
     document.getElementById('modal-nav-prev').addEventListener('click', function() { navigateModal(-1); });
@@ -4260,6 +4549,11 @@ document.addEventListener('DOMContentLoaded', function() {
             closeTargetUploadModal();
             return;
         }
+        var componentsUploadModalOpen = document.getElementById('components-upload-modal-overlay').classList.contains('visible');
+        if (componentsUploadModalOpen && e.key === 'Escape') {
+            closeComponentsUploadModal();
+            return;
+        }
         var modalOpen = document.getElementById('detail-modal-overlay').classList.contains('visible');
         if (!modalOpen) return;
         if (e.key === 'Escape') closeDetailModal();
@@ -4270,11 +4564,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize
     loadComponentNames();
     loadComponentsEditor();
-    createStockCard(null);
+    loadExistingStocksIntoCards();
     loadStockHistorySidebar();
     loadSweepConfig();
     scheduleSweepPreview();
     loadBalanceSettings();
     fetchBalanceProgress().then(renderBalanceProgress);
     refreshStorageSources();
+    switchTab(getInitialTabId());
 });

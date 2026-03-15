@@ -66,9 +66,19 @@ class _FakeResults:
         return len(self._entries)
 
 
+class _FakeTiledClient:
+    def __init__(self, run_documents):
+        self._run_documents = run_documents
+
+    def __getitem__(self, key):
+        if key != DriverWebAppsMixin.TILED_RUN_DOCUMENTS_NODE:
+            raise KeyError(key)
+        return self._run_documents
+
+
 class _DummyDriverWebApps(DriverWebAppsMixin):
     def __init__(self, results):
-        self._results = results
+        self._results = _FakeTiledClient(results)
         self.app = SimpleNamespace(logger=logging.getLogger("test_driver_webapps_search_sort"))
 
     def _get_tiled_client(self):

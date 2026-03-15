@@ -23,6 +23,8 @@ def seeded_tiled_client(tmp_path):
     app = build_app(tree)
     with Context.from_app(app) as context:
         client = from_context(context)
+        client.create_container(key="run_documents", metadata={"type": "run_documents"})
+        run_documents = client["run_documents"]
 
         datasets = [
             (
@@ -76,7 +78,7 @@ def seeded_tiled_client(tmp_path):
         ]
 
         for key, ds in datasets:
-            write_xarray_dataset(client, ds, key=key)
+            write_xarray_dataset(run_documents, ds, key=key)
 
         yield client
 

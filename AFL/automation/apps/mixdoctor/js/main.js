@@ -497,17 +497,49 @@ async function enrichBalancedTargetForModal(balanceEntry) {
 
 // ---- Detail Modal ----
 var stocksData = [];
+var allTargetsData = [];
 var targetsData = [];
 var stockHistoryEntries = [];
 var stockHistoryFilterText = '';
 var selectedStockHistoryEntry = null;
 var currentModalIdx = -1;
 var currentModalType = null;
+var targetsPaginationState = {
+    pageSize: 50,
+    renderedCount: 0,
+    failedFirst: false,
+    scrollThresholdPx: 240
+};
 var storageSources = {
     components: 'unknown',
     stock_history: 'unknown',
     stocks: 'local',
 };
+
+function getTargetOriginalIndex(target, fallbackIdx) {
+    if (target && target._originalIdx !== undefined && target._originalIdx !== null) {
+        return target._originalIdx;
+    }
+    return fallbackIdx;
+}
+
+function getTargetBalanceEntry(target, fallbackIdx) {
+    if (!target) return null;
+    return getBalanceEntry(target.name, getTargetOriginalIndex(target, fallbackIdx));
+}
+
+function isFailedBalanceEntry(entry) {
+    return !!entry && entry.success === false;
+}
+
+function normalizeTargetsForState(targets) {
+    if (!Array.isArray(targets)) return [];
+    return targets.map(function(target, idx) {
+        var normalized = Object.assign({}, target || {});
+        normalized._originalIdx = idx;
+        return normalized;
+    });
+}
 
 function setSourceBadge(elId, source) {
     var el = document.getElementById(elId);
@@ -560,7 +592,7 @@ function showDetailModal(data, type, idx) {
     if (data.total_volume) {
         summaryParts.push('<span class="summary-item"><strong>Total Volume:</strong> ' + fmtQty(data.total_volume) + '</span>');
     }
-    var br = (type === 'target') ? getBalanceEntry(data.name, idx) : null;
+    var br = (type === 'target') ? getTargetBalanceEntry(data, idx) : null;
     if (br) {
         var maxE = getMaxError(br);
         summaryParts.push(br.success
@@ -742,60 +774,171 @@ function renderStocks(data) {
 // ---- Load & Render Targets ----
 async function loadTargets() {
     var container = document.getElementById('targets-list');
+    var statusEl = document.getElementById('targets-list-status');
+    var loadMoreWrap = document.getElementById('targets-load-more-wrap');
     container.innerHTML = '<p class="empty-state">Loading...</p>';
+    if (statusEl) statusEl.textContent = '';
+    if (loadMoreWrap) loadMoreWrap.hidden = true;
     try {
         var r = await fetch('/list_targets');
         if (!r.ok) {
+            allTargetsData = [];
+            targetsData = [];
             container.innerHTML = '<p class="empty-state">Failed to load targets.</p>';
             return;
         }
-        targetsData = await r.json();
-        renderTargets(targetsData);
+        allTargetsData = normalizeTargetsForState(await r.json());
+        renderTargets(allTargetsData);
     } catch (e) {
+        allTargetsData = [];
+        targetsData = [];
         container.innerHTML = '<p class="empty-state">Error loading targets.</p>';
     }
 }
 
+function getOrderedTargetsForView(data) {
+    var ordered = Array.isArray(data) ? data.slice() : [];
+    if (!targetsPaginationState.failedFirst || balanceReportArray.length === 0) {
+        return ordered;
+    }
+    ordered.sort(function(a, b) {
+        var aFailed = isFailedBalanceEntry(getTargetBalanceEntry(a, a && a._originalIdx));
+        var bFailed = isFailedBalanceEntry(getTargetBalanceEntry(b, b && b._originalIdx));
+        if (aFailed !== bFailed) return aFailed ? -1 : 1;
+        return getTargetOriginalIndex(a, 0) - getTargetOriginalIndex(b, 0);
+    });
+    return ordered;
+}
+
+function updateTargetsListStatus() {
+    var total = targetsData.length;
+    var shown = Math.min(targetsPaginationState.renderedCount, total);
+    var statusEl = document.getElementById('targets-list-status');
+    var loadMoreWrap = document.getElementById('targets-load-more-wrap');
+    if (!statusEl || !loadMoreWrap) return;
+
+    if (total === 0) {
+        statusEl.textContent = '';
+        loadMoreWrap.hidden = true;
+        return;
+    }
+
+    var parts = ['Showing ' + shown + ' of ' + total];
+    if (targetsPaginationState.failedFirst && balanceReportArray.length > 0) {
+        parts.push('Failed First');
+    }
+    statusEl.textContent = parts.join(' | ');
+    loadMoreWrap.hidden = shown >= total;
+}
+
+function buildTargetCardHtml(target, viewIdx) {
+    var originalIdx = getTargetOriginalIndex(target, viewIdx);
+    var locBadge = target.location
+        ? '<span class="location-badge">' + escHtml(target.location) + '</span>'
+        : '';
+    var colorCls = balanceCardClass(target.name, originalIdx);
+    var indicator = balanceCardIndicator(target.name, originalIdx);
+    return '<div class="card clickable ' + colorCls + '" data-view-idx="' + viewIdx + '">'
+        + '<div class="card-header">'
+        + '<span class="card-name">' + escHtml(target.name || '') + '</span>'
+        + locBadge
+        + indicator
+        + '</div>'
+        + '<div class="component-list">' + renderComponentList(target) + '</div>'
+        + '</div>';
+}
+
+function appendNextTargetsPage() {
+    var container = document.getElementById('targets-list');
+    if (!container) return false;
+    if (targetsPaginationState.renderedCount >= targetsData.length) {
+        updateTargetsListStatus();
+        return false;
+    }
+
+    var start = targetsPaginationState.renderedCount;
+    var end = Math.min(start + targetsPaginationState.pageSize, targetsData.length);
+    var html = targetsData.slice(start, end).map(function(target, offset) {
+        return buildTargetCardHtml(target, start + offset);
+    }).join('');
+    container.insertAdjacentHTML('beforeend', html);
+    targetsPaginationState.renderedCount = end;
+    updateTargetsListStatus();
+    return true;
+}
+
+function fillTargetsViewportIfNeeded() {
+    var panel = document.getElementById('targets-panel');
+    if (!panel) return;
+    while (targetsPaginationState.renderedCount < targetsData.length
+        && panel.scrollHeight <= panel.clientHeight + 40) {
+        if (!appendNextTargetsPage()) break;
+    }
+}
+
+function maybeLoadMoreTargets() {
+    var panel = document.getElementById('targets-panel');
+    if (!panel) return;
+    if (targetsPaginationState.renderedCount >= targetsData.length) return;
+    var distanceToBottom = panel.scrollHeight - panel.scrollTop - panel.clientHeight;
+    if (distanceToBottom <= targetsPaginationState.scrollThresholdPx) {
+        appendNextTargetsPage();
+        fillTargetsViewportIfNeeded();
+    }
+}
+
+function handleTargetsListClick(event) {
+    var card = event.target.closest('.card.clickable[data-view-idx]');
+    if (!card) return;
+    var idx = parseInt(card.getAttribute('data-view-idx'), 10);
+    if (!isFinite(idx) || !targetsData[idx]) return;
+    showDetailModal(targetsData[idx], 'target', idx);
+}
+
 function renderTargets(data) {
     var container = document.getElementById('targets-list');
+    var titleEl = document.getElementById('targets-panel-title')
+        || document.querySelector('#targets-panel .panel-title');
+    var previousModalTarget = null;
+    if (currentModalType === 'target' && currentModalIdx >= 0 && targetsData[currentModalIdx]) {
+        previousModalTarget = targetsData[currentModalIdx];
+    }
+
+    targetsData = getOrderedTargetsForView(data);
+    targetsPaginationState.renderedCount = 0;
+
     // Update panel title with count and balance results
-    var titleEl = document.querySelector('#targets-panel .panel-title');
     var titleText = 'Targets';
-    if (data && data.length) {
+    if (targetsData.length) {
         if (balanceReportArray.length > 0) {
             var ok = balanceReportArray.filter(function(e) { return e.success; }).length;
-            titleText += ' (' + ok + '/' + data.length + ' succeeded)';
+            titleText += ' (' + ok + '/' + targetsData.length + ' succeeded)';
         } else {
-            titleText += ' (' + data.length + ')';
+            titleText += ' (' + targetsData.length + ')';
         }
     }
     titleEl.textContent = titleText;
-    if (!data || data.length === 0) {
+    if (!targetsData || targetsData.length === 0) {
         container.innerHTML = '<p class="empty-state">No targets configured.</p>';
+        currentModalIdx = targetsData.length ? currentModalIdx : -1;
+        updateTargetsListStatus();
+        updateModalNav();
         return;
     }
-    container.innerHTML = data.map(function(target, idx) {
-        var locBadge = target.location
-            ? '<span class="location-badge">' + escHtml(target.location) + '</span>'
-            : '';
-        var colorCls = balanceCardClass(target.name, idx);
-        var indicator = balanceCardIndicator(target.name, idx);
-        return '<div class="card clickable ' + colorCls + '" data-idx="' + idx + '">'
-            + '<div class="card-header">'
-            + '<span class="card-name">' + escHtml(target.name || '') + '</span>'
-            + locBadge
-            + indicator
-            + '</div>'
-            + '<div class="component-list">' + renderComponentList(target) + '</div>'
-            + '</div>';
-    }).join('');
+    container.innerHTML = '';
+    appendNextTargetsPage();
+    fillTargetsViewportIfNeeded();
 
-    container.querySelectorAll('.card.clickable').forEach(function(card) {
-        card.addEventListener('click', function() {
-            var idx = parseInt(this.getAttribute('data-idx'), 10);
-            showDetailModal(targetsData[idx], 'target', idx);
-        });
-    });
+    if (previousModalTarget) {
+        var originalIdx = getTargetOriginalIndex(previousModalTarget, currentModalIdx);
+        for (var i = 0; i < targetsData.length; i++) {
+            if (getTargetOriginalIndex(targetsData[i], i) === originalIdx) {
+                currentModalIdx = i;
+                break;
+            }
+        }
+        updateModalNav();
+    }
 }
 
 // ---- Balance Execution ----
@@ -4490,6 +4633,29 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('balance-upload-targets-btn').addEventListener('click', openTargetUploadModal);
     document.getElementById('balance-btn').addEventListener('click', runBalance);
+    var targetsListEl = document.getElementById('targets-list');
+    if (targetsListEl) {
+        targetsListEl.addEventListener('click', handleTargetsListClick);
+    }
+    var targetsPanelEl = document.getElementById('targets-panel');
+    if (targetsPanelEl) {
+        targetsPanelEl.addEventListener('scroll', maybeLoadMoreTargets, {passive: true});
+    }
+    var failedFirstEl = document.getElementById('targets-failed-first-input');
+    if (failedFirstEl) {
+        targetsPaginationState.failedFirst = !!failedFirstEl.checked;
+        failedFirstEl.addEventListener('change', function() {
+            targetsPaginationState.failedFirst = !!this.checked;
+            renderTargets(allTargetsData);
+        });
+    }
+    var loadMoreTargetsBtn = document.getElementById('targets-load-more-btn');
+    if (loadMoreTargetsBtn) {
+        loadMoreTargetsBtn.addEventListener('click', function() {
+            appendNextTargetsPage();
+            fillTargetsViewportIfNeeded();
+        });
+    }
 
     // Stock history modal
     document.getElementById('stock-history-modal-close').addEventListener('click', closeStockHistoryModal);

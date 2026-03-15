@@ -189,8 +189,18 @@
                 <div id="stocks-list"></div>
             </div>
             <div id="targets-panel">
-                <div class="panel-title">Targets</div>
+                <div class="panel-header">
+                    <div class="panel-title" id="targets-panel-title">Targets</div>
+                    <label class="targets-sort-control" for="targets-failed-first-input">
+                        <input type="checkbox" id="targets-failed-first-input">
+                        Failed First
+                    </label>
+                </div>
+                <div id="targets-list-status" class="targets-list-status"></div>
                 <div id="targets-list"></div>
+                <div id="targets-load-more-wrap" class="targets-load-more-wrap" hidden>
+                    <button class="toolbar-btn" id="targets-load-more-btn">Load More</button>
+                </div>
             </div>
         </div>
     </div>

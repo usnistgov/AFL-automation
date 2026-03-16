@@ -405,7 +405,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.APIServer.APIServer</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">send_file</span><span class="p">,</span> <span class="n">send_from_directory</span>
+<span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">send_file</span><span class="p">,</span> <span class="n">send_from_directory</span>
 
 <span class="kn">from</span> <span class="nn">flask_cors</span> <span class="kn">import</span> <span class="n">CORS</span>
 <span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">ChoiceLoader</span><span class="p">,</span> <span class="n">FileSystemLoader</span>
@@ -472,7 +472,7 @@
 <span class="k">class</span> <span class="nc">APIServer</span><span class="p">:</span>
 <div class="viewcode-block" id="APIServer.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">experiment</span><span class="o">=</span><span class="s1">&#39;Development&#39;</span><span class="p">,</span><span class="n">contact</span><span class="o">=</span><span class="s1">&#39;tbm@nist.gov&#39;</span><span class="p">,</span><span class="n">index_template</span><span class="o">=</span><span class="s1">&#39;index.html&#39;</span><span class="p">,</span><span class="n">new_index_template</span><span class="o">=</span><span class="s1">&#39;index-new.html&#39;</span><span class="p">,</span><span class="n">plot_template</span><span class="o">=</span><span class="s1">&#39;simple-bokeh.html&#39;</span><span class="p">,</span><span class="n">afl_home</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">experiment</span><span class="o">=</span><span class="s1">&#39;Development&#39;</span><span class="p">,</span><span class="n">contact</span><span class="o">=</span><span class="s1">&#39;tbm@nist.gov&#39;</span><span class="p">,</span><span class="n">index_template</span><span class="o">=</span><span class="s1">&#39;server_page/index.html&#39;</span><span class="p">,</span><span class="n">new_index_template</span><span class="o">=</span><span class="s1">&#39;server_page/index-new.html&#39;</span><span class="p">,</span><span class="n">plot_template</span><span class="o">=</span><span class="s1">&#39;simple-bokeh.html&#39;</span><span class="p">,</span><span class="n">afl_home</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span> <span class="o">=</span> <span class="n">experiment</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">contact</span> <span class="o">=</span> <span class="n">contact</span>
@@ -484,17 +484,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger_filter</span><span class="o">=</span> <span class="n">LoggerFilter</span><span class="p">(</span><span class="s1">&#39;get_queue&#39;</span><span class="p">,</span><span class="s1">&#39;queue_state&#39;</span><span class="p">,</span><span class="s1">&#39;driver_status&#39;</span><span class="p">,</span><span class="s1">&#39;get_server_time&#39;</span><span class="p">,</span><span class="s1">&#39;get_info&#39;</span><span class="p">)</span>
 
-        <span class="c1">#allows the flask server to find the static and templates directories</span>
+        <span class="c1"># allows the flask server to find the static and templates directories</span>
         <span class="n">root_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">root_path</span><span class="o">=</span><span class="n">root_path</span><span class="p">)</span>
 
-        <span class="c1"># Allow app templates to live with their frontend assets under AFL/automation/apps.</span>
-        <span class="n">apps_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;apps&quot;</span>
-        <span class="n">template_paths</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">apps_path</span><span class="p">,</span>
-            <span class="n">apps_path</span> <span class="o">/</span> <span class="s2">&quot;tiled_browser&quot;</span><span class="p">,</span>
-            <span class="n">apps_path</span> <span class="o">/</span> <span class="s2">&quot;mixdoctor&quot;</span><span class="p">,</span>
-        <span class="p">]</span>
+        <span class="c1"># App entrypoints and shared assets now live under AFL/automation/apps.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apps_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;apps&quot;</span>
+        <span class="n">template_paths</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">apps_path</span><span class="p">]</span>
         <span class="n">loaders</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">jinja_loader</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loaders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">jinja_loader</span><span class="p">)</span>
@@ -504,6 +500,7 @@
             <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">jinja_loader</span> <span class="o">=</span> <span class="n">ChoiceLoader</span><span class="p">(</span><span class="n">loaders</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/static/apps/&lt;path:filename&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;apps_static&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serve_apps_static</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_logging</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span> <span class="o">=</span> <span class="kc">None</span>
@@ -514,6 +511,17 @@
         <span class="c1"># CORS may have to come after JWTManager</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cors</span> <span class="o">=</span> <span class="n">CORS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span></div>
 
+
+    <span class="k">def</span> <span class="nf">_serve_apps_static</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">send_from_directory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">apps_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_static_endpoint_name</span><span class="p">(</span><span class="n">subpath</span><span class="p">):</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="n">subpath</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;static_</span><span class="si">{</span><span class="n">normalized</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_render_app_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="n">template_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="mi">200</span>
 
 
 <div class="viewcode-block" id="APIServer.create_queue">
@@ -654,6 +662,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/old&#39;</span><span class="p">,</span><span class="s1">&#39;index&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/app&#39;</span><span class="p">,</span><span class="s1">&#39;app&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">webapp</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/webapp&#39;</span><span class="p">,</span><span class="s1">&#39;webapp&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">webapp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/jupyterlite&#39;</span><span class="p">,</span> <span class="s1">&#39;jupyterlite&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">jupyterlite</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/static/config.html&#39;</span><span class="p">,</span> <span class="s1">&#39;static_config&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_editor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/static/config-retro.html&#39;</span><span class="p">,</span> <span class="s1">&#39;static_config_retro&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_editor_retro</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/static/status.html&#39;</span><span class="p">,</span> <span class="s1">&#39;static_status&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_app</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/static/jl/index.html&#39;</span><span class="p">,</span> <span class="s1">&#39;static_jupyterlite_index&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">jupyterlite</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/enqueue&#39;</span><span class="p">,</span><span class="s1">&#39;enqueue&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">enqueue</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/query_driver&#39;</span><span class="p">,</span><span class="s1">&#39;query_driver&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">query_driver</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/clear_queue&#39;</span><span class="p">,</span><span class="s1">&#39;clear_queue&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">clear_queue</span><span class="p">,</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
@@ -754,7 +767,9 @@
             <span class="n">directory</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                 <span class="n">route</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;/static/</span><span class="si">{</span><span class="n">subpath</span><span class="si">}</span><span class="s1">/&lt;path:filename&gt;&#39;</span>
-                <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;static_</span><span class="si">{</span><span class="n">subpath</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="n">endpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_endpoint_name</span><span class="p">(</span><span class="n">subpath</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">view_functions</span><span class="p">:</span>
+                    <span class="k">continue</span>
                 <span class="n">handler</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">filename</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">:</span> <span class="n">send_from_directory</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="n">route</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
 
@@ -858,7 +873,31 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Serving WebApp&#39;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;webapp.html&#39;</span><span class="p">),</span><span class="mi">200</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_app_template</span><span class="p">(</span><span class="s1">&#39;afl_app/webapp.html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="APIServer.config_editor">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.config_editor">[docs]</a>
+    <span class="k">def</span> <span class="nf">config_editor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_app_template</span><span class="p">(</span><span class="s1">&#39;config_editor/config.html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="APIServer.config_editor_retro">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.config_editor_retro">[docs]</a>
+    <span class="k">def</span> <span class="nf">config_editor_retro</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_app_template</span><span class="p">(</span><span class="s1">&#39;config_editor/config-retro.html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="APIServer.status_app">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.status_app">[docs]</a>
+    <span class="k">def</span> <span class="nf">status_app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_app_template</span><span class="p">(</span><span class="s1">&#39;status/status.html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="APIServer.jupyterlite">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.jupyterlite">[docs]</a>
+    <span class="k">def</span> <span class="nf">jupyterlite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;/static/jl/index.html&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="APIServer.render_unqueued">

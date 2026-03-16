@@ -127,6 +127,63 @@ class TestAPIServer:
         assert dummy_driver.app is not None
         assert dummy_driver.app == server.app
 
+    def test_apiserver_apps_static_route(self):
+        server = APIServer(name='TestServer')
+        client = server.app.test_client()
+
+        response = client.get('/static/apps/server_page/css/style.css')
+
+        assert response.status_code == 200
+        assert b'body' in response.data
+
+    def test_apiserver_static_app_alias_routes(self):
+        server = APIServer(name='TestServer')
+        server.add_standard_routes()
+        client = server.app.test_client()
+
+        for route in (
+            '/static/config.html',
+            '/static/config-retro.html',
+            '/static/status.html',
+        ):
+            response = client.get(route)
+            assert response.status_code == 200
+
+    def test_apiserver_main_pages_render_from_apps(self, dummy_driver):
+        server = APIServer(name='TestServer')
+        server.create_queue(dummy_driver, add_unqueued=False)
+        server.add_standard_routes()
+        client = server.app.test_client()
+
+        root_response = client.get('/')
+        app_response = client.get('/app')
+
+        assert root_response.status_code == 200
+        assert b'Quick Links' in root_response.data
+        assert app_response.status_code == 200
+        assert b'Autonomous Formulations Lab' in app_response.data
+
+    def test_apiserver_nested_driver_static_dirs(self, tmp_path):
+        class NestedStaticDriver(DummyDriver):
+            static_dirs = {
+                'apps/example/js': tmp_path / 'js',
+            }
+
+        asset_dir = tmp_path / 'js'
+        asset_dir.mkdir()
+        asset_path = asset_dir / 'example.js'
+        asset_path.write_text('console.log("nested");', encoding='utf-8')
+
+        driver = NestedStaticDriver(name='NestedDriver')
+        server = APIServer(name='TestServer')
+        server.create_queue(driver, add_unqueued=False)
+        client = server.app.test_client()
+
+        response = client.get('/static/apps/example/js/example.js')
+
+        assert response.status_code == 200
+        assert b'nested' in response.data
+
 
 def test_import_apiserver():
     """Test that APIServer can be imported"""

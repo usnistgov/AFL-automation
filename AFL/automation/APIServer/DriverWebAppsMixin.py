@@ -14,15 +14,15 @@ class DriverWebAppsMixin:
 
     def tiled_browser(self, **kwargs):
         """Serve the Tiled database browser HTML interface."""
-        return render_template('tiled_browser.html')
+        return render_template('tiled_browser/tiled_browser.html')
 
     def tiled_plot(self, **kwargs):
         """Serve the Tiled plotting interface for selected entries."""
-        return render_template('tiled_plot.html')
+        return render_template('tiled_browser/tiled_plot.html')
 
     def tiled_gantt(self, **kwargs):
         """Serve the Tiled Gantt chart interface for selected entries."""
-        return render_template('tiled_gantt.html')
+        return render_template('tiled_browser/tiled_gantt.html')
 
     def _read_tiled_config(self):
         """Internal helper to read Tiled config from ~/.afl/config.json.

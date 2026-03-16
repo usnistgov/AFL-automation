@@ -15,7 +15,7 @@ def test_html_pages_load_shared_tiled_http_client():
     plot_html = _read(TILED_APP_ROOT / "tiled_plot.html")
     gantt_html = _read(TILED_APP_ROOT / "tiled_gantt.html")
 
-    expected_tag = '/static/tiled_browser_js/tiled_http_client.js'
+    expected_tag = '/static/apps/tiled_browser/js/tiled_http_client.js'
     assert expected_tag in browser_html
     assert expected_tag in plot_html
     assert expected_tag in gantt_html
@@ -77,6 +77,17 @@ def test_plot_and_gantt_remove_legacy_read_proxy_routes():
     # Direct config/bootstrap usage retained
     assert "window.TiledHttpClient.loadConfig()" in plot_js
     assert "window.TiledHttpClient.loadConfig()" in gantt_js
+
+
+def test_html_pages_use_apps_static_layout():
+    browser_html = _read(TILED_APP_ROOT / "tiled_browser.html")
+    plot_html = _read(TILED_APP_ROOT / "tiled_plot.html")
+    gantt_html = _read(TILED_APP_ROOT / "tiled_gantt.html")
+
+    assert "/static/apps/common/ag-grid-community/styles/ag-grid.css" in browser_html
+    assert "/static/apps/common/ag-grid-community/dist/ag-grid-community.min.js" in browser_html
+    assert "/static/apps/common/plotly/plotly.min.js" in plot_html
+    assert "/static/apps/common/plotly/plotly.min.js" in gantt_html
 
 
 def test_selection_caps_are_enforced_in_frontend():

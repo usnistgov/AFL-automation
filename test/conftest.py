@@ -3,12 +3,15 @@ import datetime
 import pandas as pd
 from AFL.automation.mixcalc.MixDB import MixDB
 import json
+import werkzeug
 
 @pytest.fixture(autouse=True)
 def _set_test_afl_home(monkeypatch, tmp_path):
     afl_home = tmp_path / ".afl"
     afl_home.mkdir(parents=True, exist_ok=True)
     monkeypatch.setenv("AFL_HOME", str(afl_home))
+    if not hasattr(werkzeug, "__version__"):
+        monkeypatch.setattr(werkzeug, "__version__", "patched-for-tests", raising=False)
     return afl_home
 
 @pytest.fixture

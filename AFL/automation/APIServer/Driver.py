@@ -47,10 +47,7 @@ class Driver(DriverWebAppsMixin):
     # Mapping of url subpaths to filesystem directories containing static assets
     # Example: {'docs': '/path/to/docs', 'assets': pathlib.Path(__file__).parent / 'assets'}
     # Files will be served at /static/{subpath}/{filename}
-    static_dirs = {
-        "tiled_browser_js": pathlib.Path(__file__).parent.parent / "apps" / "tiled_browser" / "js",
-        "tiled_browser_css": pathlib.Path(__file__).parent.parent / "apps" / "tiled_browser" / "css",
-    }
+    static_dirs = {}
 
     def __init__(self, name, defaults=None, overrides=None, useful_links=None, afl_home=None):
         self.app = None

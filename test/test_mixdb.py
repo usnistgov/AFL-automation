@@ -1,9 +1,7 @@
-import os
 import json
 import uuid
 
 import pytest
-import pandas as pd
 from AFL.automation.mixcalc.MixDB import MixDB
 from AFL.automation.shared.exceptions import NotFoundError
 
@@ -28,7 +26,7 @@ def test_get_component_by_name(mixdb):
     component = mixdb.get_component(name='H2O')
     assert component['name'] == 'H2O'
     assert component['density'] == '1.0 g/ml'
-    assert pd.isna(component['formula'])
+    assert 'formula' not in component
 
 def test_get_component_by_uid(mixdb):
     component = mixdb.get_component(uid='e2777302-6565-4d4e-b9b4-800401db4ca2')
@@ -86,3 +84,36 @@ def test_add_component_with_uid(mixdb):
     assert retrieved_component['uid'] == uid
     assert retrieved_component['name'] == 'H2O'
     assert retrieved_component['density'] == '1 g/ml'
+
+def test_get_component_omits_empty_optional_fields(mixdb):
+    component = mixdb.get_component(name='NaCl')
+    assert component['name'] == 'NaCl'
+    assert 'density' not in component
+    assert 'formula' not in component
+
+def test_add_component_drops_empty_optional_fields_roundtrip(mixdb):
+    uid = str(uuid.uuid4())
+    component = {
+        'uid': uid,
+        'name': 'EmptyOptional',
+        'density': '',
+        'formula': '   ',
+        'sld': '',
+    }
+    mixdb.add_component(component)
+    retrieved_component = mixdb.get_component(uid=uid)
+
+    assert retrieved_component['uid'] == uid
+    assert retrieved_component['name'] == 'EmptyOptional'
+    assert 'density' not in retrieved_component
+    assert 'formula' not in retrieved_component
+    assert 'sld' not in retrieved_component
+
+def test_list_components_omits_missing_values(mixdb):
+    components = mixdb.list_components()
+    h2o = next(comp for comp in components if comp['name'] == 'H2O')
+    nacl = next(comp for comp in components if comp['name'] == 'NaCl')
+
+    assert 'formula' not in h2o
+    assert 'density' not in nacl
+    assert 'formula' not in nacl

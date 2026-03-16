@@ -2,9 +2,11 @@ import datetime
 import io
 import json
 import pathlib
+from collections import defaultdict
 
 from flask import render_template
 from tiled.client import from_uri
+from tiled.queries import Contains, In
 
 
 class DriverWebAppsMixin:
@@ -488,14 +490,17 @@ class DriverWebAppsMixin:
             if not text:
                 return None
 
-            # QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ]
+            # QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ][+-HHMM]
+            # Example: 12/07/25 14:30:45-123456 EST-0500
             match = __import__('re').match(
-                r'^(\d{2})/(\d{2})/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})',
+                r'^(\d{2})/(\d{2})/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})(?:-(\d{1,6}))?(?:\s+[A-Za-z_]+)?(?:([+-]\d{4}))?\s*$',
                 text,
             )
             if match:
-                month, day, year, hour, minute, second = map(int, match.groups())
-                return datetime.datetime(2000 + year, month, day, hour, minute, second)
+                month, day, year, hour, minute, second = map(int, match.groups()[:6])
+                microseconds = match.group(7) or '0'
+                microsecond = int(microseconds.ljust(6, '0')[:6])
+                return datetime.datetime(2000 + year, month, day, hour, minute, second, microsecond)
 
             # Display-style/legacy: YYYY-MM-DD HH:MM:SS
             match = __import__('re').match(
@@ -556,9 +561,6 @@ class DriverWebAppsMixin:
 
             # Apply search filters
             if query_list:
-                from tiled.queries import Contains, In
-                from collections import defaultdict
-
                 field_values = defaultdict(list)
                 for query_item in query_list:
                     field = query_item.get('field', '')
@@ -615,18 +617,12 @@ class DriverWebAppsMixin:
 
                             if reverse:
                                 items_for_sort.sort(
-                                    key=lambda kv: (
-                                        _extract_sort_value(kv) is not None,
-                                        _extract_sort_value(kv) if _extract_sort_value(kv) is not None else '',
-                                    ),
+                                    key=lambda kv: (v := _extract_sort_value(kv), v is not None, v if v is not None else '')[1:],
                                     reverse=True,
                                 )
                             else:
                                 items_for_sort.sort(
-                                    key=lambda kv: (
-                                        _extract_sort_value(kv) is None,
-                                        _extract_sort_value(kv) if _extract_sort_value(kv) is not None else '',
-                                    ),
+                                    key=lambda kv: (v := _extract_sort_value(kv), v is None, v if v is not None else '')[1:],
                                 )
 
                         sorted_ids = [key for key, _ in items_for_sort]
@@ -775,6 +771,114 @@ class DriverWebAppsMixin:
             return {
                 'status': 'error',
                 'message': f'Error fetching data: {str(e)}'
+            }
+
+    def tiled_get_xarray_html(self, entry_ids, **kwargs):
+        """Return xarray _repr_html_() for one or more Tiled entries.
+
+        Reuses the combined-dataset cache shared with the plot manifest endpoint,
+        so if the plot has already been rendered this call is effectively free.
+
+        Args:
+            entry_ids: JSON-encoded list of entry IDs
+
+        Returns:
+            dict with 'status' and 'html' (xarray HTML string)
+        """
+        try:
+            entry_ids_list = self._parse_entry_ids_param(entry_ids)
+        except (json.JSONDecodeError, ValueError) as e:
+            return {'status': 'error', 'message': f'Invalid entry_ids: {str(e)}'}
+
+        if not entry_ids_list:
+            return {'status': 'error', 'message': 'entry_ids must contain at least one entry'}
+
+        try:
+            ds = self._get_or_create_combined_dataset(entry_ids_list)
+        except Exception as e:
+            return {'status': 'error', 'message': f'Error loading dataset: {str(e)}'}
+
+        try:
+            html = ds._repr_html_()
+        except Exception:
+            html = f'<pre>{str(ds)}</pre>'
+
+        return {'status': 'success', 'html': html}
+
+    def tiled_get_full_json(self, entry_id, **kwargs):
+        """Proxy endpoint to get JSON-serializable full data payload for one entry.
+
+        This endpoint is intended as a same-origin fallback for browser clients
+        when direct browser->Tiled CORS access is not available.
+        """
+        import numpy as np
+        import pandas as pd
+
+        client = self._get_tiled_client()
+        if isinstance(client, dict) and client.get('status') == 'error':
+            return client
+
+        try:
+            if entry_id not in client:
+                return {
+                    'status': 'error',
+                    'message': f'Entry "{entry_id}" not found'
+                }
+
+            item = client[entry_id]
+            payload = self._read_tiled_item(item)
+
+            # xarray datasets: flatten into column->list payload
+            if hasattr(payload, 'to_dataframe'):
+                dataframe = payload.to_dataframe().reset_index()
+                data = {}
+                for column in dataframe.columns:
+                    series = dataframe[column]
+                    converted = []
+                    for value in series.tolist():
+                        if isinstance(value, (np.floating, float)):
+                            converted.append(None if np.isnan(value) else float(value))
+                        elif isinstance(value, (np.integer, int)):
+                            converted.append(int(value))
+                        elif isinstance(value, (np.bool_, bool)):
+                            converted.append(bool(value))
+                        elif isinstance(value, np.ndarray):
+                            converted.append(value.tolist())
+                        else:
+                            converted.append(value)
+                    data[str(column)] = converted
+                return {
+                    'status': 'success',
+                    'data': data
+                }
+
+            # pandas tables
+            if isinstance(payload, pd.DataFrame):
+                dataframe = payload.reset_index()
+                return {
+                    'status': 'success',
+                    'data': {
+                        str(col): dataframe[col].tolist()
+                        for col in dataframe.columns
+                    }
+                }
+
+            # arrays and scalars
+            if isinstance(payload, np.ndarray):
+                return {
+                    'status': 'success',
+                    'data': {'value': payload.tolist()}
+                }
+
+            return {
+                'status': 'success',
+                'data': {'value': payload}
+            }
+
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error fetching full data: {str(e)}'
             }
 
     def tiled_get_metadata(self, entry_id, **kwargs):
@@ -1260,9 +1364,6 @@ class DriverWebAppsMixin:
             self._max_combined_dataset_cache
         )
 
-        # Keep legacy cache fields for existing download flow.
-        self._cached_combined_dataset = combined_dataset
-        self._cached_entry_ids = entry_ids_list
         return combined_dataset
 
     def _sanitize_for_json(self, obj):
@@ -1291,671 +1392,3 @@ class DriverWebAppsMixin:
             return (arr / np.timedelta64(1, 's')).tolist()
 
         return self._sanitize_for_json(arr.tolist())
-
-    def tiled_get_plot_manifest(self, entry_ids, **kwargs):
-        """Return lightweight plotting manifest without eager data materialization."""
-        try:
-            entry_ids_list = self._parse_entry_ids_param(entry_ids)
-        except (json.JSONDecodeError, ValueError) as e:
-            return {
-                'status': 'error',
-                'message': f'Invalid JSON in entry_ids parameter: {str(e)}'
-            }
-
-        if not entry_ids_list:
-            return {
-                'status': 'error',
-                'message': 'entry_ids must contain at least one entry'
-            }
-
-        try:
-            combined_dataset = self._get_or_create_combined_dataset(entry_ids_list)
-        except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'Error concatenating datasets: {str(e)}'
-            }
-
-        try:
-            is_single_entry = len(entry_ids_list) == 1
-            if is_single_entry:
-                sample_dim = combined_dataset.attrs.get('_detected_sample_dim', None)
-                if not sample_dim:
-                    sample_dim = self._detect_sample_dimension(combined_dataset, allow_size_fallback=False)
-                num_datasets = int(combined_dataset.dims.get(sample_dim, 1)) if sample_dim else 1
-            else:
-                sample_dim = 'index'
-                num_datasets = int(combined_dataset.dims.get('index', 0))
-
-            dataset_html = ''
-            try:
-                dataset_html = combined_dataset._repr_html_()
-            except Exception:
-                dataset_html = f'<pre>{str(combined_dataset)}</pre>'
-
-            coords_preview = {}
-            max_coord_preview_size = int(kwargs.get('max_coord_preview_size', 5000))
-            for coord_name, coord_data in combined_dataset.coords.items():
-                try:
-                    if coord_data.ndim == 1 and coord_data.size <= max_coord_preview_size:
-                        coords_preview[coord_name] = self._safe_tolist(coord_data.values)
-                    else:
-                        coords_preview[coord_name] = {
-                            'summary': True,
-                            'shape': list(coord_data.shape),
-                            'dtype': str(coord_data.dtype),
-                            'size': int(coord_data.size),
-                        }
-                except Exception as e:
-                    coords_preview[coord_name] = {
-                        'error': f'Could not summarize coordinate: {str(e)}'
-                    }
-
-            variable_info = {}
-            variables = []
-            available_legend_vars = []
-            for var_name, var in combined_dataset.data_vars.items():
-                dims = list(var.dims)
-                shape = [int(x) for x in var.shape]
-                size = int(var.size)
-                dtype = str(var.dtype)
-
-                if sample_dim and sample_dim in dims:
-                    available_legend_vars.append(var_name)
-
-                category_hint = 'other'
-                if sample_dim and len(dims) == 1 and dims[0] == sample_dim:
-                    category_hint = 'sample'
-                elif sample_dim and sample_dim in dims and len(dims) >= 2:
-                    other_dims = [d for d in dims if d != sample_dim]
-                    if other_dims:
-                        other_size = int(combined_dataset.dims.get(other_dims[0], 0))
-                        category_hint = 'composition' if other_size < 10 else 'scattering'
-
-                variable_info[var_name] = {
-                    'name': var_name,
-                    'dims': dims,
-                    'shape': shape,
-                    'size': size,
-                    'dtype': dtype,
-                    'category_hint': category_hint,
-                }
-                variables.append(var_name)
-
-            metadata_list = []
-            for i, entry_id in enumerate(entry_ids_list):
-                sample_name = ''
-                sample_uuid = ''
-                if 'sample_name' in combined_dataset.coords and i < combined_dataset.coords['sample_name'].size:
-                    sample_name = str(combined_dataset.coords['sample_name'].values[i])
-                elif i == 0:
-                    sample_name = str(combined_dataset.attrs.get('sample_name', ''))
-                if 'sample_uuid' in combined_dataset.coords and i < combined_dataset.coords['sample_uuid'].size:
-                    sample_uuid = str(combined_dataset.coords['sample_uuid'].values[i])
-                elif i == 0:
-                    sample_uuid = str(combined_dataset.attrs.get('sample_uuid', ''))
-                metadata_list.append({
-                    'entry_id': entry_id,
-                    'sample_name': sample_name,
-                    'sample_uuid': sample_uuid,
-                })
-
-            return {
-                'status': 'success',
-                'data_type': 'xarray_dataset_manifest',
-                'num_datasets': num_datasets,
-                'variables': variables,
-                'variable_info': variable_info,
-                'dims': list(combined_dataset.dims.keys()),
-                'dim_sizes': {dim: int(size) for dim, size in combined_dataset.dims.items()},
-                'coords': coords_preview,
-                'data': {},
-                'sample_dim': sample_dim,
-                'hue_dim': sample_dim or 'index',
-                'available_legend_vars': available_legend_vars,
-                'metadata': metadata_list,
-                'dataset_html': dataset_html,
-            }
-        except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'Error building plot manifest: {str(e)}'
-            }
-
-    def tiled_get_plot_variable_data(self, entry_ids, var_name, cast_float32='true', **kwargs):
-        """Return one variable payload for plotting, fetched lazily."""
-        try:
-            entry_ids_list = self._parse_entry_ids_param(entry_ids)
-        except (json.JSONDecodeError, ValueError) as e:
-            return {
-                'status': 'error',
-                'message': f'Invalid JSON in entry_ids parameter: {str(e)}'
-            }
-
-        if not entry_ids_list:
-            return {
-                'status': 'error',
-                'message': 'entry_ids must contain at least one entry'
-            }
-
-        try:
-            cast_float32_bool = str(cast_float32).lower() not in ('0', 'false', 'no', 'off')
-            max_points = int(kwargs.get('max_points', 2_000_000))
-            max_coord_preview_size = int(kwargs.get('max_coord_preview_size', 100000))
-
-            dataset_key = self._entry_ids_cache_key(entry_ids_list)
-            payload_key = f'{dataset_key}|{var_name}|{int(cast_float32_bool)}'
-            cached_payload = self._plot_variable_payload_cache.get(payload_key)
-            if cached_payload is not None:
-                return cached_payload
-
-            combined_dataset = self._get_or_create_combined_dataset(entry_ids_list)
-            if var_name not in combined_dataset.data_vars:
-                return {
-                    'status': 'error',
-                    'message': f'Variable "{var_name}" not found',
-                    'available_variables': list(combined_dataset.data_vars.keys())
-                }
-
-            var = combined_dataset[var_name]
-            if int(var.size) > max_points:
-                return {
-                    'status': 'error',
-                    'message': f'Variable too large ({int(var.size)} points), exceeds max_points={max_points}',
-                    'var_name': var_name,
-                    'dims': list(var.dims),
-                    'shape': list(var.shape),
-                    'dtype': str(var.dtype),
-                }
-
-            # Pull only this selected variable.
-            materialized = var.values
-            if cast_float32_bool and hasattr(materialized, 'dtype'):
-                import numpy as np
-                if np.issubdtype(materialized.dtype, np.floating):
-                    materialized = materialized.astype(np.float32, copy=False)
-
-            related_coords = {}
-            for dim_name in var.dims:
-                if dim_name in combined_dataset.coords:
-                    coord = combined_dataset.coords[dim_name]
-                    if coord.ndim == 1 and coord.size <= max_coord_preview_size:
-                        related_coords[dim_name] = self._safe_tolist(coord.values)
-                    else:
-                        related_coords[dim_name] = {
-                            'summary': True,
-                            'shape': list(coord.shape),
-                            'dtype': str(coord.dtype),
-                            'size': int(coord.size),
-                        }
-
-            payload = {
-                'status': 'success',
-                'var_name': var_name,
-                'dims': list(var.dims),
-                'shape': [int(x) for x in var.shape],
-                'dtype': str(getattr(materialized, 'dtype', var.dtype)),
-                'values': self._safe_tolist(materialized),
-                'related_coords': related_coords,
-            }
-            self._cache_put(
-                self._plot_variable_payload_cache,
-                self._plot_variable_payload_cache_order,
-                payload_key,
-                payload,
-                self._max_variable_payload_cache
-            )
-            return payload
-        except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'Error fetching variable data: {str(e)}',
-                'var_name': var_name
-            }
-
-    def tiled_get_combined_plot_data(self, entry_ids, **kwargs):
-        """Get concatenated xarray datasets from multiple Tiled entries.
-
-        Args:
-            entry_ids: JSON string array of entry IDs to concatenate
-
-        Returns:
-            dict with combined dataset structure ready for plotting
-        """
-        import json
-        import xarray as xr
-
-        # Parse entry_ids from JSON string
-        try:
-            if isinstance(entry_ids, str):
-                entry_ids_list = json.loads(entry_ids)
-            else:
-                entry_ids_list = entry_ids
-        except (json.JSONDecodeError, ValueError) as e:
-            return {
-                'status': 'error',
-                'message': f'Invalid JSON in entry_ids parameter: {str(e)}'
-            }
-
-        # Use the new tiled_concat_datasets method
-        skipped_entries = []
-        try:
-            combined_dataset = self.tiled_concat_datasets(
-                entry_ids=entry_ids_list,
-                concat_dim='index',
-                variable_prefix=''
-            )
-
-            # Cache the dataset for download endpoint
-            self._cached_combined_dataset = combined_dataset
-            self._cached_entry_ids = entry_ids_list
-
-        except ValueError as e:
-            # Handle individual entry errors by tracking skipped entries
-            error_msg = str(e)
-            if 'Failed to fetch entry' in error_msg:
-                # Extract entry_id from error message if possible
-                import re
-                match = re.search(r"Failed to fetch entry '([^']+)'", error_msg)
-                if match:
-                    skipped_entries.append({
-                        'entry_id': match.group(1),
-                        'reason': error_msg
-                    })
-
-            return {
-                'status': 'error',
-                'message': f'Error concatenating datasets: {error_msg}',
-                'skipped_entries': skipped_entries
-            }
-        except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'Error concatenating datasets: {str(e)}',
-                'skipped_entries': skipped_entries
-            }
-
-        # Extract structure for JSON serialization
-        try:
-            # Get HTML representation of combined dataset
-            dataset_html = ''
-            try:
-                dataset_html = combined_dataset._repr_html_()
-            except:
-                dataset_html = f'<pre>{str(combined_dataset)}</pre>'
-
-            # Detect sample dimension:
-            # - For single entry: use '_detected_sample_dim' from attrs
-            # - For multiple entries: use 'index' (the concat_dim)
-            is_single_entry = len(entry_ids_list) == 1
-            if is_single_entry:
-                sample_dim = combined_dataset.attrs.get('_detected_sample_dim', None)
-                if not sample_dim:
-                    # Fallback detection
-                    sample_dim = self._detect_sample_dimension(combined_dataset, allow_size_fallback=False)
-                num_datasets = combined_dataset.dims.get(sample_dim, 1) if sample_dim else 1
-            else:
-                sample_dim = 'index'
-                num_datasets = combined_dataset.dims.get('index', 0)
-
-            # Build metadata list - need to re-fetch metadata for each entry to get full details
-            metadata_list = []
-            for entry_id in entry_ids_list:
-                try:
-                    # Re-fetch metadata from Tiled for this specific entry
-                    client = self._get_tiled_client()
-                    if isinstance(client, dict) and client.get('status') == 'error':
-                        # If client fails, use basic metadata
-                        metadata_list.append({
-                            'entry_id': entry_id,
-                            'sample_name': '',
-                            'sample_uuid': '',
-                            'meta': {},
-                            'AL_campaign_name': '',
-                        })
-                        continue
-
-                    if entry_id not in client:
-                        metadata_list.append({
-                            'entry_id': entry_id,
-                            'sample_name': '',
-                            'sample_uuid': '',
-                            'meta': {},
-                            'AL_campaign_name': '',
-                        })
-                        continue
-
-                    item = client[entry_id]
-                    tiled_metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
-
-                    # Extract full metadata including timing data
-                    metadata_list.append({
-                        'entry_id': entry_id,
-                        'sample_name': tiled_metadata.get('sample_name', ''),
-                        'sample_uuid': tiled_metadata.get('sample_uuid', ''),
-                        'AL_campaign_name': tiled_metadata.get('AL_campaign_name') or tiled_metadata.get('attrs', {}).get('AL_campaign_name', ''),
-                        'AL_uuid': tiled_metadata.get('AL_uuid') or tiled_metadata.get('attrs', {}).get('AL_uuid', ''),
-                        'task_name': tiled_metadata.get('task_name') or tiled_metadata.get('attrs', {}).get('task_name', ''),
-                        'driver_name': tiled_metadata.get('driver_name') or tiled_metadata.get('attrs', {}).get('driver_name', ''),
-                        'meta': tiled_metadata.get('meta', {}) or tiled_metadata.get('attrs', {}).get('meta', {}),
-                    })
-                except Exception as e:
-                    # If metadata fetch fails for an entry, use basic metadata
-                    metadata_list.append({
-                        'entry_id': entry_id,
-                        'sample_name': '',
-                        'sample_uuid': '',
-                        'meta': {},
-                        'AL_campaign_name': '',
-                    })
-
-            result = {
-                'status': 'success',
-                'data_type': 'xarray_dataset',
-                'num_datasets': num_datasets,
-                'variables': list(combined_dataset.data_vars.keys()),
-                'dims': list(combined_dataset.dims.keys()),
-                'dim_sizes': {dim: int(size) for dim, size in combined_dataset.dims.items()},
-                'coords': {},
-                'data': {},
-                'sample_dim': sample_dim,  # Tell the client which dimension is the sample dimension
-                'hue_dim': sample_dim or 'index',  # Use detected sample_dim as hue_dim
-                'available_legend_vars': [],
-                'metadata': metadata_list,
-                'skipped_entries': skipped_entries,
-                'dataset_html': dataset_html
-            }
-
-            # Helper function to recursively sanitize values for JSON
-            def sanitize_for_json(obj):
-                """Recursively replace NaN and Inf with None for JSON compatibility."""
-                import numpy as np
-                import math
-                if isinstance(obj, list):
-                    return [sanitize_for_json(x) for x in obj]
-                elif isinstance(obj, float):
-                    if math.isnan(obj) or math.isinf(obj):
-                        return None
-                    return obj
-                else:
-                    return obj
-
-            # Helper function to safely convert numpy arrays to JSON-serializable lists
-            def safe_tolist(arr):
-                """Convert numpy array to list, handling NaN, Inf, and datetime objects."""
-                import numpy as np
-                import pandas as pd
-
-                # Convert to numpy array if not already
-                if not isinstance(arr, np.ndarray):
-                    arr = np.asarray(arr)
-
-                # Handle datetime types
-                if np.issubdtype(arr.dtype, np.datetime64):
-                    # Convert to ISO format strings
-                    return pd.to_datetime(arr).astype(str).tolist()
-
-                # Handle timedelta types
-                if np.issubdtype(arr.dtype, np.timedelta64):
-                    # Convert to total seconds
-                    return (arr / np.timedelta64(1, 's')).tolist()
-
-                # Convert to list
-                lst = arr.tolist()
-
-                # Recursively replace NaN and Inf with None for JSON compatibility
-                return sanitize_for_json(lst)
-
-            # Extract coordinates (limit size)
-            print(f"\n=== EXTRACTING COORDINATES ===")
-            for coord_name, coord_data in combined_dataset.coords.items():
-                try:
-                    print(f"Coordinate: {coord_name}, dtype: {coord_data.dtype}, size: {coord_data.size}, shape: {coord_data.shape}")
-                    if coord_data.size < 100000:
-                        converted = safe_tolist(coord_data.values)
-                        result['coords'][coord_name] = converted
-                        print(f"  ✓ Converted: type={type(converted).__name__}, sample={str(converted)[:100] if converted else 'None'}")
-                    else:
-                        result['coords'][coord_name] = {
-                            'error': f'Coordinate too large ({coord_data.size} points)',
-                            'shape': list(coord_data.shape)
-                        }
-                        print(f"  ⊘ Skipped: too large")
-                except Exception as e:
-                    print(f"  ✗ ERROR: {type(e).__name__}: {str(e)}")
-                    import traceback
-                    traceback.print_exc()
-                    result['coords'][coord_name] = {
-                        'error': f'Could not serialize coordinate: {str(e)}'
-                    }
-
-            # Extract data variables (with size limits)
-            print(f"\n=== EXTRACTING DATA VARIABLES ===")
-            for var_name in combined_dataset.data_vars.keys():
-                var = combined_dataset[var_name]
-
-                # Check if variable has sample dimension (suitable for legend)
-                if sample_dim and sample_dim in var.dims:
-                    result['available_legend_vars'].append(var_name)
-
-                # Only include if total size is reasonable (<100k points)
-                print(f"Variable: {var_name}, dtype: {var.dtype}, size: {var.size}, shape: {var.shape}, dims: {var.dims}")
-                if var.size < 100000:
-                    try:
-                        converted = safe_tolist(var.values)
-                        result['data'][var_name] = {
-                            'values': converted,
-                            'dims': list(var.dims),
-                            'shape': list(var.shape),
-                            'dtype': str(var.dtype)
-                        }
-                        print(f"  ✓ Converted: type={type(converted).__name__}, sample={str(converted)[:100] if converted else 'None'}")
-                    except Exception as e:
-                        print(f"  ✗ ERROR: {type(e).__name__}: {str(e)}")
-                        import traceback
-                        traceback.print_exc()
-                        result['data'][var_name] = {
-                            'error': f'Could not serialize variable {var_name}: {str(e)}',
-                            'dims': list(var.dims),
-                            'shape': list(var.shape)
-                        }
-                else:
-                    result['data'][var_name] = {
-                        'error': f'Variable too large ({var.size} points)',
-                        'dims': list(var.dims),
-                        'shape': list(var.shape)
-                    }
-                    print(f"  ⊘ Skipped: too large")
-
-            # Test JSON serialization before returning
-            print(f"\n=== TESTING JSON SERIALIZATION ===")
-            try:
-                import json
-                json_str = json.dumps(result)
-                print(f"✓ JSON serialization successful, length: {len(json_str)} chars")
-            except Exception as json_err:
-                print(f"✗ JSON serialization FAILED: {type(json_err).__name__}: {str(json_err)}")
-                # Try to find which field is problematic
-                for key in ['coords', 'data']:
-                    if key in result:
-                        print(f"\nTesting '{key}' field:")
-                        for subkey, subval in result[key].items():
-                            try:
-                                json.dumps({subkey: subval})
-                                print(f"  ✓ {subkey}: OK")
-                            except Exception as e:
-                                print(f"  ✗ {subkey}: FAILED - {type(e).__name__}: {str(e)}")
-                                print(f"    Type: {type(subval)}, Sample: {str(subval)[:200]}")
-
-            return result
-
-        except Exception as e:
-            print(f"\n✗ EXCEPTION in tiled_get_combined_plot_data: {type(e).__name__}: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return {
-                'status': 'error',
-                'message': f'Error extracting dataset structure: {str(e)}'
-            }
-
-    def tiled_get_gantt_metadata(self, entry_ids, **kwargs):
-        """Get metadata for Gantt chart from multiple Tiled entries.
-
-        This is a lightweight endpoint that only fetches metadata without
-        loading or combining the actual datasets.
-
-        Args:
-            entry_ids: JSON string array of entry IDs
-
-        Returns:
-            dict with list of metadata for each entry
-        """
-        import json
-
-        # Parse entry_ids from JSON string
-        try:
-            if isinstance(entry_ids, str):
-                entry_ids_list = json.loads(entry_ids)
-            else:
-                entry_ids_list = entry_ids
-        except json.JSONDecodeError as e:
-            return {
-                'status': 'error',
-                'message': f'Invalid JSON in entry_ids parameter: {str(e)}'
-            }
-
-        # Get tiled client
-        client = self._get_tiled_client()
-        if isinstance(client, dict) and client.get('status') == 'error':
-            return client
-
-        # Fetch metadata for each entry
-        metadata_list = []
-        skipped_entries = []
-
-        for entry_id in entry_ids_list:
-            try:
-                if entry_id not in client:
-                    skipped_entries.append({
-                        'entry_id': entry_id,
-                        'reason': 'Entry not found in Tiled'
-                    })
-                    continue
-
-                item = client[entry_id]
-                tiled_metadata = dict(item.metadata) if hasattr(item, 'metadata') else {}
-
-                # Extract all metadata fields
-                # Check both direct metadata and nested attrs
-                attrs = tiled_metadata.get('attrs', {})
-                meta = tiled_metadata.get('meta', {}) or attrs.get('meta', {})
-
-                metadata_list.append({
-                    'entry_id': entry_id,
-                    'sample_name': tiled_metadata.get('sample_name') or attrs.get('sample_name', ''),
-                    'sample_uuid': tiled_metadata.get('sample_uuid') or attrs.get('sample_uuid', ''),
-                    'task_name': tiled_metadata.get('task_name') or attrs.get('task_name', ''),
-                    'driver_name': tiled_metadata.get('driver_name') or attrs.get('driver_name', ''),
-                    'AL_campaign_name': tiled_metadata.get('AL_campaign_name') or attrs.get('AL_campaign_name', ''),
-                    'AL_uuid': tiled_metadata.get('AL_uuid') or attrs.get('AL_uuid', ''),
-                    'meta': meta
-                })
-
-            except Exception as e:
-                skipped_entries.append({
-                    'entry_id': entry_id,
-                    'reason': f'Error fetching metadata: {str(e)}'
-                })
-
-        return {
-            'status': 'success',
-            'metadata': metadata_list,
-            'skipped_entries': skipped_entries
-        }
-
-    def tiled_download_combined_dataset(self, entry_ids, **kwargs):
-        """Download the concatenated xarray dataset as NetCDF file.
-
-        Args:
-            entry_ids: JSON string array of entry IDs (to regenerate dataset if needed)
-
-        Returns:
-            NetCDF file download with appropriate headers
-        """
-        from flask import Response
-        import json
-        import xarray as xr
-        from datetime import datetime
-        import io
-
-        # Check if we have a cached dataset with matching entry_ids
-        if (hasattr(self, '_cached_combined_dataset') and
-            hasattr(self, '_cached_entry_ids')):
-
-            # Parse requested entry_ids
-            try:
-                if isinstance(entry_ids, str):
-                    entry_ids_list = json.loads(entry_ids)
-                else:
-                    entry_ids_list = entry_ids
-            except:
-                entry_ids_list = None
-
-            # Check if cache matches
-            if entry_ids_list == self._cached_entry_ids:
-                combined_dataset = self._cached_combined_dataset
-            else:
-                # Regenerate dataset
-                result = self.tiled_get_combined_plot_data(entry_ids, **kwargs)
-                if result['status'] == 'error':
-                    return result
-                combined_dataset = self._cached_combined_dataset
-        else:
-            # No cache, generate dataset
-            result = self.tiled_get_combined_plot_data(entry_ids, **kwargs)
-            if result['status'] == 'error':
-                return result
-            combined_dataset = self._cached_combined_dataset
-
-        # Serialize to NetCDF
-        try:
-            # Create in-memory bytes buffer
-            buffer = io.BytesIO()
-
-            # Convert any object-type coordinates to strings for NetCDF compatibility
-            ds_copy = combined_dataset.copy()
-            for coord_name in ds_copy.coords:
-                coord = ds_copy.coords[coord_name]
-                if coord.dtype == object:
-                    # Convert objects to strings
-                    ds_copy.coords[coord_name] = coord.astype(str)
-
-            # Also convert object-type data variables
-            for var_name in ds_copy.data_vars:
-                var = ds_copy[var_name]
-                if var.dtype == object:
-                    ds_copy[var_name] = var.astype(str)
-
-            # Write to NetCDF with netcdf4 engine for better compatibility
-            ds_copy.to_netcdf(buffer, engine='netcdf4', format='NETCDF4')
-            buffer.seek(0)
-
-            # Generate filename with timestamp
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f'combined_dataset_{timestamp}.nc'
-
-            # Return as file download
-            return Response(
-                buffer.getvalue(),
-                mimetype='application/x-netcdf',
-                headers={
-                    'Content-Disposition': f'attachment; filename="{filename}"',
-                    'Content-Type': 'application/x-netcdf'
-                }
-            )
-
-        except Exception as e:
-            return {
-                'status': 'error',
-                'message': f'Error creating NetCDF file: {str(e)}'
-            }

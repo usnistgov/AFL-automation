@@ -14,7 +14,7 @@ class MassBalanceWebAppMixin:
         base = pathlib.Path(__file__).parent.parent / "apps" / "mixdoctor"
         html = Template((base / "mixdoctor.html").read_text())
         css = (base / "css" / "style.css").read_text()
-        plotly = (base / "js" / "plotly.min.js").read_text()
+        plotly = (base / "js" / "plotly.min.js").read_text(encoding="utf-8")
         js = (base / "js" / "main.js").read_text()
         return html.render(inline_css=css, inline_plotly=plotly, inline_js=js)
 

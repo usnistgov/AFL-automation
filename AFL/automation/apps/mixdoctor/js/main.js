@@ -966,15 +966,24 @@ async function saveComponentRow(row) {
         }
     }
 
+    var payload = {
+        r: 'update_component',
+        uid: uid,
+    };
+
+    [
+        ['name', name],
+        ['density', density],
+        ['formula', formula],
+        ['sld', sld],
+    ].forEach(function(entry) {
+        var key = entry[0];
+        var value = entry[1];
+        if (value !== '') payload[key] = value;
+    });
+
     try {
-        await queryDriver({
-            r: 'update_component',
-            uid: uid,
-            name: name,
-            density: density,
-            formula: formula,
-            sld: sld,
-        });
+        await queryDriver(payload);
         showStatus('Component updated.');
         loadComponentNames();
     } catch (e) {

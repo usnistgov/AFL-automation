@@ -4,6 +4,7 @@ import logging
 import inspect
 import pathlib
 import uuid
+import os
 
 from AFL.automation.APIServer.DriverWebAppsMixin import DriverWebAppsMixin
 
@@ -51,7 +52,7 @@ class Driver(DriverWebAppsMixin):
         "tiled_browser_css": pathlib.Path(__file__).parent.parent / "apps" / "tiled_browser" / "css",
     }
 
-    def __init__(self, name, defaults=None, overrides=None, useful_links=None):
+    def __init__(self, name, defaults=None, overrides=None, useful_links=None, afl_home=None):
         self.app = None
         self.data = None
         self.dropbox = None
@@ -60,10 +61,7 @@ class Driver(DriverWebAppsMixin):
         self._tiled_client = None  # Cached Tiled client
         self._combined_dataset_cache = {}
         self._combined_dataset_cache_order = []
-        self._plot_variable_payload_cache = {}
-        self._plot_variable_payload_cache_order = []
         self._max_combined_dataset_cache = 3
-        self._max_variable_payload_cache = 64
 
         if name is None:
             self.name = 'Driver'
@@ -76,7 +74,10 @@ class Driver(DriverWebAppsMixin):
             useful_links["Tiled Browser"] = "/tiled_browser"
             self.useful_links = useful_links
 
-        self.path = pathlib.Path.home() / '.afl'
+        resolved_afl_home = afl_home if afl_home is not None else os.environ.get('AFL_HOME')
+        if resolved_afl_home is None or str(resolved_afl_home).strip() == '':
+            resolved_afl_home = pathlib.Path.home() / '.afl'
+        self.path = pathlib.Path(resolved_afl_home).expanduser()
         self.path.mkdir(exist_ok=True,parents=True)
         self.filepath = self.path / (name + '.config.json')
 
@@ -390,39 +391,24 @@ class Driver(DriverWebAppsMixin):
         return super().tiled_get_data(entry_id, **kwargs)
 
     @unqueued()
+    def tiled_get_xarray_html(self, entry_ids, **kwargs):
+        """Return xarray _repr_html_() for one or more Tiled entries."""
+        return super().tiled_get_xarray_html(entry_ids, **kwargs)
+
+    @unqueued()
     def tiled_get_metadata(self, entry_id, **kwargs):
         """Proxy endpoint to get metadata from Tiled."""
         return super().tiled_get_metadata(entry_id, **kwargs)
 
     @unqueued()
+    def tiled_get_full_json(self, entry_id, **kwargs):
+        """Proxy endpoint to get JSON-serializable full data for one entry."""
+        return super().tiled_get_full_json(entry_id, **kwargs)
+
+    @unqueued()
     def tiled_get_distinct_values(self, field, **kwargs):
         """Get distinct values for a metadata field from Tiled."""
         return super().tiled_get_distinct_values(field, **kwargs)
-
-    @unqueued()
-    def tiled_get_plot_manifest(self, entry_ids, **kwargs):
-        """Return lightweight plotting manifest without eager data materialization."""
-        return super().tiled_get_plot_manifest(entry_ids, **kwargs)
-
-    @unqueued()
-    def tiled_get_plot_variable_data(self, entry_ids, var_name, cast_float32='true', **kwargs):
-        """Return one variable payload for plotting, fetched lazily."""
-        return super().tiled_get_plot_variable_data(entry_ids, var_name, cast_float32=cast_float32, **kwargs)
-
-    @unqueued()
-    def tiled_get_combined_plot_data(self, entry_ids, **kwargs):
-        """Legacy eager endpoint for combined plot payloads."""
-        return super().tiled_get_combined_plot_data(entry_ids, **kwargs)
-
-    @unqueued()
-    def tiled_get_gantt_metadata(self, entry_ids, **kwargs):
-        """Get metadata for Gantt chart from multiple Tiled entries."""
-        return super().tiled_get_gantt_metadata(entry_ids, **kwargs)
-
-    @unqueued()
-    def tiled_download_combined_dataset(self, entry_ids, **kwargs):
-        """Download concatenated xarray dataset as NetCDF."""
-        return super().tiled_download_combined_dataset(entry_ids, **kwargs)
 
     @unqueued()
     def tiled_upload_dataset(

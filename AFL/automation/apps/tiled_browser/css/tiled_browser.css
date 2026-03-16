@@ -41,6 +41,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
+    max-width: 520px;
 }
 
 .status-indicator {
@@ -58,6 +59,11 @@ body {
 .status-loading .status-indicator {
     background-color: #f39c12;
     animation: pulse 0.5s infinite;
+}
+
+.status-proxy .status-indicator {
+    background-color: #f39c12;
+    animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
@@ -118,6 +124,33 @@ body {
 
 .tab-content.active {
     display: block;
+    max-height: 1200px;
+    opacity: 1;
+    transform: translateY(0);
+    transition: max-height 0.28s ease, opacity 0.22s ease, transform 0.28s ease, padding 0.28s ease;
+}
+
+.tab-container.collapsed .tab-content.active {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.search-section-divider {
+    height: 1px;
+    margin: 16px 0 14px;
+    background-color: #dfe3e8;
+}
+
+.search-section-heading {
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
 }
 
 #filter-selects {
@@ -303,7 +336,8 @@ body {
 #query-rows {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    margin-bottom: 8px;
 }
 
 .query-row {
@@ -357,6 +391,8 @@ body {
 #search-buttons {
     display: flex;
     gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
 }
 
 #add-query-button, #search-button, #clear-search-button {
@@ -569,7 +605,7 @@ body {
 
 #info-bar {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 24px;
     font-size: 14px;
@@ -578,14 +614,20 @@ body {
 
 #selection-controls {
     display: flex;
-    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 10px;
+    margin-top: 8px;
 }
 
 #refresh-button, #select-all-button, #copy-entry-id-button, #copy-sample-uuid-button, #plot-selected-btn, #gantt-selected-btn {
     padding: 8px 16px;
+    min-height: 36px;
     border: none;
     border-radius: 4px;
     font-size: 14px;
+    line-height: 1.2;
     cursor: pointer;
     transition: background-color 0.2s, opacity 0.2s;
 }
@@ -967,6 +1009,12 @@ body {
     #info-bar {
         flex-wrap: wrap;
         gap: 12px;
+    }
+
+    #selection-controls {
+        width: 100%;
+        row-gap: 8px;
+        margin-top: 6px;
     }
 
     #page-size-container {

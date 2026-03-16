@@ -24,8 +24,11 @@
     <div id="components-tab" class="tab-panel active">
         <div class="tab-toolbar">
             <button class="toolbar-btn" id="components-refresh-btn">Refresh</button>
+            <button class="toolbar-btn" id="components-upload-json-btn">Upload JSON</button>
+            <button class="toolbar-btn" id="components-download-json-btn">Download JSON</button>
             <button class="primary-btn" id="components-add-btn">+ Add Component</button>
             <span id="components-status" class="components-status"></span>
+            <span id="components-source-badge" class="source-badge">Source: unknown</span>
         </div>
         <div id="components-editor">
             <table class="data-table components-table">
@@ -54,16 +57,31 @@
             <button class="primary-btn" id="upload-stocks-btn">Upload Stocks</button>
             <button class="toolbar-btn" id="add-stock-btn">+ Add Stock</button>
             <button class="toolbar-btn" id="load-stocks-from-server-btn">Load from Server</button>
+            <label class="stocks-tags-input-wrap">Tags
+                <input type="text" id="stocks-tags-input" placeholder="comma-separated tags">
+            </label>
         </div>
-        <div id="stocks-upload-errors"></div>
-        <div id="stock-cards-container"></div>
-        <div id="solution-diagnostics-panel">
-            <div class="diagnostics-header">
-                <div class="panel-title">Solution Creation Output</div>
-                <button class="toolbar-btn" id="solution-diagnostics-clear-btn">Clear</button>
+        <div id="stocks-page-layout">
+            <div id="stocks-editor-column">
+                <div id="stocks-upload-errors"></div>
+                <div id="stock-cards-container"></div>
+                <div id="solution-diagnostics-panel">
+                    <div class="diagnostics-header">
+                        <div class="panel-title">Solution Creation Output</div>
+                        <button class="toolbar-btn" id="solution-diagnostics-clear-btn">Clear</button>
+                    </div>
+                    <div id="solution-diagnostics-body">
+                        <p class="empty-state">No diagnostics yet.</p>
+                    </div>
+                </div>
             </div>
-            <div id="solution-diagnostics-body">
-                <p class="empty-state">No diagnostics yet.</p>
+            <div id="stocks-history-column">
+                <div class="panel-title">Stock History</div>
+                <div id="stocks-history-source" class="source-badge">Source: unknown</div>
+                <input type="text" id="stocks-history-filter-input" placeholder="Filter by date, tag, component, or stock">
+                <div id="stocks-history-list">
+                    <p class="empty-state">No stock history yet.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -171,8 +189,18 @@
                 <div id="stocks-list"></div>
             </div>
             <div id="targets-panel">
-                <div class="panel-title">Targets</div>
+                <div class="panel-header">
+                    <div class="panel-title" id="targets-panel-title">Targets</div>
+                    <label class="targets-sort-control" for="targets-failed-first-input">
+                        <input type="checkbox" id="targets-failed-first-input">
+                        Failed First
+                    </label>
+                </div>
+                <div id="targets-list-status" class="targets-list-status"></div>
                 <div id="targets-list"></div>
+                <div id="targets-load-more-wrap" class="targets-load-more-wrap" hidden>
+                    <button class="toolbar-btn" id="targets-load-more-btn">Load More</button>
+                </div>
             </div>
         </div>
     </div>
@@ -437,6 +465,63 @@
     </div>
 
     <div id="status-message"></div>
+</div>
+
+<!-- Components Upload Modal -->
+<div id="components-upload-modal-overlay">
+    <div id="components-upload-modal">
+        <div id="components-upload-modal-header">
+            <span id="components-upload-modal-title">Upload Components JSON</span>
+            <button id="components-upload-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="components-upload-modal-body">
+            <p class="target-upload-help">
+                Paste JSON as an array of component objects or an object with a <code>components</code> array.
+                Supported fields are <code>name</code>, <code>density</code>, <code>formula</code>, <code>sld</code>, and optional <code>uid</code>.
+            </p>
+            <label class="submit-inline-field"><span>JSON file</span>
+                <input type="file" id="components-upload-file-input" accept=".json,application/json">
+            </label>
+            <textarea id="components-upload-input" spellcheck="false" placeholder='Examples:
+[{"name":"Water","density":"1.0 g/ml","formula":"H2O"}]
+
+{"components":[{"uid":"abc123","name":"PEG","density":"1.12 g/ml"}]}'></textarea>
+            <div id="components-upload-summary"></div>
+            <div id="components-upload-errors"></div>
+            <div id="components-upload-preview"></div>
+        </div>
+        <div id="components-upload-modal-footer">
+            <button class="toolbar-btn" id="components-upload-cancel-btn">Cancel</button>
+            <button class="toolbar-btn" id="components-upload-parse-btn">Parse</button>
+            <button class="primary-btn" id="components-upload-submit-btn" disabled>Upload Components</button>
+        </div>
+    </div>
+</div>
+
+<!-- Stock History Modal -->
+<div id="stock-history-modal-overlay">
+    <div id="stock-history-modal">
+        <div id="stock-history-modal-header">
+            <span id="stock-history-modal-title">Stock Snapshot</span>
+            <button id="stock-history-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="stock-history-modal-body">
+            <div id="stock-history-modal-meta"></div>
+            <div id="stock-history-modal-tags"></div>
+            <div>
+                <div class="stock-history-modal-section-title">Unique Components</div>
+                <div id="stock-history-modal-components"></div>
+            </div>
+            <div>
+                <div class="stock-history-modal-section-title">Stocks</div>
+                <div id="stock-history-modal-stocks"></div>
+            </div>
+        </div>
+        <div id="stock-history-modal-footer">
+            <button class="toolbar-btn" id="stock-history-modal-cancel-btn">Cancel</button>
+            <button class="primary-btn" id="stock-history-modal-load-btn">Load</button>
+        </div>
+    </div>
 </div>
 
 <!-- Target Upload Modal -->

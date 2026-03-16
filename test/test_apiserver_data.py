@@ -8,6 +8,7 @@ import os
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import importlib
 
 from AFL.automation.APIServer.data import DataPacket, DataJSON, DataTiled, DataTrashcan
 
@@ -372,9 +373,15 @@ class TestDataTiled:
     @pytest.fixture
     def mock_tiled_server(self, monkeypatch):
         """Mock tiled client for testing without actual server"""
+        class MockTiledContainer:
+            def __init__(self, key, metadata=None):
+                self.key = key
+                self.metadata = metadata or {}
+
         class MockTiledClient:
             def __init__(self, *args, **kwargs):
                 self.data = []
+                self.containers = {}
             
             def new(self, key=None, structure=None, metadata=None):
                 self.data.append({
@@ -386,6 +393,14 @@ class TestDataTiled:
             
             def write(self, data):
                 self.data[-1]['data'] = data
+
+            def __getitem__(self, key):
+                return self.containers[key]
+
+            def create_container(self, key, metadata=None):
+                container = MockTiledContainer(key, metadata=metadata)
+                self.containers[key] = container
+                return container
         
         mock_client = MockTiledClient()
         
@@ -427,6 +442,24 @@ class TestDataTiled:
             assert 'array_name' not in dp.keys()
             # Other data should remain
             assert dp['test_key'] == 'test_value'
+
+    def test_tiled_writes_use_run_document_prefix(self, mock_tiled_server, monkeypatch):
+        """Test that DataTiled writes into run_documents with the uuid as the key."""
+        captured = {}
+
+        def fake_write_xarray_dataset(client, dataset, key=None):
+            captured['client'] = client
+            captured['key'] = key
+
+        tiled_mod = importlib.import_module('AFL.automation.APIServer.data.DataTiled')
+        monkeypatch.setattr(tiled_mod, 'write_xarray_dataset', fake_write_xarray_dataset)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dp = DataTiled('http://localhost:8000', 'test-api-key', tmpdir)
+            dp['uuid'] = 'QD-123'
+            dp.subtransmit_array('test_array', np.array([1, 2, 3]))
+            assert captured['client'] is mock_tiled_server['run_documents']
+            assert captured['key'] == 'QD-123'
 
 
 # Integration test to verify import works

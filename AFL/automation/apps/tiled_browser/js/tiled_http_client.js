@@ -1,4 +1,6 @@
 (function attachTiledHttpClient(global) {
+    const RUN_DOCUMENTS_NODE = 'run_documents';
+
     const DEFAULT_FIELD_CANDIDATES = {
         task_name: ['task_name', 'attrs.task_name'],
         driver_name: ['driver_name', 'attrs.driver_name'],
@@ -41,6 +43,15 @@
         const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
         const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
         return `${normalizedBase}/${normalizedPath}`;
+    }
+
+    function normalizeEntryId(entryId) {
+        const raw = String(entryId || '').trim().replace(/^\/+|\/+$/g, '');
+        const prefix = `${RUN_DOCUMENTS_NODE}/`;
+        if (raw.startsWith(prefix)) {
+            return raw.slice(prefix.length);
+        }
+        return raw;
     }
 
     function isLikelyCorsFailure(details) {
@@ -247,7 +258,7 @@
                 const probeParams = new URLSearchParams();
                 probeParams.set('page[offset]', '0');
                 probeParams.set('page[limit]', '1');
-                const probeUrl = `${joinUrl(base, 'api/v1/search/')}?${probeParams.toString()}`;
+                const probeUrl = `${joinUrl(base, `api/v1/search/${RUN_DOCUMENTS_NODE}`)}?${probeParams.toString()}`;
                 const response = await fetch(probeUrl, {
                     method: 'GET',
                     headers: {
@@ -358,7 +369,8 @@
                 }
                 return legacySearch(legacyPayload, { signal });
             }
-            const endpoint = path ? `api/v1/search/${path}` : 'api/v1/search/';
+            const normalizedPath = path || RUN_DOCUMENTS_NODE;
+            const endpoint = `api/v1/search/${normalizedPath}`;
             return tiledFetch(endpoint, { params, signal, responseType: 'json' });
         }
 
@@ -368,35 +380,41 @@
                 const normalizedField = fallbackField.startsWith('attrs.') ? fallbackField.slice('attrs.'.length) : fallbackField;
                 return legacyDistinct(normalizedField, { signal });
             }
-            const endpoint = path ? `api/v1/distinct/${path}` : 'api/v1/distinct/';
+            const normalizedPath = path || RUN_DOCUMENTS_NODE;
+            const endpoint = `api/v1/distinct/${normalizedPath}`;
             return tiledFetch(endpoint, { params, signal, responseType: 'json' });
         }
 
         async function metadata(entryId, { signal } = {}) {
+            const normalizedEntryId = normalizeEntryId(entryId);
             if (useProxy) {
-                const payload = await legacyMetadata(entryId, { signal });
+                const payload = await legacyMetadata(normalizedEntryId, { signal });
                 if (payload.status === 'error') {
-                    throw new Error(payload.message || `Entry ${entryId} not found`);
+                    throw new Error(payload.message || `Entry ${normalizedEntryId} not found`);
                 }
                 return {
                     data: {
-                        id: entryId,
+                        id: normalizedEntryId,
                         attributes: { metadata: payload.metadata || {} },
                         links: {}
                     }
                 };
             }
-            return tiledFetch(`api/v1/metadata/${entryId}`, { signal, responseType: 'json' });
+            return tiledFetch(
+                `api/v1/metadata/${RUN_DOCUMENTS_NODE}/${normalizedEntryId}`,
+                { signal, responseType: 'json' }
+            );
         }
 
         async function full(link, { format = 'application/json', signal, responseType = 'json', entryId = null } = {}) {
+            const normalizedEntryId = entryId ? normalizeEntryId(entryId) : null;
             if (useProxy) {
-                if (!entryId) {
+                if (!normalizedEntryId) {
                     throw new Error('entryId is required for proxy full-data mode');
                 }
-                const payload = await legacyFull(entryId, { responseType, signal });
+                const payload = await legacyFull(normalizedEntryId, { responseType, signal });
                 if (payload.status === 'error') {
-                    throw new Error(payload.message || `Failed to load full data for ${entryId}`);
+                    throw new Error(payload.message || `Failed to load full data for ${normalizedEntryId}`);
                 }
                 if (responseType === 'text') {
                     return payload.html || '';
@@ -406,13 +424,13 @@
 
             // Full-link URLs often point to a different host/port than this web app.
             // If cross-origin, use same-origin proxy endpoints to avoid browser CORS failures.
-            if (entryId) {
+            if (normalizedEntryId) {
                 try {
                     const fullTarget = new URL(link, window.location.href);
                     if (fullTarget.origin !== window.location.origin) {
-                        const payload = await legacyFull(entryId, { responseType, signal });
+                        const payload = await legacyFull(normalizedEntryId, { responseType, signal });
                         if (payload.status === 'error') {
-                            throw new Error(payload.message || `Failed to load full data for ${entryId}`);
+                            throw new Error(payload.message || `Failed to load full data for ${normalizedEntryId}`);
                         }
                         if (responseType === 'text') {
                             return payload.html || '';
@@ -444,10 +462,10 @@
                 return response.json();
             } catch (error) {
                 // Last-chance fallback for CORS/network issues in direct mode.
-                if (entryId) {
-                    const payload = await legacyFull(entryId, { responseType, signal });
+                if (normalizedEntryId) {
+                    const payload = await legacyFull(normalizedEntryId, { responseType, signal });
                     if (payload.status === 'error') {
-                        throw new Error(payload.message || `Failed to load full data for ${entryId}`);
+                        throw new Error(payload.message || `Failed to load full data for ${normalizedEntryId}`);
                     }
                     if (responseType === 'text') {
                         return payload.html || '';

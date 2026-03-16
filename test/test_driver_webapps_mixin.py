@@ -87,7 +87,7 @@ def test_read_tiled_item_falls_back_when_keyword_unsupported():
 
 class _DummyUploadDriver(DriverWebAppsMixin):
     def __init__(self):
-        self._client = object()
+        self._client = _FakeTiledClient()
         self.app = SimpleNamespace(logger=logging.getLogger("test_upload_driver"))
 
     def _get_tiled_client(self):
@@ -102,8 +102,23 @@ class _FakeTiledItem:
         return self._payload
 
 
-class _FakeTiledClient(dict):
+class _FakeTiledContainer(dict):
     pass
+
+
+class _FakeTiledClient:
+    def __init__(self, run_documents=None):
+        self._containers = {}
+        if run_documents is not None:
+            self._containers[DriverWebAppsMixin.TILED_RUN_DOCUMENTS_NODE] = run_documents
+
+    def __getitem__(self, key):
+        return self._containers[key]
+
+    def create_container(self, key, metadata=None):
+        container = _FakeTiledContainer()
+        self._containers[key] = container
+        return container
 
 
 class _DummyFullJsonDriver(DriverWebAppsMixin):
@@ -154,7 +169,7 @@ def test_tiled_get_full_json_returns_columnar_payload():
         },
         coords={"q": [0.01, 0.02, 0.03]},
     )
-    client = _FakeTiledClient({"entry-1": _FakeTiledItem(dataset)})
+    client = _FakeTiledClient(_FakeTiledContainer({"entry-1": _FakeTiledItem(dataset)}))
     driver = _DummyFullJsonDriver(client)
 
     result = driver.tiled_get_full_json("entry-1")

@@ -44,12 +44,26 @@ function escHtml(str) {
         .replace(/"/g, '&quot;');
 }
 
+var componentsUploadState = {
+    parsedComponents: []
+};
+
 // ---- Driver query helper (unqueued) ----
 async function queryDriver(params) {
     var qs = new URLSearchParams(params);
     var url = '/query_driver?' + qs.toString();
     var r = await authedFetch(url, { method: 'GET' });
-    if (!r.ok) throw new Error('Driver query failed');
+    if (!r.ok) {
+        var detail = '';
+        try {
+            detail = (await r.text()).trim();
+        } catch (e) {
+            detail = '';
+        }
+        var msg = 'Driver query failed (' + r.status + ')';
+        if (detail) msg += ': ' + detail;
+        throw new Error(msg);
+    }
     return r;
 }
 
@@ -483,9 +497,76 @@ async function enrichBalancedTargetForModal(balanceEntry) {
 
 // ---- Detail Modal ----
 var stocksData = [];
+var allTargetsData = [];
 var targetsData = [];
+var stockHistoryEntries = [];
+var stockHistoryFilterText = '';
+var selectedStockHistoryEntry = null;
 var currentModalIdx = -1;
 var currentModalType = null;
+var targetsPaginationState = {
+    pageSize: 50,
+    renderedCount: 0,
+    failedFirst: false,
+    scrollThresholdPx: 240
+};
+var storageSources = {
+    components: 'unknown',
+    stock_history: 'unknown',
+    stocks: 'local',
+};
+
+function getTargetOriginalIndex(target, fallbackIdx) {
+    if (target && target._originalIdx !== undefined && target._originalIdx !== null) {
+        return target._originalIdx;
+    }
+    return fallbackIdx;
+}
+
+function getTargetBalanceEntry(target, fallbackIdx) {
+    if (!target) return null;
+    return getBalanceEntry(target.name, getTargetOriginalIndex(target, fallbackIdx));
+}
+
+function isFailedBalanceEntry(entry) {
+    return !!entry && entry.success === false;
+}
+
+function normalizeTargetsForState(targets) {
+    if (!Array.isArray(targets)) return [];
+    return targets.map(function(target, idx) {
+        var normalized = Object.assign({}, target || {});
+        normalized._originalIdx = idx;
+        return normalized;
+    });
+}
+
+function setSourceBadge(elId, source) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    el.textContent = 'Source: ' + (source || 'unknown');
+}
+
+function applyStorageSourceBadges() {
+    setSourceBadge('components-source-badge', storageSources.components);
+    setSourceBadge('stocks-history-source', storageSources.stock_history);
+}
+
+async function refreshStorageSources() {
+    try {
+        var r = await fetch('/get_storage_sources');
+        if (!r.ok) return;
+        var data = await r.json();
+        if (data && typeof data === 'object') {
+            storageSources.components = data.components || storageSources.components;
+            storageSources.stock_history = data.stock_history || storageSources.stock_history;
+            storageSources.stocks = data.stocks || storageSources.stocks;
+            applyStorageSourceBadges();
+        }
+    } catch (e) {
+        // ignore source refresh failures
+    }
+}
 
 function showDetailModal(data, type, idx) {
     currentModalIdx = (idx !== undefined) ? idx : -1;
@@ -511,7 +592,7 @@ function showDetailModal(data, type, idx) {
     if (data.total_volume) {
         summaryParts.push('<span class="summary-item"><strong>Total Volume:</strong> ' + fmtQty(data.total_volume) + '</span>');
     }
-    var br = (type === 'target') ? getBalanceEntry(data.name, idx) : null;
+    var br = (type === 'target') ? getTargetBalanceEntry(data, idx) : null;
     if (br) {
         var maxE = getMaxError(br);
         summaryParts.push(br.success
@@ -693,60 +774,171 @@ function renderStocks(data) {
 // ---- Load & Render Targets ----
 async function loadTargets() {
     var container = document.getElementById('targets-list');
+    var statusEl = document.getElementById('targets-list-status');
+    var loadMoreWrap = document.getElementById('targets-load-more-wrap');
     container.innerHTML = '<p class="empty-state">Loading...</p>';
+    if (statusEl) statusEl.textContent = '';
+    if (loadMoreWrap) loadMoreWrap.hidden = true;
     try {
         var r = await fetch('/list_targets');
         if (!r.ok) {
+            allTargetsData = [];
+            targetsData = [];
             container.innerHTML = '<p class="empty-state">Failed to load targets.</p>';
             return;
         }
-        targetsData = await r.json();
-        renderTargets(targetsData);
+        allTargetsData = normalizeTargetsForState(await r.json());
+        renderTargets(allTargetsData);
     } catch (e) {
+        allTargetsData = [];
+        targetsData = [];
         container.innerHTML = '<p class="empty-state">Error loading targets.</p>';
     }
 }
 
+function getOrderedTargetsForView(data) {
+    var ordered = Array.isArray(data) ? data.slice() : [];
+    if (!targetsPaginationState.failedFirst || balanceReportArray.length === 0) {
+        return ordered;
+    }
+    ordered.sort(function(a, b) {
+        var aFailed = isFailedBalanceEntry(getTargetBalanceEntry(a, a && a._originalIdx));
+        var bFailed = isFailedBalanceEntry(getTargetBalanceEntry(b, b && b._originalIdx));
+        if (aFailed !== bFailed) return aFailed ? -1 : 1;
+        return getTargetOriginalIndex(a, 0) - getTargetOriginalIndex(b, 0);
+    });
+    return ordered;
+}
+
+function updateTargetsListStatus() {
+    var total = targetsData.length;
+    var shown = Math.min(targetsPaginationState.renderedCount, total);
+    var statusEl = document.getElementById('targets-list-status');
+    var loadMoreWrap = document.getElementById('targets-load-more-wrap');
+    if (!statusEl || !loadMoreWrap) return;
+
+    if (total === 0) {
+        statusEl.textContent = '';
+        loadMoreWrap.hidden = true;
+        return;
+    }
+
+    var parts = ['Showing ' + shown + ' of ' + total];
+    if (targetsPaginationState.failedFirst && balanceReportArray.length > 0) {
+        parts.push('Failed First');
+    }
+    statusEl.textContent = parts.join(' | ');
+    loadMoreWrap.hidden = shown >= total;
+}
+
+function buildTargetCardHtml(target, viewIdx) {
+    var originalIdx = getTargetOriginalIndex(target, viewIdx);
+    var locBadge = target.location
+        ? '<span class="location-badge">' + escHtml(target.location) + '</span>'
+        : '';
+    var colorCls = balanceCardClass(target.name, originalIdx);
+    var indicator = balanceCardIndicator(target.name, originalIdx);
+    return '<div class="card clickable ' + colorCls + '" data-view-idx="' + viewIdx + '">'
+        + '<div class="card-header">'
+        + '<span class="card-name">' + escHtml(target.name || '') + '</span>'
+        + locBadge
+        + indicator
+        + '</div>'
+        + '<div class="component-list">' + renderComponentList(target) + '</div>'
+        + '</div>';
+}
+
+function appendNextTargetsPage() {
+    var container = document.getElementById('targets-list');
+    if (!container) return false;
+    if (targetsPaginationState.renderedCount >= targetsData.length) {
+        updateTargetsListStatus();
+        return false;
+    }
+
+    var start = targetsPaginationState.renderedCount;
+    var end = Math.min(start + targetsPaginationState.pageSize, targetsData.length);
+    var html = targetsData.slice(start, end).map(function(target, offset) {
+        return buildTargetCardHtml(target, start + offset);
+    }).join('');
+    container.insertAdjacentHTML('beforeend', html);
+    targetsPaginationState.renderedCount = end;
+    updateTargetsListStatus();
+    return true;
+}
+
+function fillTargetsViewportIfNeeded() {
+    var panel = document.getElementById('targets-panel');
+    if (!panel) return;
+    while (targetsPaginationState.renderedCount < targetsData.length
+        && panel.scrollHeight <= panel.clientHeight + 40) {
+        if (!appendNextTargetsPage()) break;
+    }
+}
+
+function maybeLoadMoreTargets() {
+    var panel = document.getElementById('targets-panel');
+    if (!panel) return;
+    if (targetsPaginationState.renderedCount >= targetsData.length) return;
+    var distanceToBottom = panel.scrollHeight - panel.scrollTop - panel.clientHeight;
+    if (distanceToBottom <= targetsPaginationState.scrollThresholdPx) {
+        appendNextTargetsPage();
+        fillTargetsViewportIfNeeded();
+    }
+}
+
+function handleTargetsListClick(event) {
+    var card = event.target.closest('.card.clickable[data-view-idx]');
+    if (!card) return;
+    var idx = parseInt(card.getAttribute('data-view-idx'), 10);
+    if (!isFinite(idx) || !targetsData[idx]) return;
+    showDetailModal(targetsData[idx], 'target', idx);
+}
+
 function renderTargets(data) {
     var container = document.getElementById('targets-list');
+    var titleEl = document.getElementById('targets-panel-title')
+        || document.querySelector('#targets-panel .panel-title');
+    var previousModalTarget = null;
+    if (currentModalType === 'target' && currentModalIdx >= 0 && targetsData[currentModalIdx]) {
+        previousModalTarget = targetsData[currentModalIdx];
+    }
+
+    targetsData = getOrderedTargetsForView(data);
+    targetsPaginationState.renderedCount = 0;
+
     // Update panel title with count and balance results
-    var titleEl = document.querySelector('#targets-panel .panel-title');
     var titleText = 'Targets';
-    if (data && data.length) {
+    if (targetsData.length) {
         if (balanceReportArray.length > 0) {
             var ok = balanceReportArray.filter(function(e) { return e.success; }).length;
-            titleText += ' (' + ok + '/' + data.length + ' succeeded)';
+            titleText += ' (' + ok + '/' + targetsData.length + ' succeeded)';
         } else {
-            titleText += ' (' + data.length + ')';
+            titleText += ' (' + targetsData.length + ')';
         }
     }
     titleEl.textContent = titleText;
-    if (!data || data.length === 0) {
+    if (!targetsData || targetsData.length === 0) {
         container.innerHTML = '<p class="empty-state">No targets configured.</p>';
+        currentModalIdx = targetsData.length ? currentModalIdx : -1;
+        updateTargetsListStatus();
+        updateModalNav();
         return;
     }
-    container.innerHTML = data.map(function(target, idx) {
-        var locBadge = target.location
-            ? '<span class="location-badge">' + escHtml(target.location) + '</span>'
-            : '';
-        var colorCls = balanceCardClass(target.name, idx);
-        var indicator = balanceCardIndicator(target.name, idx);
-        return '<div class="card clickable ' + colorCls + '" data-idx="' + idx + '">'
-            + '<div class="card-header">'
-            + '<span class="card-name">' + escHtml(target.name || '') + '</span>'
-            + locBadge
-            + indicator
-            + '</div>'
-            + '<div class="component-list">' + renderComponentList(target) + '</div>'
-            + '</div>';
-    }).join('');
+    container.innerHTML = '';
+    appendNextTargetsPage();
+    fillTargetsViewportIfNeeded();
 
-    container.querySelectorAll('.card.clickable').forEach(function(card) {
-        card.addEventListener('click', function() {
-            var idx = parseInt(this.getAttribute('data-idx'), 10);
-            showDetailModal(targetsData[idx], 'target', idx);
-        });
-    });
+    if (previousModalTarget) {
+        var originalIdx = getTargetOriginalIndex(previousModalTarget, currentModalIdx);
+        for (var i = 0; i < targetsData.length; i++) {
+            if (getTargetOriginalIndex(targetsData[i], i) === originalIdx) {
+                currentModalIdx = i;
+                break;
+            }
+        }
+        updateModalNav();
+    }
 }
 
 // ---- Balance Execution ----
@@ -846,7 +1038,27 @@ async function runBalance() {
 }
 
 // ---- Tab switching ----
+var MIXDOCTOR_ACTIVE_TAB_KEY = 'mixdoctor-active-tab';
+
+function getInitialTabId() {
+    var defaultTabId = 'components-tab';
+    try {
+        var savedTabId = localStorage.getItem(MIXDOCTOR_ACTIVE_TAB_KEY);
+        if (savedTabId && document.querySelector('.tab-btn[data-tab="' + savedTabId + '"]')) {
+            return savedTabId;
+        }
+    } catch (e) {
+        // Ignore storage errors and fall back to the default tab.
+    }
+    return defaultTabId;
+}
+
 function switchTab(tabId) {
+    try {
+        localStorage.setItem(MIXDOCTOR_ACTIVE_TAB_KEY, tabId);
+    } catch (e) {
+        // Ignore storage errors; tab switching should still work.
+    }
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
         btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
     });
@@ -855,6 +1067,11 @@ function switchTab(tabId) {
     });
     if (tabId === 'components-tab') {
         loadComponentsEditor();
+        refreshStorageSources();
+    }
+    if (tabId === 'stocks-tab') {
+        loadStockHistorySidebar();
+        refreshStorageSources();
     }
     if (tabId === 'balance-tab') {
         loadBalanceSettings();
@@ -901,6 +1118,7 @@ async function loadComponentsEditor() {
         }
         var components = await r.json();
         renderComponentsTable(components);
+        refreshStorageSources();
     } catch (e) {
         body.innerHTML = '<tr><td colspan="6" class="empty-state">Error loading components.</td></tr>';
     }
@@ -913,49 +1131,22 @@ function renderComponentsTable(components) {
         body.innerHTML = '<tr><td colspan="6" class="empty-state">No components in database.</td></tr>';
         return;
     }
-    body.innerHTML = components.map(function(comp) {
-        var name = comp.name || '';
-        var density = comp.density || '';
-        var formula = comp.formula || '';
-        var sld = comp.sld || '';
-        var uid = comp.uid || '';
-        return [
-            '<tr data-uid="', escHtml(uid), '">',
-            '<td><input type="text" class="comp-name-input" value="', escHtml(name), '"></td>',
-            '<td><input type="text" class="comp-density-input" placeholder="e.g. 1.0 g/ml" value="', escHtml(density), '"></td>',
-            '<td><input type="text" class="comp-formula-input" placeholder="optional (e.g. H2O)" value="', escHtml(formula), '"></td>',
-            '<td><input type="text" class="comp-sld-input" placeholder="optional (e.g. 6.35e-6 /A^2)" value="', escHtml(sld), '"></td>',
-            '<td class="uid-cell">', escHtml(uid), '</td>',
-            '<td><div class="components-actions">',
-            '<button class="toolbar-btn comp-save-btn">Save</button>',
-            '<button class="toolbar-btn comp-delete-btn">Delete</button>',
-            '</div></td>',
-            '</tr>'
-        ].join('');
-    }).join('');
-
-    body.querySelectorAll('.comp-save-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var row = this.closest('tr');
-            saveComponentRow(row);
-        });
-    });
-    body.querySelectorAll('.comp-delete-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var row = this.closest('tr');
-            deleteComponentRow(row);
-        });
-    });
+    body.innerHTML = components.map(componentRowHtml).join('');
+    bindComponentRowHandlers(body);
 }
 
 async function saveComponentRow(row) {
     if (!row) return;
     var uid = row.getAttribute('data-uid');
-    if (!uid) return;
     var name = row.querySelector('.comp-name-input').value.trim();
     var density = row.querySelector('.comp-density-input').value.trim();
     var formula = row.querySelector('.comp-formula-input').value.trim();
     var sld = row.querySelector('.comp-sld-input').value.trim();
+
+    if (!name) {
+        showStatus('Component name is required.', true);
+        return;
+    }
 
     if (density) {
         var hasDigit = /[0-9]/.test(density);
@@ -967,9 +1158,9 @@ async function saveComponentRow(row) {
     }
 
     var payload = {
-        r: 'update_component',
-        uid: uid,
+        r: uid ? 'update_component' : 'add_component',
     };
+    if (uid) payload.uid = uid;
 
     [
         ['name', name],
@@ -983,11 +1174,20 @@ async function saveComponentRow(row) {
     });
 
     try {
-        await queryDriver(payload);
-        showStatus('Component updated.');
+        var r = await queryDriver(payload);
+        if (!uid) {
+            var newUid = (await r.text()).trim().replace(/^"|"$/g, '');
+            row.setAttribute('data-uid', newUid);
+            var uidCell = row.querySelector('.uid-cell');
+            if (uidCell) uidCell.textContent = newUid;
+            showStatus('Component added.');
+        } else {
+            showStatus('Component updated.');
+        }
+        loadComponentsEditor();
         loadComponentNames();
     } catch (e) {
-        showStatus('Update failed: ' + e.message, true);
+        showStatus('Save failed: ' + e.message, true);
     }
 }
 
@@ -995,7 +1195,10 @@ async function deleteComponentRow(row) {
     if (!row) return;
     var uid = row.getAttribute('data-uid');
     var name = row.querySelector('.comp-name-input').value.trim();
-    if (!uid) return;
+    if (!uid) {
+        row.remove();
+        return;
+    }
     if (!confirm('Delete component "' + name + '"?')) return;
     try {
         await queryDriver({ r: 'remove_component', uid: uid });
@@ -1007,14 +1210,303 @@ async function deleteComponentRow(row) {
     }
 }
 
-async function addComponentRow() {
+function resetComponentsUploadParseState() {
+    componentsUploadState.parsedComponents = [];
+    var submitBtn = document.getElementById('components-upload-submit-btn');
+    if (submitBtn) submitBtn.disabled = true;
+}
+
+function openComponentsUploadModal() {
+    resetComponentsUploadParseState();
+    var summaryEl = document.getElementById('components-upload-summary');
+    var errorsEl = document.getElementById('components-upload-errors');
+    var previewEl = document.getElementById('components-upload-preview');
+    var fileInput = document.getElementById('components-upload-file-input');
+    if (summaryEl) summaryEl.innerHTML = '';
+    if (errorsEl) errorsEl.innerHTML = '';
+    if (previewEl) previewEl.innerHTML = '<p class="empty-state">Paste JSON and click Parse.</p>';
+    if (fileInput) fileInput.value = '';
+    document.getElementById('components-upload-modal-overlay').classList.add('visible');
+}
+
+function closeComponentsUploadModal() {
+    document.getElementById('components-upload-modal-overlay').classList.remove('visible');
+}
+
+function resetComponentsUploadPreviewMessage(message) {
+    var summaryEl = document.getElementById('components-upload-summary');
+    var errorsEl = document.getElementById('components-upload-errors');
+    var previewEl = document.getElementById('components-upload-preview');
+    if (summaryEl) summaryEl.innerHTML = '';
+    if (errorsEl) errorsEl.innerHTML = '';
+    if (previewEl) previewEl.innerHTML = '<p class="empty-state">' + escHtml(message) + '</p>';
+}
+
+function handleComponentsUploadFileSelection(event) {
+    var inputEl = event && event.target ? event.target : null;
+    var file = inputEl && inputEl.files && inputEl.files[0] ? inputEl.files[0] : null;
+    if (!file) return;
+
+    var textInput = document.getElementById('components-upload-input');
+    if (!textInput) return;
+
+    resetComponentsUploadParseState();
+    resetComponentsUploadPreviewMessage('Loading file. Click Parse to refresh preview.');
+
+    var reader = new FileReader();
+    reader.onload = function(loadEvent) {
+        textInput.value = typeof loadEvent.target.result === 'string' ? loadEvent.target.result : '';
+        resetComponentsUploadPreviewMessage('File loaded. Click Parse to refresh preview.');
+        showStatus('Loaded component JSON file: ' + file.name);
+    };
+    reader.onerror = function() {
+        resetComponentsUploadPreviewMessage('File load failed. Choose another file or paste JSON manually.');
+        showStatus('Failed to read file: ' + file.name, true);
+    };
+    reader.readAsText(file);
+}
+
+function validateComponentDensity(density, label) {
+    if (!density) return;
+    var hasDigit = /[0-9]/.test(density);
+    var hasUnitLetters = /[a-zA-Z]/.test(density);
+    if (!hasDigit || !hasUnitLetters) {
+        throw new Error(label + ' density must include a numeric value and units (e.g. 1.0 g/ml).');
+    }
+}
+
+function normalizeJsonComponentEntry(entry, idx) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+        throw new Error('JSON component #' + (idx + 1) + ' must be an object.');
+    }
+    var out = {};
+    ['uid', 'name', 'density', 'formula', 'sld'].forEach(function(key) {
+        if (entry[key] === null || entry[key] === undefined) return;
+        var value = String(entry[key]).trim();
+        if (!value) return;
+        out[key] = value;
+    });
+    if (!out.name) {
+        throw new Error('JSON component #' + (idx + 1) + ' is missing a name.');
+    }
+    validateComponentDensity(out.density || '', 'Component "' + out.name + '"');
+    return out;
+}
+
+function parseComponentsFromJson(raw) {
+    var text = (raw || '').trim();
+    if (!text) {
+        throw new Error('Input is empty.');
+    }
+    var parsed = JSON.parse(text);
+    var sourceComponents;
+    if (Array.isArray(parsed)) {
+        sourceComponents = parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.components)) {
+        sourceComponents = parsed.components;
+    } else {
+        throw new Error('JSON must be an array of components or an object with a "components" array.');
+    }
+    return {
+        components: sourceComponents.map(function(entry, idx) {
+            return normalizeJsonComponentEntry(entry, idx);
+        })
+    };
+}
+
+function renderComponentsUploadResult(result) {
+    var summaryEl = document.getElementById('components-upload-summary');
+    var errorsEl = document.getElementById('components-upload-errors');
+    var previewEl = document.getElementById('components-upload-preview');
+    if (!summaryEl || !errorsEl || !previewEl) return;
+
+    summaryEl.innerHTML = '<strong>Parsed components:</strong> ' + result.components.length;
+    errorsEl.innerHTML = '';
+
+    if (!result.components || result.components.length === 0) {
+        previewEl.innerHTML = '<p class="empty-state">No valid components parsed.</p>';
+        return;
+    }
+
+    var preview = result.components.slice(0, 5);
+    var suffix = result.components.length > 5 ? '\n... (' + (result.components.length - 5) + ' more components)' : '';
+    previewEl.innerHTML = '<pre class="diagnostic-pre">' + escHtml(JSON.stringify(preview, null, 2) + suffix) + '</pre>';
+}
+
+function parseComponentsUploadInput() {
+    var input = document.getElementById('components-upload-input');
+    if (!input) return;
+    var submitBtn = document.getElementById('components-upload-submit-btn');
+    resetComponentsUploadParseState();
     try {
-        await queryDriver({ r: 'add_component' });
-        showStatus('Component added.');
-        loadComponentsEditor();
-        loadComponentNames();
+        var result = parseComponentsFromJson(input.value);
+        componentsUploadState.parsedComponents = result.components;
+        renderComponentsUploadResult(result);
+        if (submitBtn) submitBtn.disabled = result.components.length === 0;
+        if (result.components.length === 0) {
+            showStatus('Parse complete: no valid components found.', true);
+        } else {
+            showStatus('Parsed ' + result.components.length + ' component(s).');
+        }
     } catch (e) {
-        showStatus('Add failed: ' + e.message, true);
+        document.getElementById('components-upload-summary').innerHTML = '';
+        document.getElementById('components-upload-errors').innerHTML =
+            '<div class="upload-error-list"><strong>Parse error:</strong> ' + escHtml(e.message) + '</div>';
+        document.getElementById('components-upload-preview').innerHTML =
+            '<p class="empty-state">Fix parse errors and try again.</p>';
+        if (submitBtn) submitBtn.disabled = true;
+        showStatus('Parse failed: ' + e.message, true);
+    }
+}
+
+async function uploadParsedComponentsFromModal() {
+    if (!componentsUploadState.parsedComponents || componentsUploadState.parsedComponents.length === 0) {
+        showStatus('No parsed components to upload.', true);
+        return;
+    }
+    var submitBtn = document.getElementById('components-upload-submit-btn');
+    submitBtn.disabled = true;
+    showStatus('Uploading ' + componentsUploadState.parsedComponents.length + ' components...');
+    try {
+        var existingResp = await fetch('/list_components');
+        if (!existingResp.ok) {
+            throw new Error('Failed to load current components.');
+        }
+        var existingComponents = await existingResp.json();
+        var existingByUid = {};
+        existingComponents.forEach(function(existingComponent) {
+            if (!existingComponent || typeof existingComponent !== 'object' || !existingComponent.uid) return;
+            existingByUid[String(existingComponent.uid)] = existingComponent;
+        });
+
+        for (var i = 0; i < componentsUploadState.parsedComponents.length; i++) {
+            var component = componentsUploadState.parsedComponents[i];
+            var existingComponent = component.uid ? existingByUid[String(component.uid)] : null;
+            var payload;
+            if (existingComponent) {
+                payload = Object.assign({}, existingComponent, component, {
+                    r: 'update_component',
+                    uid: component.uid
+                });
+            } else {
+                payload = {
+                    r: 'add_component'
+                };
+                if (component.uid) payload.uid = component.uid;
+                ['name', 'density', 'formula', 'sld'].forEach(function(key) {
+                    if (component[key]) payload[key] = component[key];
+                });
+            }
+            await queryDriver(payload);
+        }
+        closeComponentsUploadModal();
+        document.getElementById('components-upload-input').value = '';
+        await loadComponentsEditor();
+        await loadComponentNames();
+        showStatus('Uploaded ' + componentsUploadState.parsedComponents.length + ' component(s).');
+    } catch (e) {
+        showStatus('Upload failed: ' + e.message, true);
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
+
+function buildComponentsDownloadFilename() {
+    var now = new Date();
+    function pad(value) {
+        return String(value).padStart(2, '0');
+    }
+    return 'mixdoctor-components-'
+        + now.getFullYear()
+        + pad(now.getMonth() + 1)
+        + pad(now.getDate())
+        + '-'
+        + pad(now.getHours())
+        + pad(now.getMinutes())
+        + pad(now.getSeconds())
+        + '.json';
+}
+
+async function downloadComponentsJson() {
+    try {
+        var r = await fetch('/list_components');
+        if (!r.ok) {
+            throw new Error('Failed to load components for download.');
+        }
+        var components = await r.json();
+        var blob = new Blob([JSON.stringify(components, null, 2)], {type: 'application/json'});
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = buildComponentsDownloadFilename();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showStatus('Components JSON downloaded.');
+    } catch (e) {
+        showStatus('Download failed: ' + e.message, true);
+    }
+}
+
+function componentRowHtml(comp) {
+    comp = comp || {};
+    var name = comp.name || '';
+    var density = comp.density || '';
+    var formula = comp.formula || '';
+    var sld = comp.sld || '';
+    var uid = comp.uid || '';
+    return [
+        '<tr data-uid="', escHtml(uid), '">',
+        '<td><input type="text" class="comp-name-input" value="', escHtml(name), '"></td>',
+        '<td><input type="text" class="comp-density-input" placeholder="e.g. 1.0 g/ml" value="', escHtml(density), '"></td>',
+        '<td><input type="text" class="comp-formula-input" placeholder="optional (e.g. H2O)" value="', escHtml(formula), '"></td>',
+        '<td><input type="text" class="comp-sld-input" placeholder="optional (e.g. 6.35e-6 /A^2)" value="', escHtml(sld), '"></td>',
+        '<td class="uid-cell">', escHtml(uid), '</td>',
+        '<td><div class="components-actions">',
+        '<button class="toolbar-btn comp-save-btn">Save</button>',
+        '<button class="toolbar-btn comp-delete-btn">Delete</button>',
+        '</div></td>',
+        '</tr>'
+    ].join('');
+}
+
+function bindComponentRowHandlers(body) {
+    if (!body) return;
+    body.querySelectorAll('.comp-save-btn').forEach(function(btn) {
+        if (btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', function() {
+            var row = this.closest('tr');
+            saveComponentRow(row);
+        });
+    });
+    body.querySelectorAll('.comp-delete-btn').forEach(function(btn) {
+        if (btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', function() {
+            var row = this.closest('tr');
+            deleteComponentRow(row);
+        });
+    });
+}
+
+function addComponentRow() {
+    var body = document.getElementById('components-table-body');
+    if (!body) return;
+
+    var emptyRow = body.querySelector('.empty-state');
+    if (emptyRow) {
+        body.innerHTML = '';
+    }
+
+    body.insertAdjacentHTML('afterbegin', componentRowHtml({}));
+    bindComponentRowHandlers(body);
+
+    var firstRow = body.querySelector('tr');
+    if (firstRow) {
+        var nameInput = firstRow.querySelector('.comp-name-input');
+        if (nameInput) nameInput.focus();
     }
 }
 
@@ -1284,6 +1776,105 @@ function serializeStockCard(card) {
     return result;
 }
 
+function parseStockTagsInput() {
+    var el = document.getElementById('stocks-tags-input');
+    if (!el) return [];
+    var raw = el.value.trim();
+    if (!raw) return [];
+    return raw.split(',').map(function(tag) {
+        return tag.trim();
+    }).filter(function(tag) {
+        return tag.length > 0;
+    });
+}
+
+function stockToPrefill(stock) {
+    var prefill = {
+        name: stock.name || '',
+        location: stock.location || '',
+    };
+
+    if (stock.total_mass) {
+        prefill.sizeType = 'total_mass';
+        var tm = stock.total_mass;
+        prefill.sizeValue = typeof tm === 'object' ? tm.value + ' ' + tm.units : String(tm);
+    } else if (stock.total_volume) {
+        prefill.sizeType = 'total_volume';
+        var tv = stock.total_volume;
+        prefill.sizeValue = typeof tv === 'object' ? tv.value + ' ' + tv.units : String(tv);
+    }
+
+    var soluteList = stock.solutes || [];
+    var rawComponentNames = stock.components || [];
+    if ((!rawComponentNames || rawComponentNames.length === 0) && stock && typeof stock === 'object') {
+        var componentSet = {};
+        ['masses', 'volumes', 'concentrations', 'mass_fractions', 'volume_fractions', 'molarities', 'molalities'].forEach(function(groupKey) {
+            var group = stock[groupKey];
+            if (!group || typeof group !== 'object') return;
+            Object.keys(group).forEach(function(name) {
+                componentSet[name] = true;
+            });
+        });
+        rawComponentNames = Object.keys(componentSet);
+    }
+    var components = [];
+    rawComponentNames.forEach(function(compName) {
+        var isSolute = soluteList.indexOf(compName) !== -1;
+        if (stock.masses && stock.masses[compName]) {
+            var m = stock.masses[compName];
+            components.push({name: compName, propType: 'mass',
+                value: typeof m === 'object' ? m.value : m,
+                units: typeof m === 'object' ? m.units : '',
+                isSolute: isSolute});
+        } else if (stock.volumes && stock.volumes[compName]) {
+            var vol = stock.volumes[compName];
+            components.push({name: compName, propType: 'volume',
+                value: typeof vol === 'object' ? vol.value : vol,
+                units: typeof vol === 'object' ? vol.units : '',
+                isSolute: isSolute});
+        } else if (stock.concentrations && stock.concentrations[compName]) {
+            var c = stock.concentrations[compName];
+            components.push({name: compName, propType: 'concentration',
+                value: typeof c === 'object' ? c.value : c,
+                units: typeof c === 'object' ? c.units : '',
+                isSolute: isSolute});
+        } else if (stock.mass_fractions && stock.mass_fractions[compName] != null) {
+            components.push({name: compName, propType: 'mass_fraction',
+                value: stock.mass_fractions[compName],
+                isSolute: isSolute});
+        } else if (stock.volume_fractions && stock.volume_fractions[compName] != null) {
+            components.push({name: compName, propType: 'volume_fraction',
+                value: stock.volume_fractions[compName],
+                isSolute: isSolute});
+        } else if (stock.molarities && stock.molarities[compName]) {
+            var molarity = stock.molarities[compName];
+            components.push({name: compName, propType: 'molarity',
+                value: typeof molarity === 'object' ? molarity.value : molarity,
+                units: typeof molarity === 'object' ? molarity.units : '',
+                isSolute: isSolute});
+        } else if (stock.molalities && stock.molalities[compName]) {
+            var molality = stock.molalities[compName];
+            components.push({name: compName, propType: 'molality',
+                value: typeof molality === 'object' ? molality.value : molality,
+                units: typeof molality === 'object' ? molality.units : '',
+                isSolute: isSolute});
+        }
+    });
+    prefill.components = components;
+    return prefill;
+}
+
+function loadStocksIntoCards(stocks) {
+    document.getElementById('stock-cards-container').innerHTML = '';
+    if (!stocks || stocks.length === 0) {
+        createStockCard(null);
+        return;
+    }
+    stocks.forEach(function(stock) {
+        createStockCard(stockToPrefill(stock));
+    });
+}
+
 async function uploadStocks() {
     var cards = document.querySelectorAll('.stock-form-card');
     var stocks = [];
@@ -1300,13 +1891,14 @@ async function uploadStocks() {
     var btn = document.getElementById('upload-stocks-btn');
     btn.disabled = true;
     showStatus('Uploading stocks...');
+    var tags = parseStockTagsInput();
 
     try {
         var token = await login();
         var r = await authedFetch('/enqueue', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({task_name: 'upload_stocks', stocks: stocks, reset: true})
+            body: JSON.stringify({task_name: 'upload_stocks', stocks: stocks, reset: true, tags: tags})
         });
         if (!r.ok) {
             showStatus('Failed to enqueue upload.', true);
@@ -1320,6 +1912,8 @@ async function uploadStocks() {
         if (result && result.success) {
             showStatus('Uploaded ' + result.count + ' stock(s).');
             errEl.innerHTML = '';
+            loadStockHistorySidebar();
+            refreshStorageSources();
         } else {
             var errMsg = (result && result.error) ? result.error : 'Unknown error';
             showStatus('Upload failed.', true);
@@ -1339,65 +1933,303 @@ async function loadExistingStocksIntoCards() {
         var r = await fetch('/list_stocks');
         if (!r.ok) { showStatus('Failed to load stocks.', true); return; }
         var stocks = await r.json();
-
-        document.getElementById('stock-cards-container').innerHTML = '';
-
-        stocks.forEach(function(stock) {
-            var prefill = {
-                name: stock.name || '',
-                location: stock.location || '',
-            };
-
-            if (stock.total_mass) {
-                prefill.sizeType = 'total_mass';
-                var tm = stock.total_mass;
-                prefill.sizeValue = typeof tm === 'object' ? tm.value + ' ' + tm.units : String(tm);
-            } else if (stock.total_volume) {
-                prefill.sizeType = 'total_volume';
-                var tv = stock.total_volume;
-                prefill.sizeValue = typeof tv === 'object' ? tv.value + ' ' + tv.units : String(tv);
-            }
-
-            var soluteList = stock.solutes || [];
-            var components = [];
-            (stock.components || []).forEach(function(compName) {
-                var isSolute = soluteList.indexOf(compName) !== -1;
-                if (stock.masses && stock.masses[compName]) {
-                    var m = stock.masses[compName];
-                    components.push({name: compName, propType: 'mass',
-                        value: typeof m === 'object' ? m.value : m,
-                        units: typeof m === 'object' ? m.units : '',
-                        isSolute: isSolute});
-                } else if (stock.volumes && stock.volumes[compName]) {
-                    var vol = stock.volumes[compName];
-                    components.push({name: compName, propType: 'volume',
-                        value: typeof vol === 'object' ? vol.value : vol,
-                        units: typeof vol === 'object' ? vol.units : '',
-                        isSolute: isSolute});
-                } else if (stock.concentrations && stock.concentrations[compName]) {
-                    var c = stock.concentrations[compName];
-                    components.push({name: compName, propType: 'concentration',
-                        value: typeof c === 'object' ? c.value : c,
-                        units: typeof c === 'object' ? c.units : '',
-                        isSolute: isSolute});
-                } else if (stock.mass_fractions && stock.mass_fractions[compName] != null) {
-                    components.push({name: compName, propType: 'mass_fraction',
-                        value: stock.mass_fractions[compName],
-                        isSolute: isSolute});
-                } else if (stock.volume_fractions && stock.volume_fractions[compName] != null) {
-                    components.push({name: compName, propType: 'volume_fraction',
-                        value: stock.volume_fractions[compName],
-                        isSolute: isSolute});
-                }
-            });
-            prefill.components = components;
-
-            createStockCard(prefill);
-        });
+        loadStocksIntoCards(stocks);
 
         showStatus('Loaded ' + stocks.length + ' stock(s) from server.');
     } catch (e) {
         showStatus('Error loading stocks: ' + e.message, true);
+    }
+}
+
+function getUniqueHistoryComponents(entry) {
+    if (!entry || !Array.isArray(entry.components)) return [];
+    var seen = {};
+    var out = [];
+    entry.components.forEach(function(name) {
+        var trimmed = String(name || '').trim();
+        if (!trimmed || seen[trimmed]) return;
+        seen[trimmed] = true;
+        out.push(trimmed);
+    });
+    out.sort();
+    return out;
+}
+
+function getFilteredStockHistoryEntries() {
+    var needle = String(stockHistoryFilterText || '').trim().toLowerCase();
+    if (!needle) return stockHistoryEntries.slice();
+    return stockHistoryEntries.filter(function(entry) {
+        var parts = [];
+        parts.push(entry.created_at || '');
+        parts.push(String(entry.count || 0));
+        if (Array.isArray(entry.tags)) {
+            parts.push(entry.tags.join(' '));
+        }
+        if (Array.isArray(entry.components)) {
+            parts.push(entry.components.join(' '));
+        }
+        if (Array.isArray(entry.stock_names)) {
+            parts.push(entry.stock_names.join(' '));
+        }
+        return parts.join(' ').toLowerCase().indexOf(needle) !== -1;
+    });
+}
+
+function quantityTextForMeta(val) {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'object' && val.value !== undefined) {
+        return String(val.value) + (val.units ? (' ' + String(val.units)) : '');
+    }
+    return String(val);
+}
+
+function formatStockHistoryModalMeta(stock) {
+    var parts = [];
+    if (stock.location) parts.push('location: ' + stock.location);
+    if (stock.total_mass) parts.push('total_mass: ' + quantityTextForMeta(stock.total_mass));
+    if (stock.total_volume) parts.push('total_volume: ' + quantityTextForMeta(stock.total_volume));
+    if (Array.isArray(stock.solutes) && stock.solutes.length > 0) {
+        parts.push('solutes: ' + stock.solutes.join(', '));
+    }
+    return parts;
+}
+
+function renderStockHistoryModalStocks(stocks) {
+    var container = document.getElementById('stock-history-modal-stocks');
+    if (!container) return;
+    if (!Array.isArray(stocks) || stocks.length === 0) {
+        container.innerHTML = '<p class="empty-state">No stocks in this snapshot.</p>';
+        return;
+    }
+    container.innerHTML = stocks.map(function(stock, idx) {
+        var title = stock.name ? stock.name : ('Stock #' + (idx + 1));
+        var location = stock.location ? ('<span class="location-badge">' + escHtml(stock.location) + '</span>') : '';
+        var metaParts = formatStockHistoryModalMeta(stock);
+        var metaHtml = metaParts.length > 0
+            ? ('<div class="stock-history-modal-stock-meta">' + metaParts.map(function(text) {
+                return escHtml(text);
+            }).join(' | ') + '</div>')
+            : '';
+        var tableHtml = renderCompositionTableHtml(stock, {
+            title: '',
+            forceCoreColumns: true
+        });
+        return '<div class="stock-history-modal-stock-entry">'
+            + '<div class="stock-history-modal-stock-header">'
+            + '<span class="stock-history-modal-stock-name">' + escHtml(title) + '</span>'
+            + location
+            + '</div>'
+            + metaHtml
+            + tableHtml
+            + '</div>';
+    }).join('');
+}
+
+async function fetchStockHistorySnapshotData(snapshotId) {
+    if (!snapshotId) throw new Error('snapshot_id is required');
+    var r = await fetch('/load_stock_history?snapshot_id=' + encodeURIComponent(snapshotId));
+    if (!r.ok) throw new Error('Failed to load stock snapshot.');
+    var payload = await r.json();
+    if (!payload || !payload.success) {
+        throw new Error((payload && payload.error) ? payload.error : 'Invalid stock snapshot response.');
+    }
+    return payload;
+}
+
+async function populateStockHistoryModalDetails(entry) {
+    var stockContainer = document.getElementById('stock-history-modal-stocks');
+    if (!stockContainer || !entry || !entry.id) return;
+    stockContainer.innerHTML = '<p class="empty-state">Loading stocks...</p>';
+    try {
+        if (!entry._snapshotPayload || !Array.isArray(entry._snapshotPayload.stocks)) {
+            entry._snapshotPayload = await fetchStockHistorySnapshotData(entry.id);
+        }
+        renderStockHistoryModalStocks(entry._snapshotPayload.stocks || []);
+    } catch (e) {
+        stockContainer.innerHTML = '<p class="empty-state">Failed to load stock details.</p>';
+    }
+}
+
+function openStockHistoryModal(entry) {
+    if (!entry) return;
+    selectedStockHistoryEntry = entry;
+    var createdAt = entry.created_at || 'unknown time';
+    var count = Number(entry.count || 0);
+    var tags = Array.isArray(entry.tags) ? entry.tags.filter(function(tag) { return !!String(tag).trim(); }) : [];
+    var components = getUniqueHistoryComponents(entry);
+
+    var titleEl = document.getElementById('stock-history-modal-title');
+    var metaEl = document.getElementById('stock-history-modal-meta');
+    var tagsEl = document.getElementById('stock-history-modal-tags');
+    var compsEl = document.getElementById('stock-history-modal-components');
+    if (!titleEl || !metaEl || !tagsEl || !compsEl) return;
+
+    titleEl.textContent = createdAt;
+    metaEl.innerHTML = '<strong>' + escHtml(String(count)) + '</strong> stock(s)';
+    tagsEl.innerHTML = tags.length > 0
+        ? ('<strong>tags:</strong> ' + escHtml(tags.join(', ')))
+        : '<span class="empty-state">No tags.</span>';
+    compsEl.innerHTML = components.length > 0
+        ? components.map(function(name) {
+            return '<span class="stock-history-comp-chip">' + escHtml(name) + '</span>';
+        }).join('')
+        : '<p class="empty-state">No component summary available.</p>';
+
+    var stocksEl = document.getElementById('stock-history-modal-stocks');
+    if (stocksEl) {
+        stocksEl.innerHTML = '<p class="empty-state">Loading stocks...</p>';
+    }
+    document.getElementById('stock-history-modal-overlay').classList.add('visible');
+    populateStockHistoryModalDetails(entry);
+}
+
+function closeStockHistoryModal() {
+    document.getElementById('stock-history-modal-overlay').classList.remove('visible');
+    selectedStockHistoryEntry = null;
+    var loadBtn = document.getElementById('stock-history-modal-load-btn');
+    if (loadBtn) {
+        loadBtn.disabled = false;
+        loadBtn.textContent = 'Load';
+    }
+}
+
+async function loadStockHistorySnapshot(snapshotId, options) {
+    if (!snapshotId) return false;
+    options = options || {};
+    var setServerConfig = options.setServerConfig !== false;
+    var switchToStocksTab = options.switchToStocksTab !== false;
+    showStatus('Loading stock snapshot...');
+    try {
+        var payload = await fetchStockHistorySnapshotData(snapshotId);
+
+        var stocks = Array.isArray(payload.stocks) ? payload.stocks : [];
+        if (setServerConfig) {
+            var token = await login();
+            var setResp = await authedFetch('/enqueue', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    task_name: 'set_config',
+                    stocks: stocks
+                })
+            });
+            if (!setResp.ok) {
+                showStatus('Failed to enqueue stock snapshot load.', true);
+                return false;
+            }
+            var setUuid = (await setResp.text()).trim().replace(/^"|"$/g, '');
+            var setRet = await pollForResult(token, setUuid, 60000);
+            if (setRet && typeof setRet === 'string' && setRet.indexOf('Error:') === 0) {
+                showStatus('Failed to apply stock snapshot config.', true);
+                return false;
+            }
+        }
+
+        loadStocksIntoCards(stocks);
+        var tagsEl = document.getElementById('stocks-tags-input');
+        if (tagsEl && payload.snapshot && Array.isArray(payload.snapshot.tags)) {
+            tagsEl.value = payload.snapshot.tags.join(', ');
+        }
+        if (switchToStocksTab) {
+            switchTab('stocks-tab');
+        }
+        loadStocks();
+        showStatus('Loaded stock snapshot with ' + (payload.snapshot ? payload.snapshot.count : 0) + ' stock(s).');
+        return true;
+    } catch (e) {
+        showStatus('Error loading stock snapshot: ' + e.message, true);
+        return false;
+    }
+}
+
+async function loadSelectedStockHistoryFromModal() {
+    if (!selectedStockHistoryEntry || !selectedStockHistoryEntry.id) {
+        showStatus('No stock snapshot selected.', true);
+        return;
+    }
+    var loadBtn = document.getElementById('stock-history-modal-load-btn');
+    if (loadBtn) {
+        loadBtn.disabled = true;
+        loadBtn.textContent = 'Loading...';
+    }
+    try {
+        var ok = await loadStockHistorySnapshot(selectedStockHistoryEntry.id, {
+            setServerConfig: true,
+            switchToStocksTab: true
+        });
+        if (ok) closeStockHistoryModal();
+    } finally {
+        if (loadBtn) {
+            loadBtn.disabled = false;
+            loadBtn.textContent = 'Load';
+        }
+    }
+}
+
+function renderStockHistorySidebar(payload) {
+    var container = document.getElementById('stocks-history-list');
+    if (!container) return;
+    var history = (payload && payload.history) ? payload.history : [];
+    var source = (payload && payload.source) ? payload.source : 'unknown';
+    storageSources.stock_history = source;
+    applyStorageSourceBadges();
+
+    if (!history || history.length === 0) {
+        stockHistoryEntries = [];
+        container.innerHTML = '<p class="empty-state">No stock history yet.</p>';
+        return;
+    }
+
+    stockHistoryEntries = history.slice();
+    var filteredHistory = getFilteredStockHistoryEntries();
+    if (filteredHistory.length === 0) {
+        container.innerHTML = '<p class="empty-state">No history entries match the filter.</p>';
+        return;
+    }
+
+    container.innerHTML = filteredHistory.map(function(entry) {
+        var tags = Array.isArray(entry.tags) && entry.tags.length > 0
+            ? ('<div class="stocks-history-tags">tags: ' + escHtml(entry.tags.join(', ')) + '</div>')
+            : '';
+        var components = getUniqueHistoryComponents(entry);
+        var componentsHtml = components.length > 0
+            ? ('<div class="stocks-history-components">components: ' + escHtml(components.join(', ')) + '</div>')
+            : '';
+        return '<div class="stocks-history-entry" data-stock-snapshot-id="' + escHtml(entry.id || '') + '">'
+            + '<div class="stocks-history-title">' + escHtml(entry.created_at || 'unknown time') + '</div>'
+            + '<div class="stocks-history-meta">' + escHtml(String(entry.count || 0)) + ' stock(s)</div>'
+            + tags
+            + componentsHtml
+            + '</div>';
+    }).join('');
+
+    container.querySelectorAll('.stocks-history-entry').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var snapshotId = this.getAttribute('data-stock-snapshot-id');
+            var entry = stockHistoryEntries.find(function(item) {
+                return item && item.id === snapshotId;
+            });
+            if (entry) {
+                openStockHistoryModal(entry);
+            }
+        });
+    });
+}
+
+async function loadStockHistorySidebar() {
+    var container = document.getElementById('stocks-history-list');
+    if (!container) return;
+    container.innerHTML = '<p class="empty-state">Loading stock history...</p>';
+    try {
+        var r = await fetch('/list_stock_history');
+        if (!r.ok) {
+            container.innerHTML = '<p class="empty-state">Failed to load stock history.</p>';
+            return;
+        }
+        var payload = await r.json();
+        renderStockHistorySidebar(payload);
+    } catch (e) {
+        container.innerHTML = '<p class="empty-state">Error loading stock history.</p>';
     }
 }
 
@@ -3737,6 +4569,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('upload-stocks-btn').addEventListener('click', uploadStocks);
     document.getElementById('load-stocks-from-server-btn').addEventListener('click', loadExistingStocksIntoCards);
+    var stockHistoryFilterInput = document.getElementById('stocks-history-filter-input');
+    if (stockHistoryFilterInput) {
+        stockHistoryFilterInput.addEventListener('input', function() {
+            stockHistoryFilterText = this.value || '';
+            renderStockHistorySidebar({
+                history: stockHistoryEntries,
+                source: storageSources.stock_history
+            });
+        });
+    }
     var clearDiagBtn = document.getElementById('solution-diagnostics-clear-btn');
     if (clearDiagBtn) {
         clearDiagBtn.addEventListener('click', clearSolutionDiagnostics);
@@ -3746,6 +4588,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var compRefreshBtn = document.getElementById('components-refresh-btn');
     if (compRefreshBtn) {
         compRefreshBtn.addEventListener('click', loadComponentsEditor);
+    }
+    var compUploadBtn = document.getElementById('components-upload-json-btn');
+    if (compUploadBtn) {
+        compUploadBtn.addEventListener('click', openComponentsUploadModal);
+    }
+    var compDownloadBtn = document.getElementById('components-download-json-btn');
+    if (compDownloadBtn) {
+        compDownloadBtn.addEventListener('click', downloadComponentsJson);
     }
     var compAddBtn = document.getElementById('components-add-btn');
     if (compAddBtn) {
@@ -3783,6 +4633,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('balance-upload-targets-btn').addEventListener('click', openTargetUploadModal);
     document.getElementById('balance-btn').addEventListener('click', runBalance);
+    var targetsListEl = document.getElementById('targets-list');
+    if (targetsListEl) {
+        targetsListEl.addEventListener('click', handleTargetsListClick);
+    }
+    var targetsPanelEl = document.getElementById('targets-panel');
+    if (targetsPanelEl) {
+        targetsPanelEl.addEventListener('scroll', maybeLoadMoreTargets, {passive: true});
+    }
+    var failedFirstEl = document.getElementById('targets-failed-first-input');
+    if (failedFirstEl) {
+        targetsPaginationState.failedFirst = !!failedFirstEl.checked;
+        failedFirstEl.addEventListener('change', function() {
+            targetsPaginationState.failedFirst = !!this.checked;
+            renderTargets(allTargetsData);
+        });
+    }
+    var loadMoreTargetsBtn = document.getElementById('targets-load-more-btn');
+    if (loadMoreTargetsBtn) {
+        loadMoreTargetsBtn.addEventListener('click', function() {
+            appendNextTargetsPage();
+            fillTargetsViewportIfNeeded();
+        });
+    }
+
+    // Stock history modal
+    document.getElementById('stock-history-modal-close').addEventListener('click', closeStockHistoryModal);
+    document.getElementById('stock-history-modal-cancel-btn').addEventListener('click', closeStockHistoryModal);
+    document.getElementById('stock-history-modal-load-btn').addEventListener('click', loadSelectedStockHistoryFromModal);
+    document.getElementById('stock-history-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeStockHistoryModal();
+    });
 
     // Target upload modal
     document.getElementById('target-upload-modal-close').addEventListener('click', closeTargetUploadModal);
@@ -3802,6 +4683,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (previewEl) previewEl.innerHTML = '<p class="empty-state">Input changed. Click Parse to refresh preview.</p>';
     });
 
+    // Components upload modal
+    document.getElementById('components-upload-modal-close').addEventListener('click', closeComponentsUploadModal);
+    document.getElementById('components-upload-cancel-btn').addEventListener('click', closeComponentsUploadModal);
+    document.getElementById('components-upload-parse-btn').addEventListener('click', parseComponentsUploadInput);
+    document.getElementById('components-upload-submit-btn').addEventListener('click', uploadParsedComponentsFromModal);
+    document.getElementById('components-upload-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeComponentsUploadModal();
+    });
+    document.getElementById('components-upload-file-input').addEventListener('change', handleComponentsUploadFileSelection);
+    document.getElementById('components-upload-input').addEventListener('input', function() {
+        resetComponentsUploadParseState();
+        resetComponentsUploadPreviewMessage('Input changed. Click Parse to refresh preview.');
+    });
+
     // Modal close & navigation handlers
     document.getElementById('detail-modal-close').addEventListener('click', closeDetailModal);
     document.getElementById('modal-nav-prev').addEventListener('click', function() { navigateModal(-1); });
@@ -3810,9 +4705,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === this) closeDetailModal();
     });
     document.addEventListener('keydown', function(e) {
+        var stockHistoryModalOpen = document.getElementById('stock-history-modal-overlay').classList.contains('visible');
+        if (stockHistoryModalOpen && e.key === 'Escape') {
+            closeStockHistoryModal();
+            return;
+        }
         var uploadModalOpen = document.getElementById('target-upload-modal-overlay').classList.contains('visible');
         if (uploadModalOpen && e.key === 'Escape') {
             closeTargetUploadModal();
+            return;
+        }
+        var componentsUploadModalOpen = document.getElementById('components-upload-modal-overlay').classList.contains('visible');
+        if (componentsUploadModalOpen && e.key === 'Escape') {
+            closeComponentsUploadModal();
             return;
         }
         var modalOpen = document.getElementById('detail-modal-overlay').classList.contains('visible');
@@ -3825,9 +4730,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize
     loadComponentNames();
     loadComponentsEditor();
-    createStockCard(null);
+    loadExistingStocksIntoCards();
+    loadStockHistorySidebar();
     loadSweepConfig();
     scheduleSweepPreview();
     loadBalanceSettings();
     fetchBalanceProgress().then(renderBalanceProgress);
+    refreshStorageSources();
+    switchTab(getInitialTabId());
 });

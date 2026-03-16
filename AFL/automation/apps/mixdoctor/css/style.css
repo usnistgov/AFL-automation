@@ -93,6 +93,14 @@ body {
     border-right: 1px solid #dee2e6;
 }
 
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
 .panel-title {
     font-size: 15px;
     font-weight: bold;
@@ -100,6 +108,32 @@ body {
     color: #343a40;
     padding-bottom: 6px;
     border-bottom: 2px solid #dee2e6;
+}
+
+.panel-header .panel-title {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.targets-sort-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.targets-list-status {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.targets-load-more-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 0 0 12px;
 }
 
 /* ---- Cards ---- */
@@ -522,6 +556,118 @@ body {
     margin-left: 8px;
 }
 
+.source-badge {
+    margin-left: 8px;
+    font-size: 11px;
+    color: #495057;
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 999px;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+.stocks-tags-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #495057;
+}
+
+#stocks-tags-input {
+    width: 220px;
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+#stocks-page-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#stocks-editor-column {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+#stocks-history-column {
+    width: 300px;
+    border-left: 1px solid #dee2e6;
+    background: #f8f9fa;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#stocks-history-column .panel-title {
+    margin-bottom: 8px;
+}
+
+#stocks-history-source {
+    display: inline-block;
+    margin: 0 0 10px 0;
+}
+
+#stocks-history-filter-input {
+    width: 100%;
+    margin: 0 0 10px 0;
+    padding: 6px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+#stocks-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stocks-history-entry {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #fff;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.stocks-history-entry:hover {
+    border-color: #007bff;
+    box-shadow: 0 1px 4px rgba(0, 123, 255, 0.2);
+}
+
+.stocks-history-title {
+    font-weight: 600;
+    font-size: 12px;
+    color: #212529;
+}
+
+.stocks-history-meta {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #6c757d;
+}
+
+.stocks-history-tags {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #495057;
+}
+
+.stocks-history-components {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #343a40;
+    line-height: 1.35;
+}
+
 #stock-cards-container {
     flex: 1;
     overflow-y: auto;
@@ -595,6 +741,17 @@ body {
     overflow-y: auto;
     display: flex !important;
     flex-direction: column;
+}
+
+@media (max-width: 1050px) {
+    #stocks-page-layout {
+        flex-direction: column;
+    }
+    #stocks-history-column {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #dee2e6;
+    }
 }
 
 #plot-sweep-tab.active {
@@ -742,6 +899,110 @@ body {
 .submit-substatus {
     font-size: 12px;
     color: #6c757d;
+}
+
+#components-upload-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(33, 37, 41, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 2000;
+}
+
+#components-upload-modal-overlay.visible {
+    display: flex;
+}
+
+#components-upload-modal {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+    width: 92%;
+    max-width: 980px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#components-upload-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #343a40;
+    color: #fff;
+}
+
+#components-upload-modal-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+#components-upload-modal-close {
+    margin-left: auto;
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #fff;
+    padding: 0 4px;
+}
+
+#components-upload-modal-close:hover {
+    color: #adb5bd;
+}
+
+#components-upload-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#components-upload-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+}
+
+#components-upload-input {
+    width: 100%;
+    min-height: 210px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 12px;
+    line-height: 1.35;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    resize: vertical;
+}
+
+#components-upload-summary {
+    font-size: 12px;
+    color: #495057;
+}
+
+#components-upload-errors {
+    margin: 0;
+}
+
+#components-upload-preview {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #fff;
+    padding: 8px;
+    max-height: 260px;
+    overflow: auto;
 }
 
 @media (max-width: 1000px) {
@@ -1391,6 +1652,145 @@ body {
 .upload-error-list ul {
     margin: 4px 0 0 16px;
     padding: 0;
+}
+
+/* ---- Stock history modal ---- */
+#stock-history-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 2090;
+    align-items: center;
+    justify-content: center;
+}
+
+#stock-history-modal-overlay.visible {
+    display: flex;
+}
+
+#stock-history-modal {
+    width: 92%;
+    max-width: 640px;
+    max-height: 84vh;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#stock-history-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #343a40;
+    color: #fff;
+    padding: 12px 16px;
+}
+
+#stock-history-modal-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+#stock-history-modal-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+#stock-history-modal-close:hover {
+    color: #adb5bd;
+}
+
+#stock-history-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#stock-history-modal-meta {
+    font-size: 13px;
+    color: #495057;
+}
+
+#stock-history-modal-tags {
+    font-size: 12px;
+    color: #495057;
+}
+
+.stock-history-modal-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6c757d;
+    margin-bottom: 6px;
+}
+
+#stock-history-modal-components {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.stock-history-modal-stock-entry {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #fff;
+    padding: 8px;
+    margin-bottom: 8px;
+}
+
+.stock-history-modal-stock-entry:last-child {
+    margin-bottom: 0;
+}
+
+.stock-history-modal-stock-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.stock-history-modal-stock-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #212529;
+}
+
+.stock-history-modal-stock-meta {
+    font-size: 11px;
+    color: #6c757d;
+    margin-bottom: 6px;
+}
+
+.stock-history-comp-chip {
+    font-size: 11px;
+    border: 1px solid #d0d7de;
+    background: #f6f8fa;
+    color: #1f2328;
+    border-radius: 999px;
+    padding: 2px 8px;
+}
+
+#stock-history-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid #dee2e6;
+    padding: 10px 16px;
+    background: #f8f9fa;
 }
 
 /* ---- Target upload modal ---- */

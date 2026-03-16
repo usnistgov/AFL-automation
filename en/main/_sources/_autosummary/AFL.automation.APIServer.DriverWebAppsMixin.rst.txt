@@ -15,5 +15,8 @@ AFL.automation.APIServer.DriverWebAppsMixin
 
    .. autosummary::
    
+      Contains
       DriverWebAppsMixin
+      In
+      defaultdict
    

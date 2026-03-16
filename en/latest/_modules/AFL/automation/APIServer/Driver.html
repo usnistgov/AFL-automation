@@ -411,6 +411,7 @@
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.DriverWebAppsMixin</span> <span class="kn">import</span> <span class="n">DriverWebAppsMixin</span>
 
@@ -465,7 +466,7 @@
 
 <div class="viewcode-block" id="Driver.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useful_links</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">useful_links</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">afl_home</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dropbox</span> <span class="o">=</span> <span class="kc">None</span>
@@ -474,10 +475,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_tiled_client</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Cached Tiled client</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache_order</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_plot_variable_payload_cache</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_plot_variable_payload_cache_order</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_combined_dataset_cache</span> <span class="o">=</span> <span class="mi">3</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_max_variable_payload_cache</span> <span class="o">=</span> <span class="mi">64</span>
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Driver&#39;</span>
@@ -490,7 +488,10 @@
             <span class="n">useful_links</span><span class="p">[</span><span class="s2">&quot;Tiled Browser&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/tiled_browser&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span> <span class="o">=</span> <span class="n">useful_links</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;.afl&#39;</span>
+        <span class="n">resolved_afl_home</span> <span class="o">=</span> <span class="n">afl_home</span> <span class="k">if</span> <span class="n">afl_home</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AFL_HOME&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resolved_afl_home</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">resolved_afl_home</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">resolved_afl_home</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;.afl&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">resolved_afl_home</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.config.json&#39;</span><span class="p">)</span>
 
@@ -888,6 +889,14 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_data</span><span class="p">(</span><span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="Driver.tiled_get_xarray_html">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_xarray_html">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_get_xarray_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return xarray _repr_html_() for one or more Tiled entries.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_xarray_html</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="Driver.tiled_get_metadata">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_metadata">[docs]</a>
     <span class="nd">@unqueued</span><span class="p">()</span>
@@ -896,52 +905,20 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_metadata</span><span class="p">(</span><span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="Driver.tiled_get_full_json">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_full_json">[docs]</a>
+    <span class="nd">@unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">tiled_get_full_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint to get JSON-serializable full data for one entry.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_full_json</span><span class="p">(</span><span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="Driver.tiled_get_distinct_values">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_distinct_values">[docs]</a>
     <span class="nd">@unqueued</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">tiled_get_distinct_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get distinct values for a metadata field from Tiled.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_distinct_values</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Driver.tiled_get_plot_manifest">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_plot_manifest">[docs]</a>
-    <span class="nd">@unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">tiled_get_plot_manifest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return lightweight plotting manifest without eager data materialization.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_plot_manifest</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Driver.tiled_get_plot_variable_data">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_plot_variable_data">[docs]</a>
-    <span class="nd">@unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">tiled_get_plot_variable_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">cast_float32</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return one variable payload for plotting, fetched lazily.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_plot_variable_data</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">cast_float32</span><span class="o">=</span><span class="n">cast_float32</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Driver.tiled_get_combined_plot_data">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_combined_plot_data">[docs]</a>
-    <span class="nd">@unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">tiled_get_combined_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Legacy eager endpoint for combined plot payloads.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_combined_plot_data</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Driver.tiled_get_gantt_metadata">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_gantt_metadata">[docs]</a>
-    <span class="nd">@unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">tiled_get_gantt_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get metadata for Gantt chart from multiple Tiled entries.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_get_gantt_metadata</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Driver.tiled_download_combined_dataset">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_download_combined_dataset">[docs]</a>
-    <span class="nd">@unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">tiled_download_combined_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download concatenated xarray dataset as NetCDF.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tiled_download_combined_dataset</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Driver.tiled_upload_dataset">

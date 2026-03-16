@@ -409,9 +409,11 @@
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 
 <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">render_template</span>
 <span class="kn">from</span> <span class="nn">tiled.client</span> <span class="kn">import</span> <span class="n">from_uri</span>
+<span class="kn">from</span> <span class="nn">tiled.queries</span> <span class="kn">import</span> <span class="n">Contains</span><span class="p">,</span> <span class="n">In</span>
 
 
 <div class="viewcode-block" id="DriverWebAppsMixin">
@@ -914,14 +916,17 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
 
-            <span class="c1"># QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ]</span>
+            <span class="c1"># QueueDaemon-style: MM/DD/YY HH:MM:SS-ffffff [TZ][+-HHMM]</span>
+            <span class="c1"># Example: 12/07/25 14:30:45-123456 EST-0500</span>
             <span class="n">match</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s1">&#39;re&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
-                <span class="sa">r</span><span class="s1">&#39;^(\d</span><span class="si">{2}</span><span class="s1">)/(\d</span><span class="si">{2}</span><span class="s1">)/(\d</span><span class="si">{2}</span><span class="s1">)\s+(\d</span><span class="si">{2}</span><span class="s1">):(\d</span><span class="si">{2}</span><span class="s1">):(\d</span><span class="si">{2}</span><span class="s1">)&#39;</span><span class="p">,</span>
+                <span class="sa">r</span><span class="s1">&#39;^(\d</span><span class="si">{2}</span><span class="s1">)/(\d</span><span class="si">{2}</span><span class="s1">)/(\d</span><span class="si">{2}</span><span class="s1">)\s+(\d</span><span class="si">{2}</span><span class="s1">):(\d</span><span class="si">{2}</span><span class="s1">):(\d</span><span class="si">{2}</span><span class="s1">)(?:-(\d{1,6}))?(?:\s+[A-Za-z_]+)?(?:([+-]\d</span><span class="si">{4}</span><span class="s1">))?\s*$&#39;</span><span class="p">,</span>
                 <span class="n">text</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
-                <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span>
-                <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span> <span class="o">+</span> <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
+                <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()[:</span><span class="mi">6</span><span class="p">])</span>
+                <span class="n">microseconds</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;0&#39;</span>
+                <span class="n">microsecond</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">microseconds</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)[:</span><span class="mi">6</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span> <span class="o">+</span> <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">microsecond</span><span class="p">)</span>
 
             <span class="c1"># Display-style/legacy: YYYY-MM-DD HH:MM:SS</span>
             <span class="n">match</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s1">&#39;re&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
@@ -982,9 +987,6 @@
 
             <span class="c1"># Apply search filters</span>
             <span class="k">if</span> <span class="n">query_list</span><span class="p">:</span>
-                <span class="kn">from</span> <span class="nn">tiled.queries</span> <span class="kn">import</span> <span class="n">Contains</span><span class="p">,</span> <span class="n">In</span>
-                <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-
                 <span class="n">field_values</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">query_item</span> <span class="ow">in</span> <span class="n">query_list</span><span class="p">:</span>
                     <span class="n">field</span> <span class="o">=</span> <span class="n">query_item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
@@ -1041,18 +1043,12 @@
 
                             <span class="k">if</span> <span class="n">reverse</span><span class="p">:</span>
                                 <span class="n">items_for_sort</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
-                                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="p">(</span>
-                                        <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
-                                        <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="k">if</span> <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                                    <span class="p">),</span>
+                                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="p">(</span><span class="n">v</span> <span class="o">:=</span> <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">),</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">v</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:],</span>
                                     <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                 <span class="p">)</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">items_for_sort</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
-                                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="p">(</span>
-                                        <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span>
-                                        <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="k">if</span> <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                                    <span class="p">),</span>
+                                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="p">(</span><span class="n">v</span> <span class="o">:=</span> <span class="n">_extract_sort_value</span><span class="p">(</span><span class="n">kv</span><span class="p">),</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">v</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:],</span>
                                 <span class="p">)</span>
 
                         <span class="n">sorted_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">items_for_sort</span><span class="p">]</span>
@@ -1204,6 +1200,120 @@
             <span class="k">return</span> <span class="p">{</span>
                 <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
                 <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error fetching data: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_xarray_html">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_xarray_html">[docs]</a>
+    <span class="k">def</span> <span class="nf">tiled_get_xarray_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return xarray _repr_html_() for one or more Tiled entries.</span>
+
+<span class="sd">        Reuses the combined-dataset cache shared with the plot manifest endpoint,</span>
+<span class="sd">        so if the plot has already been rendered this call is effectively free.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entry_ids: JSON-encoded list of entry IDs</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with &#39;status&#39; and &#39;html&#39; (xarray HTML string)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_entry_ids_param</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid entry_ids: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">entry_ids_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;entry_ids must contain at least one entry&#39;</span><span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_combined_dataset</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error loading dataset: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">html</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;pre&gt;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/pre&gt;&#39;</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="s1">&#39;html&#39;</span><span class="p">:</span> <span class="n">html</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_full_json">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_full_json">[docs]</a>
+    <span class="k">def</span> <span class="nf">tiled_get_full_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint to get JSON-serializable full data payload for one entry.</span>
+
+<span class="sd">        This endpoint is intended as a same-origin fallback for browser clients</span>
+<span class="sd">        when direct browser-&gt;Tiled CORS access is not available.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span>
+                <span class="p">}</span>
+
+            <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+            <span class="c1"># xarray datasets: flatten into column-&gt;list payload</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="s1">&#39;to_dataframe&#39;</span><span class="p">):</span>
+                <span class="n">dataframe</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">series</span> <span class="o">=</span> <span class="n">dataframe</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+                    <span class="n">converted</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">series</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                            <span class="n">converted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+                            <span class="n">converted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+                            <span class="n">converted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                            <span class="n">converted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">converted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">column</span><span class="p">)]</span> <span class="o">=</span> <span class="n">converted</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span>
+                <span class="p">}</span>
+
+            <span class="c1"># pandas tables</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+                <span class="n">dataframe</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">col</span><span class="p">):</span> <span class="n">dataframe</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+
+            <span class="c1"># arrays and scalars</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">payload</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+                <span class="p">}</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">payload</span><span class="p">}</span>
+            <span class="p">}</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error fetching full data: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
             <span class="p">}</span></div>
 
 
@@ -1699,9 +1809,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_max_combined_dataset_cache</span>
         <span class="p">)</span>
 
-        <span class="c1"># Keep legacy cache fields for existing download flow.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span> <span class="o">=</span> <span class="n">combined_dataset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_entry_ids</span> <span class="o">=</span> <span class="n">entry_ids_list</span>
         <span class="k">return</span> <span class="n">combined_dataset</span>
 
     <span class="k">def</span> <span class="nf">_sanitize_for_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
@@ -1729,690 +1836,7 @@
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">arr</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_for_json</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-
-<div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_plot_manifest">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_manifest">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_plot_manifest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return lightweight plotting manifest without eager data materialization.&quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_entry_ids_param</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid JSON in entry_ids parameter: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">entry_ids_list</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;entry_ids must contain at least one entry&#39;</span>
-            <span class="p">}</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_combined_dataset</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error concatenating datasets: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">is_single_entry</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="n">is_single_entry</span><span class="p">:</span>
-                <span class="n">sample_dim</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_dim</span><span class="p">:</span>
-                    <span class="n">sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_sample_dimension</span><span class="p">(</span><span class="n">combined_dataset</span><span class="p">,</span> <span class="n">allow_size_fallback</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="n">num_datasets</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="k">if</span> <span class="n">sample_dim</span> <span class="k">else</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">sample_dim</span> <span class="o">=</span> <span class="s1">&#39;index&#39;</span>
-                <span class="n">num_datasets</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-
-            <span class="n">dataset_html</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">dataset_html</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="n">dataset_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;pre&gt;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">combined_dataset</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/pre&gt;&#39;</span>
-
-            <span class="n">coords_preview</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="n">max_coord_preview_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_coord_preview_size&#39;</span><span class="p">,</span> <span class="mi">5000</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">coord_name</span><span class="p">,</span> <span class="n">coord_data</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">coord_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">coord_data</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="n">max_coord_preview_size</span><span class="p">:</span>
-                        <span class="n">coords_preview</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_tolist</span><span class="p">(</span><span class="n">coord_data</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">coords_preview</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                            <span class="s1">&#39;summary&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">coord_data</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
-                            <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">coord_data</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
-                            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">coord_data</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
-                        <span class="p">}</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="n">coords_preview</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Could not summarize coordinate: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-                    <span class="p">}</span>
-
-            <span class="n">variable_info</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">available_legend_vars</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
-                <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">]</span>
-                <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-                <span class="n">dtype</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">sample_dim</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
-                    <span class="n">available_legend_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
-
-                <span class="n">category_hint</span> <span class="o">=</span> <span class="s1">&#39;other&#39;</span>
-                <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">sample_dim</span><span class="p">:</span>
-                    <span class="n">category_hint</span> <span class="o">=</span> <span class="s1">&#39;sample&#39;</span>
-                <span class="k">elif</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">sample_dim</span> <span class="ow">in</span> <span class="n">dims</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="n">other_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dims</span> <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="n">sample_dim</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">other_dims</span><span class="p">:</span>
-                        <span class="n">other_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">other_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
-                        <span class="n">category_hint</span> <span class="o">=</span> <span class="s1">&#39;composition&#39;</span> <span class="k">if</span> <span class="n">other_size</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="k">else</span> <span class="s1">&#39;scattering&#39;</span>
-
-                <span class="n">variable_info</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">var_name</span><span class="p">,</span>
-                    <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="n">dims</span><span class="p">,</span>
-                    <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="n">shape</span><span class="p">,</span>
-                    <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">size</span><span class="p">,</span>
-                    <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="n">dtype</span><span class="p">,</span>
-                    <span class="s1">&#39;category_hint&#39;</span><span class="p">:</span> <span class="n">category_hint</span><span class="p">,</span>
-                <span class="p">}</span>
-                <span class="n">variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
-
-            <span class="n">metadata_list</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">entry_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">):</span>
-                <span class="n">sample_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-                <span class="n">sample_uuid</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-                <span class="k">if</span> <span class="s1">&#39;sample_name&#39;</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
-                    <span class="n">sample_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">sample_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
-                <span class="k">if</span> <span class="s1">&#39;sample_uuid&#39;</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
-                    <span class="n">sample_uuid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">sample_uuid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
-                <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                    <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-                    <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="n">sample_name</span><span class="p">,</span>
-                    <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="n">sample_uuid</span><span class="p">,</span>
-                <span class="p">})</span>
-
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;data_type&#39;</span><span class="p">:</span> <span class="s1">&#39;xarray_dataset_manifest&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;num_datasets&#39;</span><span class="p">:</span> <span class="n">num_datasets</span><span class="p">,</span>
-                <span class="s1">&#39;variables&#39;</span><span class="p">:</span> <span class="n">variables</span><span class="p">,</span>
-                <span class="s1">&#39;variable_info&#39;</span><span class="p">:</span> <span class="n">variable_info</span><span class="p">,</span>
-                <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
-                <span class="s1">&#39;dim_sizes&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
-                <span class="s1">&#39;coords&#39;</span><span class="p">:</span> <span class="n">coords_preview</span><span class="p">,</span>
-                <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{},</span>
-                <span class="s1">&#39;sample_dim&#39;</span><span class="p">:</span> <span class="n">sample_dim</span><span class="p">,</span>
-                <span class="s1">&#39;hue_dim&#39;</span><span class="p">:</span> <span class="n">sample_dim</span> <span class="ow">or</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;available_legend_vars&#39;</span><span class="p">:</span> <span class="n">available_legend_vars</span><span class="p">,</span>
-                <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata_list</span><span class="p">,</span>
-                <span class="s1">&#39;dataset_html&#39;</span><span class="p">:</span> <span class="n">dataset_html</span><span class="p">,</span>
-            <span class="p">}</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error building plot manifest: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span></div>
-
-
-<div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_plot_variable_data">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_variable_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_plot_variable_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">cast_float32</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return one variable payload for plotting, fetched lazily.&quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_entry_ids_param</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid JSON in entry_ids parameter: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">entry_ids_list</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;entry_ids must contain at least one entry&#39;</span>
-            <span class="p">}</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">cast_float32_bool</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cast_float32</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;false&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">)</span>
-            <span class="n">max_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_points&#39;</span><span class="p">,</span> <span class="mi">2_000_000</span><span class="p">))</span>
-            <span class="n">max_coord_preview_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_coord_preview_size&#39;</span><span class="p">,</span> <span class="mi">100000</span><span class="p">))</span>
-
-            <span class="n">dataset_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entry_ids_cache_key</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span>
-            <span class="n">payload_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">dataset_key</span><span class="si">}</span><span class="s1">|</span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s1">|</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">cast_float32_bool</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="n">cached_payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_variable_payload_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">payload_key</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">cached_payload</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cached_payload</span>
-
-            <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_combined_dataset</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">var_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">{</span>
-                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Variable &quot;</span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;available_variables&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                <span class="p">}</span>
-
-            <span class="n">var</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_points</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">{</span>
-                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Variable too large (</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s1"> points), exceeds max_points=</span><span class="si">{</span><span class="n">max_points</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;var_name&#39;</span><span class="p">:</span> <span class="n">var_name</span><span class="p">,</span>
-                    <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
-                    <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
-                    <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
-                <span class="p">}</span>
-
-            <span class="c1"># Pull only this selected variable.</span>
-            <span class="n">materialized</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">values</span>
-            <span class="k">if</span> <span class="n">cast_float32_bool</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">materialized</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">):</span>
-                <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">materialized</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
-                    <span class="n">materialized</span> <span class="o">=</span> <span class="n">materialized</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-            <span class="n">related_coords</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
-                    <span class="n">coord</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">dim_name</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">coord</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">coord</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="n">max_coord_preview_size</span><span class="p">:</span>
-                        <span class="n">related_coords</span><span class="p">[</span><span class="n">dim_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_tolist</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">related_coords</span><span class="p">[</span><span class="n">dim_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                            <span class="s1">&#39;summary&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
-                            <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
-                            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
-                        <span class="p">}</span>
-
-            <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;var_name&#39;</span><span class="p">:</span> <span class="n">var_name</span><span class="p">,</span>
-                <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
-                <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">],</span>
-                <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">materialized</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">dtype</span><span class="p">)),</span>
-                <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_tolist</span><span class="p">(</span><span class="n">materialized</span><span class="p">),</span>
-                <span class="s1">&#39;related_coords&#39;</span><span class="p">:</span> <span class="n">related_coords</span><span class="p">,</span>
-            <span class="p">}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cache_put</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_plot_variable_payload_cache</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_plot_variable_payload_cache_order</span><span class="p">,</span>
-                <span class="n">payload_key</span><span class="p">,</span>
-                <span class="n">payload</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_max_variable_payload_cache</span>
-            <span class="p">)</span>
-            <span class="k">return</span> <span class="n">payload</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error fetching variable data: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;var_name&#39;</span><span class="p">:</span> <span class="n">var_name</span>
-            <span class="p">}</span></div>
-
-
-<div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_combined_plot_data">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_combined_plot_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_combined_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get concatenated xarray datasets from multiple Tiled entries.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            entry_ids: JSON string array of entry IDs to concatenate</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict with combined dataset structure ready for plotting</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">json</span>
-        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-
-        <span class="c1"># Parse entry_ids from JSON string</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">entry_ids</span>
-        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid JSON in entry_ids parameter: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span>
-
-        <span class="c1"># Use the new tiled_concat_datasets method</span>
-        <span class="n">skipped_entries</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiled_concat_datasets</span><span class="p">(</span>
-                <span class="n">entry_ids</span><span class="o">=</span><span class="n">entry_ids_list</span><span class="p">,</span>
-                <span class="n">concat_dim</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span>
-                <span class="n">variable_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-            <span class="p">)</span>
-
-            <span class="c1"># Cache the dataset for download endpoint</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span> <span class="o">=</span> <span class="n">combined_dataset</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_entry_ids</span> <span class="o">=</span> <span class="n">entry_ids_list</span>
-
-        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="c1"># Handle individual entry errors by tracking skipped entries</span>
-            <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s1">&#39;Failed to fetch entry&#39;</span> <span class="ow">in</span> <span class="n">error_msg</span><span class="p">:</span>
-                <span class="c1"># Extract entry_id from error message if possible</span>
-                <span class="kn">import</span> <span class="nn">re</span>
-                <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Failed to fetch entry &#39;([^&#39;]+)&#39;&quot;</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
-                    <span class="n">skipped_entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                        <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-                        <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="n">error_msg</span>
-                    <span class="p">})</span>
-
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error concatenating datasets: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;skipped_entries&#39;</span><span class="p">:</span> <span class="n">skipped_entries</span>
-            <span class="p">}</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error concatenating datasets: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;skipped_entries&#39;</span><span class="p">:</span> <span class="n">skipped_entries</span>
-            <span class="p">}</span>
-
-        <span class="c1"># Extract structure for JSON serialization</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># Get HTML representation of combined dataset</span>
-            <span class="n">dataset_html</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">dataset_html</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="n">dataset_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;pre&gt;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">combined_dataset</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/pre&gt;&#39;</span>
-
-            <span class="c1"># Detect sample dimension:</span>
-            <span class="c1"># - For single entry: use &#39;_detected_sample_dim&#39; from attrs</span>
-            <span class="c1"># - For multiple entries: use &#39;index&#39; (the concat_dim)</span>
-            <span class="n">is_single_entry</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="n">is_single_entry</span><span class="p">:</span>
-                <span class="n">sample_dim</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_dim</span><span class="p">:</span>
-                    <span class="c1"># Fallback detection</span>
-                    <span class="n">sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_sample_dimension</span><span class="p">(</span><span class="n">combined_dataset</span><span class="p">,</span> <span class="n">allow_size_fallback</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="n">num_datasets</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">sample_dim</span> <span class="k">else</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">sample_dim</span> <span class="o">=</span> <span class="s1">&#39;index&#39;</span>
-                <span class="n">num_datasets</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-            <span class="c1"># Build metadata list - need to re-fetch metadata for each entry to get full details</span>
-            <span class="n">metadata_list</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">entry_id</span> <span class="ow">in</span> <span class="n">entry_ids_list</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="c1"># Re-fetch metadata from Tiled for this specific entry</span>
-                    <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
-                        <span class="c1"># If client fails, use basic metadata</span>
-                        <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-                            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                            <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="p">{},</span>
-                            <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                        <span class="p">})</span>
-                        <span class="k">continue</span>
-
-                    <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
-                        <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-                            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                            <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                            <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="p">{},</span>
-                            <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                        <span class="p">})</span>
-                        <span class="k">continue</span>
-
-                    <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
-                    <span class="n">tiled_metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
-
-                    <span class="c1"># Extract full metadata including timing data</span>
-                    <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                        <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-                        <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;AL_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;driver_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{}),</span>
-                    <span class="p">})</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="c1"># If metadata fetch fails for an entry, use basic metadata</span>
-                    <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                        <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-                        <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="p">{},</span>
-                        <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                    <span class="p">})</span>
-
-            <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;data_type&#39;</span><span class="p">:</span> <span class="s1">&#39;xarray_dataset&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;num_datasets&#39;</span><span class="p">:</span> <span class="n">num_datasets</span><span class="p">,</span>
-                <span class="s1">&#39;variables&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
-                <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
-                <span class="s1">&#39;dim_sizes&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">dims</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
-                <span class="s1">&#39;coords&#39;</span><span class="p">:</span> <span class="p">{},</span>
-                <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{},</span>
-                <span class="s1">&#39;sample_dim&#39;</span><span class="p">:</span> <span class="n">sample_dim</span><span class="p">,</span>  <span class="c1"># Tell the client which dimension is the sample dimension</span>
-                <span class="s1">&#39;hue_dim&#39;</span><span class="p">:</span> <span class="n">sample_dim</span> <span class="ow">or</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span>  <span class="c1"># Use detected sample_dim as hue_dim</span>
-                <span class="s1">&#39;available_legend_vars&#39;</span><span class="p">:</span> <span class="p">[],</span>
-                <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata_list</span><span class="p">,</span>
-                <span class="s1">&#39;skipped_entries&#39;</span><span class="p">:</span> <span class="n">skipped_entries</span><span class="p">,</span>
-                <span class="s1">&#39;dataset_html&#39;</span><span class="p">:</span> <span class="n">dataset_html</span>
-            <span class="p">}</span>
-
-            <span class="c1"># Helper function to recursively sanitize values for JSON</span>
-            <span class="k">def</span> <span class="nf">sanitize_for_json</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;Recursively replace NaN and Inf with None for JSON compatibility.&quot;&quot;&quot;</span>
-                <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-                <span class="kn">import</span> <span class="nn">math</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="p">[</span><span class="n">sanitize_for_json</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
-                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-                        <span class="k">return</span> <span class="kc">None</span>
-                    <span class="k">return</span> <span class="n">obj</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">obj</span>
-
-            <span class="c1"># Helper function to safely convert numpy arrays to JSON-serializable lists</span>
-            <span class="k">def</span> <span class="nf">safe_tolist</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;Convert numpy array to list, handling NaN, Inf, and datetime objects.&quot;&quot;&quot;</span>
-                <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-                <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-
-                <span class="c1"># Convert to numpy array if not already</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-                    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
-
-                <span class="c1"># Handle datetime types</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
-                    <span class="c1"># Convert to ISO format strings</span>
-                    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-
-                <span class="c1"># Handle timedelta types</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">):</span>
-                    <span class="c1"># Convert to total seconds</span>
-                    <span class="k">return</span> <span class="p">(</span><span class="n">arr</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-
-                <span class="c1"># Convert to list</span>
-                <span class="n">lst</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-
-                <span class="c1"># Recursively replace NaN and Inf with None for JSON compatibility</span>
-                <span class="k">return</span> <span class="n">sanitize_for_json</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
-
-            <span class="c1"># Extract coordinates (limit size)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== EXTRACTING COORDINATES ===&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">coord_name</span><span class="p">,</span> <span class="n">coord_data</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Coordinate: </span><span class="si">{</span><span class="n">coord_name</span><span class="si">}</span><span class="s2">, dtype: </span><span class="si">{</span><span class="n">coord_data</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, size: </span><span class="si">{</span><span class="n">coord_data</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">, shape: </span><span class="si">{</span><span class="n">coord_data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">coord_data</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">100000</span><span class="p">:</span>
-                        <span class="n">converted</span> <span class="o">=</span> <span class="n">safe_tolist</span><span class="p">(</span><span class="n">coord_data</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">][</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">converted</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ Converted: type=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, sample=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">converted</span><span class="p">)[:</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">converted</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;None&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">][</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Coordinate too large (</span><span class="si">{</span><span class="n">coord_data</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s1"> points)&#39;</span><span class="p">,</span>
-                            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">coord_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-                        <span class="p">}</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ⊘ Skipped: too large&quot;</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✗ ERROR: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="kn">import</span> <span class="nn">traceback</span>
-                    <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-                    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">][</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Could not serialize coordinate: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-                    <span class="p">}</span>
-
-            <span class="c1"># Extract data variables (with size limits)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== EXTRACTING DATA VARIABLES ===&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">var</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
-
-                <span class="c1"># Check if variable has sample dimension (suitable for legend)</span>
-                <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">sample_dim</span> <span class="ow">in</span> <span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
-                    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;available_legend_vars&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
-
-                <span class="c1"># Only include if total size is reasonable (&lt;100k points)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable: </span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s2">, dtype: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, size: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">, shape: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, dims: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">100000</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">converted</span> <span class="o">=</span> <span class="n">safe_tolist</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                            <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="n">converted</span><span class="p">,</span>
-                            <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
-                            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
-                            <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-                        <span class="p">}</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ Converted: type=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, sample=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">converted</span><span class="p">)[:</span><span class="mi">100</span><span class="p">]</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">converted</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;None&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✗ ERROR: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="kn">import</span> <span class="nn">traceback</span>
-                        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-                        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Could not serialize variable </span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-                            <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
-                            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-                        <span class="p">}</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Variable too large (</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s1"> points)&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">dims</span><span class="p">),</span>
-                        <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-                    <span class="p">}</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ⊘ Skipped: too large&quot;</span><span class="p">)</span>
-
-            <span class="c1"># Test JSON serialization before returning</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== TESTING JSON SERIALIZATION ===&quot;</span><span class="p">)</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="kn">import</span> <span class="nn">json</span>
-                <span class="n">json_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ JSON serialization successful, length: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars&quot;</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">json_err</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✗ JSON serialization FAILED: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">json_err</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">json_err</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="c1"># Try to find which field is problematic</span>
-                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">]:</span>
-                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Testing &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; field:&quot;</span><span class="p">)</span>
-                        <span class="k">for</span> <span class="n">subkey</span><span class="p">,</span> <span class="n">subval</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="k">try</span><span class="p">:</span>
-                                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="n">subkey</span><span class="p">:</span> <span class="n">subval</span><span class="p">})</span>
-                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ </span><span class="si">{</span><span class="n">subkey</span><span class="si">}</span><span class="s2">: OK&quot;</span><span class="p">)</span>
-                            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✗ </span><span class="si">{</span><span class="n">subkey</span><span class="si">}</span><span class="s2">: FAILED - </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">subval</span><span class="p">)</span><span class="si">}</span><span class="s2">, Sample: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">subval</span><span class="p">)[:</span><span class="mi">200</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-            <span class="k">return</span> <span class="n">result</span>
-
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✗ EXCEPTION in tiled_get_combined_plot_data: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="kn">import</span> <span class="nn">traceback</span>
-            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error extracting dataset structure: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span></div>
-
-
-<div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_gantt_metadata">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_gantt_metadata">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_gantt_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get metadata for Gantt chart from multiple Tiled entries.</span>
-
-<span class="sd">        This is a lightweight endpoint that only fetches metadata without</span>
-<span class="sd">        loading or combining the actual datasets.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            entry_ids: JSON string array of entry IDs</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict with list of metadata for each entry</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">json</span>
-
-        <span class="c1"># Parse entry_ids from JSON string</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">entry_ids</span>
-        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid JSON in entry_ids parameter: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span>
-
-        <span class="c1"># Get tiled client</span>
-        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">client</span>
-
-        <span class="c1"># Fetch metadata for each entry</span>
-        <span class="n">metadata_list</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">skipped_entries</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="k">for</span> <span class="n">entry_id</span> <span class="ow">in</span> <span class="n">entry_ids_list</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
-                    <span class="n">skipped_entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                        <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-                        <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="s1">&#39;Entry not found in Tiled&#39;</span>
-                    <span class="p">})</span>
-                    <span class="k">continue</span>
-
-                <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
-                <span class="n">tiled_metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
-
-                <span class="c1"># Extract all metadata fields</span>
-                <span class="c1"># Check both direct metadata and nested attrs</span>
-                <span class="n">attrs</span> <span class="o">=</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="p">{})</span>
-                <span class="n">meta</span> <span class="o">=</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="p">{})</span>
-
-                <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                    <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-                    <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;task_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;driver_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;driver_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_campaign_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;AL_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AL_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="n">meta</span>
-                <span class="p">})</span>
-
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">skipped_entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                    <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-                    <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error fetching metadata: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-                <span class="p">})</span>
-
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata_list</span><span class="p">,</span>
-            <span class="s1">&#39;skipped_entries&#39;</span><span class="p">:</span> <span class="n">skipped_entries</span>
-        <span class="p">}</span></div>
-
-
-<div class="viewcode-block" id="DriverWebAppsMixin.tiled_download_combined_dataset">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_download_combined_dataset">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_download_combined_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download the concatenated xarray dataset as NetCDF file.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            entry_ids: JSON string array of entry IDs (to regenerate dataset if needed)</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            NetCDF file download with appropriate headers</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Response</span>
-        <span class="kn">import</span> <span class="nn">json</span>
-        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-        <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-        <span class="kn">import</span> <span class="nn">io</span>
-
-        <span class="c1"># Check if we have a cached dataset with matching entry_ids</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_cached_combined_dataset&#39;</span><span class="p">)</span> <span class="ow">and</span>
-            <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_cached_entry_ids&#39;</span><span class="p">)):</span>
-
-            <span class="c1"># Parse requested entry_ids</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="n">entry_ids</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="c1"># Check if cache matches</span>
-            <span class="k">if</span> <span class="n">entry_ids_list</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_entry_ids</span><span class="p">:</span>
-                <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Regenerate dataset</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiled_get_combined_plot_data</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">result</span>
-                <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># No cache, generate dataset</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiled_get_combined_plot_data</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">result</span>
-            <span class="n">combined_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_combined_dataset</span>
-
-        <span class="c1"># Serialize to NetCDF</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># Create in-memory bytes buffer</span>
-            <span class="n">buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
-
-            <span class="c1"># Convert any object-type coordinates to strings for NetCDF compatibility</span>
-            <span class="n">ds_copy</span> <span class="o">=</span> <span class="n">combined_dataset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">coord_name</span> <span class="ow">in</span> <span class="n">ds_copy</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
-                <span class="n">coord</span> <span class="o">=</span> <span class="n">ds_copy</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">coord</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
-                    <span class="c1"># Convert objects to strings</span>
-                    <span class="n">ds_copy</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">coord</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-
-            <span class="c1"># Also convert object-type data variables</span>
-            <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">ds_copy</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
-                <span class="n">var</span> <span class="o">=</span> <span class="n">ds_copy</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
-                    <span class="n">ds_copy</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-
-            <span class="c1"># Write to NetCDF with netcdf4 engine for better compatibility</span>
-            <span class="n">ds_copy</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;netcdf4&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;NETCDF4&#39;</span><span class="p">)</span>
-            <span class="n">buffer</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-            <span class="c1"># Generate filename with timestamp</span>
-            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;combined_dataset_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s1">.nc&#39;</span>
-
-            <span class="c1"># Return as file download</span>
-            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
-                <span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">(),</span>
-                <span class="n">mimetype</span><span class="o">=</span><span class="s1">&#39;application/x-netcdf&#39;</span><span class="p">,</span>
-                <span class="n">headers</span><span class="o">=</span><span class="p">{</span>
-                    <span class="s1">&#39;Content-Disposition&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;attachment; filename=&quot;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/x-netcdf&#39;</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error creating NetCDF file: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span></div>
-</div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_for_json</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span></div>
 
 </pre></div>
 

@@ -466,8 +466,17 @@
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin" title="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DriverWebAppsMixin</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Contains</span></code>(key, value)</p></td>
+<td><p>Query where a given key's value contains the specified value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin" title="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DriverWebAppsMixin</span></code></a>()</p></td>
 <td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">In</span></code>(key, value)</p></td>
+<td><p>Query if a given key's value is present in the specified sequence of values.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">defaultdict</span></code></p></td>
+<td><p>defaultdict(default_factory=None, /, [...]) --&gt; dict with default factory</p></td>
 </tr>
 </tbody>
 </table>
@@ -561,6 +570,30 @@ Returns dict with status and config values or helpful error message.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_xarray_html">
+<span class="sig-name descname"><span class="pre">tiled_get_xarray_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DriverWebAppsMixin.html#DriverWebAppsMixin.tiled_get_xarray_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_xarray_html" title="Link to this definition">#</a></dt>
+<dd><p>Return xarray _repr_html_() for one or more Tiled entries.</p>
+<p>Reuses the combined-dataset cache shared with the plot manifest endpoint,
+so if the plot has already been rendered this call is effectively free.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>entry_ids</strong> – JSON-encoded list of entry IDs</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict with ‘status’ and ‘html’ (xarray HTML string)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_full_json">
+<span class="sig-name descname"><span class="pre">tiled_get_full_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DriverWebAppsMixin.html#DriverWebAppsMixin.tiled_get_full_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_full_json" title="Link to this definition">#</a></dt>
+<dd><p>Proxy endpoint to get JSON-serializable full data payload for one entry.</p>
+<p>This endpoint is intended as a same-origin fallback for browser clients
+when direct browser-&gt;Tiled CORS access is not available.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_metadata">
 <span class="sig-name descname"><span class="pre">tiled_get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DriverWebAppsMixin.html#DriverWebAppsMixin.tiled_get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_metadata" title="Link to this definition">#</a></dt>
 <dd><p>Proxy endpoint to get metadata from Tiled.</p>
@@ -641,62 +674,6 @@ containing composition values for each sample</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_manifest">
-<span class="sig-name descname"><span class="pre">tiled_get_plot_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DriverWebAppsMixin.html#DriverWebAppsMixin.tiled_get_plot_manifest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_manifest" title="Link to this definition">#</a></dt>
-<dd><p>Return lightweight plotting manifest without eager data materialization.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_variable_data">
-<span class="sig-name descname"><span class="pre">tiled_get_plot_variable_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cast_float32</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'true'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DriverWebAppsMixin.html#DriverWebAppsMixin.tiled_get_plot_variable_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_variable_data" title="Link to this definition">#</a></dt>
-<dd><p>Return one variable payload for plotting, fetched lazily.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_combined_plot_data">
-<span class="sig-name descname"><span class="pre">tiled_get_combined_plot_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DriverWebAppsMixin.html#DriverWebAppsMixin.tiled_get_combined_plot_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_combined_plot_data" title="Link to this definition">#</a></dt>
-<dd><p>Get concatenated xarray datasets from multiple Tiled entries.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry_ids</strong> – JSON string array of entry IDs to concatenate</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict with combined dataset structure ready for plotting</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_gantt_metadata">
-<span class="sig-name descname"><span class="pre">tiled_get_gantt_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DriverWebAppsMixin.html#DriverWebAppsMixin.tiled_get_gantt_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_gantt_metadata" title="Link to this definition">#</a></dt>
-<dd><p>Get metadata for Gantt chart from multiple Tiled entries.</p>
-<p>This is a lightweight endpoint that only fetches metadata without
-loading or combining the actual datasets.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry_ids</strong> – JSON string array of entry IDs</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict with list of metadata for each entry</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_download_combined_dataset">
-<span class="sig-name descname"><span class="pre">tiled_download_combined_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry_ids</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/DriverWebAppsMixin.html#DriverWebAppsMixin.tiled_download_combined_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_download_combined_dataset" title="Link to this definition">#</a></dt>
-<dd><p>Download the concatenated xarray dataset as NetCDF file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry_ids</strong> – JSON string array of entry IDs (to regenerate dataset if needed)</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>NetCDF file download with appropriate headers</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -756,14 +733,11 @@ loading or combining the actual datasets.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_upload_dataset"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_upload_dataset()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_search"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_search()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_data"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_data()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_xarray_html"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_xarray_html()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_full_json"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_full_json()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_metadata"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_metadata()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_distinct_values"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_distinct_values()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_concat_datasets"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_concat_datasets()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_manifest"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_plot_manifest()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_variable_data"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_plot_variable_data()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_combined_plot_data"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_combined_plot_data()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_gantt_metadata"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_get_gantt_metadata()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_download_combined_dataset"><code class="docutils literal notranslate"><span class="pre">DriverWebAppsMixin.tiled_download_combined_dataset()</span></code></a></li>
 </ul>
 </li>
 </ul>

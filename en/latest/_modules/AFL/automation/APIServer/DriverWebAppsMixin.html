@@ -419,6 +419,8 @@
 <div class="viewcode-block" id="DriverWebAppsMixin">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin">[docs]</a>
 <span class="k">class</span> <span class="nc">DriverWebAppsMixin</span><span class="p">:</span>
+    <span class="n">TILED_RUN_DOCUMENTS_NODE</span> <span class="o">=</span> <span class="s1">&#39;run_documents&#39;</span>
+
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_browser">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_browser">[docs]</a>
     <span class="k">def</span> <span class="nf">tiled_browser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -795,7 +797,8 @@
         <span class="n">dataset_to_write</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">existing_meta</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">write_result</span> <span class="o">=</span> <span class="n">write_xarray_dataset</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">dataset_to_write</span><span class="p">)</span>
+            <span class="n">run_documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_documents_container</span><span class="p">(</span><span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">write_result</span> <span class="o">=</span> <span class="n">write_xarray_dataset</span><span class="p">(</span><span class="n">run_documents</span><span class="p">,</span> <span class="n">dataset_to_write</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="k">else</span> <span class="nb">repr</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tiled upload error: </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -852,6 +855,38 @@
                 <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
                 <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Failed to connect to Tiled: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
             <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_get_tiled_run_documents_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get run_documents container, optionally creating it when missing.&quot;&quot;&quot;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;Failed to connect to Tiled.&#39;</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">create</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">create_container</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_normalize_run_document_entry_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
+        <span class="n">entry_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">entry_id</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="si">}</span><span class="s1">/&#39;</span>
+        <span class="k">if</span> <span class="n">entry_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+            <span class="n">entry_id</span> <span class="o">=</span> <span class="n">entry_id</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">):]</span>
+        <span class="k">return</span> <span class="n">entry_id</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_tiled_run_document_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
+        <span class="n">normalized_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_run_document_entry_id</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">normalized_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_documents_container</span><span class="p">(</span><span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">container</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">normalized_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">normalized_id</span><span class="p">,</span> <span class="n">container</span><span class="p">[</span><span class="n">normalized_id</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_read_tiled_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a Tiled item, disabling wide-table optimization when supported.&quot;&quot;&quot;</span>
@@ -983,7 +1018,14 @@
                     <span class="k">elif</span> <span class="n">values</span><span class="p">:</span>
                         <span class="n">query_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">values</span><span class="p">})</span>
 
-            <span class="n">results</span> <span class="o">=</span> <span class="n">client</span>
+            <span class="n">run_documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_documents_container</span><span class="p">(</span><span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">run_documents</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="mi">0</span>
+                <span class="p">}</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">run_documents</span>
 
             <span class="c1"># Apply search filters</span>
             <span class="k">if</span> <span class="n">query_list</span><span class="p">:</span>
@@ -1151,14 +1193,7 @@
             <span class="k">return</span> <span class="n">client</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># Get the entry</span>
-            <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">{</span>
-                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span>
-                <span class="p">}</span>
-
-            <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+            <span class="n">normalized_id</span><span class="p">,</span> <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_document_item</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
 
             <span class="c1"># Try to get xarray dataset representation</span>
             <span class="k">try</span><span class="p">:</span>
@@ -1178,7 +1213,7 @@
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># If can&#39;t read as dataset, provide basic info</span>
                 <span class="n">html</span> <span class="o">=</span> <span class="s1">&#39;&lt;div class=&quot;data-display&quot;&gt;&#39;</span>
-                <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&lt;p&gt;&lt;strong&gt;Entry ID:&lt;/strong&gt; </span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&lt;/p&gt;&#39;</span>
+                <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&lt;p&gt;&lt;strong&gt;Entry ID:&lt;/strong&gt; </span><span class="si">{</span><span class="n">normalized_id</span><span class="si">}</span><span class="s1">&lt;/p&gt;&#39;</span>
                 <span class="n">html</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&lt;p&gt;&lt;strong&gt;Type:&lt;/strong&gt; </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&lt;/p&gt;&#39;</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">):</span>
                     <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;h4&gt;Metadata:&lt;/h4&gt;&#39;</span>
@@ -1254,13 +1289,7 @@
             <span class="k">return</span> <span class="n">client</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">{</span>
-                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span>
-                <span class="p">}</span>
-
-            <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_document_item</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
             <span class="n">payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
             <span class="c1"># xarray datasets: flatten into column-&gt;list payload</span>
@@ -1334,14 +1363,7 @@
             <span class="k">return</span> <span class="n">client</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># Get the entry</span>
-            <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">{</span>
-                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found&#39;</span>
-                <span class="p">}</span>
-
-            <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_document_item</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
 
             <span class="c1"># Extract metadata</span>
             <span class="n">metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
@@ -1380,8 +1402,17 @@
             <span class="k">return</span> <span class="n">client</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># Use Tiled&#39;s distinct() method to get unique values for this field</span>
-            <span class="n">distinct_result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">distinct</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+            <span class="n">run_documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_documents_container</span><span class="p">(</span><span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">run_documents</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span>
+                    <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="mi">0</span>
+                <span class="p">}</span>
+
+            <span class="c1"># Use Tiled&#39;s distinct() method scoped to run_documents.</span>
+            <span class="n">distinct_result</span> <span class="o">=</span> <span class="n">run_documents</span><span class="o">.</span><span class="n">distinct</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
 
             <span class="c1"># Extract the values from the metadata</span>
             <span class="c1"># distinct() returns {&#39;metadata&#39;: {field: [{&#39;value&#39;: ..., &#39;count&#39;: ...}, ...]}}</span>
@@ -1433,15 +1464,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 
-        <span class="c1"># Get tiled client</span>
-        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to get tiled client: </span><span class="si">{</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unknown error&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">entry_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found in tiled&#39;</span><span class="p">)</span>
-
-        <span class="n">item</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="n">entry_id</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">normalized_id</span><span class="p">,</span> <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_document_item</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found in tiled </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
 
         <span class="c1"># Fetch dataset with wide-table optimization disabled for xarray clients.</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -1455,8 +1481,8 @@
         <span class="c1"># Build metadata dict, preferring tiled metadata over dataset attrs</span>
         <span class="c1"># Include ALL metadata fields for Gantt chart</span>
         <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">entry_id</span><span class="p">,</span>
-            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">entry_id</span><span class="p">,</span>
+            <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="n">normalized_id</span><span class="p">,</span>
+            <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">normalized_id</span><span class="p">,</span>
             <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="n">tiled_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ds_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="s1">&#39;sample_composition&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
             <span class="c1"># Add full metadata for Gantt chart and other uses</span>

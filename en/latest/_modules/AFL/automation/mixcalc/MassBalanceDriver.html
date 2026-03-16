@@ -411,6 +411,10 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">Bounds</span>
@@ -602,6 +606,7 @@
         <span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
         <span class="s1">&#39;multistep_diluent_policy&#39;</span><span class="p">:</span> <span class="s1">&#39;primary_solvent&#39;</span><span class="p">,</span>
         <span class="s1">&#39;sweep_config&#39;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s1">&#39;stock_history&#39;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s1">&#39;orchestrator_uri&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
         <span class="s1">&#39;orchestrator_username&#39;</span><span class="p">:</span> <span class="s1">&#39;Orchestrator&#39;</span><span class="p">,</span>
         <span class="s1">&#39;prepare_uri&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
@@ -633,6 +638,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transfer_volume</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_targets_signature</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_balance_progress</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;active&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;completed&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
@@ -746,10 +752,20 @@
 <div class="viewcode-block" id="MassBalanceDriver.process_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.process_targets">[docs]</a>
     <span class="k">def</span> <span class="nf">process_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">target_config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]:</span>
+        <span class="n">targets_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">signature_payload</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">targets_config</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">signature_payload</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">targets_config</span><span class="p">)</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">(</span><span class="n">signature_payload</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_targets_signature</span> <span class="o">==</span> <span class="n">signature</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets_config</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">new_targets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">target_config</span> <span class="ow">in</span> <span class="n">targets_config</span><span class="p">:</span>
             <span class="n">target</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="n">target_config</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
+            <span class="n">new_targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="n">new_targets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_targets_signature</span> <span class="o">=</span> <span class="n">signature</span></div>
 
 
 <div class="viewcode-block" id="MassBalanceDriver.add_stock">
@@ -778,6 +794,7 @@
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">target</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_targets_signature</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span></div>
 
 
@@ -787,6 +804,7 @@
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">targets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_targets_signature</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span></div>
 
 
@@ -803,12 +821,160 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.reset_targets">[docs]</a>
     <span class="k">def</span> <span class="nf">reset_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_targets_signature</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span></div>
 
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_normalize_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">parsed</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">tags</span> <span class="o">=</span> <span class="n">parsed</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tags</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">tags</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">tags</span><span class="p">]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tag</span> <span class="ow">or</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+            <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_make_stock_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+        <span class="n">snapshot_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="n">created_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">timespec</span><span class="o">=</span><span class="s1">&#39;seconds&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">snapshot_id</span><span class="p">,</span>
+            <span class="s1">&#39;created_at&#39;</span><span class="p">:</span> <span class="n">created_at</span><span class="p">,</span>
+            <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">stocks</span><span class="p">),</span>
+            <span class="s1">&#39;tags&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">),</span>
+            <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="n">stocks</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_write_stock_snapshot_tiled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;Unable to connect to tiled server.&#39;</span><span class="p">))</span>
+        <span class="n">stocks_container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_tiled_container</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">)</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;stock_history&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;snapshot&#39;</span><span class="p">:</span> <span class="n">snapshot</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">stocks_container</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">snapshot</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_or_create_tiled_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;Unable to connect to tiled server.&#39;</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="p">[</span><span class="n">node_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">create_container</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">node_name</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">node_name</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">client</span><span class="p">[</span><span class="n">node_name</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_tiled_item_metadata</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">metadata</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">metadata</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">item_doc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;item&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item_doc</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="n">links</span> <span class="o">=</span> <span class="n">item_doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;links&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">links</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="n">self_link</span> <span class="o">=</span> <span class="n">links</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;self&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">self_link</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">http_client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">self_link</span><span class="p">,</span>
+                <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]},</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">resp</span><span class="o">.</span><span class="n">is_success</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attributes&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">metadata</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_write_stock_snapshot_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_history&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_history&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">200</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_save_stock_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+        <span class="n">snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_stock_snapshot</span><span class="p">(</span><span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_stock_snapshot_tiled</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;tiled&#39;</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_stock_snapshot_local</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;local&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_list_stock_history_tiled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stocks_container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_tiled_container</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">stocks_container</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">stocks_container</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_item_metadata</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="n">snapshot</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;snapshot&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">snapshot</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">):</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">entry</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_list_stock_history_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_history&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">history</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)]</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">entry</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_get_stock_history_with_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tiled_history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_stock_history_tiled</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">tiled_history</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tiled_history</span><span class="p">,</span> <span class="s1">&#39;tiled&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_stock_history_local</span><span class="p">(),</span> <span class="s1">&#39;local&#39;</span>
+
 <div class="viewcode-block" id="MassBalanceDriver.upload_stocks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.upload_stocks">[docs]</a>
-    <span class="k">def</span> <span class="nf">upload_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">upload_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">stocks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">prev_stocks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">])</span>
@@ -821,7 +987,8 @@
                 <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">][</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">stock</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
             <span class="n">diagnostics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_stocks_with_diagnostics</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">stocks</span><span class="p">),</span> <span class="s1">&#39;diagnostics&#39;</span><span class="p">:</span> <span class="n">diagnostics</span><span class="p">}</span>
+            <span class="n">history_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_stock_snapshot</span><span class="p">(</span><span class="n">stocks</span><span class="o">=</span><span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">stocks</span><span class="p">),</span> <span class="s1">&#39;diagnostics&#39;</span><span class="p">:</span> <span class="n">diagnostics</span><span class="p">,</span> <span class="s1">&#39;history_source&#39;</span><span class="p">:</span> <span class="n">history_source</span><span class="p">}</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_stocks</span>
             <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
@@ -934,6 +1101,7 @@
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">targets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_targets_signature</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)}</span></div>
 
 
@@ -943,6 +1111,101 @@
     <span class="k">def</span> <span class="nf">list_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">_solution_to_display_dict</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MassBalanceDriver.list_stock_history">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_stock_history">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">list_stock_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">history</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_stock_history_with_source</span><span class="p">()</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">component_group_keys</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;masses&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;volumes&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;concentrations&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mass_fractions&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;volume_fractions&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;molarities&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;molalities&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">history</span><span class="p">:</span>
+            <span class="n">component_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="n">stock_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="n">stocks</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stocks</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">stocks</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="n">stock_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">stock_name</span><span class="p">:</span>
+                        <span class="n">stock_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span>
+                    <span class="n">stock_components</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;components&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stock_components</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">stock_components</span><span class="p">:</span>
+                            <span class="n">comp_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="n">comp_name</span><span class="p">:</span>
+                                <span class="n">component_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">comp_name</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">component_group_keys</span><span class="p">:</span>
+                        <span class="n">group</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                            <span class="k">continue</span>
+                        <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                            <span class="n">comp_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="n">comp_name</span><span class="p">:</span>
+                                <span class="n">component_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">comp_name</span><span class="p">)</span>
+            <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;created_at&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="s1">&#39;tags&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="p">[]),</span>
+                <span class="s1">&#39;components&#39;</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">component_names</span><span class="p">),</span>
+                <span class="s1">&#39;stock_names&#39;</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">stock_names</span><span class="p">),</span>
+            <span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+            <span class="s1">&#39;history&#39;</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="MassBalanceDriver.load_stock_history">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.load_stock_history">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">load_stock_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">snapshot_id</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;snapshot_id is required.&#39;</span><span class="p">}</span>
+        <span class="n">history</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_stock_history_with_source</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">history</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">snapshot_id</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">stocks</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stocks</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid snapshot payload.&#39;</span><span class="p">}</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+                <span class="s1">&#39;snapshot&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;created_at&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">stocks</span><span class="p">)),</span>
+                    <span class="s1">&#39;tags&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="p">[]),</span>
+                <span class="p">},</span>
+                <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="n">stocks</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;No stock snapshot found for id </span><span class="si">{</span><span class="n">snapshot_id</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="MassBalanceDriver.get_storage_sources">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_storage_sources">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_storage_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Trigger source resolution for component storage by doing a lightweight list.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">list_components</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">stock_history_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_stock_history_with_source</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;components&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">get_source</span><span class="p">(),</span>
+            <span class="s1">&#39;stock_history&#39;</span><span class="p">:</span> <span class="n">stock_history_source</span><span class="p">,</span>
+            <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="s1">&#39;local&#39;</span><span class="p">,</span>
+        <span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="MassBalanceDriver.list_targets">

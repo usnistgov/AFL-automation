@@ -1,0 +1,12 @@
+AFL.automation.instrument.FileCamera
+====================================
+
+.. automodule:: AFL.automation.instrument.FileCamera
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FileCamera
+   

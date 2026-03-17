@@ -182,7 +182,12 @@ class OpticalTurbidity(Driver):
                 measurement_img = img_as_ubyte(rgb2gray(img))
                 print('success on retry')
             else:
-                print('failed to recollect')
+                raise RuntimeError(
+                    'Failed to collect camera image after two attempts. '
+                    'Check that the camera is connected and the '
+                    f"camera_interface ('{self.config['camera_interface']}') "
+                    'settings are correct.'
+                )
 
         if set_empty:
             self.empty_img = measurement_img
@@ -292,7 +297,7 @@ class OpticalTurbidity(Driver):
         ds.attrs['turbidity_metric'] = turbidity_metric
         ds.attrs['empty_uuid'] = self.config.get('empty_uuid', '')
         ds.attrs['empty_available'] = not empty_from_measurement
-        ds['turbidity'] = ('turbidity', [turbidity_metric])
+        ds['turbidity'] = turbidity_metric
         ds['img'] = (('px','py'),measurement_img)
         ds['img_MT'] = (('px','py'),empty_img)
         ds['mask'] = (('px','py')   ,mask)

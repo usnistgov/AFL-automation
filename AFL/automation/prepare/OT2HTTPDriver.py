@@ -227,6 +227,29 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         except Exception as e:
             raise RuntimeError(f"Error getting pipettes: {str(e)}")
 
+    def _get_active_pipettes(self):
+        """Return pipettes that are both physically attached and loaded into the active run."""
+        active_pipettes = {}
+        loaded_instruments = self.config.get("loaded_instruments", {})
+
+        for mount, info in self.pipette_info.items():
+            if not info:
+                continue
+            if mount not in loaded_instruments:
+                continue
+            if info.get("id") is None:
+                continue
+            active_pipettes[mount] = info
+
+        return active_pipettes
+
+    def _get_active_pipette_info(self, mount):
+        mount = str(mount).strip().lower()
+        info = self._get_active_pipettes().get(mount)
+        if info is None:
+            raise ValueError(f"No loaded pipette available on {mount} mount")
+        return info
+
     def reset_prep_targets(self):
         """Clear the list of preparation targets stored in the config."""
         self.config["prep_targets"] = []
@@ -270,8 +293,8 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             except requests.exceptions.RequestException:
                 status.append("Unable to get session status")
 
-        # Get pipette information
-        for mount, pipette in self.pipette_info.items():
+        # Get pipette information for mounts that are loaded into the active run
+        for mount, pipette in self._get_active_pipettes().items():
             if pipette:
                 status.append(
                     f"Pipette on {mount} mount: {pipette.get('model', 'unknown')}"
@@ -923,9 +946,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         self.max_smallest_pipette = None
 
         # Get all available pipettes with their volumes
-        available_pipettes = {
-            mount: info for mount, info in self.pipette_info.items() if info is not None
-        }
+        available_pipettes = self._get_active_pipettes()
 
         if available_pipettes:
             # Get min and max volumes for each pipette
@@ -1625,20 +1646,31 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         """Set aspirate rate in uL/s. Default is 150 uL/s"""
         self.log_info(f"Setting aspirate rate to {rate} uL/s")
 
-        # If no specific pipette is provided, update all pipettes
-        if pipette == 'left' or pipette is None:
-            self.pipette_info['left']['aspirate_flow_rate'] = rate
-        if pipette == 'right' or pipette is None:
-            self.pipette_info['right']['aspirate_flow_rate'] = rate
+        if pipette is None:
+            active_pipettes = self._get_active_pipettes()
+            if not active_pipettes:
+                self.log_warning("No loaded pipettes available to update aspirate rate")
+                return
+            for info in active_pipettes.values():
+                info["aspirate_flow_rate"] = rate
+            return
+
+        self._get_active_pipette_info(pipette)["aspirate_flow_rate"] = rate
 
     def set_dispense_rate(self, rate=300, pipette=None):
         """Set dispense rate in uL/s. Default is 300 uL/s"""
         self.log_info(f"Setting dispense rate to {rate} uL/s")
-        # If no specific pipette is provided, update all pipettes
-        if pipette == 'left' or pipette is None:
-            self.pipette_info['left']['dispense_flow_rate'] = rate
-        if pipette == 'right' or pipette is None:
-            self.pipette_info['right']['dispense_flow_rate'] = rate
+
+        if pipette is None:
+            active_pipettes = self._get_active_pipettes()
+            if not active_pipettes:
+                self.log_warning("No loaded pipettes available to update dispense rate")
+                return
+            for info in active_pipettes.values():
+                info["dispense_flow_rate"] = rate
+            return
+
+        self._get_active_pipette_info(pipette)["dispense_flow_rate"] = rate
 
     def set_gantry_speed(self, speed=400):
         """Set movement speed of gantry. Default is 400 mm/s"""
@@ -1657,7 +1689,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         self._update_pipettes()
 
         pipettes = []
-        for mount, pipette_data in self.pipette_info.items():
+        for mount, pipette_data in self._get_active_pipettes().items():
             if not pipette_data:
                 continue
 
@@ -1678,7 +1710,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 )
 
         if not pipettes:
-            raise ValueError("No suitable pipettes found!\n")
+            raise ValueError("No suitable loaded pipettes found!\n")
 
         # Calculate transfers and uncertainties
         for pipette in pipettes:
@@ -1715,9 +1747,10 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
     def get_aspirate_rate(self, pipette=None):
         """Get current aspirate rate for a pipette"""
+        active_pipettes = self._get_active_pipettes()
         if pipette is None:
             # Return the rate of the first pipette found
-            for mount, pipette_data in self.pipette_info.items():
+            for mount, pipette_data in active_pipettes.items():
                 if pipette_data:
                     pipette = mount
                     break
@@ -1726,7 +1759,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             return None
 
         try:
-            for mount, pipette_data in self.pipette_info.items():
+            for mount, pipette_data in active_pipettes.items():
                 if mount == pipette and pipette_data:
                     return pipette_data.get("aspirate_flow_rate", 150)
         except requests.exceptions.RequestException:
@@ -1736,9 +1769,10 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
     def get_dispense_rate(self, pipette=None):
         """Get current dispense rate for a pipette"""
+        active_pipettes = self._get_active_pipettes()
         if pipette is None:
             # Return the rate of the first pipette found
-            for mount, pipette_data in self.pipette_info.items():
+            for mount, pipette_data in active_pipettes.items():
                 if pipette_data:
                     pipette = mount
                     break
@@ -1747,7 +1781,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             return None
 
         try:
-            for mount, pipette_data in self.pipette_info.items():
+            for mount, pipette_data in active_pipettes.items():
                 if mount == pipette and pipette_data:
                     return pipette_data.get("dispense_flow_rate", 300)
         except requests.exceptions.RequestException:

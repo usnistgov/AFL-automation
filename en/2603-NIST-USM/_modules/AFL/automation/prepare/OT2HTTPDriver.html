@@ -651,6 +651,29 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting pipettes: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_get_active_pipettes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return pipettes that are both physically attached and loaded into the active run.&quot;&quot;&quot;</span>
+        <span class="n">active_pipettes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">loaded_instruments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">mount</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">loaded_instruments</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">active_pipettes</span><span class="p">[</span><span class="n">mount</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+
+        <span class="k">return</span> <span class="n">active_pipettes</span>
+
+    <span class="k">def</span> <span class="nf">_get_active_pipette_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">):</span>
+        <span class="n">mount</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">mount</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mount</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No loaded pipette available on </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2"> mount&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">info</span>
+
 <div class="viewcode-block" id="OT2HTTPDriver.reset_prep_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_prep_targets">[docs]</a>
     <span class="k">def</span> <span class="nf">reset_prep_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -705,8 +728,8 @@
             <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">:</span>
                 <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Unable to get session status&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Get pipette information</span>
-        <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Get pipette information for mounts that are loaded into the active run</span>
+        <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">pipette</span><span class="p">:</span>
                 <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Pipette on </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2"> mount: </span><span class="si">{</span><span class="n">pipette</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;unknown&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1389,9 +1412,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_smallest_pipette</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Get all available pipettes with their volumes</span>
-        <span class="n">available_pipettes</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">mount</span><span class="p">:</span> <span class="n">info</span> <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="p">}</span>
+        <span class="n">available_pipettes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">available_pipettes</span><span class="p">:</span>
             <span class="c1"># Get min and max volumes for each pipette</span>
@@ -2099,11 +2120,16 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set aspirate rate in uL/s. Default is 150 uL/s&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting aspirate rate to </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2"> uL/s&quot;</span><span class="p">)</span>
 
-        <span class="c1"># If no specific pipette is provided, update all pipettes</span>
-        <span class="k">if</span> <span class="n">pipette</span> <span class="o">==</span> <span class="s1">&#39;left&#39;</span> <span class="ow">or</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate</span>
-        <span class="k">if</span> <span class="n">pipette</span> <span class="o">==</span> <span class="s1">&#39;right&#39;</span> <span class="ow">or</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">][</span><span class="s1">&#39;aspirate_flow_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate</span></div>
+        <span class="k">if</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">active_pipettes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">active_pipettes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="s2">&quot;No loaded pipettes available to update aspirate rate&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">active_pipettes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">&quot;aspirate_flow_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipette_info</span><span class="p">(</span><span class="n">pipette</span><span class="p">)[</span><span class="s2">&quot;aspirate_flow_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.set_dispense_rate">
@@ -2111,11 +2137,17 @@
     <span class="k">def</span> <span class="nf">set_dispense_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set dispense rate in uL/s. Default is 300 uL/s&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting dispense rate to </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2"> uL/s&quot;</span><span class="p">)</span>
-        <span class="c1"># If no specific pipette is provided, update all pipettes</span>
-        <span class="k">if</span> <span class="n">pipette</span> <span class="o">==</span> <span class="s1">&#39;left&#39;</span> <span class="ow">or</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">][</span><span class="s1">&#39;dispense_flow_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate</span>
-        <span class="k">if</span> <span class="n">pipette</span> <span class="o">==</span> <span class="s1">&#39;right&#39;</span> <span class="ow">or</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">][</span><span class="s1">&#39;dispense_flow_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate</span></div>
+
+        <span class="k">if</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">active_pipettes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">active_pipettes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="s2">&quot;No loaded pipettes available to update dispense rate&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">active_pipettes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">&quot;dispense_flow_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipette_info</span><span class="p">(</span><span class="n">pipette</span><span class="p">)[</span><span class="s2">&quot;dispense_flow_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rate</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.set_gantry_speed">
@@ -2140,7 +2172,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_pipettes</span><span class="p">()</span>
 
         <span class="n">pipettes</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">pipette_data</span><span class="p">:</span>
                 <span class="k">continue</span>
 
@@ -2161,7 +2193,7 @@
                 <span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">pipettes</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No suitable pipettes found!</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No suitable loaded pipettes found!</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Calculate transfers and uncertainties</span>
         <span class="k">for</span> <span class="n">pipette</span> <span class="ow">in</span> <span class="n">pipettes</span><span class="p">:</span>
@@ -2201,9 +2233,10 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_aspirate_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">get_aspirate_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get current aspirate rate for a pipette&quot;&quot;&quot;</span>
+        <span class="n">active_pipettes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Return the rate of the first pipette found</span>
-            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="n">active_pipettes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">pipette_data</span><span class="p">:</span>
                     <span class="n">pipette</span> <span class="o">=</span> <span class="n">mount</span>
                     <span class="k">break</span>
@@ -2212,7 +2245,7 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="n">active_pipettes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">mount</span> <span class="o">==</span> <span class="n">pipette</span> <span class="ow">and</span> <span class="n">pipette_data</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">pipette_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;aspirate_flow_rate&quot;</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">:</span>
@@ -2225,9 +2258,10 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_dispense_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">get_dispense_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get current dispense rate for a pipette&quot;&quot;&quot;</span>
+        <span class="n">active_pipettes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Return the rate of the first pipette found</span>
-            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="n">active_pipettes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">pipette_data</span><span class="p">:</span>
                     <span class="n">pipette</span> <span class="o">=</span> <span class="n">mount</span>
                     <span class="k">break</span>
@@ -2236,7 +2270,7 @@
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipette_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">mount</span><span class="p">,</span> <span class="n">pipette_data</span> <span class="ow">in</span> <span class="n">active_pipettes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">mount</span> <span class="o">==</span> <span class="n">pipette</span> <span class="ow">and</span> <span class="n">pipette_data</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">pipette_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dispense_flow_rate&quot;</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span><span class="p">:</span>

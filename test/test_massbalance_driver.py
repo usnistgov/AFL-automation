@@ -1,12 +1,18 @@
 import pytest
-from AFL.automation.mixing.MassBalance import MassBalanceDriver
-from AFL.automation.mixing.Solution import Solution
+from AFL.automation.mixcalc.MassBalanceDriver import MassBalanceDriver
+from AFL.automation.mixcalc.Solution import Solution
 from AFL.automation.shared.units import units
 
 @pytest.mark.usefixtures("mixdb")
 def test_massbalance_driver_mixed_solvents_mass():
     mb = MassBalanceDriver()
     mb.config.write = False # need to disable writing to config file for testing
+    # Isolate test behavior from any persisted user config in ~/.afl.
+    mb.config['minimum_volume'] = '20 ul'
+    mb.config['tol'] = 1e-3
+    # Ensure prior user config does not leak into test expectations
+    mb.reset_stocks()
+    mb.reset_targets()
     # Add stocks
     mb.add_stock({
         'name': "Stock1",
@@ -42,7 +48,7 @@ def test_massbalance_driver_mixed_solvents_mass():
     for i, result in enumerate(mb.balanced):
         balanced = result['balanced_target']
 
-        if balanced is None:
+        if not result['success']:
             none_count += 1
             continue
         assert balanced.mass.to('mg').magnitude == pytest.approx(500)
@@ -56,4 +62,80 @@ def test_massbalance_driver_mixed_solvents_mass():
         assert sub_balanced.mass_fraction['H2O'] == pytest.approx(sub_target.mass_fraction['H2O'])
         assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'])
 
-    assert none_count == 2 
+    assert none_count == 1
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_driver_balance_settings_and_progress():
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    # Isolate test behavior from any persisted user config in ~/.afl.
+    mb.config['minimum_volume'] = '20 ul'
+    mb.config['tol'] = 1e-3
+    mb.reset_stocks()
+    mb.reset_targets()
+
+    mb.set_config(tol=2e-3)
+    settings = mb.get_balance_settings()
+    assert settings['tol'] == pytest.approx(2e-3)
+
+    progress = mb.get_balance_progress()
+    assert progress['active'] is False
+    assert 'completed' in progress
+    assert 'total' in progress
+
+    mb.add_stock({
+        'name': "Stock1",
+        'masses': {"H2O": "20 g"},
+        'location': '1A1'
+    })
+    mb.add_stock({
+        'name': "Stock2",
+        'masses': {"Hexanes": "20 g"},
+        'location': '1A2'
+    })
+    mb.add_target({
+        'name': "SimpleTarget",
+        'mass_fractions': {"H2O": 0.5, "Hexanes": 0.5},
+        'total_mass': "500 mg",
+    })
+
+    mb.balance()
+    post = mb.get_balance_progress()
+    assert post['active'] is False
+    assert post['total'] == 1
+    assert post['completed'] == 1
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_stock_history_local_fallback(monkeypatch):
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    mb.reset_stocks()
+    mb.config['stock_history'] = []
+
+    monkeypatch.setattr(
+        mb,
+        '_get_tiled_client',
+        lambda: {'status': 'error', 'message': 'tiled unavailable for test'},
+    )
+
+    upload_result = mb.upload_stocks(
+        stocks=[{'name': 'StockA', 'masses': {'H2O': '1 g'}}],
+        reset=True,
+        tags=['campaign-a', 'seed'],
+    )
+    assert upload_result['success'] is True
+    assert upload_result['history_source'] == 'local'
+
+    history = mb.list_stock_history()
+    assert history['source'] == 'local'
+    assert len(history['history']) == 1
+    assert history['history'][0]['tags'] == ['campaign-a', 'seed']
+
+    snapshot_id = history['history'][0]['id']
+    loaded = mb.load_stock_history(snapshot_id=snapshot_id)
+    assert loaded['success'] is True
+    assert loaded['source'] == 'local'
+    assert len(loaded['stocks']) == 1
+    assert loaded['stocks'][0]['name'] == 'StockA'

@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
+from flask import Flask, redirect, render_template, request, jsonify, send_file, send_from_directory
 
 from flask_cors import CORS
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 #authentication module
 from flask_jwt_extended import (
@@ -60,7 +61,7 @@ except (ModuleNotFoundError,ImportError):
     _ADVERTISE_ZEROCONF=False
 
 class APIServer:
-    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='index.html',new_index_template='index-new.html',plot_template='simple-bokeh.html'):
+    def __init__(self,name,data = None,experiment='Development',contact='tbm@nist.gov',index_template='server_page/index.html',new_index_template='server_page/index-new.html',plot_template='simple-bokeh.html',afl_home=None):
         self.name = name
         self.experiment = experiment
         self.contact = contact
@@ -68,12 +69,27 @@ class APIServer:
         self.new_index_template = new_index_template
         self.plot_template = plot_template
         self.data = data
+        self.afl_home = afl_home
 
         self.logger_filter= LoggerFilter('get_queue','queue_state','driver_status','get_server_time','get_info')
 
-        #allows the flask server to find the static and templates directories
+        # allows the flask server to find the static and templates directories
         root_path = pathlib.Path(__file__).parent.absolute()
         self.app = Flask(name,root_path=root_path)
+
+        # App entrypoints and shared assets now live under AFL/automation/apps.
+        self.apps_path = pathlib.Path(__file__).parent.parent / "apps"
+        template_paths = [self.apps_path]
+        loaders = []
+        if self.app.jinja_loader is not None:
+            loaders.append(self.app.jinja_loader)
+        loaders.extend(
+            FileSystemLoader(str(path))
+            for path in template_paths
+            if path.exists()
+        )
+        self.app.jinja_loader = ChoiceLoader(loaders)
+        self.app.add_url_rule('/static/apps/<path:filename>', 'apps_static', self._serve_apps_static)
         self.init_logging()
 
         self.queue_daemon = None
@@ -83,6 +99,17 @@ class APIServer:
 
         # CORS may have to come after JWTManager
         self.cors = CORS(self.app)
+
+    def _serve_apps_static(self, filename):
+        return send_from_directory(self.apps_path, filename)
+
+    @staticmethod
+    def _static_endpoint_name(subpath):
+        normalized = subpath.strip('/').replace('/', '_').replace('-', '_')
+        return f'static_{normalized}'
+
+    def _render_app_template(self, template_name, **kwargs):
+        return render_template(template_name, **kwargs), 200
 
 
     def create_queue(self,driver,add_unqueued=True, start_ca=False, ca_prefix=None, ca_port=5064):
@@ -206,6 +233,11 @@ class APIServer:
         self.app.add_url_rule('/old','index',self.index)
         self.app.add_url_rule('/app','app',self.webapp)
         self.app.add_url_rule('/webapp','webapp',self.webapp)
+        self.app.add_url_rule('/jupyterlite', 'jupyterlite', self.jupyterlite)
+        self.app.add_url_rule('/static/config.html', 'static_config', self.config_editor)
+        self.app.add_url_rule('/static/config-retro.html', 'static_config_retro', self.config_editor_retro)
+        self.app.add_url_rule('/static/status.html', 'static_status', self.status_app)
+        self.app.add_url_rule('/static/jl/index.html', 'static_jupyterlite_index', self.jupyterlite)
         self.app.add_url_rule('/enqueue','enqueue',self.enqueue,methods=['POST'])
         self.app.add_url_rule('/query_driver','query_driver',self.query_driver,methods=['GET'])
         self.app.add_url_rule('/clear_queue','clear_queue',self.clear_queue,methods=['POST'])
@@ -236,6 +268,8 @@ class APIServer:
                               methods=['POST', 'GET'])
         self.app.add_url_rule('/retrieve_obj', 'retrieve_obj', self.retrieve_obj,
                               methods=['POST', 'GET'])
+        self.app.add_url_rule('/tiled_upload_data', 'tiled_upload_data', self.tiled_upload_data,
+                              methods=['POST'])
 
         # self.init is now called from run()/run_threaded due to Flask 3 removal
         # of the before_first_request hook
@@ -260,7 +294,7 @@ class APIServer:
 
     def is_server_live(self):
         self.app.logger.debug("Server is live.")
-        return 200
+        return "OK", 200
 
     def get_unqueued_commands(self):
         return jsonify(self.driver.unqueued.function_info),200
@@ -288,7 +322,9 @@ class APIServer:
             directory = pathlib.Path(directory)
             if directory.exists():
                 route = f'/static/{subpath}/<path:filename>'
-                endpoint = f'static_{subpath}'
+                endpoint = self._static_endpoint_name(subpath)
+                if endpoint in self.app.view_functions:
+                    continue
                 handler = lambda filename, directory=directory: send_from_directory(directory, filename)
                 self.app.add_url_rule(route, endpoint, handler)
 
@@ -304,15 +340,18 @@ class APIServer:
             self.app.add_url_rule(route,name,response_function,methods=['GET'])
 
     def query_driver(self):
-        if request.json:
-            task = request.json
-        else:
+        task = request.get_json(silent=True)
+        if task is None:
             task = request.args
 
         self.app.logger.info(f'Request for {request.args}')
         if 'r' in task:
             if task['r'] in self.driver.unqueued.functions:
-                return getattr(self.driver,task['r'])(**task),200
+                fn_name = task['r']
+                call_kwargs = dict(task)
+                # Remove router control key before forwarding kwargs.
+                call_kwargs.pop('r', None)
+                return getattr(self.driver, fn_name)(**call_kwargs),200
             else:
                 return "No such task found as an unqueued function in driver"
         else:
@@ -325,7 +364,10 @@ class APIServer:
 
         # SMTP email handling has been removed. The `toaddrs` argument is now
         # ignored and retained only for backwards compatibility.
-        path = pathlib.Path.home() / '.afl'
+        resolved_afl_home = self.afl_home if self.afl_home is not None else os.environ.get('AFL_HOME')
+        if resolved_afl_home is None or str(resolved_afl_home).strip() == '':
+            resolved_afl_home = pathlib.Path.home() / '.afl'
+        path = pathlib.Path(resolved_afl_home).expanduser()
         path.mkdir(exist_ok=True,parents=True)
         filepath = path / f'{self.name}.log'
         file_handler = FileHandler(filepath)
@@ -369,7 +411,19 @@ class APIServer:
         '''
         self.app.logger.info('Serving WebApp')
 
-        return render_template('webapp.html'),200
+        return self._render_app_template('afl_app/webapp.html')
+
+    def config_editor(self):
+        return self._render_app_template('config_editor/config.html')
+
+    def config_editor_retro(self):
+        return self._render_app_template('config_editor/config-retro.html')
+
+    def status_app(self):
+        return self._render_app_template('status/status.html')
+
+    def jupyterlite(self):
+        return redirect('/static/jl/index.html')
 
     def render_unqueued(self,func,kwargs_add,**kwargs):
         '''Convert an unqueued return item into web-suitable output'''
@@ -577,6 +631,61 @@ class APIServer:
             del self.driver.dropbox[task['uuid']]
         result = serialization.serialize(result)
         return jsonify({'obj':result}),200
+
+    def tiled_upload_data(self):
+        """Upload an xarray/nc/csv/tsv/dat payload to Tiled via multipart form data."""
+        upload_file = request.files.get('file')
+        if upload_file is None:
+            return jsonify({
+                'status': 'error',
+                'message': 'No file payload provided in form field "file".',
+            }), 400
+
+        upload_bytes = upload_file.read()
+        if not upload_bytes:
+            return jsonify({
+                'status': 'error',
+                'message': 'Uploaded file is empty.',
+            }), 400
+
+        form = request.form
+        metadata_payload = form.get('metadata', '')
+
+        upload_kwargs = {
+            'upload_bytes': upload_bytes,
+            'filename': upload_file.filename or '',
+            'file_format': form.get('file_format', ''),
+            'coordinate_column': form.get('coordinate_column', ''),
+            'metadata': metadata_payload,
+            'delimiter': form.get('delimiter', ''),
+            'comment_prefix': form.get('comment_prefix', ''),
+            'last_comment_as_header': form.get('last_comment_as_header', ''),
+        }
+
+        # Allow direct metadata fields in form without requiring JSON blob.
+        metadata_keys = [
+            'sample_name',
+            'sample_uuid',
+            'AL_campaign_name',
+            'AL_uuid',
+            'task_name',
+            'driver_name',
+        ]
+        for key in metadata_keys:
+            value = form.get(key, '')
+            if value:
+                upload_kwargs[key] = value
+
+        result = self.driver.tiled_upload_dataset(**upload_kwargs)
+        if isinstance(result, dict) and result.get('status') == 'success':
+            return jsonify(result), 200
+
+        if isinstance(result, dict):
+            return jsonify(result), 400
+        return jsonify({
+            'status': 'error',
+            'message': 'Unexpected response from tiled upload handler.',
+        }), 500
 
 
     @jwt_required()

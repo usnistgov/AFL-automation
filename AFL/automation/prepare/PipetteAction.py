@@ -22,7 +22,8 @@ class PipetteAction:
             to_top=True,
             to_center=False,
             to_top_z_offset=0,
-            fast_mixing=False
+            fast_mixing=False,
+            touch_tip=False
             
             ):
         self.kwargs ={}
@@ -47,6 +48,7 @@ class PipetteAction:
         self.kwargs['to_center'] = to_center
         self.kwargs['to_top_z_offset'] = to_top_z_offset #mm!
         self.kwargs['fast_mixing'] = fast_mixing
+        self.kwargs['touch_tip'] = touch_tip
     
     def __str__(self):
         return f'<PipetteAction Vol:{self.volume:4.3f} {self.source}-->{self.dest}>'

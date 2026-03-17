@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MixDoctor</title>
+    <style>{{ inline_css | safe }}</style>
+</head>
+<body>
+<div id="app-container">
+    <div id="header">
+        <h1>MixDoctor</h1>
+    </div>
+    <div id="tab-bar">
+        <button class="tab-btn active" data-tab="components-tab">Components</button>
+        <button class="tab-btn" data-tab="stocks-tab">Stocks</button>
+        <button class="tab-btn" data-tab="sweeps-tab">Sweep</button>
+        <button class="tab-btn" data-tab="balance-tab">Balance</button>
+        <button class="tab-btn" data-tab="plot-sweep-tab">Plot</button>
+        <button class="tab-btn" data-tab="submit-tab">Submit</button>
+    </div>
+
+    <!-- Tab 0: Components -->
+    <div id="components-tab" class="tab-panel active">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="components-refresh-btn">Refresh</button>
+            <button class="toolbar-btn" id="components-upload-json-btn">Upload JSON</button>
+            <button class="toolbar-btn" id="components-download-json-btn">Download JSON</button>
+            <button class="primary-btn" id="components-add-btn">+ Add Component</button>
+            <span id="components-status" class="components-status"></span>
+            <span id="components-source-badge" class="source-badge">Source: unknown</span>
+        </div>
+        <div id="components-editor">
+            <table class="data-table components-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Density (units required)</th>
+                        <th>Formula (optional)</th>
+                        <th>SLD (optional)</th>
+                        <th>UID</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="components-table-body">
+                    <tr>
+                        <td colspan="6" class="empty-state">Loading components...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab 1: Create Stocks -->
+    <div id="stocks-tab" class="tab-panel">
+        <div class="tab-toolbar">
+            <button class="primary-btn" id="upload-stocks-btn">Upload Stocks</button>
+            <button class="toolbar-btn" id="add-stock-btn">+ Add Stock</button>
+            <button class="toolbar-btn" id="load-stocks-from-server-btn">Load from Server</button>
+            <label class="stocks-tags-input-wrap">Tags
+                <input type="text" id="stocks-tags-input" placeholder="comma-separated tags">
+            </label>
+        </div>
+        <div id="stocks-page-layout">
+            <div id="stocks-editor-column">
+                <div id="stocks-upload-errors"></div>
+                <div id="stock-cards-container"></div>
+                <div id="solution-diagnostics-panel">
+                    <div class="diagnostics-header">
+                        <div class="panel-title">Solution Creation Output</div>
+                        <button class="toolbar-btn" id="solution-diagnostics-clear-btn">Clear</button>
+                    </div>
+                    <div id="solution-diagnostics-body">
+                        <p class="empty-state">No diagnostics yet.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="stocks-history-column">
+                <div class="panel-title">Stock History</div>
+                <div id="stocks-history-source" class="source-badge">Source: unknown</div>
+                <input type="text" id="stocks-history-filter-input" placeholder="Filter by date, tag, component, or stock">
+                <div id="stocks-history-list">
+                    <p class="empty-state">No stock history yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: Create Sweeps -->
+    <div id="sweeps-tab" class="tab-panel">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="add-sweep-row-btn">+ Add Row</button>
+            <button class="toolbar-btn" id="preview-sweep-btn">Preview</button>
+            <button class="primary-btn" id="upload-targets-btn">Upload Targets</button>
+        </div>
+
+        <div id="sweep-definition-panel">
+            <div class="panel-title">Sweep Definition</div>
+            <div class="sweep-settings-bar">
+                <label>Size type:
+                    <select id="sweep-size-type">
+                        <option value="total_mass">Total Mass</option>
+                        <option value="total_volume">Total Volume</option>
+                    </select>
+                </label>
+                <label>Size value: <input type="text" id="sweep-size-value" placeholder="e.g. 500 mg" style="width:120px"></label>
+            </div>
+            <table id="sweep-table">
+                <thead>
+                    <tr>
+                        <th>Use</th>
+                        <th>Component</th>
+                        <th>Property</th>
+                        <th>Start</th>
+                        <th>Stop</th>
+                        <th>Steps</th>
+                        <th>Units</th>
+                        <th>Remainder</th>
+                        <th>Solute</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="sweep-name-builder">
+            <div class="sweep-name-builder-header">
+                <div class="panel-title">Name Builder</div>
+                <button class="toolbar-btn" id="add-sweep-name-rule-btn">+ Add Name Rule</button>
+            </div>
+            <table id="sweep-name-rule-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Include Units</th>
+                        <th>Show Component</th>
+                        <th>Include Index</th>
+                        <th>Formatter</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="sweep-name-rule-body"></tbody>
+            </table>
+            <div class="sweep-name-prefix-row">
+                <label>Target Prefix
+                    <input type="text" id="sweep-prefix" value="target" placeholder="e.g. campaignA">
+                </label>
+            </div>
+            <div id="sweep-name-preview">Name preview: <span class="empty">No rules. Using prefix-index naming.</span></div>
+        </div>
+        <div id="sweeps-upload-errors"></div>
+        <div id="sweep-preview-area"></div>
+    </div>
+
+    <!-- Tab 3: Balance -->
+    <div id="balance-tab" class="tab-panel">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="refresh-btn">Refresh</button>
+            <button class="toolbar-btn" id="balance-upload-targets-btn">Upload Targets</button>
+            <button class="toolbar-btn" id="balance-btn">Balance</button>
+            <label class="balance-tol-control" for="balance-tol-input">
+                Tolerance
+                <input type="number" id="balance-tol-input" min="0" step="any" placeholder="e.g. 1e-3">
+            </label>
+            <label class="balance-tol-control" for="balance-min-volume-input">
+                Minimum Volume
+                <input type="text" id="balance-min-volume-input" placeholder="e.g. 20 ul">
+            </label>
+            <label class="balance-tol-control" for="balance-enable-multistep-input">
+                Multistep Dilution
+                <input type="checkbox" id="balance-enable-multistep-input">
+            </label>
+            <span id="balance-counter"></span>
+        </div>
+        <div id="balance-progress-panel">
+            <div class="balance-progress-header">
+                <span id="balance-progress-text">Idle</span>
+                <span id="balance-progress-eta"></span>
+            </div>
+            <div class="balance-progress-bar-wrap">
+                <div id="balance-progress-bar"></div>
+            </div>
+            <div id="balance-progress-target"></div>
+        </div>
+        <div id="main-content">
+            <div id="stocks-panel">
+                <div class="panel-title">Stocks</div>
+                <div id="stocks-list"></div>
+            </div>
+            <div id="targets-panel">
+                <div class="panel-header">
+                    <div class="panel-title" id="targets-panel-title">Targets</div>
+                    <label class="targets-sort-control" for="targets-failed-first-input">
+                        <input type="checkbox" id="targets-failed-first-input">
+                        Failed First
+                    </label>
+                </div>
+                <div id="targets-list-status" class="targets-list-status"></div>
+                <div id="targets-list"></div>
+                <div id="targets-load-more-wrap" class="targets-load-more-wrap" hidden>
+                    <button class="toolbar-btn" id="targets-load-more-btn">Load More</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 4: Plot Sweep -->
+    <div id="plot-sweep-tab" class="tab-panel">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="plot-sweep-refresh-btn">Refresh Data</button>
+            <button class="primary-btn" id="plot-sweep-plot-btn">Plot</button>
+            <span id="plot-sweep-status" class="plot-sweep-status"></span>
+        </div>
+        <div id="plot-sweep-body">
+            <div id="plot-sweep-controls">
+                <div class="plot-sweep-section">
+                    <div class="plot-sweep-section-title">Plot Type</div>
+                    <label>Type
+                        <select id="plot-sweep-type">
+                            <option value="2d">2D</option>
+                            <option value="3d">3D</option>
+                            <option value="ternary">Ternary</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="plot-sweep-section">
+                    <div class="plot-sweep-section-title">Axes</div>
+                    <div class="plot-sweep-axes plot-sweep-axes-2d">
+                        <div class="plot-sweep-axis-row">
+                            <label>X component
+                                <select id="plot-sweep-x"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-x-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-x-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>Y component
+                                <select id="plot-sweep-y"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-y-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-y-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="plot-sweep-axes plot-sweep-axes-3d">
+                        <div class="plot-sweep-axis-row">
+                            <label>X component
+                                <select id="plot-sweep-x3"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-x3-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-x3-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>Y component
+                                <select id="plot-sweep-y3"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-y3-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-y3-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>Z component
+                                <select id="plot-sweep-z3"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-z3-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-z3-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="plot-sweep-axes plot-sweep-axes-ternary">
+                        <div class="plot-sweep-axis-row">
+                            <label>A component
+                                <select id="plot-sweep-a"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-a-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-a-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>B component
+                                <select id="plot-sweep-b"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-b-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-b-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                        <div class="plot-sweep-axis-row">
+                            <label>C component
+                                <select id="plot-sweep-c"></select>
+                            </label>
+                            <label>Property
+                                <select id="plot-sweep-c-prop" class="plot-sweep-prop-select"></select>
+                            </label>
+                            <label>Units
+                                <input type="text" id="plot-sweep-c-units" class="plot-sweep-unit-input" placeholder="e.g. mg/ml">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="plot-sweep-section">
+                    <div class="plot-sweep-section-title">Subsample Balanced</div>
+                    <div class="plot-sweep-axis-row subsample-row">
+                        <label>Count
+                            <input type="number" id="plot-sweep-subsample-count" min="1" step="1" placeholder="e.g. 50">
+                        </label>
+                        <button class="toolbar-btn" id="plot-sweep-subsample-btn">Select</button>
+                    </div>
+                    <div id="plot-sweep-subsample-status" class="plot-sweep-substatus"></div>
+                </div>
+                <div id="plot-sweep-note" class="plot-sweep-note"></div>
+            </div>
+            <div id="plot-sweep-plot" class="plot-sweep-plot"></div>
+        </div>
+    </div>
+
+    <!-- Tab 5: Submit -->
+    <div id="submit-tab" class="tab-panel">
+        <div class="tab-toolbar">
+            <button class="toolbar-btn" id="submit-refresh-context-btn">Refresh Context</button>
+            <button class="primary-btn" id="submit-run-btn">Submit Samples</button>
+            <span id="submit-status" class="submit-status"></span>
+        </div>
+        <div id="submit-body">
+            <div id="submit-controls">
+                <div class="submit-section">
+                    <div class="submit-section-title">Submission Target</div>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-destination-mode" value="orchestrator" checked>
+                        Orchestrator (process_sample)
+                    </label>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-destination-mode" value="prepare">
+                        Prepare Server (prepare)
+                    </label>
+                </div>
+
+                <div class="submit-section" id="submit-orchestrator-section">
+                    <div class="submit-section-title">Orchestrator</div>
+                    <label class="submit-inline-field"><span>URI</span>
+                        <input type="text" id="submit-orchestrator-uri" placeholder="e.g. 127.0.0.1:5001">
+                    </label>
+                </div>
+
+                <div class="submit-section" id="submit-prepare-section" style="display:none;">
+                    <div class="submit-section-title">Prepare Server</div>
+                    <label class="submit-inline-field"><span>URI</span>
+                        <input type="text" id="submit-prepare-uri" placeholder="e.g. 127.0.0.1:5002">
+                    </label>
+                </div>
+                <div class="submit-section">
+                    <div id="submit-context-status" class="submit-substatus"></div>
+                </div>
+
+                <div class="submit-section">
+                    <div class="submit-section-title">Sample Source</div>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-sample-mode" value="balanced_all" checked>
+                        Full balanced grid
+                    </label>
+                    <label class="submit-inline-choice">
+                        <input type="radio" name="submit-sample-mode" value="plot_subsample">
+                        Plot tab random subset
+                    </label>
+                    <label class="submit-inline-choice" id="submit-no-sample-option">
+                        <input type="radio" name="submit-sample-mode" value="no_sample">
+                        No sample (autonomous kickoff)
+                    </label>
+                </div>
+
+                <div class="submit-section" id="submit-process-kwargs-section">
+                    <div class="submit-section-title">process_sample kwargs</div>
+                    <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-predict-next"> predict_next</label>
+                    <label class="submit-inline-choice"><input type="checkbox" id="submit-kw-enqueue-next"> enqueue_next</label>
+                    <label>Name
+                        <input type="text" id="submit-kw-name" placeholder="optional">
+                    </label>
+                    <label>sample_uuid
+                        <input type="text" id="submit-kw-sample-uuid" placeholder="optional">
+                    </label>
+                    <label>AL_campaign_name
+                        <input type="text" id="submit-kw-al-campaign-name" placeholder="optional">
+                    </label>
+                    <label>AL_uuid
+                        <input type="text" id="submit-kw-al-uuid" placeholder="optional">
+                    </label>
+                    <label>predict_combine_comps (JSON)
+                        <textarea id="submit-kw-predict-combine" rows="3" placeholder='{"groupA": ["A", "B"]}'></textarea>
+                    </label>
+                    <label>Advanced kwargs JSON (merged last)
+                        <textarea id="submit-kw-advanced-json" rows="5" placeholder='{"custom_kw": 123}'></textarea>
+                    </label>
+                </div>
+
+                <div class="submit-section" id="submit-prepare-kwargs-section" style="display:none;">
+                    <div class="submit-section-title">prepare kwargs</div>
+                    <label class="submit-inline-choice">
+                        <input type="checkbox" id="submit-prepare-kw-enable-multistep">
+                        enable_multistep_dilution
+                    </label>
+                    <label>dest
+                        <input type="text" id="submit-prepare-kw-dest" placeholder="optional destination">
+                    </label>
+                    <label>Advanced kwargs JSON (merged last)
+                        <textarea id="submit-prepare-kw-advanced-json" rows="5" placeholder='{"custom_kw": 123}'></textarea>
+                    </label>
+                </div>
+
+                <div class="submit-section">
+                    <div class="submit-section-title">Config Overrides</div>
+                    <label class="submit-override-row">
+                        <input type="checkbox" id="submit-override-prepare-volume-enabled">
+                        <span>prepare_volume</span>
+                    </label>
+                    <input type="text" id="submit-override-prepare-volume" placeholder="e.g. 1000 ul">
+
+                    <label class="submit-override-row">
+                        <input type="checkbox" id="submit-override-data-tag-enabled">
+                        <span>data_tag</span>
+                    </label>
+                    <input type="text" id="submit-override-data-tag" placeholder="e.g. campaign_01">
+
+                    <label class="submit-override-row">
+                        <input type="checkbox" id="submit-override-al-components-enabled">
+                        <span>AL_components (JSON array)</span>
+                    </label>
+                    <textarea id="submit-override-al-components" rows="2" placeholder='["A", "B"]'></textarea>
+
+                    <label class="submit-override-row">
+                        <input type="checkbox" id="submit-override-composition-format-enabled">
+                        <span>composition_format (str or JSON dict)</span>
+                    </label>
+                    <textarea id="submit-override-composition-format" rows="2" placeholder='"mass_fraction" or {"A":"mass_fraction"}'></textarea>
+                </div>
+            </div>
+
+            <div id="submit-preview">
+                <div class="panel-title" id="submit-preview-title">Samples to Submit (0)</div>
+                <div id="submit-preview-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-message"></div>
+</div>
+
+<!-- Components Upload Modal -->
+<div id="components-upload-modal-overlay">
+    <div id="components-upload-modal">
+        <div id="components-upload-modal-header">
+            <span id="components-upload-modal-title">Upload Components JSON</span>
+            <button id="components-upload-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="components-upload-modal-body">
+            <p class="target-upload-help">
+                Paste JSON as an array of component objects or an object with a <code>components</code> array.
+                Supported fields are <code>name</code>, <code>density</code>, <code>formula</code>, <code>sld</code>, and optional <code>uid</code>.
+            </p>
+            <label class="submit-inline-field"><span>JSON file</span>
+                <input type="file" id="components-upload-file-input" accept=".json,application/json">
+            </label>
+            <textarea id="components-upload-input" spellcheck="false" placeholder='Examples:
+[{"name":"Water","density":"1.0 g/ml","formula":"H2O"}]
+
+{"components":[{"uid":"abc123","name":"PEG","density":"1.12 g/ml"}]}'></textarea>
+            <div id="components-upload-summary"></div>
+            <div id="components-upload-errors"></div>
+            <div id="components-upload-preview"></div>
+        </div>
+        <div id="components-upload-modal-footer">
+            <button class="toolbar-btn" id="components-upload-cancel-btn">Cancel</button>
+            <button class="toolbar-btn" id="components-upload-parse-btn">Parse</button>
+            <button class="primary-btn" id="components-upload-submit-btn" disabled>Upload Components</button>
+        </div>
+    </div>
+</div>
+
+<!-- Stock History Modal -->
+<div id="stock-history-modal-overlay">
+    <div id="stock-history-modal">
+        <div id="stock-history-modal-header">
+            <span id="stock-history-modal-title">Stock Snapshot</span>
+            <button id="stock-history-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="stock-history-modal-body">
+            <div id="stock-history-modal-meta"></div>
+            <div id="stock-history-modal-tags"></div>
+            <div>
+                <div class="stock-history-modal-section-title">Unique Components</div>
+                <div id="stock-history-modal-components"></div>
+            </div>
+            <div>
+                <div class="stock-history-modal-section-title">Stocks</div>
+                <div id="stock-history-modal-stocks"></div>
+            </div>
+        </div>
+        <div id="stock-history-modal-footer">
+            <button class="toolbar-btn" id="stock-history-modal-cancel-btn">Cancel</button>
+            <button class="primary-btn" id="stock-history-modal-load-btn">Load</button>
+        </div>
+    </div>
+</div>
+
+<!-- Target Upload Modal -->
+<div id="target-upload-modal-overlay">
+    <div id="target-upload-modal">
+        <div id="target-upload-modal-header">
+            <span id="target-upload-modal-title">Upload Targets</span>
+            <button id="target-upload-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="target-upload-modal-body">
+            <p class="target-upload-help">
+                Paste JSON, CSV, or TSV. For tables, use columns like <code>component.property.units</code>
+                (e.g. <code>PEG.concentration.mg/ml</code>) plus optional reserved columns:
+                <code>name</code>, <code>location</code>, <code>total_mass</code>, <code>total_volume</code>, <code>solutes</code>.
+            </p>
+            <textarea id="target-upload-input" spellcheck="false" placeholder='Examples:
+[{"name":"target-1","concentrations":{"PEG":"10 mg/ml"}}]
+
+name,PEG.concentration.mg/ml,Water.mass_fraction
+target-1,10,0.9'></textarea>
+            <div id="target-upload-summary"></div>
+            <div id="target-upload-errors"></div>
+            <div id="target-upload-preview"></div>
+        </div>
+        <div id="target-upload-modal-footer">
+            <button class="toolbar-btn" id="target-upload-cancel-btn">Cancel</button>
+            <button class="toolbar-btn" id="target-upload-parse-btn">Parse</button>
+            <button class="primary-btn" id="target-upload-submit-btn" disabled>Upload Targets</button>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detail-modal-overlay">
+    <div id="detail-modal">
+        <div id="detail-modal-header">
+            <button id="modal-nav-prev" class="modal-nav-btn" title="Previous target">&larr;</button>
+            <button id="modal-nav-next" class="modal-nav-btn" title="Next target">&rarr;</button>
+            <span id="modal-title"></span>
+            <span id="modal-location-badge" class="location-badge"></span>
+            <button id="detail-modal-close" title="Close">&times;</button>
+        </div>
+        <div id="detail-modal-summary"></div>
+        <div id="detail-modal-body">
+            <div id="modal-table"></div>
+            <div id="modal-balance-results"></div>
+        </div>
+    </div>
+</div>
+
+<datalist id="component-names-datalist"></datalist>
+
+<script src="/static/apps/common/plotly/plotly.min.js"></script>
+<script>{{ inline_js | safe }}</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 import pytest
-from AFL.automation.mixing.MassBalance import MassBalance
-from AFL.automation.mixing.Solution import Solution
-from AFL.automation.mixing.TargetSolution import TargetSolution
+from AFL.automation.mixcalc.MassBalance import MassBalance
+from AFL.automation.mixcalc.Solution import Solution
+from AFL.automation.mixcalc.TargetSolution import TargetSolution
 from AFL.automation.shared.units import units
 
 
@@ -45,7 +45,8 @@ def test_mixed_solvents_mass():
         target = result['target']
         balanced = result['balanced_target']
 
-        if balanced is None:
+
+        if not result['success']:
             none_count += 1
             continue
         assert balanced.mass.to('mg').magnitude == pytest.approx(500)
@@ -59,4 +60,4 @@ def test_mixed_solvents_mass():
         assert sub_balanced.mass_fraction['H2O'] == pytest.approx(sub_target.mass_fraction['H2O'])
         assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'])
 
-    assert none_count == 2
+    assert none_count == 1

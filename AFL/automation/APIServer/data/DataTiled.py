@@ -7,6 +7,7 @@ from tiled.client.xarray import write_xarray_dataset
 import numpy as np
 import xarray as xr
 import copy
+import uuid
 
 class DataTiled(DataPacket):
     '''
@@ -16,10 +17,22 @@ class DataTiled(DataPacket):
 
     def __init__(self,server,api_key,backup_path):
         self.backup_path = backup_path
-        self.tiled_client = tiled.client.from_uri(server,api_key=api_key)
+        self.tiled_client = tiled.client.from_uri(
+            server,
+            api_key=api_key,
+            structure_clients="dask",
+        )
         super().__init__()
         
         self.arrays = {}
+
+    def _get_or_create_container(self, name):
+        try:
+            return self.tiled_client[name]
+        except Exception:
+            pass
+        self.tiled_client.create_container(key=name, metadata={'type': name})
+        return self.tiled_client[name]
         
     def finalize(self):
         self.transmit()
@@ -70,6 +83,8 @@ class DataTiled(DataPacket):
         '''
         
         try:
+            entry_uuid = str(self._dict().get('uuid', uuid.uuid4()))
+            run_document_container = self._get_or_create_container('run_documents')
             if 'main_dataset' in self._dict().keys():
                 main_data = copy.deepcopy(self._dict()['main_dataset'])
                 del(self._transient_dict['main_dataset'])
@@ -84,7 +99,7 @@ class DataTiled(DataPacket):
                 # Update dataset attrs with DataPacket metadata
                 main_data.attrs.update(metadata)
                 # Write using native Tiled xarray support
-                write_xarray_dataset(self.tiled_client, main_data)
+                write_xarray_dataset(run_document_container, main_data, key=entry_uuid)
             elif 'main_array' in self._dict().keys():
                 main_data = copy.deepcopy(self._dict()['main_array'])
                 array_name = self._transient_dict.get('array_name', 'main_array')
@@ -106,18 +121,18 @@ class DataTiled(DataPacket):
                 # Update dataset attrs with DataPacket metadata
                 dataset.attrs.update(metadata)
                 # Write using native Tiled xarray support
-                write_xarray_dataset(self.tiled_client, dataset)
+                write_xarray_dataset(run_document_container, dataset, key=entry_uuid)
             elif 'main_dataframe' in self._dict().keys():
                 main_data = copy.deepcopy(self._dict()['main_dataframe'])
                 del(self._transient_dict['main_dataframe'])
-                fxn = self.tiled_client.write_dataframe
+                fxn = run_document_container.write_dataframe
                 self._sanitize()
-                fxn(main_data, metadata=self._dict())
+                fxn(main_data, key=entry_uuid, metadata=self._dict())
             else:
                 main_data = [np.nan]
-                fxn = self.tiled_client.write_array
+                fxn = run_document_container.write_array
                 self._sanitize()
-                fxn(main_data, metadata=self._dict())
+                fxn(main_data, key=entry_uuid, metadata=self._dict())
         except Exception as e:
             print(f'Exception while transmitting to Tiled! {e}. Saving data in backup store.')
             if 'main_data' not in locals():
@@ -137,6 +152,9 @@ class DataTiled(DataPacket):
             self._sanitize()
             
             filename = str(datetime.datetime.now()).replace(' ','-')
-            with open(f'{self.backup_path}/{filename}.json','w') as f:
-                json.dump(self._dict(),f)
-
+            try:
+                os.makedirs(self.backup_path, exist_ok=True)
+                with open(os.path.join(self.backup_path, f'{filename}.json'),'w') as f:
+                    json.dump(self._dict(),f)
+            except Exception as backup_error:
+                print(f'Failed to write backup JSON to {self.backup_path}: {backup_error}')

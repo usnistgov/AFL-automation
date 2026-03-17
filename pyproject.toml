@@ -106,16 +106,15 @@ packages = ["AFL"]
 packages = ["AFL"]
 include = [
   "AFL/**/*.py",
+  "support/labware/*.json",
 ]
 
 [tool.hatch.build.targets.sdist]
 packages = ["AFL"]
 include = [
   "AFL/**/*.py",
+  "support/labware/*.json",
 ]
-
-[tool.afl]
-custom_labware_dir = "support/labware"
 
 [tool.setuptools]
 package-data = { "AFL.automation.apps" = ["*.html", "**/*.html", "**/*.css", "**/*.js"] }

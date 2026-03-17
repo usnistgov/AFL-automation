@@ -508,3 +508,95 @@ def test_load_custom_labware_defs_rejects_duplicate_keys(tmp_path):
 
     with pytest.raises(ValueError, match="Duplicate custom labware definitions"):
         driver._load_custom_labware_defs()
+
+
+def test_driver_bootstraps_user_labware_dir_on_first_init(monkeypatch, tmp_path):
+    home_dir = tmp_path / "home"
+    seed_dir = tmp_path / "seed_labware"
+    seed_dir.mkdir()
+    seed_file = seed_dir / "seed_plate.json"
+    with open(seed_file, "w") as f:
+        json.dump(_custom_labware_def(load_name="seed_plate"), f)
+
+    monkeypatch.setenv("HOME", str(home_dir))
+    monkeypatch.setattr(OT2HTTPDriver, "_initialize_robot", lambda self: None)
+    monkeypatch.setattr(
+        OT2HTTPDriver,
+        "_get_seed_custom_labware_dir",
+        lambda self: seed_dir,
+    )
+
+    driver = OT2HTTPDriver()
+
+    expected_dir = home_dir / ".afl" / "opentrons_labware"
+    assert driver.custom_labware_dir == expected_dir
+    assert expected_dir.exists()
+    assert (expected_dir / "seed_plate.json").exists()
+    assert driver.custom_labware_files["custom_beta/seed_plate"] == expected_dir / "seed_plate.json"
+
+
+def test_driver_does_not_reseed_existing_user_labware_dir(monkeypatch, tmp_path):
+    home_dir = tmp_path / "home"
+    expected_dir = home_dir / ".afl" / "opentrons_labware"
+    expected_dir.mkdir(parents=True)
+
+    existing_def = _custom_labware_def(z_value=9.9)
+    with open(expected_dir / "nist_6_20ml_vials.json", "w") as f:
+        json.dump(existing_def, f)
+
+    seed_dir = tmp_path / "seed_labware"
+    seed_dir.mkdir()
+    with open(seed_dir / "nist_6_20ml_vials.json", "w") as f:
+        json.dump(_custom_labware_def(z_value=6.1), f)
+    with open(seed_dir / "seed_only.json", "w") as f:
+        json.dump(_custom_labware_def(load_name="seed_only"), f)
+
+    monkeypatch.setenv("HOME", str(home_dir))
+    monkeypatch.setattr(OT2HTTPDriver, "_initialize_robot", lambda self: None)
+    monkeypatch.setattr(
+        OT2HTTPDriver,
+        "_get_seed_custom_labware_dir",
+        lambda self: seed_dir,
+    )
+
+    driver = OT2HTTPDriver()
+
+    with open(expected_dir / "nist_6_20ml_vials.json", "r") as f:
+        persisted = json.load(f)
+
+    assert driver.custom_labware_dir == expected_dir
+    assert persisted["wells"]["A1"]["z"] == 9.9
+    assert not (expected_dir / "seed_only.json").exists()
+
+
+def test_send_labware_persists_to_user_labware_dir(monkeypatch, tmp_path):
+    home_dir = tmp_path / "home"
+    seed_dir = tmp_path / "seed_labware"
+    seed_dir.mkdir()
+
+    monkeypatch.setenv("HOME", str(home_dir))
+    monkeypatch.setattr(OT2HTTPDriver, "_initialize_robot", lambda self: None)
+    monkeypatch.setattr(
+        OT2HTTPDriver,
+        "_get_seed_custom_labware_dir",
+        lambda self: seed_dir,
+    )
+
+    driver = OT2HTTPDriver()
+    driver._ensure_run_exists = lambda check_run_status=True: "test-run"
+
+    def fake_post(url, headers=None, params=None, json=None):
+        return _FakeResponse(
+            {"data": {"definitionUri": "custom_beta/nist_6_20ml_vials/1"}}
+        )
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", fake_post)
+
+    driver.send_labware(_custom_labware_def(z_value=6.5))
+
+    expected_file = home_dir / ".afl" / "opentrons_labware" / "nist_6_20ml_vials.json"
+    with open(expected_file, "r") as f:
+        persisted = json.load(f)
+
+    assert expected_file.exists()
+    assert persisted["wells"]["A1"]["z"] == 6.5

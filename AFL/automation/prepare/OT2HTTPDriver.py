@@ -5,7 +5,7 @@ import logging
 import copy
 import hashlib
 import json
-import tomllib
+import shutil
 from pathlib import Path
 
 
@@ -105,28 +105,43 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         self._log("warning", message)
 
     def _get_custom_labware_dir(self) -> Path:
-        """Return the path to the custom labware directory."""
+        """Return the user-scoped custom labware directory."""
+        custom_labware_dir = Path.home() / ".afl" / "opentrons_labware"
+        self._bootstrap_custom_labware_dir(custom_labware_dir)
+        return custom_labware_dir
+
+    def _get_seed_custom_labware_dir(self):
+        """Find the packaged labware definitions used to seed first-run state."""
         current = Path(__file__).resolve()
         for parent in current.parents:
-            if (parent / "pyproject.toml").exists():
-                pyproject = parent / "pyproject.toml"
-                try:
-                    with open(pyproject, "rb") as f:
-                        data = tomllib.load(f)
-                    custom_dir = (
-                        data.get("tool", {})
-                        .get("afl", {})
-                        .get("custom_labware_dir")
-                    )
-                    if custom_dir:
-                        return (parent / custom_dir).expanduser()
-                except Exception:
-                    pass
-                return parent / "support" / "labware"
-        return Path.cwd() / "support" / "labware"
+            candidate = parent / "support" / "labware"
+            if candidate.is_dir():
+                return candidate
+
+        candidate = Path.cwd() / "support" / "labware"
+        if candidate.is_dir():
+            return candidate
+
+        return None
+
+    def _bootstrap_custom_labware_dir(self, custom_labware_dir: Path):
+        """Create the user labware directory and seed it once from packaged files."""
+        if custom_labware_dir.exists():
+            return
+
+        custom_labware_dir.mkdir(parents=True, exist_ok=True)
+        seed_dir = self._get_seed_custom_labware_dir()
+        if seed_dir is None:
+            self.log_warning(
+                f"Custom labware seed directory not found; leaving {custom_labware_dir} empty"
+            )
+            return
+
+        for json_file in sorted(seed_dir.glob("*.json")):
+            shutil.copy2(json_file, custom_labware_dir / json_file.name)
 
     def _load_custom_labware_defs(self):
-        """Record available custom labware definitions in the support directory."""
+        """Record available custom labware definitions in the user directory."""
         self.custom_labware_dir.mkdir(parents=True, exist_ok=True)
         self.custom_labware_files = {}
         duplicates = []

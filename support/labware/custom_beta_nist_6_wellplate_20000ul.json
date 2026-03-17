@@ -1,0 +1,119 @@
+{
+  "ordering": [
+    [
+      "A1",
+      "B1"
+    ],
+    [
+      "A2",
+      "B2"
+    ],
+    [
+      "A3",
+      "B3"
+    ]
+  ],
+  "brand": {
+    "brand": "NIST",
+    "brandId": [
+      "gvh2"
+    ]
+  },
+  "metadata": {
+    "displayName": "NIST 6 Well Plate 20000 \u00b5L (AFL)",
+    "displayCategory": "wellPlate",
+    "displayVolumeUnits": "\u00b5L",
+    "tags": []
+  },
+  "dimensions": {
+    "xDimension": 127.75,
+    "yDimension": 85.5,
+    "zDimension": 62.6
+  },
+  "wells": {
+    "A1": {
+      "depth": 54.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 23,
+      "y": 62.5,
+      "z": 8.1
+    },
+    "B1": {
+      "depth": 54.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 23,
+      "y": 22.37,
+      "z": 8.1
+    },
+    "A2": {
+      "depth": 54.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 63.13,
+      "y": 62.5,
+      "z": 8.1
+    },
+    "B2": {
+      "depth": 54.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 63.13,
+      "y": 22.37,
+      "z": 8.1
+    },
+    "A3": {
+      "depth": 54.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 103.26,
+      "y": 62.5,
+      "z": 8.1
+    },
+    "B3": {
+      "depth": 54.5,
+      "totalLiquidVolume": 20000,
+      "shape": "circular",
+      "diameter": 28.95,
+      "x": 103.26,
+      "y": 22.37,
+      "z": 8.1
+    }
+  },
+  "groups": [
+    {
+      "metadata": {
+        "wellBottomShape": "flat"
+      },
+      "wells": [
+        "A1",
+        "B1",
+        "A2",
+        "B2",
+        "A3",
+        "B3"
+      ]
+    }
+  ],
+  "parameters": {
+    "format": "irregular",
+    "quirks": [],
+    "isTiprack": false,
+    "isMagneticModuleCompatible": false,
+    "loadName": "nist_6_wellplate_20000ul"
+  },
+  "namespace": "custom_beta",
+  "version": 1,
+  "schemaVersion": 2,
+  "cornerOffsetFromSlot": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  }
+}

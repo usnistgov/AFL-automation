@@ -525,6 +525,13 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         out.sort(key=lambda entry: entry.get('created_at', ''), reverse=True)
         return out
 
+    def _has_tiled_stock_history_backend(self):
+        try:
+            self._get_or_create_tiled_container('stocks')
+            return True
+        except Exception:
+            return False
+
     def _list_stock_history_local(self):
         history = self.config.get('stock_history', [])
         if not isinstance(history, list):
@@ -535,7 +542,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
 
     def _get_stock_history_with_source(self):
         tiled_history = self._list_stock_history_tiled()
-        if tiled_history:
+        if tiled_history or self._has_tiled_stock_history_backend():
             return tiled_history, 'tiled'
         return self._list_stock_history_local(), 'local'
 

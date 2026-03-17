@@ -2,6 +2,8 @@ import requests
 import time
 import logging
 
+import copy
+import hashlib
 import json
 import tomllib
 from pathlib import Path
@@ -62,7 +64,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
         # Custom labware handling
         self.custom_labware_files = {}
-        self.sent_custom_labware = set()
+        self.sent_custom_labware = {}
         self.custom_labware_dir = self._get_custom_labware_dir()
         self._load_custom_labware_defs()
 
@@ -126,17 +128,154 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
     def _load_custom_labware_defs(self):
         """Record available custom labware definitions in the support directory."""
         self.custom_labware_dir.mkdir(parents=True, exist_ok=True)
+        self.custom_labware_files = {}
+        duplicates = []
         for json_file in self.custom_labware_dir.glob("*.json"):
             try:
                 with open(json_file, "r") as f:
                     definition = json.load(f)
-                ns = definition.get("namespace", "custom_beta")
-                load = definition.get("parameters", {}).get("loadName")
-                if ns and load:
-                    key = f"{ns}/{load}"
-                    self.custom_labware_files[key] = json_file
+                _, _, key = self._custom_labware_key(definition)
+                existing_path = self.custom_labware_files.get(key)
+                if existing_path is not None and existing_path != json_file:
+                    duplicates.append((key, existing_path, json_file))
+                    continue
+                self.custom_labware_files[key] = json_file
             except Exception:
                 continue
+        if duplicates:
+            details = "; ".join(
+                f"{key}: {first} vs {second}"
+                for key, first, second in duplicates
+            )
+            raise ValueError(
+                f"Duplicate custom labware definitions found in {self.custom_labware_dir}: {details}"
+            )
+
+    def _custom_labware_key(self, labware_def):
+        ns = labware_def.get("namespace", "custom_beta")
+        load_name = labware_def.get("parameters", {}).get("loadName")
+        if not load_name:
+            raise ValueError("labware_def missing parameters.loadName")
+        return ns, load_name, f"{ns}/{load_name}"
+
+    def _canonical_labware_def(self, labware_def):
+        canonical_def = copy.deepcopy(labware_def)
+        canonical_def.pop("version", None)
+        return json.dumps(canonical_def, sort_keys=True, separators=(",", ":"))
+
+    def _hash_labware_def(self, labware_def):
+        canonical = self._canonical_labware_def(labware_def)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    def _labware_upload_info(self, key):
+        info = self.sent_custom_labware.get(key)
+        if isinstance(info, dict):
+            return info
+        return None
+
+    def _next_custom_labware_version(self, key, labware_def):
+        existing = self._labware_upload_info(key)
+        requested_version = int(labware_def.get("version", 1) or 1)
+        if existing is None:
+            return requested_version
+        return max(requested_version, int(existing["version"]) + 1)
+
+    def _custom_labware_file_path(self, labware_def):
+        _, load_name, _ = self._custom_labware_key(labware_def)
+        return self.custom_labware_dir / f"{load_name}.json"
+
+    def _loaded_labware_key(self, name, labware_data):
+        definition = {}
+        if isinstance(labware_data, dict):
+            definition = labware_data.get("definition", {}) or {}
+
+        try:
+            namespace, load_name, _ = self._custom_labware_key(definition)
+            return namespace, load_name
+        except ValueError:
+            if "/" in str(name):
+                namespace, load_name = str(name).split("/", 1)
+                return namespace, load_name
+            return "opentrons", str(name)
+
+    def _remap_tip_availability(self, mount, old_available_tips, old_uuid_to_slot):
+        remapped = []
+        for tiprack_uuid, well in old_available_tips.get(mount, []):
+            slot = old_uuid_to_slot.get(tiprack_uuid)
+            if slot is None or slot not in self.config["loaded_labware"]:
+                continue
+            new_uuid = self.config["loaded_labware"][slot][0]
+            remapped.append((new_uuid, well))
+        self.config["available_tips"][mount] = remapped
+
+    def _reload_matching_labware_definition(
+        self, labware_def, run_id=None, check_run_status=True
+    ):
+        namespace, load_name, _ = self._custom_labware_key(labware_def)
+        matching_slots = []
+        original_labware = copy.deepcopy(self.config["loaded_labware"])
+
+        for slot, (labware_id, name, labware_data) in original_labware.items():
+            loaded_namespace, loaded_name = self._loaded_labware_key(name, labware_data)
+            if loaded_namespace == namespace and loaded_name == load_name:
+                matching_slots.append(str(slot))
+
+        if not matching_slots:
+            return
+
+        if run_id is None:
+            run_id = self._ensure_run_exists(check_run_status=check_run_status)
+
+        original_instruments = copy.deepcopy(self.config["loaded_instruments"])
+        old_available_tips = copy.deepcopy(self.config.get("available_tips", {}))
+        old_uuid_to_slot = {}
+        affected_mounts = {}
+
+        for mount, instrument in original_instruments.items():
+            tiprack_slots = []
+            for tiprack_uuid in instrument.get("tip_racks", []):
+                slot = self._slot_by_labware_uuid(tiprack_uuid)
+                if slot is not None:
+                    slot = str(slot)
+                    old_uuid_to_slot[tiprack_uuid] = slot
+                    tiprack_slots.append(slot)
+            if any(slot in matching_slots for slot in tiprack_slots):
+                affected_mounts[mount] = {
+                    "name": instrument["name"],
+                    "tiprack_slots": tiprack_slots,
+                }
+
+        for slot in matching_slots:
+            module_id = None
+            if slot in self.config["loaded_modules"]:
+                module_id = self.config["loaded_modules"][slot][0]
+            self.log_info(
+                f"Reloading active labware '{namespace}/{load_name}' in slot {slot}"
+            )
+            self.load_labware(
+                f"{namespace}/{load_name}",
+                slot,
+                module=module_id,
+                labware_json=labware_def,
+                check_run_status=False,
+            )
+
+        for mount, instrument in affected_mounts.items():
+            self.log_info(
+                f"Reloading pipette '{instrument['name']}' on {mount} mount after tiprack update"
+            )
+            self.load_instrument(
+                instrument["name"],
+                mount,
+                instrument["tiprack_slots"],
+                reload=True,
+                check_run_status=False,
+            )
+            self._remap_tip_availability(mount, old_available_tips, old_uuid_to_slot)
+
+        if affected_mounts:
+            self.has_tip = False
+            self.last_pipette = None
 
     def _initialize_robot(self):
         """Initialize the connection to the robot and get basic information"""
@@ -390,7 +529,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         
         # Clear internal state variables
         self.modules = {}
-        self.sent_custom_labware = set()
+        self.sent_custom_labware = {}
         self.run_id = None
 
     @Driver.quickbar(qb={"button_text": "Home"})
@@ -491,7 +630,9 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     raise RuntimeError(
                         f"Command returned error: {response.text}"
                     )
-    def send_labware(self, labware_def, check_run_status=True):
+    def send_labware(
+        self, labware_def, check_run_status=True, reload_loaded_labware=True
+    ):
         """Send a custom labware definition to the current run and persist it.
         
         Args:
@@ -501,30 +642,31 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
         self.log_debug(f"Sending custom labware definition: {labware_def}")
 
-        ns = labware_def.get("namespace", "custom_beta")
-        load_name = labware_def.get("parameters", {}).get("loadName")
-        if not load_name:
-            raise ValueError("labware_def missing parameters.loadName")
-
-        key = f"{ns}/{load_name}"
+        ns, load_name, key = self._custom_labware_key(labware_def)
+        content_hash = self._hash_labware_def(labware_def)
 
         # Persist the definition for future use
         self.custom_labware_dir.mkdir(parents=True, exist_ok=True)
-        file_path = self.custom_labware_dir / f"{ns}_{load_name}.json"
+        file_path = self._custom_labware_file_path(labware_def)
         with open(file_path, "w") as f:
             json.dump(labware_def, f, indent=2)
-        self.custom_labware_files[key] = file_path
+        self._load_custom_labware_defs()
 
-        # Avoid re-sending if already uploaded
-        if key in self.sent_custom_labware:
-            self.log_debug(f"Labware {key} already sent to robot")
-            return key
+        existing = self._labware_upload_info(key)
+        if existing is not None and existing.get("content_hash") == content_hash:
+            self.log_debug(
+                f"Labware {key} already sent to robot as version {existing['version']}"
+            )
+            return copy.deepcopy(existing)
 
         # Ensure we have a valid run
         run_id = self._ensure_run_exists(check_run_status=check_run_status)
 
         try:
-            command_dict = {"data": labware_def}
+            upload_def = copy.deepcopy(labware_def)
+            upload_version = self._next_custom_labware_version(key, upload_def)
+            upload_def["version"] = upload_version
+            command_dict = {"data": upload_def}
 
             response = requests.post(
                 url=f"{self.base_url}/runs/{run_id}/labware_definitions",
@@ -538,12 +680,21 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             response_data = response.json()
             labware_name = response_data["data"]["definitionUri"]
 
-            self.sent_custom_labware.add(key)
+            upload_info = {
+                "definition_uri": labware_name,
+                "version": upload_version,
+                "content_hash": content_hash,
+            }
+            self.sent_custom_labware[key] = upload_info
+            if reload_loaded_labware:
+                self._reload_matching_labware_definition(
+                    upload_def, run_id=run_id, check_run_status=False
+                )
 
             self.log_info(
                 f"Successfully sent custom labware with name/URI {labware_name}"
             )
-            return labware_name
+            return copy.deepcopy(upload_info)
 
         except (requests.exceptions.RequestException, KeyError) as e:
             self.log_error(f"Error sending custom labware: {str(e)}")
@@ -571,7 +722,14 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             if not load_name:
                 raise ValueError("labware_json missing parameters.loadName")
             name = load_name
-            self.send_labware(labware_json, check_run_status=check_run_status)
+            version = int(labware_json.get("version", 1) or 1)
+            if namespace != "opentrons":
+                upload_info = self.send_labware(
+                    labware_json,
+                    check_run_status=check_run_status,
+                    reload_loaded_labware=False,
+                )
+                version = int(upload_info["version"])
         else:
             if "/" in name:
                 namespace, load_name = name.split("/", 1)
@@ -585,12 +743,17 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 else:
                     namespace = "opentrons"
             key = f"{namespace}/{load_name}"
-            if namespace != "opentrons" and key not in self.sent_custom_labware:
+            if namespace != "opentrons":
                 path = self.custom_labware_files.get(key)
                 if path and Path(path).exists():
                     with open(path, "r") as f:
                         definition = json.load(f)
-                    self.send_labware(definition, check_run_status=check_run_status)
+                    upload_info = self.send_labware(
+                        definition,
+                        check_run_status=check_run_status,
+                        reload_loaded_labware=False,
+                    )
+                    version = int(upload_info["version"])
                 else:
                     self.log_warning(f"Custom labware definition not found for {key}")
 
@@ -635,9 +798,6 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             else:
                 location = {"slotName": str(slot)}
                 
-            # Determine namespace and version
-            version = 1  # default version
-
             # Prepare the loadLabware command
             command_dict = {
                 "data": {
@@ -1967,7 +2127,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
         try:
             # Clear custom labware tracking so definitions are re-uploaded for the new run
-            self.sent_custom_labware = set()
+            self.sent_custom_labware = {}
             
             # Create a run
             import datetime

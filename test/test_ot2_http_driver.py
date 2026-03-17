@@ -1,4 +1,6 @@
 import pytest
+from pathlib import Path
+import json
 
 from AFL.automation.prepare.OT2HTTPDriver import OT2HTTPDriver
 
@@ -31,6 +33,11 @@ class StubOT2HTTPDriver(OT2HTTPDriver):
         self.pipette_info = {}
         self.hardware_pipettes = {}
         self.executed_commands = []
+        self.custom_labware_files = {}
+        self.sent_custom_labware = {}
+        self.custom_labware_dir = Path("/tmp/ot2-http-driver-tests")
+        self.headers = {"Opentrons-Version": "2"}
+        self.base_url = "http://ot2.test"
 
     def _ensure_run_exists(self, check_run_status=True):
         return self.run_id
@@ -102,6 +109,78 @@ def _configured_driver():
     return driver
 
 
+def _custom_labware_def(
+    z_value=6.1,
+    *,
+    load_name="nist_6_20ml_vials",
+    namespace="custom_beta",
+    is_tiprack=False,
+    display_category="wellPlate",
+):
+    return {
+        "ordering": [["A1", "B1"], ["A2", "B2"], ["A3", "B3"]],
+        "brand": {"brand": "NIST", "brandId": ["gvh2"]},
+        "metadata": {
+            "displayName": "NIST 6 x 20 mL vial holder",
+            "displayCategory": display_category,
+            "displayVolumeUnits": "uL",
+            "tags": [],
+        },
+        "dimensions": {"xDimension": 127.75, "yDimension": 85.5, "zDimension": 61.6},
+        "wells": {
+            well: {
+                "depth": 56.5,
+                "totalLiquidVolume": 20000,
+                "shape": "circular",
+                "diameter": 28.95,
+                "x": x,
+                "y": y,
+                "z": z_value,
+            }
+            for well, x, y in (
+                ("A1", 23, 62.5),
+                ("B1", 23, 22.37),
+                ("A2", 63.13, 62.5),
+                ("B2", 63.13, 22.37),
+                ("A3", 103.26, 62.5),
+                ("B3", 103.26, 22.37),
+            )
+        },
+        "groups": [
+            {
+                "metadata": {
+                    "displayName": "NIST 6 x 20 mL vial holder",
+                    "displayCategory": "wellPlate",
+                    "wellBottomShape": "flat",
+                },
+                "brand": {"brand": "NIST", "brandId": ["gvh2"]},
+                "wells": ["A1", "B1", "A2", "B2", "A3", "B3"],
+            }
+        ],
+        "parameters": {
+            "format": "irregular",
+            "quirks": [],
+            "isTiprack": is_tiprack,
+            "isMagneticModuleCompatible": False,
+            "loadName": load_name,
+        },
+        "namespace": namespace,
+        "version": 1,
+        "schemaVersion": 2,
+        "cornerOffsetFromSlot": {"x": 0, "y": 0, "z": 0},
+    }
+
+
+class _FakeResponse:
+    def __init__(self, payload, status_code=201):
+        self._payload = payload
+        self.status_code = status_code
+        self.text = str(payload)
+
+    def json(self):
+        return self._payload
+
+
 def test_set_flow_rates_updates_only_loaded_pipettes():
     driver = _configured_driver()
 
@@ -151,3 +230,281 @@ def test_pipette_ranges_ignore_unloaded_mounts():
 
     assert driver.min_largest_pipette == 20
     assert driver.max_smallest_pipette == 300
+
+
+def test_send_labware_deduplicates_identical_content(monkeypatch, tmp_path):
+    driver = StubOT2HTTPDriver()
+    driver.custom_labware_dir = tmp_path
+    requests_seen = []
+
+    def fake_post(url, headers=None, params=None, json=None):
+        requests_seen.append({"url": url, "json": json})
+        return _FakeResponse(
+            {"data": {"definitionUri": "custom_beta/nist_6_20ml_vials/1"}}
+        )
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", fake_post)
+
+    labware_def = _custom_labware_def(z_value=6.1)
+    first = driver.send_labware(labware_def)
+    second = driver.send_labware(_custom_labware_def(z_value=6.1))
+
+    assert first["version"] == 1
+    assert second["version"] == 1
+    assert len(requests_seen) == 1
+    assert requests_seen[0]["json"]["data"]["version"] == 1
+    assert (tmp_path / "nist_6_20ml_vials.json").exists()
+    assert not (tmp_path / "custom_beta_nist_6_20ml_vials.json").exists()
+
+
+def test_send_labware_bumps_version_when_content_changes(monkeypatch, tmp_path):
+    driver = StubOT2HTTPDriver()
+    driver.custom_labware_dir = tmp_path
+    uploaded_versions = []
+
+    def fake_post(url, headers=None, params=None, json=None):
+        version = json["data"]["version"]
+        uploaded_versions.append(version)
+        return _FakeResponse(
+            {"data": {"definitionUri": f"custom_beta/nist_6_20ml_vials/{version}"}}
+        )
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", fake_post)
+
+    first = driver.send_labware(_custom_labware_def(z_value=6.1))
+    second = driver.send_labware(_custom_labware_def(z_value=6.5))
+
+    assert uploaded_versions == [1, 2]
+    assert first["version"] == 1
+    assert second["version"] == 2
+    assert driver.sent_custom_labware["custom_beta/nist_6_20ml_vials"]["version"] == 2
+
+
+def test_send_labware_does_not_reload_when_content_is_unchanged(monkeypatch, tmp_path):
+    driver = StubOT2HTTPDriver()
+    driver.custom_labware_dir = tmp_path
+    original_def = _custom_labware_def(z_value=6.1)
+    original_hash = driver._hash_labware_def(original_def)
+    driver.sent_custom_labware["custom_beta/nist_6_20ml_vials"] = {
+        "definition_uri": "custom_beta/nist_6_20ml_vials/1",
+        "version": 1,
+        "content_hash": original_hash,
+    }
+    driver.config["loaded_labware"]["2"] = (
+        "labware-1",
+        "nist_6_20ml_vials",
+        {"definition": original_def},
+    )
+    requests_seen = []
+
+    def fake_post(url, headers=None, params=None, json=None):
+        requests_seen.append({"url": url, "json": json})
+        return _FakeResponse({"data": {"result": {}}})
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", fake_post)
+
+    result = driver.send_labware(_custom_labware_def(z_value=6.1))
+
+    assert result["version"] == 1
+    assert requests_seen == []
+    assert driver.config["loaded_labware"]["2"][0] == "labware-1"
+    assert driver.config["loaded_labware"]["2"][2]["definition"]["wells"]["A1"]["z"] == 6.1
+
+
+def test_send_labware_reloads_matching_loaded_labware(monkeypatch, tmp_path):
+    driver = StubOT2HTTPDriver()
+    driver.custom_labware_dir = tmp_path
+    original_def = _custom_labware_def(z_value=6.1)
+    driver.sent_custom_labware["custom_beta/nist_6_20ml_vials"] = {
+        "definition_uri": "custom_beta/nist_6_20ml_vials/1",
+        "version": 1,
+        "content_hash": driver._hash_labware_def(original_def),
+    }
+    driver.config["loaded_labware"]["2"] = (
+        "labware-1",
+        "nist_6_20ml_vials",
+        {"definition": original_def},
+    )
+    posted_command_types = []
+
+    def fake_post(url, headers=None, params=None, json=None):
+        if url.endswith("/labware_definitions"):
+            return _FakeResponse(
+                {"data": {"definitionUri": "custom_beta/nist_6_20ml_vials/2"}}
+            )
+
+        posted_command_types.append(json["data"]["commandType"])
+        if json["data"]["commandType"] == "moveLabware":
+            return _FakeResponse({"data": {"result": {}}})
+        if json["data"]["commandType"] == "loadLabware":
+            assert json["data"]["params"]["version"] == 2
+            updated_def = _custom_labware_def(z_value=6.5)
+            updated_def["version"] = 2
+            return _FakeResponse(
+                {
+                    "data": {
+                        "result": {
+                            "labwareId": "labware-2",
+                            "definition": updated_def,
+                        }
+                    }
+                }
+            )
+        raise AssertionError(f"Unexpected command payload: {json}")
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", fake_post)
+
+    result = driver.send_labware(_custom_labware_def(z_value=6.5))
+
+    assert result["version"] == 2
+    assert posted_command_types == ["moveLabware", "loadLabware"]
+    assert driver.config["loaded_labware"]["2"][0] == "labware-2"
+    assert driver.config["loaded_labware"]["2"][2]["definition"]["version"] == 2
+    assert driver.config["loaded_labware"]["2"][2]["definition"]["wells"]["A1"]["z"] == 6.5
+
+
+def test_send_labware_reloads_tiprack_and_affected_pipette(monkeypatch, tmp_path):
+    driver = StubOT2HTTPDriver()
+    driver.custom_labware_dir = tmp_path
+    original_tiprack = _custom_labware_def(
+        z_value=6.1,
+        load_name="nist_300ul_tiprack",
+        is_tiprack=True,
+        display_category="tipRack",
+    )
+    updated_tiprack = _custom_labware_def(
+        z_value=6.5,
+        load_name="nist_300ul_tiprack",
+        is_tiprack=True,
+        display_category="tipRack",
+    )
+    driver.sent_custom_labware["custom_beta/nist_300ul_tiprack"] = {
+        "definition_uri": "custom_beta/nist_300ul_tiprack/1",
+        "version": 1,
+        "content_hash": driver._hash_labware_def(original_tiprack),
+    }
+    driver.config["loaded_labware"]["1"] = (
+        "tiprack-old",
+        "nist_300ul_tiprack",
+        {"definition": original_tiprack},
+    )
+    driver.config["loaded_instruments"]["left"] = {
+        "name": "p300_single",
+        "pipette_id": "pipette-old",
+        "tip_racks": ["tiprack-old"],
+    }
+    driver.config["available_tips"]["left"] = [
+        ("tiprack-old", "A1"),
+        ("tiprack-old", "A2"),
+    ]
+    driver.hardware_pipettes = {
+        "left": _pipette_info("left", None, min_volume=20, max_volume=300),
+    }
+    driver.has_tip = True
+    command_types = []
+
+    def fake_post(url, headers=None, params=None, json=None):
+        if url.endswith("/labware_definitions"):
+            return _FakeResponse(
+                {"data": {"definitionUri": "custom_beta/nist_300ul_tiprack/2"}}
+            )
+
+        command_type = json["data"]["commandType"]
+        command_types.append(command_type)
+        if command_type == "moveLabware":
+            return _FakeResponse({"data": {"result": {}}})
+        if command_type == "loadLabware":
+            assert json["data"]["params"]["version"] == 2
+            return _FakeResponse(
+                {
+                    "data": {
+                        "result": {
+                            "labwareId": "tiprack-new",
+                            "definition": {**updated_tiprack, "version": 2},
+                        }
+                    }
+                }
+            )
+        if command_type == "loadPipette":
+            assert json["data"]["params"]["tip_racks"] == ["tiprack-new"]
+            return _FakeResponse(
+                {"data": {"result": {"pipetteId": "pipette-new"}}}
+            )
+        raise AssertionError(f"Unexpected command payload: {json}")
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", fake_post)
+
+    result = driver.send_labware(updated_tiprack)
+
+    assert result["version"] == 2
+    assert command_types == ["moveLabware", "loadLabware", "loadPipette"]
+    assert driver.config["loaded_labware"]["1"][0] == "tiprack-new"
+    assert driver.config["loaded_instruments"]["left"]["pipette_id"] == "pipette-new"
+    assert driver.config["loaded_instruments"]["left"]["tip_racks"] == ["tiprack-new"]
+    assert driver.config["available_tips"]["left"] == [
+        ("tiprack-new", "A1"),
+        ("tiprack-new", "A2"),
+    ]
+    assert driver.has_tip is False
+    assert driver.last_pipette is None
+
+
+def test_load_labware_uses_resolved_custom_version(monkeypatch, tmp_path):
+    driver = StubOT2HTTPDriver()
+    driver.custom_labware_dir = tmp_path
+    upload_versions = []
+    load_versions = []
+
+    def fake_post(url, headers=None, params=None, json=None):
+        if url.endswith("/labware_definitions"):
+            version = json["data"]["version"]
+            upload_versions.append(version)
+            return _FakeResponse(
+                {"data": {"definitionUri": f"custom_beta/nist_6_20ml_vials/{version}"}}
+            )
+
+        command_type = json["data"]["commandType"]
+        if command_type == "moveLabware":
+            return _FakeResponse({"data": {"result": {}}})
+
+        params_payload = json["data"]["params"]
+        load_versions.append(params_payload["version"])
+        version = params_payload["version"]
+        definition = _custom_labware_def(z_value=6.5 if version == 2 else 6.1)
+        definition["version"] = version
+        return _FakeResponse(
+            {
+                "data": {
+                    "result": {
+                        "labwareId": f"labware-{version}",
+                        "definition": definition,
+                    }
+                }
+            }
+        )
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", fake_post)
+
+    driver.load_labware("custom_beta/nist_6_20ml_vials", "2", labware_json=_custom_labware_def(z_value=6.1))
+    driver.load_labware("custom_beta/nist_6_20ml_vials", "2", labware_json=_custom_labware_def(z_value=6.5))
+
+    assert upload_versions == [1, 2]
+    assert load_versions == [1, 2]
+    assert driver.config["loaded_labware"]["2"][2]["definition"]["version"] == 2
+    assert driver.config["loaded_labware"]["2"][2]["definition"]["wells"]["A1"]["z"] == 6.5
+
+
+def test_load_custom_labware_defs_rejects_duplicate_keys(tmp_path):
+    driver = StubOT2HTTPDriver()
+    driver.custom_labware_dir = tmp_path
+
+    first = _custom_labware_def(z_value=6.1)
+    second = _custom_labware_def(z_value=6.5)
+
+    with open(tmp_path / "nist_6_20ml_vials.json", "w") as f:
+        json.dump(first, f)
+    with open(tmp_path / "custom_beta_nist_6_20ml_vials.json", "w") as f:
+        json.dump(second, f)
+
+    with pytest.raises(ValueError, match="Duplicate custom labware definitions"):
+        driver._load_custom_labware_defs()

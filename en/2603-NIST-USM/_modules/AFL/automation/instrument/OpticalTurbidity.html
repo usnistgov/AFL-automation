@@ -540,6 +540,32 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_opencv_capture</span> <span class="o">=</span> <span class="n">cv2_module</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="n">camera_index</span><span class="p">)</span>
         
         <span class="c1"># No else needed - _collect_image will catch invalid interface</span>
+
+    <span class="k">def</span> <span class="nf">_build_dataset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">turbidity_metric</span><span class="p">,</span>
+        <span class="n">measurement_img</span><span class="p">,</span>
+        <span class="n">empty_img</span><span class="p">,</span>
+        <span class="n">mask</span><span class="p">,</span>
+        <span class="n">cx</span><span class="p">,</span>
+        <span class="n">cy</span><span class="p">,</span>
+        <span class="n">empty_from_measurement</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_empty_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;located_center&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">]</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;turbidity_metric&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">turbidity_metric</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;empty_uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;empty_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;empty_available&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">empty_from_measurement</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;is_empty_reference&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_empty_reference</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;turbidity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">turbidity_metric</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;img&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;px&#39;</span><span class="p">,</span><span class="s1">&#39;py&#39;</span><span class="p">),</span> <span class="n">measurement_img</span><span class="p">)</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;img_MT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;px&#39;</span><span class="p">,</span><span class="s1">&#39;py&#39;</span><span class="p">),</span> <span class="n">empty_img</span><span class="p">)</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;px&#39;</span><span class="p">,</span><span class="s1">&#39;py&#39;</span><span class="p">),</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
         
 <div class="viewcode-block" id="OpticalTurbidity.measure">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.OpticalTurbidity.html#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.measure">[docs]</a>
@@ -566,9 +592,9 @@
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">        --------</span>
-<span class="sd">        xarray.Dataset or tuple</span>
-<span class="sd">            If set_empty=True, returns (0, [0,0])</span>
-<span class="sd">            Otherwise returns xarray.Dataset with turbidity measurements and images</span>
+<span class="sd">        xarray.Dataset</span>
+<span class="sd">            Dataset with turbidity measurements and images. When set_empty=True,</span>
+<span class="sd">            the dataset contains the captured empty reference image.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">row_crop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;row_crop&#39;</span><span class="p">]</span>
         <span class="n">col_crop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;col_crop&#39;</span><span class="p">]</span>
@@ -608,7 +634,17 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;setting empty image&#39;</span><span class="p">,</span> <span class="n">measurement_img</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;sample_uuid&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;empty_uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">])</span>
-            <span class="k">return</span> <span class="mi">0</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_dataset</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">turbidity_metric</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                <span class="n">measurement_img</span><span class="o">=</span><span class="n">measurement_img</span><span class="p">,</span>
+                <span class="n">empty_img</span><span class="o">=</span><span class="n">measurement_img</span><span class="p">,</span>
+                <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">measurement_img</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+                <span class="n">cx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">cy</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">empty_from_measurement</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">is_empty_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;measuring turbidity&#39;</span><span class="p">)</span>
             <span class="n">measurement_img</span> <span class="o">=</span> <span class="n">measurement_img</span><span class="p">[</span><span class="n">row_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">row_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">col_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">col_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
@@ -704,19 +740,17 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">])</span><span class="o">/</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">-turbidity1.png&#39;</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
         
-        <span class="c1"># Create and return xarray Dataset</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
-        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;located_center&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">]</span>
-        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;turbidity_metric&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">turbidity_metric</span>
-        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;empty_uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;empty_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;empty_available&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">empty_from_measurement</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;turbidity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">turbidity_metric</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;img&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;px&#39;</span><span class="p">,</span><span class="s1">&#39;py&#39;</span><span class="p">),</span><span class="n">measurement_img</span><span class="p">)</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;img_MT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;px&#39;</span><span class="p">,</span><span class="s1">&#39;py&#39;</span><span class="p">),</span><span class="n">empty_img</span><span class="p">)</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;px&#39;</span><span class="p">,</span><span class="s1">&#39;py&#39;</span><span class="p">)</span>   <span class="p">,</span><span class="n">mask</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">ds</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_dataset</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">turbidity_metric</span><span class="o">=</span><span class="n">turbidity_metric</span><span class="p">,</span>
+            <span class="n">measurement_img</span><span class="o">=</span><span class="n">measurement_img</span><span class="p">,</span>
+            <span class="n">empty_img</span><span class="o">=</span><span class="n">empty_img</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+            <span class="n">cx</span><span class="o">=</span><span class="n">cx</span><span class="p">,</span>
+            <span class="n">cy</span><span class="o">=</span><span class="n">cy</span><span class="p">,</span>
+            <span class="n">empty_from_measurement</span><span class="o">=</span><span class="n">empty_from_measurement</span><span class="p">,</span>
+            <span class="n">is_empty_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span></div>
 </div>
 
 

@@ -1801,7 +1801,13 @@
         <span class="n">volume_ul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">volume_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping transfer with nonpositive volume </span><span class="si">{</span><span class="n">volume_ul</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+                <span class="s2">&quot;dest&quot;</span><span class="p">:</span> <span class="n">dest</span><span class="p">,</span>
+                <span class="s2">&quot;requested_volume_ul&quot;</span><span class="p">:</span> <span class="n">volume_ul</span><span class="p">,</span>
+                <span class="s2">&quot;subtransfers_ul&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;skipped_nonpositive_volume&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
         
         <span class="c1"># Verify run exists once at the start, then skip checks for all atomic commands</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_run_exists</span><span class="p">()</span>
@@ -1851,6 +1857,48 @@
 
         <span class="c1"># Split transfers if needed</span>
         <span class="n">transfers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_up_transfers</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span>
+        <span class="n">transfer_record</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+            <span class="s2">&quot;dest&quot;</span><span class="p">:</span> <span class="n">dest</span><span class="p">,</span>
+            <span class="s2">&quot;requested_volume_ul&quot;</span><span class="p">:</span> <span class="n">volume_ul</span><span class="p">,</span>
+            <span class="s2">&quot;subtransfers_ul&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;subtransfer_count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;pipette_mount&quot;</span><span class="p">:</span> <span class="n">pipette_mount</span><span class="p">,</span>
+            <span class="s2">&quot;pipette_name&quot;</span><span class="p">:</span> <span class="n">pipette</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;pipette_id&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
+            <span class="s2">&quot;source_well&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;labware_id&quot;</span><span class="p">:</span> <span class="n">source_well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;well_name&quot;</span><span class="p">:</span> <span class="n">source_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">source_position</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;dest_well&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;labware_id&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;labwareId&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;well_name&quot;</span><span class="p">:</span> <span class="n">dest_well</span><span class="p">[</span><span class="s2">&quot;wellName&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">dest_position</span><span class="p">,</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">to_top_z_offset</span> <span class="k">if</span> <span class="n">dest_position</span> <span class="o">==</span> <span class="s2">&quot;top&quot;</span> <span class="k">else</span> <span class="mi">0</span><span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;mix_before&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">mix_before</span><span class="p">)</span> <span class="k">if</span> <span class="n">mix_before</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;mix_after&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">mix_after</span><span class="p">)</span> <span class="k">if</span> <span class="n">mix_after</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;air_gap&quot;</span><span class="p">:</span> <span class="n">air_gap</span><span class="p">,</span>
+                <span class="s2">&quot;aspirate_rate&quot;</span><span class="p">:</span> <span class="n">aspirate_rate</span><span class="p">,</span>
+                <span class="s2">&quot;dispense_rate&quot;</span><span class="p">:</span> <span class="n">dispense_rate</span><span class="p">,</span>
+                <span class="s2">&quot;mix_aspirate_rate&quot;</span><span class="p">:</span> <span class="n">mix_aspirate_rate</span><span class="p">,</span>
+                <span class="s2">&quot;mix_dispense_rate&quot;</span><span class="p">:</span> <span class="n">mix_dispense_rate</span><span class="p">,</span>
+                <span class="s2">&quot;blow_out&quot;</span><span class="p">:</span> <span class="n">blow_out</span><span class="p">,</span>
+                <span class="s2">&quot;post_aspirate_delay&quot;</span><span class="p">:</span> <span class="n">post_aspirate_delay</span><span class="p">,</span>
+                <span class="s2">&quot;aspirate_equilibration_delay&quot;</span><span class="p">:</span> <span class="n">aspirate_equilibration_delay</span><span class="p">,</span>
+                <span class="s2">&quot;post_dispense_delay&quot;</span><span class="p">:</span> <span class="n">post_dispense_delay</span><span class="p">,</span>
+                <span class="s2">&quot;drop_tip&quot;</span><span class="p">:</span> <span class="n">drop_tip</span><span class="p">,</span>
+                <span class="s2">&quot;force_new_tip&quot;</span><span class="p">:</span> <span class="n">force_new_tip</span><span class="p">,</span>
+                <span class="s2">&quot;to_top&quot;</span><span class="p">:</span> <span class="n">to_top</span><span class="p">,</span>
+                <span class="s2">&quot;to_center&quot;</span><span class="p">:</span> <span class="n">to_center</span><span class="p">,</span>
+                <span class="s2">&quot;to_top_z_offset&quot;</span><span class="p">:</span> <span class="n">to_top_z_offset</span><span class="p">,</span>
+                <span class="s2">&quot;fast_mixing&quot;</span><span class="p">:</span> <span class="n">fast_mixing</span><span class="p">,</span>
+                <span class="s2">&quot;touch_tip&quot;</span><span class="p">:</span> <span class="n">touch_tip</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;executed&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sub_volume</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">transfers</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">sub_volume</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -1858,6 +1906,7 @@
                     <span class="sa">f</span><span class="s2">&quot;Skipping nonpositive sub-transfer volume </span><span class="si">{</span><span class="n">sub_volume</span><span class="si">}</span><span class="s2">uL from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
                 <span class="k">continue</span>
+            <span class="n">transfer_record</span><span class="p">[</span><span class="s2">&quot;subtransfers_ul&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">sub_volume</span><span class="p">))</span>
 
             <span class="c1"># Intermediate split transfers should not drop the tip unless explicitly forced.</span>
             <span class="n">is_last_subtransfer</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">transfers</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
@@ -2177,7 +2226,9 @@
                                                         <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="c1"># Update last pipette</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="n">pipette_mount</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="n">pipette_mount</span>
+        <span class="n">transfer_record</span><span class="p">[</span><span class="s2">&quot;subtransfer_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">transfer_record</span><span class="p">[</span><span class="s2">&quot;subtransfers_ul&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">transfer_record</span></div>
 
 
     <span class="k">def</span> <span class="nf">_touch_tip_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette_id</span><span class="p">,</span> <span class="n">well</span><span class="p">):</span>

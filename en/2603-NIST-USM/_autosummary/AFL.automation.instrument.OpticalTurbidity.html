@@ -560,8 +560,8 @@ based on camera_interface config setting.</p>
 <section id="returns">
 <h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">#</a></h2>
 <dl class="simple">
-<dt>xarray.Dataset or tuple</dt><dd><p>If set_empty=True, returns (0, [0,0])
-Otherwise returns xarray.Dataset with turbidity measurements and images</p>
+<dt>xarray.Dataset</dt><dd><p>Dataset with turbidity measurements and images. When set_empty=True,
+the dataset contains the captured empty reference image.</p>
 </dd>
 </dl>
 </section>

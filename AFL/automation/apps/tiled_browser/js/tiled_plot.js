@@ -8,15 +8,19 @@ const FIELD_CANDIDATES = window.TiledHttpClient.DEFAULT_FIELD_CANDIDATES;
 
 const AppState = {
     entries: [],               // [{id, metadata, fullLink, table, numericColumns}]
+    plotManifest: null,
+    plotVariableCache: {},
     dataIndex: 0,
     xarrayHtmlLoaded: false,
     sampleDim: 'entry',
     scatterVariables: [],
     xVariable: null,
+    currentDataMode: 'line',
     compositionVariable: 'sample_composition',
     compositionColorVariable: null,
     metadataNumericFields: [],
     _lastAutoRangedColorVar: undefined,  // sentinel: auto-range only when color variable changes
+    _lastAutoRangedImageVar: undefined,
     cmin: 0.0,
     cmax: 1.0,
     colorscale: 'Bluered',
@@ -125,16 +129,23 @@ function getSampleComposition(entry) {
 }
 
 async function loadEntryMetadata(entryId) {
-    const payload = await tiledClient.metadata(entryId);
+    const entryRef = window.TiledHttpClient.toEntryRef(entryId);
+    const payload = await tiledClient.metadata(entryRef);
     const data = payload?.data;
     if (!data) {
-        throw new Error(`Metadata missing for ${entryId}`);
+        throw new Error(`Metadata missing for ${entryRef.id || entryId}`);
     }
     return {
-        id: entryId,
+        id: entryRef.id || data.id || '',
+        entryRef: {
+            ...entryRef,
+            metadataLink: entryRef.metadataLink || data.links?.self || null,
+            fullLink: entryRef.fullLink || data.links?.full || null,
+            searchLink: entryRef.searchLink || data.links?.search || null
+        },
         metadata: data.attributes?.metadata || {},
         structureFamily: data.attributes?.structure_family || 'unknown',
-        fullLink: data.links?.full || null,
+        fullLink: data.links?.full || entryRef.fullLink || null,
         varCatalog: null,
         sampleDim: null,
         numSamples: 0,
@@ -151,7 +162,7 @@ async function ensureEntryDataLoaded(entry) {
     if (entry.table !== null) {
         return entry.table;
     }
-    if (!entry.fullLink) {
+    if (!entry.fullLink && !tiledClient.useProxy) {
         entry.table = {};
         entry.numericColumns = [];
         return entry.table;
@@ -160,7 +171,7 @@ async function ensureEntryDataLoaded(entry) {
     const fullData = await tiledClient.full(entry.fullLink, {
         format: 'application/json',
         responseType: 'json',
-        entryId: entry.id
+        entry: entry.entryRef || entry.id
     });
     const table = normalizeFullPayload(fullData);
 
@@ -184,17 +195,109 @@ function detectSampleDim(varCatalog) {
     return ranked[0]?.[0] || null;
 }
 
+function classifyCatalogItem(info, catalog, sampleDim) {
+    if (!info) return 'unknown';
+    const dims = info.dims || [];
+    const kind = info.kind || 'O';
+    if (info.is_coord) {
+        if (sampleDim && dims.length === 1 && dims[0] === sampleDim) return 'sample_coord';
+        if ('USO'.includes(kind)) return 'coord_string';
+        if ('fiu'.includes(kind)) return 'coord_numeric';
+        return 'coord_other';
+    }
+    if (!'fiu'.includes(kind)) return 'meta';
+    if (dims.length === 0) return 'scalar';
+    if (dims.length === 1) {
+        if (sampleDim && dims[0] === sampleDim) return 'sample_1d';
+        return 'line_1d';
+    }
+    if (dims.length === 2) {
+        if (sampleDim && dims[0] === sampleDim) {
+            const compDim = dims[1];
+            const coord = catalog?.[compDim];
+            if (coord && 'USO'.includes(coord.kind || '')) return 'composition_2d';
+            return 'stacked_2d';
+        }
+        return 'image_2d';
+    }
+    if (dims.length === 3) {
+        if (sampleDim && dims[0] === sampleDim) return 'image_stack_3d';
+        return 'volume_3d';
+    }
+    return 'nd';
+}
+
+function getPlotCatalog() {
+    return AppState.plotManifest?.catalog || AppState.entries[0]?.varCatalog || null;
+}
+
+function getEffectiveSampleDim() {
+    return AppState.entries[0]?.sampleDim || AppState.plotManifest?.sample_dim || 'entry';
+}
+
+function getVariableMode(info, sampleDim, catalog) {
+    const classification = classifyCatalogItem(info, catalog, sampleDim);
+    if (classification === 'image_2d' || classification === 'image_stack_3d') return 'image';
+    if (classification === 'line_1d' || classification === 'stacked_2d') return 'line';
+    return 'other';
+}
+
+async function ensurePlotManifestLoaded() {
+    if (AppState.entries.length <= 1 || AppState.plotManifest !== null) return;
+    const entryIds = JSON.stringify(AppState.entries.map(e => e.id));
+    const response = await window.TiledHttpClient.authenticatedFetch(
+        `/tiled_get_plot_manifest?entry_ids=${encodeURIComponent(entryIds)}`
+    );
+    const payload = await response.json();
+    if (!response.ok || payload.status === 'error') {
+        throw new Error(payload.message || `Failed to load plot manifest (${response.status})`);
+    }
+    AppState.plotManifest = payload.manifest || null;
+    if (AppState.plotManifest?.sample_dim) {
+        AppState.sampleDim = AppState.plotManifest.sample_dim;
+        if (AppState.entries[0]) {
+            AppState.entries[0].sampleDim = AppState.plotManifest.sample_dim;
+            AppState.entries[0].numSamples = AppState.plotManifest.sample_count || 1;
+        }
+    }
+}
+
+async function ensureManifestVariableLoaded(varName) {
+    if (!AppState.plotManifest || AppState.entries.length <= 1) {
+        throw new Error(`Combined plot manifest not available for ${varName}`);
+    }
+    if (Object.prototype.hasOwnProperty.call(AppState.plotVariableCache, varName)) {
+        return AppState.plotVariableCache[varName];
+    }
+    const entryIds = JSON.stringify(AppState.entries.map(e => e.id));
+    const params = new URLSearchParams({
+        entry_ids: entryIds,
+        var_name: varName
+    });
+    const response = await window.TiledHttpClient.authenticatedFetch(
+        `/tiled_get_plot_variable?${params.toString()}`
+    );
+    const payload = await response.json();
+    if (!response.ok || payload.status === 'error') {
+        throw new Error(payload.message || `Failed to load combined variable ${varName}`);
+    }
+    const variable = payload.variable || {};
+    AppState.plotVariableCache[varName] = variable.data;
+    return variable.data;
+}
+
 async function ensureContainerCatalogLoaded(entry) {
     if (entry.varCatalog !== null) return;
 
     const params = window.TiledHttpClient.buildSearchParams({ limit: 100, fields: ['structure_family', 'structure'] });
-    const result = await tiledClient.search(params, { path: entry.id });
+    const result = await tiledClient.search(params, { entry });
     const items = result?.data || [];
 
     const catalog = {};
     for (const item of items) {
         const s = item.attributes?.structure || {};
         catalog[item.id] = {
+            entryRef: window.TiledHttpClient.entryRefFromItem(item),
             fullLink: item.links?.full || null,
             shape: s.shape || [],
             dims: s.dims || [],
@@ -218,7 +321,10 @@ async function ensureVariableLoaded(entry, varName) {
     if (!varInfo) throw new Error(`Variable ${varName} not in catalog`);
     if (varInfo.data !== null) return varInfo.data;
 
-    varInfo.data = await tiledClient.full(varInfo.fullLink, { format: 'application/json' });
+    varInfo.data = await tiledClient.full(varInfo.fullLink, {
+        format: 'application/json',
+        entry: varInfo.entryRef || varName
+    });
     return varInfo.data;
 }
 
@@ -254,28 +360,35 @@ function collectMetadataNumericFields(entries) {
     return Array.from(fields);
 }
 
-function buildVarCatalogHtml(entry) {
-    const catalog = entry.varCatalog;
+function getCatalogCoordNames(catalog) {
+    const coordNames = new Set();
+    for (const [name, info] of Object.entries(catalog || {})) {
+        for (const dim of info.dims || []) {
+            if (catalog?.[dim]) coordNames.add(dim);
+        }
+        if (info.is_coord) coordNames.add(name);
+    }
+    return coordNames;
+}
+
+function buildVarCatalogHtml(catalog, sampleDim = null) {
     if (!catalog || Object.keys(catalog).length === 0) return '';
 
     const kindLabel = { f: 'float', i: 'int', u: 'uint', U: 'str', S: 'bytes', b: 'bool', c: 'complex' };
 
-    const coordNames = new Set();
-    for (const info of Object.values(catalog)) {
-        for (const dim of info.dims) {
-            if (catalog[dim]) coordNames.add(dim);
-        }
-    }
+    const coordNames = getCatalogCoordNames(catalog);
 
     function varRow(name, info) {
         const dimsStr = info.dims.length ? `(${info.dims.join(', ')})` : '()';
         const shapeStr = info.shape.length ? info.shape.join(' \u00d7 ') : 'scalar';
         const dtype = kindLabel[info.kind] || info.kind;
+        const classification = classifyCatalogItem(info, catalog, sampleDim);
         return `<tr>
             <td style="padding:2px 8px; font-family:monospace;">${name}</td>
             <td style="padding:2px 8px; color:#666;">${dimsStr}</td>
             <td style="padding:2px 8px;">${shapeStr}</td>
             <td style="padding:2px 8px;">${dtype}</td>
+            <td style="padding:2px 8px;">${classification}</td>
         </tr>`;
     }
 
@@ -284,7 +397,7 @@ function buildVarCatalogHtml(entry) {
 
     const thStyle = 'text-align:left; border-bottom:1px solid #ccc; padding:2px 8px; font-size:0.85em; color:#555;';
     const sectionHdr = (label, count) =>
-        `<tr><td colspan="4" style="padding:4px 8px; font-weight:bold; background:#f5f5f5; border-top:1px solid #ddd;">${label} (${count})</td></tr>`;
+        `<tr><td colspan="5" style="padding:4px 8px; font-weight:bold; background:#f5f5f5; border-top:1px solid #ddd;">${label} (${count})</td></tr>`;
 
     return `
         <table style="width:100%; border-collapse:collapse; font-size:0.9em; margin-top:8px;">
@@ -293,6 +406,7 @@ function buildVarCatalogHtml(entry) {
                 <th style="${thStyle}">Dimensions</th>
                 <th style="${thStyle}">Shape</th>
                 <th style="${thStyle}">Dtype</th>
+                <th style="${thStyle}">Class</th>
             </tr></thead>
             <tbody>
                 ${coordEntries.length ? sectionHdr('Coordinates', coordEntries.length) + coordEntries.map(([n, v]) => varRow(n, v)).join('') : ''}
@@ -304,16 +418,18 @@ function buildVarCatalogHtml(entry) {
 function updateDatasetInfoPanel() {
     const info = document.getElementById('data-info-content');
     const firstEntry = AppState.entries[0];
-    const isContainer = firstEntry?.structureFamily === 'container';
+    const isContainer = firstEntry?.structureFamily === 'container' || Boolean(AppState.plotManifest);
 
     const rows = AppState.entries.map(entry => {
         const metadata = entry.metadata || {};
         const task = resolveMeta(metadata, 'task_name') || 'n/a';
         const driver = resolveMeta(metadata, 'driver_name') || 'n/a';
         const sample = resolveMeta(metadata, 'sample_name') || 'n/a';
-        const loaded = isContainer
+        const loaded = AppState.plotManifest
+            ? `${Object.keys(AppState.plotManifest.catalog || {}).length} vars`
+            : (isContainer
             ? (entry.varCatalog !== null ? `${Object.keys(entry.varCatalog).length} vars` : 'catalog pending')
-            : (entry.table !== null ? 'yes' : 'no');
+            : (entry.table !== null ? 'yes' : 'no'));
         return `<tr><td>${entry.id}</td><td>${driver}</td><td>${task}</td><td>${sample}</td><td>${loaded}</td></tr>`;
     }).join('');
 
@@ -331,8 +447,10 @@ function updateDatasetInfoPanel() {
             <tbody>${rows}</tbody>
         </table>`;
 
-    const varHtml = isContainer && firstEntry?.varCatalog
-        ? `<h4 style="margin:12px 0 4px;">Variables (${firstEntry.id})</h4>${buildVarCatalogHtml(firstEntry)}`
+    const catalog = AppState.plotManifest?.catalog || firstEntry?.varCatalog || null;
+    const label = AppState.plotManifest ? 'Combined dataset' : firstEntry?.id;
+    const varHtml = isContainer && catalog
+        ? `<h4 style="margin:12px 0 4px;">Variables (${label})</h4>${buildVarCatalogHtml(catalog, getEffectiveSampleDim())}`
         : '';
 
     info.innerHTML = metaTable + varHtml;
@@ -342,62 +460,70 @@ async function updateVariableOptions() {
     if (AppState.entries.length === 0) return;
 
     const firstEntry = AppState.entries[0];
-    let numericCols;
+    const useManifest = AppState.entries.length > 1 && Boolean(AppState.plotManifest?.catalog);
+    let variableOptions = [];
     let maxIndex;
 
-    if (firstEntry.structureFamily === 'container') {
+    if (useManifest) {
+        const catalog = AppState.plotManifest.catalog;
+        const sampleDim = AppState.plotManifest.sample_dim || 'index';
+        firstEntry.sampleDim = sampleDim;
+        firstEntry.numSamples = AppState.plotManifest.sample_count || 1;
+        AppState.sampleDim = sampleDim;
+        AppState.xVariable = null;
+        maxIndex = Math.max((AppState.plotManifest.dims?.[sampleDim] ?? AppState.plotManifest.sample_count ?? 1) - 1, 0);
+        variableOptions = Object.entries(catalog)
+            .filter(([name, info]) => {
+                if (getCatalogCoordNames(catalog).has(name)) return false;
+                return ['line', 'image'].includes(getVariableMode(info, sampleDim, catalog));
+            })
+            .map(([name, info]) => ({
+                name,
+                mode: getVariableMode(info, sampleDim, catalog),
+                classification: classifyCatalogItem(info, catalog, sampleDim)
+            }));
+    } else if (firstEntry.structureFamily === 'container') {
         await ensureContainerCatalogLoaded(firstEntry);
         const sampleDim = firstEntry.sampleDim;
-        // Scattering data: 2D arrays where the non-sample dim has >= 10 elements
-        // (mirrors DatasetWidget.split_vars() — small second dims are composition-like)
-        const SCATT_DIM_MIN = 10;
-        numericCols = firstEntry.numericColumns.filter(name => {
-            const info = firstEntry.varCatalog[name];
-            if (info.dims.length !== 2 || !sampleDim || !info.dims.includes(sampleDim)) return false;
-            const otherDim = info.dims.find(d => d !== sampleDim);
-            const otherIdx = info.dims.indexOf(otherDim);
-            return (info.shape[otherIdx] ?? 0) >= SCATT_DIM_MIN;
-        });
+        const catalog = firstEntry.varCatalog;
+        variableOptions = Object.entries(catalog)
+            .filter(([name]) => !getCatalogCoordNames(catalog).has(name))
+            .map(([name, info]) => ({
+                name,
+                mode: getVariableMode(info, sampleDim, catalog),
+                classification: classifyCatalogItem(info, catalog, sampleDim)
+            }))
+            .filter(option => option.mode === 'line' || option.mode === 'image');
         AppState.xVariable = null;
         AppState.sampleDim = sampleDim || 'entry';
         maxIndex = firstEntry.numSamples - 1;
-
-        // Fallback: multiple 1D-only containers — each entry IS one sample.
-        // This happens when individual datasets are selected (not a pre-concatenated container).
-        // Each variable has one dimension (the q-axis), so the 2D filter above finds nothing.
-        if (numericCols.length === 0 && AppState.entries.length > 1) {
-            numericCols = firstEntry.numericColumns.filter(name => {
-                const info = firstEntry.varCatalog[name];
-                // Exclude self-referential coordinate arrays (e.g. USAXS_q with dims:["USAXS_q"])
-                if (name === info.dims[0]) return false;
-                return info.dims.length === 1 && (info.shape[0] ?? 0) >= SCATT_DIM_MIN;
-            });
-            // Override sampleDim: samples are the entries, not rows within any container
-            firstEntry.sampleDim = 'entry';
-            AppState.sampleDim = 'entry';
-            maxIndex = AppState.entries.length - 1;
-        }
     } else {
         await ensureEntryDataLoaded(firstEntry);
-        numericCols = firstEntry.numericColumns || [];
+        const numericCols = firstEntry.numericColumns || [];
         AppState.xVariable = preferredXColumn(numericCols);
-        numericCols = numericCols.filter(c => c !== AppState.xVariable);
+        variableOptions = numericCols
+            .filter(c => c !== AppState.xVariable)
+            .map(name => ({ name, mode: 'line', classification: 'line_1d' }));
         maxIndex = Math.max(AppState.entries.length - 1, 0);
     }
 
     const scatterSelect = document.getElementById('scatter-vars');
     scatterSelect.innerHTML = '';
-    numericCols.forEach((name, idx) => {
+    variableOptions.forEach((optionInfo, idx) => {
         const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
+        option.value = optionInfo.name;
+        option.textContent = optionInfo.mode === 'image'
+            ? `${optionInfo.name} [image]`
+            : optionInfo.name;
+        option.dataset.mode = optionInfo.mode;
+        option.dataset.classification = optionInfo.classification;
         if (idx === 0) option.selected = true;
         scatterSelect.appendChild(option);
     });
     AppState.scatterVariables = Array.from(scatterSelect.selectedOptions).map(opt => opt.value);
 
     const compSelect = document.getElementById('composition-var');
-    if (firstEntry.structureFamily === 'container' && firstEntry.sampleDim && firstEntry.varCatalog) {
+    if (!useManifest && firstEntry.structureFamily === 'container' && firstEntry.sampleDim && firstEntry.varCatalog) {
         const sampleDim = firstEntry.sampleDim;
         // Composition candidates:
         //   1D: indexed solely by sampleDim  (e.g. temperature)
@@ -428,7 +554,7 @@ async function updateVariableOptions() {
 
     const colorSelect = document.getElementById('composition-color');
     colorSelect.innerHTML = '<option value="">None</option>';
-    if (firstEntry.structureFamily === 'container' && firstEntry.sampleDim && firstEntry.varCatalog) {
+    if (!useManifest && firstEntry.structureFamily === 'container' && firstEntry.sampleDim && firstEntry.varCatalog) {
         // sample_vars: 1D numeric variables indexed solely by sampleDim (mirrors DatasetWidget.split_vars)
         const sampleDim = firstEntry.sampleDim;
         Object.entries(firstEntry.varCatalog)
@@ -451,23 +577,18 @@ async function updateVariableOptions() {
     AppState.compositionColorVariable = colorSelect.value || null;
 
     const sampleDimSelect = document.getElementById('sample-dim-select');
-    if (firstEntry.structureFamily === 'container' && firstEntry.varCatalog) {
+    if (useManifest) {
+        const sampleDim = AppState.plotManifest.sample_dim || 'index';
+        sampleDimSelect.innerHTML = `<option value="${sampleDim}" selected>${sampleDim}</option>`;
+    } else if (firstEntry.structureFamily === 'container' && firstEntry.varCatalog) {
         const allDims = new Set();
         for (const info of Object.values(firstEntry.varCatalog)) {
             for (const dim of info.dims) allDims.add(dim);
         }
-        // In multi-entry 1D mode the effective sample dim is 'entry' (between entries),
-        // not any within-container dimension — add it as a display-only option.
         const effectiveDim = firstEntry.sampleDim;
-        if (effectiveDim === 'entry') {
-            sampleDimSelect.innerHTML =
-                '<option value="entry" selected>entry</option>' +
-                Array.from(allDims).map(dim => `<option value="${dim}">${dim}</option>`).join('');
-        } else {
-            sampleDimSelect.innerHTML = Array.from(allDims).map(dim =>
-                `<option value="${dim}"${dim === effectiveDim ? ' selected' : ''}>${dim}</option>`
-            ).join('');
-        }
+        sampleDimSelect.innerHTML = Array.from(allDims).map(dim =>
+            `<option value="${dim}"${dim === effectiveDim ? ' selected' : ''}>${dim}</option>`
+        ).join('');
     } else {
         sampleDimSelect.innerHTML = '<option value="entry" selected>entry</option>';
     }
@@ -483,9 +604,52 @@ async function buildScatteringTraces() {
     if (!selected || selected.length === 0) return [];
 
     const traces = [];
+    const useManifest = AppState.entries.length > 1 && Boolean(AppState.plotManifest?.catalog);
+    const sampleDim = getEffectiveSampleDim();
+    const manifestCatalog = AppState.plotManifest?.catalog || {};
+
+    const firstEntry = AppState.entries[0];
+    if (useManifest) {
+        for (const varName of selected) {
+            const varInfo = manifestCatalog[varName];
+            if (!varInfo || !'fiu'.includes(varInfo.kind)) continue;
+
+            let yData;
+            try {
+                yData = await ensureManifestVariableLoaded(varName);
+            } catch (err) {
+                showError(`Could not load ${varName}: ${err.message}`);
+                continue;
+            }
+
+            const qDim = varInfo.dims.find(d => d !== sampleDim) || varInfo.dims[0];
+            let xData = null;
+            if (qDim && manifestCatalog[qDim]) {
+                try {
+                    xData = await ensureManifestVariableLoaded(qDim);
+                } catch (_) {}
+            }
+
+            const is2D = Array.isArray(yData) && Array.isArray(yData[0]);
+            const yRow = is2D ? yData[Math.min(AppState.dataIndex, yData.length - 1)] : yData;
+            if (!yRow) continue;
+            const xRow = is2D && Array.isArray(xData) && Array.isArray(xData[0])
+                ? xData[Math.min(AppState.dataIndex, xData.length - 1)]
+                : xData;
+            traces.push({
+                x: Array.isArray(xRow) ? toNumericArray(xRow) : yRow.map((_, j) => j),
+                y: toNumericArray(yRow),
+                type: 'scatter',
+                mode: 'markers',
+                name: varName,
+                marker: { size: 5 },
+                visible: true
+            });
+        }
+        return traces;
+    }
 
     // Container branch: use first entry, show only the selected sample row
-    const firstEntry = AppState.entries[0];
     if (firstEntry?.structureFamily === 'container') {
         await ensureContainerCatalogLoaded(firstEntry);
 
@@ -567,14 +731,176 @@ async function buildScatteringTraces() {
     return traces;
 }
 
+function updatePrimaryPlotTitle(mode) {
+    const title = document.getElementById('primary-plot-title');
+    if (!title) return;
+    title.textContent = mode === 'image' ? 'Image Data' : '1D Data';
+}
+
+async function buildImagePlot(varName) {
+    const useManifest = AppState.entries.length > 1 && Boolean(AppState.plotManifest?.catalog);
+    const sampleDim = getEffectiveSampleDim();
+    const manifestCatalog = AppState.plotManifest?.catalog || {};
+    let varInfo;
+    let zData;
+    let xData = null;
+    let yData = null;
+    let yDim = null;
+    let xDim = null;
+
+    if (useManifest) {
+        varInfo = manifestCatalog[varName];
+        if (!varInfo) {
+            throw new Error(`Variable ${varName} not in combined manifest`);
+        }
+
+        zData = await ensureManifestVariableLoaded(varName);
+        if (Array.isArray(zData) && Array.isArray(zData[0]) && Array.isArray(zData[0][0]) && varInfo.dims.includes(sampleDim)) {
+            zData = zData[Math.min(AppState.dataIndex, zData.length - 1)];
+        }
+
+        const imageDims = (varInfo.dims || []).filter(d => d !== sampleDim).slice(-2);
+        yDim = imageDims[0];
+        xDim = imageDims[1];
+
+        if (xDim && manifestCatalog[xDim]) {
+            try {
+                xData = await ensureManifestVariableLoaded(xDim);
+            } catch (_) {}
+        }
+        if (yDim && manifestCatalog[yDim]) {
+            try {
+                yData = await ensureManifestVariableLoaded(yDim);
+            } catch (_) {}
+        }
+
+        if (Array.isArray(xData) && Array.isArray(xData[0]) && manifestCatalog[xDim]?.dims?.includes(sampleDim)) {
+            xData = xData[Math.min(AppState.dataIndex, xData.length - 1)];
+        }
+        if (Array.isArray(yData) && Array.isArray(yData[0]) && manifestCatalog[yDim]?.dims?.includes(sampleDim)) {
+            yData = yData[Math.min(AppState.dataIndex, yData.length - 1)];
+        }
+    } else {
+        const entry = AppState.entries[0];
+        if (!entry || entry.structureFamily !== 'container') {
+            throw new Error(`Image rendering requires container-style array access for ${varName}`);
+        }
+
+        await ensureContainerCatalogLoaded(entry);
+        varInfo = entry.varCatalog?.[varName];
+        if (!varInfo) {
+            throw new Error(`Variable ${varName} not in catalog`);
+        }
+
+        zData = await ensureVariableLoaded(entry, varName);
+        if (Array.isArray(zData) && Array.isArray(zData[0]) && Array.isArray(zData[0][0])) {
+            zData = zData[Math.min(AppState.dataIndex, zData.length - 1)];
+        }
+
+        const imageDims = (varInfo.dims || []).length >= 2
+            ? varInfo.dims.slice(-2)
+            : [];
+        yDim = imageDims[0];
+        xDim = imageDims[1];
+
+        if (xDim && entry.varCatalog?.[xDim]) {
+            try {
+                xData = await ensureVariableLoaded(entry, xDim);
+            } catch (_) {}
+        }
+        if (yDim && entry.varCatalog?.[yDim]) {
+            try {
+                yData = await ensureVariableLoaded(entry, yDim);
+            } catch (_) {}
+        }
+
+        if (Array.isArray(xData) && Array.isArray(xData[0])) {
+            xData = xData[Math.min(AppState.dataIndex, xData.length - 1)];
+        }
+        if (Array.isArray(yData) && Array.isArray(yData[0])) {
+            yData = yData[Math.min(AppState.dataIndex, yData.length - 1)];
+        }
+    }
+
+    if (!(Array.isArray(zData) && Array.isArray(zData[0]))) {
+        throw new Error(`Variable ${varName} is not a 2D image payload`);
+    }
+
+    const flat = zData.flat().map(Number).filter(Number.isFinite);
+    if (flat.length > 0 && AppState._lastAutoRangedImageVar !== varName) {
+        AppState._lastAutoRangedImageVar = varName;
+        AppState.cmin = Math.min(...flat);
+        AppState.cmax = Math.max(...flat);
+        document.getElementById('cmin').value = AppState.cmin.toFixed(2);
+        document.getElementById('cmax').value = AppState.cmax.toFixed(2);
+    }
+
+    return {
+        traces: [{
+            type: 'heatmap',
+            z: zData,
+            x: Array.isArray(xData) ? xData : undefined,
+            y: Array.isArray(yData) ? yData : undefined,
+            colorscale: AppState.colorscale,
+            zmin: AppState.cmin,
+            zmax: AppState.cmax,
+            colorbar: { title: varName },
+            hovertemplate: 'x=%{x}<br>y=%{y}<br>z=%{z}<extra></extra>'
+        }],
+        layout: {
+            xaxis: { title: xDim || 'x' },
+            yaxis: { title: yDim || 'y', autorange: 'reversed' },
+            autosize: true,
+            margin: { t: 10, b: 40, l: 50, r: 10 }
+        }
+    };
+}
+
 async function renderScatteringPlot() {
+    const selected = AppState.scatterVariables || [];
+    if (selected.length === 0) {
+        updatePrimaryPlotTitle('line');
+        Plotly.purge('scattering-plot');
+        return;
+    }
+
+    const catalog = getPlotCatalog();
+    const sampleDim = getEffectiveSampleDim();
+    const imageSelections = selected.filter(name => {
+        const info = catalog?.[name];
+        if (!info) return false;
+        return getVariableMode(info, sampleDim, catalog) === 'image';
+    });
+
+    if (imageSelections.length > 0) {
+        updatePrimaryPlotTitle('image');
+        if (selected.length > 1) {
+            showError('Select exactly one image variable at a time.');
+            Plotly.purge('scattering-plot');
+            return;
+        }
+        try {
+            const imagePlot = await buildImagePlot(imageSelections[0]);
+            Plotly.react('scattering-plot', imagePlot.traces, imagePlot.layout, {
+                responsive: true,
+                displayModeBar: true
+            });
+            hideError();
+        } catch (err) {
+            showError(`Could not render image ${imageSelections[0]}: ${err.message}`);
+            Plotly.purge('scattering-plot');
+        }
+        return;
+    }
+
+    updatePrimaryPlotTitle('line');
     const traces = await buildScatteringTraces();
     if (traces.length === 0) {
         Plotly.purge('scattering-plot');
         return;
     }
 
-    const layout = {
+    Plotly.react('scattering-plot', traces, {
         xaxis: {
             title: AppState.xVariable || 'x',
             type: AppState.logX ? 'log' : 'linear',
@@ -587,9 +913,8 @@ async function renderScatteringPlot() {
         autosize: true,
         margin: { t: 10, b: 40, l: 50, r: 10 },
         legend: { yanchor: 'top', xanchor: 'right', y: 0.99, x: 0.99 }
-    };
-
-    Plotly.react('scattering-plot', traces, layout, { responsive: true, displayModeBar: true });
+    }, { responsive: true, displayModeBar: true });
+    hideError();
 }
 
 async function compositionColorArray(points) {
@@ -950,6 +1275,8 @@ function initializeEventListeners() {
             entry.sampleDim = null;
             entry.numSamples = 0;
         }
+        AppState.plotManifest = null;
+        AppState.plotVariableCache = {};
         AppState.dataIndex = 0;
         AppState.xarrayHtmlLoaded = false;
         document.getElementById('data-index').value = '0';
@@ -981,7 +1308,7 @@ function initializeEventListeners() {
 
     document.getElementById('colorscale-config').addEventListener('change', (e) => {
         AppState.colorscale = e.target.value;
-        renderCompositionPlot();
+        renderAllPlots();
     });
 
     document.getElementById('sample-dim-select').addEventListener('change', async (e) => {
@@ -990,9 +1317,12 @@ function initializeEventListeners() {
         if (!entry) return;
 
         entry.sampleDim = newDim;
+        AppState.sampleDim = newDim;
 
         // Recalculate numSamples from the cached catalog shape
-        if (entry.varCatalog?.[newDim]) {
+        if (AppState.plotManifest?.dims?.[newDim] !== undefined) {
+            entry.numSamples = AppState.plotManifest.dims[newDim] ?? 1;
+        } else if (entry.varCatalog?.[newDim]) {
             entry.numSamples = entry.varCatalog[newDim].shape?.[0] ?? 1;
         } else {
             entry.numSamples = 1;
@@ -1010,8 +1340,10 @@ async function initialize() {
     try {
         setLoading(true);
         setStatus('loading', 'Loading configuration...');
+        AppState.plotManifest = null;
+        AppState.plotVariableCache = {};
 
-        entryIds = parseEntryIds();
+        entryIds = parseEntryIds().map(entry => window.TiledHttpClient.toEntryRef(entry));
         if (!Array.isArray(entryIds) || entryIds.length === 0) {
             throw new Error('No entry IDs specified');
         }
@@ -1035,6 +1367,11 @@ async function initialize() {
         const failed = settled.length - AppState.entries.length;
         if (failed > 0) {
             showError(`Loaded ${AppState.entries.length} entries; ${failed} metadata request(s) failed.`);
+        }
+
+        if (AppState.entries.length > 1) {
+            setStatus('loading', 'Loading combined dataset structure...');
+            await ensurePlotManifestLoaded();
         }
 
         document.getElementById('dataset-count').textContent = `${AppState.entries.length} dataset(s) selected`;

@@ -128,6 +128,109 @@ class OpticalTurbidity(Driver):
             self._opencv_capture = cv2_module.VideoCapture(camera_index)
         
         # No else needed - _collect_image will catch invalid interface
+
+    @staticmethod
+    def _get_nested_metadata_value(metadata, path):
+        current = metadata
+        for part in path.split('.'):
+            if not isinstance(current, dict):
+                return None
+            if part not in current:
+                return None
+            current = current[part]
+        return current
+
+    def _entry_sort_timestamp(self, entry):
+        metadata = dict(getattr(entry, 'metadata', {}) or {})
+        timestamp_paths = (
+            'meta.ended',
+            'attrs.meta.ended',
+            'attr.meta.ended',
+            'meta.started',
+            'attrs.meta.started',
+            'attr.meta.started',
+            'timestamp',
+            'attrs.timestamp',
+            'attr.timestamp',
+        )
+        for path in timestamp_paths:
+            value = self._get_nested_metadata_value(metadata, path)
+            if isinstance(value, datetime.datetime):
+                return value
+            if isinstance(value, str):
+                try:
+                    return datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
+                except ValueError:
+                    continue
+        return datetime.datetime.min
+
+    def _search_tiled_entries(self, field_names, value, extra_field_names=(), extra_value=None):
+        candidate_entries = {}
+        query_errors = []
+
+        for field_name in field_names:
+            if extra_field_names:
+                for extra_field_name in extra_field_names:
+                    try:
+                        results = self.data.tiled_client.search(Eq(field_name, value)).search(Eq(extra_field_name, extra_value))
+                        for entry_id, entry in results.items():
+                            candidate_entries[entry_id] = entry
+                    except Exception as exc:
+                        query_errors.append(str(exc))
+            else:
+                try:
+                    results = self.data.tiled_client.search(Eq(field_name, value))
+                    for entry_id, entry in results.items():
+                        candidate_entries[entry_id] = entry
+                except Exception as exc:
+                    query_errors.append(str(exc))
+
+        return candidate_entries, query_errors
+
+    def _load_empty_image_from_tiled(self, row_crop, col_crop):
+        sample_uuid_fields = ('sample_uuid', 'attrs.sample_uuid', 'attr.sample_uuid')
+        empty_reference_fields = ('is_empty_reference', 'attrs.is_empty_reference', 'attr.is_empty_reference')
+
+        candidate_entries, query_errors = self._search_tiled_entries(
+            field_names=sample_uuid_fields,
+            value=self.config['empty_uuid'],
+            extra_field_names=empty_reference_fields,
+            extra_value=True,
+        )
+
+        if not candidate_entries:
+            candidate_entries, fallback_errors = self._search_tiled_entries(
+                field_names=sample_uuid_fields,
+                value=self.config['empty_uuid'],
+            )
+            query_errors.extend(fallback_errors)
+
+        if not candidate_entries:
+            error_msg = f"No tiled entry found for empty_uuid={self.config['empty_uuid']}."
+            if query_errors:
+                error_msg = f"{error_msg} Query errors: {' | '.join(query_errors)}"
+            self.log_warning(f'{error_msg} Using measurement image for mask.')
+            return None
+
+        latest_entry = max(
+            list(candidate_entries.items()),
+            key=lambda item: self._entry_sort_timestamp(item[1]),
+        )[1]
+        ds = self._read_tiled_item(latest_entry)
+
+        empty_img = None
+        if 'img_MT' in ds:
+            empty_img = ds['img_MT'].values
+        elif 'img' in ds:
+            empty_img = ds['img'].values
+
+        if empty_img is None:
+            self.log_warning(
+                f"Tiled entry for empty_uuid={self.config['empty_uuid']} does not contain 'img_MT' or 'img'. Using measurement image for mask."
+            )
+            return None
+
+        return empty_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]
         
     def measure(self,set_empty=False, plotting=False,**kwargs):
         """
@@ -211,21 +314,7 @@ class OpticalTurbidity(Driver):
             elif self.data is None or not hasattr(self.data, 'tiled_client') or self.data.tiled_client is None:
                 self.log_warning('No tiled client available. Using measurement image for mask.')
             else:
-                tiled_result = self.data.tiled_client.search(Eq('sample_uuid', self.config['empty_uuid']))
-                if len(tiled_result) == 0:
-                    self.log_warning(f"No tiled entry found for empty_uuid={self.config['empty_uuid']}. Using measurement image for mask.")
-                else:
-                    item = tiled_result.items()[-1][-1]
-                    try:
-                        ds = item.read(optimize_wide_table=False)
-                    except TypeError:
-                        ds = item.read()
-                    if 'img_MT' in ds:
-                        empty_img = ds['img_MT'].values
-                    elif 'img' in ds:
-                        empty_img = ds['img'].values
-                    if empty_img is not None:
-                        empty_img = empty_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]
+                empty_img = self._load_empty_image_from_tiled(row_crop=row_crop, col_crop=col_crop)
 
         if empty_img is None:
             self.log_warning('No empty image available. Using measurement image for mask and normalization.')

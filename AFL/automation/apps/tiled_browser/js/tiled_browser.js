@@ -304,11 +304,12 @@ async function performSearch(queries, offset, limit, sortModel = [], signal = nu
 /**
  * Load xarray Dataset HTML representation for an entry
  */
-async function loadData(entryId) {
+async function loadData(entry) {
     try {
-        const metaResponse = await tiledClient.metadata(entryId);
-        const fullLink = metaResponse?.data?.links?.full;
-        if (!fullLink) {
+        const entryRef = window.TiledHttpClient.toEntryRef(entry);
+        const metaResponse = await tiledClient.metadata(entryRef);
+        const fullLink = metaResponse?.data?.links?.full || entryRef.fullLink;
+        if (!fullLink && !tiledClient.useProxy) {
             throw new Error('Missing links.full on metadata response');
         }
 
@@ -316,14 +317,14 @@ async function loadData(entryId) {
             const html = await tiledClient.full(fullLink, {
                 format: 'text/html',
                 responseType: 'text',
-                entryId
+                entry: entryRef
             });
             return { status: 'success', html };
         } catch (_htmlError) {
             const jsonData = await tiledClient.full(fullLink, {
                 format: 'application/json',
                 responseType: 'json',
-                entryId
+                entry: entryRef
             });
             return {
                 status: 'success',
@@ -342,9 +343,9 @@ async function loadData(entryId) {
 /**
  * Load full metadata for an entry
  */
-async function loadMetadata(entryId) {
+async function loadMetadata(entry) {
     try {
-        const result = await tiledClient.metadata(entryId);
+        const result = await tiledClient.metadata(entry);
 
         return {
             status: 'success',
@@ -425,10 +426,10 @@ class ActionsRenderer {
     }
 
     async onViewData() {
-        const entryId = this.params.data.id;
+        const entryRef = this.params.data.entryRef || this.params.data.id;
         showLoadingInModal('data');
 
-        const result = await loadData(entryId);
+        const result = await loadData(entryRef);
 
         if (result.status === 'success') {
             showDataModal(result.html);
@@ -439,10 +440,10 @@ class ActionsRenderer {
     }
 
     async onViewMetadata() {
-        const entryId = this.params.data.id;
+        const entryRef = this.params.data.entryRef || this.params.data.id;
         showLoadingInModal('metadata');
 
-        const result = await loadMetadata(entryId);
+        const result = await loadMetadata(entryRef);
 
         if (result.status === 'success') {
             showMetadataModal(result.metadata);
@@ -460,6 +461,7 @@ class ActionsRenderer {
 function transformRows(items) {
     return items.map(item => {
         const metadata = item?.attributes?.metadata || {};
+        const entryRef = window.TiledHttpClient.entryRefFromItem(item);
 
         return {
             id: item.id,
@@ -473,6 +475,7 @@ function transformRows(items) {
             AL_campaign_name: window.TiledHttpClient.resolveMetadataValue(metadata, 'AL_campaign_name', FIELD_CANDIDATES),
             AL_uuid: window.TiledHttpClient.resolveMetadataValue(metadata, 'AL_uuid', FIELD_CANDIDATES),
             AL_components: window.TiledHttpClient.resolveMetadataValue(metadata, 'AL_components', FIELD_CANDIDATES),
+            entryRef,
             _raw: item
         };
     });
@@ -1044,8 +1047,7 @@ function plotSelected() {
         return;
     }
 
-    // Extract entry IDs
-    const entryIds = selectedRows.map(row => row.id);
+    const entryIds = selectedRows.map(row => row.entryRef || row.id);
 
     // Open plot page and pass entry IDs
     // Use URL params for short lists, sessionStorage for long lists
@@ -1075,8 +1077,7 @@ function ganttSelected() {
         return;
     }
 
-    // Extract entry IDs
-    const entryIds = selectedRows.map(row => row.id);
+    const entryIds = selectedRows.map(row => row.entryRef || row.id);
 
     // Open gantt page and pass entry IDs
     if (entryIds.length <= 10) {

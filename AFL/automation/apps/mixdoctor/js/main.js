@@ -4210,6 +4210,14 @@ function collectConfigOverridesFromUI() {
     return overrides;
 }
 
+function applyDefaultSubmitCompositionFormat() {
+    var formatEl = document.getElementById('submit-override-composition-format');
+    if (!formatEl) return;
+    if (!formatEl.value.trim()) {
+        formatEl.value = 'masses';
+    }
+}
+
 function syncSubmitDestinationUI() {
     var mode = getSubmitDestinationMode();
     var orchestratorSection = document.getElementById('submit-orchestrator-section');
@@ -4334,6 +4342,8 @@ function applySubmitContextToUI(ctx) {
         } else {
             document.getElementById('submit-override-composition-format').value = JSON.stringify(cfg.composition_format);
         }
+    } else {
+        applyDefaultSubmitCompositionFormat();
     }
     if (cfg.enable_multistep_dilution !== undefined && cfg.enable_multistep_dilution !== null) {
         document.getElementById('submit-prepare-kw-enable-multistep').checked = !!cfg.enable_multistep_dilution;
@@ -4536,6 +4546,7 @@ function initSubmitTab() {
         loadPlotSweepData();
     }
     syncSubmitDestinationUI();
+    applyDefaultSubmitCompositionFormat();
     renderSubmitPreview();
     loadSubmitContext();
 }

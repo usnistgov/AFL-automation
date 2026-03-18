@@ -168,3 +168,10 @@ def test_prepare_records_metadata_for_multistep_prepare():
     assert prepare_data['intermediate_destinations'] == ['5A1']
     assert prepare_data['procedure_plan']['required_intermediate_targets'] == 1
     assert prepare_data['execution_success'] is True
+
+
+def test_prepare_driver_default_composition_format_is_masses():
+    driver = DummyPrepare()
+    driver.config.write = False
+
+    assert driver.config['composition_format'] == 'masses'

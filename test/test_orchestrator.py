@@ -146,7 +146,7 @@ class TestOrchestratorDriverConfiguration:
             'max_sample_transmission': 0.6,
             'mix_order': [],
             'camera_urls': [],
-            'composition_format': 'mass_fraction',
+            'composition_format': 'masses',
         })
         
         # Should not raise
@@ -186,7 +186,7 @@ class TestOrchestratorDriverConfiguration:
 
     def test_validate_config_composition_format_valid_str(self):
         """Test that valid composition format strings are accepted"""
-        for valid_format in ['mass_fraction', 'volume_fraction', 'concentration', 'molarity']:
+        for valid_format in ['masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity']:
             driver = OrchestratorDriver(overrides={
                 'client': {
                     'load': 'localhost:5000',
@@ -240,7 +240,7 @@ class TestOrchestratorDriverConfiguration:
             'mix_order': [],
             'camera_urls': [],
             'composition_format': {
-                'water': 'mass_fraction',
+                'water': 'masses',
                 'salt': 'concentration'
             }
         })
@@ -377,9 +377,9 @@ class TestOrchestratorDriverDefaults:
         """Test that data_tag defaults to 'default'"""
         assert OrchestratorDriver.defaults['data_tag'] == 'default'
 
-    def test_default_composition_format_is_mass_fraction(self):
-        """Test that composition_format defaults to mass_fraction"""
-        assert OrchestratorDriver.defaults['composition_format'] == 'mass_fraction'
+    def test_default_composition_format_is_masses(self):
+        """Test that composition_format defaults to masses"""
+        assert OrchestratorDriver.defaults['composition_format'] == 'masses'
 
     def test_default_next_samples_variable(self):
         """Test that next_samples_variable defaults to next_samples"""
@@ -445,7 +445,7 @@ class TestOrchestratorDriverPredictFromTiled:
             'max_sample_transmission': 0.6,
             'mix_order': [],
             'camera_urls': [],
-            'composition_format': 'mass_fraction',
+            'composition_format': 'masses',
             'next_samples_variable': 'next_samples',
         })
         driver.app = Mock()

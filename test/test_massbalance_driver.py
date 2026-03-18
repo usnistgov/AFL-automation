@@ -3,6 +3,39 @@ from AFL.automation.mixcalc.MassBalanceDriver import MassBalanceDriver
 from AFL.automation.mixcalc.Solution import Solution
 from AFL.automation.shared.units import units
 
+
+def _build_balanced_massbalance_driver():
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    mb.config['minimum_volume'] = '20 ul'
+    mb.config['tol'] = 1e-3
+    mb.reset_stocks()
+    mb.reset_targets()
+    mb.add_stock({
+        'name': 'WaterStock',
+        'masses': {'H2O': '20 g'},
+        'location': '1A1'
+    })
+    mb.add_stock({
+        'name': 'SaltStock',
+        'masses': {'H2O': '20 g'},
+        'concentrations': {'NaCl': '200 mg/ml'},
+        'solutes': ['NaCl'],
+        'location': '1A2'
+    })
+    mb.add_target({
+        'name': 'Target',
+        'concentrations': {'NaCl': '25 mg/ml'},
+        'mass_fractions': {'H2O': 1.0},
+        'total_volume': '1 ml',
+        'solutes': ['NaCl']
+    })
+    mb.balance()
+    assert mb.balanced
+    assert mb.balanced[0]['success'] is True
+    return mb
+
+
 @pytest.mark.usefixtures("mixdb")
 def test_massbalance_driver_mixed_solvents_mass():
     mb = MassBalanceDriver()
@@ -139,3 +172,44 @@ def test_massbalance_stock_history_local_fallback(monkeypatch):
     assert loaded['source'] == 'local'
     assert len(loaded['stocks']) == 1
     assert loaded['stocks'][0]['name'] == 'StockA'
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_get_sample_composition_supports_masses():
+    mb = _build_balanced_massbalance_driver()
+
+    composition = mb.get_sample_composition('masses')
+    balanced_target = mb.balanced[-1]['balanced_target']
+
+    assert composition['H2O'] == pytest.approx(
+        balanced_target['H2O'].mass.to('mg').magnitude
+    )
+    assert composition['NaCl'] == pytest.approx(
+        balanced_target['NaCl'].mass.to('mg').magnitude
+    )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_get_sample_composition_dict_requires_all_components():
+    mb = _build_balanced_massbalance_driver()
+
+    with pytest.raises(ValueError, match='must specify every component'):
+        mb.get_sample_composition({'H2O': 'masses'})
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_get_sample_composition_dict_accepts_mixed_formats():
+    mb = _build_balanced_massbalance_driver()
+
+    composition = mb.get_sample_composition({
+        'H2O': 'masses',
+        'NaCl': 'concentration',
+    })
+    balanced_target = mb.balanced[-1]['balanced_target']
+
+    assert composition['H2O'] == pytest.approx(
+        balanced_target['H2O'].mass.to('mg').magnitude
+    )
+    assert composition['NaCl'] == pytest.approx(
+        balanced_target.concentration['NaCl'].to('mg/ml').magnitude
+    )

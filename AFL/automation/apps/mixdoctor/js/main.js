@@ -4094,7 +4094,7 @@ function clonePropMapForSolution(map, quantityLike) {
     return Object.keys(out).length > 0 ? out : null;
 }
 
-function buildSolutionSampleFromDisplayEntry(entry, idx) {
+function buildMassOnlySampleFromDisplayEntry(entry, idx) {
     var sample = {};
     if (!entry || typeof entry !== 'object') return sample;
     sample.name = entry.name || entry.source_target_name || ('sample-' + (idx + 1));
@@ -4102,22 +4102,8 @@ function buildSolutionSampleFromDisplayEntry(entry, idx) {
     if (entry.solutes && Array.isArray(entry.solutes) && entry.solutes.length > 0) {
         sample.solutes = entry.solutes.slice();
     }
-
-    var totalMass = normalizeQtyValue(entry.total_mass);
-    var totalVolume = normalizeQtyValue(entry.total_volume);
-    if (totalMass) sample.total_mass = totalMass;
-    if (totalVolume) sample.total_volume = totalVolume;
-
-    var quantityGroups = ['masses', 'volumes', 'concentrations', 'molarities', 'molalities'];
-    quantityGroups.forEach(function(key) {
-        var mapped = clonePropMapForSolution(entry[key], true);
-        if (mapped) sample[key] = mapped;
-    });
-    var fractionGroups = ['mass_fractions', 'volume_fractions'];
-    fractionGroups.forEach(function(key) {
-        var mapped = clonePropMapForSolution(entry[key], false);
-        if (mapped) sample[key] = mapped;
-    });
+    var masses = clonePropMapForSolution(entry.masses, true);
+    if (masses) sample.masses = masses;
     return sample;
 }
 
@@ -4404,7 +4390,7 @@ async function submitSamples() {
         samples = [{}];
     } else {
         samples = sampleEntries.map(function(entry, idx) {
-            return buildSolutionSampleFromDisplayEntry(entry, idx);
+            return buildMassOnlySampleFromDisplayEntry(entry, idx);
         });
     }
     if (samples.length === 0) {

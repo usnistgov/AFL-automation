@@ -205,7 +205,7 @@ def test_get_pipette_ignores_attached_but_unloaded_mount():
 def test_transfer_with_single_loaded_pipette_allows_rate_overrides():
     driver = _configured_driver()
 
-    driver.transfer("1A1", "1A2", 50, aspirate_rate=111, dispense_rate=222)
+    transfer_result = driver.transfer("1A1", "1A2", 50, aspirate_rate=111, dispense_rate=222)
 
     command_names = [name for name, _ in driver.executed_commands]
     assert "pickUpTip" in command_names
@@ -213,6 +213,11 @@ def test_transfer_with_single_loaded_pipette_allows_rate_overrides():
     assert "dispense" in command_names
     assert "dropTipInPlace" in command_names
     assert driver.last_pipette == "left"
+    assert transfer_result["requested_volume_ul"] == 50.0
+    assert transfer_result["subtransfers_ul"] == [50.0]
+    assert transfer_result["pipette_mount"] == "left"
+    assert transfer_result["source"] == "1A1"
+    assert transfer_result["dest"] == "1A2"
 
 
 def test_get_pipette_raises_when_no_loaded_pipettes_exist():

@@ -1330,7 +1330,13 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         volume_ul = float(volume)
         if volume_ul <= 0:
             self.log_info(f"Skipping transfer with nonpositive volume {volume_ul}uL from {source} to {dest}")
-            return
+            return {
+                "source": source,
+                "dest": dest,
+                "requested_volume_ul": volume_ul,
+                "subtransfers_ul": [],
+                "status": "skipped_nonpositive_volume",
+            }
         
         # Verify run exists once at the start, then skip checks for all atomic commands
         self._ensure_run_exists()
@@ -1380,6 +1386,48 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
         # Split transfers if needed
         transfers = self._split_up_transfers(volume_ul)
+        transfer_record = {
+            "source": source,
+            "dest": dest,
+            "requested_volume_ul": volume_ul,
+            "subtransfers_ul": [],
+            "subtransfer_count": 0,
+            "pipette_mount": pipette_mount,
+            "pipette_name": pipette.get("name"),
+            "pipette_id": pipette_id,
+            "source_well": {
+                "labware_id": source_well["labwareId"],
+                "well_name": source_well["wellName"],
+                "position": source_position,
+            },
+            "dest_well": {
+                "labware_id": dest_well["labwareId"],
+                "well_name": dest_well["wellName"],
+                "position": dest_position,
+                "offset": {"x": 0, "y": 0, "z": to_top_z_offset if dest_position == "top" else 0},
+            },
+            "options": {
+                "mix_before": list(mix_before) if mix_before is not None else None,
+                "mix_after": list(mix_after) if mix_after is not None else None,
+                "air_gap": air_gap,
+                "aspirate_rate": aspirate_rate,
+                "dispense_rate": dispense_rate,
+                "mix_aspirate_rate": mix_aspirate_rate,
+                "mix_dispense_rate": mix_dispense_rate,
+                "blow_out": blow_out,
+                "post_aspirate_delay": post_aspirate_delay,
+                "aspirate_equilibration_delay": aspirate_equilibration_delay,
+                "post_dispense_delay": post_dispense_delay,
+                "drop_tip": drop_tip,
+                "force_new_tip": force_new_tip,
+                "to_top": to_top,
+                "to_center": to_center,
+                "to_top_z_offset": to_top_z_offset,
+                "fast_mixing": fast_mixing,
+                "touch_tip": touch_tip,
+            },
+            "status": "executed",
+        }
 
         for i, sub_volume in enumerate(transfers):
             if sub_volume <= 0:
@@ -1387,6 +1435,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     f"Skipping nonpositive sub-transfer volume {sub_volume}uL from {source} to {dest}"
                 )
                 continue
+            transfer_record["subtransfers_ul"].append(float(sub_volume))
 
             # Intermediate split transfers should not drop the tip unless explicitly forced.
             is_last_subtransfer = i == (len(transfers) - 1)
@@ -1707,6 +1756,8 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 self.has_tip = False
             # Update last pipette
             self.last_pipette = pipette_mount
+        transfer_record["subtransfer_count"] = len(transfer_record["subtransfers_ul"])
+        return transfer_record
 
     def _touch_tip_well(self, pipette_id, well):
         """Touch tip at a well edge if supported by robot-server; otherwise move to well top."""

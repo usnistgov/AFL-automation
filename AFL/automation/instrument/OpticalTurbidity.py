@@ -129,108 +129,31 @@ class OpticalTurbidity(Driver):
         
         # No else needed - _collect_image will catch invalid interface
 
-    @staticmethod
-    def _get_nested_metadata_value(metadata, path):
-        current = metadata
-        for part in path.split('.'):
-            if not isinstance(current, dict):
-                return None
-            if part not in current:
-                return None
-            current = current[part]
-        return current
-
-    def _entry_sort_timestamp(self, entry):
-        metadata = dict(getattr(entry, 'metadata', {}) or {})
-        timestamp_paths = (
-            'meta.ended',
-            'attrs.meta.ended',
-            'attr.meta.ended',
-            'meta.started',
-            'attrs.meta.started',
-            'attr.meta.started',
-            'timestamp',
-            'attrs.timestamp',
-            'attr.timestamp',
-        )
-        for path in timestamp_paths:
-            value = self._get_nested_metadata_value(metadata, path)
-            if isinstance(value, datetime.datetime):
-                return value
-            if isinstance(value, str):
-                try:
-                    return datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
-                except ValueError:
-                    continue
-        return datetime.datetime.min
-
-    def _search_tiled_entries(self, field_names, value, extra_field_names=(), extra_value=None):
-        candidate_entries = {}
-        query_errors = []
-
-        for field_name in field_names:
-            if extra_field_names:
-                for extra_field_name in extra_field_names:
-                    try:
-                        results = self.data.tiled_client.search(Eq(field_name, value)).search(Eq(extra_field_name, extra_value))
-                        for entry_id, entry in results.items():
-                            candidate_entries[entry_id] = entry
-                    except Exception as exc:
-                        query_errors.append(str(exc))
-            else:
-                try:
-                    results = self.data.tiled_client.search(Eq(field_name, value))
-                    for entry_id, entry in results.items():
-                        candidate_entries[entry_id] = entry
-                except Exception as exc:
-                    query_errors.append(str(exc))
-
-        return candidate_entries, query_errors
-
-    def _load_empty_image_from_tiled(self, row_crop, col_crop):
-        sample_uuid_fields = ('sample_uuid', 'attrs.sample_uuid', 'attr.sample_uuid')
-        empty_reference_fields = ('is_empty_reference', 'attrs.is_empty_reference', 'attr.is_empty_reference')
-
-        candidate_entries, query_errors = self._search_tiled_entries(
-            field_names=sample_uuid_fields,
-            value=self.config['empty_uuid'],
-            extra_field_names=empty_reference_fields,
-            extra_value=True,
-        )
-
-        if not candidate_entries:
-            candidate_entries, fallback_errors = self._search_tiled_entries(
-                field_names=sample_uuid_fields,
-                value=self.config['empty_uuid'],
-            )
-            query_errors.extend(fallback_errors)
-
-        if not candidate_entries:
-            error_msg = f"No tiled entry found for empty_uuid={self.config['empty_uuid']}."
-            if query_errors:
-                error_msg = f"{error_msg} Query errors: {' | '.join(query_errors)}"
-            self.log_warning(f'{error_msg} Using measurement image for mask.')
-            return None
-
-        latest_entry = max(
-            list(candidate_entries.items()),
-            key=lambda item: self._entry_sort_timestamp(item[1]),
-        )[1]
-        ds = self._read_tiled_item(latest_entry)
-
-        empty_img = None
-        if 'img_MT' in ds:
-            empty_img = ds['img_MT'].values
-        elif 'img' in ds:
-            empty_img = ds['img'].values
-
-        if empty_img is None:
-            self.log_warning(
-                f"Tiled entry for empty_uuid={self.config['empty_uuid']} does not contain 'img_MT' or 'img'. Using measurement image for mask."
-            )
-            return None
-
-        return empty_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]
+    def _build_dataset(
+        self,
+        *,
+        name,
+        turbidity_metric,
+        measurement_img,
+        empty_img,
+        mask,
+        cx,
+        cy,
+        empty_from_measurement=False,
+        is_empty_reference=False,
+    ):
+        ds = xr.Dataset()
+        ds.attrs['located_center'] = [cx, cy]
+        ds.attrs['name'] = name
+        ds.attrs['turbidity_metric'] = turbidity_metric
+        ds.attrs['empty_uuid'] = self.config.get('empty_uuid', '')
+        ds.attrs['empty_available'] = not empty_from_measurement
+        ds.attrs['is_empty_reference'] = is_empty_reference
+        ds['turbidity'] = turbidity_metric
+        ds['img'] = (('px','py'), measurement_img)
+        ds['img_MT'] = (('px','py'), empty_img)
+        ds['mask'] = (('px','py'), mask)
+        return ds
         
     def measure(self,set_empty=False, plotting=False,**kwargs):
         """
@@ -255,9 +178,9 @@ class OpticalTurbidity(Driver):
         
         Returns:
         --------
-        xarray.Dataset or tuple
-            If set_empty=True, returns (0, [0,0])
-            Otherwise returns xarray.Dataset with turbidity measurements and images
+        xarray.Dataset
+            Dataset with turbidity measurements and images. When set_empty=True,
+            the dataset contains the captured empty reference image.
         """
         row_crop = self.config['row_crop']
         col_crop = self.config['col_crop']
@@ -297,7 +220,17 @@ class OpticalTurbidity(Driver):
             print('setting empty image', measurement_img)
             if self.data is not None and 'sample_uuid' in self.data:
                 self.config['empty_uuid'] = copy.deepcopy(self.data['sample_uuid'])
-            return 0,[0,0]
+            return self._build_dataset(
+                name=name,
+                turbidity_metric=1.0,
+                measurement_img=measurement_img,
+                empty_img=measurement_img,
+                mask=np.ones_like(measurement_img, dtype=bool),
+                cx=0,
+                cy=0,
+                empty_from_measurement=False,
+                is_empty_reference=True,
+            )
         else:
             print('measuring turbidity')
             measurement_img = measurement_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]
@@ -314,7 +247,21 @@ class OpticalTurbidity(Driver):
             elif self.data is None or not hasattr(self.data, 'tiled_client') or self.data.tiled_client is None:
                 self.log_warning('No tiled client available. Using measurement image for mask.')
             else:
-                empty_img = self._load_empty_image_from_tiled(row_crop=row_crop, col_crop=col_crop)
+                tiled_result = self.data.tiled_client.search(Eq('sample_uuid', self.config['empty_uuid']))
+                if len(tiled_result) == 0:
+                    self.log_warning(f"No tiled entry found for empty_uuid={self.config['empty_uuid']}. Using measurement image for mask.")
+                else:
+                    item = tiled_result.items()[-1][-1]
+                    try:
+                        ds = item.read(optimize_wide_table=False)
+                    except TypeError:
+                        ds = item.read()
+                    if 'img_MT' in ds:
+                        empty_img = ds['img_MT'].values
+                    elif 'img' in ds:
+                        empty_img = ds['img'].values
+                    if empty_img is not None:
+                        empty_img = empty_img[row_crop[0]:row_crop[1], col_crop[0]:col_crop[1]]
 
         if empty_img is None:
             self.log_warning('No empty image available. Using measurement image for mask and normalization.')
@@ -379,19 +326,17 @@ class OpticalTurbidity(Driver):
             plt.savefig(pathlib.Path(self.config['save_path'])/f'{datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-turbidity1.png')
             plt.close(fig)
         
-        # Create and return xarray Dataset
-        ds = xr.Dataset()
-        ds.attrs['located_center'] = [cx, cy]
-        ds.attrs['name'] = name
-        ds.attrs['turbidity_metric'] = turbidity_metric
-        ds.attrs['empty_uuid'] = self.config.get('empty_uuid', '')
-        ds.attrs['empty_available'] = not empty_from_measurement
-        ds['turbidity'] = turbidity_metric
-        ds['img'] = (('px','py'),measurement_img)
-        ds['img_MT'] = (('px','py'),empty_img)
-        ds['mask'] = (('px','py')   ,mask)
-
-        return ds
+        return self._build_dataset(
+            name=name,
+            turbidity_metric=turbidity_metric,
+            measurement_img=measurement_img,
+            empty_img=empty_img,
+            mask=mask,
+            cx=cx,
+            cy=cy,
+            empty_from_measurement=empty_from_measurement,
+            is_empty_reference=False,
+        )
 
 
 

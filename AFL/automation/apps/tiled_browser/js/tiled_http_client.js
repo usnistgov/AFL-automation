@@ -1,5 +1,6 @@
 (function attachTiledHttpClient(global) {
     const RUN_DOCUMENTS_NODE = 'run_documents';
+    const MAX_PAGE_LIMIT = 300;
 
     const DEFAULT_FIELD_CANDIDATES = {
         task_name: ['task_name', 'attrs.task_name'],
@@ -249,7 +250,7 @@
     } = {}) {
         const params = new URLSearchParams();
         params.set('page[offset]', String(offset));
-        params.set('page[limit]', String(limit));
+        params.set('page[limit]', String(Math.min(Math.max(Number(limit) || 0, 0), MAX_PAGE_LIMIT)));
 
         if (Array.isArray(fields)) {
             for (const field of fields) {
@@ -627,6 +628,7 @@
     }
 
     global.TiledHttpClient = {
+        MAX_PAGE_LIMIT,
         DEFAULT_FIELD_CANDIDATES,
         getAuthToken,
         authenticatedFetch,

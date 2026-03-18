@@ -301,6 +301,52 @@ async function performSearch(queries, offset, limit, sortModel = [], signal = nu
     }
 }
 
+async function performSearchPaged(queries, offset, limit, sortModel = [], signal = null) {
+    const maxPageLimit = Number(window.TiledHttpClient?.MAX_PAGE_LIMIT || 300);
+    const requestedLimit = Math.max(Number(limit) || 0, 0);
+
+    if (requestedLimit <= maxPageLimit) {
+        return performSearch(queries, offset, requestedLimit, sortModel, signal);
+    }
+
+    const mergedData = [];
+    let totalCount = 0;
+    let currentOffset = Math.max(Number(offset) || 0, 0);
+    let remaining = requestedLimit;
+
+    while (remaining > 0) {
+        const chunkLimit = Math.min(remaining, maxPageLimit);
+        const result = await performSearch(queries, currentOffset, chunkLimit, sortModel, signal);
+        if (result.status !== 'success') {
+            return result;
+        }
+
+        const chunkData = Array.isArray(result.data) ? result.data : [];
+        mergedData.push(...chunkData);
+        totalCount = Math.max(totalCount, Number(result.total_count || 0), mergedData.length);
+
+        if (chunkData.length < chunkLimit) {
+            break;
+        }
+
+        currentOffset += chunkLimit;
+        remaining -= chunkLimit;
+    }
+
+    const allKeys = new Set();
+    for (const item of mergedData) {
+        const metadata = item?.attributes?.metadata || {};
+        extractNestedKeys(metadata).forEach(k => allKeys.add(k));
+    }
+
+    return {
+        status: 'success',
+        data: mergedData,
+        total_count: totalCount,
+        columns: Array.from(allKeys).sort()
+    };
+}
+
 /**
  * Load xarray Dataset HTML representation for an entry
  */
@@ -1903,7 +1949,7 @@ async function getChronologicallySortedRows(sortModel, signal) {
         };
     }
 
-    const descResult = await performSearch(
+    const descResult = await performSearchPaged(
         currentQueries,
         0,
         allCount,
@@ -1914,7 +1960,7 @@ async function getChronologicallySortedRows(sortModel, signal) {
         return descResult;
     }
 
-    const ascResult = await performSearch(
+    const ascResult = await performSearchPaged(
         currentQueries,
         0,
         allCount,

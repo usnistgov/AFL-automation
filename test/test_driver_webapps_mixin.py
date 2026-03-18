@@ -47,6 +47,57 @@ def test_tiled_concat_single_entry_preserves_no_sample_dim():
     assert "entry_id" in result.coords
 
 
+def test_tiled_get_plot_manifest_reports_index_for_multi_entry_concat():
+    dataset = xr.Dataset(
+        {"I": (("q",), [1.0, 2.0, 3.0])},
+        coords={"q": [0.01, 0.02, 0.03]},
+    )
+    driver = _DummyDriverWebApps(dataset)
+
+    result = driver.tiled_get_plot_manifest(entry_ids=["entry-1", "entry-2", "entry-3"])
+
+    assert result["status"] == "success"
+    manifest = result["manifest"]
+    assert manifest["sample_dim"] == "index"
+    assert manifest["sample_count"] == 3
+    assert manifest["dims"]["index"] == 3
+    assert manifest["catalog"]["index"]["is_coord"] is True
+    assert manifest["catalog"]["I"]["classification"] == "stacked_2d"
+    assert manifest["catalog"]["I"]["dims"] == ["index", "q"]
+
+
+def test_tiled_get_plot_manifest_classifies_image_stack():
+    dataset = xr.Dataset(
+        {"image": (("pixel_y", "pixel_x"), [[1.0, 2.0], [3.0, 4.0]])},
+        coords={"pixel_y": [0, 1], "pixel_x": [10, 11]},
+    )
+    driver = _DummyDriverWebApps(dataset)
+
+    result = driver.tiled_get_plot_manifest(entry_ids=["entry-1", "entry-2"])
+
+    assert result["status"] == "success"
+    manifest = result["manifest"]
+    assert manifest["sample_dim"] == "index"
+    assert manifest["catalog"]["image"]["classification"] == "image_stack_3d"
+    assert manifest["catalog"]["image"]["dims"] == ["index", "pixel_y", "pixel_x"]
+
+
+def test_tiled_get_plot_variable_returns_combined_indexed_data():
+    dataset = xr.Dataset(
+        {"I": (("q",), [1.0, 2.0, 3.0])},
+        coords={"q": [0.01, 0.02, 0.03]},
+    )
+    driver = _DummyDriverWebApps(dataset)
+
+    result = driver.tiled_get_plot_variable(entry_ids=["entry-1", "entry-2"], var_name="I")
+
+    assert result["status"] == "success"
+    variable = result["variable"]
+    assert variable["dims"] == ["index", "q"]
+    assert variable["shape"] == [2, 3]
+    assert variable["data"] == [[1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+
+
 def test_read_tiled_item_uses_optimize_wide_table_false():
     class _FakeItem:
         def __init__(self):
@@ -95,8 +146,9 @@ class _DummyUploadDriver(DriverWebAppsMixin):
 
 
 class _FakeTiledItem:
-    def __init__(self, payload):
+    def __init__(self, payload, metadata=None):
         self._payload = payload
+        self.metadata = metadata or {}
 
     def read(self, **kwargs):
         return self._payload
@@ -178,6 +230,47 @@ def test_tiled_get_full_json_returns_columnar_payload():
     assert set(result["data"].keys()) >= {"q", "I", "dI"}
     assert result["data"]["q"] == [0.01, 0.02, 0.03]
     assert result["data"]["I"] == [1.0, 2.0, 3.0]
+
+
+def test_get_tiled_run_document_item_resolves_nested_leaf_ids():
+    dataset = xr.Dataset({"I": (("q",), [1.0, 2.0, 3.0])}, coords={"q": [0.01, 0.02, 0.03]})
+    nested = _FakeTiledContainer({
+        "batch-1": _FakeTiledContainer({
+            "entry-1": _FakeTiledItem(dataset),
+        })
+    })
+    client = _FakeTiledClient(nested)
+    driver = _DummyFullJsonDriver(client)
+
+    nested_path, nested_item = driver._get_tiled_run_document_item("batch-1/entry-1")
+    leaf_path, leaf_item = driver._get_tiled_run_document_item("entry-1")
+
+    assert nested_path == "batch-1/entry-1"
+    assert leaf_path == "batch-1/entry-1"
+    assert nested_item is leaf_item
+
+
+def test_tiled_get_metadata_and_full_json_accept_nested_paths():
+    dataset = xr.Dataset({"I": (("q",), [1.0, 2.0])}, coords={"q": [0.01, 0.02]})
+    nested = _FakeTiledContainer({
+        "batch-1": _FakeTiledContainer({
+            "entry-1": _FakeTiledItem(
+                dataset,
+                metadata={"attrs": {"sample_name": "nested-sample", "driver_name": "nested-driver"}},
+            ),
+        })
+    })
+    client = _FakeTiledClient(nested)
+    driver = _DummyFullJsonDriver(client)
+
+    metadata_result = driver.tiled_get_metadata("run_documents/batch-1/entry-1")
+    full_result = driver.tiled_get_full_json("entry-1")
+
+    assert metadata_result["status"] == "success"
+    assert metadata_result["metadata"]["attrs"]["sample_name"] == "nested-sample"
+    assert full_result["status"] == "success"
+    assert full_result["data"]["q"] == [0.01, 0.02]
+    assert full_result["data"]["I"] == [1.0, 2.0]
 
 
 def test_tiled_upload_dataset_rejects_unknown_coordinate(monkeypatch):

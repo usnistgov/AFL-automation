@@ -455,6 +455,18 @@ class DriverWebAppsMixin:
             entry_id = entry_id[len(prefix):]
         return entry_id.strip('/')
 
+    def _walk_tiled_descendants(self, container, prefix=''):
+        try:
+            items = list(container.items())
+        except Exception:
+            return
+
+        for key, item in items:
+            key = str(key)
+            path = f'{prefix}/{key}' if prefix else key
+            yield path, item
+            yield from self._walk_tiled_descendants(item, path)
+
     def _get_tiled_run_document_item(self, entry_id):
         normalized_id = self._normalize_run_document_entry_id(entry_id)
         if not normalized_id:
@@ -462,7 +474,27 @@ class DriverWebAppsMixin:
         container = self._get_tiled_run_documents_container(create=False)
         if container is None:
             raise KeyError(normalized_id)
-        return normalized_id, container[normalized_id]
+
+        path_parts = [part for part in normalized_id.split('/') if part]
+        if len(path_parts) > 1:
+            item = container
+            traversed = []
+            for part in path_parts:
+                item = item[part]
+                traversed.append(part)
+            return '/'.join(traversed), item
+
+        if normalized_id in container:
+            return normalized_id, container[normalized_id]
+
+        matches = [
+            (path, item)
+            for path, item in self._walk_tiled_descendants(container)
+            if path.rsplit('/', 1)[-1] == normalized_id
+        ]
+        if len(matches) == 1:
+            return matches[0]
+        raise KeyError(normalized_id)
 
     def _read_tiled_item(self, item):
         """Read a Tiled item, disabling wide-table optimization when supported."""
@@ -839,6 +871,178 @@ class DriverWebAppsMixin:
             html = f'<pre>{str(ds)}</pre>'
 
         return {'status': 'success', 'html': html}
+
+    def _classify_plot_dataarray(self, data_array, dataset, sample_dim=None, is_coord=False):
+        """Classify a DataArray for plot UI selection."""
+        dims = list(getattr(data_array, 'dims', ()))
+        kind = getattr(getattr(data_array, 'dtype', None), 'kind', 'O')
+
+        if is_coord:
+            if sample_dim and dims == [sample_dim]:
+                return 'sample_coord'
+            if kind in ('U', 'S', 'O'):
+                return 'coord_string'
+            if kind in ('f', 'i', 'u'):
+                return 'coord_numeric'
+            return 'coord_other'
+
+        if kind not in ('f', 'i', 'u'):
+            return 'meta'
+
+        if len(dims) == 0:
+            return 'scalar'
+
+        if len(dims) == 1:
+            if sample_dim and dims[0] == sample_dim:
+                return 'sample_1d'
+            return 'line_1d'
+
+        if len(dims) == 2:
+            if sample_dim and dims[0] == sample_dim:
+                comp_dim = dims[1]
+                coord = dataset.coords.get(comp_dim)
+                coord_kind = getattr(getattr(coord, 'dtype', None), 'kind', None) if coord is not None else None
+                if coord_kind in ('U', 'S', 'O'):
+                    return 'composition_2d'
+                return 'stacked_2d'
+            return 'image_2d'
+
+        if len(dims) == 3:
+            if sample_dim and dims[0] == sample_dim:
+                return 'image_stack_3d'
+            return 'volume_3d'
+
+        return 'nd'
+
+    def _describe_plot_dataarray(self, name, data_array, dataset, sample_dim=None, is_coord=False):
+        """Summarize a DataArray for the tiled plot manifest."""
+        return {
+            'name': name,
+            'dims': list(getattr(data_array, 'dims', ())),
+            'shape': [int(v) for v in getattr(data_array, 'shape', ())],
+            'kind': getattr(getattr(data_array, 'dtype', None), 'kind', 'O'),
+            'is_coord': bool(is_coord),
+            'classification': self._classify_plot_dataarray(
+                data_array,
+                dataset,
+                sample_dim=sample_dim,
+                is_coord=is_coord,
+            ),
+        }
+
+    def _build_tiled_plot_manifest(self, dataset):
+        """Build a lightweight structural manifest for the tiled plot UI."""
+        import numpy as np
+        import xarray as xr
+
+        sample_dim = dataset.attrs.get('_detected_sample_dim')
+        if sample_dim not in dataset.dims:
+            sample_dim = self._detect_sample_dimension(dataset, allow_size_fallback=True)
+
+        catalog = {}
+        for coord_name, coord in dataset.coords.items():
+            catalog[coord_name] = self._describe_plot_dataarray(
+                coord_name,
+                coord,
+                dataset,
+                sample_dim=sample_dim,
+                is_coord=True,
+            )
+
+        for var_name, data_array in dataset.data_vars.items():
+            catalog[var_name] = self._describe_plot_dataarray(
+                var_name,
+                data_array,
+                dataset,
+                sample_dim=sample_dim,
+                is_coord=False,
+            )
+
+        for dim_name, dim_size in dataset.sizes.items():
+            if dim_name in catalog:
+                continue
+            synthetic_coord = xr.DataArray(
+                np.arange(int(dim_size)),
+                dims=[dim_name],
+                name=dim_name,
+            )
+            catalog[dim_name] = self._describe_plot_dataarray(
+                dim_name,
+                synthetic_coord,
+                dataset,
+                sample_dim=sample_dim,
+                is_coord=True,
+            )
+
+        return {
+            'sample_dim': sample_dim,
+            'sample_count': int(dataset.sizes.get(sample_dim, 1)) if sample_dim else 1,
+            'dims': {name: int(size) for name, size in dataset.sizes.items()},
+            'catalog': catalog,
+        }
+
+    def tiled_get_plot_manifest(self, entry_ids, **kwargs):
+        """Return a lightweight manifest describing the combined plot dataset."""
+        try:
+            entry_ids_list = self._parse_entry_ids_param(entry_ids)
+        except (json.JSONDecodeError, ValueError) as e:
+            return {'status': 'error', 'message': f'Invalid entry_ids: {str(e)}'}
+
+        if not entry_ids_list:
+            return {'status': 'error', 'message': 'entry_ids must contain at least one entry'}
+
+        try:
+            ds = self._get_or_create_combined_dataset(entry_ids_list)
+        except Exception as e:
+            return {'status': 'error', 'message': f'Error loading dataset: {str(e)}'}
+
+        try:
+            manifest = self._build_tiled_plot_manifest(ds)
+        except Exception as e:
+            return {'status': 'error', 'message': f'Error building plot manifest: {str(e)}'}
+
+        return {'status': 'success', 'manifest': manifest}
+
+    def tiled_get_plot_variable(self, entry_ids, var_name, **kwargs):
+        """Return one variable or coordinate from the cached combined plot dataset."""
+        try:
+            entry_ids_list = self._parse_entry_ids_param(entry_ids)
+        except (json.JSONDecodeError, ValueError) as e:
+            return {'status': 'error', 'message': f'Invalid entry_ids: {str(e)}'}
+
+        if not entry_ids_list:
+            return {'status': 'error', 'message': 'entry_ids must contain at least one entry'}
+        if not var_name:
+            return {'status': 'error', 'message': 'var_name is required'}
+
+        try:
+            ds = self._get_or_create_combined_dataset(entry_ids_list)
+        except Exception as e:
+            return {'status': 'error', 'message': f'Error loading dataset: {str(e)}'}
+
+        try:
+            if var_name in ds.data_vars:
+                data_array = ds[var_name]
+                is_coord = False
+            elif var_name in ds.coords:
+                data_array = ds.coords[var_name]
+                is_coord = True
+            else:
+                return {'status': 'error', 'message': f'Variable "{var_name}" not found in combined dataset'}
+
+            return {
+                'status': 'success',
+                'variable': {
+                    'name': var_name,
+                    'dims': list(getattr(data_array, 'dims', ())),
+                    'shape': [int(v) for v in getattr(data_array, 'shape', ())],
+                    'kind': getattr(getattr(data_array, 'dtype', None), 'kind', 'O'),
+                    'is_coord': is_coord,
+                    'data': self._safe_tolist(data_array.values),
+                }
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': f'Error serializing variable "{var_name}": {str(e)}'}
 
     def tiled_get_full_json(self, entry_id, **kwargs):
         """Proxy endpoint to get JSON-serializable full data payload for one entry.
@@ -1370,8 +1574,18 @@ class DriverWebAppsMixin:
             old_key = order.pop(0)
             cache.pop(old_key, None)
 
+    def _ensure_combined_dataset_cache(self):
+        """Initialize combined-dataset cache state for bare mixin test doubles."""
+        if not hasattr(self, '_combined_dataset_cache') or self._combined_dataset_cache is None:
+            self._combined_dataset_cache = {}
+        if not hasattr(self, '_combined_dataset_cache_order') or self._combined_dataset_cache_order is None:
+            self._combined_dataset_cache_order = []
+        if not hasattr(self, '_max_combined_dataset_cache') or self._max_combined_dataset_cache is None:
+            self._max_combined_dataset_cache = 3
+
     def _get_or_create_combined_dataset(self, entry_ids_list):
         """Get combined dataset from cache or create and cache it."""
+        self._ensure_combined_dataset_cache()
         key = self._entry_ids_cache_key(entry_ids_list)
         cached = self._combined_dataset_cache.get(key)
         if cached is not None:

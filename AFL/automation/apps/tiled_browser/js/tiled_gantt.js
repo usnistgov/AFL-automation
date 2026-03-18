@@ -80,10 +80,11 @@ function resolve(meta, field) {
 async function loadGanttMetadata(entryIdsList) {
     const settled = await Promise.allSettled(
         entryIdsList.map(async (entryId) => {
-            const payload = await tiledClient.metadata(entryId);
+            const entryRef = window.TiledHttpClient.toEntryRef(entryId);
+            const payload = await tiledClient.metadata(entryRef);
             const metadata = payload?.data?.attributes?.metadata || {};
             return {
-                entry_id: entryId,
+                entry_id: entryRef.id || entryId,
                 driver_name: resolve(metadata, 'driver_name') || 'Unknown',
                 task_name: resolve(metadata, 'task_name') || 'Unknown',
                 sample_name: resolve(metadata, 'sample_name') || 'N/A',
@@ -343,7 +344,7 @@ function parseEntryIds() {
 async function initialize() {
     try {
         showLoading();
-        entryIds = parseEntryIds();
+        entryIds = parseEntryIds().map(entry => window.TiledHttpClient.toEntryRef(entry));
 
         if (!Array.isArray(entryIds) || entryIds.length === 0) {
             throw new Error('No entries selected');

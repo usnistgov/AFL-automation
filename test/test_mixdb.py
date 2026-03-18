@@ -2,7 +2,10 @@ import json
 import uuid
 
 import pytest
-from AFL.automation.mixcalc.MixDB import MixDB
+from tiled.client.container import Container
+
+from AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents import CatalogOfAFLEvents
+from AFL.automation.mixcalc.MixDB import MixDB, Tiled_DBEngine
 from AFL.automation.shared.exceptions import NotFoundError
 
 
@@ -117,3 +120,64 @@ def test_list_components_omits_missing_values(mixdb):
     assert 'formula' not in h2o
     assert 'density' not in nacl
     assert 'formula' not in nacl
+
+
+def test_catalog_of_afl_events_string_lookup_uses_container_getitem(monkeypatch):
+    catalog = object.__new__(CatalogOfAFLEvents)
+
+    def fake_getitem(self, key):
+        assert self is catalog
+        assert key == 'components'
+        return 'components-container'
+
+    monkeypatch.setattr(Container, '__getitem__', fake_getitem)
+
+    assert catalog['components'] == 'components-container'
+
+
+def test_catalog_of_afl_events_negative_index_reads_values():
+    catalog = object.__new__(CatalogOfAFLEvents)
+    catalog.values = lambda: ['older', 'newer']
+
+    assert catalog[-1] == 'newer'
+
+
+def test_catalog_of_afl_events_positive_index_is_unsupported():
+    catalog = object.__new__(CatalogOfAFLEvents)
+
+    with pytest.raises(TypeError, match='Positive integer indexing is not supported'):
+        catalog[1]
+
+
+def test_tiled_get_components_container_recovers_from_conflict():
+    class FakeConflictError(Exception):
+        def __init__(self):
+            self.response = type('Response', (), {'status_code': 409})()
+
+    class FakeClient:
+        def __init__(self):
+            self.container = object()
+            self.lookup_calls = 0
+            self.create_calls = 0
+
+        def __getitem__(self, key):
+            assert key == 'components'
+            self.lookup_calls += 1
+            if self.lookup_calls == 1:
+                raise KeyError(key)
+            return self.container
+
+        def create_container(self, key, metadata):
+            assert key == 'components'
+            assert metadata == {'type': 'components'}
+            self.create_calls += 1
+            raise FakeConflictError()
+
+    engine = object.__new__(Tiled_DBEngine)
+    engine.client = FakeClient()
+
+    container = engine._get_components_container(create=True)
+
+    assert container is engine.client.container
+    assert engine.client.lookup_calls == 2
+    assert engine.client.create_calls == 1

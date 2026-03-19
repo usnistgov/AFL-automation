@@ -52,6 +52,7 @@ class BioSANSPrepare(PrepareDriver):
         "ipts_number": "1234",
         "beamline": "CG3",
         "mock_mode": False,
+        "sample_equilibration_delay_s": 180,
     }
 
     def __init__(self, overrides=None):
@@ -145,7 +146,7 @@ class BioSANSPrepare(PrepareDriver):
             0,
             1,
             1,
-            5,
+            self.config["sample_equilibration_delay_s"],
             2,
             "seconds",
             self.config["exposure"],

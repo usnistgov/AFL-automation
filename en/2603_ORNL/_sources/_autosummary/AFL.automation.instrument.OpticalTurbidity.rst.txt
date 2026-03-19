@@ -9,10 +9,8 @@ AFL.automation.instrument.OpticalTurbidity
    .. autosummary::
    
       canny
-      circle_perimeter
       hough_circle
       hough_circle_peaks
-      hough_ellipse
       img_as_ubyte
       rgb2gray
    
@@ -21,5 +19,6 @@ AFL.automation.instrument.OpticalTurbidity
    .. autosummary::
    
       Driver
+      Eq
       OpticalTurbidity
    

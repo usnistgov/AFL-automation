@@ -479,17 +479,11 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">canny</span></code>(image[, sigma, low_threshold, ...])</p></td>
 <td><p>Edge filter an image using the Canny algorithm.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">circle_perimeter</span></code>(r, c, radius[, method, shape])</p></td>
-<td><p>Generate circle perimeter coordinates.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hough_circle</span></code>(image, radius[, normalize, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hough_circle</span></code>(image, radius[, normalize, ...])</p></td>
 <td><p>Perform a circular Hough transform.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hough_circle_peaks</span></code>(hspaces, radii[, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hough_circle_peaks</span></code>(hspaces, radii[, ...])</p></td>
 <td><p>Return peaks in a circle Hough transform.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hough_ellipse</span></code>(image[, threshold, accuracy, ...])</p></td>
-<td><p>Perform an elliptical Hough transform.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">img_as_ubyte</span></code>(image[, force_copy])</p></td>
 <td><p>Convert an image to 8-bit unsigned integer format.</p></td>
@@ -506,7 +500,10 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code>(name[, defaults, overrides, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity" title="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpticalTurbidity</span></code></a>(camera[, overrides])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Eq</span></code>(key, value)</p></td>
+<td><p>Query equality of a given key's value to the specified value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity" title="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpticalTurbidity</span></code></a>([camera, overrides])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -514,16 +511,26 @@
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.instrument.OpticalTurbidity.</span></span><span class="sig-name descname"><span class="pre">OpticalTurbidity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/OpticalTurbidity.html#OpticalTurbidity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.instrument.OpticalTurbidity.</span></span><span class="sig-name descname"><span class="pre">OpticalTurbidity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/OpticalTurbidity.html#OpticalTurbidity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity" title="Link to this definition">#</a></dt>
 <dd><dl class="py attribute">
 <dt class="sig sig-object py" id="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'camera_id':</span> <span class="pre">5,</span> <span class="pre">'col_crop':</span> <span class="pre">[0,</span> <span class="pre">479],</span> <span class="pre">'hough_radii':</span> <span class="pre">98,</span> <span class="pre">'row_crop':</span> <span class="pre">[0,</span> <span class="pre">479],</span> <span class="pre">'save_path':</span> <span class="pre">'/home/afl642/2305_SINQ_TurbidityImages/'}</span></em><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.defaults" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'camera_index':</span> <span class="pre">0,</span> <span class="pre">'camera_interface':</span> <span class="pre">'http',</span> <span class="pre">'camera_url':</span> <span class="pre">'http://afl-video:8081/103/current',</span> <span class="pre">'col_crop':</span> <span class="pre">[0,</span> <span class="pre">479],</span> <span class="pre">'empty_uuid':</span> <span class="pre">'',</span> <span class="pre">'hough_radii':</span> <span class="pre">98,</span> <span class="pre">'row_crop':</span> <span class="pre">[0,</span> <span class="pre">479],</span> <span class="pre">'save_path':</span> <span class="pre">'/home/afl642/2305_SINQ_TurbidityImages/'}</span></em><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.defaults" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/OpticalTurbidity.html#OpticalTurbidity.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.__init__" title="Link to this definition">#</a></dt>
-<dd><p>Initalize OPticalTurbidity calculator driver</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/OpticalTurbidity.html#OpticalTurbidity.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.__init__" title="Link to this definition">#</a></dt>
+<dd><p>Initialize OpticalTurbidity calculator driver</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>camera<span class="classifier">object, optional</span></dt><dd><p>Camera object (e.g., NetworkCamera instance). If None, will be created
+based on camera_interface config setting.</p>
+</dd>
+<dt>overrides<span class="classifier">dict, optional</span></dt><dd><p>Configuration overrides for PersistentConfig</p>
+</dd>
+</dl>
+</section>
 </dd></dl>
 
 <dl class="py method">
@@ -531,8 +538,32 @@
 <span class="sig-name descname"><span class="pre">measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_empty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/OpticalTurbidity.html#OpticalTurbidity.measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.measure" title="Link to this definition">#</a></dt>
 <dd><section id="this-is-an-optical-turbidity-measurement-observing-the-sans-cell">
 <h2>This is an optical turbidity measurement observing the sans cell<a class="headerlink" href="#this-is-an-optical-turbidity-measurement-observing-the-sans-cell" title="Link to this heading">#</a></h2>
-<p>empty_fn: (str) is the path to the empty SANS cell image</p>
-<p>filled_fn: (str) is the path to the filled SANS cell image</p>
+</section>
+<section id="id1">
+<h2>Parameters:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>set_empty<span class="classifier">bool, optional</span></dt><dd><p>If True, sets the current image as the empty reference image</p>
+</dd>
+<dt>plotting<span class="classifier">bool, optional</span></dt><dd><p>If True, saves diagnostic plots</p>
+</dd>
+<dt><a href="#id2"><span class="problematic" id="id3">**</span></a>kwargs<span class="classifier">dict</span></dt><dd><p>Additional arguments passed to image collection</p>
+</dd>
+</dl>
+</section>
+<section id="configuration">
+<h2>Configuration:<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
+<p>The image source is controlled by PersistentConfig settings:
+- camera_interface: ‘http’ or ‘opencv’ (default: ‘http’)
+- camera_url: URL for HTTP interface (required when camera_interface=’http’)
+- camera_index: Device index for OpenCV interface (required when camera_interface=’opencv’)</p>
+</section>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>xarray.Dataset</dt><dd><p>Dataset with turbidity measurements and images. When set_empty=True,
+the dataset contains the captured empty reference image.</p>
+</dd>
+</dl>
 </section>
 </dd></dl>
 

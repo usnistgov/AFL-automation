@@ -901,7 +901,7 @@ been run yet.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.mixcalc.MassBalanceDriver.get_sample_composition">
-<span class="sig-name descname"><span class="pre">get_sample_composition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">composition_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mass_fraction'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixcalc/MassBalanceDriver.html#MassBalanceDriver.get_sample_composition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixcalc.MassBalanceDriver.get_sample_composition" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_sample_composition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">composition_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'masses'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/mixcalc/MassBalanceDriver.html#MassBalanceDriver.get_sample_composition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.mixcalc.MassBalanceDriver.get_sample_composition" title="Link to this definition">#</a></dt>
 <dd><p>Get the composition of the last balanced target in the requested format.</p>
 <p>Uses the Solution objects in <code class="docutils literal notranslate"><span class="pre">self.balanced</span></code> which have full access
 to the component database, avoiding the need for the caller to
@@ -909,10 +909,10 @@ reconstruct Solution objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>composition_format</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – If str, a single format applied to all components.
-If dict, maps component names to format strings; components not
-listed default to <code class="docutils literal notranslate"><span class="pre">'mass_fraction'</span></code>.
-Valid formats: <code class="docutils literal notranslate"><span class="pre">'mass_fraction'</span></code>, <code class="docutils literal notranslate"><span class="pre">'volume_fraction'</span></code>,
-<code class="docutils literal notranslate"><span class="pre">'concentration'</span></code>, <code class="docutils literal notranslate"><span class="pre">'molarity'</span></code>.</p>
+If dict, maps component names to format strings and must include
+every component in the balanced target.
+Valid formats: <code class="docutils literal notranslate"><span class="pre">'masses'</span></code>, <code class="docutils literal notranslate"><span class="pre">'mass_fraction'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'volume_fraction'</span></code>, <code class="docutils literal notranslate"><span class="pre">'concentration'</span></code>, <code class="docutils literal notranslate"><span class="pre">'molarity'</span></code>.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Composition dictionary with component names as keys and numeric

@@ -1820,19 +1820,19 @@ function stockToPrefill(stock) {
     var components = [];
     rawComponentNames.forEach(function(compName) {
         var isSolute = soluteList.indexOf(compName) !== -1;
-        if (stock.masses && stock.masses[compName]) {
+        if (stock.masses && stock.masses[compName] != null) {
             var m = stock.masses[compName];
             components.push({name: compName, propType: 'mass',
                 value: typeof m === 'object' ? m.value : m,
                 units: typeof m === 'object' ? m.units : '',
                 isSolute: isSolute});
-        } else if (stock.volumes && stock.volumes[compName]) {
+        } else if (stock.volumes && stock.volumes[compName] != null) {
             var vol = stock.volumes[compName];
             components.push({name: compName, propType: 'volume',
                 value: typeof vol === 'object' ? vol.value : vol,
                 units: typeof vol === 'object' ? vol.units : '',
                 isSolute: isSolute});
-        } else if (stock.concentrations && stock.concentrations[compName]) {
+        } else if (stock.concentrations && stock.concentrations[compName] != null) {
             var c = stock.concentrations[compName];
             components.push({name: compName, propType: 'concentration',
                 value: typeof c === 'object' ? c.value : c,
@@ -1846,13 +1846,13 @@ function stockToPrefill(stock) {
             components.push({name: compName, propType: 'volume_fraction',
                 value: stock.volume_fractions[compName],
                 isSolute: isSolute});
-        } else if (stock.molarities && stock.molarities[compName]) {
+        } else if (stock.molarities && stock.molarities[compName] != null) {
             var molarity = stock.molarities[compName];
             components.push({name: compName, propType: 'molarity',
                 value: typeof molarity === 'object' ? molarity.value : molarity,
                 units: typeof molarity === 'object' ? molarity.units : '',
                 isSolute: isSolute});
-        } else if (stock.molalities && stock.molalities[compName]) {
+        } else if (stock.molalities && stock.molalities[compName] != null) {
             var molality = stock.molalities[compName];
             components.push({name: compName, propType: 'molality',
                 value: typeof molality === 'object' ? molality.value : molality,

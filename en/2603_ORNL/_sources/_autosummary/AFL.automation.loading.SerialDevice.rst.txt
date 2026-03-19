@@ -1,0 +1,18 @@
+AFL.automation.loading.SerialDevice
+===================================
+
+.. automodule:: AFL.automation.loading.SerialDevice
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SerialDevice
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      SerialCommsException
+   

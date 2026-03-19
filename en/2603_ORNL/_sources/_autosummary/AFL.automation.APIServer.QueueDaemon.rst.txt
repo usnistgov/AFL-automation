@@ -1,0 +1,19 @@
+AFL.automation.APIServer.QueueDaemon
+====================================
+
+.. automodule:: AFL.automation.APIServer.QueueDaemon
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      is_serialized
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DataTrashcan
+      QueueDaemon
+   

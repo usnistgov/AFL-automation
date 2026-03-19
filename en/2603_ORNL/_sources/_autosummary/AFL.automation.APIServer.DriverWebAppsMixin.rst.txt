@@ -1,0 +1,22 @@
+AFL.automation.APIServer.DriverWebAppsMixin
+===========================================
+
+.. automodule:: AFL.automation.APIServer.DriverWebAppsMixin
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      from_uri
+      render_template
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Contains
+      DriverWebAppsMixin
+      In
+      defaultdict
+   

@@ -1365,6 +1365,9 @@
 
     <span class="k">def</span> <span class="nf">_build_tiled_plot_manifest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a lightweight structural manifest for the tiled plot UI.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
         <span class="n">sample_dim</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
             <span class="n">sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_sample_dimension</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">allow_size_fallback</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1386,6 +1389,22 @@
                 <span class="n">dataset</span><span class="p">,</span>
                 <span class="n">sample_dim</span><span class="o">=</span><span class="n">sample_dim</span><span class="p">,</span>
                 <span class="n">is_coord</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">dim_name</span><span class="p">,</span> <span class="n">dim_size</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sizes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">synthetic_coord</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">dim_size</span><span class="p">)),</span>
+                <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="n">dim_name</span><span class="p">],</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">dim_name</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">catalog</span><span class="p">[</span><span class="n">dim_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_plot_dataarray</span><span class="p">(</span>
+                <span class="n">dim_name</span><span class="p">,</span>
+                <span class="n">synthetic_coord</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="n">sample_dim</span><span class="p">,</span>
+                <span class="n">is_coord</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -2006,8 +2025,18 @@
             <span class="n">old_key</span> <span class="o">=</span> <span class="n">order</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">cache</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">old_key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_ensure_combined_dataset_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize combined-dataset cache state for bare mixin test doubles.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_combined_dataset_cache&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_combined_dataset_cache_order&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache_order</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_max_combined_dataset_cache&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_combined_dataset_cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_combined_dataset_cache</span> <span class="o">=</span> <span class="mi">3</span>
+
     <span class="k">def</span> <span class="nf">_get_or_create_combined_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids_list</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get combined dataset from cache or create and cache it.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_combined_dataset_cache</span><span class="p">()</span>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entry_ids_cache_key</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span>
         <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

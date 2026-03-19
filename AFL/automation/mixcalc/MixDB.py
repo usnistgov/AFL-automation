@@ -4,6 +4,7 @@ from typing import Optional, Dict
 import pathlib
 import json
 import os
+import datetime
 
 import pandas as pd  # type: ignore
 import numpy as np
@@ -424,6 +425,11 @@ class Tiled_DBEngine(DBEngine):
                 continue
         return out
 
+    @staticmethod
+    def _is_conflict_error(exc: Exception) -> bool:
+        response = getattr(exc, 'response', None)
+        return getattr(response, 'status_code', None) == 409
+
     def _get_components_container(self, create: bool = False):
         if self.client is None:
             return None
@@ -433,7 +439,11 @@ class Tiled_DBEngine(DBEngine):
             if not create:
                 return None
         # Container is missing. Create it at root so component entries live under components/*.
-        self.client.create_container(key='components', metadata={'type': 'components'})
+        try:
+            self.client.create_container(key='components', metadata={'type': 'components'})
+        except Exception as exc:
+            if not self._is_conflict_error(exc):
+                raise
         return self.client['components']
 
     def _write_component(self, component_dict: Dict):
@@ -620,7 +630,20 @@ def _read_global_tiled_config() -> tuple[str, str]:
         return '', ''
     if not isinstance(config_data, dict) or not config_data:
         return '', ''
-    for key in sorted(config_data.keys(), reverse=True):
+
+    # PersistentConfig uses YY/DD/MM timestamps, so lexicographic sorting can
+    # pick an older entry. Parse the timestamps to select the true latest entry.
+    datetime_key_format = '%y/%d/%m %H:%M:%S.%f'
+    try:
+        keys = sorted(
+            config_data.keys(),
+            key=lambda key: datetime.datetime.strptime(key, datetime_key_format),
+            reverse=True,
+        )
+    except ValueError:
+        keys = sorted(config_data.keys(), reverse=True)
+
+    for key in keys:
         entry = config_data.get(key, {})
         if not isinstance(entry, dict):
             continue

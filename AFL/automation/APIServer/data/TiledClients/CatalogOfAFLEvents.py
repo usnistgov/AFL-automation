@@ -1,3 +1,6 @@
+import collections.abc
+import numbers
+
 import tiled
 
 from tqdm.auto import tqdm
@@ -137,27 +140,16 @@ class CatalogOfAFLEvents(Container):
         #return data_vars
 
     def __getitem__(self, key):
-        # For convenience and backward-compatiblity reasons, we support
-        # some "magic" here that is helpful in an interactive setting.
         if isinstance(key, str):
-            # CASE 1: Interpret key as a uid or partial uid.
-            if len(key) == 36:
-                # This looks like a full uid. Try direct lookup first.
-                try:
-                    return super().__getitem__(key)
-                except KeyError:
-                    # Fall back to partial uid lookup below.
-                    pass
-            return self._lookup_by_partial_uid(key)
+            return super().__getitem__(key)
         elif isinstance(key, numbers.Integral):
-            if key > 0:
-                # CASE 2: Interpret key as a scan_id.
-                return self._lookup_by_scan_id(key)
-            else:
-                # CASE 3: Interpret key as a recently lookup, as in
-                # `catalog[-1]` is the latest entry.
-                key = int(key)
-                return self.values()[key]
+            key = int(key)
+            if key >= 0:
+                raise TypeError(
+                    "Positive integer indexing is not supported. "
+                    "Use string keys for tiled entries."
+                )
+            return self.values()[key]
         elif isinstance(key, slice):
             if (key.start is None) or (key.start >= 0):
                 raise ValueError(

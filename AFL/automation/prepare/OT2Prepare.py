@@ -60,11 +60,25 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
 
             transfer_params = self.get_transfer_params(stock_name)
             try:
-                self.transfer(
+                transfer_result = self.transfer(
                     source=source,
                     dest=destination,
                     volume=volume_ul,
                     **transfer_params,
+                )
+                self._record_prepare_transfer(
+                    stage_type="single",
+                    source=source,
+                    dest=destination,
+                    requested_volume_ul=float(volume_ul),
+                    source_stock_name=stock_name,
+                    transfer_params=transfer_params,
+                    transfer_result=transfer_result,
+                    planned_transfer={
+                        "source": source,
+                        "dest": destination,
+                        "source_stock_name": stock_name,
+                    },
                 )
             except Exception as e:
                 warnings.warn(f"Transfer failed from {source} to {destination}: {str(e)}", stacklevel=2)
@@ -81,12 +95,61 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
             return intermediate_map[key]
         return source_location
 
-    def _transfer_stage(self, source, dest, volume_ul):
+    def _record_prepare_transfer(
+        self,
+        stage_type,
+        source,
+        dest,
+        requested_volume_ul,
+        source_stock_name,
+        transfer_params,
+        transfer_result,
+        planned_transfer=None,
+        extra=None,
+    ):
+        entry = {
+            "stage_type": stage_type,
+            "source_location": source,
+            "dest_location": dest,
+            "source_stock_name": source_stock_name,
+            "requested_volume_ul": float(requested_volume_ul),
+            "transfer_params": dict(transfer_params or {}),
+            "transfer_result": transfer_result,
+        }
+        if planned_transfer is not None:
+            entry["planned_transfer"] = planned_transfer
+        if extra:
+            entry.update(extra)
+        self._append_prepare_transfer(entry)
+
+    def _transfer_stage(
+        self,
+        source,
+        dest,
+        volume_ul,
+        stage_type,
+        source_stock_name=None,
+        planned_transfer=None,
+        extra=None,
+    ):
         if float(volume_ul) <= 0:
             return
-        stock_name = self.config.get("deck", {}).get(source)
+        stock_name = source_stock_name
+        if stock_name is None:
+            stock_name = self.config.get("deck", {}).get(source)
         transfer_params = self.get_transfer_params(stock_name) if stock_name is not None else self.get_transfer_params("default")
-        self.transfer(source=source, dest=dest, volume=volume_ul, **transfer_params)
+        transfer_result = self.transfer(source=source, dest=dest, volume=volume_ul, **transfer_params)
+        self._record_prepare_transfer(
+            stage_type=stage_type,
+            source=source,
+            dest=dest,
+            requested_volume_ul=float(volume_ul),
+            source_stock_name=stock_name,
+            transfer_params=transfer_params,
+            transfer_result=transfer_result,
+            planned_transfer=planned_transfer,
+            extra=extra,
+        )
 
     def execute_preparation_plan(self, target, balanced_target, destination, procedure_plan, intermediate_destinations):
         intermediate_ids = procedure_plan.get("intermediate_ids", [])
@@ -118,18 +181,66 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
                 if source_mass_g > 0:
                     source_stock = self.stocks_by_location(source_loc)
                     source_volume = source_stock.measure_out(f"{source_mass_g} g").volume.to("ul").magnitude
-                    self._transfer_stage(source_loc, stage_dest, source_volume)
+                    self._transfer_stage(
+                        source_loc,
+                        stage_dest,
+                        source_volume,
+                        stage_type="dilution",
+                        source_stock_name=stage.get("source_stock_name"),
+                        planned_transfer={
+                            "required_mass_g": source_mass_g,
+                            "source_location": source_loc,
+                            "destination_token": dest_token,
+                        },
+                        extra={
+                            "intermediate_id": intermediate_id,
+                            "destination_token": dest_token,
+                            "dilution_factor": stage.get("dilution_factor"),
+                            "batches": stage.get("batches"),
+                            "transfer_role": "source",
+                            "intermediate_location": stage_dest,
+                        },
+                    )
                 if diluent_mass_g > 0:
                     diluent_stock = self.stocks_by_location(diluent_loc)
                     diluent_volume = diluent_stock.measure_out(f"{diluent_mass_g} g").volume.to("ul").magnitude
-                    self._transfer_stage(diluent_loc, stage_dest, diluent_volume)
+                    self._transfer_stage(
+                        diluent_loc,
+                        stage_dest,
+                        diluent_volume,
+                        stage_type="dilution",
+                        source_stock_name=stage.get("diluent_stock_name"),
+                        planned_transfer={
+                            "required_mass_g": diluent_mass_g,
+                            "source_location": diluent_loc,
+                            "destination_token": dest_token,
+                        },
+                        extra={
+                            "intermediate_id": intermediate_id,
+                            "destination_token": dest_token,
+                            "dilution_factor": stage.get("dilution_factor"),
+                            "batches": stage.get("batches"),
+                            "transfer_role": "diluent",
+                            "intermediate_location": stage_dest,
+                        },
+                    )
             elif stage_type == "final_mix":
                 for transfer in stage.get("transfers", []):
                     source_loc = self._resolve_stage_source(transfer.get("source_location"), intermediate_map)
                     vol_ul = float(transfer.get("required_volume_ul", 0.0))
                     if vol_ul <= 0:
                         continue
-                    self._transfer_stage(source_loc, destination, vol_ul)
+                    self._transfer_stage(
+                        source_loc,
+                        destination,
+                        vol_ul,
+                        stage_type="final_mix",
+                        source_stock_name=transfer.get("source_stock_name"),
+                        planned_transfer=transfer,
+                        extra={
+                            "destination_location": destination,
+                        },
+                    )
             else:
                 raise ValueError(f"Unknown stage type '{stage_type}' in procedure plan")
 
@@ -206,7 +317,16 @@ class OT2Prepare(OT2HTTPDriver, PrepareDriver):
             raise ValueError("Destination 'dest' must be specified in catch_protocol config or as an argument.")
 
         try:
-            self.transfer(**catch_params)
+            transfer_result = self.transfer(**catch_params)
+            self._record_prepare_transfer(
+                stage_type="catch",
+                source=catch_params["source"],
+                dest=catch_params["dest"],
+                requested_volume_ul=float(catch_params.get("volume", 0.0)),
+                source_stock_name=self.config.get("deck", {}).get(catch_params["source"]),
+                transfer_params={k: v for k, v in catch_params.items() if k not in ("source", "dest", "volume")},
+                transfer_result=transfer_result,
+            )
         except Exception as e:
             dest_val = catch_params.get("dest", "unknown")
             warnings.warn(

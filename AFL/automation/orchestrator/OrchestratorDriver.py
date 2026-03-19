@@ -58,13 +58,14 @@ class OrchestratorDriver(Driver):
         Format for extracting composition from balanced_target after preparation.
 
         If str: Single format applied to all components
-            Valid values: 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'
+            Valid values: 'masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'
 
-        If dict: Per-component format specification
-            Example: {"H2O": "mass_fraction", "NaCl": "concentration"}
+        If dict: Per-component format specification. Every prepared component
+            must be explicitly listed.
+            Example: {"H2O": "masses", "NaCl": "concentration"}
             Keys are component names, values are format strings (same valid values as above)
 
-        Default: 'mass_fraction'
+        Default: 'masses'
     """
 
     defaults = {}
@@ -81,7 +82,7 @@ class OrchestratorDriver(Driver):
     defaults['snapshot_directory'] = []
     defaults['prepare_volume'] = '1000 ul'
     defaults['empty_prefix'] = 'MT-'
-    defaults['composition_format'] = 'mass_fraction'
+    defaults['composition_format'] = 'masses'
     defaults['next_samples_variable'] = 'next_samples'
     def __init__(
             self,
@@ -177,7 +178,7 @@ class OrchestratorDriver(Driver):
         if not isinstance(self.config['max_sample_transmission'], (int, float)):
             raise TypeError("self.config['max_sample_transmission'] must be a number")
 
-        allowed_formats = {'mass_fraction', 'volume_fraction', 'concentration', 'molarity'}
+        allowed_formats = {'masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'}
         composition_format = self.config.get('composition_format')
         if isinstance(composition_format, str):
             if composition_format not in allowed_formats:
@@ -629,7 +630,7 @@ class OrchestratorDriver(Driver):
             # The prep server has direct access to the balanced Solution objects
             # and the component DB, so it performs the composition math.
             self.update_status(f'Getting realized composition from prep server...')
-            composition_format = self.config.get('composition_format', 'mass_fraction')
+            composition_format = self.config.get('composition_format', 'masses')
             comp_result = self.get_client('prep').enqueue(
                 task_name='get_sample_composition',
                 composition_format=composition_format,

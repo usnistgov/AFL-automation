@@ -393,6 +393,16 @@ class Driver(DriverWebAppsMixin):
         return super().tiled_get_xarray_html(entry_ids, **kwargs)
 
     @unqueued()
+    def tiled_get_plot_manifest(self, entry_ids, **kwargs):
+        """Return plot-manifest metadata for one or more Tiled entries."""
+        return super().tiled_get_plot_manifest(entry_ids, **kwargs)
+
+    @unqueued()
+    def tiled_get_plot_variable(self, entry_ids, var_name, **kwargs):
+        """Return one variable from the cached combined plot dataset."""
+        return super().tiled_get_plot_variable(entry_ids, var_name, **kwargs)
+
+    @unqueued()
     def tiled_get_metadata(self, entry_id, **kwargs):
         """Proxy endpoint to get metadata from Tiled."""
         return super().tiled_get_metadata(entry_id, **kwargs)

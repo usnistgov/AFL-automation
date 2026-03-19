@@ -20,7 +20,7 @@
     ]
   },
   "metadata": {
-    "displayName": "NIST 6 x 20 mL vial holder",
+    "displayName": "NIST 6 Well Plate 20000 \u00b5L (AFL)",
     "displayCategory": "wellPlate",
     "displayVolumeUnits": "\u00b5L",
     "tags": []
@@ -28,76 +28,68 @@
   "dimensions": {
     "xDimension": 127.75,
     "yDimension": 85.5,
-    "zDimension": 61.6
+    "zDimension": 62.6
   },
   "wells": {
     "A1": {
-      "depth": 56.5,
+      "depth": 54.5,
       "totalLiquidVolume": 20000,
       "shape": "circular",
       "diameter": 28.95,
       "x": 23,
       "y": 62.5,
-      "z": 6.1
+      "z": 8.1
     },
     "B1": {
-      "depth": 56.5,
+      "depth": 54.5,
       "totalLiquidVolume": 20000,
       "shape": "circular",
       "diameter": 28.95,
       "x": 23,
       "y": 22.37,
-      "z": 6.1
+      "z": 8.1
     },
     "A2": {
-      "depth": 56.5,
+      "depth": 54.5,
       "totalLiquidVolume": 20000,
       "shape": "circular",
       "diameter": 28.95,
       "x": 63.13,
       "y": 62.5,
-      "z": 6.1
+      "z": 8.1
     },
     "B2": {
-      "depth": 56.5,
+      "depth": 54.5,
       "totalLiquidVolume": 20000,
       "shape": "circular",
       "diameter": 28.95,
       "x": 63.13,
       "y": 22.37,
-      "z": 6.1
+      "z": 8.1
     },
     "A3": {
-      "depth": 56.5,
+      "depth": 54.5,
       "totalLiquidVolume": 20000,
       "shape": "circular",
       "diameter": 28.95,
       "x": 103.26,
       "y": 62.5,
-      "z": 6.1
+      "z": 8.1
     },
     "B3": {
-      "depth": 56.5,
+      "depth": 54.5,
       "totalLiquidVolume": 20000,
       "shape": "circular",
       "diameter": 28.95,
       "x": 103.26,
       "y": 22.37,
-      "z": 6.1
+      "z": 8.1
     }
   },
   "groups": [
     {
       "metadata": {
-        "displayName": "NIST 6 x 20 mL vial holder",
-        "displayCategory": "wellPlate",
         "wellBottomShape": "flat"
-      },
-      "brand": {
-        "brand": "NIST",
-        "brandId": [
-          "gvh2"
-        ]
       },
       "wells": [
         "A1",
@@ -114,7 +106,7 @@
     "quirks": [],
     "isTiprack": false,
     "isMagneticModuleCompatible": false,
-    "loadName": "nist_6_20ml_vials"
+    "loadName": "nist_6_wellplate_20000ul"
   },
   "namespace": "custom_beta",
   "version": 1,

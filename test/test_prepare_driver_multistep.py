@@ -17,6 +17,7 @@ class DummyPrepare(PrepareDriver):
 
     def __init__(self):
         super().__init__(driver_name='DummyPrepare')
+        self.data = {}
         self.last_plan = None
         self.raise_on_plan = False
 
@@ -71,6 +72,13 @@ def _tiny_nacl_target():
     }
 
 
+def _binary_target():
+    return {
+        'name': 'BinaryBlend',
+        'masses': {'H2O': '250 mg', 'Hexanes': '250 mg'},
+    }
+
+
 @pytest.mark.usefixtures('mixdb')
 def test_prepare_multistep_consumes_multiple_prep_targets():
     driver = DummyPrepare()
@@ -114,3 +122,56 @@ def test_prepare_multistep_restores_queue_on_execution_exception():
         driver.prepare(_tiny_nacl_target(), enable_multistep_dilution=True)
 
     assert driver.config['prep_targets'] == original
+
+
+@pytest.mark.usefixtures('mixdb')
+def test_prepare_records_metadata_for_single_step_prepare():
+    driver = DummyPrepare()
+    driver.config.write = False
+    _seed_stocks(driver)
+    driver.config['prep_targets'] = ['5A1']
+
+    result, destination = driver.prepare(_binary_target(), enable_multistep_dilution=False)
+
+    assert destination == '5A1'
+    assert result['destination'] == '5A1'
+    assert result['intermediate_destinations'] == []
+    assert result['planned_mass_transfers'] is not None
+    assert result['procedure_plan']['required_intermediate_targets'] == 0
+
+    prepare_data = driver.data['prepare']
+    assert prepare_data['requested_target']['name'] == 'BinaryBlend'
+    assert prepare_data['applied_target']['name'] == 'BinaryBlend'
+    assert prepare_data['destination'] == '5A1'
+    assert prepare_data['intermediate_destinations'] == []
+    assert prepare_data['execution_success'] is True
+    assert prepare_data['planned_mass_transfers'] == result['planned_mass_transfers']
+    assert prepare_data['executed_transfers'] == []
+
+
+@pytest.mark.usefixtures('mixdb')
+def test_prepare_records_metadata_for_multistep_prepare():
+    driver = DummyPrepare()
+    driver.config.write = False
+    _seed_stocks(driver)
+    driver.config['prep_targets'] = ['5A1', '5A2', '5A3']
+
+    result, destination = driver.prepare(_tiny_nacl_target(), enable_multistep_dilution=True)
+
+    assert destination == '5A2'
+    assert result['destination'] == '5A2'
+    assert result['intermediate_destinations'] == ['5A1']
+    assert result['procedure_plan']['required_intermediate_targets'] == 1
+
+    prepare_data = driver.data['prepare']
+    assert prepare_data['destination'] == '5A2'
+    assert prepare_data['intermediate_destinations'] == ['5A1']
+    assert prepare_data['procedure_plan']['required_intermediate_targets'] == 1
+    assert prepare_data['execution_success'] is True
+
+
+def test_prepare_driver_default_composition_format_is_masses():
+    driver = DummyPrepare()
+    driver.config.write = False
+
+    assert driver.config['composition_format'] == 'masses'

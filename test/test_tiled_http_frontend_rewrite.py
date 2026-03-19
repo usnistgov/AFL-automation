@@ -33,6 +33,8 @@ def test_shared_client_defines_direct_tiled_http_contract_helpers():
     assert "resolveMetadataValue" in shared_client
     assert "probeDirectMode" in shared_client
     assert "mode: useProxy ? 'proxy' : 'direct'" in shared_client
+    assert "toEntryRef" in shared_client
+    assert "entryRefFromItem" in shared_client
 
     # Dual-path mapping requirement for key fields
     assert "task_name: ['task_name', 'attrs.task_name']" in shared_client
@@ -77,6 +79,15 @@ def test_plot_and_gantt_remove_legacy_read_proxy_routes():
     # Direct config/bootstrap usage retained
     assert "window.TiledHttpClient.loadConfig()" in plot_js
     assert "window.TiledHttpClient.loadConfig()" in gantt_js
+    assert "window.TiledHttpClient.toEntryRef(entry)" in plot_js
+    assert "window.TiledHttpClient.toEntryRef(entry)" in gantt_js
+
+
+def test_browser_selection_preserves_entry_references():
+    browser_js = _read(JS_ROOT / "tiled_browser.js")
+
+    assert "window.TiledHttpClient.entryRefFromItem(item)" in browser_js
+    assert "selectedRows.map(row => row.entryRef || row.id)" in browser_js
 
 
 def test_html_pages_use_apps_static_layout():

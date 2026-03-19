@@ -18,7 +18,7 @@ except ImportError:
 from AFL.automation.APIServer.Driver import Driver
 
 try:
-    from eic_client.EICClient import EICClient
+    from AFL.automation.instrument.EICClient import EICClient
 except ImportError:
     EICClient = None
 

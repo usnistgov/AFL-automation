@@ -242,17 +242,112 @@ function getVariableMode(info, sampleDim, catalog) {
     return 'other';
 }
 
+function detectExplicitSampleDim(catalog) {
+    if (!catalog) return null;
+    if (catalog.sample?.is_coord) return 'sample';
+    const sampleLikeDim = Object.entries(catalog).find(([name, info]) => {
+        return Boolean(info?.is_coord) && /_sample$/.test(name);
+    });
+    return sampleLikeDim?.[0] || null;
+}
+
+function buildCombinedPlotManifest(entries) {
+    const firstEntry = entries[0];
+    const sourceCatalog = firstEntry?.varCatalog;
+    if (!sourceCatalog) return null;
+
+    const sampleCount = entries.length;
+    const explicitSampleDim = detectExplicitSampleDim(sourceCatalog);
+    const sampleDim = explicitSampleDim || 'index';
+    const dims = { index: sampleCount };
+    const catalog = {
+        index: {
+            name: 'index',
+            dims: ['index'],
+            shape: [sampleCount],
+            kind: 'i',
+            is_coord: true
+        }
+    };
+
+    for (const entry of entries) {
+        const metadata = entry.metadata || {};
+        const coordName = resolveMeta(metadata, 'sample_name') || entry.id || '';
+        void coordName;
+    }
+
+    catalog.sample_name = {
+        name: 'sample_name',
+        dims: ['index'],
+        shape: [sampleCount],
+        kind: 'U',
+        is_coord: true
+    };
+    catalog.sample_uuid = {
+        name: 'sample_uuid',
+        dims: ['index'],
+        shape: [sampleCount],
+        kind: 'U',
+        is_coord: true
+    };
+    catalog.entry_id = {
+        name: 'entry_id',
+        dims: ['index'],
+        shape: [sampleCount],
+        kind: 'U',
+        is_coord: true
+    };
+
+    for (const [name, info] of Object.entries(sourceCatalog)) {
+        const originalDims = Array.isArray(info.dims) ? [...info.dims] : [];
+        const originalShape = Array.isArray(info.shape) ? [...info.shape] : [];
+
+        originalDims.forEach((dim, idx) => {
+            if (dims[dim] === undefined && Number.isFinite(originalShape[idx])) {
+                dims[dim] = originalShape[idx];
+            }
+        });
+
+        let dimsForCombined = originalDims;
+        let shapeForCombined = originalShape;
+        if (!info.is_coord) {
+            dimsForCombined = ['index', ...originalDims];
+            shapeForCombined = [sampleCount, ...originalShape];
+        }
+
+        catalog[name] = {
+            ...info,
+            dims: dimsForCombined,
+            shape: shapeForCombined
+        };
+    }
+
+    for (const [name, info] of Object.entries(catalog)) {
+        info.classification = classifyCatalogItem(info, catalog, sampleDim);
+    }
+
+    return {
+        sample_dim: sampleDim,
+        sample_count: sampleCount,
+        dims,
+        catalog
+    };
+}
+
 async function ensurePlotManifestLoaded() {
     if (AppState.entries.length <= 1 || AppState.plotManifest !== null) return;
-    const entryIds = JSON.stringify(AppState.entries.map(e => e.id));
-    const response = await window.TiledHttpClient.authenticatedFetch(
-        `/tiled_get_plot_manifest?entry_ids=${encodeURIComponent(entryIds)}`
-    );
-    const payload = await response.json();
-    if (!response.ok || payload.status === 'error') {
-        throw new Error(payload.message || `Failed to load plot manifest (${response.status})`);
+    const firstEntry = AppState.entries[0];
+    if (firstEntry?.structureFamily !== 'container') {
+        return;
     }
-    AppState.plotManifest = payload.manifest || null;
+
+    await ensureContainerCatalogLoaded(firstEntry);
+    const manifest = buildCombinedPlotManifest(AppState.entries);
+    if (!manifest) {
+        throw new Error('Failed to build combined plot manifest');
+    }
+
+    AppState.plotManifest = manifest;
     if (AppState.plotManifest?.sample_dim) {
         AppState.sampleDim = AppState.plotManifest.sample_dim;
         if (AppState.entries[0]) {

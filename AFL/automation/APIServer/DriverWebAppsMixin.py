@@ -932,6 +932,9 @@ class DriverWebAppsMixin:
 
     def _build_tiled_plot_manifest(self, dataset):
         """Build a lightweight structural manifest for the tiled plot UI."""
+        import numpy as np
+        import xarray as xr
+
         sample_dim = dataset.attrs.get('_detected_sample_dim')
         if sample_dim not in dataset.dims:
             sample_dim = self._detect_sample_dimension(dataset, allow_size_fallback=True)
@@ -953,6 +956,22 @@ class DriverWebAppsMixin:
                 dataset,
                 sample_dim=sample_dim,
                 is_coord=False,
+            )
+
+        for dim_name, dim_size in dataset.sizes.items():
+            if dim_name in catalog:
+                continue
+            synthetic_coord = xr.DataArray(
+                np.arange(int(dim_size)),
+                dims=[dim_name],
+                name=dim_name,
+            )
+            catalog[dim_name] = self._describe_plot_dataarray(
+                dim_name,
+                synthetic_coord,
+                dataset,
+                sample_dim=sample_dim,
+                is_coord=True,
             )
 
         return {
@@ -1555,8 +1574,18 @@ class DriverWebAppsMixin:
             old_key = order.pop(0)
             cache.pop(old_key, None)
 
+    def _ensure_combined_dataset_cache(self):
+        """Initialize combined-dataset cache state for bare mixin test doubles."""
+        if not hasattr(self, '_combined_dataset_cache') or self._combined_dataset_cache is None:
+            self._combined_dataset_cache = {}
+        if not hasattr(self, '_combined_dataset_cache_order') or self._combined_dataset_cache_order is None:
+            self._combined_dataset_cache_order = []
+        if not hasattr(self, '_max_combined_dataset_cache') or self._max_combined_dataset_cache is None:
+            self._max_combined_dataset_cache = 3
+
     def _get_or_create_combined_dataset(self, entry_ids_list):
         """Get combined dataset from cache or create and cache it."""
+        self._ensure_combined_dataset_cache()
         key = self._entry_ids_cache_key(entry_ids_list)
         cached = self._combined_dataset_cache.get(key)
         if cached is not None:

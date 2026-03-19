@@ -176,6 +176,7 @@ body {
 }
 
 .card-status-ok { color: #28a745; }
+.card-status-within-tolerance { color: #b7791f; }
 .card-status-fail { color: #dc3545; }
 
 .component-list {
@@ -217,6 +218,11 @@ body {
     background: #f6fff8;
 }
 
+.card.card-within-tolerance {
+    border-left: 4px solid #d39e00;
+    background: #fffaf0;
+}
+
 .card.card-failed {
     border-left: 4px solid #dc3545;
     background: #fff8f8;
@@ -226,6 +232,16 @@ body {
 .badge-success {
     display: inline-block;
     background: #28a745;
+    color: white;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.badge-within-tolerance {
+    display: inline-block;
+    background: #d39e00;
     color: white;
     border-radius: 4px;
     padding: 2px 8px;

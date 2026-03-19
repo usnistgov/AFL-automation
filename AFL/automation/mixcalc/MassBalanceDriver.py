@@ -26,6 +26,35 @@ def _is_finite(v):
     return isinstance(v, (int, float)) and math.isfinite(v)
 
 
+EXACT_BALANCE_ERROR_TOL = 1e-12
+
+
+def _max_component_error(component_errors):
+    if not component_errors or not isinstance(component_errors, dict):
+        return None
+
+    max_err = None
+    for value in component_errors.values():
+        try:
+            err = abs(float(value))
+        except (TypeError, ValueError):
+            continue
+        if not _is_finite(err):
+            continue
+        if max_err is None or err > max_err:
+            max_err = err
+    return max_err
+
+
+def _derive_balance_status(success, component_errors=None):
+    max_err = _max_component_error(component_errors)
+    if success is not True:
+        return 'failed', max_err
+    if max_err is None or max_err <= EXACT_BALANCE_ERROR_TOL:
+        return 'succeeded', max_err
+    return 'within_tolerance', max_err
+
+
 def _solution_to_display_dict(solution):
     """Build a JSON-serializable dict from a Solution with all available
     composition methods.
@@ -779,6 +808,28 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             pass
         return []
 
+    @staticmethod
+    def _balance_status_metadata(entry):
+        diagnosis = entry.get('diagnosis') if isinstance(entry, dict) else None
+        component_errors = diagnosis.component_errors if diagnosis is not None else {}
+        balance_status, max_component_error = _derive_balance_status(
+            entry.get('success') if isinstance(entry, dict) else None,
+            component_errors=component_errors,
+        )
+        return {
+            'balance_status': balance_status,
+            'max_component_error': max_component_error,
+        }
+
+    def balance_report(self):
+        report = super().balance_report()
+        for idx, entry in enumerate(report):
+            raw_entry = self.balanced[idx] if idx < len(self.balanced) else None
+            if raw_entry is None:
+                continue
+            entry.update(self._balance_status_metadata(raw_entry))
+        return report
+
     def _collect_balanced_targets(self):
         if not self.balanced:
             return []
@@ -790,6 +841,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             out = _solution_to_display_dict(balanced_target)
             out['source_target_name'] = entry['target'].name if entry.get('target') else None
             out['balance_success'] = entry.get('success')
+            out.update(self._balance_status_metadata(entry))
             results.append(out)
         return results
 

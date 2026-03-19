@@ -1,5 +1,5 @@
 import pytest
-from AFL.automation.mixcalc.BalanceDiagnosis import FailureCode
+from AFL.automation.mixcalc.BalanceDiagnosis import BalanceDiagnosis, FailureCode
 from AFL.automation.mixcalc.MassBalanceDriver import MassBalanceDriver
 from AFL.automation.mixcalc.Solution import Solution
 from AFL.automation.shared.units import units
@@ -211,6 +211,80 @@ def test_massbalance_driver_transfer_report_omits_zero_mass_transfers():
     assert transfers is not None
     assert set(stock.name for stock in transfers.keys()) == {'WaterStock', 'HexanesStock'}
     assert all(mass != '0.0 g' for mass in transfers.values())
+
+
+def test_massbalance_driver_balance_status_metadata_exact_success():
+    entry = {
+        'success': True,
+        'diagnosis': BalanceDiagnosis(
+            success=True,
+            component_errors={'H2O': 1e-16, 'NaCl': 0.0},
+        ),
+    }
+
+    meta = MassBalanceDriver._balance_status_metadata(entry)
+
+    assert meta['balance_status'] == 'succeeded'
+    assert meta['max_component_error'] == pytest.approx(1e-16)
+
+
+def test_massbalance_driver_balance_status_metadata_within_tolerance():
+    entry = {
+        'success': True,
+        'diagnosis': BalanceDiagnosis(
+            success=True,
+            component_errors={'H2O': 0.02, 'NaCl': 0.0},
+        ),
+    }
+
+    meta = MassBalanceDriver._balance_status_metadata(entry)
+
+    assert meta['balance_status'] == 'within_tolerance'
+    assert meta['max_component_error'] == pytest.approx(0.02)
+
+
+def test_massbalance_driver_balance_status_metadata_failed():
+    entry = {
+        'success': False,
+        'diagnosis': BalanceDiagnosis(
+            success=False,
+            component_errors={'H2O': 0.01, 'NaCl': 0.0},
+        ),
+    }
+
+    meta = MassBalanceDriver._balance_status_metadata(entry)
+
+    assert meta['balance_status'] == 'failed'
+    assert meta['max_component_error'] == pytest.approx(0.01)
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_driver_balance_report_includes_status_metadata():
+    mb = _build_balanced_massbalance_driver()
+
+    report = mb.balance_report()
+
+    assert report
+    assert report[0]['balance_status'] == 'succeeded'
+    assert 'max_component_error' in report[0]
+    assert report[0]['max_component_error'] is not None
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_driver_collect_balanced_targets_includes_status_metadata():
+    mb = _build_balanced_massbalance_driver()
+    mb.balanced[0]['diagnosis'] = BalanceDiagnosis(
+        success=True,
+        component_errors={'H2O': 0.02, 'NaCl': 0.0},
+    )
+    mb.balanced[0]['success'] = True
+
+    targets = mb._collect_balanced_targets()
+
+    assert len(targets) == 1
+    assert targets[0]['balance_success'] is True
+    assert targets[0]['balance_status'] == 'within_tolerance'
+    assert targets[0]['max_component_error'] == pytest.approx(0.02)
 
 
 @pytest.mark.usefixtures("mixdb")

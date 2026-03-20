@@ -961,36 +961,56 @@ class OrchestratorDriver(Driver):
             Entry ID if found, None otherwise
         """
         try:
-            # Get tiled client from config
-            if 'tiled_uri' not in self.config or not self.config['tiled_uri']:
-                self.app.logger.warning("No tiled_uri configured, cannot query for entry_id")
+            client = None
+            if self.data is not None:
+                try:
+                    client = self.tiled_client
+                except Exception:
+                    client = None
+
+            if client is None:
+                if 'tiled_uri' not in self.config or not self.config['tiled_uri']:
+                    self.app.logger.warning("No tiled_uri configured, cannot query for entry_id")
+                    return None
+
+                from tiled.client import from_uri
+                client = from_uri(self.config['tiled_uri'], structure_clients="dask")
+
+            try:
+                run_documents = client['run_documents']
+            except Exception:
+                self.app.logger.warning("No run_documents container found in Tiled")
                 return None
 
-            from tiled.client import from_uri
-
-            # Connect to tiled
-            client = from_uri(self.config['tiled_uri'], structure_clients="dask")
-
-            # Search for entries with matching sample_uuid in metadata
+            sample_uuid_fields = ('sample_uuid', 'attrs.sample_uuid', 'attr.sample_uuid')
+            task_name_fields = ('task_name', 'attrs.task_name', 'attr.task_name')
             matching_entries = []
-            for entry_id in client:
-                entry = client[entry_id]
-                metadata = getattr(entry, 'metadata', {})
+            for entry_id, entry in run_documents.items():
+                metadata = dict(getattr(entry, 'metadata', {}) or {})
 
-                # Check if sample_uuid matches
-                if metadata.get('sample_uuid') == sample_uuid:
-                    # Check if task_name matches (if provided)
-                    if task_name is None or metadata.get('task_name') == task_name:
-                        # Get timestamp or use entry order
-                        timestamp = metadata.get('timestamp', 0)
-                        matching_entries.append((entry_id, timestamp))
+                sample_matches = any(
+                    self._get_nested_metadata_value(metadata, field) == sample_uuid
+                    for field in sample_uuid_fields
+                )
+                if not sample_matches:
+                    continue
+
+                if task_name is not None:
+                    task_matches = any(
+                        self._get_nested_metadata_value(metadata, field) == task_name
+                        for field in task_name_fields
+                    )
+                    if not task_matches:
+                        continue
+
+                matching_entries.append((entry_id, self._entry_sort_timestamp(entry)))
 
             if not matching_entries:
                 self.app.logger.warning(f"No tiled entry found for sample_uuid={sample_uuid}, task_name={task_name}")
                 return None
 
             # Sort by timestamp and return the last one
-            matching_entries.sort(key=lambda x: x[1], reverse=True)
+            matching_entries.sort(key=lambda x: (x[1], x[0]), reverse=True)
             return matching_entries[0][0]
 
         except Exception as e:
@@ -1007,8 +1027,20 @@ class OrchestratorDriver(Driver):
         entry_ids : List[str]
             Entry IDs from tiled to append to the group
         """
-        # Step 1: Get current config from AgentDriver (direct return, no return_val)
-        current_groups = self.get_client('agent').get_config('tiled_input_groups')
+        agent_client = self.get_client('agent')
+        config_result = agent_client.get_config(
+            'tiled_input_groups',
+            print_console=False,
+            interactive=True,
+        )
+        if (
+            isinstance(config_result, dict)
+            and config_result.get('exit_state') == 'Error!'
+        ):
+            raise RuntimeError(
+                f"Failed to fetch agent tiled_input_groups: {config_result.get('return_val')}"
+            )
+        current_groups = config_result.get('return_val') if isinstance(config_result, dict) else config_result
 
         if current_groups is None:
             current_groups = []
@@ -1033,8 +1065,17 @@ class OrchestratorDriver(Driver):
                 'entry_ids': entry_ids
             })
 
-        # Step 4: Update AgentDriver config (direct, no interactive)
-        self.get_client('agent').set_config('tiled_input_groups', current_groups)
+        set_result = agent_client.set_config(
+            interactive=True,
+            tiled_input_groups=current_groups,
+        )
+        if (
+            isinstance(set_result, dict)
+            and set_result.get('exit_state') == 'Error!'
+        ):
+            raise RuntimeError(
+                f"Failed to update agent tiled_input_groups: {set_result.get('return_val')}"
+            )
 
 _DEFAULT_CUSTOM_CONFIG = {
 

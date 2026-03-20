@@ -424,11 +424,8 @@ class OrchestratorDriver(Driver):
                 variable_name=self.config['next_samples_variable'],
                 entry_id=entry_id,
             )
-            # Convert to concentrations format for Solution
-            new_sample_dict = {
-                'concentrations': {k: f"{v} mg/ml" for k, v in new_sample.items()},
-                'name': f"sample_{self.uuid['sample'][-8:]}"
-            }
+            new_sample_dict = self._build_queued_sample_from_prediction(new_sample)
+            new_sample_dict['name'] = f"sample_{self.uuid['sample'][-8:]}"
 
             task = {
                 'task_name':'process_sample',
@@ -679,6 +676,83 @@ class OrchestratorDriver(Driver):
         )
         return latest[1]
 
+    @staticmethod
+    def _sample_key_for_composition_format(format_type: str) -> str:
+        mapping = {
+            'masses': 'masses',
+            'mass_fraction': 'mass_fractions',
+            'volume_fraction': 'volume_fractions',
+            'concentration': 'concentrations',
+            'molarity': 'molarities',
+        }
+        try:
+            return mapping[format_type]
+        except KeyError as exc:
+            raise ValueError(f"Unsupported composition format '{format_type}' for queued sample serialization") from exc
+
+    @staticmethod
+    def _format_predicted_component_value(value: Any, format_type: str) -> Any:
+        value = OrchestratorDriver._normalize_metadata_value(value)
+
+        if isinstance(value, dict):
+            if 'value' not in value:
+                raise ValueError(f"Predicted component value must be scalar-like, got nested dict {value!r}")
+            units_value = value.get('units')
+            value = OrchestratorDriver._normalize_metadata_value(value['value'])
+        else:
+            units_value = None
+
+        if isinstance(value, np.ndarray):
+            if value.size != 1:
+                raise ValueError(f"Predicted component value must be scalar-like, got array with shape {value.shape}")
+            value = value.item()
+
+        unit_defaults = {
+            'masses': 'mg',
+            'concentration': 'mg/ml',
+            'molarity': 'mol/L',
+        }
+        if format_type in unit_defaults:
+            units_suffix = units_value or unit_defaults[format_type]
+            return f"{value} {units_suffix}"
+
+        return value
+
+    def _build_queued_sample_from_prediction(self, sample_values: Dict[str, Any]) -> Dict[str, Any]:
+        composition_format = self.config.get('composition_format', 'masses')
+        sample_payload: Dict[str, Any] = {}
+
+        if isinstance(composition_format, str):
+            sample_key = self._sample_key_for_composition_format(composition_format)
+            sample_payload[sample_key] = {
+                component: self._format_predicted_component_value(value, composition_format)
+                for component, value in sample_values.items()
+            }
+            return sample_payload
+
+        if not isinstance(composition_format, dict):
+            raise TypeError("self.config['composition_format'] must be a string or dict")
+
+        missing_components = sorted(
+            component for component in sample_values.keys()
+            if component not in composition_format
+        )
+        if missing_components:
+            raise ValueError(
+                "composition_format dict must specify every predicted component for enqueue_next. "
+                f"Missing components: {missing_components}"
+            )
+
+        for component, value in sample_values.items():
+            format_type = composition_format[component]
+            sample_key = self._sample_key_for_composition_format(format_type)
+            sample_payload.setdefault(sample_key, {})[component] = self._format_predicted_component_value(
+                value,
+                format_type,
+            )
+
+        return sample_payload
+
     def _extract_next_sample_from_tiled_entry(self, entry: Any, variable_name: str, entry_id: str) -> Dict[str, Any]:
         try:
             dataset = self._read_tiled_item(entry)
@@ -704,19 +778,32 @@ class OrchestratorDriver(Driver):
             raise ValueError(error_msg)
 
         variable = dataset[variable_name]
-        extracted = variable.to_pandas().squeeze()
+        extracted = variable.to_pandas()
+
+        if isinstance(extracted, pd.DataFrame):
+            if extracted.empty:
+                error_msg = (
+                    f"Predict tiled entry '{entry_id}' has empty data for variable '{variable_name}'."
+                )
+                self.app.logger.error(error_msg)
+                raise ValueError(error_msg)
+            extracted = extracted.iloc[0]
+
+        if isinstance(extracted, pd.Series):
+            return {
+                component: self._normalize_metadata_value(value)
+                for component, value in extracted.to_dict().items()
+            }
+
         if isinstance(extracted, dict):
             return extracted
-        if hasattr(extracted, 'to_dict'):
-            extracted = extracted.to_dict()
-        if not isinstance(extracted, dict):
-            error_msg = (
-                f"Could not convert '{variable_name}' in tiled entry '{entry_id}' to dict; "
-                f"got {type(extracted).__name__}."
-            )
-            self.app.logger.error(error_msg)
-            raise ValueError(error_msg)
-        return extracted
+
+        error_msg = (
+            f"Could not convert '{variable_name}' in tiled entry '{entry_id}' to dict; "
+            f"got {type(extracted).__name__}."
+        )
+        self.app.logger.error(error_msg)
+        raise ValueError(error_msg)
 
     def make_and_measure(
             self,

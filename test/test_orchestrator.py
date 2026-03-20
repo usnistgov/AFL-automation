@@ -490,7 +490,7 @@ class TestOrchestratorDriverPredictFromTiled:
         assert entry_id == 'batch-1/entry-2'
         assert returned_entry is entry
 
-    def test_process_sample_enqueue_next_uses_tiled_and_not_retrieve_obj(self):
+    def test_process_sample_enqueue_next_uses_configured_masses_and_not_retrieve_obj(self):
         driver = self._driver_with_minimal_config()
         driver.data = Mock()
         ds = xr.Dataset(
@@ -529,9 +529,99 @@ class TestOrchestratorDriverPredictFromTiled:
         assert driver._queue.put.call_count == 1
         queued_package, _ = driver._queue.put.call_args[0]
         assert queued_package['task']['task_name'] == 'process_sample'
-        concentrations = queued_package['task']['sample']['concentrations']
-        assert concentrations['comp_a'] == '1.2 mg/ml'
-        assert concentrations['comp_b'] == '3.4 mg/ml'
+        masses = queued_package['task']['sample']['masses']
+        assert masses['comp_a'] == '1.2 mg'
+        assert masses['comp_b'] == '3.4 mg'
+
+    def test_process_sample_enqueue_next_groups_components_by_mixed_composition_format(self):
+        driver = self._driver_with_minimal_config()
+        driver.config['composition_format'] = {
+            'comp_mass': 'masses',
+            'comp_conc': 'concentration',
+            'comp_fraction': 'mass_fraction',
+            'comp_molarity': 'molarity',
+        }
+        driver.data = Mock()
+        ds = xr.Dataset(
+            {'next_samples': ('component', [1.2, 3.4, 0.25, 0.01])},
+            coords={'component': ['comp_mass', 'comp_conc', 'comp_fraction', 'comp_molarity']}
+        )
+        entry = _FakeTiledEntry(
+            metadata={
+                'sample_uuid': 'SAM-MIXED',
+                'task_name': 'predict',
+                'meta': {'ended': '2026-02-28T01:03:00'},
+            },
+            dataset=ds,
+        )
+        driver.data.tiled_client = _FakeTiledClient(_FakeTiledContainer({'entry-mixed': entry}))
+
+        agent_client = Mock()
+        agent_client.enqueue.return_value = {'return_val': 'AGENT-UUID'}
+        agent_client.retrieve_obj.side_effect = AssertionError("retrieve_obj should not be called")
+
+        driver.get_client = Mock(return_value=agent_client)
+        driver.make_and_measure = Mock()
+        driver.validate_config = Mock()
+        driver._queue = Mock()
+        driver._queue.qsize.return_value = 0
+
+        driver.process_sample(
+            sample={},
+            predict_next=True,
+            enqueue_next=True,
+            sample_uuid='SAM-MIXED',
+            AL_uuid='AL-XYZ',
+            AL_campaign_name='camp',
+        )
+
+        queued_package, _ = driver._queue.put.call_args[0]
+        queued_sample = queued_package['task']['sample']
+        assert queued_sample['masses']['comp_mass'] == '1.2 mg'
+        assert queued_sample['concentrations']['comp_conc'] == '3.4 mg/ml'
+        assert queued_sample['mass_fractions']['comp_fraction'] == 0.25
+        assert queued_sample['molarities']['comp_molarity'] == '0.01 mol/L'
+
+    def test_process_sample_enqueue_next_uses_first_prediction_row_when_multiple_rows_exist(self):
+        driver = self._driver_with_minimal_config()
+        driver.data = Mock()
+        ds = xr.Dataset(
+            {'next_samples': (('candidate', 'component'), [[1.2, 3.4], [9.9, 8.8]])},
+            coords={'candidate': [0, 1], 'component': ['comp_a', 'comp_b']}
+        )
+        entry = _FakeTiledEntry(
+            metadata={
+                'sample_uuid': 'SAM-MULTI',
+                'task_name': 'predict',
+                'meta': {'ended': '2026-02-28T01:04:00'},
+            },
+            dataset=ds,
+        )
+        driver.data.tiled_client = _FakeTiledClient(_FakeTiledContainer({'entry-multi': entry}))
+
+        agent_client = Mock()
+        agent_client.enqueue.return_value = {'return_val': 'AGENT-UUID'}
+        agent_client.retrieve_obj.side_effect = AssertionError("retrieve_obj should not be called")
+
+        driver.get_client = Mock(return_value=agent_client)
+        driver.make_and_measure = Mock()
+        driver.validate_config = Mock()
+        driver._queue = Mock()
+        driver._queue.qsize.return_value = 0
+
+        driver.process_sample(
+            sample={},
+            predict_next=True,
+            enqueue_next=True,
+            sample_uuid='SAM-MULTI',
+            AL_uuid='AL-XYZ',
+            AL_campaign_name='camp',
+        )
+
+        queued_package, _ = driver._queue.put.call_args[0]
+        masses = queued_package['task']['sample']['masses']
+        assert masses['comp_a'] == '1.2 mg'
+        assert masses['comp_b'] == '3.4 mg'
 
     def test_process_sample_enqueue_next_raises_when_tiled_entry_missing(self):
         driver = self._driver_with_minimal_config()

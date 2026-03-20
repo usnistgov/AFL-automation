@@ -35,7 +35,7 @@ def _inject_noop_methods(cls, command_names):
 
 
 try:
-    from eic_client.EICClient import EICClient
+    from AFL.automation.instrument.EICClient import EICClient
 except ImportError:
     EICClient = None
 

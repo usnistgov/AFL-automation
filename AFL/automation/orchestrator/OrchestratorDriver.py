@@ -16,7 +16,6 @@ import numpy as np
 import requests  # type: ignore
 import xarray as xr 
 from tiled.client import from_uri  # type: ignore
-from tiled.queries import Eq  # type: ignore
 from scipy.spatial.distance import cdist
 
 from AFL.automation.APIServer.Client import Client  # type: ignore
@@ -459,39 +458,180 @@ class OrchestratorDriver(Driver):
             current = current[part]
         return current
 
-    def _iter_predict_entries_for_sample(self, sample_uuid: str) -> List[Tuple[str, Any]]:
-        """Find predict-task tiled entries for a sample UUID using metadata key variants."""
-        sample_uuid_fields = ('sample_uuid', 'attrs.sample_uuid', 'attr.sample_uuid')
-        task_name_fields = ('task_name', 'attrs.task_name', 'attr.task_name')
+    @staticmethod
+    def _normalize_metadata_value(value: Any) -> Any:
+        if isinstance(value, np.generic):
+            return value.item()
+        return value
 
-        candidate_entries: Dict[str, Any] = {}
-        query_errors = []
+    def _iter_metadata_field_values(self, metadata: Any, field_name: str):
+        if isinstance(metadata, dict):
+            for key, value in metadata.items():
+                if key == field_name:
+                    yield self._normalize_metadata_value(value)
+                yield from self._iter_metadata_field_values(value, field_name)
+        elif isinstance(metadata, (list, tuple)):
+            for value in metadata:
+                yield from self._iter_metadata_field_values(value, field_name)
 
-        for sample_field in sample_uuid_fields:
-            for task_field in task_name_fields:
-                try:
-                    results = (
-                        self.tiled_client
-                        .search(Eq(sample_field, sample_uuid))
-                        .search(Eq(task_field, 'predict'))
-                    )
-                    for entry_id, entry in results.items():
-                        candidate_entries[entry_id] = entry
-                except Exception as exc:
-                    query_errors.append(str(exc))
+    def _metadata_matches(
+        self,
+        metadata: Dict[str, Any],
+        expected_value: Any,
+        *,
+        field_name: str,
+        paths: Tuple[str, ...],
+    ) -> bool:
+        expected_value = self._normalize_metadata_value(expected_value)
+
+        for path in paths:
+            value = self._normalize_metadata_value(self._get_nested_metadata_value(metadata, path))
+            if value == expected_value:
+                return True
+
+        for value in self._iter_metadata_field_values(metadata, field_name):
+            if value == expected_value:
+                return True
+
+        return False
+
+    def _get_tiled_client_for_lookup(self):
+        client = None
+        if self.data is not None:
+            try:
+                client = self.tiled_client
+            except Exception:
+                client = None
+
+        if client is not None:
+            return client
+
+        if 'tiled_uri' not in self.config or not self.config['tiled_uri']:
+            return None
+
+        return from_uri(self.config['tiled_uri'], structure_clients="dask")
+
+    def _get_run_documents_container_for_lookup(self, client: Any):
+        if client is None:
+            return None
+
+        try:
+            return client['run_documents']
+        except Exception:
+            return client
+
+    def _iter_run_document_entries(self, container: Any, prefix: str = ''):
+        try:
+            items = list(container.items())
+        except Exception:
+            return
+
+        for key, entry in items:
+            entry_id = f'{prefix}/{key}' if prefix else str(key)
+            yield entry_id, entry
+            yield from self._iter_run_document_entries(entry, prefix=entry_id)
+
+    def _find_run_document_entries(
+        self,
+        *,
+        sample_uuid: str,
+        task_name: Optional[str] = None,
+    ) -> List[Tuple[str, Any]]:
+        client = self._get_tiled_client_for_lookup()
+        if client is None:
+            self.log_warning("No tiled client available, cannot query run_documents")
+            return []
+
+        run_documents = self._get_run_documents_container_for_lookup(client)
+        if run_documents is None:
+            self.log_warning("No run_documents container found in Tiled")
+            return []
+
+        sample_uuid_paths = (
+            'sample_uuid',
+            'attrs.sample_uuid',
+            'attr.sample_uuid',
+            'metadata.sample_uuid',
+            'metadata.attrs.sample_uuid',
+            'metadata.attr.sample_uuid',
+        )
+        task_name_paths = (
+            'task_name',
+            'attrs.task_name',
+            'attr.task_name',
+            'metadata.task_name',
+            'metadata.attrs.task_name',
+            'metadata.attr.task_name',
+        )
+
+        matches: List[Tuple[str, Any]] = []
+        for entry_id, entry in self._iter_run_document_entries(run_documents):
+            metadata = dict(getattr(entry, 'metadata', {}) or {})
+            if not metadata:
+                continue
+
+            sample_matches = self._metadata_matches(
+                metadata,
+                sample_uuid,
+                field_name='sample_uuid',
+                paths=sample_uuid_paths,
+            )
+            if not sample_matches:
+                continue
+
+            if task_name is not None:
+                task_matches = self._metadata_matches(
+                    metadata,
+                    task_name,
+                    field_name='task_name',
+                    paths=task_name_paths,
+                )
+                if not task_matches:
                     continue
 
+            matches.append((entry_id, entry))
+
+        return matches
+
+    def _iter_predict_entries_for_sample(self, sample_uuid: str) -> List[Tuple[str, Any]]:
+        """Find predict-task run_documents entries for a sample UUID."""
+        candidate_entries = self._find_run_document_entries(
+            sample_uuid=sample_uuid,
+            task_name='predict',
+        )
         if candidate_entries:
-            return list(candidate_entries.items())
+            return candidate_entries
 
         error_msg = (
-            f"No predict entries found in Tiled for sample_uuid={sample_uuid} "
-            f"using keys {sample_uuid_fields} and task keys {task_name_fields}."
+            f"No predict entries found in run_documents for sample_uuid={sample_uuid}. "
+            "Checked metadata values recursively for sample_uuid/task_name, including attrs.* fields."
         )
-        if query_errors:
-            error_msg = f"{error_msg} Query errors: {' | '.join(query_errors)}"
-        self.app.logger.error(error_msg)
+        self.log_error(error_msg)
         raise ValueError(error_msg)
+
+    @staticmethod
+    def _parse_metadata_timestamp(value: Any) -> Optional[datetime.datetime]:
+        value = OrchestratorDriver._normalize_metadata_value(value)
+        if isinstance(value, datetime.datetime):
+            return value
+        if not isinstance(value, str):
+            return None
+
+        text = value.strip()
+        if not text:
+            return None
+
+        for parser in (
+            lambda raw: datetime.datetime.fromisoformat(raw.replace('Z', '+00:00')),
+            lambda raw: datetime.datetime.strptime(raw, '%m/%d/%y %H:%M:%S-%f'),
+            lambda raw: datetime.datetime.strptime(raw, '%Y-%m-%d %H:%M:%S'),
+        ):
+            try:
+                return parser(text)
+            except ValueError:
+                continue
+
+        return None
 
     def _entry_sort_timestamp(self, entry: Any) -> datetime.datetime:
         metadata = dict(getattr(entry, 'metadata', {}) or {})
@@ -499,22 +639,32 @@ class OrchestratorDriver(Driver):
             'meta.ended',
             'attrs.meta.ended',
             'attr.meta.ended',
+            'metadata.meta.ended',
+            'metadata.attrs.meta.ended',
+            'metadata.attr.meta.ended',
             'meta.started',
             'attrs.meta.started',
             'attr.meta.started',
+            'metadata.meta.started',
+            'metadata.attrs.meta.started',
+            'metadata.attr.meta.started',
             'timestamp',
             'attrs.timestamp',
             'attr.timestamp',
+            'metadata.timestamp',
+            'metadata.attrs.timestamp',
+            'metadata.attr.timestamp',
         )
         for path in timestamp_paths:
-            value = self._get_nested_metadata_value(metadata, path)
-            if isinstance(value, datetime.datetime):
-                return value
-            if isinstance(value, str):
-                try:
-                    return datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
-                except ValueError:
-                    continue
+            parsed = self._parse_metadata_timestamp(self._get_nested_metadata_value(metadata, path))
+            if parsed is not None:
+                return parsed
+
+        for field_name in ('ended', 'started', 'timestamp'):
+            for value in self._iter_metadata_field_values(metadata, field_name):
+                parsed = self._parse_metadata_timestamp(value)
+                if parsed is not None:
+                    return parsed
         return datetime.datetime.min
 
     def _get_latest_predict_tiled_entry(self, sample_uuid: str) -> Tuple[str, Any]:
@@ -961,52 +1111,18 @@ class OrchestratorDriver(Driver):
             Entry ID if found, None otherwise
         """
         try:
-            client = None
-            if self.data is not None:
-                try:
-                    client = self.tiled_client
-                except Exception:
-                    client = None
-
-            if client is None:
-                if 'tiled_uri' not in self.config or not self.config['tiled_uri']:
-                    self.app.logger.warning("No tiled_uri configured, cannot query for entry_id")
-                    return None
-
-                from tiled.client import from_uri
-                client = from_uri(self.config['tiled_uri'], structure_clients="dask")
-
-            try:
-                run_documents = client['run_documents']
-            except Exception:
-                self.app.logger.warning("No run_documents container found in Tiled")
-                return None
-
-            sample_uuid_fields = ('sample_uuid', 'attrs.sample_uuid', 'attr.sample_uuid')
-            task_name_fields = ('task_name', 'attrs.task_name', 'attr.task_name')
-            matching_entries = []
-            for entry_id, entry in run_documents.items():
-                metadata = dict(getattr(entry, 'metadata', {}) or {})
-
-                sample_matches = any(
-                    self._get_nested_metadata_value(metadata, field) == sample_uuid
-                    for field in sample_uuid_fields
+            matching_entries = [
+                (entry_id, self._entry_sort_timestamp(entry))
+                for entry_id, entry in self._find_run_document_entries(
+                    sample_uuid=sample_uuid,
+                    task_name=task_name,
                 )
-                if not sample_matches:
-                    continue
-
-                if task_name is not None:
-                    task_matches = any(
-                        self._get_nested_metadata_value(metadata, field) == task_name
-                        for field in task_name_fields
-                    )
-                    if not task_matches:
-                        continue
-
-                matching_entries.append((entry_id, self._entry_sort_timestamp(entry)))
+            ]
 
             if not matching_entries:
-                self.app.logger.warning(f"No tiled entry found for sample_uuid={sample_uuid}, task_name={task_name}")
+                self.log_warning(
+                    f"No tiled entry found for sample_uuid={sample_uuid}, task_name={task_name}"
+                )
                 return None
 
             # Sort by timestamp and return the last one
@@ -1014,7 +1130,7 @@ class OrchestratorDriver(Driver):
             return matching_entries[0][0]
 
         except Exception as e:
-            self.app.logger.error(f"Error querying tiled for entry_id: {e}")
+            self.log_error(f"Error querying tiled for entry_id: {e}")
             return None
 
     def _append_to_agent_input_groups(self, instrument: Dict, entry_ids: List[str]) -> None:

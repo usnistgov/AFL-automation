@@ -386,29 +386,25 @@ class TestOrchestratorDriverDefaults:
         assert OrchestratorDriver.defaults['next_samples_variable'] == 'next_samples'
 
 
-class _FakeTiledResults:
+class _FakeTiledContainer:
     def __init__(self, entries):
         self._entries = entries
 
-    def search(self, query):
-        key = query.key
-        value = query.value
-        filtered = {}
-        for entry_id, entry in self._entries.items():
-            metadata = dict(getattr(entry, 'metadata', {}) or {})
-            current = metadata
-            found = True
-            for part in key.split('.'):
-                if not isinstance(current, dict) or part not in current:
-                    found = False
-                    break
-                current = current[part]
-            if found and current == value:
-                filtered[entry_id] = entry
-        return _FakeTiledResults(filtered)
-
     def items(self):
         return list(self._entries.items())
+
+    def __getitem__(self, key):
+        return self._entries[key]
+
+
+class _FakeTiledClient:
+    def __init__(self, run_documents):
+        self._run_documents = run_documents
+
+    def __getitem__(self, key):
+        if key != 'run_documents':
+            raise KeyError(key)
+        return self._run_documents
 
 
 class _FakeTiledEntry:
@@ -464,13 +460,13 @@ class TestOrchestratorDriverPredictFromTiled:
             dataset=ds,
         )
         driver.data = Mock()
-        driver.data.tiled_client = _FakeTiledResults({'entry-1': entry})
+        driver.data.tiled_client = _FakeTiledClient(_FakeTiledContainer({'entry-1': entry}))
 
         entry_id, returned_entry = driver._get_latest_predict_tiled_entry(sample_uuid='SAM-123')
         assert entry_id == 'entry-1'
         assert returned_entry is entry
 
-    def test_get_latest_predict_entry_matches_attrs_sample_uuid(self):
+    def test_get_latest_predict_entry_matches_nested_run_documents_attrs_sample_uuid(self):
         driver = self._driver_with_minimal_config()
         ds = xr.Dataset({'next_samples': ('component', [2.0])}, coords={'component': ['B']})
         entry = _FakeTiledEntry(
@@ -478,16 +474,20 @@ class TestOrchestratorDriverPredictFromTiled:
                 'attrs': {
                     'sample_uuid': 'SAM-456',
                     'task_name': 'predict',
-                    'meta': {'ended': '2026-02-28T01:01:00'},
+                    'meta': {'ended': '03/20/26 11:20:50-348049'},
                 }
             },
             dataset=ds,
         )
         driver.data = Mock()
-        driver.data.tiled_client = _FakeTiledResults({'entry-2': entry})
+        driver.data.tiled_client = _FakeTiledClient(
+            _FakeTiledContainer(
+                {'batch-1': _FakeTiledContainer({'entry-2': entry})}
+            )
+        )
 
         entry_id, returned_entry = driver._get_latest_predict_tiled_entry(sample_uuid='SAM-456')
-        assert entry_id == 'entry-2'
+        assert entry_id == 'batch-1/entry-2'
         assert returned_entry is entry
 
     def test_process_sample_enqueue_next_uses_tiled_and_not_retrieve_obj(self):
@@ -505,7 +505,7 @@ class TestOrchestratorDriverPredictFromTiled:
             },
             dataset=ds,
         )
-        driver.data.tiled_client = _FakeTiledResults({'entry-3': entry})
+        driver.data.tiled_client = _FakeTiledClient(_FakeTiledContainer({'entry-3': entry}))
 
         agent_client = Mock()
         agent_client.enqueue.return_value = {'return_val': 'AGENT-UUID'}
@@ -536,7 +536,7 @@ class TestOrchestratorDriverPredictFromTiled:
     def test_process_sample_enqueue_next_raises_when_tiled_entry_missing(self):
         driver = self._driver_with_minimal_config()
         driver.data = Mock()
-        driver.data.tiled_client = _FakeTiledResults({})
+        driver.data.tiled_client = _FakeTiledClient(_FakeTiledContainer({}))
 
         agent_client = Mock()
         agent_client.enqueue.return_value = {'return_val': 'AGENT-UUID'}
@@ -569,7 +569,7 @@ class TestOrchestratorDriverPredictFromTiled:
             },
             dataset=ds,
         )
-        driver.data.tiled_client = _FakeTiledResults({'entry-4': entry})
+        driver.data.tiled_client = _FakeTiledClient(_FakeTiledContainer({'entry-4': entry}))
 
         agent_client = Mock()
         agent_client.enqueue.return_value = {'return_val': 'AGENT-UUID'}
@@ -589,6 +589,45 @@ class TestOrchestratorDriverPredictFromTiled:
                 AL_uuid='AL-XYZ',
                 AL_campaign_name='camp',
             )
+
+    def test_get_last_measurement_entry_prefers_newest_queue_style_timestamp(self):
+        driver = self._driver_with_minimal_config()
+        driver.data = Mock()
+        older_entry = _FakeTiledEntry(
+            metadata={
+                'attrs': {
+                    'sample_uuid': 'SAM-MEASURE',
+                    'task_name': 'expose',
+                    'meta': {'ended': '03/20/26 11:20:45-486705'},
+                }
+            },
+            dataset=xr.Dataset(),
+        )
+        newer_entry = _FakeTiledEntry(
+            metadata={
+                'attrs': {
+                    'sample_uuid': 'SAM-MEASURE',
+                    'task_name': 'expose',
+                    'meta': {'ended': '03/20/26 11:20:50-348049'},
+                }
+            },
+            dataset=xr.Dataset(),
+        )
+        driver.data.tiled_client = _FakeTiledClient(
+            _FakeTiledContainer(
+                {
+                    'batch-1': _FakeTiledContainer({'entry-old': older_entry}),
+                    'batch-2': _FakeTiledContainer({'entry-new': newer_entry}),
+                }
+            )
+        )
+
+        entry_id = driver._get_last_tiled_entry_for_measurement(
+            sample_uuid='SAM-MEASURE',
+            task_name='expose',
+        )
+
+        assert entry_id == 'batch-2/entry-new'
 
 
 if __name__ == '__main__':

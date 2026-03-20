@@ -19,6 +19,7 @@ class PrepareDriver(MassBalanceDriver):
     defaults = {
         "stocks": [],
         "fixed_compositions": {},
+        "composition_format": "masses",
         "enable_multistep_dilution": False,
         "multistep_max_steps": 2,
         "multistep_diluent_policy": "primary_solvent",

@@ -940,7 +940,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             'multistep_diluent_policy': str(self.config.get('multistep_diluent_policy', 'primary_solvent')),
         }
 
-    def get_sample_composition(self, composition_format='mass_fraction'):
+    def get_sample_composition(self, composition_format='masses'):
         """Get the composition of the last balanced target in the requested format.
 
         Uses the Solution objects in ``self.balanced`` which have full access
@@ -951,10 +951,10 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         ----------
         composition_format : str or dict
             If str, a single format applied to all components.
-            If dict, maps component names to format strings; components not
-            listed default to ``'mass_fraction'``.
-            Valid formats: ``'mass_fraction'``, ``'volume_fraction'``,
-            ``'concentration'``, ``'molarity'``.
+            If dict, maps component names to format strings and must include
+            every component in the balanced target.
+            Valid formats: ``'masses'``, ``'mass_fraction'``,
+            ``'volume_fraction'``, ``'concentration'``, ``'molarity'``.
 
         Returns
         -------
@@ -962,7 +962,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             Composition dictionary with component names as keys and numeric
             values in the requested format.
         """
-        valid_formats = ['mass_fraction', 'volume_fraction', 'concentration', 'molarity']
+        valid_formats = ['masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity']
 
         if not self.balanced:
             raise ValueError("No balanced targets available. Call balance() first.")
@@ -986,8 +986,18 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
                     balanced_target, component, composition_format
                 )
         elif isinstance(composition_format, dict):
+            missing_components = [
+                component for component in balanced_target.components.keys()
+                if component not in composition_format
+            ]
+            if missing_components:
+                raise ValueError(
+                    "composition_format dict must specify every component in the balanced target. "
+                    f"Missing components: {missing_components}. "
+                    f"Available components: {list(balanced_target.components.keys())}"
+                )
             for component in balanced_target.components.keys():
-                format_type = composition_format.get(component, 'mass_fraction')
+                format_type = composition_format[component]
                 if format_type not in valid_formats:
                     raise ValueError(
                         f"Invalid format '{format_type}' for component '{component}'. "
@@ -1014,16 +1024,20 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         component : str
             Component name.
         format_type : str
-            One of: ``'mass_fraction'``, ``'volume_fraction'``,
-            ``'concentration'``, ``'molarity'``.
+            One of: ``'masses'``, ``'mass_fraction'``,
+            ``'volume_fraction'``, ``'concentration'``, ``'molarity'``.
 
         Returns
         -------
         float
             Component value in the requested format (dimensionless or in
-            canonical units: mg/ml for concentration, mM for molarity).
+            canonical units: mg for masses, mg/ml for concentration,
+            mM for molarity).
         """
-        if format_type == 'mass_fraction':
+        if format_type == 'masses':
+            return solution[component].mass.to('mg').magnitude
+
+        elif format_type == 'mass_fraction':
             return solution.mass_fraction[component].magnitude
 
         elif format_type == 'volume_fraction':
@@ -1047,7 +1061,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         else:
             raise ValueError(
                 f"Invalid format_type '{format_type}'. "
-                f"Must be one of: 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'"
+                f"Must be one of: 'masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'"
             )
 
     # --- Component database management ---

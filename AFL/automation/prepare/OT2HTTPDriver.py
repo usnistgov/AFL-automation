@@ -2,8 +2,10 @@ import requests
 import time
 import logging
 
+import copy
+import hashlib
 import json
-import tomllib
+import shutil
 from pathlib import Path
 
 
@@ -62,7 +64,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
         # Custom labware handling
         self.custom_labware_files = {}
-        self.sent_custom_labware = set()
+        self.sent_custom_labware = {}
         self.custom_labware_dir = self._get_custom_labware_dir()
         self._load_custom_labware_defs()
 
@@ -103,40 +105,192 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         self._log("warning", message)
 
     def _get_custom_labware_dir(self) -> Path:
-        """Return the path to the custom labware directory."""
+        """Return the user-scoped custom labware directory."""
+        custom_labware_dir = Path.home() / ".afl" / "opentrons_labware"
+        self._bootstrap_custom_labware_dir(custom_labware_dir)
+        return custom_labware_dir
+
+    def _get_seed_custom_labware_dir(self):
+        """Find the packaged labware definitions used to seed first-run state."""
         current = Path(__file__).resolve()
         for parent in current.parents:
-            if (parent / "pyproject.toml").exists():
-                pyproject = parent / "pyproject.toml"
-                try:
-                    with open(pyproject, "rb") as f:
-                        data = tomllib.load(f)
-                    custom_dir = (
-                        data.get("tool", {})
-                        .get("afl", {})
-                        .get("custom_labware_dir")
-                    )
-                    if custom_dir:
-                        return (parent / custom_dir).expanduser()
-                except Exception:
-                    pass
-                return parent / "support" / "labware"
-        return Path.cwd() / "support" / "labware"
+            candidate = parent / "support" / "labware"
+            if candidate.is_dir():
+                return candidate
+
+        candidate = Path.cwd() / "support" / "labware"
+        if candidate.is_dir():
+            return candidate
+
+        return None
+
+    def _bootstrap_custom_labware_dir(self, custom_labware_dir: Path):
+        """Create the user labware directory and seed it once from packaged files."""
+        if custom_labware_dir.exists():
+            return
+
+        custom_labware_dir.mkdir(parents=True, exist_ok=True)
+        seed_dir = self._get_seed_custom_labware_dir()
+        if seed_dir is None:
+            self.log_warning(
+                f"Custom labware seed directory not found; leaving {custom_labware_dir} empty"
+            )
+            return
+
+        for json_file in sorted(seed_dir.glob("*.json")):
+            shutil.copy2(json_file, custom_labware_dir / json_file.name)
 
     def _load_custom_labware_defs(self):
-        """Record available custom labware definitions in the support directory."""
+        """Record available custom labware definitions in the user directory."""
         self.custom_labware_dir.mkdir(parents=True, exist_ok=True)
+        self.custom_labware_files = {}
+        duplicates = []
         for json_file in self.custom_labware_dir.glob("*.json"):
             try:
                 with open(json_file, "r") as f:
                     definition = json.load(f)
-                ns = definition.get("namespace", "custom_beta")
-                load = definition.get("parameters", {}).get("loadName")
-                if ns and load:
-                    key = f"{ns}/{load}"
-                    self.custom_labware_files[key] = json_file
+                _, _, key = self._custom_labware_key(definition)
+                existing_path = self.custom_labware_files.get(key)
+                if existing_path is not None and existing_path != json_file:
+                    duplicates.append((key, existing_path, json_file))
+                    continue
+                self.custom_labware_files[key] = json_file
             except Exception:
                 continue
+        if duplicates:
+            details = "; ".join(
+                f"{key}: {first} vs {second}"
+                for key, first, second in duplicates
+            )
+            raise ValueError(
+                f"Duplicate custom labware definitions found in {self.custom_labware_dir}: {details}"
+            )
+
+    def _custom_labware_key(self, labware_def):
+        ns = labware_def.get("namespace", "custom_beta")
+        load_name = labware_def.get("parameters", {}).get("loadName")
+        if not load_name:
+            raise ValueError("labware_def missing parameters.loadName")
+        return ns, load_name, f"{ns}/{load_name}"
+
+    def _canonical_labware_def(self, labware_def):
+        canonical_def = copy.deepcopy(labware_def)
+        canonical_def.pop("version", None)
+        return json.dumps(canonical_def, sort_keys=True, separators=(",", ":"))
+
+    def _hash_labware_def(self, labware_def):
+        canonical = self._canonical_labware_def(labware_def)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    def _labware_upload_info(self, key):
+        info = self.sent_custom_labware.get(key)
+        if isinstance(info, dict):
+            return info
+        return None
+
+    def _next_custom_labware_version(self, key, labware_def):
+        existing = self._labware_upload_info(key)
+        requested_version = int(labware_def.get("version", 1) or 1)
+        if existing is None:
+            return requested_version
+        return max(requested_version, int(existing["version"]) + 1)
+
+    def _custom_labware_file_path(self, labware_def):
+        _, load_name, _ = self._custom_labware_key(labware_def)
+        return self.custom_labware_dir / f"{load_name}.json"
+
+    def _loaded_labware_key(self, name, labware_data):
+        definition = {}
+        if isinstance(labware_data, dict):
+            definition = labware_data.get("definition", {}) or {}
+
+        try:
+            namespace, load_name, _ = self._custom_labware_key(definition)
+            return namespace, load_name
+        except ValueError:
+            if "/" in str(name):
+                namespace, load_name = str(name).split("/", 1)
+                return namespace, load_name
+            return "opentrons", str(name)
+
+    def _remap_tip_availability(self, mount, old_available_tips, old_uuid_to_slot):
+        remapped = []
+        for tiprack_uuid, well in old_available_tips.get(mount, []):
+            slot = old_uuid_to_slot.get(tiprack_uuid)
+            if slot is None or slot not in self.config["loaded_labware"]:
+                continue
+            new_uuid = self.config["loaded_labware"][slot][0]
+            remapped.append((new_uuid, well))
+        self.config["available_tips"][mount] = remapped
+
+    def _reload_matching_labware_definition(
+        self, labware_def, run_id=None, check_run_status=True
+    ):
+        namespace, load_name, _ = self._custom_labware_key(labware_def)
+        matching_slots = []
+        original_labware = copy.deepcopy(self.config["loaded_labware"])
+
+        for slot, (labware_id, name, labware_data) in original_labware.items():
+            loaded_namespace, loaded_name = self._loaded_labware_key(name, labware_data)
+            if loaded_namespace == namespace and loaded_name == load_name:
+                matching_slots.append(str(slot))
+
+        if not matching_slots:
+            return
+
+        if run_id is None:
+            run_id = self._ensure_run_exists(check_run_status=check_run_status)
+
+        original_instruments = copy.deepcopy(self.config["loaded_instruments"])
+        old_available_tips = copy.deepcopy(self.config.get("available_tips", {}))
+        old_uuid_to_slot = {}
+        affected_mounts = {}
+
+        for mount, instrument in original_instruments.items():
+            tiprack_slots = []
+            for tiprack_uuid in instrument.get("tip_racks", []):
+                slot = self._slot_by_labware_uuid(tiprack_uuid)
+                if slot is not None:
+                    slot = str(slot)
+                    old_uuid_to_slot[tiprack_uuid] = slot
+                    tiprack_slots.append(slot)
+            if any(slot in matching_slots for slot in tiprack_slots):
+                affected_mounts[mount] = {
+                    "name": instrument["name"],
+                    "tiprack_slots": tiprack_slots,
+                }
+
+        for slot in matching_slots:
+            module_id = None
+            if slot in self.config["loaded_modules"]:
+                module_id = self.config["loaded_modules"][slot][0]
+            self.log_info(
+                f"Reloading active labware '{namespace}/{load_name}' in slot {slot}"
+            )
+            self.load_labware(
+                f"{namespace}/{load_name}",
+                slot,
+                module=module_id,
+                labware_json=labware_def,
+                check_run_status=False,
+            )
+
+        for mount, instrument in affected_mounts.items():
+            self.log_info(
+                f"Reloading pipette '{instrument['name']}' on {mount} mount after tiprack update"
+            )
+            self.load_instrument(
+                instrument["name"],
+                mount,
+                instrument["tiprack_slots"],
+                reload=True,
+                check_run_status=False,
+            )
+            self._remap_tip_availability(mount, old_available_tips, old_uuid_to_slot)
+
+        if affected_mounts:
+            self.has_tip = False
+            self.last_pipette = None
 
     def _initialize_robot(self):
         """Initialize the connection to the robot and get basic information"""
@@ -227,6 +381,29 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         except Exception as e:
             raise RuntimeError(f"Error getting pipettes: {str(e)}")
 
+    def _get_active_pipettes(self):
+        """Return pipettes that are both physically attached and loaded into the active run."""
+        active_pipettes = {}
+        loaded_instruments = self.config.get("loaded_instruments", {})
+
+        for mount, info in self.pipette_info.items():
+            if not info:
+                continue
+            if mount not in loaded_instruments:
+                continue
+            if info.get("id") is None:
+                continue
+            active_pipettes[mount] = info
+
+        return active_pipettes
+
+    def _get_active_pipette_info(self, mount):
+        mount = str(mount).strip().lower()
+        info = self._get_active_pipettes().get(mount)
+        if info is None:
+            raise ValueError(f"No loaded pipette available on {mount} mount")
+        return info
+
     def reset_prep_targets(self):
         """Clear the list of preparation targets stored in the config."""
         self.config["prep_targets"] = []
@@ -270,8 +447,8 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             except requests.exceptions.RequestException:
                 status.append("Unable to get session status")
 
-        # Get pipette information
-        for mount, pipette in self.pipette_info.items():
+        # Get pipette information for mounts that are loaded into the active run
+        for mount, pipette in self._get_active_pipettes().items():
             if pipette:
                 status.append(
                     f"Pipette on {mount} mount: {pipette.get('model', 'unknown')}"
@@ -367,7 +544,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         
         # Clear internal state variables
         self.modules = {}
-        self.sent_custom_labware = set()
+        self.sent_custom_labware = {}
         self.run_id = None
 
     @Driver.quickbar(qb={"button_text": "Home"})
@@ -468,7 +645,9 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     raise RuntimeError(
                         f"Command returned error: {response.text}"
                     )
-    def send_labware(self, labware_def, check_run_status=True):
+    def send_labware(
+        self, labware_def, check_run_status=True, reload_loaded_labware=True
+    ):
         """Send a custom labware definition to the current run and persist it.
         
         Args:
@@ -478,30 +657,31 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
         self.log_debug(f"Sending custom labware definition: {labware_def}")
 
-        ns = labware_def.get("namespace", "custom_beta")
-        load_name = labware_def.get("parameters", {}).get("loadName")
-        if not load_name:
-            raise ValueError("labware_def missing parameters.loadName")
-
-        key = f"{ns}/{load_name}"
+        ns, load_name, key = self._custom_labware_key(labware_def)
+        content_hash = self._hash_labware_def(labware_def)
 
         # Persist the definition for future use
         self.custom_labware_dir.mkdir(parents=True, exist_ok=True)
-        file_path = self.custom_labware_dir / f"{ns}_{load_name}.json"
+        file_path = self._custom_labware_file_path(labware_def)
         with open(file_path, "w") as f:
             json.dump(labware_def, f, indent=2)
-        self.custom_labware_files[key] = file_path
+        self._load_custom_labware_defs()
 
-        # Avoid re-sending if already uploaded
-        if key in self.sent_custom_labware:
-            self.log_debug(f"Labware {key} already sent to robot")
-            return key
+        existing = self._labware_upload_info(key)
+        if existing is not None and existing.get("content_hash") == content_hash:
+            self.log_debug(
+                f"Labware {key} already sent to robot as version {existing['version']}"
+            )
+            return copy.deepcopy(existing)
 
         # Ensure we have a valid run
         run_id = self._ensure_run_exists(check_run_status=check_run_status)
 
         try:
-            command_dict = {"data": labware_def}
+            upload_def = copy.deepcopy(labware_def)
+            upload_version = self._next_custom_labware_version(key, upload_def)
+            upload_def["version"] = upload_version
+            command_dict = {"data": upload_def}
 
             response = requests.post(
                 url=f"{self.base_url}/runs/{run_id}/labware_definitions",
@@ -515,12 +695,21 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             response_data = response.json()
             labware_name = response_data["data"]["definitionUri"]
 
-            self.sent_custom_labware.add(key)
+            upload_info = {
+                "definition_uri": labware_name,
+                "version": upload_version,
+                "content_hash": content_hash,
+            }
+            self.sent_custom_labware[key] = upload_info
+            if reload_loaded_labware:
+                self._reload_matching_labware_definition(
+                    upload_def, run_id=run_id, check_run_status=False
+                )
 
             self.log_info(
                 f"Successfully sent custom labware with name/URI {labware_name}"
             )
-            return labware_name
+            return copy.deepcopy(upload_info)
 
         except (requests.exceptions.RequestException, KeyError) as e:
             self.log_error(f"Error sending custom labware: {str(e)}")
@@ -548,7 +737,14 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             if not load_name:
                 raise ValueError("labware_json missing parameters.loadName")
             name = load_name
-            self.send_labware(labware_json, check_run_status=check_run_status)
+            version = int(labware_json.get("version", 1) or 1)
+            if namespace != "opentrons":
+                upload_info = self.send_labware(
+                    labware_json,
+                    check_run_status=check_run_status,
+                    reload_loaded_labware=False,
+                )
+                version = int(upload_info["version"])
         else:
             if "/" in name:
                 namespace, load_name = name.split("/", 1)
@@ -562,12 +758,17 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 else:
                     namespace = "opentrons"
             key = f"{namespace}/{load_name}"
-            if namespace != "opentrons" and key not in self.sent_custom_labware:
+            if namespace != "opentrons":
                 path = self.custom_labware_files.get(key)
                 if path and Path(path).exists():
                     with open(path, "r") as f:
                         definition = json.load(f)
-                    self.send_labware(definition, check_run_status=check_run_status)
+                    upload_info = self.send_labware(
+                        definition,
+                        check_run_status=check_run_status,
+                        reload_loaded_labware=False,
+                    )
+                    version = int(upload_info["version"])
                 else:
                     self.log_warning(f"Custom labware definition not found for {key}")
 
@@ -612,9 +813,6 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             else:
                 location = {"slotName": str(slot)}
                 
-            # Determine namespace and version
-            version = 1  # default version
-
             # Prepare the loadLabware command
             command_dict = {
                 "data": {
@@ -923,9 +1121,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         self.max_smallest_pipette = None
 
         # Get all available pipettes with their volumes
-        available_pipettes = {
-            mount: info for mount, info in self.pipette_info.items() if info is not None
-        }
+        available_pipettes = self._get_active_pipettes()
 
         if available_pipettes:
             # Get min and max volumes for each pipette
@@ -1134,7 +1330,13 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         volume_ul = float(volume)
         if volume_ul <= 0:
             self.log_info(f"Skipping transfer with nonpositive volume {volume_ul}uL from {source} to {dest}")
-            return
+            return {
+                "source": source,
+                "dest": dest,
+                "requested_volume_ul": volume_ul,
+                "subtransfers_ul": [],
+                "status": "skipped_nonpositive_volume",
+            }
         
         # Verify run exists once at the start, then skip checks for all atomic commands
         self._ensure_run_exists()
@@ -1184,6 +1386,48 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
         # Split transfers if needed
         transfers = self._split_up_transfers(volume_ul)
+        transfer_record = {
+            "source": source,
+            "dest": dest,
+            "requested_volume_ul": volume_ul,
+            "subtransfers_ul": [],
+            "subtransfer_count": 0,
+            "pipette_mount": pipette_mount,
+            "pipette_name": pipette.get("name"),
+            "pipette_id": pipette_id,
+            "source_well": {
+                "labware_id": source_well["labwareId"],
+                "well_name": source_well["wellName"],
+                "position": source_position,
+            },
+            "dest_well": {
+                "labware_id": dest_well["labwareId"],
+                "well_name": dest_well["wellName"],
+                "position": dest_position,
+                "offset": {"x": 0, "y": 0, "z": to_top_z_offset if dest_position == "top" else 0},
+            },
+            "options": {
+                "mix_before": list(mix_before) if mix_before is not None else None,
+                "mix_after": list(mix_after) if mix_after is not None else None,
+                "air_gap": air_gap,
+                "aspirate_rate": aspirate_rate,
+                "dispense_rate": dispense_rate,
+                "mix_aspirate_rate": mix_aspirate_rate,
+                "mix_dispense_rate": mix_dispense_rate,
+                "blow_out": blow_out,
+                "post_aspirate_delay": post_aspirate_delay,
+                "aspirate_equilibration_delay": aspirate_equilibration_delay,
+                "post_dispense_delay": post_dispense_delay,
+                "drop_tip": drop_tip,
+                "force_new_tip": force_new_tip,
+                "to_top": to_top,
+                "to_center": to_center,
+                "to_top_z_offset": to_top_z_offset,
+                "fast_mixing": fast_mixing,
+                "touch_tip": touch_tip,
+            },
+            "status": "executed",
+        }
 
         for i, sub_volume in enumerate(transfers):
             if sub_volume <= 0:
@@ -1191,6 +1435,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     f"Skipping nonpositive sub-transfer volume {sub_volume}uL from {source} to {dest}"
                 )
                 continue
+            transfer_record["subtransfers_ul"].append(float(sub_volume))
 
             # Intermediate split transfers should not drop the tip unless explicitly forced.
             is_last_subtransfer = i == (len(transfers) - 1)
@@ -1511,6 +1756,8 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 self.has_tip = False
             # Update last pipette
             self.last_pipette = pipette_mount
+        transfer_record["subtransfer_count"] = len(transfer_record["subtransfers_ul"])
+        return transfer_record
 
     def _touch_tip_well(self, pipette_id, well):
         """Touch tip at a well edge if supported by robot-server; otherwise move to well top."""
@@ -1625,20 +1872,31 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         """Set aspirate rate in uL/s. Default is 150 uL/s"""
         self.log_info(f"Setting aspirate rate to {rate} uL/s")
 
-        # If no specific pipette is provided, update all pipettes
-        if pipette == 'left' or pipette is None:
-            self.pipette_info['left']['aspirate_flow_rate'] = rate
-        if pipette == 'right' or pipette is None:
-            self.pipette_info['right']['aspirate_flow_rate'] = rate
+        if pipette is None:
+            active_pipettes = self._get_active_pipettes()
+            if not active_pipettes:
+                self.log_warning("No loaded pipettes available to update aspirate rate")
+                return
+            for info in active_pipettes.values():
+                info["aspirate_flow_rate"] = rate
+            return
+
+        self._get_active_pipette_info(pipette)["aspirate_flow_rate"] = rate
 
     def set_dispense_rate(self, rate=300, pipette=None):
         """Set dispense rate in uL/s. Default is 300 uL/s"""
         self.log_info(f"Setting dispense rate to {rate} uL/s")
-        # If no specific pipette is provided, update all pipettes
-        if pipette == 'left' or pipette is None:
-            self.pipette_info['left']['dispense_flow_rate'] = rate
-        if pipette == 'right' or pipette is None:
-            self.pipette_info['right']['dispense_flow_rate'] = rate
+
+        if pipette is None:
+            active_pipettes = self._get_active_pipettes()
+            if not active_pipettes:
+                self.log_warning("No loaded pipettes available to update dispense rate")
+                return
+            for info in active_pipettes.values():
+                info["dispense_flow_rate"] = rate
+            return
+
+        self._get_active_pipette_info(pipette)["dispense_flow_rate"] = rate
 
     def set_gantry_speed(self, speed=400):
         """Set movement speed of gantry. Default is 400 mm/s"""
@@ -1657,7 +1915,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         self._update_pipettes()
 
         pipettes = []
-        for mount, pipette_data in self.pipette_info.items():
+        for mount, pipette_data in self._get_active_pipettes().items():
             if not pipette_data:
                 continue
 
@@ -1678,7 +1936,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 )
 
         if not pipettes:
-            raise ValueError("No suitable pipettes found!\n")
+            raise ValueError("No suitable loaded pipettes found!\n")
 
         # Calculate transfers and uncertainties
         for pipette in pipettes:
@@ -1715,9 +1973,10 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
     def get_aspirate_rate(self, pipette=None):
         """Get current aspirate rate for a pipette"""
+        active_pipettes = self._get_active_pipettes()
         if pipette is None:
             # Return the rate of the first pipette found
-            for mount, pipette_data in self.pipette_info.items():
+            for mount, pipette_data in active_pipettes.items():
                 if pipette_data:
                     pipette = mount
                     break
@@ -1726,7 +1985,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             return None
 
         try:
-            for mount, pipette_data in self.pipette_info.items():
+            for mount, pipette_data in active_pipettes.items():
                 if mount == pipette and pipette_data:
                     return pipette_data.get("aspirate_flow_rate", 150)
         except requests.exceptions.RequestException:
@@ -1736,9 +1995,10 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
     def get_dispense_rate(self, pipette=None):
         """Get current dispense rate for a pipette"""
+        active_pipettes = self._get_active_pipettes()
         if pipette is None:
             # Return the rate of the first pipette found
-            for mount, pipette_data in self.pipette_info.items():
+            for mount, pipette_data in active_pipettes.items():
                 if pipette_data:
                     pipette = mount
                     break
@@ -1747,7 +2007,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             return None
 
         try:
-            for mount, pipette_data in self.pipette_info.items():
+            for mount, pipette_data in active_pipettes.items():
                 if mount == pipette and pipette_data:
                     return pipette_data.get("dispense_flow_rate", 300)
         except requests.exceptions.RequestException:
@@ -1933,7 +2193,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
         try:
             # Clear custom labware tracking so definitions are re-uploaded for the new run
-            self.sent_custom_labware = set()
+            self.sent_custom_labware = {}
             
             # Create a run
             import datetime

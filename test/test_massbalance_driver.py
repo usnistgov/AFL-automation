@@ -1,7 +1,41 @@
 import pytest
+from AFL.automation.mixcalc.BalanceDiagnosis import BalanceDiagnosis, FailureCode
 from AFL.automation.mixcalc.MassBalanceDriver import MassBalanceDriver
 from AFL.automation.mixcalc.Solution import Solution
 from AFL.automation.shared.units import units
+
+
+def _build_balanced_massbalance_driver():
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    mb.config['minimum_volume'] = '20 ul'
+    mb.config['tol'] = 1e-3
+    mb.reset_stocks()
+    mb.reset_targets()
+    mb.add_stock({
+        'name': 'WaterStock',
+        'masses': {'H2O': '20 g'},
+        'location': '1A1'
+    })
+    mb.add_stock({
+        'name': 'SaltStock',
+        'masses': {'H2O': '20 g'},
+        'concentrations': {'NaCl': '200 mg/ml'},
+        'solutes': ['NaCl'],
+        'location': '1A2'
+    })
+    mb.add_target({
+        'name': 'Target',
+        'concentrations': {'NaCl': '25 mg/ml'},
+        'mass_fractions': {'H2O': 1.0},
+        'total_volume': '1 ml',
+        'solutes': ['NaCl']
+    })
+    mb.balance()
+    assert mb.balanced
+    assert mb.balanced[0]['success'] is True
+    return mb
+
 
 @pytest.mark.usefixtures("mixdb")
 def test_massbalance_driver_mixed_solvents_mass():
@@ -108,6 +142,152 @@ def test_massbalance_driver_balance_settings_and_progress():
 
 
 @pytest.mark.usefixtures("mixdb")
+def test_massbalance_driver_rejects_zero_target_component_contamination():
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    mb.config['minimum_volume'] = '20 ul'
+    mb.config['tol'] = 1e-3
+    mb.reset_stocks()
+    mb.reset_targets()
+
+    mb.add_stock({
+        'name': 'WaterStock',
+        'masses': {'H2O': '20 g'},
+        'location': '1A1',
+    })
+    mb.add_stock({
+        'name': 'HexanesTraceSalt',
+        'masses': {'Hexanes': '20 g', 'NaCl': '20 mg'},
+        'solutes': ['NaCl'],
+        'location': '1A2',
+    })
+    mb.add_target({
+        'name': 'ZeroNaCl',
+        'masses': {'H2O': '250 mg', 'Hexanes': '250 mg'},
+    })
+
+    mb.balance()
+
+    result = mb.balanced[0]
+    codes = [d.code for d in result['diagnosis'].details]
+    assert result['success'] is False
+    assert result['balanced_target'] is None
+    assert FailureCode.UNWANTED_STOCK_COMPONENT in codes
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_driver_transfer_report_omits_zero_mass_transfers():
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    mb.config['minimum_volume'] = '20 ul'
+    mb.config['tol'] = 1e-3
+    mb.reset_stocks()
+    mb.reset_targets()
+
+    mb.add_stock({
+        'name': 'WaterStock',
+        'masses': {'H2O': '20 g'},
+        'location': '1A1',
+    })
+    mb.add_stock({
+        'name': 'HexanesStock',
+        'masses': {'Hexanes': '20 g'},
+        'location': '1A2',
+    })
+    mb.add_stock({
+        'name': 'MysteryStock',
+        'masses': {'Mystery_Solvent': '20 g'},
+        'location': '1A3',
+    })
+    mb.add_target({
+        'name': 'BinaryTarget',
+        'masses': {'H2O': '250 mg', 'Hexanes': '250 mg'},
+    })
+
+    mb.balance()
+
+    transfers = mb.balanced[0]['transfers']
+    assert mb.balanced[0]['success'] is True
+    assert transfers is not None
+    assert set(stock.name for stock in transfers.keys()) == {'WaterStock', 'HexanesStock'}
+    assert all(mass != '0.0 g' for mass in transfers.values())
+
+
+def test_massbalance_driver_balance_status_metadata_exact_success():
+    entry = {
+        'success': True,
+        'diagnosis': BalanceDiagnosis(
+            success=True,
+            component_errors={'H2O': 1e-16, 'NaCl': 0.0},
+        ),
+    }
+
+    meta = MassBalanceDriver._balance_status_metadata(entry)
+
+    assert meta['balance_status'] == 'succeeded'
+    assert meta['max_component_error'] == pytest.approx(1e-16)
+
+
+def test_massbalance_driver_balance_status_metadata_within_tolerance():
+    entry = {
+        'success': True,
+        'diagnosis': BalanceDiagnosis(
+            success=True,
+            component_errors={'H2O': 0.02, 'NaCl': 0.0},
+        ),
+    }
+
+    meta = MassBalanceDriver._balance_status_metadata(entry)
+
+    assert meta['balance_status'] == 'within_tolerance'
+    assert meta['max_component_error'] == pytest.approx(0.02)
+
+
+def test_massbalance_driver_balance_status_metadata_failed():
+    entry = {
+        'success': False,
+        'diagnosis': BalanceDiagnosis(
+            success=False,
+            component_errors={'H2O': 0.01, 'NaCl': 0.0},
+        ),
+    }
+
+    meta = MassBalanceDriver._balance_status_metadata(entry)
+
+    assert meta['balance_status'] == 'failed'
+    assert meta['max_component_error'] == pytest.approx(0.01)
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_driver_balance_report_includes_status_metadata():
+    mb = _build_balanced_massbalance_driver()
+
+    report = mb.balance_report()
+
+    assert report
+    assert report[0]['balance_status'] == 'succeeded'
+    assert 'max_component_error' in report[0]
+    assert report[0]['max_component_error'] is not None
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_massbalance_driver_collect_balanced_targets_includes_status_metadata():
+    mb = _build_balanced_massbalance_driver()
+    mb.balanced[0]['diagnosis'] = BalanceDiagnosis(
+        success=True,
+        component_errors={'H2O': 0.02, 'NaCl': 0.0},
+    )
+    mb.balanced[0]['success'] = True
+
+    targets = mb._collect_balanced_targets()
+
+    assert len(targets) == 1
+    assert targets[0]['balance_success'] is True
+    assert targets[0]['balance_status'] == 'within_tolerance'
+    assert targets[0]['max_component_error'] == pytest.approx(0.02)
+
+
+@pytest.mark.usefixtures("mixdb")
 def test_massbalance_stock_history_local_fallback(monkeypatch):
     mb = MassBalanceDriver()
     mb.config.write = False
@@ -139,3 +319,44 @@ def test_massbalance_stock_history_local_fallback(monkeypatch):
     assert loaded['source'] == 'local'
     assert len(loaded['stocks']) == 1
     assert loaded['stocks'][0]['name'] == 'StockA'
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_get_sample_composition_supports_masses():
+    mb = _build_balanced_massbalance_driver()
+
+    composition = mb.get_sample_composition('masses')
+    balanced_target = mb.balanced[-1]['balanced_target']
+
+    assert composition['H2O'] == pytest.approx(
+        balanced_target['H2O'].mass.to('mg').magnitude
+    )
+    assert composition['NaCl'] == pytest.approx(
+        balanced_target['NaCl'].mass.to('mg').magnitude
+    )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_get_sample_composition_dict_requires_all_components():
+    mb = _build_balanced_massbalance_driver()
+
+    with pytest.raises(ValueError, match='must specify every component'):
+        mb.get_sample_composition({'H2O': 'masses'})
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_get_sample_composition_dict_accepts_mixed_formats():
+    mb = _build_balanced_massbalance_driver()
+
+    composition = mb.get_sample_composition({
+        'H2O': 'masses',
+        'NaCl': 'concentration',
+    })
+    balanced_target = mb.balanced[-1]['balanced_target']
+
+    assert composition['H2O'] == pytest.approx(
+        balanced_target['H2O'].mass.to('mg').magnitude
+    )
+    assert composition['NaCl'] == pytest.approx(
+        balanced_target.concentration['NaCl'].to('mg/ml').magnitude
+    )

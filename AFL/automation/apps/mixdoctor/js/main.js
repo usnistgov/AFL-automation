@@ -47,6 +47,7 @@ function escHtml(str) {
 var componentsUploadState = {
     parsedComponents: []
 };
+var EXACT_BALANCE_ERROR_TOL = 1e-12;
 
 // ---- Driver query helper (unqueued) ----
 async function queryDriver(params) {
@@ -357,6 +358,10 @@ function getBalanceEntry(name, idx) {
 }
 
 function getMaxError(entry) {
+    if (entry && entry.max_component_error !== undefined && entry.max_component_error !== null) {
+        var direct = Math.abs(Number(entry.max_component_error));
+        if (isFinite(direct)) return direct;
+    }
     var maxErr = 0;
     var errors = entry.diagnosis && entry.diagnosis.component_errors;
     if (errors) {
@@ -368,16 +373,63 @@ function getMaxError(entry) {
     return maxErr;
 }
 
+function getBalanceStatus(entry) {
+    if (!entry) return null;
+    if (entry.balance_status) return entry.balance_status;
+
+    var success = entry.success;
+    if (success === undefined && entry.balance_success !== undefined) {
+        success = entry.balance_success;
+    }
+    if (success !== true) return 'failed';
+
+    var maxErr = getMaxError(entry);
+    if (maxErr > EXACT_BALANCE_ERROR_TOL) return 'within_tolerance';
+    return 'succeeded';
+}
+
+function getBalanceStatusCounts(entries) {
+    var counts = {
+        succeeded: 0,
+        within_tolerance: 0,
+        failed: 0
+    };
+    (entries || []).forEach(function(entry) {
+        var status = getBalanceStatus(entry);
+        if (status && counts[status] !== undefined) {
+            counts[status] += 1;
+        }
+    });
+    return counts;
+}
+
+function formatBalanceStatusSummary(entries, total) {
+    var counts = getBalanceStatusCounts(entries);
+    var parts = [];
+    if (counts.succeeded > 0) parts.push(counts.succeeded + ' succeeded');
+    if (counts.within_tolerance > 0) parts.push(counts.within_tolerance + ' within tolerance');
+    if (counts.failed > 0) parts.push(counts.failed + ' failed');
+    if (parts.length === 0) return total ? String(total) : '';
+    return parts.join(', ');
+}
+
 function balanceCardClass(name, idx) {
     var entry = getBalanceEntry(name, idx);
     if (!entry) return '';
-    return entry.success ? 'card-balanced' : 'card-failed';
+    var status = getBalanceStatus(entry);
+    if (status === 'within_tolerance') return 'card-within-tolerance';
+    if (status === 'succeeded') return 'card-balanced';
+    return 'card-failed';
 }
 
 function balanceCardIndicator(name, idx) {
     var entry = getBalanceEntry(name, idx);
     if (!entry) return '';
-    return entry.success
+    var status = getBalanceStatus(entry);
+    if (status === 'within_tolerance') {
+        return '<span class="card-status card-status-within-tolerance">!</span>';
+    }
+    return status === 'succeeded'
         ? '<span class="card-status card-status-ok">&#10003;</span>'
         : '<span class="card-status card-status-fail">&#10007;</span>';
 }
@@ -595,9 +647,14 @@ function showDetailModal(data, type, idx) {
     var br = (type === 'target') ? getTargetBalanceEntry(data, idx) : null;
     if (br) {
         var maxE = getMaxError(br);
-        summaryParts.push(br.success
-            ? '<span class="badge-success">&#10003; Balanced</span>'
-            : '<span class="badge-failure">&#10007; Failed (max err: ' + (maxE * 100).toFixed(2) + '%)</span>');
+        var status = getBalanceStatus(br);
+        if (status === 'succeeded') {
+            summaryParts.push('<span class="badge-success">&#10003; Succeeded</span>');
+        } else if (status === 'within_tolerance') {
+            summaryParts.push('<span class="badge-within-tolerance">Within Tolerance (max err: ' + (maxE * 100).toFixed(2) + '%)</span>');
+        } else {
+            summaryParts.push('<span class="badge-failure">&#10007; Failed (max err: ' + (maxE * 100).toFixed(2) + '%)</span>');
+        }
     }
     document.getElementById('detail-modal-summary').innerHTML =
         summaryParts.length
@@ -802,9 +859,14 @@ function getOrderedTargetsForView(data) {
         return ordered;
     }
     ordered.sort(function(a, b) {
-        var aFailed = isFailedBalanceEntry(getTargetBalanceEntry(a, a && a._originalIdx));
-        var bFailed = isFailedBalanceEntry(getTargetBalanceEntry(b, b && b._originalIdx));
-        if (aFailed !== bFailed) return aFailed ? -1 : 1;
+        var order = {
+            failed: 0,
+            within_tolerance: 1,
+            succeeded: 2
+        };
+        var aStatus = getBalanceStatus(getTargetBalanceEntry(a, a && a._originalIdx)) || 'succeeded';
+        var bStatus = getBalanceStatus(getTargetBalanceEntry(b, b && b._originalIdx)) || 'succeeded';
+        if (aStatus !== bStatus) return order[aStatus] - order[bStatus];
         return getTargetOriginalIndex(a, 0) - getTargetOriginalIndex(b, 0);
     });
     return ordered;
@@ -911,8 +973,7 @@ function renderTargets(data) {
     var titleText = 'Targets';
     if (targetsData.length) {
         if (balanceReportArray.length > 0) {
-            var ok = balanceReportArray.filter(function(e) { return e.success; }).length;
-            titleText += ' (' + ok + '/' + targetsData.length + ' succeeded)';
+            titleText += ' (' + formatBalanceStatusSummary(balanceReportArray, targetsData.length) + ')';
         } else {
             titleText += ' (' + targetsData.length + ')';
         }
@@ -1820,19 +1881,19 @@ function stockToPrefill(stock) {
     var components = [];
     rawComponentNames.forEach(function(compName) {
         var isSolute = soluteList.indexOf(compName) !== -1;
-        if (stock.masses && stock.masses[compName]) {
+        if (stock.masses && stock.masses[compName] != null) {
             var m = stock.masses[compName];
             components.push({name: compName, propType: 'mass',
                 value: typeof m === 'object' ? m.value : m,
                 units: typeof m === 'object' ? m.units : '',
                 isSolute: isSolute});
-        } else if (stock.volumes && stock.volumes[compName]) {
+        } else if (stock.volumes && stock.volumes[compName] != null) {
             var vol = stock.volumes[compName];
             components.push({name: compName, propType: 'volume',
                 value: typeof vol === 'object' ? vol.value : vol,
                 units: typeof vol === 'object' ? vol.units : '',
                 isSolute: isSolute});
-        } else if (stock.concentrations && stock.concentrations[compName]) {
+        } else if (stock.concentrations && stock.concentrations[compName] != null) {
             var c = stock.concentrations[compName];
             components.push({name: compName, propType: 'concentration',
                 value: typeof c === 'object' ? c.value : c,
@@ -1846,13 +1907,13 @@ function stockToPrefill(stock) {
             components.push({name: compName, propType: 'volume_fraction',
                 value: stock.volume_fractions[compName],
                 isSolute: isSolute});
-        } else if (stock.molarities && stock.molarities[compName]) {
+        } else if (stock.molarities && stock.molarities[compName] != null) {
             var molarity = stock.molarities[compName];
             components.push({name: compName, propType: 'molarity',
                 value: typeof molarity === 'object' ? molarity.value : molarity,
                 units: typeof molarity === 'object' ? molarity.units : '',
                 isSolute: isSolute});
-        } else if (stock.molalities && stock.molalities[compName]) {
+        } else if (stock.molalities && stock.molalities[compName] != null) {
             var molality = stock.molalities[compName];
             components.push({name: compName, propType: 'molality',
                 value: typeof molality === 'object' ? molality.value : molality,
@@ -3348,7 +3409,11 @@ async function loadPlotSweepData() {
         var baseResp = results[0];
         var balResp = results[1];
         plotSweepState.baseTargets = baseResp.ok ? await baseResp.json() : [];
-        plotSweepState.balancedTargets = balResp.ok ? await balResp.json() : [];
+        var allBalancedTargets = balResp.ok ? await balResp.json() : [];
+        var balancedCounts = getBalanceStatusCounts(allBalancedTargets);
+        plotSweepState.balancedTargets = allBalancedTargets.filter(function(entry) {
+            return getBalanceStatus(entry) !== 'failed';
+        });
         plotSweepState.balancedTargets.forEach(function(entry, idx) {
             entry._balanced_idx = idx;
         });
@@ -3357,10 +3422,15 @@ async function loadPlotSweepData() {
         if (subStatus) subStatus.textContent = '';
         plotSweepState.lastUpdated = new Date();
         plotSweepState.loaded = true;
-        setPlotSweepStatus(
-            'Base: ' + plotSweepState.baseTargets.length +
-            ' | Balanced: ' + plotSweepState.balancedTargets.length
-        );
+        var plotStatus = 'Base: ' + plotSweepState.baseTargets.length
+            + ' | Balanced: ' + plotSweepState.balancedTargets.length;
+        if (balancedCounts.within_tolerance > 0) {
+            plotStatus += ' (' + balancedCounts.within_tolerance + ' within tolerance)';
+        }
+        if (balancedCounts.failed > 0) {
+            plotStatus += ' | Failed excluded: ' + balancedCounts.failed;
+        }
+        setPlotSweepStatus(plotStatus);
         populatePlotSweepComponentOptions();
         renderPlotSweep(false);
         if (submitTabInitialized) renderSubmitPreview();
@@ -3711,6 +3781,7 @@ function renderPlotSweep(saveSettings) {
         var b = [];
         var c = [];
         var text = [];
+        var colors = [];
         var sx = [];
         var sy = [];
         var sz = [];
@@ -3725,10 +3796,13 @@ function renderPlotSweep(saveSettings) {
             if (v1 === null || v2 === null || (axes[2] && v3 === null)) return;
             var label = entry.name || entry.source_target_name || '';
             var isSelected = (ds.label === 'Balanced') && selectedSet[entry._balanced_idx];
+            var status = getBalanceStatus(entry);
+            var color = status === 'within_tolerance' ? '#d39e00' : '#28a745';
             if (settings.type === 'ternary') {
                 a.push(v1);
                 b.push(v2);
                 c.push(v3);
+                colors.push(ds.label === 'Balanced' ? color : '#1f77b4');
                 if (isSelected) {
                     sa.push(v1); sb.push(v2); sc.push(v3); stext.push(label);
                 }
@@ -3736,12 +3810,14 @@ function renderPlotSweep(saveSettings) {
                 x.push(v1);
                 y.push(v2);
                 z.push(v3);
+                colors.push(ds.label === 'Balanced' ? color : '#1f77b4');
                 if (isSelected) {
                     sx.push(v1); sy.push(v2); sz.push(v3); stext.push(label);
                 }
             } else {
                 x.push(v1);
                 y.push(v2);
+                colors.push(ds.label === 'Balanced' ? color : '#1f77b4');
                 if (isSelected) {
                     sx.push(v1); sy.push(v2); stext.push(label);
                 }
@@ -3754,10 +3830,11 @@ function renderPlotSweep(saveSettings) {
                 type: 'scatterternary',
                 mode: 'markers',
                 name: ds.label,
+                showlegend: true,
                 a: a,
                 b: b,
                 c: c,
-                marker: {size: 10},
+                marker: {size: 10, color: colors},
                 text: text,
                 hovertemplate: '%{text}<br>' +
                     axes[0] + ' (' + propMeta[0].label + ')= %{a}<br>' +
@@ -3769,10 +3846,11 @@ function renderPlotSweep(saveSettings) {
                 type: 'scatter3d',
                 mode: 'markers',
                 name: ds.label,
+                showlegend: true,
                 x: x,
                 y: y,
                 z: z,
-                marker: {size: 7},
+                marker: {size: 7, color: colors},
                 text: text,
                 hovertemplate: '%{text}<br>' +
                     axes[0] + ' (' + propMeta[0].label + ')= %{x}<br>' +
@@ -3784,9 +3862,10 @@ function renderPlotSweep(saveSettings) {
                 type: 'scatter',
                 mode: 'markers',
                 name: ds.label,
+                showlegend: true,
                 x: x,
                 y: y,
-                marker: {size: 10},
+                marker: {size: 10, color: colors},
                 text: text,
                 hovertemplate: '%{text}<br>' +
                     axes[0] + ' (' + propMeta[0].label + ')= %{x}<br>' +
@@ -3842,10 +3921,14 @@ function renderPlotSweep(saveSettings) {
         }
     });
 
-    if (traces.length === 0 || traces.every(function(t) { return (t.x && t.x.length === 0) || (t.a && t.a.length === 0); })) {
-        plotEl.innerHTML = '<div class="empty-state">No data points for this selection.</div>';
-        return;
-    }
+    var noPointData = (
+        traces.length === 0 ||
+        traces.every(function(t) {
+            if (Array.isArray(t.x)) return t.x.length === 0;
+            if (Array.isArray(t.a)) return t.a.length === 0;
+            return true;
+        })
+    );
 
     var axisUnits = {
         x: units[0] || (propMeta[0].unitAware ? findUnits(datasets[0].entries, propMeta[0].key, axes[0]) : ''),
@@ -3882,10 +3965,33 @@ function renderPlotSweep(saveSettings) {
         layout.yaxis = {title: yLabel};
     }
 
+    if (noPointData) {
+        if (settings.type === '3d') {
+            layout.scene.annotations = [{
+                text: 'No data points for this selection.',
+                x: 0.5,
+                y: 0.5,
+                z: 0.5,
+                showarrow: false,
+                font: {color: '#6c757d', size: 14}
+            }];
+        } else {
+            layout.annotations = [{
+                text: 'No data points for this selection.',
+                x: 0.5,
+                y: 0.5,
+                xref: 'paper',
+                yref: 'paper',
+                showarrow: false,
+                font: {color: '#6c757d', size: 14}
+            }];
+        }
+    }
+
     Plotly.react(plotEl, traces, layout, {responsive: true, displaylogo: false});
 
     if (noteEl) {
-        var notes = [];
+        var notes = ['Series: Base, Balanced'];
         if (settings.type === 'ternary') {
             if (props.some(function(p) { return p.indexOf('fraction') === -1; })) {
                 notes.push('Ternary plots are most meaningful for fraction-based properties.');
@@ -4094,7 +4200,7 @@ function clonePropMapForSolution(map, quantityLike) {
     return Object.keys(out).length > 0 ? out : null;
 }
 
-function buildSolutionSampleFromDisplayEntry(entry, idx) {
+function buildMassOnlySampleFromDisplayEntry(entry, idx) {
     var sample = {};
     if (!entry || typeof entry !== 'object') return sample;
     sample.name = entry.name || entry.source_target_name || ('sample-' + (idx + 1));
@@ -4102,22 +4208,8 @@ function buildSolutionSampleFromDisplayEntry(entry, idx) {
     if (entry.solutes && Array.isArray(entry.solutes) && entry.solutes.length > 0) {
         sample.solutes = entry.solutes.slice();
     }
-
-    var totalMass = normalizeQtyValue(entry.total_mass);
-    var totalVolume = normalizeQtyValue(entry.total_volume);
-    if (totalMass) sample.total_mass = totalMass;
-    if (totalVolume) sample.total_volume = totalVolume;
-
-    var quantityGroups = ['masses', 'volumes', 'concentrations', 'molarities', 'molalities'];
-    quantityGroups.forEach(function(key) {
-        var mapped = clonePropMapForSolution(entry[key], true);
-        if (mapped) sample[key] = mapped;
-    });
-    var fractionGroups = ['mass_fractions', 'volume_fractions'];
-    fractionGroups.forEach(function(key) {
-        var mapped = clonePropMapForSolution(entry[key], false);
-        if (mapped) sample[key] = mapped;
-    });
+    var masses = clonePropMapForSolution(entry.masses, true);
+    if (masses) sample.masses = masses;
     return sample;
 }
 
@@ -4222,6 +4314,14 @@ function collectConfigOverridesFromUI() {
         }
     }
     return overrides;
+}
+
+function applyDefaultSubmitCompositionFormat() {
+    var formatEl = document.getElementById('submit-override-composition-format');
+    if (!formatEl) return;
+    if (!formatEl.value.trim()) {
+        formatEl.value = 'masses';
+    }
 }
 
 function syncSubmitDestinationUI() {
@@ -4348,6 +4448,8 @@ function applySubmitContextToUI(ctx) {
         } else {
             document.getElementById('submit-override-composition-format').value = JSON.stringify(cfg.composition_format);
         }
+    } else {
+        applyDefaultSubmitCompositionFormat();
     }
     if (cfg.enable_multistep_dilution !== undefined && cfg.enable_multistep_dilution !== null) {
         document.getElementById('submit-prepare-kw-enable-multistep').checked = !!cfg.enable_multistep_dilution;
@@ -4404,7 +4506,7 @@ async function submitSamples() {
         samples = [{}];
     } else {
         samples = sampleEntries.map(function(entry, idx) {
-            return buildSolutionSampleFromDisplayEntry(entry, idx);
+            return buildMassOnlySampleFromDisplayEntry(entry, idx);
         });
     }
     if (samples.length === 0) {
@@ -4550,6 +4652,7 @@ function initSubmitTab() {
         loadPlotSweepData();
     }
     syncSubmitDestinationUI();
+    applyDefaultSubmitCompositionFormat();
     renderSubmitPreview();
     loadSubmitContext();
 }

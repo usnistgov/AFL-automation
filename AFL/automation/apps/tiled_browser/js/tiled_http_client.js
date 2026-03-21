@@ -1,5 +1,6 @@
 (function attachTiledHttpClient(global) {
     const RUN_DOCUMENTS_NODE = 'run_documents';
+    const MAX_PAGE_LIMIT = 300;
 
     const DEFAULT_FIELD_CANDIDATES = {
         task_name: ['task_name', 'attrs.task_name'],
@@ -45,6 +46,15 @@
         return `${normalizedBase}/${normalizedPath}`;
     }
 
+    function resolveUrl(base, urlOrPath) {
+        if (!urlOrPath) return '';
+        try {
+            return new URL(urlOrPath, base).toString();
+        } catch (_error) {
+            return joinUrl(base, urlOrPath);
+        }
+    }
+
     function normalizeEntryId(entryId) {
         const raw = String(entryId || '').trim().replace(/^\/+|\/+$/g, '');
         const prefix = `${RUN_DOCUMENTS_NODE}/`;
@@ -52,6 +62,92 @@
             return raw.slice(prefix.length);
         }
         return raw;
+    }
+
+    function extractPathFromApiLink(link, endpointName) {
+        if (!link || !endpointName) return '';
+        try {
+            const url = new URL(link, global?.location?.href || 'http://localhost/');
+            const marker = `/api/v1/${endpointName}/`;
+            const index = url.pathname.indexOf(marker);
+            if (index === -1) return '';
+            return normalizeEntryId(decodeURIComponent(url.pathname.slice(index + marker.length)));
+        } catch (_error) {
+            const marker = `/api/v1/${endpointName}/`;
+            const index = String(link).indexOf(marker);
+            if (index === -1) return '';
+            return normalizeEntryId(decodeURIComponent(String(link).slice(index + marker.length)));
+        }
+    }
+
+    function toEntryRef(entry) {
+        if (entry && typeof entry === 'object' && entry.entryRef) {
+            return toEntryRef(entry.entryRef);
+        }
+
+        if (typeof entry === 'string') {
+            const normalized = normalizeEntryId(entry);
+            return {
+                id: normalized.split('/').pop() || normalized,
+                path: normalized,
+                searchPath: normalized,
+                metadataLink: null,
+                searchLink: null,
+                fullLink: null
+            };
+        }
+
+        if (!entry || typeof entry !== 'object') {
+            return {
+                id: '',
+                path: '',
+                searchPath: '',
+                metadataLink: null,
+                searchLink: null,
+                fullLink: null
+            };
+        }
+
+        const links = entry.links || entry._raw?.links || {};
+        const metadataLink = entry.metadataLink || links.self || null;
+        const searchLink = entry.searchLink || links.search || null;
+        const fullLink = entry.fullLink || links.full || null;
+        const explicitPath = entry.path || entry.entryPath || '';
+        const explicitSearchPath = entry.searchPath || '';
+        const rawId = String(entry.id || entry.entry_id || entry.entryId || '').trim();
+
+        const path = normalizeEntryId(
+            explicitPath
+            || extractPathFromApiLink(metadataLink, 'metadata')
+            || extractPathFromApiLink(searchLink, 'search')
+            || rawId
+        );
+        const searchPath = normalizeEntryId(
+            explicitSearchPath
+            || extractPathFromApiLink(searchLink, 'search')
+            || path
+        );
+
+        return {
+            id: normalizeEntryId(rawId || path.split('/').pop() || ''),
+            path,
+            searchPath,
+            metadataLink,
+            searchLink,
+            fullLink
+        };
+    }
+
+    function entryRefFromItem(item) {
+        const ref = toEntryRef(item);
+        return {
+            id: ref.id,
+            path: ref.path,
+            searchPath: ref.searchPath,
+            metadataLink: ref.metadataLink,
+            searchLink: ref.searchLink,
+            fullLink: ref.fullLink
+        };
     }
 
     function isLikelyCorsFailure(details) {
@@ -154,7 +250,7 @@
     } = {}) {
         const params = new URLSearchParams();
         params.set('page[offset]', String(offset));
-        params.set('page[limit]', String(limit));
+        params.set('page[limit]', String(Math.min(Math.max(Number(limit) || 0, 0), MAX_PAGE_LIMIT)));
 
         if (Array.isArray(fields)) {
             for (const field of fields) {
@@ -271,8 +367,7 @@
             }
         }
 
-        async function tiledFetch(path, { params, headers = {}, signal, responseType = 'json' } = {}) {
-            const url = joinUrl(base, path);
+        async function tiledFetchUrl(url, { params, headers = {}, signal, responseType = 'json' } = {}) {
             const finalUrl = params ? `${url}?${params.toString()}` : url;
             let response;
             try {
@@ -300,6 +395,10 @@
                 return response.blob();
             }
             return response.json();
+        }
+
+        async function tiledFetch(path, options = {}) {
+            return tiledFetchUrl(resolveUrl(base, path), options);
         }
 
         async function legacySearch({ queryRows = [], quickFilters = {}, sortModel = [], offset = 0, limit = 50 }, { signal } = {}) {
@@ -362,14 +461,18 @@
 
         const useProxy = !(await probeDirectMode());
 
-        async function search(params, { path = '', signal, legacyPayload = null } = {}) {
+        async function search(params, { path = '', entry = null, signal, legacyPayload = null } = {}) {
             if (useProxy) {
                 if (!legacyPayload) {
                     throw new Error('Legacy payload required for proxy search mode');
                 }
                 return legacySearch(legacyPayload, { signal });
             }
-            const normalizedPath = path || RUN_DOCUMENTS_NODE;
+            const ref = toEntryRef(entry);
+            if (ref.searchLink) {
+                return tiledFetchUrl(resolveUrl(base, ref.searchLink), { params, signal, responseType: 'json' });
+            }
+            const normalizedPath = path || ref.searchPath || RUN_DOCUMENTS_NODE;
             const endpoint = `api/v1/search/${normalizedPath}`;
             return tiledFetch(endpoint, { params, signal, responseType: 'json' });
         }
@@ -385,29 +488,51 @@
             return tiledFetch(endpoint, { params, signal, responseType: 'json' });
         }
 
-        async function metadata(entryId, { signal } = {}) {
-            const normalizedEntryId = normalizeEntryId(entryId);
+        async function metadata(entry, { signal } = {}) {
+            const ref = toEntryRef(entry);
+            const legacyEntryId = ref.path || ref.id;
             if (useProxy) {
-                const payload = await legacyMetadata(normalizedEntryId, { signal });
+                const payload = await legacyMetadata(legacyEntryId, { signal });
                 if (payload.status === 'error') {
-                    throw new Error(payload.message || `Entry ${normalizedEntryId} not found`);
+                    throw new Error(payload.message || `Entry ${legacyEntryId} not found`);
                 }
                 return {
                     data: {
-                        id: normalizedEntryId,
+                        id: ref.id || legacyEntryId,
                         attributes: { metadata: payload.metadata || {} },
-                        links: {}
+                        links: ref.fullLink ? { full: ref.fullLink } : {}
                     }
                 };
             }
-            return tiledFetch(
-                `api/v1/metadata/${RUN_DOCUMENTS_NODE}/${normalizedEntryId}`,
-                { signal, responseType: 'json' }
-            );
+            try {
+                if (ref.metadataLink) {
+                    return tiledFetchUrl(resolveUrl(base, ref.metadataLink), { signal, responseType: 'json' });
+                }
+                return tiledFetch(
+                    `api/v1/metadata/${RUN_DOCUMENTS_NODE}/${ref.path || ref.id}`,
+                    { signal, responseType: 'json' }
+                );
+            } catch (error) {
+                if (legacyEntryId && String(error?.message || '').includes('(404)')) {
+                    const payload = await legacyMetadata(legacyEntryId, { signal });
+                    if (payload.status === 'error') {
+                        throw new Error(payload.message || `Entry ${legacyEntryId} not found`);
+                    }
+                    return {
+                        data: {
+                            id: ref.id || legacyEntryId,
+                            attributes: { metadata: payload.metadata || {} },
+                            links: ref.fullLink ? { full: ref.fullLink } : {}
+                        }
+                    };
+                }
+                throw error;
+            }
         }
 
-        async function full(link, { format = 'application/json', signal, responseType = 'json', entryId = null } = {}) {
-            const normalizedEntryId = entryId ? normalizeEntryId(entryId) : null;
+        async function full(link, { format = 'application/json', signal, responseType = 'json', entry = null, entryId = null } = {}) {
+            const ref = toEntryRef(entry || entryId);
+            const normalizedEntryId = ref.path || ref.id || null;
             if (useProxy) {
                 if (!normalizedEntryId) {
                     throw new Error('entryId is required for proxy full-data mode');
@@ -442,9 +567,10 @@
                 }
             }
 
+            const resolvedLink = resolveUrl(base, link || ref.fullLink || '');
             const params = new URLSearchParams();
             if (format) params.set('format', format);
-            const fullUrl = `${link}${link.includes('?') ? '&' : '?'}${params.toString()}`;
+            const fullUrl = `${resolvedLink}${resolvedLink.includes('?') ? '&' : '?'}${params.toString()}`;
             try {
                 const response = await fetch(fullUrl, {
                     method: 'GET',
@@ -502,11 +628,14 @@
     }
 
     global.TiledHttpClient = {
+        MAX_PAGE_LIMIT,
         DEFAULT_FIELD_CANDIDATES,
         getAuthToken,
         authenticatedFetch,
         loadConfig,
         createClientFromConfig,
+        toEntryRef,
+        entryRefFromItem,
         buildSearchParams,
         buildDistinctParams,
         mergeSearchData,

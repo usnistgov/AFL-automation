@@ -18,7 +18,7 @@ except ImportError:
 from AFL.automation.APIServer.Driver import Driver
 
 try:
-    from eic_client.EICClient import EICClient
+    from AFL.automation.instrument.EICClient import EICClient
 except ImportError:
     EICClient = None
 
@@ -33,7 +33,6 @@ class BioSANS(Driver):
     defaults['ipts_number'] = '1234'
     defaults['beamline'] = 'CG3'
     defaults['run_cycle'] = 'RC511'
-    defaults['use_subtracted_data'] = True
     defaults['config'] = 'Config0'
     defaults['mock_mode'] = False
     defaults['reduction_log_data_path'] = f'/HFIR/{{INST}}/IPTS-{{IPTS}}/shared/autoreduce/{{RUN_CYCLE}}/{{CONFIG}}'

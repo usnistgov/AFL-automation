@@ -37,7 +37,6 @@ class TestBioSANSConfiguration:
         from AFL.automation.instrument.BioSANS import BioSANS
         
         assert BioSANS.defaults['beamline'] == 'CG3'
-        assert BioSANS.defaults['use_subtracted_data'] is True
         
     def test_initialization_without_hardware(self, epics_stub):
         """Test that driver can be instantiated without EPICS/EIC"""

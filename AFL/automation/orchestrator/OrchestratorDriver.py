@@ -15,13 +15,41 @@ import h5py  # type: ignore
 import numpy as np
 import requests  # type: ignore
 import xarray as xr 
-from tiled.client import from_uri  # type: ignore
-from tiled.queries import Eq  # type: ignore
 from scipy.spatial.distance import cdist
 
 from AFL.automation.APIServer.Client import Client  # type: ignore
 from AFL.automation.APIServer.Driver import Driver  # type: ignore
 from AFL.automation.shared.units import units  # type: ignore
+
+
+class MissingTiledConfigurationError(RuntimeError):
+    """Raised when OrchestratorDriver needs Tiled access but no client is configured."""
+
+
+class _MissingTiledClient:
+    def __init__(self, message: str):
+        self._message = message
+
+    def _raise(self):
+        raise MissingTiledConfigurationError(self._message)
+
+    def __getitem__(self, key):
+        self._raise()
+
+    def __getattr__(self, name):
+        self._raise()
+
+    def items(self):
+        self._raise()
+
+    def search(self, *args, **kwargs):
+        self._raise()
+
+    def __iter__(self):
+        self._raise()
+
+    def __len__(self):
+        self._raise()
 
 
 class OrchestratorDriver(Driver):
@@ -58,13 +86,14 @@ class OrchestratorDriver(Driver):
         Format for extracting composition from balanced_target after preparation.
 
         If str: Single format applied to all components
-            Valid values: 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'
+            Valid values: 'masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'
 
-        If dict: Per-component format specification
-            Example: {"H2O": "mass_fraction", "NaCl": "concentration"}
+        If dict: Per-component format specification. Every prepared component
+            must be explicitly listed.
+            Example: {"H2O": "masses", "NaCl": "concentration"}
             Keys are component names, values are format strings (same valid values as above)
 
-        Default: 'mass_fraction'
+        Default: 'masses'
     """
 
     defaults = {}
@@ -81,7 +110,7 @@ class OrchestratorDriver(Driver):
     defaults['snapshot_directory'] = []
     defaults['prepare_volume'] = '1000 ul'
     defaults['empty_prefix'] = 'MT-'
-    defaults['composition_format'] = 'mass_fraction'
+    defaults['composition_format'] = 'masses'
     defaults['next_samples_variable'] = 'next_samples'
     def __init__(
             self,
@@ -177,7 +206,7 @@ class OrchestratorDriver(Driver):
         if not isinstance(self.config['max_sample_transmission'], (int, float)):
             raise TypeError("self.config['max_sample_transmission'] must be a number")
 
-        allowed_formats = {'mass_fraction', 'volume_fraction', 'concentration', 'molarity'}
+        allowed_formats = {'masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'}
         composition_format = self.config.get('composition_format')
         if isinstance(composition_format, str):
             if composition_format not in allowed_formats:
@@ -424,11 +453,8 @@ class OrchestratorDriver(Driver):
                 variable_name=self.config['next_samples_variable'],
                 entry_id=entry_id,
             )
-            # Convert to concentrations format for Solution
-            new_sample_dict = {
-                'concentrations': {k: f"{v} mg/ml" for k, v in new_sample.items()},
-                'name': f"sample_{self.uuid['sample'][-8:]}"
-            }
+            new_sample_dict = self._build_queued_sample_from_prediction(new_sample)
+            new_sample_dict['name'] = f"sample_{self.uuid['sample'][-8:]}"
 
             task = {
                 'task_name':'process_sample',
@@ -458,39 +484,188 @@ class OrchestratorDriver(Driver):
             current = current[part]
         return current
 
-    def _iter_predict_entries_for_sample(self, sample_uuid: str) -> List[Tuple[str, Any]]:
-        """Find predict-task tiled entries for a sample UUID using metadata key variants."""
-        sample_uuid_fields = ('sample_uuid', 'attrs.sample_uuid', 'attr.sample_uuid')
-        task_name_fields = ('task_name', 'attrs.task_name', 'attr.task_name')
+    @staticmethod
+    def _normalize_metadata_value(value: Any) -> Any:
+        if isinstance(value, np.generic):
+            return value.item()
+        return value
 
-        candidate_entries: Dict[str, Any] = {}
-        query_errors = []
+    def _iter_metadata_field_values(self, metadata: Any, field_name: str):
+        if isinstance(metadata, dict):
+            for key, value in metadata.items():
+                if key == field_name:
+                    yield self._normalize_metadata_value(value)
+                yield from self._iter_metadata_field_values(value, field_name)
+        elif isinstance(metadata, (list, tuple)):
+            for value in metadata:
+                yield from self._iter_metadata_field_values(value, field_name)
 
-        for sample_field in sample_uuid_fields:
-            for task_field in task_name_fields:
-                try:
-                    results = (
-                        self.tiled_client
-                        .search(Eq(sample_field, sample_uuid))
-                        .search(Eq(task_field, 'predict'))
-                    )
-                    for entry_id, entry in results.items():
-                        candidate_entries[entry_id] = entry
-                except Exception as exc:
-                    query_errors.append(str(exc))
+    def _metadata_matches(
+        self,
+        metadata: Dict[str, Any],
+        expected_value: Any,
+        *,
+        field_name: str,
+        paths: Tuple[str, ...],
+    ) -> bool:
+        expected_value = self._normalize_metadata_value(expected_value)
+
+        for path in paths:
+            value = self._normalize_metadata_value(self._get_nested_metadata_value(metadata, path))
+            if value == expected_value:
+                return True
+
+        for value in self._iter_metadata_field_values(metadata, field_name):
+            if value == expected_value:
+                return True
+
+        return False
+
+    def _get_tiled_client_for_lookup(self):
+        if self._tiled_client is not None:
+            return self._tiled_client
+
+        client = None
+        if self.data is not None:
+            client = getattr(self.data, "tiled_client", None)
+
+        if client is not None:
+            self._tiled_client = client
+            return client
+
+        message = (
+            "No Tiled client is available on self.data for OrchestratorDriver lookup. "
+            "Configure the Tiled URI and API key in ~/.afl/config if they are not already set."
+        )
+        self.log_warning(message)
+        self._tiled_client = _MissingTiledClient(message)
+        return self._tiled_client
+
+    def _get_run_documents_container_for_lookup(self, client: Any):
+        if client is None:
+            return None
+
+        try:
+            return client['run_documents']
+        except MissingTiledConfigurationError:
+            raise
+        except Exception:
+            return client
+
+    def _iter_run_document_entries(self, container: Any, prefix: str = ''):
+        try:
+            items = list(container.items())
+        except MissingTiledConfigurationError:
+            raise
+        except Exception:
+            return
+
+        for key, entry in items:
+            entry_id = f'{prefix}/{key}' if prefix else str(key)
+            yield entry_id, entry
+            yield from self._iter_run_document_entries(entry, prefix=entry_id)
+
+    def _find_run_document_entries(
+        self,
+        *,
+        sample_uuid: str,
+        task_name: Optional[str] = None,
+    ) -> List[Tuple[str, Any]]:
+        client = self._get_tiled_client_for_lookup()
+        if client is None:
+            self.log_warning("No tiled client available, cannot query run_documents")
+            return []
+
+        run_documents = self._get_run_documents_container_for_lookup(client)
+        if run_documents is None:
+            self.log_warning("No run_documents container found in Tiled")
+            return []
+
+        sample_uuid_paths = (
+            'sample_uuid',
+            'attrs.sample_uuid',
+            'attr.sample_uuid',
+            'metadata.sample_uuid',
+            'metadata.attrs.sample_uuid',
+            'metadata.attr.sample_uuid',
+        )
+        task_name_paths = (
+            'task_name',
+            'attrs.task_name',
+            'attr.task_name',
+            'metadata.task_name',
+            'metadata.attrs.task_name',
+            'metadata.attr.task_name',
+        )
+
+        matches: List[Tuple[str, Any]] = []
+        for entry_id, entry in self._iter_run_document_entries(run_documents):
+            metadata = dict(getattr(entry, 'metadata', {}) or {})
+            if not metadata:
+                continue
+
+            sample_matches = self._metadata_matches(
+                metadata,
+                sample_uuid,
+                field_name='sample_uuid',
+                paths=sample_uuid_paths,
+            )
+            if not sample_matches:
+                continue
+
+            if task_name is not None:
+                task_matches = self._metadata_matches(
+                    metadata,
+                    task_name,
+                    field_name='task_name',
+                    paths=task_name_paths,
+                )
+                if not task_matches:
                     continue
 
+            matches.append((entry_id, entry))
+
+        return matches
+
+    def _iter_predict_entries_for_sample(self, sample_uuid: str) -> List[Tuple[str, Any]]:
+        """Find predict-task run_documents entries for a sample UUID."""
+        candidate_entries = self._find_run_document_entries(
+            sample_uuid=sample_uuid,
+            task_name='predict',
+        )
         if candidate_entries:
-            return list(candidate_entries.items())
+            return candidate_entries
 
         error_msg = (
-            f"No predict entries found in Tiled for sample_uuid={sample_uuid} "
-            f"using keys {sample_uuid_fields} and task keys {task_name_fields}."
+            f"No predict entries found in run_documents for sample_uuid={sample_uuid}. "
+            "Checked metadata values recursively for sample_uuid/task_name, including attrs.* fields."
         )
-        if query_errors:
-            error_msg = f"{error_msg} Query errors: {' | '.join(query_errors)}"
-        self.app.logger.error(error_msg)
+        self.log_error(error_msg)
         raise ValueError(error_msg)
+
+    @staticmethod
+    def _parse_metadata_timestamp(value: Any) -> Optional[datetime.datetime]:
+        value = OrchestratorDriver._normalize_metadata_value(value)
+        if isinstance(value, datetime.datetime):
+            return value
+        if not isinstance(value, str):
+            return None
+
+        text = value.strip()
+        if not text:
+            return None
+
+        for parser in (
+            lambda raw: datetime.datetime.fromisoformat(raw.replace('Z', '+00:00')),
+            lambda raw: datetime.datetime.strptime(raw, '%m/%d/%y %H:%M:%S-%f'),
+            lambda raw: datetime.datetime.strptime(raw, '%Y-%m-%d %H:%M:%S'),
+        ):
+            try:
+                return parser(text)
+            except ValueError:
+                continue
+
+        return None
 
     def _entry_sort_timestamp(self, entry: Any) -> datetime.datetime:
         metadata = dict(getattr(entry, 'metadata', {}) or {})
@@ -498,22 +673,32 @@ class OrchestratorDriver(Driver):
             'meta.ended',
             'attrs.meta.ended',
             'attr.meta.ended',
+            'metadata.meta.ended',
+            'metadata.attrs.meta.ended',
+            'metadata.attr.meta.ended',
             'meta.started',
             'attrs.meta.started',
             'attr.meta.started',
+            'metadata.meta.started',
+            'metadata.attrs.meta.started',
+            'metadata.attr.meta.started',
             'timestamp',
             'attrs.timestamp',
             'attr.timestamp',
+            'metadata.timestamp',
+            'metadata.attrs.timestamp',
+            'metadata.attr.timestamp',
         )
         for path in timestamp_paths:
-            value = self._get_nested_metadata_value(metadata, path)
-            if isinstance(value, datetime.datetime):
-                return value
-            if isinstance(value, str):
-                try:
-                    return datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
-                except ValueError:
-                    continue
+            parsed = self._parse_metadata_timestamp(self._get_nested_metadata_value(metadata, path))
+            if parsed is not None:
+                return parsed
+
+        for field_name in ('ended', 'started', 'timestamp'):
+            for value in self._iter_metadata_field_values(metadata, field_name):
+                parsed = self._parse_metadata_timestamp(value)
+                if parsed is not None:
+                    return parsed
         return datetime.datetime.min
 
     def _get_latest_predict_tiled_entry(self, sample_uuid: str) -> Tuple[str, Any]:
@@ -527,6 +712,83 @@ class OrchestratorDriver(Driver):
             )
         )
         return latest[1]
+
+    @staticmethod
+    def _sample_key_for_composition_format(format_type: str) -> str:
+        mapping = {
+            'masses': 'masses',
+            'mass_fraction': 'mass_fractions',
+            'volume_fraction': 'volume_fractions',
+            'concentration': 'concentrations',
+            'molarity': 'molarities',
+        }
+        try:
+            return mapping[format_type]
+        except KeyError as exc:
+            raise ValueError(f"Unsupported composition format '{format_type}' for queued sample serialization") from exc
+
+    @staticmethod
+    def _format_predicted_component_value(value: Any, format_type: str) -> Any:
+        value = OrchestratorDriver._normalize_metadata_value(value)
+
+        if isinstance(value, dict):
+            if 'value' not in value:
+                raise ValueError(f"Predicted component value must be scalar-like, got nested dict {value!r}")
+            units_value = value.get('units')
+            value = OrchestratorDriver._normalize_metadata_value(value['value'])
+        else:
+            units_value = None
+
+        if isinstance(value, np.ndarray):
+            if value.size != 1:
+                raise ValueError(f"Predicted component value must be scalar-like, got array with shape {value.shape}")
+            value = value.item()
+
+        unit_defaults = {
+            'masses': 'mg',
+            'concentration': 'mg/ml',
+            'molarity': 'mol/L',
+        }
+        if format_type in unit_defaults:
+            units_suffix = units_value or unit_defaults[format_type]
+            return f"{value} {units_suffix}"
+
+        return value
+
+    def _build_queued_sample_from_prediction(self, sample_values: Dict[str, Any]) -> Dict[str, Any]:
+        composition_format = self.config.get('composition_format', 'masses')
+        sample_payload: Dict[str, Any] = {}
+
+        if isinstance(composition_format, str):
+            sample_key = self._sample_key_for_composition_format(composition_format)
+            sample_payload[sample_key] = {
+                component: self._format_predicted_component_value(value, composition_format)
+                for component, value in sample_values.items()
+            }
+            return sample_payload
+
+        if not isinstance(composition_format, dict):
+            raise TypeError("self.config['composition_format'] must be a string or dict")
+
+        missing_components = sorted(
+            component for component in sample_values.keys()
+            if component not in composition_format
+        )
+        if missing_components:
+            raise ValueError(
+                "composition_format dict must specify every predicted component for enqueue_next. "
+                f"Missing components: {missing_components}"
+            )
+
+        for component, value in sample_values.items():
+            format_type = composition_format[component]
+            sample_key = self._sample_key_for_composition_format(format_type)
+            sample_payload.setdefault(sample_key, {})[component] = self._format_predicted_component_value(
+                value,
+                format_type,
+            )
+
+        return sample_payload
 
     def _extract_next_sample_from_tiled_entry(self, entry: Any, variable_name: str, entry_id: str) -> Dict[str, Any]:
         try:
@@ -553,19 +815,32 @@ class OrchestratorDriver(Driver):
             raise ValueError(error_msg)
 
         variable = dataset[variable_name]
-        extracted = variable.to_pandas().squeeze()
+        extracted = variable.to_pandas()
+
+        if isinstance(extracted, pd.DataFrame):
+            if extracted.empty:
+                error_msg = (
+                    f"Predict tiled entry '{entry_id}' has empty data for variable '{variable_name}'."
+                )
+                self.app.logger.error(error_msg)
+                raise ValueError(error_msg)
+            extracted = extracted.iloc[0]
+
+        if isinstance(extracted, pd.Series):
+            return {
+                component: self._normalize_metadata_value(value)
+                for component, value in extracted.to_dict().items()
+            }
+
         if isinstance(extracted, dict):
             return extracted
-        if hasattr(extracted, 'to_dict'):
-            extracted = extracted.to_dict()
-        if not isinstance(extracted, dict):
-            error_msg = (
-                f"Could not convert '{variable_name}' in tiled entry '{entry_id}' to dict; "
-                f"got {type(extracted).__name__}."
-            )
-            self.app.logger.error(error_msg)
-            raise ValueError(error_msg)
-        return extracted
+
+        error_msg = (
+            f"Could not convert '{variable_name}' in tiled entry '{entry_id}' to dict; "
+            f"got {type(extracted).__name__}."
+        )
+        self.app.logger.error(error_msg)
+        raise ValueError(error_msg)
 
     def make_and_measure(
             self,
@@ -629,7 +904,7 @@ class OrchestratorDriver(Driver):
             # The prep server has direct access to the balanced Solution objects
             # and the component DB, so it performs the composition math.
             self.update_status(f'Getting realized composition from prep server...')
-            composition_format = self.config.get('composition_format', 'mass_fraction')
+            composition_format = self.config.get('composition_format', 'masses')
             comp_result = self.get_client('prep').enqueue(
                 task_name='get_sample_composition',
                 composition_format=composition_format,
@@ -960,40 +1235,28 @@ class OrchestratorDriver(Driver):
             Entry ID if found, None otherwise
         """
         try:
-            # Get tiled client from config
-            if 'tiled_uri' not in self.config or not self.config['tiled_uri']:
-                self.app.logger.warning("No tiled_uri configured, cannot query for entry_id")
-                return None
-
-            from tiled.client import from_uri
-
-            # Connect to tiled
-            client = from_uri(self.config['tiled_uri'], structure_clients="dask")
-
-            # Search for entries with matching sample_uuid in metadata
-            matching_entries = []
-            for entry_id in client:
-                entry = client[entry_id]
-                metadata = getattr(entry, 'metadata', {})
-
-                # Check if sample_uuid matches
-                if metadata.get('sample_uuid') == sample_uuid:
-                    # Check if task_name matches (if provided)
-                    if task_name is None or metadata.get('task_name') == task_name:
-                        # Get timestamp or use entry order
-                        timestamp = metadata.get('timestamp', 0)
-                        matching_entries.append((entry_id, timestamp))
+            matching_entries = [
+                (entry_id, self._entry_sort_timestamp(entry))
+                for entry_id, entry in self._find_run_document_entries(
+                    sample_uuid=sample_uuid,
+                    task_name=task_name,
+                )
+            ]
 
             if not matching_entries:
-                self.app.logger.warning(f"No tiled entry found for sample_uuid={sample_uuid}, task_name={task_name}")
+                self.log_warning(
+                    f"No tiled entry found for sample_uuid={sample_uuid}, task_name={task_name}"
+                )
                 return None
 
             # Sort by timestamp and return the last one
-            matching_entries.sort(key=lambda x: x[1], reverse=True)
+            matching_entries.sort(key=lambda x: (x[1], x[0]), reverse=True)
             return matching_entries[0][0]
 
         except Exception as e:
-            self.app.logger.error(f"Error querying tiled for entry_id: {e}")
+            if isinstance(e, MissingTiledConfigurationError):
+                raise
+            self.log_error(f"Error querying tiled for entry_id: {e}")
             return None
 
     def _append_to_agent_input_groups(self, instrument: Dict, entry_ids: List[str]) -> None:
@@ -1006,8 +1269,20 @@ class OrchestratorDriver(Driver):
         entry_ids : List[str]
             Entry IDs from tiled to append to the group
         """
-        # Step 1: Get current config from AgentDriver (direct return, no return_val)
-        current_groups = self.get_client('agent').get_config('tiled_input_groups')
+        agent_client = self.get_client('agent')
+        config_result = agent_client.get_config(
+            'tiled_input_groups',
+            print_console=False,
+            interactive=True,
+        )
+        if (
+            isinstance(config_result, dict)
+            and config_result.get('exit_state') == 'Error!'
+        ):
+            raise RuntimeError(
+                f"Failed to fetch agent tiled_input_groups: {config_result.get('return_val')}"
+            )
+        current_groups = config_result.get('return_val') if isinstance(config_result, dict) else config_result
 
         if current_groups is None:
             current_groups = []
@@ -1032,8 +1307,17 @@ class OrchestratorDriver(Driver):
                 'entry_ids': entry_ids
             })
 
-        # Step 4: Update AgentDriver config (direct, no interactive)
-        self.get_client('agent').set_config('tiled_input_groups', current_groups)
+        set_result = agent_client.set_config(
+            interactive=True,
+            tiled_input_groups=current_groups,
+        )
+        if (
+            isinstance(set_result, dict)
+            and set_result.get('exit_state') == 'Error!'
+        ):
+            raise RuntimeError(
+                f"Failed to update agent tiled_input_groups: {set_result.get('return_val')}"
+            )
 
 _DEFAULT_CUSTOM_CONFIG = {
 

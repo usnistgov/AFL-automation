@@ -10,6 +10,8 @@ from AFL.automation.mixcalc.PipetteAction import PipetteAction
 from AFL.automation.mixcalc.Solution import Solution
 from AFL.automation.mixcalc.BalanceDiagnosis import BalanceDiagnosis, FailureCode, FailureDetail
 
+ZERO_MASS_TOL_G = 1e-12
+
 
 # --- Shared utility functions ---
 def _extract_masses(solution: Solution, components: List[str], array: np.ndarray, unit: str = 'g') -> None:
@@ -29,6 +31,43 @@ def _extract_mass_fractions(stocks: List[Solution], components: List[str], matri
                 matrix[i, j] = stock.mass_fraction[component].to('').magnitude
             else:
                 matrix[i, j] = 0
+
+
+def _zero_target_mask(target_masses: np.ndarray, zero_mass_tol: float = ZERO_MASS_TOL_G) -> np.ndarray:
+    return np.abs(target_masses) <= zero_mass_tol
+
+
+def _component_failure_mask(
+    target_masses: np.ndarray,
+    balanced_masses: np.ndarray,
+    differences: np.ndarray,
+    tol: float,
+    zero_mass_tol: float = ZERO_MASS_TOL_G,
+) -> np.ndarray:
+    zero_target = _zero_target_mask(target_masses, zero_mass_tol=zero_mass_tol)
+    failed = np.zeros_like(target_masses, dtype=bool)
+    failed[zero_target] = np.abs(balanced_masses[zero_target]) > zero_mass_tol
+    failed[~zero_target] = np.abs(differences[~zero_target]) >= tol
+    return failed
+
+
+def _is_balance_success(
+    target_masses: np.ndarray,
+    balanced_masses: np.ndarray,
+    differences: np.ndarray,
+    tol: float,
+    zero_mass_tol: float = ZERO_MASS_TOL_G,
+) -> bool:
+    return not np.any(
+        _component_failure_mask(
+            target_masses=target_masses,
+            balanced_masses=balanced_masses,
+            differences=differences,
+            tol=tol,
+            zero_mass_tol=zero_mass_tol,
+        )
+    )
+
 
 def _make_balanced_target(mass_transfers, target):
     balanced_target = Solution(name="")
@@ -54,6 +93,7 @@ def _make_balanced_target(mass_transfers, target):
 def _diagnose(
     target,
     transfers: np.ndarray,
+    balanced_masses: np.ndarray,
     differences: np.ndarray,
     components: List[str],
     stocks: List[Solution],
@@ -73,6 +113,13 @@ def _diagnose(
     component_errors = {comp: float(differences[i]) for i, comp in enumerate(components)}
     total_target_mass = float(np.sum(target_masses))
     n_stocks = len(stocks)
+    zero_target = _zero_target_mask(target_masses)
+    failure_mask = _component_failure_mask(
+        target_masses=target_masses,
+        balanced_masses=balanced_masses,
+        differences=differences,
+        tol=tol,
+    )
 
     if success:
         return BalanceDiagnosis(success=True, component_errors=component_errors)
@@ -87,7 +134,7 @@ def _diagnose(
     # A required component is absent from every stock — cannot be achieved regardless
     # of volumes or concentrations.
     for i, comp in enumerate(components):
-        if target_masses[i] > 1e-12 and bool(missing_component_mask[i]):
+        if target_masses[i] > ZERO_MASS_TOL_G and bool(missing_component_mask[i]):
             details.append(FailureDetail(
                 code=FailureCode.MISSING_STOCK_COMPONENT,
                 description=(
@@ -104,7 +151,7 @@ def _diagnose(
     if total_target_mass > 1e-12:
         target_fracs = target_masses / total_target_mass
         for i, comp in enumerate(components):
-            if target_masses[i] < 1e-12:
+            if zero_target[i]:
                 continue
             max_stock_frac = float(max_stock_fractions[i])
             target_frac = float(target_fracs[i])
@@ -140,7 +187,19 @@ def _diagnose(
         hull_bounds = Bounds(lb=[0.0] * n_stocks, ub=[np.inf] * n_stocks)
         hull_result = lsq_linear(mass_fraction_matrix, target_masses, bounds=hull_bounds)
         residual_norm = float(np.linalg.norm(hull_result.fun))
-        if total_target_mass > 1e-12 and (residual_norm / total_target_mass) > tol:
+        hull_balanced_masses = mass_fraction_matrix @ np.array(hull_result.x, dtype=float)
+        hull_differences = _compute_differences(
+            target_masses=target_masses,
+            balanced_masses=hull_balanced_masses,
+            total_target_mass=total_target_mass,
+        )
+        hull_success = _is_balance_success(
+            target_masses=target_masses,
+            balanced_masses=hull_balanced_masses,
+            differences=hull_differences,
+            tol=tol,
+        )
+        if total_target_mass > ZERO_MASS_TOL_G and not hull_success:
             details.append(FailureDetail(
                 code=FailureCode.TARGET_OUTSIDE_REACHABLE_COMPOSITIONS,
                 description=(
@@ -162,7 +221,7 @@ def _diagnose(
     # (b) A stock is active but pinned at its lower bound and still cannot deliver
     #     enough of a required component (the ideal transfer would be smaller than
     #     the minimum, so it is forced up, but the constraint is still binding).
-    failed_comps = {components[i] for i in range(len(components)) if abs(differences[i]) >= tol}
+    failed_comps = {components[i] for i in range(len(components)) if failure_mask[i]}
     for idx, stock in enumerate(stocks):
         mass_val = float(transfers[idx])
         lb_val = float(bounds.lb[idx])
@@ -218,14 +277,15 @@ def _diagnose(
     # A component the target wants zero of is nonzero in the balanced result
     # because a stock needed for other components also contains it.
     for i, comp in enumerate(components):
-        if target_masses[i] >= 1e-12:
+        if not zero_target[i]:
             continue
-        if abs(differences[i]) < tol:
+        contaminant_mass_g = float(balanced_masses[i])
+        if abs(contaminant_mass_g) <= ZERO_MASS_TOL_G:
             continue
         contaminating = [
             stock.name
             for idx, stock in enumerate(stocks)
-            if float(transfers[idx]) > 0.0 and mass_fraction_matrix[i, idx] > 0.0
+            if float(transfers[idx]) > ZERO_MASS_TOL_G and mass_fraction_matrix[i, idx] > 0.0
         ]
         if contaminating:
             details.append(FailureDetail(
@@ -237,14 +297,26 @@ def _diagnose(
                 ),
                 affected_components=[comp],
                 affected_stocks=contaminating,
-                data={"component": comp, "error": float(differences[i])},
+                data={
+                    "component": comp,
+                    "error": float(differences[i]),
+                    "realized_mass_g": contaminant_mass_g,
+                },
             ))
 
     # --- Check 6: TOLERANCE_EXCEEDED (catch-all) ---
     # Lists every component whose relative error exceeds the tolerance.
-    tol_exceeded = [components[i] for i in range(len(components)) if abs(differences[i]) >= tol]
+    tol_exceeded = [
+        components[i]
+        for i in range(len(components))
+        if (not zero_target[i]) and abs(differences[i]) >= tol
+    ]
     if tol_exceeded:
-        tol_exceeded_idx = [i for i in range(len(components)) if abs(differences[i]) >= tol]
+        tol_exceeded_idx = [
+            i
+            for i in range(len(components))
+            if (not zero_target[i]) and abs(differences[i]) >= tol
+        ]
         details.append(FailureDetail(
             code=FailureCode.TOLERANCE_EXCEEDED,
             description=f"{len(tol_exceeded)} component(s) exceed {tol * 100:.1f}% tolerance.",
@@ -323,8 +395,8 @@ def _compute_differences(
     b = balanced_masses
     differences = np.zeros_like(t, dtype=float)
 
-    zero_t = t == 0
-    zero_b = b == 0
+    zero_t = _zero_target_mask(t)
+    zero_b = np.abs(b) <= ZERO_MASS_TOL_G
     both_zero = zero_t & zero_b
 
     # Target is zero but balanced is not
@@ -343,7 +415,11 @@ def _compute_differences(
 
 
 def _make_transfer_dict(stocks: List[Solution], transfers: np.ndarray) -> Dict[Solution, str]:
-    return {stock: f'{float(mass)} g' for stock, mass in zip(stocks, transfers)}
+    return {
+        stock: f'{float(mass)} g'
+        for stock, mass in zip(stocks, transfers)
+        if abs(float(mass)) > ZERO_MASS_TOL_G
+    }
 
 
 # --- MassBalance Base Class ---
@@ -628,9 +704,15 @@ class MassBalanceBase:
                     total_target_mass=total_target_mass,
                 )
                 score = float(np.sum(np.abs(differences)))
-                success = bool(np.all(np.abs(differences) < tol))
+                success = _is_balance_success(
+                    target_masses=target_masses,
+                    balanced_masses=balanced_masses,
+                    differences=differences,
+                    tol=tol,
+                )
                 if best_candidate is None or score < best_score:
                     best_candidate = {
+                        'balanced_masses': balanced_masses,
                         'difference': differences,
                         'transfers': transfers,
                         'success': success,
@@ -648,6 +730,7 @@ class MassBalanceBase:
                 diagnosis = _diagnose(
                     target=target,
                     transfers=best_candidate['transfers'],
+                    balanced_masses=best_candidate['balanced_masses'],
                     differences=best_candidate['difference'],
                     components=components,
                     stocks=planning_stocks,
@@ -706,6 +789,7 @@ class MassBalanceBase:
                 diagnosis = _diagnose(
                     target=target,
                     transfers=best_candidate['transfers'],
+                    balanced_masses=best_candidate['balanced_masses'],
                     differences=best_candidate['difference'],
                     components=components,
                     stocks=planning_stocks,

@@ -26,6 +26,35 @@ def _is_finite(v):
     return isinstance(v, (int, float)) and math.isfinite(v)
 
 
+EXACT_BALANCE_ERROR_TOL = 1e-12
+
+
+def _max_component_error(component_errors):
+    if not component_errors or not isinstance(component_errors, dict):
+        return None
+
+    max_err = None
+    for value in component_errors.values():
+        try:
+            err = abs(float(value))
+        except (TypeError, ValueError):
+            continue
+        if not _is_finite(err):
+            continue
+        if max_err is None or err > max_err:
+            max_err = err
+    return max_err
+
+
+def _derive_balance_status(success, component_errors=None):
+    max_err = _max_component_error(component_errors)
+    if success is not True:
+        return 'failed', max_err
+    if max_err is None or max_err <= EXACT_BALANCE_ERROR_TOL:
+        return 'succeeded', max_err
+    return 'within_tolerance', max_err
+
+
 def _solution_to_display_dict(solution):
     """Build a JSON-serializable dict from a Solution with all available
     composition methods.
@@ -525,6 +554,13 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         out.sort(key=lambda entry: entry.get('created_at', ''), reverse=True)
         return out
 
+    def _has_tiled_stock_history_backend(self):
+        try:
+            self._get_or_create_tiled_container('stocks')
+            return True
+        except Exception:
+            return False
+
     def _list_stock_history_local(self):
         history = self.config.get('stock_history', [])
         if not isinstance(history, list):
@@ -535,7 +571,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
 
     def _get_stock_history_with_source(self):
         tiled_history = self._list_stock_history_tiled()
-        if tiled_history:
+        if tiled_history or self._has_tiled_stock_history_backend():
             return tiled_history, 'tiled'
         return self._list_stock_history_local(), 'local'
 
@@ -772,6 +808,28 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             pass
         return []
 
+    @staticmethod
+    def _balance_status_metadata(entry):
+        diagnosis = entry.get('diagnosis') if isinstance(entry, dict) else None
+        component_errors = diagnosis.component_errors if diagnosis is not None else {}
+        balance_status, max_component_error = _derive_balance_status(
+            entry.get('success') if isinstance(entry, dict) else None,
+            component_errors=component_errors,
+        )
+        return {
+            'balance_status': balance_status,
+            'max_component_error': max_component_error,
+        }
+
+    def balance_report(self):
+        report = super().balance_report()
+        for idx, entry in enumerate(report):
+            raw_entry = self.balanced[idx] if idx < len(self.balanced) else None
+            if raw_entry is None:
+                continue
+            entry.update(self._balance_status_metadata(raw_entry))
+        return report
+
     def _collect_balanced_targets(self):
         if not self.balanced:
             return []
@@ -783,6 +841,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             out = _solution_to_display_dict(balanced_target)
             out['source_target_name'] = entry['target'].name if entry.get('target') else None
             out['balance_success'] = entry.get('success')
+            out.update(self._balance_status_metadata(entry))
             results.append(out)
         return results
 
@@ -881,7 +940,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             'multistep_diluent_policy': str(self.config.get('multistep_diluent_policy', 'primary_solvent')),
         }
 
-    def get_sample_composition(self, composition_format='mass_fraction'):
+    def get_sample_composition(self, composition_format='masses'):
         """Get the composition of the last balanced target in the requested format.
 
         Uses the Solution objects in ``self.balanced`` which have full access
@@ -892,10 +951,10 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         ----------
         composition_format : str or dict
             If str, a single format applied to all components.
-            If dict, maps component names to format strings; components not
-            listed default to ``'mass_fraction'``.
-            Valid formats: ``'mass_fraction'``, ``'volume_fraction'``,
-            ``'concentration'``, ``'molarity'``.
+            If dict, maps component names to format strings and must include
+            every component in the balanced target.
+            Valid formats: ``'masses'``, ``'mass_fraction'``,
+            ``'volume_fraction'``, ``'concentration'``, ``'molarity'``.
 
         Returns
         -------
@@ -903,7 +962,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
             Composition dictionary with component names as keys and numeric
             values in the requested format.
         """
-        valid_formats = ['mass_fraction', 'volume_fraction', 'concentration', 'molarity']
+        valid_formats = ['masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity']
 
         if not self.balanced:
             raise ValueError("No balanced targets available. Call balance() first.")
@@ -927,8 +986,18 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
                     balanced_target, component, composition_format
                 )
         elif isinstance(composition_format, dict):
+            missing_components = [
+                component for component in balanced_target.components.keys()
+                if component not in composition_format
+            ]
+            if missing_components:
+                raise ValueError(
+                    "composition_format dict must specify every component in the balanced target. "
+                    f"Missing components: {missing_components}. "
+                    f"Available components: {list(balanced_target.components.keys())}"
+                )
             for component in balanced_target.components.keys():
-                format_type = composition_format.get(component, 'mass_fraction')
+                format_type = composition_format[component]
                 if format_type not in valid_formats:
                     raise ValueError(
                         f"Invalid format '{format_type}' for component '{component}'. "
@@ -955,16 +1024,20 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         component : str
             Component name.
         format_type : str
-            One of: ``'mass_fraction'``, ``'volume_fraction'``,
-            ``'concentration'``, ``'molarity'``.
+            One of: ``'masses'``, ``'mass_fraction'``,
+            ``'volume_fraction'``, ``'concentration'``, ``'molarity'``.
 
         Returns
         -------
         float
             Component value in the requested format (dimensionless or in
-            canonical units: mg/ml for concentration, mM for molarity).
+            canonical units: mg for masses, mg/ml for concentration,
+            mM for molarity).
         """
-        if format_type == 'mass_fraction':
+        if format_type == 'masses':
+            return solution[component].mass.to('mg').magnitude
+
+        elif format_type == 'mass_fraction':
             return solution.mass_fraction[component].magnitude
 
         elif format_type == 'volume_fraction':
@@ -988,7 +1061,7 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
         else:
             raise ValueError(
                 f"Invalid format_type '{format_type}'. "
-                f"Must be one of: 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'"
+                f"Must be one of: 'masses', 'mass_fraction', 'volume_fraction', 'concentration', 'molarity'"
             )
 
     # --- Component database management ---

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>AFL.automation.instrument.I22SAXS &#8212; AFL-automation  documentation</title>
+    <title>AFL.automation.instrument.OpticalTurbidity &#8212; AFL-automation  documentation</title>
   
   
   
@@ -46,12 +46,12 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../_static/_static/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/AFL.automation.instrument.I22SAXS';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/AFL.automation.instrument.OpticalTurbidity';</script>
     <link rel="icon" href="../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="AFL.automation.instrument.ISISLARMOR" href="AFL.automation.instrument.ISISLARMOR.html" />
-    <link rel="prev" title="AFL.automation.instrument.GPInterpolator" href="AFL.automation.instrument.GPInterpolator.html" />
+    <link rel="next" title="AFL.automation.instrument.PySpecClient" href="AFL.automation.instrument.PySpecClient.html" />
+    <link rel="prev" title="AFL.automation.instrument.NicosScriptClient" href="AFL.automation.instrument.NicosScriptClient.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -371,14 +371,14 @@
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.DummySAS.html">AFL.automation.instrument.DummySAS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.FileCamera.html">AFL.automation.instrument.FileCamera</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.GPInterpolator.html">AFL.automation.instrument.GPInterpolator</a></li>
-<li class="toctree-l4 current active"><a class="current reference internal" href="#">AFL.automation.instrument.I22SAXS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.I22SAXS.html">AFL.automation.instrument.I22SAXS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.ISISLARMOR.html">AFL.automation.instrument.ISISLARMOR</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.NICEConsole.html">AFL.automation.instrument.NICEConsole</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.NICEData.html">AFL.automation.instrument.NICEData</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.NICEDevice.html">AFL.automation.instrument.NICEDevice</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.NetworkCamera.html">AFL.automation.instrument.NetworkCamera</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.NicosScriptClient.html">AFL.automation.instrument.NicosScriptClient</a></li>
-<li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.OpticalTurbidity.html">AFL.automation.instrument.OpticalTurbidity</a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">AFL.automation.instrument.OpticalTurbidity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.PySpecClient.html">AFL.automation.instrument.PySpecClient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.SINQSANS.html">AFL.automation.instrument.SINQSANS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.SINQSANS_NICOS.html">AFL.automation.instrument.SINQSANS_NICOS</a></li>
@@ -454,7 +454,7 @@
     
     <li class="breadcrumb-item"><a href="AFL.automation.instrument.html" class="nav-link">AFL.automation.instrument</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.instrument.I22SAXS</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.instrument.OpticalTurbidity</span></li>
   </ul>
 </nav>
 </div>
@@ -471,44 +471,87 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-AFL.automation.instrument.I22SAXS">
-<span id="afl-automation-instrument-i22saxs"></span><h1>AFL.automation.instrument.I22SAXS<a class="headerlink" href="#module-AFL.automation.instrument.I22SAXS" title="Link to this heading">#</a></h1>
+  <section id="module-AFL.automation.instrument.OpticalTurbidity">
+<span id="afl-automation-instrument-opticalturbidity"></span><h1>AFL.automation.instrument.OpticalTurbidity<a class="headerlink" href="#module-AFL.automation.instrument.OpticalTurbidity" title="Link to this heading">#</a></h1>
+<p class="rubric">Functions</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">canny</span></code>(image[, sigma, low_threshold, ...])</p></td>
+<td><p>Edge filter an image using the Canny algorithm.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hough_circle</span></code>(image, radius[, normalize, ...])</p></td>
+<td><p>Perform a circular Hough transform.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hough_circle_peaks</span></code>(hspaces, radii[, ...])</p></td>
+<td><p>Return peaks in a circle Hough transform.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">img_as_ubyte</span></code>(image[, force_copy])</p></td>
+<td><p>Convert an image to 8-bit unsigned integer format.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rgb2gray</span></code>(rgb, *[, channel_axis])</p></td>
+<td><p>Compute luminance of an RGB image.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code>(name[, defaults, overrides, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.instrument.I22SAXS.I22SAXS" title="AFL.automation.instrument.I22SAXS.I22SAXS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">I22SAXS</span></code></a>([overrides])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Eq</span></code>(key, value)</p></td>
+<td><p>Query equality of a given key's value to the specified value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity" title="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpticalTurbidity</span></code></a>([camera, overrides])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <dl class="py class">
-<dt class="sig sig-object py" id="AFL.automation.instrument.I22SAXS.I22SAXS">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.instrument.I22SAXS.</span></span><span class="sig-name descname"><span class="pre">I22SAXS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/I22SAXS.html#I22SAXS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.I22SAXS.I22SAXS" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.instrument.OpticalTurbidity.</span></span><span class="sig-name descname"><span class="pre">OpticalTurbidity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/OpticalTurbidity.html#OpticalTurbidity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity" title="Link to this definition">#</a></dt>
 <dd><dl class="py attribute">
-<dt class="sig sig-object py" id="AFL.automation.instrument.I22SAXS.I22SAXS.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'acq_time':</span> <span class="pre">1,</span> <span class="pre">'acq_timeout':</span> <span class="pre">120,</span> <span class="pre">'address':</span> <span class="pre">'',</span> <span class="pre">'data_read_cooldown':</span> <span class="pre">5,</span> <span class="pre">'empty_scan_id':</span> <span class="pre">'',</span> <span class="pre">'file_read_timeout':</span> <span class="pre">30,</span> <span class="pre">'nframes':</span> <span class="pre">1,</span> <span class="pre">'port':</span> <span class="pre">2222,</span> <span class="pre">'pos_list':</span> <span class="pre">[],</span> <span class="pre">'processed_base_path':</span> <span class="pre">'/mnt/i22_processed/i22-',</span> <span class="pre">'reduced_data_suffix':</span> <span class="pre">'_saxs_Transmission_Averaged_Subtracted_IvsQ_processed.nxs',</span> <span class="pre">'ssh_key_path':</span> <span class="pre">'',</span> <span class="pre">'username':</span> <span class="pre">''}</span></em><a class="headerlink" href="#AFL.automation.instrument.I22SAXS.I22SAXS.defaults" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.defaults">
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'camera_index':</span> <span class="pre">0,</span> <span class="pre">'camera_interface':</span> <span class="pre">'http',</span> <span class="pre">'camera_url':</span> <span class="pre">'http://afl-video:8081/103/current',</span> <span class="pre">'col_crop':</span> <span class="pre">[0,</span> <span class="pre">479],</span> <span class="pre">'empty_uuid':</span> <span class="pre">'',</span> <span class="pre">'hough_radii':</span> <span class="pre">98,</span> <span class="pre">'row_crop':</span> <span class="pre">[0,</span> <span class="pre">479],</span> <span class="pre">'save_path':</span> <span class="pre">'/home/afl642/2305_SINQ_TurbidityImages/'}</span></em><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.defaults" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.instrument.I22SAXS.I22SAXS.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/I22SAXS.html#I22SAXS.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.I22SAXS.I22SAXS.__init__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.instrument.I22SAXS.I22SAXS.expose">
-<span class="sig-name descname"><span class="pre">expose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">empty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nframes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acq_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_empty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/I22SAXS.html#I22SAXS.expose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.I22SAXS.I22SAXS.expose" title="Link to this definition">#</a></dt>
-<dd><p>Perform a sequence of exposures at positions defined in self.config[‘pos_list’].</p>
-<p>Return the integrated data of the measurement with the lowest measured sample transmission.</p>
+<dt class="sig sig-object py" id="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/OpticalTurbidity.html#OpticalTurbidity.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.__init__" title="Link to this definition">#</a></dt>
+<dd><p>Initialize OpticalTurbidity calculator driver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>camera</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em>, </em><em>optional</em>) – Camera object (for example, a NetworkCamera instance). If None, one
+will be created when using the HTTP interface.</p></li>
+<li><p><strong>overrides</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – Configuration overrides for PersistentConfig.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.instrument.I22SAXS.I22SAXS.read_integrated">
-<span class="sig-name descname"><span class="pre">read_integrated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scanid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/I22SAXS.html#I22SAXS.read_integrated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.I22SAXS.I22SAXS.read_integrated" title="Link to this definition">#</a></dt>
-<dd><p>Scans the appropriate directory for the filename of the data collected with filename</p>
+<dt class="sig sig-object py" id="AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.measure">
+<span class="sig-name descname"><span class="pre">measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_empty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/OpticalTurbidity.html#OpticalTurbidity.measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.measure" title="Link to this definition">#</a></dt>
+<dd><p>This is an optical turbidity measurement observing the SANS cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_empty</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, set the current image as the empty reference image.</p></li>
+<li><p><strong>plotting</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, save diagnostic plots.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Additional arguments passed to image collection.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataset with turbidity measurements and images. When
+<cite>set_empty=True</cite>, the dataset contains the captured empty image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -526,20 +569,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="AFL.automation.instrument.GPInterpolator.html"
+       href="AFL.automation.instrument.NicosScriptClient.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">AFL.automation.instrument.GPInterpolator</p>
+        <p class="prev-next-title">AFL.automation.instrument.NicosScriptClient</p>
       </div>
     </a>
     <a class="right-next"
-       href="AFL.automation.instrument.ISISLARMOR.html"
+       href="AFL.automation.instrument.PySpecClient.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">AFL.automation.instrument.ISISLARMOR</p>
+        <p class="prev-next-title">AFL.automation.instrument.PySpecClient</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -562,11 +605,10 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.I22SAXS.I22SAXS"><code class="docutils literal notranslate"><span class="pre">I22SAXS</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.I22SAXS.I22SAXS.defaults"><code class="docutils literal notranslate"><span class="pre">I22SAXS.defaults</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.I22SAXS.I22SAXS.__init__"><code class="docutils literal notranslate"><span class="pre">I22SAXS.__init__()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.I22SAXS.I22SAXS.expose"><code class="docutils literal notranslate"><span class="pre">I22SAXS.expose()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.I22SAXS.I22SAXS.read_integrated"><code class="docutils literal notranslate"><span class="pre">I22SAXS.read_integrated()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity"><code class="docutils literal notranslate"><span class="pre">OpticalTurbidity</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.defaults"><code class="docutils literal notranslate"><span class="pre">OpticalTurbidity.defaults</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.__init__"><code class="docutils literal notranslate"><span class="pre">OpticalTurbidity.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.measure"><code class="docutils literal notranslate"><span class="pre">OpticalTurbidity.measure()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -576,7 +618,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/_autosummary/AFL.automation.instrument.I22SAXS.rst.txt"
+      <li><a href="../_sources/_autosummary/AFL.automation.instrument.OpticalTurbidity.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>

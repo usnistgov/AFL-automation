@@ -15,12 +15,41 @@ import h5py  # type: ignore
 import numpy as np
 import requests  # type: ignore
 import xarray as xr 
-from tiled.client import from_uri  # type: ignore
 from scipy.spatial.distance import cdist
 
 from AFL.automation.APIServer.Client import Client  # type: ignore
 from AFL.automation.APIServer.Driver import Driver  # type: ignore
 from AFL.automation.shared.units import units  # type: ignore
+
+
+class MissingTiledConfigurationError(RuntimeError):
+    """Raised when OrchestratorDriver needs Tiled access but no client is configured."""
+
+
+class _MissingTiledClient:
+    def __init__(self, message: str):
+        self._message = message
+
+    def _raise(self):
+        raise MissingTiledConfigurationError(self._message)
+
+    def __getitem__(self, key):
+        self._raise()
+
+    def __getattr__(self, name):
+        self._raise()
+
+    def items(self):
+        self._raise()
+
+    def search(self, *args, **kwargs):
+        self._raise()
+
+    def __iter__(self):
+        self._raise()
+
+    def __len__(self):
+        self._raise()
 
 
 class OrchestratorDriver(Driver):
@@ -493,20 +522,24 @@ class OrchestratorDriver(Driver):
         return False
 
     def _get_tiled_client_for_lookup(self):
+        if self._tiled_client is not None:
+            return self._tiled_client
+
         client = None
         if self.data is not None:
-            try:
-                client = self.tiled_client
-            except Exception:
-                client = None
+            client = getattr(self.data, "tiled_client", None)
 
         if client is not None:
+            self._tiled_client = client
             return client
 
-        if 'tiled_uri' not in self.config or not self.config['tiled_uri']:
-            return None
-
-        return from_uri(self.config['tiled_uri'], structure_clients="dask")
+        message = (
+            "No Tiled client is available on self.data for OrchestratorDriver lookup. "
+            "Configure the Tiled URI and API key in ~/.afl/config if they are not already set."
+        )
+        self.log_warning(message)
+        self._tiled_client = _MissingTiledClient(message)
+        return self._tiled_client
 
     def _get_run_documents_container_for_lookup(self, client: Any):
         if client is None:
@@ -514,12 +547,16 @@ class OrchestratorDriver(Driver):
 
         try:
             return client['run_documents']
+        except MissingTiledConfigurationError:
+            raise
         except Exception:
             return client
 
     def _iter_run_document_entries(self, container: Any, prefix: str = ''):
         try:
             items = list(container.items())
+        except MissingTiledConfigurationError:
+            raise
         except Exception:
             return
 
@@ -1217,6 +1254,8 @@ class OrchestratorDriver(Driver):
             return matching_entries[0][0]
 
         except Exception as e:
+            if isinstance(e, MissingTiledConfigurationError):
+                raise
             self.log_error(f"Error querying tiled for entry_id: {e}")
             return None
 

@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import pathlib
 import sys
 import time
@@ -21,7 +22,10 @@ from AFL.automation.APIServer.Driver import Driver
 from AFL.automation.APIServer.data.DataTrashcan import DataTrashcan
 from AFL.automation.APIServer.data.DataTiled import DataTiled
 from AFL.automation.mixcalc.MixDB import MixDB
-from AFL.automation.orchestrator.OrchestratorDriver import OrchestratorDriver
+from AFL.automation.orchestrator.OrchestratorDriver import (
+    MissingTiledConfigurationError,
+    OrchestratorDriver,
+)
 
 AGENT_REPO = pathlib.Path(__file__).resolve().parents[2] / "AFL-agent"
 if AGENT_REPO.exists():
@@ -359,7 +363,7 @@ def isolated_closed_loop(tmp_path, monkeypatch):
             "tiled_uri": tiled_server,
         }
     )
-    orchestrator_server = make_server("OrchestratorServer", orchestrator_driver)
+    orchestrator_server = make_server("OrchestratorServer", orchestrator_driver, use_tiled_data=True)
     LocalClient.register(*endpoints["orchestrator"], orchestrator_server.app.test_client())
 
     def make_client(endpoint_name):
@@ -493,3 +497,47 @@ def test_orchestrator_extends_existing_agent_input_group(isolated_closed_loop):
     assert groups[0]["entry_ids"][0] == "seed-entry"
     assert len(groups[0]["entry_ids"]) == 2
     assert groups[0]["entry_ids"][1].startswith("QD-")
+
+
+def test_orchestrator_missing_tiled_client_warns_and_raises(tmp_path, monkeypatch, caplog):
+    afl_home = tmp_path / ".afl"
+    afl_home.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("AFL_HOME", str(afl_home))
+
+    driver = OrchestratorDriver(
+        overrides={
+            "client": {
+                "prep": "prep:5001",
+                "load": "load:5002",
+            },
+            "instrument": [
+                {
+                    "name": "fake_sans",
+                    "client_name": "instrument",
+                    "measure_base_kw": {"task_name": "measure_scattering"},
+                    "empty_base_kw": {},
+                    "concat_dim": "sample",
+                }
+            ],
+            "ternary": False,
+            "data_tag": "closed-loop-test",
+            "components": ["A", "B"],
+            "AL_components": ["A", "B"],
+            "snapshot_directory": str(tmp_path / "snapshots"),
+            "max_sample_transmission": 0.6,
+            "mix_order": [],
+            "camera_urls": [],
+            "prepare_volume": "1000 ul",
+            "composition_format": "concentration",
+        }
+    )
+    driver.data = DataTrashcan()
+
+    with caplog.at_level(logging.WARNING):
+        with pytest.raises(MissingTiledConfigurationError, match=r"~/.afl/config"):
+            driver._get_last_tiled_entry_for_measurement(
+                sample_uuid="SAM-CLOSED-LOOP-ERR",
+                task_name="measure_scattering",
+            )
+
+    assert "No Tiled client is available on self.data for OrchestratorDriver lookup" in caplog.text

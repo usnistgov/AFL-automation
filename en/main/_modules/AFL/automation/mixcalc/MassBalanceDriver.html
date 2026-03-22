@@ -433,6 +433,35 @@
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 
+<span class="n">EXACT_BALANCE_ERROR_TOL</span> <span class="o">=</span> <span class="mf">1e-12</span>
+
+
+<span class="k">def</span> <span class="nf">_max_component_error</span><span class="p">(</span><span class="n">component_errors</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">component_errors</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">component_errors</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">max_err</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">component_errors</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_finite</span><span class="p">(</span><span class="n">err</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">max_err</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">err</span> <span class="o">&gt;</span> <span class="n">max_err</span><span class="p">:</span>
+            <span class="n">max_err</span> <span class="o">=</span> <span class="n">err</span>
+    <span class="k">return</span> <span class="n">max_err</span>
+
+
+<span class="k">def</span> <span class="nf">_derive_balance_status</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">component_errors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">max_err</span> <span class="o">=</span> <span class="n">_max_component_error</span><span class="p">(</span><span class="n">component_errors</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">success</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;failed&#39;</span><span class="p">,</span> <span class="n">max_err</span>
+    <span class="k">if</span> <span class="n">max_err</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">max_err</span> <span class="o">&lt;=</span> <span class="n">EXACT_BALANCE_ERROR_TOL</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;succeeded&#39;</span><span class="p">,</span> <span class="n">max_err</span>
+    <span class="k">return</span> <span class="s1">&#39;within_tolerance&#39;</span><span class="p">,</span> <span class="n">max_err</span>
+
+
 <span class="k">def</span> <span class="nf">_solution_to_display_dict</span><span class="p">(</span><span class="n">solution</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a JSON-serializable dict from a Solution with all available</span>
 <span class="sd">    composition methods.</span>
@@ -958,6 +987,13 @@
         <span class="n">out</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">entry</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
+    <span class="k">def</span> <span class="nf">_has_tiled_stock_history_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_tiled_container</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
     <span class="k">def</span> <span class="nf">_list_stock_history_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_history&#39;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -968,7 +1004,7 @@
 
     <span class="k">def</span> <span class="nf">_get_stock_history_with_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">tiled_history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_stock_history_tiled</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">tiled_history</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tiled_history</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_tiled_stock_history_backend</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">tiled_history</span><span class="p">,</span> <span class="s1">&#39;tiled&#39;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_stock_history_local</span><span class="p">(),</span> <span class="s1">&#39;local&#39;</span>
 
@@ -1238,6 +1274,31 @@
         <span class="k">return</span> <span class="p">[]</span></div>
 
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_balance_status_metadata</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+        <span class="n">diagnosis</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;diagnosis&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">component_errors</span> <span class="o">=</span> <span class="n">diagnosis</span><span class="o">.</span><span class="n">component_errors</span> <span class="k">if</span> <span class="n">diagnosis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">balance_status</span><span class="p">,</span> <span class="n">max_component_error</span> <span class="o">=</span> <span class="n">_derive_balance_status</span><span class="p">(</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;success&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">component_errors</span><span class="o">=</span><span class="n">component_errors</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;balance_status&#39;</span><span class="p">:</span> <span class="n">balance_status</span><span class="p">,</span>
+            <span class="s1">&#39;max_component_error&#39;</span><span class="p">:</span> <span class="n">max_component_error</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="MassBalanceDriver.balance_report">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.balance_report">[docs]</a>
+    <span class="k">def</span> <span class="nf">balance_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">report</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">balance_report</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">report</span><span class="p">):</span>
+            <span class="n">raw_entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">raw_entry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_balance_status_metadata</span><span class="p">(</span><span class="n">raw_entry</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">report</span></div>
+
+
     <span class="k">def</span> <span class="nf">_collect_balanced_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
@@ -1249,6 +1310,7 @@
             <span class="n">out</span> <span class="o">=</span> <span class="n">_solution_to_display_dict</span><span class="p">(</span><span class="n">balanced_target</span><span class="p">)</span>
             <span class="n">out</span><span class="p">[</span><span class="s1">&#39;source_target_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="n">out</span><span class="p">[</span><span class="s1">&#39;balance_success&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;success&#39;</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_balance_status_metadata</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
             <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span>
 
@@ -1358,7 +1420,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.get_sample_composition">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_sample_composition">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_sample_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition_format</span><span class="o">=</span><span class="s1">&#39;mass_fraction&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_sample_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition_format</span><span class="o">=</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the composition of the last balanced target in the requested format.</span>
 
 <span class="sd">        Uses the Solution objects in ``self.balanced`` which have full access</span>
@@ -1369,10 +1431,10 @@
 <span class="sd">        ----------</span>
 <span class="sd">        composition_format : str or dict</span>
 <span class="sd">            If str, a single format applied to all components.</span>
-<span class="sd">            If dict, maps component names to format strings; components not</span>
-<span class="sd">            listed default to ``&#39;mass_fraction&#39;``.</span>
-<span class="sd">            Valid formats: ``&#39;mass_fraction&#39;``, ``&#39;volume_fraction&#39;``,</span>
-<span class="sd">            ``&#39;concentration&#39;``, ``&#39;molarity&#39;``.</span>
+<span class="sd">            If dict, maps component names to format strings and must include</span>
+<span class="sd">            every component in the balanced target.</span>
+<span class="sd">            Valid formats: ``&#39;masses&#39;``, ``&#39;mass_fraction&#39;``,</span>
+<span class="sd">            ``&#39;volume_fraction&#39;``, ``&#39;concentration&#39;``, ``&#39;molarity&#39;``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1380,7 +1442,7 @@
 <span class="sd">            Composition dictionary with component names as keys and numeric</span>
 <span class="sd">            values in the requested format.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">valid_formats</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mass_fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;volume_fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;concentration&#39;</span><span class="p">,</span> <span class="s1">&#39;molarity&#39;</span><span class="p">]</span>
+        <span class="n">valid_formats</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;masses&#39;</span><span class="p">,</span> <span class="s1">&#39;mass_fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;volume_fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;concentration&#39;</span><span class="p">,</span> <span class="s1">&#39;molarity&#39;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No balanced targets available. Call balance() first.&quot;</span><span class="p">)</span>
@@ -1404,8 +1466,18 @@
                     <span class="n">balanced_target</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">composition_format</span>
                 <span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">composition_format</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">missing_components</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">component</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">component</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">composition_format</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">missing_components</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;composition_format dict must specify every component in the balanced target. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Missing components: </span><span class="si">{</span><span class="n">missing_components</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Available components: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">balanced_target</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
             <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">format_type</span> <span class="o">=</span> <span class="n">composition_format</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;mass_fraction&#39;</span><span class="p">)</span>
+                <span class="n">format_type</span> <span class="o">=</span> <span class="n">composition_format</span><span class="p">[</span><span class="n">component</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">format_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_formats</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;Invalid format &#39;</span><span class="si">{</span><span class="n">format_type</span><span class="si">}</span><span class="s2">&#39; for component &#39;</span><span class="si">{</span><span class="n">component</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
@@ -1433,16 +1505,20 @@
 <span class="sd">        component : str</span>
 <span class="sd">            Component name.</span>
 <span class="sd">        format_type : str</span>
-<span class="sd">            One of: ``&#39;mass_fraction&#39;``, ``&#39;volume_fraction&#39;``,</span>
-<span class="sd">            ``&#39;concentration&#39;``, ``&#39;molarity&#39;``.</span>
+<span class="sd">            One of: ``&#39;masses&#39;``, ``&#39;mass_fraction&#39;``,</span>
+<span class="sd">            ``&#39;volume_fraction&#39;``, ``&#39;concentration&#39;``, ``&#39;molarity&#39;``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        float</span>
 <span class="sd">            Component value in the requested format (dimensionless or in</span>
-<span class="sd">            canonical units: mg/ml for concentration, mM for molarity).</span>
+<span class="sd">            canonical units: mg for masses, mg/ml for concentration,</span>
+<span class="sd">            mM for molarity).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">format_type</span> <span class="o">==</span> <span class="s1">&#39;mass_fraction&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">format_type</span> <span class="o">==</span> <span class="s1">&#39;masses&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">solution</span><span class="p">[</span><span class="n">component</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+
+        <span class="k">elif</span> <span class="n">format_type</span> <span class="o">==</span> <span class="s1">&#39;mass_fraction&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">solution</span><span class="o">.</span><span class="n">mass_fraction</span><span class="p">[</span><span class="n">component</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span>
 
         <span class="k">elif</span> <span class="n">format_type</span> <span class="o">==</span> <span class="s1">&#39;volume_fraction&#39;</span><span class="p">:</span>
@@ -1466,7 +1542,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Invalid format_type &#39;</span><span class="si">{</span><span class="n">format_type</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Must be one of: &#39;mass_fraction&#39;, &#39;volume_fraction&#39;, &#39;concentration&#39;, &#39;molarity&#39;&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Must be one of: &#39;masses&#39;, &#39;mass_fraction&#39;, &#39;volume_fraction&#39;, &#39;concentration&#39;, &#39;molarity&#39;&quot;</span>
             <span class="p">)</span>
 
     <span class="c1"># --- Component database management ---</span>

@@ -425,7 +425,7 @@
 <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">eic_client.EICClient</span> <span class="kn">import</span> <span class="n">EICClient</span>
+    <span class="kn">from</span> <span class="nn">AFL.automation.instrument.EICClient</span> <span class="kn">import</span> <span class="n">EICClient</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">EICClient</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -442,7 +442,6 @@
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;ipts_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1234&#39;</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;beamline&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CG3&#39;</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;run_cycle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;RC511&#39;</span>
-    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;use_subtracted_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Config0&#39;</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;mock_mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;reduction_log_data_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;/HFIR/</span><span class="se">{{</span><span class="s1">INST</span><span class="se">}}</span><span class="s1">/IPTS-</span><span class="se">{{</span><span class="s1">IPTS</span><span class="se">}}</span><span class="s1">/shared/autoreduce/</span><span class="se">{{</span><span class="s1">RUN_CYCLE</span><span class="se">}}</span><span class="s1">/</span><span class="se">{{</span><span class="s1">CONFIG</span><span class="se">}}</span><span class="s1">&#39;</span>

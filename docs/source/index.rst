@@ -28,4 +28,3 @@ Table of Contents
    how-to/index
    explanation/index
    reference/index
-   modules

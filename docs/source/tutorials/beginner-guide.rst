@@ -10,36 +10,75 @@ This tutorial will guide you through basic examples of using the AFL through use
 Prerequisites
 -----------------
 
-To fully utilize this tutorial, a raspberry pi with internet access and the AFL installed is required. For how to install the AFL, please see the :doc:`Quick Start Guide <quick-start>`
+To fully utilize this tutorial, a raspberry pi with internet access and the AFL installed is required. For how to install the AFL, please see the :doc:`Setup <installation>`
 
-Installation with Hardware Support
+Basic AFL usage
 ---------------------------------
 
-Depending on your specific hardware needs, you may want to install additional dependencies:
+To get a good understanding of a basic use case of the AFL, consider the starter code given in the :doc:`Quick Start Guide <quick-start>`:
+
+.. code-block:: python
+    
+    from AFL.automation.APIServer.Driver import Driver
+    
+    class SimpleDriver(Driver):
+        defaults = {}
+        defaults['greeting'] = 'Hello, World!'
+        
+        def __init__(self, overrides=None):
+            Driver.__init__(self, name='SimpleDriver', 
+                           defaults=self.gather_defaults(),
+                           overrides=overrides)
+        
+        def say_hello(self):
+            """Say a greeting based on configuration"""
+            return self.config['greeting']
+
+    if __name__ == '__main__':
+        from AFL.automation.shared.launcher import *
+
+
+This basic driver allows for a user to query the device the driver is running on, to which the device will return the greeting stored on the disc, which is initiated as 'Hello World' on creation.
+To run the driver, place the SimpleDriver.py file within the AFL/automation/instrument file and run from the command line:
 
 .. code-block:: bash
 
-    # For Ocean Insight spectrometers
-    pip install AFL-automation[seabreeze]
-    
-    # For Opentrons liquid handling robots
-    pip install AFL-automation[opentrons]
-    
-    # For multiple hardware types
-    pip install AFL-automation[seabreeze,opentrons]
+    python -m AFL.automation.instrument.SimpleDriver
 
-For a complete list of available extras and what they provide, see the :doc:`/how-to/dependencies` page.
+Doing so will show an output on the CLI that lists the system info, added routes, and the API server starting. With this, you can now view the server located at http://localhost:5000.
 
-Development Installation
------------------------
+.. image:: ../images/BasicDriver-Default.png
 
-For development, you might want to install in editable mode with additional tools:
+This is the default page for the driver that can be used to view the tasks that have been queued and run through the driver which will be displayed on the right hand side as well as commands to operate on the currently running task.
+
+With the driver running, we can now queue a task. To do so, we use a slightly modified Client.py file, also located within the :doc:`Quick Start Guide <quick-start>`:
+
+.. code-block:: python
+
+    from AFL.automation.APIServer.Client import Client
+
+    # Connect to the service
+    client = Client('localhost',port=5000)
+    client.login(username = 'test')
+
+    # Call a method
+    response = client.enqueue(task_name='say_hello',interactive=True)
+    print(response['return_val'])  # Outputs: 'Hello, World!'
+
+    # Call a method asynchronously
+    response = client.enqueue(task_name='say_hello',interactive=False)
+    print(response)  # Outputs a uuid
+
+In the above code, two separate ways of enqueuing the task say_hello are performed: one that directly returns the result of the task, and one that returns the associated UUID, determined by the interactive flag.
+
+Running the Client.py file will result in an output of:
 
 .. code-block:: bash
+    Hello, World!
+    QD-05cdd0ed-6f25-45e6-8d70-1528e9de4064
 
-    git clone https://github.com/usnistgov/AFL-automation.git
-    cd AFL-automation
-    pip install -e .
-    
-    # Install development tools
-    pip install -e ".[docs]"
+Viewing the website at http://localhost:5000 now displays that both say_hello tasks were completed:
+
+.. image:: ../images/BasicDriver-AfterQueue.png
+
+

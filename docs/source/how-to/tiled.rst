@@ -36,12 +36,14 @@ In the terminal, run the command below to generate the API key:
 In the tiled/config.yml file, add the generated API key under the authentication section:
 
 .. code-block:: yml
+    
     authentication:
         single_user_api_key: [your_api_key_here]
 
 Make sure in tiled/config.yml, the following is there:
 
 .. code-block:: yml
+    
     allow_origins:
         - http://localhost:5000
 

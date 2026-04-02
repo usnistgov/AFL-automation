@@ -66,11 +66,11 @@ Before running the Driver file, add the following details to ~/.afl/config.json 
         "tiled_api_key": "your_api_key_here"
     }
 
-**Note**: the api_key in the json file should macth the one in the tiled/config.yml file
+**Note**: the api_key in the json file should match the one in the tiled/config.yml file
 
 Run the Driver file to start the API Server 
 
-A successful startup will show a confirmation message or accessible URL within the APIServer. The connection message on the top right of the database browser should now say **Connected** insetead of **connected via same-origin proxy**
+A successful startup will show a confirmation message or accessible URL within the APIServer. The connection message on the top right of the database browser should now say **Connected** instead of **connected via same-origin proxy**
 
 Database Browser
 ------------------

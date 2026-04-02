@@ -2,7 +2,7 @@
 Using GNU Screen 
 ======================
 
-GNU Screen is a platform that manages multiple terminal sessions in a single window. It allows users to handle starting/detaching processes, multiple windows, and session sharing as well as serves as a way for the server to run in the background so users and view and interact with it.
+GNU Screen is a platform that manages multiple terminal sessions in a single window. It allows users to handle starting/detaching processes, work with multiple windows, and use session sharing. Screen serves as a way for the API server to run in the background so users and view and interact with it.
 
 Installation
 ----------------
@@ -67,6 +67,7 @@ When running AFL-automation on a server, you can start a screen session to run t
 When using AFL-automation, it is important to use screen to manage your server sessions effectively and allow the API server to run in the background while you work on other tasks or disconnect from the terminal.
 
 Certain repos like _____ require screen to run the server in the background, so it is important to understand how to use it effectively.
+
 
 Additional Resources
 ----------------------

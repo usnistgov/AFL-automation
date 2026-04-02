@@ -2,7 +2,7 @@
 Using Tiled Server
 ======================
 
-Tiled is a Python-based data server developed by Bluesky/NSLS-II that serves structured scientific data (arrays, dataframes, etc) via HTTP. It is designed to hlep scientists store, access, and find scientific data at scall and supports parallel uploads and downloads for efficient transfers. 
+Tiled is a Python-based data server developed by Bluesky/NSLS-II that serves structured scientific data (arrays, dataframes, etc) via HTTP. It is designed to help scientists store, access, and find scientific data at scale and supports parallel uploads and downloads for efficient transfers. 
 
 Installation
 ----------------
@@ -15,18 +15,19 @@ To install Tiled Server, you can use pip:
 
 Setting up Tiled Server
 ----------------
-To set up Tiled Server, you need to access the configuration file (AFL-automation/tiled/config.yml) that specifies the data sources and other settings. 
+To set up Tiled Server, you need to access AFL's tiled configuration file (AFL-automation/tiled/config.yml) that specifies the data sources and other settings. 
 
 **CORS**: Cross-Origin Resource Sharing (CORS) is a browser security rule that blocks web pages from making requests to a different domain or port than the one they were loaded from. Since AFL's frontend runs on a different port than Tiled (port 5000 vs. port 8000), you need to explicitly tell Tiled which origins are allowed to talk to it, otherwise the browser will block the connection. 
 
-Without configuring the orgin, you can still connect to the database, and the Tiled will route traffic through a same-origin proxy (shown below)
-
-This is not an error, but it means Tiled is proxying the connection rather than serving it directly, which can affect API key handling and performance. 
+Without configuring the origin, it is still possible to connect to the database, and the Tiled will route traffic through a same-origin proxy (shown below)
 
 .. image:: /docs/source/images/same-origin-proxy.png
    :alt: Tiled Proxy
 
 
+This is not an error, but it means Tiled is proxying the connection rather than serving it directly, which can affect API key handling and performance. 
+
+To avoid this, you need to add the AFL frontend's origin (http://localhost:5000) to the allow_origins list in the tiled/config.yml file.
 In the terminal, run the command below to generate the API key:
 
 .. code-block:: bash
@@ -40,29 +41,36 @@ In the tiled/config.yml file, add the generated API key under the authentication
     authentication:
         single_user_api_key: [your_api_key_here]
 
-Make sure in tiled/config.yml, the following is there:
+Make sure the following line is also included in the config.yml file:
 
 .. code-block:: yml
     
     allow_origins:
         - http://localhost:5000
 
-Starting the Server
+After the config file is updated with the correct origin and API key, run the command below to start the Tiled Server:
+
+.. code-block:: bash
+
+    tiled serve config AFL-automation/tiled/config.yml
+
+
+Starting the API Server
 -----------------
-Before running the Driver file, add the following to ~/.afl/config.json:
+Before running the Driver file, add the following details to ~/.afl/config.json file:
 
 .. code-block:: json
 
-    "tiled": {
-        "url": "http://localhost:8000",
-        "api_key": "your_api_key_here"
+    {
+        "tiled_server": "http://localhost:8000",
+        "tiled_api_key": "your_api_key_here"
     }
 
 **Note**: the api_key in the json file should macth the one in the tiled/config.yml file
 
 Run the Driver file to start the API Server 
 
-A successful startup will show a confirmation message or accessible URL within the APIServer
+A successful startup will show a confirmation message or accessible URL within the APIServer. The connection message on the top right of the database browser should now say **Connected** insetead of **connected via same-origin proxy**
 
 Database Browser
 ------------------

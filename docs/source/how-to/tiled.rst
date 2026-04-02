@@ -7,9 +7,11 @@ Tiled is a Python-based data server developed by Bluesky/NSLS-II that serves str
 Installation
 ----------------
 To install Tiled Server, you can use pip:
+
 .. code-block:: bash
 
     pip install tiled
+
 
 Setting up Tiled Server
 ----------------
@@ -21,21 +23,24 @@ Without configuring the orgin, you can still connect to the database, and the Ti
 
 This is not an error, but it means Tiled is proxying the connection rather than serving it directly, which can affect API key handling and performance. 
 
-.. image:: /_static/tiled-proxy.png
+.. image:: /docs/source/images/same-origin-proxy.png
    :alt: Tiled Proxy
 
 
 In the terminal, run the command below to generate the API key:
+
 .. code-block:: bash
 
     openssl rand -hex 32
 
 In the tiled/config.yml file, add the generated API key under the authentication section:
+
 .. code-block:: yml
     authentication:
         single_user_api_key: [your_api_key_here]
 
 Make sure in tiled/config.yml, the following is there:
+
 .. code-block:: yml
     allow_origins:
         - http://localhost:5000
@@ -59,6 +64,10 @@ A successful startup will show a confirmation message or accessible URL within t
 
 Database Browser
 ------------------
+
+.. image:: /docs/source/images/tiled_browser.png
+   :alt: Tiled Browser 
+
 Once the API Server is running, you can access AFL's tiled database browser (typically at http://localhost:5000/tiled_browser)
 
 This interface allows users to display AFL data as browsable nodes and datasets directly in the browser, making it easier to explore and understand the data structure.

@@ -9,41 +9,48 @@ Installation
 To install GNU Screen, you can use your system's package manager.
 
 - For Debian/Ubuntu:
+  
   .. code-block:: bash
-
-    sudo apt-get install screen
+        sudo apt-get install screen
 
 - For macOS (using Homebrew):
+    
     .. code-block:: bash
-    brew install screen
+        brew install screen
 
 - For Windows, you can use a terminal emulator like Git Bash or WSL (Windows Subsystem for Linux) to access GNU Screen.
 
 Basic Commands
 ----------------
 - Start a new screen session:
+  
   .. code-block:: bash
-    screen 
+        screen 
 
 - Start a new session with a name (easier to find later):
+    
     .. code-block:: bash
-    screen -S session_name
+        screen -S session_name
 
 - Detach from the current session (leaves it running in the background):
+  
   .. code-block:: bash
-    Ctrl + A, then D
+        Ctrl + A, then D
 
 - List all screen sessions:
+    
     .. code-block:: bash
-    screen -ls
+        screen -ls
 
 - Reattach to a session:
+    
     .. code-block:: bash
-    screen -r session_name
+        screen -r session_name
 
 - Kill a session:
+   
     .. code-block:: bash
-    screen -X -S session_name quit
+        screen -X -S session_name quit
 
 AFL Use
 ----------------

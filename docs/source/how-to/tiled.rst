@@ -21,7 +21,7 @@ To set up Tiled Server, you need to access AFL's tiled configuration file (AFL-a
 
 Without configuring the origin, it is still possible to connect to the database, and the Tiled will route traffic through a same-origin proxy (shown below)
 
-.. image:: /docs/source/images/same-origin-proxy.png
+.. image:: ../images/same-origin-proxy.png
    :alt: Tiled Proxy
 
 
@@ -75,7 +75,7 @@ A successful startup will show a confirmation message or accessible URL within t
 Database Browser
 ------------------
 
-.. image:: /docs/source/images/tiled_browser.png
+.. image:: ../images/tiled_browser.png
    :alt: Tiled Browser 
 
 Once the API Server is running, you can access AFL's tiled database browser (typically at http://localhost:5000/tiled_browser)

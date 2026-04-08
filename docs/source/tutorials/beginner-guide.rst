@@ -10,7 +10,7 @@ This tutorial will guide you through basic examples of using the AFL through use
 Prerequisites
 ------------
 
-To fully utilize this tutorial, a USB camera and a raspberry pi with internet access and the AFL installed is required. For how to install the AFL, please see :doc:`Setup <installation>`.
+To fully utilize this tutorial, a USB camera and a raspberry pi with internet access and the AFL installed are required. For how to install the AFL, please see :doc:`Setup <installation>`.
 
 Basic AFL usage
 --------------

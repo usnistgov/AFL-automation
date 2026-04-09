@@ -68,8 +68,6 @@ When running AFL-automation on a server, you can start a screen session to run t
 
 When using AFL-automation, it is important to use screen to manage your server sessions effectively and allow the API server to run in the background while you work on other tasks or disconnect from the terminal.
 
-Certain repos like _____ require screen to run the server in the background, so it is important to understand how to use it effectively.
-
 
 Walkthrough with the API Server
 ----------------
@@ -82,6 +80,13 @@ Walkthrough with the API Server
 Running this command will drop you into a fresh shell and it will look like nothing happened, but you are now in a screen session named AFL-demo.
 
 2. Run the command to start the API server (using the driver file) within the screen session.
+
+sample command to start the API server with the SimpleDriver file:
+
+.. code-block:: bash
+    
+    python -m AFL.automation.instrument.SimpleDriver
+
 
 3. Detach from the screen session to keep the server running in the background:
 

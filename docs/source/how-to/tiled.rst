@@ -67,7 +67,15 @@ Starting the API Server
 
 **Note**: the api_key in the json file should match the one in the tiled/config.yml file
 
-6. Run the Driver file to start the API Server. A successful startup will show a confirmation message or accessible URL within the APIServer. The connection message on the top right of the database browser should now say **Connected** instead of **connected via same-origin proxy**
+6. Run the Driver file to start the API Server. 
+
+sample command to start the API server with the SimpleDriver file:
+
+.. code-block:: bash
+    
+    python -m AFL.automation.instrument.SimpleDriver
+
+7. A successful startup will show a confirmation message or accessible URL within the APIServer. The connection message on the top right of the database browser should now say **Connected** instead of **connected via same-origin proxy**
 
 Database Browser
 ------------------

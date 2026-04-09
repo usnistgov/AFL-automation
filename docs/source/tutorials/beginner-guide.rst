@@ -7,6 +7,18 @@ This tutorial will guide you through basic examples of using the AFL through use
 - How to queue hardware specific commands to the AFL and view the results
 - How to set up external devices to be used with the AFL
 
+.. image:: ../images/Flowchart.svg
+   :width: 0
+   :height: 0
+
+.. raw:: html
+
+   <img src="../_images/Flowchart.svg" type="image/svg+xml" width="100%">
+
+Shown above is a top level overview of how the AFL operates. One or multiple clients, each with their own client.py files, send commands through HTTP to a device hosting the driver.py file, which then executes the specified command and returns the result back to the client. 
+
+The following sections will guide through how to setup both the client.py and driver.py files to perform the specified operations, with each section performing slightly more advanced operations than the previous. 
+
 Prerequisites
 ------------
 
@@ -97,23 +109,66 @@ AFL usage with specific hardware
 To gain a better understanding of the capabilities of the AFL, we can have the AFL perform hardware-specific operations. To do so, consider this driver code to be run on a raspberry pi:
 
 .. code-block:: python
-    [TODO]
 
-As can be seen in the function get_cpu_temp, a specific file unique to a raspberry pi is printed, which obtains the current temperature of the raspberry pi.
+    from AFL.automation.APIServer.Driver import Driver
+    import subprocess
 
-It is worth noting that even though we are only using the get_cpu_temp function, other functions are in the driver code. This allows any client connecting to the raspberry pi to call any of the functions that the driver supports, not just get_cpu_temp.
+    class SimpleDriver(Driver):
+        defaults = {}
+        defaults['greeting'] = 'Hello, World!'
+
+        def __init__(self, overrides=None):
+            Driver.__init__(self, name='SimpleDriver',
+                        defaults=self.gather_defaults(),
+                        overrides=overrides)
+
+        def say_hello(self):
+            """Say a greeting based on configuration"""
+            return self.config['greeting']
+            
+        def get_cpu_temp(self):
+            """Returns the temperature of the raspberry pi"""
+            result = subprocess.run(['vcgencmd', 'measure_temp'], capture_output=True, text=True)
+            return(result.stdout)
+
+    if __name__ == '__main__':
+        from AFL.automation.shared.launcher import *
+
+
+
+As can be seen in the function get_cpu_temp, a raspberry pi command is printed, which obtains the current temperature of the raspberry pi.
+
+It is worth noting that even though we are only using the get_cpu_temp function, the previous functions remain in the driver code. This allows any client connecting to the raspberry pi to call any of the functions that the driver supports, not just get_cpu_temp.
 
 If we run this code on the raspberry pi, we can now query the temperature of the raspberry pi on other devices through this client code:
 
 .. code-block:: python
-    [TODO]
 
-Note that in order for other devices to successfully queue tasks to the raspberry pi, the Client function must use the raspberry pi's external IP.
+    from AFL.automation.APIServer.Client import Client
 
-Running the above code should give an output of:
+    # Connect to the service
+    client = Client('localhost',port=5000)
+    client.login(username = 'test')
+
+    response = client.enqueue(task_name='say_hello',interactive=True)
+    print(response['return_val'])  # Outputs: 'Hello, World!'
+
+    response = client.enqueue(task_name='say_hello',interactive=False)
+    print(response)  # Outputs a uuid
+
+    response = client.enqueue(task_name='get_cpu_temp', interactive=True)
+    print(response['return_val'])
+
+Note that in order for other devices to successfully queue tasks to the raspberry pi, the Client function must use the raspberry pi's external IP, not localhost.
+
+Running the above code should give an output similar to:
 
 .. code-block:: bash
-    [TODO]
+
+    Hello, World!
+    QD-c6409c0e-1ec8-4b24-bf5c-92c01983e74c
+    temp=44.3'C
+
 
 This method of utilizing device-specific instructions can be used on any device that can run the AFL so long as there is a method to locally run the device specific instruction.
 
@@ -121,18 +176,91 @@ Connecting External Hardware to the AFL
 ---------------------------------------
 To utilize the AFL with devices that cannot directly run the AFL, we connect them to a device which can run the AFL, then perform the desired operation on said device.
 
-To demonstrate, we can connect a USB camera to the raspberry pi and allow any device to query the raspberry pi to take a photograph and send it back to the device.
+To demonstrate, we can connect a USB camera to the raspberry pi and allow any device to query the raspberry pi to take a photograph and send it back to the device through a new function inside the driver:
 
 .. code-block:: python
-    [TODO] #ALSO edit the return value of the code to return an Xarray, not the raw image.
+
+    from AFL.automation.APIServer.Driver import Driver
+    import subprocess
+    import xarray as xr
+    import cv2
+
+    class SimpleDriver(Driver):
+        defaults = {}
+        defaults['greeting'] = 'Hello, World!'
+        defaults['grayscale'] = False
+
+        def __init__(self, overrides=None):
+            Driver.__init__(self, name='SimpleDriver',
+                        defaults=self.gather_defaults(),
+                        overrides=overrides)
+
+        def say_hello(self):
+            """Say a greeting based on configuration"""
+            return self.config['greeting']
+            
+        def get_cpu_temp(self):
+            """Returns the temperature of the raspberry pi"""
+            result = subprocess.run(['vcgencmd', 'measure_temp'], capture_output=True, text=True)
+            return(result.stdout)
+            
+
+        def take_image(self):
+            """Returns an image captured by a camera connected to the driver."""
+            cap = cv2.VideoCapture(0)
+
+            # Warm-up frames for better exposure
+            for _ in range(5):
+                cap.read()
+
+            ret, frame = cap.read()
+
+            if ret:
+                if self.config['grayscale']:
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                cap.release()
+                return frame
+            else:
+                cap.release()
+                return("Failed to capture image")
+
+            
+
+    if __name__ == '__main__':
+        from AFL.automation.shared.launcher import *
 
 Similar to before, this code queries the camera connected to the device running the driver and returns the result.
-
-Note here that, instead of simply returning the image, we return an Xarray containing the data. This makes it easier to save and store the data, and is how most data is returned in real usage of the AFL.
 
 We can now query the device running the driver through the following client code:
 
 .. code-block:: python
-    [TODO]
 
+    from AFL.automation.APIServer.Client import Client
+    import cv2
+    import numpy as np
+
+    # Connect to the service
+    client = Client('localhost',port=5000)
+    client.login(username = 'test')
+
+    # Call a method
+    response = client.enqueue(task_name='say_hello',interactive=True)
+    print(response['return_val'])  # Outputs: 'Hello, World!'
+
+    # Call a method asynchronously
+    response = client.enqueue(task_name='say_hello',interactive=False)
+    print(response)  # Outputs a uuid
+
+    response = client.enqueue(task_name='get_cpu_temp', interactive=True)
+    print(response['return_val'])
+
+    response = client.enqueue(task_name = 'take_image', interactive=True)
+    frame=(np.array(response['return_val'],dtype=np.uint8))
+    cv2.imshow("Frame", frame)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+You may have noticed that in the Driver file, we return the data in the form of an image, but the Client file needs to re-convert the output into an array before displaying the image. This is because the response['return_val'] is stored as a string. In real world scenarios, most drivers will save their data inside an Xarray, and store it inside a tiled server for future use. For more on how to set up a tiled server with the AFL, see :doc:`Using Tiled Server  <../how-to/tiled>`.
+
+As demonstrated with the USB camera, the AFL is able to operate on any device which can connect to a device running the afl. Even if the device does not have an easy method of communication such as the python package opencv, other methods such as pySerial and mouse allow automatous operation of the hardware.
 

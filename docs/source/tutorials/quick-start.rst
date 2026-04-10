@@ -86,21 +86,18 @@ You can now access your service via HTTP requests or use the built-in client:
 .. code-block:: python
 
     from AFL.automation.APIServer.Client import Client
-    
+
     # Connect to the service
-    client = Client('http://localhost:5000')
-    
+    client = Client('localhost',port=5000)
+    client.login(username = 'user')
+
     # Call a method
     response = client.enqueue(task_name='say_hello',interactive=True)
-    print(response)  # Outputs: 'Hello, World!'
+    print(response['return_val'])  # Outputs: 'Hello, World!'
 
     # Call a method asynchronously
     response = client.enqueue(task_name='say_hello',interactive=False)
     print(response)  # Outputs a uuid
-
-    # Get the result of the task
-    result = client.get_result(response)
-    print(result)  # Outputs: 'Hello, World!'
 
 Accessing the Service (Browser)
 --------------------------------

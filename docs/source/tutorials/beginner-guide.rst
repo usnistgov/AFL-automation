@@ -74,7 +74,7 @@ With the driver running, we can now queue a task. To do so, we use a slightly mo
 
     # Connect to the service
     client = Client('localhost',port=5000)
-    client.login(username = 'test')
+    client.login(username = 'user')
 
     # Call a method
     response = client.enqueue(task_name='say_hello',interactive=True)

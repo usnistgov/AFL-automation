@@ -66,7 +66,7 @@ Doing so will show an output on the CLI that lists the system info, added routes
 
 This is the default page for the driver that can be used to view the tasks that have been queued and run through the driver which will be displayed on the right hand side as well as commands to operate on the currently running task.
 
-With the driver running, we can now queue a task. To do so, we use a slightly modified Client.py file, also located within the :doc:`Quick Start Guide <quick-start>`:
+With the driver running, we can now queue a task. To do so, we use the python code given in :doc:`Quick Start Guide <quick-start>`:
 
 .. code-block:: python
 

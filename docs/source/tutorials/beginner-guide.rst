@@ -27,7 +27,7 @@ To fully utilize this tutorial, a USB camera and a raspberry pi with internet ac
 Basic AFL usage
 --------------
 
-To get a good understanding of a basic use case of the AFL, consider the starter code given in the :doc:`Quick Start Guide <quick-start>`:
+To get a good understanding of a basic use case of the AFL, consider the starter code given in the :doc:`Quick Start Guide <quick-start>`, which will be referred to as SimpleDriver.py:
 
 .. code-block:: python
     
@@ -66,7 +66,7 @@ Doing so will show an output on the CLI that lists the system info, added routes
 
 This is the default page for the driver that can be used to view the tasks that have been queued and run through the driver which will be displayed on the right hand side as well as commands to operate on the currently running task.
 
-With the driver running, we can now queue a task. To do so, we use the python code given in :doc:`Quick Start Guide <quick-start>`:
+With the driver running, we can now queue a task. To do so, we use the python code given in :doc:`Quick Start Guide <quick-start>`, which will be referred to as Client.py:
 
 .. code-block:: python
 

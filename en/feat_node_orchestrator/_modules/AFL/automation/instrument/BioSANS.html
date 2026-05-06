@@ -1,0 +1,960 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFL.automation.instrument.BioSANS &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/instrument/BioSANS';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../../../../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../automation.html" class="nav-link">AFL.automation</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.instrument.BioSANS</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for AFL.automation.instrument.BioSANS</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>  <span class="c1"># for return types in get data</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">import</span> <span class="nn">h5py</span>  <span class="c1"># for Nexus file writing</span>
+
+<span class="kn">from</span> <span class="nn">AFL.automation.shared.mock_eic_client</span> <span class="kn">import</span> <span class="n">MockEICClient</span>
+<span class="c1"># Optional imports for hardware dependencies; real usage is gated by config</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">epics</span> <span class="kn">import</span> <span class="n">caget</span><span class="p">,</span> <span class="n">caput</span><span class="p">,</span> <span class="n">cainfo</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">caget</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">caput</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cainfo</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">AFL.automation.instrument.EICClient</span> <span class="kn">import</span> <span class="n">EICClient</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">EICClient</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="BioSANS">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS">[docs]</a>
+<span class="k">class</span> <span class="nc">BioSANS</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Driver for Bio-SANS instrument ORNL.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># confirmed config parameteters</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;eic_token&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;ipts_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1234&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;beamline&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CG3&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;run_cycle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;RC511&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Config0&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;mock_mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;reduction_log_data_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;/HFIR/</span><span class="se">{{</span><span class="s1">INST</span><span class="se">}}</span><span class="s1">/IPTS-</span><span class="se">{{</span><span class="s1">IPTS</span><span class="se">}}</span><span class="s1">/shared/autoreduce/</span><span class="se">{{</span><span class="s1">RUN_CYCLE</span><span class="se">}}</span><span class="s1">/</span><span class="se">{{</span><span class="s1">CONFIG</span><span class="se">}}</span><span class="s1">&#39;</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;reduced_file_data_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;/HFIR/</span><span class="se">{{</span><span class="s1">INST</span><span class="se">}}</span><span class="s1">/IPTS-</span><span class="se">{{</span><span class="s1">IPTS</span><span class="se">}}</span><span class="s1">/shared/autoreduce/</span><span class="se">{{</span><span class="s1">RUN_CYCLE</span><span class="se">}}</span><span class="s1">/</span><span class="se">{{</span><span class="s1">CONFIG</span><span class="se">}}</span><span class="s1">/1D&#39;</span>
+
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;CG3:SE:SMPLINF:SRC</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">Comp&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">)])</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;CG3:SE:SMPLINF:SRC</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">Name&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">)])</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;CG3:SE:SMPLINF:SRC</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">Conc&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">)])</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;CG3:SE:SMPLINF:SRC</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">ConcUnits&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">)])</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;CG3:SE:CMP:S</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">Vol&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">)])</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;CG3:SE:URMPI:143&#39;</span><span class="p">])</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;CG3:SE:SMPLINF:SMPLTotalVol&#39;</span><span class="p">])</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;CG3:SE:SMPLINF:SMPLFinalConc</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">)])</span>
+
+
+<div class="viewcode-block" id="BioSANS.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;BioSANS&#39;</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_caget</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caput</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cainfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_epics</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_scan_id</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__instrument_name__</span> <span class="o">=</span> <span class="s1">&#39;ORNL Bio-SANS instrument&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Just started...&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span></div>
+
+    
+
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Property that returns the EIC client instance.</span>
+<span class="sd">        </span>
+<span class="sd">        If the client doesn&#39;t exist yet, it instantiates a new EICClient</span>
+<span class="sd">        using the token and beamline from the configuration.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        EICClient</span>
+<span class="sd">            The client instance for communicating with the instrument.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;mock_mode&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">MockEICClient</span><span class="p">(</span>
+                    <span class="n">ipts_number</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ipts_number&#39;</span><span class="p">]),</span>
+                    <span class="n">eic_token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;eic_token&#39;</span><span class="p">],</span>
+                    <span class="n">beamline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;beamline&#39;</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">EICClient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;eic_client is not available and mock_mode is False&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">EICClient</span><span class="p">(</span>
+                    <span class="n">ipts_number</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ipts_number&#39;</span><span class="p">]),</span>
+                    <span class="n">eic_token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;eic_token&#39;</span><span class="p">],</span>
+                    <span class="n">beamline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;beamline&#39;</span><span class="p">]</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span>
+    
+<div class="viewcode-block" id="BioSANS.reset_client">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.reset_client">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Reset the EICClient instance</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_resolve_epics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return EPICS accessors, honoring mock_mode and availability.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;mock_mode&#39;</span><span class="p">]:</span>
+            <span class="k">def</span> <span class="nf">_mock_caget</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;EPICS in mock mode - caget&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">def</span> <span class="nf">_mock_caput</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;EPICS in mock mode - caput&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">def</span> <span class="nf">_mock_cainfo</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;EPICS in mock mode - cainfo&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="k">return</span> <span class="n">_mock_caget</span><span class="p">,</span> <span class="n">_mock_caput</span><span class="p">,</span> <span class="n">_mock_cainfo</span>
+
+        <span class="k">if</span> <span class="n">caget</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">caput</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">cainfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;epics is not available and mock_mode is False&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">caget</span><span class="p">,</span> <span class="n">caput</span><span class="p">,</span> <span class="n">cainfo</span>
+
+<div class="viewcode-block" id="BioSANS.getLastRunNumber">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.getLastRunNumber">[docs]</a>
+    <span class="k">def</span> <span class="nf">getLastRunNumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caget</span><span class="p">(</span><span class="s1">&#39;CG3:CS:RunControl:LastRunNumber&#39;</span><span class="p">)</span></div>
+
+        
+        <span class="c1"># timeout = 120</span>
+        <span class="c1"># success_get, pv_value_read, response_data_get = self.client.get_pv(pv_name, timeout)</span>
+        <span class="c1"># if not success_get:</span>
+        <span class="c1">#     raise RuntimeError(f&#39;Could not read pv {pv_name}. Response: {response_data_get}&#39;)</span>
+        <span class="c1"># return pv_value_read</span>
+    
+<div class="viewcode-block" id="BioSANS.lastMeasuredTransmission">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.lastMeasuredTransmission">[docs]</a>
+    <span class="k">def</span> <span class="nf">lastMeasuredTransmission</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_resolve_data_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_key</span><span class="p">):</span>
+        <span class="n">data_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">config_key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span>
+            <span class="n">data_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">INST</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;beamline&#39;</span><span class="p">],</span>
+                <span class="n">IPTS</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ipts_number&#39;</span><span class="p">],</span>
+                <span class="n">RUN_CYCLE</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;run_cycle&#39;</span><span class="p">],</span>
+                <span class="n">CONFIG</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_latest_run_number_from_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paths</span><span class="p">):</span>
+        <span class="n">run_numbers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(?:S_)?r(\d+)_(\d+)_(?:reduction_log\.hdf|1D_(?:main|combined)\.txt)$&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">):</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">candidate</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">second</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">first</span> <span class="o">==</span> <span class="n">second</span><span class="p">:</span>
+                    <span class="n">run_numbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">run_numbers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">run_numbers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_last_run_number_with_fallback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">run_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLastRunNumber</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">run_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">run_number</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">run_number</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">run_number</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">run_number</span>
+
+        <span class="n">fallback_run_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_latest_run_number_from_paths</span><span class="p">([</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_data_path</span><span class="p">(</span><span class="s1">&#39;reduction_log_data_path&#39;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_data_path</span><span class="p">(</span><span class="s1">&#39;reduced_file_data_path&#39;</span><span class="p">),</span>
+        <span class="p">])</span>
+        <span class="k">if</span> <span class="n">fallback_run_number</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;Using fallback run number </span><span class="si">{</span><span class="n">fallback_run_number</span><span class="si">}</span><span class="s1"> because EPICS returned </span><span class="si">{</span><span class="n">run_number</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">fallback_run_number</span>
+
+        <span class="k">return</span> <span class="n">run_number</span>
+
+    <span class="k">def</span> <span class="nf">_candidate_reduced_filenames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_number</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s1">&#39;r</span><span class="si">{</span><span class="n">run_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">run_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">_1D_main.txt&#39;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s1">&#39;S_r</span><span class="si">{</span><span class="n">run_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">run_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">_1D_combined.txt&#39;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s1">&#39;r</span><span class="si">{</span><span class="n">run_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">run_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">_1D_combined.txt&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_select_existing_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_path</span><span class="p">,</span> <span class="n">filenames</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">base_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">filename</span>
+            <span class="k">if</span> <span class="n">filepath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">filepath</span>
+        <span class="k">return</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">base_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">filenames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="BioSANS.getLastReductionLogFilePath">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.getLastReductionLogFilePath">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getLastReductionLogFilePath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; get the currently set file name &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_data_path</span><span class="p">(</span><span class="s1">&#39;reduction_log_data_path&#39;</span><span class="p">)</span>
+
+        <span class="n">run_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_last_run_number_with_fallback</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;r</span><span class="si">{</span><span class="n">run_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">run_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">_reduction_log.hdf&#39;</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">/</span> <span class="n">filename</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_readLastTransmission</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLastReductionLogFilePath</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5</span><span class="p">:</span>
+            <span class="n">transmission</span> <span class="o">=</span> <span class="n">h5</span><span class="p">[</span><span class="s1">&#39;reduction_information&#39;</span><span class="p">][</span><span class="s1">&#39;special_parameters&#39;</span><span class="p">][</span><span class="s1">&#39;sample_transmission&#39;</span><span class="p">][</span><span class="s1">&#39;main&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">][()]</span>
+        <span class="k">return</span> <span class="n">transmission</span>
+
+<div class="viewcode-block" id="BioSANS.getLastTransmission">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.getLastTransmission">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getLastTransmission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">readFileSafely</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_readLastTransmission</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BioSANS.setExposure">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.setExposure">[docs]</a>
+    <span class="k">def</span> <span class="nf">setExposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting exposure time to </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;exposure&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exposure</span></div>
+
+
+<div class="viewcode-block" id="BioSANS.getLastFilePath">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.getLastFilePath">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">getLastFilePath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; get the currently set file name &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_data_path</span><span class="p">(</span><span class="s1">&#39;reduced_file_data_path&#39;</span><span class="p">)</span>
+
+        <span class="n">run_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_last_run_number_with_fallback</span><span class="p">()</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_existing_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidate_reduced_filenames</span><span class="p">(</span><span class="n">run_number</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></div>
+
+
+
+    <span class="k">def</span> <span class="nf">_readLastReducedFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLastFilePath</span><span class="p">()</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">dI</span><span class="p">,</span> <span class="n">dQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;q&#39;</span><span class="p">:</span> <span class="n">q</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="n">I</span><span class="p">,</span> <span class="s1">&#39;dI&#39;</span><span class="p">:</span> <span class="n">dI</span><span class="p">,</span> <span class="s1">&#39;dQ&#39;</span><span class="p">:</span> <span class="n">dQ</span><span class="p">}</span>
+
+<div class="viewcode-block" id="BioSANS.readFileSafely">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.readFileSafely">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;2d_img&#39;</span><span class="p">,</span> <span class="n">log_image</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">readFileSafely</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_read_function</span><span class="p">,</span> <span class="n">attempts_limit</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">attempts_pause_time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">file_read_function</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">nattempts</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">nattempts</span> <span class="o">&lt;</span> <span class="n">attempts_limit</span><span class="p">:</span>
+                <span class="n">nattempts</span> <span class="o">=</span> <span class="n">nattempts</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">attempts_pause_time</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">file_read_function</span><span class="p">()</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">nattempts</span> <span class="o">==</span> <span class="n">attempts_limit</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not locate file after </span><span class="si">{</span><span class="n">nattempts</span><span class="si">}</span><span class="s1"> tries: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to load file, trying again, this is try </span><span class="si">{</span><span class="n">nattempts</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_validateExposureType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure_type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">exposure_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Exposure type must be one of &quot;time&quot;, not </span><span class="si">{</span><span class="n">exposure_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BioSANS.blockForTableScan">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.blockForTableScan">[docs]</a>
+    <span class="k">def</span> <span class="nf">blockForTableScan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">status_sucess</span><span class="p">,</span>  <span class="n">is_done</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">status_response_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_scan_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_scan_id</span><span class="p">)</span>
+
+        <span class="n">loop_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">is_done</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="n">status_sucess</span><span class="p">,</span>  <span class="n">is_done</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">status_response_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_scan_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_scan_id</span><span class="p">)</span>
+            <span class="n">loop_count</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+
+    <span class="k">def</span> <span class="nf">_simple_expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">exposure_type</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">1800</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a simple exposure with the specified parameters.</span>
+
+<span class="sd">        This method sets up and performs an exposure of the sample, optionally blocking until the exposure is complete.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exposure : float</span>
+<span class="sd">            The exposure time or counts.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            The name of the sample (default is None).</span>
+<span class="sd">        block : bool, optional</span>
+<span class="sd">            If True, block until the exposure is complete (default is False).</span>
+<span class="sd">        exposure_type : str, optional</span>
+<span class="sd">            The type of exposure, must be one of &#39;time&#39;, &#39;detector&#39;, or &#39;monitor&#39; (default is &#39;detector&#39;).</span>
+<span class="sd">        tmax : int, optional</span>
+<span class="sd">            The maximum time to wait for the exposure in seconds (default is 1800). This is only applicable for the</span>
+<span class="sd">            exposure_type &#39;detector&#39;.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the exposure type is not one of &#39;time&#39;, &#39;detector&#39;, or &#39;monitor&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validateExposureType</span><span class="p">(</span><span class="n">exposure_type</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setExposure</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Starting </span><span class="si">{</span><span class="n">exposure</span><span class="si">}</span><span class="s1"> count table scan named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span><span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;run_mode&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="c1">#????</span>
+            <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="s1">&#39;AFL submitted table scan&#39;</span>
+        <span class="p">}</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">,</span><span class="s1">&#39;Wait For&#39;</span><span class="p">,</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="p">,</span><span class="s1">&#39;seconds&#39;</span><span class="p">,</span><span class="n">exposure</span><span class="p">]</span>
+        
+        <span class="c1"># headers.append(&#39;CG3:CS:SANSQUser:SampleToMain&#39;)</span>
+        <span class="c1"># row.append(15.5)</span>
+        
+        <span class="k">if</span> <span class="n">exposure_type</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span>
+            <span class="n">success</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_scan_id</span><span class="p">,</span><span class="n">response_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">submit_table_scan</span><span class="p">(</span>
+                <span class="n">parms</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;run_mode&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="c1">#????</span>
+                    <span class="s1">&#39;headers&#39;</span><span class="p">:</span> <span class="n">headers</span><span class="p">,</span>
+                    <span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">row</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;AFL submitted table scan named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">simulate_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">exposure_type</span> <span class="o">==</span> <span class="s1">&#39;monitor&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Monitor exposure is not implemented for BioSANS&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">exposure_type</span> <span class="o">==</span> <span class="s1">&#39;detector&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Monitor exposure is not implemented for BioSANS&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exposure_type not recognized: </span><span class="si">{</span><span class="n">exposure_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error in EIC table scan: </span><span class="si">{</span><span class="n">response_data</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">success</span> <span class="ow">and</span> <span class="n">block</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blockForTableScan</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BioSANS.expose">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.expose">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span> <span class="s1">&#39;Expose&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span>
+                             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;test_exposure&#39;</span><span class="p">},</span>
+                             <span class="s1">&#39;exposure&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Exposure (s)&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+                             <span class="s1">&#39;reduce_data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Reduce?&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;bool&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                             <span class="s1">&#39;measure_transmission&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Measure Trans?&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;bool&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+                         <span class="p">}})</span>
+    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exposure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+               <span class="n">save_reduced_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_nexus</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exposure_type</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform an exposure with the specified parameters.</span>
+
+<span class="sd">        This method performs an exposure of the sample, optionally measuring the transmission, reducing the data,</span>
+<span class="sd">        and saving it in Nexus format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            The name of the sample (default is None).</span>
+<span class="sd">        exposure : float, optional</span>
+<span class="sd">            The exposure time or counts (default is None).</span>
+<span class="sd">        block : bool, optional</span>
+<span class="sd">            If True, block until the exposure is complete (default is True).</span>
+<span class="sd">        save_nexus : bool, optional</span>
+<span class="sd">            If True, save the data in Nexus format (default is True).</span>
+<span class="sd">        exposure_type : str, optional</span>
+<span class="sd">            The type of exposure, must be one of &#39;time&#39;, &#39;detector&#39;, or &#39;monitor&#39; (default is &#39;detector&#39;).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the exposure type is not one of &#39;time&#39;, &#39;detector&#39;, or &#39;monitor&#39;.</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            If the data file cannot be located after multiple attempts.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validateExposureType</span><span class="p">(</span><span class="n">exposure_type</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_simple_expose</span><span class="p">(</span><span class="n">exposure</span><span class="o">=</span><span class="n">exposure</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">exposure_type</span><span class="o">=</span><span class="n">exposure_type</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_data</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BioSANS.process_data">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.process_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the SANS data after exposure, writing the data to Tiled&quot;&quot;&quot;</span>
+        <span class="c1"># Read data and create xarray Dataset</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readFileSafely</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_readLastReducedFile</span><span class="p">)</span>
+        <span class="n">transmission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readFileSafely</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_readLastTransmission</span><span class="p">)</span>
+
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">])</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">])</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;dI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dI&#39;</span><span class="p">])</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s1">&#39;dQ&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dQ&#39;</span><span class="p">])</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_transmission&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">transmission</span>
+
+        <span class="k">for</span> <span class="n">pv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;PVs_to_store&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">caget</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">pv</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not read PV </span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s1"> to save in dataset attributes: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">pv</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span> <span class="o">=</span> <span class="s1">&#39;Instrument Idle&#39;</span>
+
+        <span class="k">return</span> <span class="n">ds</span></div>
+
+
+
+<div class="viewcode-block" id="BioSANS.status">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.status">[docs]</a>
+    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Last Measured Transmission: scaled=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> using empty cell trans of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s1"> with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1"> raw counts in open </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_measured_transmission</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s1"> sample&#39;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Status: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_txt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span></div>
+</div>
+
+
+
+<span class="n">_DEFAULT_PORT</span><span class="o">=</span><span class="mi">5001</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../../../../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

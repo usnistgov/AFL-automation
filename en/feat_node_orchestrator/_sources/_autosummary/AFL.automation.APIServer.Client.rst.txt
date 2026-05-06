@@ -1,0 +1,13 @@
+AFL.automation.APIServer.Client
+===============================
+
+.. automodule:: AFL.automation.APIServer.Client
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Client
+      ServerDiscovery
+   

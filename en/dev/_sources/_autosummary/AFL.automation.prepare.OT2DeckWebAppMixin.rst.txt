@@ -1,0 +1,13 @@
+AFL.automation.prepare.OT2DeckWebAppMixin
+=========================================
+
+.. automodule:: AFL.automation.prepare.OT2DeckWebAppMixin
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      OT2DeckWebAppMixin
+   

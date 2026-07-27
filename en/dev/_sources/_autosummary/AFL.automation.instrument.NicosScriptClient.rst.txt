@@ -1,0 +1,12 @@
+AFL.automation.instrument.NicosScriptClient
+===========================================
+
+.. automodule:: AFL.automation.instrument.NicosScriptClient
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NicosScriptClient
+   

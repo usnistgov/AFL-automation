@@ -1,0 +1,16 @@
+AFL.automation.shared.exceptions
+================================
+
+.. automodule:: AFL.automation.shared.exceptions
+
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      EmptyException
+      MixingException
+      NoDeviceFoundException
+      NotFoundError
+      SerialCommsException
+   

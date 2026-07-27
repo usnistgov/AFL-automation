@@ -1,0 +1,13 @@
+AFL.automation.loading.DAQC2Sensor
+==================================
+
+.. automodule:: AFL.automation.loading.DAQC2Sensor
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DACQC2Sensor
+      Sensor
+   

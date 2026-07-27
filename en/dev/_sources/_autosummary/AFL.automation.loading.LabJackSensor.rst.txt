@@ -1,0 +1,13 @@
+AFL.automation.loading.LabJackSensor
+====================================
+
+.. automodule:: AFL.automation.loading.LabJackSensor
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LabJackSensor
+      Sensor
+   

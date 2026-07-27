@@ -1,0 +1,14 @@
+AFL.automation.prepare.BioSANSPrepare
+=====================================
+
+.. automodule:: AFL.automation.prepare.BioSANSPrepare
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BioSANSPrepare
+      MockEICClient
+      PrepareDriver
+   

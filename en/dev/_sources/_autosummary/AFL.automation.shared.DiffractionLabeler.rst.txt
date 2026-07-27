@@ -1,0 +1,21 @@
+AFL.automation.shared.DiffractionLabeler
+========================================
+
+.. automodule:: AFL.automation.shared.DiffractionLabeler
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      sqrt
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DiffractionLabeler
+      DiffractionLabelerModel
+      DiffractionLabelerView
+      OrdinalEncoder
+   

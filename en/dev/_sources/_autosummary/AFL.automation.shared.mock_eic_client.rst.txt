@@ -1,0 +1,12 @@
+AFL.automation.shared.mock\_eic\_client
+=======================================
+
+.. automodule:: AFL.automation.shared.mock_eic_client
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MockEICClient
+   

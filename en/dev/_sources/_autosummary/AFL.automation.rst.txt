@@ -1,0 +1,25 @@
+﻿AFL.automation
+==============
+
+.. automodule:: AFL.automation
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      test
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   APIServer
+   apps
+   instrument
+   loading
+   mixcalc
+   sample_env
+   shared

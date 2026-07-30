@@ -428,6 +428,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared</span><span class="w"> </span><span class="kn">import</span> <span class="n">serialization</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -982,6 +983,108 @@
             <span class="n">last_comment_as_header</span><span class="o">=</span><span class="n">last_comment_as_header</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ProxyConnectionError">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyConnectionError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProxyConnectionError</span><span class="p">(</span><span class="ne">ConnectionError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when a proxy driver cannot establish or use a remote Client.&quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ProxyDriver">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProxyDriver</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base driver for forwarding commands to one or more AFL APIServers.</span>
+
+<span class="sd">    Subclasses retain their own API and safety policy, while this class owns</span>
+<span class="sd">    lazy ``Client`` construction and optional injected clients for testing.</span>
+<span class="sd">    A proxy connection is not opened during driver construction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ProxyDriver.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proxy_clients</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="n">defaults</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_clients</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">proxy_clients</span> <span class="ow">or</span> <span class="p">{})</span></div>
+
+
+<div class="viewcode-block" id="ProxyDriver.get_proxy_client">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver.get_proxy_client">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_proxy_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proxy_name</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">client_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a cached Client for ``proxy_name``, creating it on first use.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">proxy_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_clients</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ip</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ProxyConnectionError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot connect </span><span class="si">{</span><span class="n">proxy_name</span><span class="si">}</span><span class="s2"> proxy: no APIServer address was configured&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">client_factory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Client</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+                <span class="n">client_factory</span> <span class="o">=</span> <span class="n">Client</span>
+            <span class="n">address</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ip</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_clients</span><span class="p">[</span><span class="n">proxy_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_factory</span><span class="p">(</span>
+                    <span class="n">ip</span><span class="o">=</span><span class="n">ip</span><span class="p">,</span>
+                    <span class="n">port</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">),</span>
+                    <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ProxyConnectionError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot connect </span><span class="si">{</span><span class="n">proxy_name</span><span class="si">}</span><span class="s2"> proxy to AFL APIServer at </span><span class="si">{</span><span class="n">address</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="s2">&quot;Check the server address, network reachability, and login settings.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_clients</span><span class="p">[</span><span class="n">proxy_name</span><span class="p">]</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_proxy_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proxy_name</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_clients</span><span class="p">[</span><span class="n">proxy_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ProxyConnectionError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot use </span><span class="si">{</span><span class="n">proxy_name</span><span class="si">}</span><span class="s2"> proxy because it has not been connected&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+<div class="viewcode-block" id="ProxyDriver.enqueue_proxy">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver.enqueue_proxy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enqueue_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proxy_name</span><span class="p">,</span> <span class="n">task_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enqueue a command on a named remote driver and return its task UUID.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_client</span><span class="p">(</span><span class="n">proxy_name</span><span class="p">)</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+                <span class="n">task_name</span><span class="o">=</span><span class="n">task_name</span><span class="p">,</span>
+                <span class="n">interactive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">ProxyConnectionError</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ProxyConnectionError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unable to enqueue </span><span class="si">{</span><span class="n">task_name</span><span class="si">!r}</span><span class="s2"> through </span><span class="si">{</span><span class="n">proxy_name</span><span class="si">}</span><span class="s2"> proxy. &quot;</span>
+                <span class="s2">&quot;The remote AFL APIServer may be unavailable.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
+
+
+<div class="viewcode-block" id="ProxyDriver.query_proxy">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver.query_proxy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proxy_name</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call a named unqueued operation on a remote driver.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_client</span><span class="p">(</span><span class="n">proxy_name</span><span class="p">)</span><span class="o">.</span><span class="n">query_driver</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">command</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ProxyConnectionError</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ProxyConnectionError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unable to query </span><span class="si">{</span><span class="n">command</span><span class="si">!r}</span><span class="s2"> through </span><span class="si">{</span><span class="n">proxy_name</span><span class="si">}</span><span class="s2"> proxy. &quot;</span>
+                <span class="s2">&quot;The remote AFL APIServer may be unavailable.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">result</span></div>
 </div>
 
 </pre></div>

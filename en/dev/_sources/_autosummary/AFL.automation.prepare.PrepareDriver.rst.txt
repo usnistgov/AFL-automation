@@ -17,6 +17,7 @@ AFL.automation.prepare.PrepareDriver
       MassBalance
       MassBalanceDriver
       PersistentConfig
+      PipetteAction
       PrepareDriver
       Solution
    

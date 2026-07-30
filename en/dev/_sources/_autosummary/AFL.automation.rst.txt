@@ -23,3 +23,4 @@
    mixcalc
    sample_env
    shared
+   vision

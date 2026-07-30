@@ -426,13 +426,35 @@
   <h1>Source code for AFL.automation.prepare.OT2Prepare</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.prepare.OT2HTTPDriver</span><span class="w"> </span><span class="kn">import</span> <span class="n">OT2HTTPDriver</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.prepare.PrepareDriver</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrepareDriver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">listify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">enforce_units</span>
 
 
 <div class="viewcode-block" id="OT2Prepare">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OT2Prepare</span><span class="p">(</span><span class="n">OT2HTTPDriver</span><span class="p">,</span> <span class="n">PrepareDriver</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Preparation-oriented OT-2 driver.</span>
+
+<span class="sd">    This class combines :class:`OT2HTTPDriver` transport primitives with the</span>
+<span class="sd">    higher-level preparation workflow implemented by :class:`PrepareDriver`.</span>
+<span class="sd">    It adds stock-aware tip reservation, destination occupancy tracking, and</span>
+<span class="sd">    execution helpers for preparation plans.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    overrides : dict, optional</span>
+<span class="sd">        Configuration overrides merged into the inherited defaults.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; driver = OT2Prepare({&quot;robot_ip&quot;: &quot;192.168.1.50&quot;})</span>
+<span class="sd">    &gt;&gt;&gt; driver.add_prep_targets([&quot;4A1&quot;, &quot;4A2&quot;])</span>
+<span class="sd">    &gt;&gt;&gt; driver.resolve_destination(None)</span>
+<span class="sd">    &#39;4A1&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;prep_targets&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">&quot;prepare_volume&quot;</span><span class="p">:</span> <span class="s2">&quot;900 ul&quot;</span><span class="p">,</span>
@@ -449,41 +471,845 @@
 <div class="viewcode-block" id="OT2Prepare.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the preparation driver.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        overrides : dict, optional</span>
+<span class="sd">            Configuration values applied on top of the inherited defaults.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver = OT2Prepare({&quot;prepare_volume&quot;: &quot;500 ul&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; driver.last_target_location is None</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">OT2HTTPDriver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
         <span class="n">PrepareDriver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver_name</span><span class="o">=</span><span class="s2">&quot;OT2Prepare&quot;</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_id</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_group</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_location</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">useful_links</span><span class="p">[</span><span class="s2">&quot;View Deck&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/visualize_deck&quot;</span></div>
 
 
 <div class="viewcode-block" id="OT2Prepare.status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.status">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return combined preparation and robot status lines.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Human-readable status lines from both parent driver layers.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(driver.status(), list)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">PrepareDriver</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">+</span> <span class="n">OT2HTTPDriver</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_status_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build preparation-specific status lines.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Summary lines describing configured stocks, reserved stock tips,</span>
+<span class="sd">            occupied sample locations, and queued preparation targets.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; lines = driver._status_lines()</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(lines, list)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stocks: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)</span><span class="si">}</span><span class="s2"> configured&quot;</span><span class="p">)</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stock locations: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">stock_inventory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stock_inventory_snapshot</span><span class="p">(</span><span class="n">include_sources</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stock_inventory</span><span class="p">:</span>
+            <span class="n">remaining_by_stock</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">stock_inventory</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">remaining_volume_ul</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remaining_volume_ul&quot;</span><span class="p">)</span>
+                <span class="n">remaining_by_stock</span><span class="p">[</span><span class="n">stock_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">remaining_volume_ul</span><span class="si">}</span><span class="s2"> uL&quot;</span> <span class="k">if</span> <span class="n">remaining_volume_ul</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;unknown&quot;</span>
+                <span class="p">)</span>
+            <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stock inventory remaining: </span><span class="si">{</span><span class="n">remaining_by_stock</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Stock-reserved tips: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;reserved_stock_tips&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Occupied sample locations: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;occupied_sample_locations&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;prep_targets&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> preparation targets available&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">status</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_pipette_action_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate planned transfer volumes against loaded OT-2 pipettes.&quot;&quot;&quot;</span>
+        <span class="n">split_up_transfers</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_split_up_transfers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">can_split</span> <span class="o">=</span> <span class="n">split_up_transfers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;max_transfer&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">protocol</span><span class="p">:</span>
+            <span class="n">volume_ul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">volume_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">subtransfers</span> <span class="o">=</span> <span class="p">[</span><span class="n">volume_ul</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">can_split</span><span class="p">:</span>
+                <span class="n">subtransfers</span> <span class="o">=</span> <span class="n">split_up_transfers</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">subtransfers</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">subtransfer_ul</span> <span class="ow">in</span> <span class="n">subtransfers</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">subtransfer_ul</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Planned transfer from </span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">dest</span><span class="si">}</span><span class="s2"> with volume &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">volume_ul</span><span class="si">}</span><span class="s2"> uL is not executable with the loaded pipettes. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Subtransfer </span><span class="si">{</span><span class="n">subtransfer_ul</span><span class="si">}</span><span class="s2"> uL failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_infer_pipette_min_volume</span><span class="p">(</span><span class="n">pipette_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer a pipette minimum transfer volume from its model name.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">pipette_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pipette_name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">known_minima</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;p10&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s2">&quot;p10_single&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s2">&quot;p10_single_gen1&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s2">&quot;p20&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s2">&quot;p20_single&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s2">&quot;p20_single_gen2&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s2">&quot;p50&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+            <span class="s2">&quot;p50_single&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+            <span class="s2">&quot;p100&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+            <span class="s2">&quot;p100_single&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+            <span class="s2">&quot;p300&quot;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span>
+            <span class="s2">&quot;p300_single&quot;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span>
+            <span class="s2">&quot;p1000&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span>
+            <span class="s2">&quot;p1000_single&quot;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">known_minima</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">normalized</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_loaded_pipette_minimum_volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return candidate positive minimum transfer volumes for active pipettes.&quot;&quot;&quot;</span>
+        <span class="n">minima</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">update_pipettes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_update_pipettes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">update_pipettes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">update_pipettes</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="n">get_active_pipettes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_get_active_pipettes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">get_active_pipettes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">active_pipettes</span> <span class="o">=</span> <span class="n">get_active_pipettes</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">active_pipettes</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">active_pipettes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">min_volume</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min_volume&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">min_volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">min_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infer_pipette_min_volume</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">min_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_volume</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">minima</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">min_volume</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">minima</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">instrument</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">min_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infer_pipette_min_volume</span><span class="p">(</span><span class="n">instrument</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">min_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_volume</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">minima</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">min_volume</span><span class="p">))</span>
+
+        <span class="n">min_transfer</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;min_transfer&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_transfer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_transfer</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">minima</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">min_transfer</span><span class="p">))</span>
+
+        <span class="n">unique_minima</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">min_volume</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">minima</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">min_volume</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_minima</span><span class="p">:</span>
+                <span class="n">unique_minima</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">min_volume</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">unique_minima</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_closest_feasible_transfer_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requested_volume_ul</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the nearest OT-2-executable transfer volume for a request.&quot;&quot;&quot;</span>
+        <span class="n">requested_volume_ul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">requested_volume_ul</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">requested_volume_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">requested_volume_ul</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">requested_volume_ul</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">candidate_minima</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">candidate_volume_ul</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loaded_pipette_minimum_volumes</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">candidate_volume_ul</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">candidate_minima</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate_volume_ul</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">candidate_minima</span><span class="p">:</span>
+            <span class="n">nearest_positive_volume_ul</span> <span class="o">=</span> <span class="n">candidate_minima</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">requested_volume_ul</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">nearest_positive_volume_ul</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">):</span>
+                <span class="k">return</span> <span class="mf">0.0</span>
+
+        <span class="k">for</span> <span class="n">candidate_volume_ul</span> <span class="ow">in</span> <span class="n">candidate_minima</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">candidate_volume_ul</span> <span class="o">&lt;</span> <span class="n">requested_volume_ul</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="n">candidate_volume_ul</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">candidate_volume_ul</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No feasible OT-2 transfer volume found for requested aliquot </span><span class="si">{</span><span class="n">requested_volume_ul</span><span class="si">}</span><span class="s2"> uL&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_condition_preparation_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adjust undersized stock-fraction transfers to executable OT-2 aliquots.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">balanced_target</span><span class="p">,</span> <span class="s2">&quot;stock_volume_fractions&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">balanced_target</span>
+
+        <span class="n">adjusted_transfer_volumes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">adjusted_protocol</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">adjusted_any_transfer</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">protocol</span><span class="p">:</span>
+            <span class="n">adjusted_volume_ul</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_closest_feasible_transfer_volume</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">volume</span><span class="p">),</span>
+                <span class="mi">6</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">adjusted_volume_ul</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">volume</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">:</span>
+                <span class="n">adjusted_any_transfer</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="n">adjusted_action</span> <span class="o">=</span> <span class="n">action</span>
+            <span class="n">adjusted_action</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adjusted_volume_ul</span>
+            <span class="n">adjusted_protocol</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">adjusted_action</span><span class="p">)</span>
+
+            <span class="n">stock_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks_by_location</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">adjusted_transfer_volumes</span><span class="p">[</span><span class="n">stock_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span>
+                <span class="n">adjusted_transfer_volumes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">+</span> <span class="n">adjusted_volume_ul</span><span class="p">,</span>
+                <span class="mi">6</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">adjusted_any_transfer</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">balanced_target</span>
+
+        <span class="n">actual_total_volume_ul</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">adjusted_transfer_volumes</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">actual_total_volume_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Adjusted stock-fraction target has no executable transfer volume&quot;</span><span class="p">)</span>
+
+        <span class="n">balanced_target</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="n">adjusted_protocol</span>
+        <span class="n">balanced_target</span><span class="o">.</span><span class="n">stock_transfer_volumes</span> <span class="o">=</span> <span class="n">adjusted_transfer_volumes</span>
+        <span class="n">balanced_target</span><span class="o">.</span><span class="n">stock_volume_fractions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">stock_name</span><span class="p">:</span> <span class="n">adjusted_volume_ul</span> <span class="o">/</span> <span class="n">actual_total_volume_ul</span>
+            <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">adjusted_volume_ul</span> <span class="ow">in</span> <span class="n">adjusted_transfer_volumes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="n">balanced_target</span><span class="o">.</span><span class="n">requested_total_volume</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">actual_total_volume_ul</span><span class="si">}</span><span class="s2"> ul&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">balanced_target</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locations</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize and deduplicate deck locations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        locations : iterable of str</span>
+<span class="sd">            Deck locations such as ``&quot;4A1&quot;`` or ``&quot;6B3&quot;``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Uppercase normalized locations in first-seen order.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._normalize_locations([&quot;4a1&quot;, &quot;4A1&quot;, &quot;4b1&quot;])</span>
+<span class="sd">        [&#39;4A1&#39;, &#39;4B1&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">normalize_location</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_normalize_deck_location&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">locations</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">normalize_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">normalized_location</span> <span class="o">=</span> <span class="n">normalize_location</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">normalized_location</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Deck location must be a string, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">location</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">normalized_location</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">normalized_location</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">normalized</span><span class="p">:</span>
+                <span class="n">normalized</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normalized_location</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">normalized</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sync_stock_tip_tracking</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rebuild stock-tip configuration and active reservations.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This method inspects configured stock objects for ``tip_location`` or</span>
+<span class="sd">        legacy ``tip`` attributes and synchronizes the persistent reservation</span>
+<span class="sd">        state stored in the driver config.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._sync_stock_tip_tracking()</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(driver.config.get(&quot;stock_tip_locations&quot;, {}), dict)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stock_tip_locations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stocks&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">stock_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">stock_name</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">tip_location</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tip_location&quot;</span><span class="p">,</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tip&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">tip_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">stock_tip_locations</span><span class="p">[</span><span class="n">stock_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">listify</span><span class="p">(</span><span class="n">tip_location</span><span class="p">))</span>
+
+        <span class="n">existing_reservations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_tip_reservations&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">normalized_reservations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">tip_locations</span> <span class="ow">in</span> <span class="n">existing_reservations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">configured_tips</span> <span class="o">=</span> <span class="n">stock_tip_locations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">configured_tips</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">active</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">location</span>
+                <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">listify</span><span class="p">(</span><span class="n">tip_locations</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">configured_tips</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">active</span><span class="p">:</span>
+                <span class="n">normalized_reservations</span><span class="p">[</span><span class="n">stock_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">active</span>
+
+        <span class="n">active_reserved</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tip_locations</span> <span class="ow">in</span> <span class="n">normalized_reservations</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">active_reserved</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tip_locations</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;stock_tip_locations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock_tip_locations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;stock_tip_reservations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized_reservations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;reserved_stock_tips&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">active_reserved</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild_stock_source_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rebuild runtime lookup tables for physical stock sources.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_id</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_group</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_location</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;stocks&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">stock_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">stock_group</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_group&quot;</span><span class="p">,</span> <span class="n">stock</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stock_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_id</span><span class="p">[</span><span class="n">stock_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_group</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">stock_group</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_location</span><span class="p">[</span><span class="n">stock</span><span class="o">.</span><span class="n">location</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_stock_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">):</span>
+        <span class="n">stock_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;stock_sources_by_group&quot;</span><span class="p">,</span> <span class="p">{}):</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_group</span><span class="p">[</span><span class="n">stock_name</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_resolve_stock_sources</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_stock_inventory_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_sources</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">snapshot</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;stocks&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">snapshot</span>
+
+        <span class="n">grouped_sources</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">:</span>
+            <span class="n">grouped_sources</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_group&quot;</span><span class="p">,</span> <span class="n">stock</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                <span class="p">[],</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
+
+        <span class="n">requested_name</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">sources</span> <span class="ow">in</span> <span class="n">grouped_sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">requested_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">group_name</span> <span class="o">!=</span> <span class="n">requested_name</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">total_remaining_ul</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">total_known</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">source_entries</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+                <span class="n">remaining_ul</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">remaining_ul</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">),</span> <span class="mi">6</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="n">remaining_ul</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">remaining_ul</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">total_remaining_ul</span> <span class="o">+=</span> <span class="n">remaining_ul</span>
+                    <span class="n">total_known</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="n">include_sources</span><span class="p">:</span>
+                    <span class="n">source_entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;stock_id&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;stock_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                            <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">source</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                            <span class="s2">&quot;remaining_volume_ul&quot;</span><span class="p">:</span> <span class="n">remaining_ul</span><span class="p">,</span>
+                            <span class="s2">&quot;tip_location&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;tip_location&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;remaining_volume_ul&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">total_remaining_ul</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> <span class="k">if</span> <span class="n">total_known</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">include_sources</span><span class="p">:</span>
+                <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;sources&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_entries</span>
+            <span class="n">snapshot</span><span class="p">[</span><span class="n">group_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+        <span class="k">return</span> <span class="n">snapshot</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_consume_stock_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_location</span><span class="p">,</span> <span class="n">consumed_volume_ul</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deplete tracked stock volume for a physical source well.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks_by_location</span><span class="p">(</span><span class="n">source_location</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;stock_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;source_stock_group&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;deck&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source_location</span><span class="p">),</span>
+                <span class="s2">&quot;remaining_before_ul&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;remaining_after_ul&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;consumed_volume_ul&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">consumed_volume_ul</span><span class="p">),</span> <span class="mi">6</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="n">before_ul</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">after_ul</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">before_ul</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stock</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">),</span> <span class="mi">6</span><span class="p">)</span>
+            <span class="n">stock</span><span class="o">.</span><span class="n">measure_out</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">consumed_volume_ul</span><span class="p">)</span><span class="si">}</span><span class="s2"> ul&quot;</span><span class="p">,</span> <span class="n">deplete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">after_ul</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stock</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">),</span> <span class="mi">6</span><span class="p">)</span>
+            <span class="n">inventory</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_inventory&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+            <span class="n">inventory</span><span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_id&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stock</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">stock</span><span class="o">.</span><span class="n">location</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;remaining_volume&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">after_ul</span><span class="si">}</span><span class="s2"> ul&quot;</span>
+            <span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;stock_inventory&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inventory</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;stock_id&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;source_stock_group&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_group&quot;</span><span class="p">,</span> <span class="n">stock</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+            <span class="s2">&quot;remaining_before_ul&quot;</span><span class="p">:</span> <span class="n">before_ul</span><span class="p">,</span>
+            <span class="s2">&quot;remaining_after_ul&quot;</span><span class="p">:</span> <span class="n">after_ul</span><span class="p">,</span>
+            <span class="s2">&quot;consumed_volume_ul&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">consumed_volume_ul</span><span class="p">),</span> <span class="mi">6</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ordered_stock_tip_candidates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">step_tip_location</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return prioritized tip candidates for a stock transfer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stock_name : str</span>
+<span class="sd">            Stock identifier used in the preparation configuration.</span>
+<span class="sd">        step_tip_location : str or sequence of str, optional</span>
+<span class="sd">            Explicit tip location override from a protocol step.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Normalized tip locations with active reservations ordered before</span>
+<span class="sd">            configured fallback candidates.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._ordered_stock_tip_candidates(&quot;stockH2O&quot;)</span>
+<span class="sd">        [&#39;6A1&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">configured</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_tip_locations&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">step_tip_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">candidates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">configured</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">listify</span><span class="p">(</span><span class="n">step_tip_location</span><span class="p">))</span>
+
+        <span class="n">active</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_tip_reservations&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">ordered</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">normalized</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">active</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">candidates</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">normalized</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ordered</span><span class="p">:</span>
+                <span class="n">ordered</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normalized</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ordered</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_stock_tip_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">volume_ul</span><span class="p">,</span> <span class="n">step_tip_location</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Choose an available stock-reserved tip location.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stock_name : str</span>
+<span class="sd">            Stock identifier.</span>
+<span class="sd">        volume_ul : float</span>
+<span class="sd">            Transfer volume used to determine the pipette mount.</span>
+<span class="sd">        step_tip_location : str or sequence of str, optional</span>
+<span class="sd">            Explicit tip location override from the planned transfer step.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str or None</span>
+<span class="sd">            Selected normalized tip location, or ``None`` when no stock tip is</span>
+<span class="sd">            configured.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If configured stock tips exist but none are currently available for</span>
+<span class="sd">            the required mount.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._select_stock_tip_location(&quot;stockH2O&quot;, 50)</span>
+<span class="sd">        &#39;6A1&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ordered_stock_tip_candidates</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="n">step_tip_location</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">candidates</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">pipette_mount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pipette</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">))[</span><span class="s2">&quot;mount&quot;</span><span class="p">]</span>
+        <span class="n">match_tip_location</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_tip_location_matches_mount&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">resolve_tip_location</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_resolve_tip_location&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">compatible</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">match_tip_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">matches_mount</span> <span class="o">=</span> <span class="n">match_tip_location</span><span class="p">(</span><span class="n">pipette_mount</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">matches_mount</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="n">compatible</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">resolve_tip_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">location</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">resolve_tip_location</span><span class="p">(</span><span class="n">pipette_mount</span><span class="p">,</span> <span class="n">location</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">location</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">compatible</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No configured tip locations for stock &#39;</span><span class="si">{</span><span class="n">stock_name</span><span class="si">}</span><span class="s2">&#39; are currently available &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;on </span><span class="si">{</span><span class="n">pipette_mount</span><span class="si">}</span><span class="s2"> mount: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">compatible</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No configured tip locations for stock &#39;</span><span class="si">{</span><span class="n">stock_name</span><span class="si">}</span><span class="s2">&#39; match the </span><span class="si">{</span><span class="n">pipette_mount</span><span class="si">}</span><span class="s2"> mount: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_activate_stock_tip_reservation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">tip_location</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mark a stock tip as actively reserved.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stock_name : str</span>
+<span class="sd">            Stock identifier.</span>
+<span class="sd">        tip_location : str or None</span>
+<span class="sd">            Tip location to reserve. ``None`` leaves the reservation state</span>
+<span class="sd">            unchanged.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._activate_stock_tip_reservation(&quot;stockH2O&quot;, &quot;6A1&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tip_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">tip_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">([</span><span class="n">tip_location</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">configured</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_tip_locations&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">tip_location</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">configured</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">reservations</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">listify</span><span class="p">(</span><span class="n">locations</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">locations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_tip_reservations&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">other_stock</span><span class="p">,</span> <span class="n">locations</span> <span class="ow">in</span> <span class="n">reservations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">other_stock</span> <span class="o">!=</span> <span class="n">stock_name</span> <span class="ow">and</span> <span class="n">tip_location</span> <span class="ow">in</span> <span class="n">locations</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Tip location </span><span class="si">{</span><span class="n">tip_location</span><span class="si">}</span><span class="s2"> is already reserved for stock &#39;</span><span class="si">{</span><span class="n">other_stock</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;and cannot also be reserved for stock &#39;</span><span class="si">{</span><span class="n">stock_name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="n">stock_reservations</span> <span class="o">=</span> <span class="n">reservations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">tip_location</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stock_reservations</span><span class="p">:</span>
+            <span class="n">stock_reservations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tip_location</span><span class="p">)</span>
+        <span class="n">reservations</span><span class="p">[</span><span class="n">stock_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">stock_reservations</span><span class="p">)</span>
+
+        <span class="n">active_reserved</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">locations</span> <span class="ow">in</span> <span class="n">reservations</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">active_reserved</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">locations</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;stock_tip_reservations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reservations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;reserved_stock_tips&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">active_reserved</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_stock_transfer_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">volume_ul</span><span class="p">,</span> <span class="n">step_tip_location</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build transfer keyword arguments for a stock step.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stock_name : str</span>
+<span class="sd">            Stock identifier.</span>
+<span class="sd">        volume_ul : float</span>
+<span class="sd">            Requested transfer volume in microliters.</span>
+<span class="sd">        step_tip_location : str or sequence of str, optional</span>
+<span class="sd">            Explicit tip location override from the protocol step.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Two-item tuple ``(transfer_params, selected_tip_location)``.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; params, tip = driver._build_stock_transfer_params(&quot;stockH2O&quot;, 100)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(params, dict)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transfer_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_params</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span>
+        <span class="n">selected_tip_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_stock_tip_location</span><span class="p">(</span>
+            <span class="n">stock_name</span><span class="o">=</span><span class="n">stock_name</span><span class="p">,</span>
+            <span class="n">volume_ul</span><span class="o">=</span><span class="n">volume_ul</span><span class="p">,</span>
+            <span class="n">step_tip_location</span><span class="o">=</span><span class="n">step_tip_location</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">selected_tip_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">transfer_params</span><span class="p">[</span><span class="s2">&quot;tip_location&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_tip_location</span>
+        <span class="k">return</span> <span class="n">transfer_params</span><span class="p">,</span> <span class="n">selected_tip_location</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_occupied_sample_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return occupied sample destinations as a normalized set.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        set of str</span>
+<span class="sd">            Occupied destination locations currently tracked in config.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(driver._occupied_sample_locations(), set)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;occupied_sample_locations&quot;</span><span class="p">,</span> <span class="p">[])))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_assert_destination_locations_available</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destinations</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that destination locations are not already occupied.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        locations : iterable of str</span>
+<span class="sd">            Destination locations to validate.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If duplicate destinations are requested or any destination is</span>
+<span class="sd">            already marked occupied.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._assert_destination_locations_available([&quot;4A1&quot;, &quot;4A2&quot;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">listify</span><span class="p">(</span><span class="n">destinations</span><span class="p">))</span>
+        <span class="n">duplicates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">location</span> <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">normalized</span> <span class="k">if</span> <span class="n">normalized</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">location</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">duplicates</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Preparation requested the same destination location more than once: &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">duplicates</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">occupied</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occupied_sample_locations</span><span class="p">()</span>
+        <span class="n">conflicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">location</span> <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">normalized</span> <span class="k">if</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">occupied</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">conflicts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Destination location(s) already contain a prepared sample: &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conflicts</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;. Clear or change those sample destinations before preparing again.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mark_sample_locations_occupied</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locations</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Record destination locations as occupied.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        locations : iterable of str</span>
+<span class="sd">            Locations to add to the occupied-sample tracking list.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._mark_sample_locations_occupied([&quot;4A1&quot;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">occupied</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;occupied_sample_locations&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">listify</span><span class="p">(</span><span class="n">locations</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">location</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">occupied</span><span class="p">:</span>
+                <span class="n">occupied</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;occupied_sample_locations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">occupied</span>
+
+<div class="viewcode-block" id="OT2Prepare.clear_sample_locations">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.clear_sample_locations">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">queued</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_sample_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear occupied sample destination tracking.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        locations : str or sequence of str, optional</span>
+<span class="sd">            Specific occupied locations to clear. If omitted, all occupied</span>
+<span class="sd">            sample locations are cleared.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Normalized locations that were cleared.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver.clear_sample_locations([&quot;4A1&quot;])</span>
+<span class="sd">        [&#39;4A1&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; driver.clear_sample_locations()</span>
+<span class="sd">        []</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">occupied</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occupied_sample_locations</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;occupied_sample_locations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">to_clear</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">listify</span><span class="p">(</span><span class="n">locations</span><span class="p">)))</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="p">[</span><span class="n">location</span> <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">occupied</span> <span class="k">if</span> <span class="n">location</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">to_clear</span><span class="p">]</span>
+        <span class="n">cleared</span> <span class="o">=</span> <span class="p">[</span><span class="n">location</span> <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">occupied</span> <span class="k">if</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">to_clear</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;occupied_sample_locations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remaining</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cleared</span></div>
+
+
 <div class="viewcode-block" id="OT2Prepare.resolve_destination">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.resolve_destination">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_destination</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">dest</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No preparation targets configured. Cannot select a destination target.&quot;</span><span class="p">)</span>
-        <span class="n">prep_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span>
-        <span class="n">destination</span> <span class="o">=</span> <span class="n">prep_targets</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prep_targets</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_destination</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the destination well for a preparation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        destination : str or None</span>
+<span class="sd">            Explicit destination location. If ``None``, the next queued</span>
+<span class="sd">            preparation target is consumed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Normalized destination location.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no destination is available or the destination is already</span>
+<span class="sd">            occupied.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver.resolve_destination(&quot;4A1&quot;)</span>
+<span class="sd">        &#39;4A1&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">destination</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No preparation targets configured. Cannot select a destination target.&quot;</span><span class="p">)</span>
+            <span class="n">prep_targets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">])</span>
+            <span class="n">destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">([</span><span class="n">prep_targets</span><span class="p">[</span><span class="mi">0</span><span class="p">]])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_assert_destination_locations_available</span><span class="p">([</span><span class="n">destination</span><span class="p">])</span>
+            <span class="n">prep_targets</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prep_targets</span>
+            <span class="k">return</span> <span class="n">destination</span>
+
+        <span class="n">destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">([</span><span class="n">destination</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_destination_locations_available</span><span class="p">([</span><span class="n">destination</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">destination</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reserve_destinations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">required_intermediate_targets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">intermediate_destinations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">destination</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reserve final and intermediate destinations for a preparation plan.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dest : str, optional</span>
+<span class="sd">            Final destination location.</span>
+<span class="sd">        required_intermediate_targets : int, default=0</span>
+<span class="sd">            Number of intermediate destinations required by the preparation</span>
+<span class="sd">            plan. Used by the base prepare flow.</span>
+<span class="sd">        intermediate_destinations : sequence of str, optional</span>
+<span class="sd">            Intermediate destination locations used by staged plans.</span>
+<span class="sd">        destination : str, optional</span>
+<span class="sd">            Backward-compatible alias for ``dest``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Normalized ``(destination, intermediate_destinations)``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If any requested destination is already occupied.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._reserve_destinations(&quot;4A1&quot;, [&quot;5A1&quot;])</span>
+<span class="sd">        (&#39;4A1&#39;, [&#39;5A1&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">requested_destination</span> <span class="o">=</span> <span class="n">dest</span> <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">destination</span>
+        <span class="n">requested_intermediate_destinations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">intermediate_destinations</span> <span class="ow">or</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">requested_intermediate_destinations</span><span class="p">:</span>
+            <span class="n">required_intermediate_targets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">requested_intermediate_destinations</span><span class="p">)</span>
+        <span class="n">destination</span><span class="p">,</span> <span class="n">intermediate_destinations</span><span class="p">,</span> <span class="n">consumed</span><span class="p">,</span> <span class="n">queue_key</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_reserve_destinations</span><span class="p">(</span>
+            <span class="n">dest</span><span class="o">=</span><span class="n">requested_destination</span><span class="p">,</span>
+            <span class="n">required_intermediate_targets</span><span class="o">=</span><span class="n">required_intermediate_targets</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">all_destinations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">intermediate_destinations</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">destination</span><span class="p">]</span>
+        <span class="n">normalized_destinations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">(</span><span class="n">all_destinations</span><span class="p">)</span>
+        <span class="n">normalized_intermediates</span> <span class="o">=</span> <span class="n">normalized_destinations</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">intermediate_destinations</span><span class="p">)]</span>
+        <span class="n">normalized_destination</span> <span class="o">=</span> <span class="n">normalized_destinations</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_assert_destination_locations_available</span><span class="p">(</span><span class="n">normalized_destinations</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">required_intermediate_targets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_restore_reserved_destinations</span><span class="p">(</span><span class="n">queue_key</span><span class="o">=</span><span class="n">queue_key</span><span class="p">,</span> <span class="n">consumed</span><span class="o">=</span><span class="n">consumed</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">requested_destination</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">queue</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">normalized_destination</span><span class="p">]</span> <span class="o">+</span> <span class="n">queue</span>
+            <span class="k">raise</span>
+        <span class="k">return</span> <span class="n">normalized_destination</span><span class="p">,</span> <span class="n">normalized_intermediates</span><span class="p">,</span> <span class="n">consumed</span><span class="p">,</span> <span class="n">queue_key</span>
 
 <div class="viewcode-block" id="OT2Prepare.execute_preparation">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.execute_preparation">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">execute_preparation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">,</span> <span class="n">destination</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a simple preparation protocol into one destination.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        target : object</span>
+<span class="sd">            Original target specification from the preparation workflow.</span>
+<span class="sd">        balanced_target : object</span>
+<span class="sd">            Balanced target object containing a generated ``protocol``.</span>
+<span class="sd">        destination : str</span>
+<span class="sd">            Destination deck location.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            ``True`` when all transfers succeed, otherwise ``False``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no protocol is available or a stock location cannot be resolved.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver.execute_preparation(target, balanced_target, &quot;4A1&quot;)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">balanced_target</span><span class="p">,</span> <span class="s2">&quot;protocol&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">protocol</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No protocol generated for the target solution&quot;</span><span class="p">)</span>
 
@@ -497,13 +1323,26 @@
             <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No stock name found for deck location: </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-            <span class="n">transfer_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_params</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span>
+            <span class="n">transfer_params</span><span class="p">,</span> <span class="n">selected_tip_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_stock_transfer_params</span><span class="p">(</span>
+                <span class="n">stock_name</span><span class="o">=</span><span class="n">stock_name</span><span class="p">,</span>
+                <span class="n">volume_ul</span><span class="o">=</span><span class="n">volume_ul</span><span class="p">,</span>
+                <span class="n">step_tip_location</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="s2">&quot;tip_location&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span>
+                    <span class="s2">&quot;Pipette action: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;stock=</span><span class="si">{</span><span class="n">stock_name</span><span class="si">!r}</span><span class="s2">, source=</span><span class="si">{</span><span class="n">source</span><span class="si">!r}</span><span class="s2">, dest=</span><span class="si">{</span><span class="n">destination</span><span class="si">!r}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;volume_ul=</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
                 <span class="n">transfer_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
                     <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
                     <span class="n">dest</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span>
                     <span class="n">volume</span><span class="o">=</span><span class="n">volume_ul</span><span class="p">,</span>
                     <span class="o">**</span><span class="n">transfer_params</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">depletion_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_consume_stock_volume</span><span class="p">(</span>
+                    <span class="n">source</span><span class="p">,</span>
+                    <span class="nb">sum</span><span class="p">(</span><span class="n">transfer_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subtransfers_ul&quot;</span><span class="p">,</span> <span class="p">[]))</span> <span class="ow">or</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">),</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_record_prepare_transfer</span><span class="p">(</span>
                     <span class="n">stage_type</span><span class="o">=</span><span class="s2">&quot;single&quot;</span><span class="p">,</span>
@@ -518,16 +1357,38 @@
                         <span class="s2">&quot;dest&quot;</span><span class="p">:</span> <span class="n">destination</span><span class="p">,</span>
                         <span class="s2">&quot;source_stock_name&quot;</span><span class="p">:</span> <span class="n">stock_name</span><span class="p">,</span>
                     <span class="p">},</span>
+                    <span class="n">extra</span><span class="o">=</span><span class="n">depletion_info</span><span class="p">,</span>
                 <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_activate_stock_tip_reservation</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="n">selected_tip_location</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transfer failed from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">destination</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">False</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="o">=</span> <span class="n">destination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mark_sample_locations_occupied</span><span class="p">([</span><span class="n">destination</span><span class="p">])</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_stage_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_location</span><span class="p">,</span> <span class="n">intermediate_map</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve a staged source token to a concrete deck location.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        source_location : str</span>
+<span class="sd">            Source location or ``@intermediate:&lt;id&gt;`` token.</span>
+<span class="sd">        intermediate_map : dict</span>
+<span class="sd">            Mapping from intermediate identifiers to deck locations.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Concrete deck location.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If an intermediate token cannot be resolved.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source_location</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">source_location</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;@intermediate:&quot;</span><span class="p">):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">source_location</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">intermediate_map</span><span class="p">:</span>
@@ -547,6 +1408,27 @@
         <span class="n">planned_transfer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">extra</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Append a structured preparation transfer record.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stage_type : str</span>
+<span class="sd">            Preparation stage label such as ``&quot;single&quot;`` or ``&quot;final_mix&quot;``.</span>
+<span class="sd">        source, dest : str</span>
+<span class="sd">            Source and destination deck locations.</span>
+<span class="sd">        requested_volume_ul : float</span>
+<span class="sd">            Requested transfer volume in microliters.</span>
+<span class="sd">        source_stock_name : str or None</span>
+<span class="sd">            Stock name associated with the source location.</span>
+<span class="sd">        transfer_params : dict</span>
+<span class="sd">            Transfer keyword arguments used for execution.</span>
+<span class="sd">        transfer_result : dict</span>
+<span class="sd">            Result returned by :meth:`transfer`.</span>
+<span class="sd">        planned_transfer : dict, optional</span>
+<span class="sd">            Original planned transfer metadata.</span>
+<span class="sd">        extra : dict, optional</span>
+<span class="sd">            Additional fields merged into the stored record.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;stage_type&quot;</span><span class="p">:</span> <span class="n">stage_type</span><span class="p">,</span>
             <span class="s2">&quot;source_location&quot;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
@@ -572,13 +1454,49 @@
         <span class="n">planned_transfer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">extra</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute and record one staged preparation transfer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        source, dest : str</span>
+<span class="sd">            Source and destination deck locations.</span>
+<span class="sd">        volume_ul : float</span>
+<span class="sd">            Transfer volume in microliters.</span>
+<span class="sd">        stage_type : str</span>
+<span class="sd">            Stage label used in transfer bookkeeping.</span>
+<span class="sd">        source_stock_name : str, optional</span>
+<span class="sd">            Stock name associated with the source.</span>
+<span class="sd">        planned_transfer : dict, optional</span>
+<span class="sd">            Planned transfer metadata.</span>
+<span class="sd">        extra : dict, optional</span>
+<span class="sd">            Additional bookkeeping fields.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">stock_name</span> <span class="o">=</span> <span class="n">source_stock_name</span>
         <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">stock_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;deck&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
-        <span class="n">transfer_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_params</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_params</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+        <span class="n">selected_tip_location</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">transfer_params</span><span class="p">,</span> <span class="n">selected_tip_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_stock_transfer_params</span><span class="p">(</span>
+                <span class="n">stock_name</span><span class="o">=</span><span class="n">stock_name</span><span class="p">,</span>
+                <span class="n">volume_ul</span><span class="o">=</span><span class="n">volume_ul</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">transfer_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_params</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span>
+            <span class="s2">&quot;Pipette action: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;stage=</span><span class="si">{</span><span class="n">stage_type</span><span class="si">!r}</span><span class="s2">, stock=</span><span class="si">{</span><span class="n">stock_name</span><span class="si">!r}</span><span class="s2">, source=</span><span class="si">{</span><span class="n">source</span><span class="si">!r}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;dest=</span><span class="si">{</span><span class="n">dest</span><span class="si">!r}</span><span class="s2">, volume_ul=</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
         <span class="n">transfer_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="n">volume_ul</span><span class="p">,</span> <span class="o">**</span><span class="n">transfer_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_activate_stock_tip_reservation</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="n">selected_tip_location</span><span class="p">)</span>
+        <span class="n">depletion_info</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">depletion_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_consume_stock_volume</span><span class="p">(</span>
+                <span class="n">source</span><span class="p">,</span>
+                <span class="nb">sum</span><span class="p">(</span><span class="n">transfer_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subtransfers_ul&quot;</span><span class="p">,</span> <span class="p">[]))</span> <span class="ow">or</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">),</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_record_prepare_transfer</span><span class="p">(</span>
             <span class="n">stage_type</span><span class="o">=</span><span class="n">stage_type</span><span class="p">,</span>
             <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
@@ -588,12 +1506,43 @@
             <span class="n">transfer_params</span><span class="o">=</span><span class="n">transfer_params</span><span class="p">,</span>
             <span class="n">transfer_result</span><span class="o">=</span><span class="n">transfer_result</span><span class="p">,</span>
             <span class="n">planned_transfer</span><span class="o">=</span><span class="n">planned_transfer</span><span class="p">,</span>
-            <span class="n">extra</span><span class="o">=</span><span class="n">extra</span><span class="p">,</span>
+            <span class="n">extra</span><span class="o">=</span><span class="nb">dict</span><span class="p">((</span><span class="n">extra</span> <span class="ow">or</span> <span class="p">{}),</span> <span class="o">**</span><span class="n">depletion_info</span><span class="p">),</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="OT2Prepare.execute_preparation_plan">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.execute_preparation_plan">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">execute_preparation_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">procedure_plan</span><span class="p">,</span> <span class="n">intermediate_destinations</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a staged preparation plan with intermediates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        target : object</span>
+<span class="sd">            Original target specification.</span>
+<span class="sd">        balanced_target : object</span>
+<span class="sd">            Balanced target object associated with the plan.</span>
+<span class="sd">        destination : str</span>
+<span class="sd">            Final destination location.</span>
+<span class="sd">        procedure_plan : dict</span>
+<span class="sd">            Staged plan containing dilution and final-mix steps.</span>
+<span class="sd">        intermediate_destinations : sequence of str</span>
+<span class="sd">            Concrete deck locations assigned to intermediate stages.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            ``True`` when the plan completes successfully.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the intermediate mapping is inconsistent or a stage type is</span>
+<span class="sd">            unknown.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver.execute_pre preparation_plan(target, balanced_target, &quot;4A1&quot;, plan, [&quot;5A1&quot;])</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">intermediate_ids</span> <span class="o">=</span> <span class="n">procedure_plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;intermediate_ids&quot;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intermediate_ids</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">intermediate_destinations</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -620,54 +1569,65 @@
                 <span class="n">diluent_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_stage_source</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;diluent_location&quot;</span><span class="p">),</span> <span class="n">intermediate_map</span><span class="p">)</span>
                 <span class="n">source_mass_g</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total_source_mass_g&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
                 <span class="n">diluent_mass_g</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total_diluent_mass_g&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+                <span class="n">dilution_actions</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">if</span> <span class="n">source_mass_g</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">source_stock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks_by_location</span><span class="p">(</span><span class="n">source_loc</span><span class="p">)</span>
                     <span class="n">source_volume</span> <span class="o">=</span> <span class="n">source_stock</span><span class="o">.</span><span class="n">measure_out</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_mass_g</span><span class="si">}</span><span class="s2"> g&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_transfer_stage</span><span class="p">(</span>
-                        <span class="n">source_loc</span><span class="p">,</span>
-                        <span class="n">stage_dest</span><span class="p">,</span>
-                        <span class="n">source_volume</span><span class="p">,</span>
-                        <span class="n">stage_type</span><span class="o">=</span><span class="s2">&quot;dilution&quot;</span><span class="p">,</span>
-                        <span class="n">source_stock_name</span><span class="o">=</span><span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_stock_name&quot;</span><span class="p">),</span>
-                        <span class="n">planned_transfer</span><span class="o">=</span><span class="p">{</span>
-                            <span class="s2">&quot;required_mass_g&quot;</span><span class="p">:</span> <span class="n">source_mass_g</span><span class="p">,</span>
+                    <span class="n">dilution_actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
                             <span class="s2">&quot;source_location&quot;</span><span class="p">:</span> <span class="n">source_loc</span><span class="p">,</span>
-                            <span class="s2">&quot;destination_token&quot;</span><span class="p">:</span> <span class="n">dest_token</span><span class="p">,</span>
-                        <span class="p">},</span>
-                        <span class="n">extra</span><span class="o">=</span><span class="p">{</span>
-                            <span class="s2">&quot;intermediate_id&quot;</span><span class="p">:</span> <span class="n">intermediate_id</span><span class="p">,</span>
-                            <span class="s2">&quot;destination_token&quot;</span><span class="p">:</span> <span class="n">dest_token</span><span class="p">,</span>
-                            <span class="s2">&quot;dilution_factor&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dilution_factor&quot;</span><span class="p">),</span>
-                            <span class="s2">&quot;batches&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;batches&quot;</span><span class="p">),</span>
-                            <span class="s2">&quot;transfer_role&quot;</span><span class="p">:</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;intermediate_location&quot;</span><span class="p">:</span> <span class="n">stage_dest</span><span class="p">,</span>
-                        <span class="p">},</span>
+                            <span class="s2">&quot;source_stock_name&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_stock_name&quot;</span><span class="p">),</span>
+                            <span class="s2">&quot;volume_ul&quot;</span><span class="p">:</span> <span class="n">source_volume</span><span class="p">,</span>
+                            <span class="s2">&quot;planned_transfer&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;required_mass_g&quot;</span><span class="p">:</span> <span class="n">source_mass_g</span><span class="p">,</span>
+                                <span class="s2">&quot;source_location&quot;</span><span class="p">:</span> <span class="n">source_loc</span><span class="p">,</span>
+                                <span class="s2">&quot;destination_token&quot;</span><span class="p">:</span> <span class="n">dest_token</span><span class="p">,</span>
+                            <span class="p">},</span>
+                            <span class="s2">&quot;extra&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;intermediate_id&quot;</span><span class="p">:</span> <span class="n">intermediate_id</span><span class="p">,</span>
+                                <span class="s2">&quot;destination_token&quot;</span><span class="p">:</span> <span class="n">dest_token</span><span class="p">,</span>
+                                <span class="s2">&quot;dilution_factor&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dilution_factor&quot;</span><span class="p">),</span>
+                                <span class="s2">&quot;batches&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;batches&quot;</span><span class="p">),</span>
+                                <span class="s2">&quot;transfer_role&quot;</span><span class="p">:</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;intermediate_location&quot;</span><span class="p">:</span> <span class="n">stage_dest</span><span class="p">,</span>
+                            <span class="p">},</span>
+                        <span class="p">}</span>
                     <span class="p">)</span>
                 <span class="k">if</span> <span class="n">diluent_mass_g</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">diluent_stock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks_by_location</span><span class="p">(</span><span class="n">diluent_loc</span><span class="p">)</span>
                     <span class="n">diluent_volume</span> <span class="o">=</span> <span class="n">diluent_stock</span><span class="o">.</span><span class="n">measure_out</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">diluent_mass_g</span><span class="si">}</span><span class="s2"> g&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_transfer_stage</span><span class="p">(</span>
-                        <span class="n">diluent_loc</span><span class="p">,</span>
-                        <span class="n">stage_dest</span><span class="p">,</span>
-                        <span class="n">diluent_volume</span><span class="p">,</span>
-                        <span class="n">stage_type</span><span class="o">=</span><span class="s2">&quot;dilution&quot;</span><span class="p">,</span>
-                        <span class="n">source_stock_name</span><span class="o">=</span><span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;diluent_stock_name&quot;</span><span class="p">),</span>
-                        <span class="n">planned_transfer</span><span class="o">=</span><span class="p">{</span>
-                            <span class="s2">&quot;required_mass_g&quot;</span><span class="p">:</span> <span class="n">diluent_mass_g</span><span class="p">,</span>
+                    <span class="n">dilution_actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
                             <span class="s2">&quot;source_location&quot;</span><span class="p">:</span> <span class="n">diluent_loc</span><span class="p">,</span>
-                            <span class="s2">&quot;destination_token&quot;</span><span class="p">:</span> <span class="n">dest_token</span><span class="p">,</span>
-                        <span class="p">},</span>
-                        <span class="n">extra</span><span class="o">=</span><span class="p">{</span>
-                            <span class="s2">&quot;intermediate_id&quot;</span><span class="p">:</span> <span class="n">intermediate_id</span><span class="p">,</span>
-                            <span class="s2">&quot;destination_token&quot;</span><span class="p">:</span> <span class="n">dest_token</span><span class="p">,</span>
-                            <span class="s2">&quot;dilution_factor&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dilution_factor&quot;</span><span class="p">),</span>
-                            <span class="s2">&quot;batches&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;batches&quot;</span><span class="p">),</span>
-                            <span class="s2">&quot;transfer_role&quot;</span><span class="p">:</span> <span class="s2">&quot;diluent&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;intermediate_location&quot;</span><span class="p">:</span> <span class="n">stage_dest</span><span class="p">,</span>
-                        <span class="p">},</span>
+                            <span class="s2">&quot;source_stock_name&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;diluent_stock_name&quot;</span><span class="p">),</span>
+                            <span class="s2">&quot;volume_ul&quot;</span><span class="p">:</span> <span class="n">diluent_volume</span><span class="p">,</span>
+                            <span class="s2">&quot;planned_transfer&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;required_mass_g&quot;</span><span class="p">:</span> <span class="n">diluent_mass_g</span><span class="p">,</span>
+                                <span class="s2">&quot;source_location&quot;</span><span class="p">:</span> <span class="n">diluent_loc</span><span class="p">,</span>
+                                <span class="s2">&quot;destination_token&quot;</span><span class="p">:</span> <span class="n">dest_token</span><span class="p">,</span>
+                            <span class="p">},</span>
+                            <span class="s2">&quot;extra&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;intermediate_id&quot;</span><span class="p">:</span> <span class="n">intermediate_id</span><span class="p">,</span>
+                                <span class="s2">&quot;destination_token&quot;</span><span class="p">:</span> <span class="n">dest_token</span><span class="p">,</span>
+                                <span class="s2">&quot;dilution_factor&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dilution_factor&quot;</span><span class="p">),</span>
+                                <span class="s2">&quot;batches&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;batches&quot;</span><span class="p">),</span>
+                                <span class="s2">&quot;transfer_role&quot;</span><span class="p">:</span> <span class="s2">&quot;diluent&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;intermediate_location&quot;</span><span class="p">:</span> <span class="n">stage_dest</span><span class="p">,</span>
+                            <span class="p">},</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reorder_protocol</span><span class="p">(</span><span class="n">dilution_actions</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_transfer_stage</span><span class="p">(</span>
+                        <span class="n">action</span><span class="p">[</span><span class="s2">&quot;source_location&quot;</span><span class="p">],</span>
+                        <span class="n">stage_dest</span><span class="p">,</span>
+                        <span class="n">action</span><span class="p">[</span><span class="s2">&quot;volume_ul&quot;</span><span class="p">],</span>
+                        <span class="n">stage_type</span><span class="o">=</span><span class="s2">&quot;dilution&quot;</span><span class="p">,</span>
+                        <span class="n">source_stock_name</span><span class="o">=</span><span class="n">action</span><span class="p">[</span><span class="s2">&quot;source_stock_name&quot;</span><span class="p">],</span>
+                        <span class="n">planned_transfer</span><span class="o">=</span><span class="n">action</span><span class="p">[</span><span class="s2">&quot;planned_transfer&quot;</span><span class="p">],</span>
+                        <span class="n">extra</span><span class="o">=</span><span class="n">action</span><span class="p">[</span><span class="s2">&quot;extra&quot;</span><span class="p">],</span>
                     <span class="p">)</span>
             <span class="k">elif</span> <span class="n">stage_type</span> <span class="o">==</span> <span class="s2">&quot;final_mix&quot;</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">transfer</span> <span class="ow">in</span> <span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;transfers&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="k">for</span> <span class="n">transfer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reorder_protocol</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;transfers&quot;</span><span class="p">,</span> <span class="p">[])):</span>
                     <span class="n">source_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_stage_source</span><span class="p">(</span><span class="n">transfer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_location&quot;</span><span class="p">),</span> <span class="n">intermediate_map</span><span class="p">)</span>
                     <span class="n">vol_ul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">transfer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;required_volume_ul&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
                     <span class="k">if</span> <span class="n">vol_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -687,14 +1647,35 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown stage type &#39;</span><span class="si">{</span><span class="n">stage_type</span><span class="si">}</span><span class="s2">&#39; in procedure plan&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="o">=</span> <span class="n">destination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mark_sample_locations_occupied</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">intermediate_destinations</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">destination</span><span class="p">])</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="OT2Prepare.stocks_by_location">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.stocks_by_location">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">stocks_by_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the configured stock object at a deck location.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        location : str</span>
+<span class="sd">            Deck location associated with a configured stock.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        object</span>
+<span class="sd">            Matching stock object.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no stock is configured at the requested location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_locations</span><span class="p">([</span><span class="n">location</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">normalized</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;stock_sources_by_location&quot;</span><span class="p">,</span> <span class="p">{}):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stock_sources_by_location</span><span class="p">[</span><span class="n">normalized</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="o">==</span> <span class="n">location</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="o">==</span> <span class="n">normalized</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">stock</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No stock configured at location &#39;</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span></div>
 
@@ -702,29 +1683,94 @@
 <div class="viewcode-block" id="OT2Prepare.build_prepare_result">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.build_prepare_result">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_prepare_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feasible_result</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the serialized result payload for a preparation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        feasible_result : object</span>
+<span class="sd">            Feasibility result from the preparation workflow.</span>
+<span class="sd">        balanced_target : object</span>
+<span class="sd">            Balanced target object to serialize.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Serialized target data with total volume included when available.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result_dict</span> <span class="o">=</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">balanced_target</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">result_dict</span><span class="p">[</span><span class="s2">&quot;total_volume&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">balanced_target</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="si">}</span><span class="s2"> ul&quot;</span>
+        <span class="n">total_volume</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">balanced_target</span><span class="p">,</span> <span class="s2">&quot;requested_total_volume&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">total_volume</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">balanced_target</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">):</span>
+            <span class="n">total_volume</span> <span class="o">=</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">volume</span>
+        <span class="k">if</span> <span class="n">total_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">total_volume_ul</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">total_volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">),</span> <span class="mi">6</span><span class="p">)</span>
+            <span class="n">result_dict</span><span class="p">[</span><span class="s2">&quot;total_volume&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">total_volume_ul</span><span class="si">}</span><span class="s2"> ul&quot;</span>
+        <span class="n">result_dict</span><span class="p">[</span><span class="s2">&quot;stock_inventory_after&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stock_inventory_snapshot</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">result_dict</span></div>
 
 
 <div class="viewcode-block" id="OT2Prepare.process_stocks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.process_stocks">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process stocks and refresh deck-derived preparation state.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This extends :class:`PrepareDriver` stock processing by rebuilding the</span>
+<span class="sd">        reverse deck map and stock-tip reservation state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">PrepareDriver</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_deck_config</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild_stock_source_indexes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_deck_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sync_stock_tip_tracking</span><span class="p">()</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_deck_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rebuild the reverse deck map from stock locations.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; driver._update_deck_config()</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(driver.config.get(&quot;deck&quot;, {}), dict)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">deck_config</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">stock_locations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_locations&quot;</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">deck_location</span> <span class="ow">in</span> <span class="n">stock_locations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">deck_config</span><span class="p">[</span><span class="n">deck_location</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock_name</span>
+        <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;stocks&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">deck_config</span><span class="p">[</span><span class="n">stock</span><span class="o">.</span><span class="n">location</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_group&quot;</span><span class="p">,</span> <span class="n">stock</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;deck&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deck_config</span>
+
+<div class="viewcode-block" id="OT2Prepare.get_stock_inventory">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.get_stock_inventory">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stock_inventory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_sources</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stock_inventory_snapshot</span><span class="p">(</span>
+            <span class="n">stock_name</span><span class="o">=</span><span class="n">stock_name</span><span class="p">,</span>
+            <span class="n">include_sources</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">include_sources</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="OT2Prepare.get_transfer_params">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.get_transfer_params">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_transfer_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return merged transfer parameters for a stock.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stock_name : str</span>
+<span class="sd">            Stock identifier.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Default transfer parameters overlaid with stock-specific overrides.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(driver.get_transfer_params(&quot;default&quot;), dict)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">stock_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_transfer_params&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="p">{})</span>
         <span class="n">default_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_transfer_params&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="p">{})</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">default_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -735,30 +1781,87 @@
 <div class="viewcode-block" id="OT2Prepare.reorder_protocol">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.reorder_protocol">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reorder_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reorder protocol steps according to configured stock-name order.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        protocol : sequence</span>
+<span class="sd">            Protocol steps with a ``source`` attribute (or procedure-plan</span>
+<span class="sd">            transfer dictionaries with ``source_location``).  A stock may</span>
+<span class="sd">            have several source wells; all of those wells are ordered using</span>
+<span class="sd">            the stock&#39;s configured name.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            Reordered protocol steps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">stock_mix_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_mix_order&quot;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">stock_mix_order</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">protocol</span>
 
-        <span class="n">steps_by_source</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">configured_stock_names</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">stock_name</span> <span class="ow">in</span> <span class="n">stock_mix_order</span><span class="p">}</span>
+        <span class="n">steps_by_stock_name</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">unordered_steps</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">protocol</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">steps_by_source</span><span class="p">:</span>
-                <span class="n">steps_by_source</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">source</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">steps_by_source</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">source</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_location&quot;</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">))</span>
+                <span class="n">stock_name</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_stock_name&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">source</span>
+                <span class="n">stock_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># ``stock_mix_order`` is intentionally expressed in logical</span>
+            <span class="c1"># stock names, rather than physical source locations.  Resolve a</span>
+            <span class="c1"># source well through the deck map so split-stock transfers stay</span>
+            <span class="c1"># together and obey the same ordering.</span>
+            <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">stock_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;deck&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">in</span> <span class="n">configured_stock_names</span><span class="p">:</span>
+                <span class="n">steps_by_stock_name</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">stock_name</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">unordered_steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
 
         <span class="n">reordered</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">emitted_stock_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">stock_name</span> <span class="ow">in</span> <span class="n">stock_mix_order</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">stock_name</span> <span class="ow">in</span> <span class="n">steps_by_source</span><span class="p">:</span>
-                <span class="n">reordered</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">steps_by_source</span><span class="p">[</span><span class="n">stock_name</span><span class="p">])</span>
-                <span class="k">del</span> <span class="n">steps_by_source</span><span class="p">[</span><span class="n">stock_name</span><span class="p">]</span>
+            <span class="n">normalized_stock_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">normalized_stock_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">emitted_stock_names</span><span class="p">:</span>
+                <span class="n">reordered</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">steps_by_stock_name</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">normalized_stock_name</span><span class="p">,</span> <span class="p">[]))</span>
+                <span class="n">emitted_stock_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">normalized_stock_name</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">steps</span> <span class="ow">in</span> <span class="n">steps_by_source</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">reordered</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">reordered</span></div>
+        <span class="c1"># Keep all stocks omitted from stock_mix_order in their original</span>
+        <span class="c1"># protocol order.</span>
+        <span class="k">return</span> <span class="n">reordered</span> <span class="o">+</span> <span class="n">unordered_steps</span></div>
 
 
 <div class="viewcode-block" id="OT2Prepare.transfer_to_catch">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.transfer_to_catch">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">transfer_to_catch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transfer a prepared sample into the configured catch destination.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        source : str, optional</span>
+<span class="sd">            Source location. Defaults to the last preparation destination.</span>
+<span class="sd">        dest : str, optional</span>
+<span class="sd">            Destination override for the catch transfer.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional transfer keyword arguments merged into the configured</span>
+<span class="sd">            catch protocol.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">            The method raises on failure and records the transfer on success.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no source or destination can be resolved.</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If the underlying transfer fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">catch_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;catch_protocol&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_target_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -799,7 +1902,22 @@
 <div class="viewcode-block" id="OT2Prepare.load_gen1_p10">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.load_gen1_p10">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_gen1_p10</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convenience wrapper for loading a GEN1 P10 single-channel pipette.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a GEN1 P10 single-channel pipette.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mount : {&quot;left&quot;, &quot;right&quot;}</span>
+<span class="sd">            Mount on which to load the pipette.</span>
+<span class="sd">        tip_rack_slots : sequence of str</span>
+<span class="sd">            Tiprack slots associated with the pipette.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional keyword arguments forwarded to :meth:`load_instrument`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Loaded pipette identifier returned by the robot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_instrument</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;p10_single&quot;</span><span class="p">,</span>
             <span class="n">mount</span><span class="o">=</span><span class="n">mount</span><span class="p">,</span>
@@ -811,8 +1929,16 @@
 <div class="viewcode-block" id="OT2Prepare.reset">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.reset">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset preparation targets and stock state.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This reset is preparation-focused and delegates to</span>
+<span class="sd">        :class:`PrepareDriver` helpers rather than resetting the OT-2 run.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_stocks</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_stocks</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_prepare_state</span><span class="p">()</span></div>
 </div>
 
 

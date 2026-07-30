@@ -425,6 +425,7 @@
                   
   <h1>Source code for AFL.automation.mixcalc.MassBalanceDriver</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
@@ -434,6 +435,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bounds</span>
@@ -444,6 +446,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Solution</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MixDB</span><span class="w"> </span><span class="kn">import</span> <span class="n">MixDB</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">enforce_units</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">listify</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_finite</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
@@ -506,6 +509,7 @@
     <span class="n">out</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">solution</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
         <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="n">solution</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+        <span class="s1">&#39;tip&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="s1">&#39;tip&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
         <span class="s1">&#39;components&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
     <span class="p">}</span>
 
@@ -648,6 +652,7 @@
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;minimum_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;20 ul&#39;</span><span class="p">,</span>
         <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;stock_inventory&#39;</span><span class="p">:</span> <span class="p">{},</span>
         <span class="s1">&#39;targets&#39;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s1">&#39;tol&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
         <span class="s1">&#39;enable_multistep_dilution&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
@@ -722,6 +727,145 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No targets have been added; Must call process_stocks before accessing components&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">component</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">target</span><span class="o">.</span><span class="n">components</span><span class="p">}</span>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_stock_location</span><span class="p">(</span><span class="n">location</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Stock source location is required&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Stock source location must be a string, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">location</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">normalized</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Stock source location cannot be empty&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">normalized</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_stock_source_id</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">stock_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">_normalize_stock_location</span><span class="p">(</span><span class="n">location</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_stock_source</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Stock source must be a mapping, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tip&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tip_location&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;tip_location must be defined once at the stock level, not per source&#39;</span><span class="p">)</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_normalize_stock_location</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">)),</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial_volume&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">normalized</span><span class="p">[</span><span class="s1">&#39;initial_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial_volume&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">normalized</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_stock_definition</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">stock</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stock definition must be a mapping, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
+        <span class="n">stock_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">normalized</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">stock_name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Stock definition requires a non-empty name&#39;</span><span class="p">)</span>
+        <span class="n">normalized</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock_name</span>
+
+        <span class="n">location</span> <span class="o">=</span> <span class="n">normalized</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">)</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="n">normalized</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specify either top-level location or sources, not both&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="n">normalized_sources</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_normalize_stock_source</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">listify</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">normalized_sources</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_normalize_stock_source</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="n">location</span><span class="p">,</span>
+                        <span class="s1">&#39;initial_volume&#39;</span><span class="p">:</span> <span class="n">normalized</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;total_volume&#39;</span><span class="p">),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">normalized_sources</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">seen_locations</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">normalized_sources</span><span class="p">:</span>
+            <span class="n">location_key</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">location_key</span> <span class="ow">in</span> <span class="n">seen_locations</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Stock &#39;</span><span class="si">{</span><span class="n">stock_name</span><span class="si">}</span><span class="s2">&#39; defines duplicate source location </span><span class="si">{</span><span class="n">location_key</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">seen_locations</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">location_key</span><span class="p">)</span>
+
+        <span class="n">normalized</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">normalized</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;total_volume&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">normalized</span><span class="p">[</span><span class="s1">&#39;sources&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized_sources</span>
+        <span class="k">return</span> <span class="n">normalized</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_stock_inventory_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">inventory</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">stock_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_stock_source_id</span><span class="p">(</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">source</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">stock_id</span> <span class="ow">in</span> <span class="n">inventory</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">inventory</span><span class="p">[</span><span class="n">stock_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;remaining_volume&#39;</span><span class="p">:</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial_volume&#39;</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inventory</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_and_store_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="n">normalized_stocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">seen_locations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">inventory</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">stocks</span><span class="p">:</span>
+            <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_stock_definition</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">normalized</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">location</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
+                <span class="n">existing_stock</span> <span class="o">=</span> <span class="n">seen_locations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">existing_stock</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Stock source location </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2"> is already assigned to stock &#39;</span><span class="si">{</span><span class="n">existing_stock</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">seen_locations</span><span class="p">[</span><span class="n">location</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">stock_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_stock_source_id</span><span class="p">(</span><span class="n">normalized</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">location</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">stock_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">inventory</span><span class="p">:</span>
+                    <span class="n">inventory</span><span class="p">[</span><span class="n">stock_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;remaining_volume&#39;</span><span class="p">:</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial_volume&#39;</span><span class="p">),</span>
+                    <span class="p">}</span>
+            <span class="n">normalized_stocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normalized</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized_stocks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inventory</span>
+        <span class="k">return</span> <span class="n">normalized_stocks</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_runtime_stock_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="n">runtime_configs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">stock_config</span><span class="p">)</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">tip_location</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tip_location&#39;</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tip&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">base</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="n">runtime_config</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+            <span class="n">runtime_config</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">tip_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">runtime_config</span><span class="p">[</span><span class="s1">&#39;tip_location&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tip_location</span>
+            <span class="n">stock_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_stock_source_id</span><span class="p">(</span><span class="n">runtime_config</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">source</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">])</span>
+            <span class="n">inventory_entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_id</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">remaining_volume</span> <span class="o">=</span> <span class="n">inventory_entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;remaining_volume&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">remaining_volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">remaining_volume</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial_volume&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">remaining_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">remaining_volume_qty</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">remaining_volume</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">remaining_volume_qty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">runtime_config</span><span class="p">[</span><span class="s1">&#39;total_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remaining_volume</span>
+            <span class="n">runtime_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">runtime_config</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">runtime_configs</span>
+
 <div class="viewcode-block" id="MassBalanceDriver.process_stocks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.process_stocks">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -733,16 +877,35 @@
         <span class="n">diagnostics</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">capture_diagnostics</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_stock_load_diagnostics</span> <span class="o">=</span> <span class="n">diagnostics</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">stock_config</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]):</span>
-            <span class="k">if</span> <span class="n">capture_diagnostics</span><span class="p">:</span>
-                <span class="n">stock</span><span class="p">,</span> <span class="n">diag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_solution_with_diagnostics</span><span class="p">(</span><span class="n">stock_config</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">diag</span><span class="p">:</span>
-                    <span class="n">diagnostics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diag</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">stock</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="n">stock_config</span><span class="p">)</span>
-            <span class="n">new_stocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">][</span><span class="n">stock</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span>
+        <span class="n">normalized_stocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_and_store_stocks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">])</span>
+        <span class="n">stock_locations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">stock_config</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">normalized_stocks</span><span class="p">):</span>
+            <span class="n">source_locations</span> <span class="o">=</span> <span class="p">[</span><span class="n">source</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">stock_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="p">[])]</span>
+            <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+                <span class="n">stock_locations</span><span class="p">[</span><span class="n">stock_config</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">source_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_locations</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">source_locations</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">runtime_config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_stock_configs</span><span class="p">(</span><span class="n">stock_config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">capture_diagnostics</span><span class="p">:</span>
+                    <span class="n">stock</span><span class="p">,</span> <span class="n">diag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_solution_with_diagnostics</span><span class="p">(</span><span class="n">runtime_config</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">diag</span><span class="p">:</span>
+                        <span class="n">diagnostics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diag</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">stock</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="n">runtime_config</span><span class="p">)</span>
+                <span class="n">stock</span><span class="o">.</span><span class="n">stock_group</span> <span class="o">=</span> <span class="n">stock_config</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">stock</span><span class="o">.</span><span class="n">stock_id</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_make_stock_source_id</span><span class="p">(</span><span class="n">stock_config</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">)</span>
+                <span class="n">new_stocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
+                <span class="n">inventory_entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock</span><span class="o">.</span><span class="n">stock_id</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="k">if</span> <span class="n">stock</span><span class="o">.</span><span class="n">stock_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">inventory_entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;remaining_volume&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">stock</span><span class="o">.</span><span class="n">volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">][</span><span class="n">stock</span><span class="o">.</span><span class="n">stock_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;remaining_volume&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">stock</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span><span class="si">}</span><span class="s2"> ul&quot;</span>
+                    <span class="p">}</span>
+        <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock_locations</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="o">=</span> <span class="n">new_stocks</span>
         <span class="k">return</span> <span class="n">diagnostics</span>
 
@@ -824,13 +987,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_stocks</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">prev</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">solution</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="n">solution</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">][</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
+        <span class="n">prev_inventory</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="n">normalized_solution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_stock_definition</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">normalized_solution</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_stock_inventory_entry</span><span class="p">(</span><span class="n">normalized_solution</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_inventory</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
             <span class="k">raise</span> <span class="n">e</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span></div>
@@ -860,6 +1025,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.reset_stocks">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span></div>
@@ -1034,18 +1200,20 @@
             <span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">prev_stocks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">])</span>
         <span class="n">prev_locs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">prev_inventory</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">,</span> <span class="p">{}))</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reset_stocks</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">stocks</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">stock</span><span class="p">]</span>
-                <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">][</span><span class="n">stock</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">stock</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
+            <span class="n">normalized_stocks</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_normalize_stock_definition</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">stocks</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">normalized_stocks</span>
+            <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">normalized_stocks</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_stock_inventory_entry</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
             <span class="n">diagnostics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_stocks_with_diagnostics</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">history_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_stock_snapshot</span><span class="p">(</span><span class="n">stocks</span><span class="o">=</span><span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">stocks</span><span class="p">),</span> <span class="s1">&#39;diagnostics&#39;</span><span class="p">:</span> <span class="n">diagnostics</span><span class="p">,</span> <span class="s1">&#39;history_source&#39;</span><span class="p">:</span> <span class="n">history_source</span><span class="p">}</span>
+            <span class="n">history_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_stock_snapshot</span><span class="p">(</span><span class="n">stocks</span><span class="o">=</span><span class="n">normalized_stocks</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">normalized_stocks</span><span class="p">),</span> <span class="s1">&#39;diagnostics&#39;</span><span class="p">:</span> <span class="n">diagnostics</span><span class="p">,</span> <span class="s1">&#39;history_source&#39;</span><span class="p">:</span> <span class="n">history_source</span><span class="p">}</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_stocks</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_inventory</span>
             <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prev_locs</span><span class="p">)</span>
@@ -1133,6 +1301,141 @@
         <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span></div>
 
 
+<div class="viewcode-block" id="MassBalanceDriver.generate_sweep_targets">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.generate_sweep_targets">[docs]</a>
+    <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_sweep_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sweep_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate MixDoctor targets from a serializable sweep configuration.</span>
+
+<span class="sd">        The configuration is the same object saved by MixDoctor&#39;s sweep editor:</span>
+<span class="sd">        ``prefix``, ``size_type``, ``size_value``, ``rows``, and optional</span>
+<span class="sd">        ``name_rules``.  Keeping generation on the driver makes it available to</span>
+<span class="sd">        scripts and guarantees that the UI previews the exact target list that it</span>
+<span class="sd">        uploads.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sweep_config</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">sweep_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">sweep_config</span><span class="p">)</span>
+        <span class="n">sweep_config</span> <span class="o">=</span> <span class="n">sweep_config</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sweep_config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;sweep_config must be a dictionary&#39;</span><span class="p">)</span>
+
+        <span class="n">property_keys</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;masses&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="s1">&#39;volumes&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;concentration&#39;</span><span class="p">:</span> <span class="s1">&#39;concentrations&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mass_fraction&#39;</span><span class="p">:</span> <span class="s1">&#39;mass_fractions&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;volume_fraction&#39;</span><span class="p">:</span> <span class="s1">&#39;volume_fractions&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;molarity&#39;</span><span class="p">:</span> <span class="s1">&#39;molarities&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;molality&#39;</span><span class="p">:</span> <span class="s1">&#39;molalities&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">property_short_names</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;concentration&#39;</span><span class="p">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mass_fraction&#39;</span><span class="p">:</span> <span class="s1">&#39;mf&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;volume_fraction&#39;</span><span class="p">:</span> <span class="s1">&#39;vf&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;molarity&#39;</span><span class="p">:</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;molality&#39;</span><span class="p">:</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">unit_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;concentration&#39;</span><span class="p">,</span> <span class="s1">&#39;molarity&#39;</span><span class="p">,</span> <span class="s1">&#39;molality&#39;</span><span class="p">}</span>
+
+        <span class="n">active_rows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">remainder_rows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">solutes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">source_rows</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">sweep_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rows&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">component</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">property_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prop_type&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">component</span> <span class="ow">or</span> <span class="n">property_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">property_keys</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">source_rows</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_solute&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">and</span> <span class="n">component</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">solutes</span><span class="p">:</span>
+                <span class="n">solutes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_remainder&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">remainder_rows</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">component</span><span class="p">,</span> <span class="n">property_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">))</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stop&#39;</span><span class="p">))</span>
+                <span class="n">steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;steps&#39;</span><span class="p">))</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid sweep range for </span><span class="si">{</span><span class="n">component</span><span class="si">!r}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+            <span class="k">if</span> <span class="n">steps</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Sweep steps for </span><span class="si">{</span><span class="n">component</span><span class="si">!r}</span><span class="s1"> must be at least 1&#39;</span><span class="p">)</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">active_rows</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">component</span><span class="p">,</span> <span class="n">property_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">values</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">active_rows</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">target_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">active_rows</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">target_count</span> <span class="o">&gt;</span> <span class="mi">10000</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Sweep would create </span><span class="si">{</span><span class="n">target_count</span><span class="si">}</span><span class="s1"> targets; limit is 10000&#39;</span><span class="p">)</span>
+
+        <span class="n">prefix</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sweep_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prefix&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;target&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="s1">&#39;target&#39;</span>
+        <span class="n">size_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sweep_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size_type&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">size_value</span> <span class="o">=</span> <span class="n">sweep_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size_value&#39;</span><span class="p">)</span>
+        <span class="n">name_rules</span> <span class="o">=</span> <span class="n">sweep_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name_rules&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">active_rows</span><span class="p">))):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">size_type</span> <span class="ow">and</span> <span class="n">size_value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+                <span class="n">target</span><span class="p">[</span><span class="n">size_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">size_value</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">property_type</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">active_rows</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+                <span class="n">property_key</span> <span class="o">=</span> <span class="n">property_keys</span><span class="p">[</span><span class="n">property_type</span><span class="p">]</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">property_key</span><span class="p">,</span> <span class="p">{})[</span><span class="n">component</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="n">property_type</span> <span class="ow">in</span> <span class="n">unit_properties</span> <span class="ow">and</span> <span class="n">units</span> <span class="k">else</span> <span class="n">value</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">component</span><span class="p">,</span> <span class="n">property_type</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">remainder_rows</span><span class="p">:</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">property_keys</span><span class="p">[</span><span class="n">property_type</span><span class="p">],</span> <span class="p">{})[</span><span class="n">component</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">solutes</span><span class="p">:</span>
+                <span class="n">target</span><span class="p">[</span><span class="s1">&#39;solutes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">solutes</span><span class="p">)</span>
+
+            <span class="n">name_segments</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">include_index</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">name_rules</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">component</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;component&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">source_row</span> <span class="o">=</span> <span class="n">source_rows</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">source_row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">property_type</span> <span class="o">=</span> <span class="n">source_row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prop_type&#39;</span><span class="p">)</span>
+                <span class="n">property_key</span> <span class="o">=</span> <span class="n">property_keys</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">property_type</span><span class="p">)</span>
+                <span class="n">raw_value</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">property_key</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">component</span><span class="p">)</span> <span class="k">if</span> <span class="n">property_key</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">raw_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_value</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">formatter</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;formatter&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;.3f&#39;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">formatted</span> <span class="o">=</span> <span class="nb">format</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">formatter</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="n">formatted</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">.4g</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">source_row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">suffix</span> <span class="o">=</span> <span class="n">units</span> <span class="k">if</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;include_units&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">and</span> <span class="n">property_type</span> <span class="ow">in</span> <span class="n">unit_properties</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">if</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;show_component&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                    <span class="n">segment</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">component</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">property_short_names</span><span class="p">[</span><span class="n">property_type</span><span class="p">]</span><span class="si">}{</span><span class="n">formatted</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">segment</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">formatted</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="n">name_segments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span>
+                <span class="n">include_index</span> <span class="o">=</span> <span class="n">include_index</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;include_index&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+
+            <span class="n">target</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">-&#39;</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_segments</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">name_segments</span> <span class="k">else</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">include_index</span> <span class="ow">and</span> <span class="n">name_segments</span><span class="p">:</span>
+                <span class="n">target</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;-</span><span class="si">{</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">targets</span></div>
+
+
 <div class="viewcode-block" id="MassBalanceDriver.load_sweep_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.load_sweep_config">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
@@ -1165,7 +1468,29 @@
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">_solution_to_display_dict</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">]</span></div>
+        <span class="n">inventory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_inventory&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">listed_stocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
+            <span class="n">aggregate_remaining_ul</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">aggregate_known</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">stock_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_stock_source_id</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">source</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">])</span>
+                <span class="n">remaining_volume</span> <span class="o">=</span> <span class="n">inventory</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stock_id</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;remaining_volume&#39;</span><span class="p">)</span>
+                <span class="n">source</span><span class="p">[</span><span class="s1">&#39;stock_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stock_id</span>
+                <span class="n">source</span><span class="p">[</span><span class="s1">&#39;remaining_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remaining_volume</span>
+                <span class="k">if</span> <span class="n">remaining_volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">aggregate_remaining_ul</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">enforce_units</span><span class="p">(</span><span class="n">remaining_volume</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+                    <span class="n">aggregate_known</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;remaining_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">aggregate_remaining_ul</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span><span class="si">}</span><span class="s2"> ul&quot;</span> <span class="k">if</span> <span class="n">aggregate_known</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
+            <span class="n">listed_stocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">listed_stocks</span></div>
 
 
 <div class="viewcode-block" id="MassBalanceDriver.list_stock_history">
@@ -1385,7 +1710,7 @@
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span>
-                <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;tol&#39;</span><span class="p">],</span>
+                <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tol&#39;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">),</span>
                 <span class="n">return_report</span><span class="o">=</span><span class="n">return_report</span><span class="p">,</span>
                 <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">),</span>
                 <span class="n">multistep_max_steps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multistep_max_steps&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>

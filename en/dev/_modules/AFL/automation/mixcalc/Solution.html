@@ -445,6 +445,7 @@
     <span class="n">AVOGADROS_NUMBER</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">MixWarning</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">listify</span>
 
 <span class="n">SANITY_MSG</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">Solution Check:</span>
@@ -462,6 +463,33 @@
     <span class="n">_stack_name</span> <span class="o">=</span> <span class="s2">&quot;stocks&quot;</span>
     <span class="n">_component_init_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;density&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="s1">&#39;sld&#39;</span><span class="p">,</span> <span class="s1">&#39;uid&#39;</span><span class="p">,</span> <span class="s1">&#39;solute&#39;</span><span class="p">}</span>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tip_locations_as_list</span><span class="p">(</span><span class="n">tip_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tip_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">normalized</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">listify</span><span class="p">(</span><span class="n">tip_value</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Tip location must be a string or list of strings, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">location</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">location</span> <span class="ow">and</span> <span class="n">location</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">normalized</span><span class="p">:</span>
+                <span class="n">normalized</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">normalized</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">normalized</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_collapse_tip_locations</span><span class="p">(</span><span class="n">tip_locations</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tip_locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tip_locations</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tip_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">tip_locations</span>
+
 <div class="viewcode-block" id="Solution.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -477,7 +505,10 @@
         <span class="n">molarities</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">molalities</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">location</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tip_location</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">solutes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stock_volume_fractions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sanity_check</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -509,9 +540,18 @@
 <span class="sd">            A dictionary of component molalities (moles per kilogram of solvent).</span>
 <span class="sd">        location : str, optional</span>
 <span class="sd">            The location of the solution on the robot. Usually a deck location e.g., &#39;1A1&#39;.</span>
+<span class="sd">        tip : str or list[str], optional</span>
+<span class="sd">            Optional tip location or ordered tip-location list associated with this stock,</span>
+<span class="sd">            e.g. &#39;6A4&#39; or [&#39;6A4&#39;, &#39;9A4&#39;].</span>
+<span class="sd">        tip_location : str or list[str], optional</span>
+<span class="sd">            Alias for ``tip``.</span>
 <span class="sd">        solutes : list of str, optional</span>
 <span class="sd">            A list of solute names. If set, the components will be initialized as solutes and they won&#39;t contribute</span>
 <span class="sd">            to the volume of the solution</span>
+<span class="sd">        stock_volume_fractions : dict, optional</span>
+<span class="sd">            A direct preparation recipe mapping configured stock names to</span>
+<span class="sd">            their requested volume fractions. This is preparation metadata,</span>
+<span class="sd">            distinct from ``volume_fractions`` over chemical components.</span>
 <span class="sd">        sanity_check : bool, optional</span>
 <span class="sd">            Whether to perform a sanity check on the solution.</span>
 
@@ -528,7 +568,30 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">context_type</span> <span class="o">=</span> <span class="s2">&quot;Solution&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">location</span>
+        <span class="n">normalized_tip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tip_locations_as_list</span><span class="p">(</span><span class="n">tip</span><span class="p">)</span>
+        <span class="n">normalized_tip_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tip_locations_as_list</span><span class="p">(</span><span class="n">tip_location</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">normalized_tip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="n">normalized_tip_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="n">normalized_tip</span> <span class="o">!=</span> <span class="n">normalized_tip_location</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Received conflicting tip values: tip=</span><span class="si">{</span><span class="n">tip</span><span class="si">!r}</span><span class="s2">, tip_location=</span><span class="si">{</span><span class="n">tip_location</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">resolved_tip</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">normalized_tip_location</span>
+            <span class="k">if</span> <span class="n">normalized_tip_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">normalized_tip</span>
+        <span class="p">)</span>
+        <span class="n">resolved_tip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collapse_tip_locations</span><span class="p">(</span><span class="n">resolved_tip</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tip</span> <span class="o">=</span> <span class="n">resolved_tip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tip_location</span> <span class="o">=</span> <span class="n">resolved_tip</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stock_volume_fractions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_stock_volume_fractions</span><span class="p">(</span>
+            <span class="n">stock_volume_fractions</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stock_transfer_volumes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requested_total_volume</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_self_to_context</span><span class="p">()</span>
 
@@ -625,9 +688,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">total_mass</span>
 
         <span class="k">if</span> <span class="n">total_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">total_volume</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stock_volume_fractions</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solvents</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">requested_total_volume</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">total_volume</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">total_volume</span>
 
-        <span class="k">if</span> <span class="n">sanity_check</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sanity_check</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stock_volume_fractions</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sanity_check</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">volume_fractions</span><span class="p">,</span> <span class="n">molarities</span><span class="p">,</span> <span class="n">molalities</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">)</span></div>
 
 
@@ -692,6 +758,37 @@
         <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fractions</span><span class="p">)</span>
         <span class="n">result</span><span class="p">[</span><span class="n">remainder_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>  <span class="c1"># Clamp to 0 for tiny negative values due to float precision</span>
         <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_stock_volume_fractions</span><span class="p">(</span><span class="n">stock_volume_fractions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate direct stock-dispense recipe fractions.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">stock_volume_fractions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stock_volume_fractions</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">stock_volume_fractions</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;stock_volume_fractions must be a non-empty mapping of stock names to fractions&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">normalized</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">fraction_sum</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">fraction</span> <span class="ow">in</span> <span class="n">stock_volume_fractions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stock_name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;stock_volume_fractions contains an empty stock name&quot;</span><span class="p">)</span>
+            <span class="n">fraction_value</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">fraction</span><span class="p">,</span> <span class="s2">&quot;dimensionless&quot;</span><span class="p">)</span>
+            <span class="n">fraction_float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">fraction_value</span><span class="p">,</span> <span class="s2">&quot;magnitude&quot;</span><span class="p">,</span> <span class="n">fraction_value</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">fraction_float</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;stock_volume_fractions[</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">] must be non-negative, got </span><span class="si">{</span><span class="n">fraction_float</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">normalized</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">fraction_float</span>
+            <span class="n">fraction_sum</span> <span class="o">+=</span> <span class="n">fraction_float</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fraction_sum</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;stock_volume_fractions must sum to 1.0, got </span><span class="si">{</span><span class="n">fraction_sum</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">normalized</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_sanity_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">volume_fractions</span><span class="p">,</span> <span class="n">molarities</span><span class="p">,</span> <span class="n">molalities</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -885,8 +982,20 @@
 <div class="viewcode-block" id="Solution.to_dict">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.to_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stock_volume_fractions</span><span class="p">:</span>
+            <span class="n">total_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requested_total_volume</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                <span class="s2">&quot;total_volume&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">total_volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">),</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span><span class="si">}</span><span class="s2"> ul&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;stock_volume_fractions&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stock_volume_fractions</span><span class="p">),</span>
+                <span class="s2">&quot;stock_transfer_volumes_ul&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stock_transfer_volumes</span><span class="p">),</span>
+            <span class="p">}</span>
+
         <span class="n">out_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+            <span class="s2">&quot;tip&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tip</span><span class="p">,</span>
             <span class="s2">&quot;components&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
             <span class="s2">&quot;masses&quot;</span><span class="p">:</span> <span class="p">{},</span>
         <span class="p">}</span>
@@ -960,7 +1069,12 @@
         <span class="n">solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="n">solution</span><span class="o">.</span><span class="n">context_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context_type</span>
         <span class="n">solution</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span>
+        <span class="n">solution</span><span class="o">.</span><span class="n">tip</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tip</span><span class="p">)</span>
+        <span class="n">solution</span><span class="o">.</span><span class="n">tip_location</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tip_location</span><span class="p">)</span>
         <span class="n">solution</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">protocol</span>
+        <span class="n">solution</span><span class="o">.</span><span class="n">stock_volume_fractions</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stock_volume_fractions</span><span class="p">)</span>
+        <span class="n">solution</span><span class="o">.</span><span class="n">stock_transfer_volumes</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stock_transfer_volumes</span><span class="p">)</span>
+        <span class="n">solution</span><span class="o">.</span><span class="n">requested_total_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requested_total_volume</span>
         <span class="n">solution</span><span class="o">.</span><span class="n">components</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">component</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">return</span> <span class="n">solution</span></div>
 

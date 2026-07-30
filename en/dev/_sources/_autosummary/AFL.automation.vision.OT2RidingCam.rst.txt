@@ -1,0 +1,15 @@
+AFL.automation.vision.OT2RidingCam
+==================================
+
+.. automodule:: AFL.automation.vision.OT2RidingCam
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      OT2GantryDriver
+      OT2RidingCam
+      PiCameraDriver
+   

@@ -499,6 +499,18 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PersistentConfig</span></code>(path[, defaults, ...])</p></td>
 <td><p>A dictionary-like class that serializes changes to disk</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.APIServer.Driver.ProxyDriver" title="AFL.automation.APIServer.Driver.ProxyDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProxyDriver</span></code></a>(name[, defaults, overrides, ...])</p></td>
+<td><p>Base driver for forwarding commands to one or more AFL APIServers.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Exceptions</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.APIServer.Driver.ProxyConnectionError" title="AFL.automation.APIServer.Driver.ProxyConnectionError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProxyConnectionError</span></code></a></p></td>
+<td><p>Raised when a proxy driver cannot establish or use a remote Client.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -783,6 +795,44 @@ is expected that this method be overridden by subclasses.</p>
 
 </dd></dl>
 
+<dl class="py exception">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.ProxyConnectionError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.APIServer.Driver.</span></span><span class="sig-name descname"><span class="pre">ProxyConnectionError</span></span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#ProxyConnectionError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.ProxyConnectionError" title="Link to this definition">#</a></dt>
+<dd><p>Raised when a proxy driver cannot establish or use a remote Client.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.ProxyDriver">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.APIServer.Driver.</span></span><span class="sig-name descname"><span class="pre">ProxyDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proxy_clients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#ProxyDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.ProxyDriver" title="Link to this definition">#</a></dt>
+<dd><p>Base driver for forwarding commands to one or more AFL APIServers.</p>
+<p>Subclasses retain their own API and safety policy, while this class owns
+lazy <code class="docutils literal notranslate"><span class="pre">Client</span></code> construction and optional injected clients for testing.
+A proxy connection is not opened during driver construction.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.ProxyDriver.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proxy_clients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#ProxyDriver.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.ProxyDriver.__init__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.ProxyDriver.get_proxy_client">
+<span class="sig-name descname"><span class="pre">get_proxy_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proxy_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">ip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#ProxyDriver.get_proxy_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.ProxyDriver.get_proxy_client" title="Link to this definition">#</a></dt>
+<dd><p>Return a cached Client for <code class="docutils literal notranslate"><span class="pre">proxy_name</span></code>, creating it on first use.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.ProxyDriver.enqueue_proxy">
+<span class="sig-name descname"><span class="pre">enqueue_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proxy_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#ProxyDriver.enqueue_proxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.ProxyDriver.enqueue_proxy" title="Link to this definition">#</a></dt>
+<dd><p>Enqueue a command on a named remote driver and return its task UUID.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.APIServer.Driver.ProxyDriver.query_proxy">
+<span class="sig-name descname"><span class="pre">query_proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proxy_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/APIServer/Driver.html#ProxyDriver.query_proxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.APIServer.Driver.ProxyDriver.query_proxy" title="Link to this definition">#</a></dt>
+<dd><p>Call a named unqueued operation on a remote driver.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -874,6 +924,14 @@ is expected that this method be overridden by subclasses.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_full_json"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_full_json()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_get_distinct_values"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_get_distinct_values()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.Driver.tiled_upload_dataset"><code class="docutils literal notranslate"><span class="pre">Driver.tiled_upload_dataset()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.ProxyConnectionError"><code class="docutils literal notranslate"><span class="pre">ProxyConnectionError</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.ProxyDriver"><code class="docutils literal notranslate"><span class="pre">ProxyDriver</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.ProxyDriver.__init__"><code class="docutils literal notranslate"><span class="pre">ProxyDriver.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.ProxyDriver.get_proxy_client"><code class="docutils literal notranslate"><span class="pre">ProxyDriver.get_proxy_client()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.ProxyDriver.enqueue_proxy"><code class="docutils literal notranslate"><span class="pre">ProxyDriver.enqueue_proxy()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.APIServer.Driver.ProxyDriver.query_proxy"><code class="docutils literal notranslate"><span class="pre">ProxyDriver.query_proxy()</span></code></a></li>
 </ul>
 </li>
 </ul>

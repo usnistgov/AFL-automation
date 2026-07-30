@@ -430,6 +430,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MassBalance</span><span class="w"> </span><span class="kn">import</span> <span class="n">MassBalance</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MassBalanceDriver</span><span class="w"> </span><span class="kn">import</span> <span class="n">MassBalanceDriver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.prepare.PipetteAction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipetteAction</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Solution</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.PersistentConfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">PersistentConfig</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">listify</span>
@@ -488,6 +489,51 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subclass hook for additional status lines.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[]</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reset_prepare_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear transient preparation bookkeeping.</span>
+
+<span class="sd">        This resets runtime and persisted state derived from stock processing</span>
+<span class="sd">        and sample execution without touching backend-specific robot/session</span>
+<span class="sd">        state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">&quot;deck&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;deck&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;occupied_sample_locations&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;occupied_sample_locations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">&quot;stock_tip_locations&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;stock_tip_locations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;stock_tip_reservations&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;stock_tip_reservations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;reserved_stock_tips&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;reserved_stock_tips&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_condition_preparation_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Solution</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Backend hook to adjust a planned preparation target before validation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">balanced_target</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_balance_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">enable_multistep_dilution</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plan one target through the common MassBalance result contract.&quot;&quot;&quot;</span>
+        <span class="n">mb</span> <span class="o">=</span> <span class="n">MassBalance</span><span class="p">(</span><span class="n">minimum_volume</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;minimum_volume&quot;</span><span class="p">,</span> <span class="s2">&quot;100 ul&quot;</span><span class="p">))</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">stocks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)</span>
+        <span class="n">target_solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">apply_fixed_comps</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_solution</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span>
+            <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tol&quot;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">),</span>
+            <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">),</span>
+            <span class="n">multistep_max_steps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;multistep_max_steps&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="n">multistep_diluent_policy</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;multistep_diluent_policy&quot;</span><span class="p">,</span> <span class="s2">&quot;primary_solvent&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mb</span><span class="o">.</span><span class="n">balanced</span> <span class="ow">or</span> <span class="n">mb</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_preparation_target</span><span class="p">(</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_pipette_action_plan</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">protocol</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">entry</span>
+
 <div class="viewcode-block" id="PrepareDriver.is_feasible">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.is_feasible">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_feasible</span><span class="p">(</span>
@@ -497,35 +543,14 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="n">targets_to_check</span> <span class="o">=</span> <span class="n">listify</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
-        <span class="n">minimum_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;minimum_volume&quot;</span><span class="p">,</span> <span class="s2">&quot;100 ul&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">enable_multistep_dilution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">enable_multistep_dilution</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enable_multistep_dilution&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
 
         <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets_to_check</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">mb</span> <span class="o">=</span> <span class="n">MassBalance</span><span class="p">(</span><span class="n">minimum_volume</span><span class="o">=</span><span class="n">minimum_volume</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">:</span>
-                    <span class="n">mb</span><span class="o">.</span><span class="n">stocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
-
-                <span class="n">target_with_fixed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_fixed_comps</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
-                <span class="n">target_solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="n">target_with_fixed</span><span class="p">)</span>
-                <span class="n">mb</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_solution</span><span class="p">)</span>
-                <span class="n">mb</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span>
-                    <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tol&quot;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">),</span>
-                    <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">),</span>
-                    <span class="n">multistep_max_steps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;multistep_max_steps&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
-                    <span class="n">multistep_diluent_policy</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;multistep_diluent_policy&quot;</span><span class="p">,</span> <span class="s2">&quot;primary_solvent&quot;</span><span class="p">)),</span>
-                <span class="p">)</span>
-
-                <span class="k">if</span> <span class="p">(</span>
-                    <span class="n">mb</span><span class="o">.</span><span class="n">balanced</span>
-                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">balanced</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-                    <span class="ow">and</span> <span class="n">mb</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                <span class="p">):</span>
-                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_balance_target</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">))</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">if</span> <span class="n">entry</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Exception during feasibility check for target &quot;</span>
@@ -572,6 +597,15 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">before_balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subclass hook to perform backend-specific checks before solving.&quot;&quot;&quot;</span></div>
 
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_pipette_action_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PipetteAction</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate a planned transfer protocol.</span>
+
+<span class="sd">        Subclasses may override this to enforce backend-specific pipette</span>
+<span class="sd">        constraints. The default implementation accepts all plans.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="PrepareDriver.resolve_destination">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.resolve_destination">[docs]</a>
@@ -790,6 +824,9 @@
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="n">balanced_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span>
+        <span class="n">balanced_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_preparation_target</span><span class="p">(</span><span class="n">balanced_target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">balanced_target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_pipette_action_plan</span><span class="p">(</span><span class="n">balanced_target</span><span class="o">.</span><span class="n">protocol</span><span class="p">)</span>
         <span class="n">procedure_plan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;procedure_plan&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="n">planned_mass_transfers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;transfers&quot;</span><span class="p">)</span>
         <span class="n">required_intermediate_targets</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">procedure_plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;required_intermediate_targets&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>

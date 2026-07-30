@@ -432,7 +432,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">lsq_linear</span><span class="p">,</span> <span class="n">Bounds</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.PipetteAction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipetteAction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.prepare.PipetteAction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipetteAction</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Solution</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.BalanceDiagnosis</span><span class="w"> </span><span class="kn">import</span> <span class="n">BalanceDiagnosis</span><span class="p">,</span> <span class="n">FailureCode</span><span class="p">,</span> <span class="n">FailureDetail</span>
 
@@ -506,6 +506,7 @@
                 <span class="n">source</span><span class="o">=</span><span class="n">stock</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
                 <span class="n">dest</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
                 <span class="n">volume</span><span class="o">=</span><span class="n">measured</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+                <span class="n">tip_location</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s1">&#39;tip_location&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="p">)</span>
     <span class="n">balanced_target</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;-balanced&quot;</span>
@@ -513,6 +514,71 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
             <span class="n">balanced_target</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">balanced_target</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="s1">&#39;0.0 g&#39;</span>
+    <span class="k">return</span> <span class="n">balanced_target</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_stock_volume_fraction_target</span><span class="p">(</span><span class="n">stocks</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compile a direct stock-volume recipe into a normal balanced target.&quot;&quot;&quot;</span>
+    <span class="n">requested_total_volume</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">requested_total_volume</span>
+    <span class="k">if</span> <span class="n">requested_total_volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;stock_volume_fractions targets require total_volume&quot;</span><span class="p">)</span>
+
+    <span class="n">balanced_target</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;-balanced&quot;</span><span class="p">)</span>
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">stock_volume_fractions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">stock_volume_fractions</span><span class="p">)</span>
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">stock_transfer_volumes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">requested_total_volume</span> <span class="o">=</span> <span class="n">requested_total_volume</span>
+
+    <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">fraction</span> <span class="ow">in</span> <span class="n">target</span><span class="o">.</span><span class="n">stock_volume_fractions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">required_volume_ul</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">requested_total_volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span> <span class="o">*</span> <span class="n">fraction</span><span class="p">,</span>
+            <span class="mi">6</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">balanced_target</span><span class="o">.</span><span class="n">stock_transfer_volumes</span><span class="p">[</span><span class="n">stock_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">required_volume_ul</span>
+        <span class="n">remaining_volume_ul</span> <span class="o">=</span> <span class="n">required_volume_ul</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">stock</span>
+            <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">stocks</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_group&quot;</span><span class="p">,</span> <span class="n">stock</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="n">stock_name</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown stock &#39;</span><span class="si">{</span><span class="n">stock_name</span><span class="si">}</span><span class="s2">&#39; in stock_volume_fractions&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">available_volume_ul</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stock</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+            <span class="n">transfer_volume_ul</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">remaining_volume_ul</span><span class="p">,</span> <span class="n">available_volume_ul</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">transfer_volume_ul</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">measured</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">measure_out</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">transfer_volume_ul</span><span class="si">}</span><span class="s2"> ul&quot;</span><span class="p">)</span>
+            <span class="n">balanced_target</span> <span class="o">=</span> <span class="n">balanced_target</span> <span class="o">+</span> <span class="n">measured</span>
+            <span class="n">balanced_target</span><span class="o">.</span><span class="n">protocol</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">PipetteAction</span><span class="p">(</span>
+                    <span class="n">source</span><span class="o">=</span><span class="n">stock</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                    <span class="n">dest</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                    <span class="n">volume</span><span class="o">=</span><span class="n">transfer_volume_ul</span><span class="p">,</span>
+                    <span class="n">tip_location</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;tip_location&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">remaining_volume_ul</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">remaining_volume_ul</span> <span class="o">-</span> <span class="n">transfer_volume_ul</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">remaining_volume_ul</span> <span class="o">&lt;=</span> <span class="mf">1e-6</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">remaining_volume_ul</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Not enough volume remaining across stock sources for &#39;</span><span class="si">{</span><span class="n">stock_name</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Requested </span><span class="si">{</span><span class="n">required_volume_ul</span><span class="si">}</span><span class="s2"> uL, </span><span class="si">{</span><span class="n">remaining_volume_ul</span><span class="si">}</span><span class="s2"> uL could not be allocated.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">location</span>
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">stock_volume_fractions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">stock_volume_fractions</span><span class="p">)</span>
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">stock_transfer_volumes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">stock_name</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">volume_ul</span><span class="p">),</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">stock_name</span><span class="p">,</span> <span class="n">volume_ul</span> <span class="ow">in</span> <span class="n">balanced_target</span><span class="o">.</span><span class="n">stock_transfer_volumes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="n">balanced_target</span><span class="o">.</span><span class="n">requested_total_volume</span> <span class="o">=</span> <span class="n">requested_total_volume</span>
     <span class="k">return</span> <span class="n">balanced_target</span>
 
 
@@ -1267,7 +1333,8 @@
     <span class="p">):</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">stock</span><span class="o">.</span><span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">]):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Some stocks don&#39;t have a location specified. This should be specified when the stocks are instantiated&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_bounds</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">stock_volume_fractions</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_bounds</span><span class="p">()</span>
         <span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
 
         <span class="n">target_mass_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)))</span>
@@ -1297,6 +1364,30 @@
                     <span class="n">target_idx</span><span class="o">=</span><span class="n">target_idx</span><span class="p">,</span>
                     <span class="n">target_name</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="p">)</span>
+            <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">stock_volume_fractions</span><span class="p">:</span>
+                <span class="n">balanced_target</span> <span class="o">=</span> <span class="n">_make_stock_volume_fraction_target</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span>
+                    <span class="s1">&#39;balanced_target&#39;</span><span class="p">:</span> <span class="n">balanced_target</span><span class="p">,</span>
+                    <span class="s1">&#39;transfers&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s1">&#39;difference&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s1">&#39;diagnosis&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s1">&#39;procedure_plan&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;mode&#39;</span><span class="p">:</span> <span class="s1">&#39;stock_volume_fractions&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;required_intermediate_targets&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;stages&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="p">},</span>
+                <span class="p">})</span>
+                <span class="k">if</span> <span class="n">progress_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">progress_callback</span><span class="p">(</span>
+                        <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;target_end&#39;</span><span class="p">,</span>
+                        <span class="n">completed</span><span class="o">=</span><span class="n">target_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">),</span>
+                        <span class="n">target_idx</span><span class="o">=</span><span class="n">target_idx</span><span class="p">,</span>
+                        <span class="n">target_name</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">continue</span>
             <span class="n">target_masses</span> <span class="o">=</span> <span class="n">target_mass_matrix</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span>
             <span class="n">solved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_single_target</span><span class="p">(</span>
                 <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>

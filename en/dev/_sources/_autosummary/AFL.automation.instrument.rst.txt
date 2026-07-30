@@ -29,6 +29,7 @@ AFL.automation.instrument
    NicosScriptClient
    OpticalTurbidity
    PySpecClient
+   RGBCamera
    SINQSANS
    SINQSANS_NICOS
    ScatteringInstrument

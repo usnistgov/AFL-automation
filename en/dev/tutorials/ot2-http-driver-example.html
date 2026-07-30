@@ -1,0 +1,839 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>OT-2 HTTP Driver End-to-End Example &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/ot2-http-driver-example';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How-to Guides" href="../how-to/index.html" />
+    <link rel="prev" title="Quick Start Guide" href="quick-start.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">OT-2 HTTP Driver End-to-End Example</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">OT-2 HTTP Driver End-to-End Example</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="ot-2-http-driver-end-to-end-example">
+<h1>OT-2 HTTP Driver End-to-End Example<a class="headerlink" href="#ot-2-http-driver-end-to-end-example" title="Link to this heading">#</a></h1>
+<p>This tutorial walks through a complete OT-2 workflow using the AFL-automation Opentrons driver stack. It is based on the repository notebook for preparing samples with <code class="docutils literal notranslate"><span class="pre">OT2Prepare</span></code> and demonstrates how to set up the robot, define stocks and targets, and execute a preparation protocol that includes both shaking and temperature control.</p>
+<p>By the end, you will have connected to a robot, loaded pipettes and labware, prepared a sample from stock solutions, mixed it on a heater-shaker, moved it to a temperature module, and shut the system down cleanly.</p>
+<p>This page is meant to be read as a full worked example rather than a task-specific reference.</p>
+<section id="what-you-will-do">
+<h2>What You Will Do<a class="headerlink" href="#what-you-will-do" title="Link to this heading">#</a></h2>
+<p>In this tutorial, you will:</p>
+<ul class="simple">
+<li><p>connect to an OT-2 over its HTTP interface</p></li>
+<li><p>reset the driver state before starting a run</p></li>
+<li><p>load pipettes, tip racks, custom labware, and modules</p></li>
+<li><p>define stock solutions and a target sample</p></li>
+<li><p>prepare the sample automatically</p></li>
+<li><p>shake the sample and move it to a temperature-controlled location</p></li>
+<li><p>deactivate modules and reset the robot at the end</p></li>
+</ul>
+</section>
+<section id="connection-and-robot-requirements">
+<h2>Connection and Robot Requirements<a class="headerlink" href="#connection-and-robot-requirements" title="Link to this heading">#</a></h2>
+<p>This tutorial requires a direct Ethernet connection between the OT-2 and the control computer running the notebook or script. That connection may be provided through USB-B Ethernet or through a LAN connection, but the control computer must be able to reach the OT-2 over the network.</p>
+<p>Before you begin, confirm that your robot meets at least these requirements:</p>
+<ul class="simple">
+<li><p>firmware version <code class="docutils literal notranslate"><span class="pre">v1.1.0-25e5cea</span></code> or newer</p></li>
+<li><p>supported Protocol API versions from <code class="docutils literal notranslate"><span class="pre">v2.0</span></code> through <code class="docutils literal notranslate"><span class="pre">v2.28</span></code></p></li>
+</ul>
+<p>You will also need the OT-2 IP address. You can find it in the Opentrons app under the network settings for the robot. Update the <code class="docutils literal notranslate"><span class="pre">robot_ip</span></code> field in the driver initialization below with that address. The port should remain <code class="docutils literal notranslate"><span class="pre">31950</span></code> unless you have changed it on your system.</p>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<p>Before you begin, make sure you have:</p>
+<ul class="simple">
+<li><p>installed AFL-automation with Opentrons support</p></li>
+<li><p>an Ethernet connection between the OT-2 and the control computer running this tutorial</p></li>
+<li><p>the OT-2 IP address from the Opentrons app network settings</p></li>
+<li><p>local copies of any custom labware JSON files used in the workflow</p></li>
+<li><p>a physical deck layout that matches the slots and modules used below</p></li>
+</ul>
+<p>Install the Opentrons extra if needed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>AFL-automation<span class="o">[</span>opentrons<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+<section id="step-1-create-the-driver">
+<h2>Step 1: Create the Driver<a class="headerlink" href="#step-1-create-the-driver" title="Link to this heading">#</a></h2>
+<p>Start by creating an <code class="docutils literal notranslate"><span class="pre">OT2Prepare</span></code> instance and pointing it at the robot. This tutorial uses the preparation-oriented wrapper because it combines deck control with stock and sample preparation logic.</p>
+<p>Replace the example <code class="docutils literal notranslate"><span class="pre">robot_ip</span></code> value below with the IP address of your own OT-2.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.prepare.OT2Prepare</span><span class="w"> </span><span class="kn">import</span> <span class="n">OT2Prepare</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="n">driver</span> <span class="o">=</span> <span class="n">OT2Prepare</span><span class="p">(</span>
+    <span class="n">overrides</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;robot_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;169.254.59.185&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;robot_port&quot;</span><span class="p">:</span> <span class="s2">&quot;31950&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>If you are repeating the tutorial, clear any previous state before continuing.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">driver</span><span class="o">.</span><span class="n">reset_stocks</span><span class="p">()</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">reset_deck</span><span class="p">()</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-load-tip-racks-and-pipettes">
+<h2>Step 2: Load Tip Racks and Pipettes<a class="headerlink" href="#step-2-load-tip-racks-and-pipettes" title="Link to this heading">#</a></h2>
+<p>Next, load the tip racks and attach the pipettes that will be used for transfers. The left mount carries a <code class="docutils literal notranslate"><span class="pre">p20_single_gen2</span></code> and the right mount carries a <code class="docutils literal notranslate"><span class="pre">p300_single_gen2</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">driver</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;opentrons_96_tiprack_20ul&quot;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;10&quot;</span><span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">load_instrument</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;p20_single_gen2&quot;</span><span class="p">,</span>
+    <span class="n">mount</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">tip_rack_slots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;10&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;opentrons_96_tiprack_300ul&quot;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;11&quot;</span><span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">load_instrument</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;p300_single_gen2&quot;</span><span class="p">,</span>
+    <span class="n">mount</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span>
+    <span class="n">tip_rack_slots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;11&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>At this point the driver can choose between the loaded pipettes when it plans transfers.</p>
+</section>
+<section id="step-3-load-custom-source-labware">
+<h2>Step 3: Load Custom Source Labware<a class="headerlink" href="#step-3-load-custom-source-labware" title="Link to this heading">#</a></h2>
+<p>The stock solutions in this example live in a custom vial holder. Load the labware definition from JSON and send it to the robot as part of the labware load call.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;./labware/ice_slurry_holder_20ml_3x2.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">custom_labware_def</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ice_slurry_holder&quot;</span><span class="p">,</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="p">,</span>
+    <span class="n">labware_json</span><span class="o">=</span><span class="n">custom_labware_def</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>When <code class="docutils literal notranslate"><span class="pre">labware_json</span></code> is provided, the driver uploads the definition and can reuse it in later runs.</p>
+</section>
+<section id="step-4-load-the-heater-shaker-assembly">
+<h2>Step 4: Load the Heater-Shaker Assembly<a class="headerlink" href="#step-4-load-the-heater-shaker-assembly" title="Link to this heading">#</a></h2>
+<p>Now load a heater-shaker module in slot 4 and place the destination plate on top of it. In this example, the adapter and plate are loaded as separate steps.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">heater_shaker_id</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;heaterShakerModuleV1&quot;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;4&quot;</span><span class="p">)</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">unlatch_shaker</span><span class="p">(</span><span class="n">module_id</span><span class="o">=</span><span class="n">heater_shaker_id</span><span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;opentrons_96_deep_well_adapter_nest_wellplate_2ml_deep&quot;</span><span class="p">,</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;4&quot;</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="n">heater_shaker_id</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;nest_96_wellplate_2ml_deep&quot;</span><span class="p">,</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;4&quot;</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="n">heater_shaker_id</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">latch_shaker</span><span class="p">(</span><span class="n">module_id</span><span class="o">=</span><span class="n">heater_shaker_id</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is the destination where the prepared sample will initially be mixed.</p>
+</section>
+<section id="step-5-load-the-temperature-module">
+<h2>Step 5: Load the Temperature Module<a class="headerlink" href="#step-5-load-the-temperature-module" title="Link to this heading">#</a></h2>
+<p>The final sample is transferred to a vial holder mounted on a temperature module.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">temp_module_id</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;temperatureModuleV1&quot;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;3&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;./labware/5ml_vial_holder_1x1_hightemp.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">vial_holder_def</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;vial_holder&quot;</span><span class="p">,</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;3&quot;</span><span class="p">,</span>
+    <span class="n">labware_json</span><span class="o">=</span><span class="n">vial_holder_def</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="n">temp_module_id</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Notice that module-backed labware is associated with the module identifier rather than treated as a plain deck slot load.</p>
+</section>
+<section id="step-6-define-components-and-stock-solutions">
+<h2>Step 6: Define Components and Stock Solutions<a class="headerlink" href="#step-6-define-components-and-stock-solutions" title="Link to this heading">#</a></h2>
+<p>With the deck configured, define the components and stock solutions that the preparation layer will use to plan the sample.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">driver</span><span class="o">.</span><span class="n">reset_stocks</span><span class="p">()</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;H2O&quot;</span><span class="p">,</span> <span class="n">formula</span><span class="o">=</span><span class="s2">&quot;H2O&quot;</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="s2">&quot;1.0 g/ml&quot;</span><span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;YCl3&quot;</span><span class="p">,</span> <span class="n">formula</span><span class="o">=</span><span class="s2">&quot;YCl3&quot;</span><span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;BSA&quot;</span><span class="p">)</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">add_stock</span><span class="p">({</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stock_BSA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;2A1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;concentrations&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;BSA&quot;</span><span class="p">:</span> <span class="s2">&quot;200 mg/ml&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;volumes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;H2O&quot;</span><span class="p">:</span> <span class="s2">&quot;20 ml&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;total_volume&quot;</span><span class="p">:</span> <span class="s2">&quot;20 ml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;solutes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;BSA&quot;</span><span class="p">],</span>
+<span class="p">})</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">add_stock</span><span class="p">({</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stock_YCl3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;2A2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;molarities&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;YCl3&quot;</span><span class="p">:</span> <span class="s2">&quot;1 mol/L&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;volumes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;H2O&quot;</span><span class="p">:</span> <span class="s2">&quot;10 ml&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;total_volume&quot;</span><span class="p">:</span> <span class="s2">&quot;10 ml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;solutes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;YCl3&quot;</span><span class="p">],</span>
+<span class="p">})</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">add_stock</span><span class="p">({</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stock_H2O&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;2A3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;volumes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;H2O&quot;</span><span class="p">:</span> <span class="s2">&quot;20 ml&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;total_volume&quot;</span><span class="p">:</span> <span class="s2">&quot;20 ml&quot;</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>The stock metadata is what allows the driver to compute a feasible preparation plan.</p>
+</section>
+<section id="step-7-define-and-prepare-the-target-sample">
+<h2>Step 7: Define and Prepare the Target Sample<a class="headerlink" href="#step-7-define-and-prepare-the-target-sample" title="Link to this heading">#</a></h2>
+<p>Now describe the sample you want to make and ask the driver whether it can be prepared from the stocks currently on deck.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">target</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;bsa_ycl3_sample&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;concentrations&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;BSA&quot;</span><span class="p">:</span> <span class="s2">&quot;175 mg/ml&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;molarities&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;YCl3&quot;</span><span class="p">:</span> <span class="s2">&quot;43 mmol/L&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;volumes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;H2O&quot;</span><span class="p">:</span> <span class="s2">&quot;1 ml&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;total_volume&quot;</span><span class="p">:</span> <span class="s2">&quot;1 ml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;solutes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;BSA&quot;</span><span class="p">,</span> <span class="s2">&quot;YCl3&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;4A1&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">feasible</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">is_feasible</span><span class="p">(</span><span class="n">target</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Feasible solution:&quot;</span><span class="p">,</span> <span class="n">feasible</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If the target is feasible, execute the preparation into the destination well.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span><span class="p">,</span> <span class="n">dest</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">target</span><span class="p">[</span><span class="s2">&quot;location&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>During this step, the driver selects an appropriate loaded pipette and breaks transfers into smaller operations when necessary.</p>
+</section>
+<section id="step-8-mix-the-sample-and-move-it">
+<h2>Step 8: Mix the Sample and Move It<a class="headerlink" href="#step-8-mix-the-sample-and-move-it" title="Link to this heading">#</a></h2>
+<p>After the sample is prepared, briefly mix it on the heater-shaker and then transfer it to the vial holder on the temperature module.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">driver</span><span class="o">.</span><span class="n">set_shake</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="n">module_id</span><span class="o">=</span><span class="n">heater_shaker_id</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">stop_shake</span><span class="p">(</span><span class="n">module_id</span><span class="o">=</span><span class="n">heater_shaker_id</span><span class="p">)</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;destination&quot;</span><span class="p">],</span>
+    <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;3A1&quot;</span><span class="p">,</span>
+    <span class="n">volume</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;total_volume&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;ul&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()),</span>
+    <span class="n">source_z_offset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">source_z_offset</span></code> helps keep the tip slightly above the bottom of the well during aspiration.</p>
+</section>
+<section id="step-9-control-the-temperature-module">
+<h2>Step 9: Control the Temperature Module<a class="headerlink" href="#step-9-control-the-temperature-module" title="Link to this heading">#</a></h2>
+<p>With the sample in its final location, step through a few temperatures and inspect the module status after each change.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">temp_c</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting sample temperature to </span><span class="si">{</span><span class="n">temp_c</span><span class="si">}</span><span class="s2"> C&quot;</span><span class="p">)</span>
+    <span class="n">driver</span><span class="o">.</span><span class="n">set_tempmodule_temperature</span><span class="p">(</span><span class="n">temp_module_id</span><span class="p">,</span> <span class="n">temp_c</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">driver</span><span class="o">.</span><span class="n">get_tempmodule_status</span><span class="p">()</span>
+
+<span class="n">driver</span><span class="o">.</span><span class="n">deactivate_tempmodule</span><span class="p">(</span><span class="n">temp_module_id</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This demonstrates both active temperature control and clean module shutdown.</p>
+</section>
+<section id="step-10-finish-the-run">
+<h2>Step 10: Finish the Run<a class="headerlink" href="#step-10-finish-the-run" title="Link to this heading">#</a></h2>
+<p>When the example is complete, home the robot and reset the driver state.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">driver</span><span class="o">.</span><span class="n">home</span><span class="p">()</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="what-this-tutorial-demonstrated">
+<h2>What This Tutorial Demonstrated<a class="headerlink" href="#what-this-tutorial-demonstrated" title="Link to this heading">#</a></h2>
+<p>You have now walked through a full OT-2 HTTP driver example that combines:</p>
+<ul class="simple">
+<li><p>deck setup</p></li>
+<li><p>custom labware loading</p></li>
+<li><p>module control</p></li>
+<li><p>stock-aware sample preparation</p></li>
+<li><p>direct liquid transfer</p></li>
+<li><p>temperature control</p></li>
+<li><p>end-of-run cleanup</p></li>
+</ul>
+<p>From here, you can adapt the same pattern to your own deck layouts, stock definitions, and sample recipes.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="quick-start.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Quick Start Guide</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../how-to/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">How-to Guides</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-will-do">What You Will Do</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connection-and-robot-requirements">Connection and Robot Requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-create-the-driver">Step 1: Create the Driver</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-load-tip-racks-and-pipettes">Step 2: Load Tip Racks and Pipettes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-load-custom-source-labware">Step 3: Load Custom Source Labware</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-load-the-heater-shaker-assembly">Step 4: Load the Heater-Shaker Assembly</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-load-the-temperature-module">Step 5: Load the Temperature Module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-define-components-and-stock-solutions">Step 6: Define Components and Stock Solutions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-define-and-prepare-the-target-sample">Step 7: Define and Prepare the Target Sample</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-mix-the-sample-and-move-it">Step 8: Mix the Sample and Move It</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-control-the-temperature-module">Step 9: Control the Temperature Module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-10-finish-the-run">Step 10: Finish the Run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-tutorial-demonstrated">What This Tutorial Demonstrated</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/tutorials/ot2-http-driver-example.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

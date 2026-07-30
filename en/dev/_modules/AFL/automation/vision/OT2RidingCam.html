@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AFL.automation.mixcalc.PipetteAction &#8212; AFL-automation  documentation</title>
+    <title>AFL.automation.vision.OT2RidingCam &#8212; AFL-automation  documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/mixcalc/PipetteAction';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/vision/OT2RidingCam';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -406,7 +406,10 @@
     
     <li class="breadcrumb-item"><a href="../../automation.html" class="nav-link">AFL.automation</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.mixcalc.PipetteAction</span></li>
+    
+    <li class="breadcrumb-item"><a href="../vision.html" class="nav-link">AFL.automation.vision</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.vision.OT2RidingCam</span></li>
   </ul>
 </nav>
 </div>
@@ -423,93 +426,80 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for AFL.automation.mixcalc.PipetteAction</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+  <h1>Source code for AFL.automation.vision.OT2RidingCam</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A Raspberry Pi camera driver mounted on an OT-2 gantry.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PipetteAction">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PipetteAction</span><span class="p">:</span>
-<div class="viewcode-block" id="PipetteAction.__init__">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">source</span><span class="p">,</span>
-                 <span class="n">dest</span><span class="p">,</span>
-                 <span class="n">volume</span><span class="p">,</span>
-                 <span class="n">source_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">dest_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">aspirate_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">dispense_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">mix_aspirate_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">mix_dispense_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">mix_before</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">mix_after</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">blow_out</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">post_aspirate_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                 <span class="n">post_dispense_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                 <span class="n">aspirate_equilibration_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                 <span class="n">drop_tip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                 <span class="n">force_new_tip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">to_top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                 <span class="n">to_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">to_top_z_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                 <span class="n">fast_mixing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">touch_tip</span><span class="o">=</span><span class="kc">False</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-                 <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">volume</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source_loc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_loc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dest_loc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest_loc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_before&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mix_before</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_after&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mix_after</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;aspirate_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aspirate_rate</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dispense_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dispense_rate</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_aspirate_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mix_aspirate_rate</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_dispense_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mix_dispense_rate</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;blow_out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">blow_out</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;post_aspirate_delay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">post_aspirate_delay</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;post_dispense_delay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">post_dispense_delay</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;aspirate_equilibration_delay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aspirate_equilibration_delay</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;drop_tip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">drop_tip</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;force_new_tip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">force_new_tip</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;to_top&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_top</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;to_center&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_center</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;to_top_z_offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_top_z_offset</span>  <span class="c1"># mm!</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;fast_mixing&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fast_mixing</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;touch_tip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">touch_tip</span></div>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.manipulate.OT2GantryDriver</span><span class="w"> </span><span class="kn">import</span> <span class="n">OT2GantryDriver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.vision.PiCameraDriver</span><span class="w"> </span><span class="kn">import</span> <span class="n">PiCameraDriver</span>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;PipetteAction Vol:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="si">:</span><span class="s1">4.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s1">--&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="si">}</span><span class="s1">&gt;&#39;</span>
+<div class="viewcode-block" id="OT2RidingCam">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.vision.OT2RidingCam.html#AFL.automation.vision.OT2RidingCam.OT2RidingCam">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OT2RidingCam</span><span class="p">(</span><span class="n">PiCameraDriver</span><span class="p">,</span> <span class="n">OT2GantryDriver</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine the complete Pi camera and OT-2 gantry driver interfaces.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+<span class="sd">    The class directly inherits its public commands: camera capture, streaming,</span>
+<span class="sd">    RGB and turbidity measurement come from :class:`PiCameraDriver`; well and</span>
+<span class="sd">    relative movement come from :class:`OT2GantryDriver`.  The gantry still</span>
+<span class="sd">    uses its OT2Prepare proxy connection as designed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<div class="viewcode-block" id="OT2RidingCam.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.vision.OT2RidingCam.html#AFL.automation.vision.OT2RidingCam.OT2RidingCam.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">camera</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ot2_prepare_ip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ot2_prepare_port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the local camera and inherited OT2 gantry proxy.</span>
 
-<div class="viewcode-block" id="PipetteAction.emit_protocol">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction.emit_protocol">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">emit_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_kwargs</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="PipetteAction.get_kwargs">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction.get_kwargs">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">kw</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;source_loc&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;source_loc&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;dest_loc&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;dest_loc&#39;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">kw</span></div>
+<span class="sd">        ``ot2_prepare_ip`` and ``ot2_prepare_port`` are forwarded to</span>
+<span class="sd">        :class:`OT2GantryDriver` and take precedence over ``overrides``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialize the shared Driver once, then invoke each parent</span>
+        <span class="c1"># initializer in state-only mode.  This follows normal multiple-driver</span>
+        <span class="c1"># composition while avoiding a second PersistentConfig instance.</span>
+        <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;OT2RidingCam&quot;</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span>
+            <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">PiCameraDriver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">camera</span><span class="o">=</span><span class="n">camera</span><span class="p">,</span>
+            <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;OT2RidingCam&quot;</span><span class="p">,</span>
+            <span class="n">initialize_driver</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">OT2GantryDriver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">,</span>
+            <span class="n">ot2_prepare_ip</span><span class="o">=</span><span class="n">ot2_prepare_ip</span><span class="p">,</span>
+            <span class="n">ot2_prepare_port</span><span class="o">=</span><span class="n">ot2_prepare_port</span><span class="p">,</span>
+            <span class="n">initialize_driver</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span></div>
 </div>
 
+
+
+<span class="n">_DEFAULT_CUSTOM_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;_classname&quot;</span><span class="p">:</span> <span class="s2">&quot;AFL.automation.vision.OT2RidingCam.OT2RidingCam&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;overrides&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;ot2_prepare_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="c1"># should be the network switch where you start the AFL servers </span>
+        <span class="s2">&quot;ot2_prepare_port&quot;</span><span class="p">:</span> <span class="s2">&quot;5005&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">],</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+<span class="n">_DEFAULT_PORT</span> <span class="o">=</span> <span class="mi">5007</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.launcher</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 </pre></div>
 
                 </article>

@@ -492,7 +492,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code>([overrides])</p></td>
-<td><p></p></td>
+<td><p>HTTP-backed Opentrons OT-2 driver.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver" title="AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VirtualOT2HTTPDriver</span></code></a>([overrides])</p></td>
 <td><p>In-memory mock of <code class="xref py py-class docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code> for CI testing.</p></td>
@@ -511,7 +511,19 @@ requiring hardware or the HTTP server.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/VirtualOT2HTTPDriver.html#VirtualOT2HTTPDriver.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.__init__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Initialize the OT-2 HTTP driver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>overrides</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – Configuration values that override the class defaults.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span> <span class="o">=</span> <span class="n">OT2HTTPDriver</span><span class="p">({</span><span class="s2">&quot;robot_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;robot_port&quot;</span><span class="p">:</span> <span class="s2">&quot;31950&quot;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">base_url</span>
+<span class="go">&#39;http://127.0.0.1:31950&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.reset">
@@ -530,11 +542,22 @@ It can be used to home all axes at once or specific axes as needed.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.load_labware">
 <span class="sig-name descname"><span class="pre">load_labware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/VirtualOT2HTTPDriver.html#VirtualOT2HTTPDriver.load_labware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.load_labware" title="Link to this definition">#</a></dt>
-<dd><p>Load labware (containers, tipracks) into the protocol using HTTP API</p>
+<dd><p>Load labware into a deck slot or module.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>check_run_status</strong> – If False, skip HTTP GET check when ensuring run exists.
-Passed to _ensure_run_exists and send_labware for optimization.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Labware load name or <code class="docutils literal notranslate"><span class="pre">namespace/load_name</span></code> key.</p></li>
+<li><p><strong>slot</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Deck slot identifier.</p></li>
+<li><p><strong>module</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Module identifier when loading onto a module.</p></li>
+<li><p><strong>check_run_status</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, skip the run-status GET check when ensuring a run.</p></li>
+<li><p><strong>**kwargs</strong> – Additional options, including <code class="docutils literal notranslate"><span class="pre">labware_json</span></code> for custom labware.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loaded labware identifier returned by the robot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -542,14 +565,23 @@ Passed to _ensure_run_exists and send_labware for optimization.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.load_instrument">
 <span class="sig-name descname"><span class="pre">load_instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_rack_slots</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/VirtualOT2HTTPDriver.html#VirtualOT2HTTPDriver.load_instrument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.load_instrument" title="Link to this definition">#</a></dt>
-<dd><p>Load pipette and store tiprack information using HTTP API.</p>
+<dd><p>Load a pipette and initialize tip tracking.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>check_run_status</strong> – If False, skip HTTP GET check when ensuring run exists.
-Passed to _ensure_run_exists for optimization.</p></li>
-<li><p><strong>update_pipettes</strong> – If False, skip calling _update_pipettes (for optimization during reload).</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Pipette name or alias.</p></li>
+<li><p><strong>mount</strong> (<em>{&quot;left&quot;</em><em>, </em><em>&quot;right&quot;}</em>) – Mount on which to load the pipette.</p></li>
+<li><p><strong>tip_rack_slots</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Slots containing compatible tipracks.</p></li>
+<li><p><strong>reload</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, preserve existing tip availability during run reload.</p></li>
+<li><p><strong>check_run_status</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, skip the run-status GET check when ensuring a run.</p></li>
+<li><p><strong>update_pipettes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, skip refreshing attached pipette metadata.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loaded pipette identifier returned by the robot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -567,7 +599,71 @@ Passed to _ensure_run_exists for optimization.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.transfer">
 <span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_tip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/VirtualOT2HTTPDriver.html#VirtualOT2HTTPDriver.transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.transfer" title="Link to this definition">#</a></dt>
-<dd><p>Transfer fluid from one location to another using atomic HTTP API commands</p>
+<dd><p>Transfer liquid between two deck locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Source deck location such as <code class="docutils literal notranslate"><span class="pre">&quot;2A1&quot;</span></code>.</p></li>
+<li><p><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Destination deck location such as <code class="docutils literal notranslate"><span class="pre">&quot;3B1&quot;</span></code>.</p></li>
+<li><p><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Requested transfer volume in microliters.</p></li>
+<li><p><strong>mix_before</strong> (<em>sequence</em><em> of </em><em>int and float</em><em>, </em><em>optional</em>) – Two-item sequence <code class="docutils literal notranslate"><span class="pre">(repetitions,</span> <span class="pre">volume_ul)</span></code> applied before the
+aspirate step.</p></li>
+<li><p><strong>mix_after</strong> (<em>sequence</em><em> of </em><em>int and float</em><em>, </em><em>optional</em>) – Two-item sequence <code class="docutils literal notranslate"><span class="pre">(repetitions,</span> <span class="pre">volume_ul)</span></code> applied after the
+dispense step.</p></li>
+<li><p><strong>air_gap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0</em>) – Air gap volume in microliters.</p></li>
+<li><p><strong>aspirate_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Aspirate flow rate in microliters per second.</p></li>
+<li><p><strong>dispense_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Dispense flow rate in microliters per second.</p></li>
+<li><p><strong>mix_aspirate_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Aspirate flow rate used during mix cycles.</p></li>
+<li><p><strong>mix_dispense_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Dispense flow rate used during mix cycles.</p></li>
+<li><p><strong>blow_out</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, perform a blow-out after dispensing.</p></li>
+<li><p><strong>post_aspirate_delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0.0</em>) – Delay in seconds after moving above the source well.</p></li>
+<li><p><strong>aspirate_equilibration_delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0.0</em>) – Delay in seconds while the tip remains in the source liquid after
+aspirating.</p></li>
+<li><p><strong>post_dispense_delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0.0</em>) – Delay in seconds after dispensing.</p></li>
+<li><p><strong>drop_tip</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, discard the tip after the transfer.</p></li>
+<li><p><strong>return_tip</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, return the tip to its origin instead of discarding it.</p></li>
+<li><p><strong>force_new_tip</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, force a fresh tip between split sub-transfers.</p></li>
+<li><p><strong>to_top</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=True</em>) – Dispense at the top of the destination well.</p></li>
+<li><p><strong>to_center</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – Dispense at the center of the destination well.</p></li>
+<li><p><strong>to_top_z_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0</em>) – Additional z-offset applied when dispensing to the top.</p></li>
+<li><p><strong>source_z_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0</em>) – Additional z-offset applied when aspirating from the source.</p></li>
+<li><p><strong>tip_rack_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – Offset mapping with <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, and <code class="docutils literal notranslate"><span class="pre">z</span></code> keys used for tip pickup
+and tip return.</p></li>
+<li><p><strong>return_tip_z_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Return-only z-offset applied when returning a tip to its origin.
+If omitted, the existing <code class="docutils literal notranslate"><span class="pre">tip_rack_offset</span></code> z value is used.</p></li>
+<li><p><strong>fast_mixing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – Reserved flag for higher-level callers.</p></li>
+<li><p><strong>touch_tip</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, touch the tip to the destination well after dispense.</p></li>
+<li><p><strong>tip_location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Explicit tip location to use, for example <code class="docutils literal notranslate"><span class="pre">&quot;1A1&quot;</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Additional compatibility aliases such as <code class="docutils literal notranslate"><span class="pre">blowout</span></code> and
+<code class="docutils literal notranslate"><span class="pre">touchTip</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Structured transfer metadata including selected pipette, subtransfer
+volumes, source and destination well metadata, and applied options.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the transfer request is invalid or no suitable pipette is loaded.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If the underlying robot command fails.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="s2">&quot;2A1&quot;</span><span class="p">,</span> <span class="s2">&quot;3A1&quot;</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;2A1&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;3A1&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="mi">50</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mix_before</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">return_tip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">tip_rack_offset</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>

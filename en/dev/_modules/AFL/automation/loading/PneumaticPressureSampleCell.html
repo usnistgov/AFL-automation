@@ -434,8 +434,6 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
-
 <div class="viewcode-block" id="PneumaticPressureSampleCell">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PneumaticPressureSampleCell</span><span class="p">(</span><span class="n">Driver</span><span class="p">,</span><span class="n">SampleCell</span><span class="p">):</span>
@@ -465,6 +463,7 @@
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;external_load_complete_trigger&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;ramp_load_stop_pressure&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">7</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;ramp_load_duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;enforce_door_closed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.__init__">[docs]</a>
@@ -610,9 +609,32 @@
             
         <span class="k">return</span> <span class="n">status</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;logger&#39;</span><span class="p">):</span>
+            <span class="n">log_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">log_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log_method</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">return</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[</span><span class="si">{</span><span class="n">level</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s1">] </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PneumaticPressureSampleCell.log_warning">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.log_warning">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;warning&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PneumaticPressureSampleCell.log_info">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.log_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+
  
     <span class="k">def</span><span class="w"> </span><span class="nf">_arm_interlock_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USE_DOOR_INTERLOCK</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;enforce_door_closed&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="s1">&#39;Door-closed interlock check is disabled; moving arm without verifying the door is closed.&#39;</span><span class="p">)</span>
+                <span class="k">return</span>
             <span class="n">oldstate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
             <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_door_state</span><span class="p">():</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
@@ -884,8 +906,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">set_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;sensor_n&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="n">sensor_n</span><span class="p">]]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="n">sensor_n</span><span class="p">]]</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>                        
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;sensor_n&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;sensor_n&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>                        
             <span class="k">else</span><span class="p">:</span> <span class="c1"># assume it should apply to all</span>
                 <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
                     <span class="n">ls</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -923,7 +945,7 @@
                 <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
                     <span class="n">ls</span><span class="o">.</span><span class="n">reset_poll</span><span class="p">()</span>
                     <span class="n">ls</span><span class="o">.</span><span class="n">reset_stopper</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="n">ls_app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">ls</span><span class="o">.</span><span class="n">_app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">ls</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app</span>
                         <span class="n">ls</span><span class="o">.</span><span class="n">stopper</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app</span>
                     <span class="k">if</span> <span class="n">ls</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

@@ -718,6 +718,10 @@
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Perform the actual write to disk&#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">:</span>
             <span class="k">return</span>
+
+        <span class="c1"># Config paths such as ``~/.afl/config.json`` may not exist yet on a</span>
+        <span class="c1"># new host. Create the parent before the atomic temporary-file write.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             
         <span class="c1"># Trim history by count</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_history</span><span class="p">:</span>

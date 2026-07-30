@@ -426,44 +426,46 @@
   <h1>Source code for AFL.automation.prepare.PipetteAction</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 
+
 <div class="viewcode-block" id="PipetteAction">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.prepare.PipetteAction.PipetteAction">[docs]</a>
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.mixcalc.PipetteAction">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PipetteAction</span><span class="p">:</span>
 <div class="viewcode-block" id="PipetteAction.__init__">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.prepare.PipetteAction.PipetteAction.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-            <span class="n">source</span><span class="p">,</span>
-            <span class="n">dest</span><span class="p">,</span>
-            <span class="n">volume</span><span class="p">,</span>
-            <span class="n">source_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">dest_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">aspirate_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">dispense_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">mix_aspirate_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">mix_dispense_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">mix_before</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">mix_after</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">blow_out</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">post_aspirate_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">post_dispense_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">aspirate_equilibration_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">drop_tip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">force_new_tip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">to_top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">to_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">to_top_z_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">fast_mixing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">touch_tip</span><span class="o">=</span><span class="kc">False</span>
-            
-            <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span><span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="n">source</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dest&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="n">dest</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="n">volume</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source_loc&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="n">source_loc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dest_loc&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="n">dest_loc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_before&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="n">mix_before</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_after&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="n">mix_after</span>
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.mixcalc.PipetteAction.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">,</span>
+        <span class="n">dest</span><span class="p">,</span>
+        <span class="n">volume</span><span class="p">,</span>
+        <span class="n">source_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dest_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">aspirate_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dispense_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mix_aspirate_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mix_dispense_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mix_before</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mix_after</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">blow_out</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">post_aspirate_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">post_dispense_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">aspirate_equilibration_delay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">drop_tip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">force_new_tip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">to_top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">to_center</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">to_top_z_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">fast_mixing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">touch_tip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">tip_location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">volume</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;source_loc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_loc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dest_loc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest_loc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_before&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mix_before</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_after&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mix_after</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;aspirate_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aspirate_rate</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dispense_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dispense_rate</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mix_aspirate_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mix_aspirate_rate</span>
@@ -476,37 +478,40 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;force_new_tip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">force_new_tip</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;to_top&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_top</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;to_center&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_center</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;to_top_z_offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_top_z_offset</span> <span class="c1">#mm!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;to_top_z_offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_top_z_offset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;fast_mixing&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fast_mixing</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;touch_tip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">touch_tip</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;touch_tip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">touch_tip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;tip_location&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tip_location</span></div>
 
-    
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;PipetteAction Vol:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="si">:</span><span class="s1">4.3f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s1">--&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="si">}</span><span class="s1">&gt;&#39;</span>
-    
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipetteAction.emit_protocol">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.prepare.PipetteAction.PipetteAction.emit_protocol">[docs]</a>
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.mixcalc.PipetteAction.emit_protocol">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">emit_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_kwargs</span><span class="p">()</span></div>
 
-    
+
 <div class="viewcode-block" id="PipetteAction.get_kwargs">
-<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.prepare.PipetteAction.PipetteAction.get_kwargs">[docs]</a>
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PipetteAction.html#AFL.automation.mixcalc.PipetteAction.get_kwargs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">kw</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;source_loc&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;source_loc&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;dest_loc&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;dest_loc&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;tip_location&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;tip_location&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">kw</span></div>
 </div>
 

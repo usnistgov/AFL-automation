@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/APIServer/APIServer';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,13 +424,13 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.APIServer.APIServer</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">send_file</span><span class="p">,</span> <span class="n">send_from_directory</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">send_file</span><span class="p">,</span> <span class="n">send_from_directory</span>
 
-<span class="kn">from</span> <span class="nn">flask_cors</span> <span class="kn">import</span> <span class="n">CORS</span>
-<span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">ChoiceLoader</span><span class="p">,</span> <span class="n">FileSystemLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask_cors</span><span class="w"> </span><span class="kn">import</span> <span class="n">CORS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jinja2</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChoiceLoader</span><span class="p">,</span> <span class="n">FileSystemLoader</span>
 
 <span class="c1">#authentication module</span>
-<span class="kn">from</span> <span class="nn">flask_jwt_extended</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask_jwt_extended</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">JWTManager</span><span class="p">,</span> <span class="n">jwt_required</span><span class="p">,</span> <span class="n">create_access_token</span><span class="p">,</span>
     <span class="n">create_refresh_token</span><span class="p">,</span>
     <span class="n">get_jwt_identity</span><span class="p">,</span> <span class="n">set_access_cookies</span><span class="p">,</span>
@@ -420,48 +439,48 @@
 
 
 
-<span class="kn">import</span> <span class="nn">datetime</span><span class="o">,</span><span class="nn">requests</span><span class="o">,</span><span class="nn">subprocess</span><span class="o">,</span><span class="nn">shlex</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">threading</span><span class="o">,</span><span class="nn">queue</span><span class="o">,</span><span class="nn">logging</span><span class="o">,</span><span class="nn">json</span><span class="o">,</span><span class="nn">pathlib</span><span class="o">,</span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="o">,</span><span class="nn">requests</span><span class="o">,</span><span class="nn">subprocess</span><span class="o">,</span><span class="nn">shlex</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span><span class="o">,</span><span class="nn">queue</span><span class="o">,</span><span class="nn">logging</span><span class="o">,</span><span class="nn">json</span><span class="o">,</span><span class="nn">pathlib</span><span class="o">,</span><span class="nn">uuid</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">waitress</span> <span class="kn">import</span> <span class="n">serve</span> <span class="k">as</span> <span class="n">wsgi_serve</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">waitress</span><span class="w"> </span><span class="kn">import</span> <span class="n">serve</span> <span class="k">as</span> <span class="n">wsgi_serve</span>
     <span class="n">_HAVE_WAITRESS</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="c1"># Silence verbose logging from waitress which can flood the console</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;waitress&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">_HAVE_WAITRESS</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">FileHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileHandler</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.QueueDaemon</span> <span class="kn">import</span> <span class="n">QueueDaemon</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.LoggerFilter</span> <span class="kn">import</span> <span class="n">LoggerFilter</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.CAStatusPublisher</span> <span class="kn">import</span> <span class="n">CAStatusPublisher</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.QueueDaemon</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueueDaemon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.LoggerFilter</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoggerFilter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.CAStatusPublisher</span><span class="w"> </span><span class="kn">import</span> <span class="n">CAStatusPublisher</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.MutableQueue</span> <span class="kn">import</span> <span class="n">MutableQueue</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.utilities</span> <span class="kn">import</span> <span class="n">listify</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared</span> <span class="kn">import</span> <span class="n">serialization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.MutableQueue</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableQueue</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">listify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared</span><span class="w"> </span><span class="kn">import</span> <span class="n">serialization</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 
 <span class="k">try</span><span class="p">:</span>
 <span class="c1">#this import block is all for the web-ui unqueued rendering code</span>
-    <span class="kn">import</span> <span class="nn">bokeh</span>
-    <span class="kn">import</span> <span class="nn">bokeh.plotting</span>
-    <span class="kn">from</span> <span class="nn">bokeh.resources</span> <span class="kn">import</span> <span class="n">INLINE</span>
-    <span class="kn">from</span> <span class="nn">bokeh.core.templates</span> <span class="kn">import</span> <span class="n">JS_RESOURCES</span>
-    <span class="kn">from</span> <span class="nn">bokeh.core.templates</span> <span class="kn">import</span> <span class="n">CSS_RESOURCES</span>
-    <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
-    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">cm</span>
-    <span class="kn">import</span> <span class="nn">io</span>
-    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-    <span class="kn">from</span> <span class="nn">distutils.util</span> <span class="kn">import</span> <span class="n">strtobool</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">bokeh</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">bokeh.plotting</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bokeh.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">INLINE</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bokeh.core.templates</span><span class="w"> </span><span class="kn">import</span> <span class="n">JS_RESOURCES</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bokeh.core.templates</span><span class="w"> </span><span class="kn">import</span> <span class="n">CSS_RESOURCES</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">distutils.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">strtobool</span>
 <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span><span class="ne">ImportError</span><span class="p">):</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Plotting imports failed! Live data plotting will not work on this server.&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">socket</span>
-    <span class="kn">from</span> <span class="nn">zeroconf</span> <span class="kn">import</span> <span class="n">IPVersion</span><span class="p">,</span> <span class="n">ServiceInfo</span><span class="p">,</span> <span class="n">Zeroconf</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">zeroconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">IPVersion</span><span class="p">,</span> <span class="n">ServiceInfo</span><span class="p">,</span> <span class="n">Zeroconf</span>
     <span class="n">_ADVERTISE_ZEROCONF</span><span class="o">=</span><span class="kc">True</span>
 <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span><span class="ne">ImportError</span><span class="p">):</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Could not import zeroconf! Network autodiscovery will not work on this server.&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -469,10 +488,10 @@
 
 <div class="viewcode-block" id="APIServer">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer">[docs]</a>
-<span class="k">class</span> <span class="nc">APIServer</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">APIServer</span><span class="p">:</span>
 <div class="viewcode-block" id="APIServer.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">experiment</span><span class="o">=</span><span class="s1">&#39;Development&#39;</span><span class="p">,</span><span class="n">contact</span><span class="o">=</span><span class="s1">&#39;tbm@nist.gov&#39;</span><span class="p">,</span><span class="n">index_template</span><span class="o">=</span><span class="s1">&#39;server_page/index.html&#39;</span><span class="p">,</span><span class="n">new_index_template</span><span class="o">=</span><span class="s1">&#39;server_page/index-new.html&#39;</span><span class="p">,</span><span class="n">plot_template</span><span class="o">=</span><span class="s1">&#39;simple-bokeh.html&#39;</span><span class="p">,</span><span class="n">afl_home</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">experiment</span><span class="o">=</span><span class="s1">&#39;Development&#39;</span><span class="p">,</span><span class="n">contact</span><span class="o">=</span><span class="s1">&#39;tbm@nist.gov&#39;</span><span class="p">,</span><span class="n">index_template</span><span class="o">=</span><span class="s1">&#39;server_page/index.html&#39;</span><span class="p">,</span><span class="n">new_index_template</span><span class="o">=</span><span class="s1">&#39;server_page/index-new.html&#39;</span><span class="p">,</span><span class="n">plot_template</span><span class="o">=</span><span class="s1">&#39;simple-bokeh.html&#39;</span><span class="p">,</span><span class="n">afl_home</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span> <span class="o">=</span> <span class="n">experiment</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">contact</span> <span class="o">=</span> <span class="n">contact</span>
@@ -512,21 +531,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cors</span> <span class="o">=</span> <span class="n">CORS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_serve_apps_static</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serve_apps_static</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">send_from_directory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">apps_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_static_endpoint_name</span><span class="p">(</span><span class="n">subpath</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_static_endpoint_name</span><span class="p">(</span><span class="n">subpath</span><span class="p">):</span>
         <span class="n">normalized</span> <span class="o">=</span> <span class="n">subpath</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;static_</span><span class="si">{</span><span class="n">normalized</span><span class="si">}</span><span class="s1">&#39;</span>
 
-    <span class="k">def</span> <span class="nf">_render_app_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render_app_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="n">template_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="mi">200</span>
 
 
 <div class="viewcode-block" id="APIServer.create_queue">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.create_queue">[docs]</a>
-    <span class="k">def</span> <span class="nf">create_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">driver</span><span class="p">,</span><span class="n">add_unqueued</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">start_ca</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ca_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ca_port</span><span class="o">=</span><span class="mi">5064</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">driver</span><span class="p">,</span><span class="n">add_unqueued</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">start_ca</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ca_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ca_port</span><span class="o">=</span><span class="mi">5064</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span> <span class="o">=</span> <span class="n">MutableQueue</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">driver</span>     <span class="o">=</span> <span class="n">driver</span>
@@ -551,7 +570,7 @@
 
 <div class="viewcode-block" id="APIServer.reset_queue_daemon">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.reset_queue_daemon">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset_queue_daemon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_queue_daemon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">driver</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">=</span><span class="n">driver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
@@ -560,7 +579,7 @@
 
 <div class="viewcode-block" id="APIServer.advertise_zeroconf">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.advertise_zeroconf">[docs]</a>
-    <span class="k">def</span> <span class="nf">advertise_zeroconf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">advertise_zeroconf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="s1">&#39;port&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">port</span> <span class="o">=</span> <span class="mi">5000</span>
         <span class="k">else</span><span class="p">:</span>
@@ -589,7 +608,7 @@
 
 <div class="viewcode-block" id="APIServer.run">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.run">[docs]</a>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_waitress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_waitress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;create_queue must be called before running server&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_ADVERTISE_ZEROCONF</span><span class="p">:</span>
@@ -622,7 +641,7 @@
 
 <div class="viewcode-block" id="APIServer.run_threaded">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.run_threaded">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_threaded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_thread</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_waitress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_threaded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_thread</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_waitress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;create_queue must be called before running server&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_ADVERTISE_ZEROCONF</span><span class="p">:</span>
@@ -656,7 +675,7 @@
 
 <div class="viewcode-block" id="APIServer.add_standard_routes">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.add_standard_routes">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_standard_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_standard_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;index_new&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">index_new</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/new&#39;</span><span class="p">,</span><span class="s1">&#39;index_new&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">index_new</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="s1">&#39;/old&#39;</span><span class="p">,</span><span class="s1">&#39;index&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
@@ -706,7 +725,7 @@
 
 <div class="viewcode-block" id="APIServer.get_info">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Live, status page of the robot&#39;&#39;&#39;</span>
         <span class="c1">#self.app.logger.error(print(self.get_queue()[0].json))</span>
         <span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
@@ -721,7 +740,7 @@
 
 <div class="viewcode-block" id="APIServer.get_quickbar">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_quickbar">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_quickbar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_quickbar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Return the functions, params, and defaults to be shown in this server&#39;s quickbar</span>
 <span class="sd">        &#39;&#39;&#39;</span>
@@ -730,24 +749,24 @@
 
 <div class="viewcode-block" id="APIServer.is_server_live">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.is_server_live">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_server_live</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_server_live</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Server is live.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="mi">200</span></div>
 
 
 <div class="viewcode-block" id="APIServer.get_unqueued_commands">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_unqueued_commands">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_unqueued_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_unqueued_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">unqueued</span><span class="o">.</span><span class="n">function_info</span><span class="p">),</span><span class="mi">200</span></div>
 
 
 <div class="viewcode-block" id="APIServer.get_queued_commands">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_queued_commands">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queued_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queued_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">queued</span><span class="o">.</span><span class="n">function_info</span><span class="p">),</span><span class="mi">200</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_add_driver_static_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_driver_static_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Serve any extra static directories defined by the driver.</span>
 <span class="sd">        </span>
 <span class="sd">        This method creates Flask routes for each directory specified in the driver&#39;s</span>
@@ -775,7 +794,7 @@
 
 <div class="viewcode-block" id="APIServer.add_unqueued_routes">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.add_unqueued_routes">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_unqueued_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_unqueued_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Adding unqueued routes&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">unqueued</span><span class="o">.</span><span class="n">functions</span><span class="p">:</span>
             <span class="n">route</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">fn</span>
@@ -789,7 +808,7 @@
 
 <div class="viewcode-block" id="APIServer.query_driver">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.query_driver">[docs]</a>
-    <span class="k">def</span> <span class="nf">query_driver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_driver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">(</span><span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">task</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span>
@@ -812,7 +831,7 @@
 
 <div class="viewcode-block" id="APIServer.init_logging">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.init_logging">[docs]</a>
-    <span class="k">def</span> <span class="nf">init_logging</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">toaddrs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_logging</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">toaddrs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
         <span class="c1"># SMTP email handling has been removed. The `toaddrs` argument is now</span>
@@ -834,7 +853,7 @@
 
 <div class="viewcode-block" id="APIServer.index">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.index">[docs]</a>
-    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Render the legacy status board</span>
 <span class="sd">        &#39;&#39;&#39;</span>
@@ -850,7 +869,7 @@
 
 <div class="viewcode-block" id="APIServer.index_new">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.index_new">[docs]</a>
-    <span class="k">def</span> <span class="nf">index_new</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">index_new</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Render the new driver UI</span>
 <span class="sd">        &#39;&#39;&#39;</span>
@@ -867,7 +886,7 @@
 
 <div class="viewcode-block" id="APIServer.webapp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.webapp">[docs]</a>
-    <span class="k">def</span> <span class="nf">webapp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">webapp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Render the jquery webapp</span>
 <span class="sd">        &#39;&#39;&#39;</span>
@@ -878,31 +897,31 @@
 
 <div class="viewcode-block" id="APIServer.config_editor">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.config_editor">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_editor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_editor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_app_template</span><span class="p">(</span><span class="s1">&#39;config_editor/config.html&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="APIServer.config_editor_retro">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.config_editor_retro">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_editor_retro</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_editor_retro</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_app_template</span><span class="p">(</span><span class="s1">&#39;config_editor/config-retro.html&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="APIServer.status_app">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.status_app">[docs]</a>
-    <span class="k">def</span> <span class="nf">status_app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status_app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_app_template</span><span class="p">(</span><span class="s1">&#39;status/status.html&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="APIServer.jupyterlite">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.jupyterlite">[docs]</a>
-    <span class="k">def</span> <span class="nf">jupyterlite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">jupyterlite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;/static/jl/index.html&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="APIServer.render_unqueued">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.render_unqueued">[docs]</a>
-    <span class="k">def</span> <span class="nf">render_unqueued</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">func</span><span class="p">,</span><span class="n">kwargs_add</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render_unqueued</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">func</span><span class="p">,</span><span class="n">kwargs_add</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Convert an unqueued return item into web-suitable output&#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Serving unqueued function: </span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> received with decorator kwargs </span><span class="si">{</span><span class="n">kwargs_add</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs_add</span><span class="p">)</span>
@@ -955,7 +974,7 @@
 
 <div class="viewcode-block" id="APIServer.send_1d_plot">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.send_1d_plot">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_1d_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">result</span><span class="p">,</span><span class="n">multi</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_1d_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">result</span><span class="p">,</span><span class="n">multi</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="s1">&#39;xlin&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xlin&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
                 <span class="n">xlin</span> <span class="o">=</span> <span class="n">strtobool</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xlin&#39;</span><span class="p">])</span>
@@ -1014,7 +1033,7 @@
 
 <div class="viewcode-block" id="APIServer.send_array_as_jpg">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.send_array_as_jpg">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_array_as_jpg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">array</span><span class="p">,</span><span class="n">log_image</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">max_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">fillna</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_array_as_jpg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">array</span><span class="p">,</span><span class="n">log_image</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">max_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">fillna</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1">#img = Image.fromarray(array.astype(&#39;uint8&#39;))</span>
         <span class="c1">#self.app.logger.info(type(array))</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">array</span><span class="p">,</span><span class="n">nan</span><span class="o">=</span><span class="n">fillna</span><span class="p">)</span>
@@ -1045,7 +1064,7 @@
 
 <div class="viewcode-block" id="APIServer.queue_state">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.queue_state">[docs]</a>
-    <span class="k">def</span> <span class="nf">queue_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">queue_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">paused</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;Paused&#39;</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
@@ -1059,14 +1078,14 @@
 
 <div class="viewcode-block" id="APIServer.driver_status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.driver_status">[docs]</a>
-    <span class="k">def</span> <span class="nf">driver_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">driver_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">status</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">status</span><span class="p">),</span><span class="mi">200</span></div>
 
 
 <div class="viewcode-block" id="APIServer.get_queue">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_queue">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span>
         <span class="k">if</span> <span class="s1">&#39;with_iteration&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="n">with_iteration</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;with_iteration&#39;</span><span class="p">])</span>
@@ -1079,14 +1098,14 @@
 
 <div class="viewcode-block" id="APIServer.get_queue_iteration">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_queue_iteration">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_queue_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queue_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">iterationid</span><span class="p">()),</span><span class="mi">200</span></div>
 
 
 <div class="viewcode-block" id="APIServer.deposit_obj">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.deposit_obj">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">deposit_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deposit_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Store an object named obj in the driver&#39;s dropbox</span>
 <span class="sd">        If a uuid is provided, the object will be stored with that uuid</span>
@@ -1112,7 +1131,7 @@
 <div class="viewcode-block" id="APIServer.retrieve_obj">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.retrieve_obj">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">retrieve_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">retrieve_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Retrieve an object from the driver&#39;s dropbox</span>
 <span class="sd">        uuid specifies the object to retrieve</span>
@@ -1136,7 +1155,7 @@
 
 <div class="viewcode-block" id="APIServer.tiled_upload_data">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.tiled_upload_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_upload_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_upload_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Upload an xarray/nc/csv/tsv/dat payload to Tiled via multipart form data.&quot;&quot;&quot;</span>
         <span class="n">upload_file</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">upload_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1196,7 +1215,7 @@
 <div class="viewcode-block" id="APIServer.set_driver_object">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.set_driver_object">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">set_driver_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_driver_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
         <span class="n">user</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">obj</span> <span class="ow">in</span> <span class="n">task</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1209,7 +1228,7 @@
 <div class="viewcode-block" id="APIServer.get_driver_object">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_driver_object">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">get_driver_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_driver_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
         <span class="n">user</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s1"> is getting an object named </span><span class="si">{</span><span class="n">task</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> from driver&#39;</span><span class="p">)</span>
@@ -1221,7 +1240,7 @@
 <div class="viewcode-block" id="APIServer.enqueue">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.enqueue">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">enqueue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enqueue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
         <span class="k">if</span> <span class="s1">&#39;queue_loc&#39;</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
             <span class="n">queue_loc</span> <span class="o">=</span> <span class="n">task</span><span class="p">[</span><span class="s1">&#39;queue_loc&#39;</span><span class="p">]</span>
@@ -1248,7 +1267,7 @@
 <div class="viewcode-block" id="APIServer.reorder_queue">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.reorder_queue">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">reorder_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reorder_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
         <span class="n">prior_state</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;prior_state&#39;</span><span class="p">]</span>
         <span class="n">reordered_queue</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">]</span>
@@ -1288,7 +1307,7 @@
 <div class="viewcode-block" id="APIServer.remove_items">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.remove_items">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">remove_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">items</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;remove </span><span class="si">{</span><span class="n">items</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -1297,7 +1316,7 @@
         <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_uuid_to_qpos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uuid</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_uuid_to_qpos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uuid</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">queue</span><span class="p">)):</span>
             <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="n">uuid</span><span class="p">:</span>
                 <span class="n">pos</span> <span class="o">=</span> <span class="n">idx</span>
@@ -1307,7 +1326,7 @@
 <div class="viewcode-block" id="APIServer.remove_item">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.remove_item">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">remove_item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">uuid</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_to_qpos</span><span class="p">(</span><span class="n">uuid</span><span class="p">))</span>
         <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
@@ -1316,7 +1335,7 @@
 <div class="viewcode-block" id="APIServer.move_item">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.move_item">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">move_item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move_item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">uuid</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_to_qpos</span><span class="p">(</span><span class="n">uuid</span><span class="p">),</span><span class="n">new_index</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span>
@@ -1325,21 +1344,21 @@
 
 <div class="viewcode-block" id="APIServer.clear_queue">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.clear_queue">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
 
 
 <div class="viewcode-block" id="APIServer.clear_history">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.clear_history">[docs]</a>
-    <span class="k">def</span> <span class="nf">clear_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[:]</span>
         <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
 
 
 <div class="viewcode-block" id="APIServer.debug">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.debug">[docs]</a>
-    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting queue debug state to </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">state</span>
@@ -1348,7 +1367,7 @@
 
 <div class="viewcode-block" id="APIServer.pause">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.pause">[docs]</a>
-    <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Setting queue paused state to </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">queue_daemon</span><span class="o">.</span><span class="n">paused</span> <span class="o">=</span> <span class="n">state</span>
@@ -1357,7 +1376,7 @@
 
 <div class="viewcode-block" id="APIServer.halt">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.halt">[docs]</a>
-    <span class="k">def</span> <span class="nf">halt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">halt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Halting all drivers and stopping QueueDaemon&#39;</span><span class="p">)</span>
         <span class="c1"># ToDo....</span>
         <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
@@ -1365,7 +1384,7 @@
 
 <div class="viewcode-block" id="APIServer.init">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.init">[docs]</a>
-    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># this kills the default werkzeug webserver output</span>
         <span class="c1"># log = logging.getLogger(&#39;werkzeug&#39;)</span>
         <span class="c1">#log.disabled = True</span>
@@ -1378,7 +1397,7 @@
 
 <div class="viewcode-block" id="APIServer.login">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.login">[docs]</a>
-    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">is_json</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;msg&quot;</span><span class="p">:</span> <span class="s2">&quot;Missing JSON in request&quot;</span><span class="p">}),</span> <span class="mi">400</span>
 
@@ -1408,7 +1427,7 @@
 
 <div class="viewcode-block" id="APIServer.get_server_time">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_server_time">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_server_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_server_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H:%M:%S - %y/%m/</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">now</span></div>
 
@@ -1417,7 +1436,7 @@
 <div class="viewcode-block" id="APIServer.login_test">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.login_test">[docs]</a>
     <span class="nd">@jwt_required</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">login_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">login_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">username</span> <span class="o">=</span> <span class="n">get_jwt_identity</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Login test for </span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s1"> successful&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="s1">&#39;Success&#39;</span><span class="p">,</span><span class="mi">200</span></div>
@@ -1428,7 +1447,7 @@
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
 
-    <span class="kn">from</span> <span class="nn">AFL.automation.APIServer.DummyDriver</span> <span class="kn">import</span> <span class="n">DummyDriver</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.DummyDriver</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummyDriver</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">APIServer</span><span class="p">(</span><span class="s1">&#39;TestServer&#39;</span><span class="p">)</span>
     <span class="n">server</span><span class="o">.</span><span class="n">add_standard_routes</span><span class="p">()</span>
     <span class="n">server</span><span class="o">.</span><span class="n">create_queue</span><span class="p">(</span><span class="n">DummyDriver</span><span class="p">())</span>
@@ -1462,8 +1481,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -1499,7 +1518,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

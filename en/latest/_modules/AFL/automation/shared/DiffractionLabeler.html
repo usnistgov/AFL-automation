@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/shared/DiffractionLabeler';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,24 +424,24 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.shared.DiffractionLabeler</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">sqrt</span>
 
-<span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
-<span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.graph_objects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">go</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.express</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">px</span>
 
 
-<span class="kn">import</span> <span class="nn">ipywidgets</span>
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OrdinalEncoder</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ipywidgets</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrdinalEncoder</span>
 
 <div class="viewcode-block" id="DiffractionLabeler">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler">[docs]</a>
-<span class="k">class</span> <span class="nc">DiffractionLabeler</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiffractionLabeler</span><span class="p">:</span>
 <div class="viewcode-block" id="DiffractionLabeler.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">saxs_data</span><span class="p">,</span><span class="n">composition_data</span><span class="p">,</span><span class="n">possible_phase_labels</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">saxs_data</span><span class="p">,</span><span class="n">composition_data</span><span class="p">,</span><span class="n">possible_phase_labels</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span> <span class="o">=</span> <span class="n">DiffractionLabelerView</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span> <span class="o">=</span> <span class="n">DiffractionLabelerModel</span><span class="p">(</span><span class="n">saxs_data</span><span class="p">,</span><span class="n">composition_data</span><span class="p">,</span><span class="n">possible_phase_labels</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span> <span class="o">=</span> <span class="mi">0</span></div>
@@ -430,7 +449,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.next_button_callback">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.next_button_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">next_button_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">next_button_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="o">+=</span><span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span></div>
@@ -438,7 +457,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.prev_button_callback">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.prev_button_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">prev_button_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prev_button_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="o">-=</span><span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span></div>
@@ -446,7 +465,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.goto_callback">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.goto_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">goto_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">goto_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="o">=</span><span class="n">index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span></div>
@@ -454,7 +473,7 @@
     
 <div class="viewcode-block" id="DiffractionLabeler.ternary_click_callback">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.ternary_click_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">ternary_click_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">figure</span><span class="p">,</span><span class="n">location</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ternary_click_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">figure</span><span class="p">,</span><span class="n">location</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
         <span class="n">index</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">point_inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span> <span class="o">=</span> <span class="n">index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">current_index</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_index</span>
@@ -463,7 +482,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.update_plot">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.update_plot">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">saxs_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">saxs_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span>
         <span class="n">composition_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">composition_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">update_plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">saxs_data</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">saxs_data</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">composition</span><span class="o">=</span><span class="n">composition_data</span><span class="p">)</span>
@@ -472,7 +491,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.draw_peaks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.draw_peaks">[docs]</a>
-    <span class="k">def</span> <span class="nf">draw_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">peaks</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">peaks</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">clear_output</span><span class="p">()</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">vl</span><span class="p">,(</span><span class="n">spacing</span><span class="p">,</span><span class="n">peak_loc</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">shapes</span><span class="p">,</span><span class="n">peaks</span><span class="o">.</span><span class="n">items</span><span class="p">())):</span>
@@ -490,7 +509,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.change_qstar_callback">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.change_qstar_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">change_qstar_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">figure</span><span class="p">,</span><span class="n">location</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">change_qstar_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">figure</span><span class="p">,</span><span class="n">location</span><span class="p">,</span><span class="n">click</span><span class="p">):</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">phase_dropdown</span><span class="o">.</span><span class="n">value</span>
         <span class="n">n_orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">n_orders</span><span class="o">.</span><span class="n">value</span>
         <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">qstar</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">max_order</span><span class="o">=</span><span class="n">n_orders</span><span class="p">)</span>
@@ -499,7 +518,7 @@
             
 <div class="viewcode-block" id="DiffractionLabeler.change_model_callback">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.change_model_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">change_model_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">change_model_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">phase_dropdown</span><span class="o">.</span><span class="n">value</span>
         <span class="n">n_orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">n_orders</span><span class="o">.</span><span class="n">value</span>
         <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">max_order</span><span class="o">=</span><span class="n">n_orders</span><span class="p">)</span>
@@ -508,7 +527,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.change_norder_callback">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.change_norder_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">change_norder_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">change_norder_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">phase_dropdown</span><span class="o">.</span><span class="n">value</span>
         <span class="n">n_orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">n_orders</span><span class="o">.</span><span class="n">value</span>
         <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">max_order</span><span class="o">=</span><span class="n">n_orders</span><span class="p">)</span>
@@ -517,7 +536,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.label">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.label">[docs]</a>
-    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">label</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">label</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">phase_labels</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">update_ternary_colors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">ordinal_phase_labels</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">next_button_callback</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
@@ -525,7 +544,7 @@
         
 <div class="viewcode-block" id="DiffractionLabeler.run">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabeler.run">[docs]</a>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">saxs_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">saxs_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span>
         <span class="n">composition_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_model</span><span class="o">.</span><span class="n">composition_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_index</span><span class="p">]</span>
         <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_view</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
@@ -562,10 +581,10 @@
 
 <div class="viewcode-block" id="DiffractionLabelerModel">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerModel">[docs]</a>
-<span class="k">class</span> <span class="nc">DiffractionLabelerModel</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiffractionLabelerModel</span><span class="p">:</span>
 <div class="viewcode-block" id="DiffractionLabelerModel.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerModel.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">saxs_data</span><span class="p">,</span><span class="n">composition_data</span><span class="p">,</span><span class="n">possible_phase_labels</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">saxs_data</span><span class="p">,</span><span class="n">composition_data</span><span class="p">,</span><span class="n">possible_phase_labels</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saxs_data</span> <span class="o">=</span> <span class="n">saxs_data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">composition_data</span> <span class="o">=</span> <span class="n">composition_data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">phase_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Unlabeled&#39;</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">composition_data</span><span class="p">)</span>
@@ -577,14 +596,14 @@
         
 <div class="viewcode-block" id="DiffractionLabelerModel.ordinal_phase_labels">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerModel.ordinal_phase_labels">[docs]</a>
-    <span class="k">def</span> <span class="nf">ordinal_phase_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ordinal_phase_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">enc</span> <span class="o">=</span> <span class="n">OrdinalEncoder</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">enc</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_labels</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div>
 
         
 <div class="viewcode-block" id="DiffractionLabelerModel.init_models">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerModel.init_models">[docs]</a>
-    <span class="k">def</span> <span class="nf">init_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;q*&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> 
             <span class="s1">&#39;labels&#39;</span><span class="p">:[</span><span class="s2">&quot;1&quot;</span><span class="p">],</span>
@@ -631,7 +650,7 @@
         
 <div class="viewcode-block" id="DiffractionLabelerModel.get_peaks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerModel.get_peaks">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">qstar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">max_order</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_peaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">qstar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">max_order</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">qstar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">qstar</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qstar</span>
         <span class="k">else</span><span class="p">:</span>
@@ -654,17 +673,17 @@
     
 <div class="viewcode-block" id="DiffractionLabelerView">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView">[docs]</a>
-<span class="k">class</span> <span class="nc">DiffractionLabelerView</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiffractionLabelerView</span><span class="p">:</span>
 <div class="viewcode-block" id="DiffractionLabelerView.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nverts</span> <span class="o">=</span> <span class="mi">8</span></div>
 
         
 <div class="viewcode-block" id="DiffractionLabelerView.update_plot">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView.update_plot">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">composition</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">composition</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="n">x</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="n">y</span><span class="p">})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ternary</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
             <span class="s1">&#39;a&#39;</span><span class="p">:(</span><span class="n">composition</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span>
@@ -675,13 +694,13 @@
         
 <div class="viewcode-block" id="DiffractionLabelerView.remove_vertical_lines">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView.remove_vertical_lines">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove_vertical_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_vertical_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span><span class="o">.</span><span class="n">layout</span><span class="p">[</span><span class="s1">&#39;shapes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
 
         
 <div class="viewcode-block" id="DiffractionLabelerView.add_vertical_line">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView.add_vertical_line">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_vertical_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y1</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">line_kw</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_vertical_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y1</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">line_kw</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">line_kw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">line_kw</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span><span class="n">dash</span><span class="o">=</span><span class="s1">&#39;dot&#39;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
@@ -696,13 +715,13 @@
         
 <div class="viewcode-block" id="DiffractionLabelerView.update_ternary_colors">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView.update_ternary_colors">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_ternary_colors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">colors</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_ternary_colors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">colors</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">all_ternary</span><span class="o">.</span><span class="n">marker</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">colors</span></div>
 
         
 <div class="viewcode-block" id="DiffractionLabelerView.run">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView.run">[docs]</a>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">all_compositions</span><span class="p">,</span><span class="n">composition</span><span class="p">,</span><span class="n">models</span><span class="p">,</span><span class="n">possible_phase_labels</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">all_compositions</span><span class="p">,</span><span class="n">composition</span><span class="p">,</span><span class="n">models</span><span class="p">,</span><span class="n">possible_phase_labels</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fig1</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">FigureWidget</span><span class="p">(</span>
             <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
         <span class="p">)</span>
@@ -825,8 +844,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -862,7 +881,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

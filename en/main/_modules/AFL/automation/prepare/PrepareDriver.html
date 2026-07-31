@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/prepare/PrepareDriver';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,20 +424,20 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.prepare.PrepareDriver</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.MassBalance</span> <span class="kn">import</span> <span class="n">MassBalance</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.MassBalanceDriver</span> <span class="kn">import</span> <span class="n">MassBalanceDriver</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.PersistentConfig</span> <span class="kn">import</span> <span class="n">PersistentConfig</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.utilities</span> <span class="kn">import</span> <span class="n">listify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MassBalance</span><span class="w"> </span><span class="kn">import</span> <span class="n">MassBalance</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MassBalanceDriver</span><span class="w"> </span><span class="kn">import</span> <span class="n">MassBalanceDriver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Solution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.PersistentConfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">PersistentConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">listify</span>
 
 
 <div class="viewcode-block" id="PrepareDriver">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver">[docs]</a>
-<span class="k">class</span> <span class="nc">PrepareDriver</span><span class="p">(</span><span class="n">MassBalanceDriver</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PrepareDriver</span><span class="p">(</span><span class="n">MassBalanceDriver</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for prepare drivers.</span>
 
 <span class="sd">    Subclasses provide transport/backend-specific execution while this class</span>
@@ -436,7 +455,7 @@
 
 <div class="viewcode-block" id="PrepareDriver.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">MassBalanceDriver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">driver_name</span>
@@ -458,20 +477,20 @@
 
 <div class="viewcode-block" id="PrepareDriver.status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.status">[docs]</a>
-    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AFL Server Stocks: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">status</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_status_lines</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">status</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_status_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_status_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subclass hook for additional status lines.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="PrepareDriver.is_feasible">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.is_feasible">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_feasible</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_feasible</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">targets</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
         <span class="n">enable_multistep_dilution</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -519,7 +538,7 @@
 
 <div class="viewcode-block" id="PrepareDriver.apply_fixed_comps">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.apply_fixed_comps">[docs]</a>
-    <span class="k">def</span> <span class="nf">apply_fixed_comps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_fixed_comps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">fixed_comps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fixed_compositions&quot;</span><span class="p">,</span> <span class="p">{})</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fixed_comps</span><span class="p">:</span>
@@ -550,20 +569,20 @@
 
 <div class="viewcode-block" id="PrepareDriver.before_balance">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.before_balance">[docs]</a>
-    <span class="k">def</span> <span class="nf">before_balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">before_balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subclass hook to perform backend-specific checks before solving.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="PrepareDriver.resolve_destination">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.resolve_destination">[docs]</a>
-    <span class="k">def</span> <span class="nf">resolve_destination</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_destination</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return destination identifier for this backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;PrepareDriver subclasses must implement resolve_destination().&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PrepareDriver.execute_preparation">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.execute_preparation">[docs]</a>
-    <span class="k">def</span> <span class="nf">execute_preparation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span> <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute_preparation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span> <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute backend-specific prepare actions.</span>
 
 <span class="sd">        Returns False for handled, non-fatal failures where caller should return</span>
@@ -574,7 +593,7 @@
 
 <div class="viewcode-block" id="PrepareDriver.execute_preparation_plan">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.execute_preparation_plan">[docs]</a>
-    <span class="k">def</span> <span class="nf">execute_preparation_plan</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute_preparation_plan</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">balanced_target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
@@ -591,18 +610,18 @@
 
 <div class="viewcode-block" id="PrepareDriver.on_prepare_exception">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.on_prepare_exception">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_prepare_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_was_none</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_prepare_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_was_none</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subclass hook to rollback destination bookkeeping on exceptions.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="PrepareDriver.build_prepare_result">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.build_prepare_result">[docs]</a>
-    <span class="k">def</span> <span class="nf">build_prepare_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feasible_result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_prepare_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feasible_result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">balanced_target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build return payload for prepare().&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">feasible_result</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_ensure_prepare_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_prepare_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
@@ -613,7 +632,7 @@
         <span class="n">prepare_meta</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;executed_transfers&quot;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">return</span> <span class="n">prepare_meta</span>
 
-    <span class="k">def</span> <span class="nf">_update_prepare_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_prepare_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">prepare_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_prepare_metadata</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">prepare_meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -621,14 +640,14 @@
             <span class="n">prepare_meta</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">return</span> <span class="n">prepare_meta</span>
 
-    <span class="k">def</span> <span class="nf">_append_prepare_transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transfer_entry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_append_prepare_transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transfer_entry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">prepare_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_prepare_metadata</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">prepare_meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">executed</span> <span class="o">=</span> <span class="n">prepare_meta</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;executed_transfers&quot;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="n">executed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">transfer_entry</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_serialize_planned_mass_transfers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">planned_mass_transfers</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_serialize_planned_mass_transfers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">planned_mass_transfers</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">planned_mass_transfers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
@@ -638,7 +657,7 @@
             <span class="n">serialized</span><span class="p">[</span><span class="n">stock_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">mass</span>
         <span class="k">return</span> <span class="n">serialized</span>
 
-    <span class="k">def</span> <span class="nf">_augment_prepare_result</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_augment_prepare_result</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -660,14 +679,14 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">augmented</span>
 
-    <span class="k">def</span> <span class="nf">_destination_queue_key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_destination_queue_key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;prep_targets&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;prep_targets&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;mixing_locations&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;mixing_locations&quot;</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_reserve_destinations</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reserve_destinations</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">required_intermediate_targets</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -694,7 +713,7 @@
         <span class="n">destination</span> <span class="o">=</span> <span class="n">dest</span> <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">consumed</span><span class="p">[</span><span class="n">required_intermediate_targets</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">destination</span><span class="p">,</span> <span class="n">intermediate_destinations</span><span class="p">,</span> <span class="n">consumed</span><span class="p">,</span> <span class="n">queue_key</span>
 
-    <span class="k">def</span> <span class="nf">_restore_reserved_destinations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">consumed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_restore_reserved_destinations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">consumed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">queue_key</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">consumed</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">queue_key</span><span class="p">,</span> <span class="p">[]))</span>
@@ -702,7 +721,7 @@
 
 <div class="viewcode-block" id="PrepareDriver.prepare">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.prepare">[docs]</a>
-    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -849,8 +868,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -886,7 +905,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

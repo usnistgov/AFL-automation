@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/instrument/ISISLARMOR';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,22 +424,22 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.instrument.ISISLARMOR</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">numbers</span> <span class="kn">import</span> <span class="n">Number</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Number</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">from</span> <span class="nn">tiled.client</span> <span class="kn">import</span> <span class="n">from_uri</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tiled.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_uri</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">import</span> <span class="nn">lazy_loader</span> <span class="k">as</span> <span class="nn">lazy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">lazy_loader</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lazy</span>
 
 <span class="c1"># Neutron scattering and control system dependencies</span>
 <span class="n">pye</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;epics&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[neutron-scattering]&quot;</span><span class="p">)</span>
 <span class="n">sasdata_module</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;sasdata&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[neutron-scattering]&quot;</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Known PV names:</span>
@@ -446,7 +465,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR">[docs]</a>
-<span class="k">class</span> <span class="nc">ISISLARMOR</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ISISLARMOR</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
     <span class="c1"># self.config dictionary</span>
     <span class="c1"># anything you may want to change at run time, pull from defaults.config</span>
     <span class="c1"># these defaults will need to be changed</span>
@@ -469,7 +488,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;ISISLARMOR&#39;</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;ISISLARMOR&#39;</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span><span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
@@ -486,7 +505,7 @@
         
 <div class="viewcode-block" id="ISISLARMOR.status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.status">[docs]</a>
-    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">status</span><span class="o">=</span><span class="p">[]</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status_str</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">status</span></div>
@@ -495,14 +514,14 @@
 
 <div class="viewcode-block" id="ISISLARMOR.getRunNumber">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.getRunNumber">[docs]</a>
-    <span class="k">def</span> <span class="nf">getRunNumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getRunNumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">rn</span> <span class="o">=</span> <span class="n">pye</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:IRUNNUMBER&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">rn</span></div>
 
 
 <div class="viewcode-block" id="ISISLARMOR.trans_mode">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.trans_mode">[docs]</a>
-    <span class="k">def</span> <span class="nf">trans_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">trans_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">pye</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:MOT:MTR0602.VAL&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;slow_wait_time&#39;</span><span class="p">])</span>
         <span class="c1"># need to wait for motor move</span>
@@ -514,7 +533,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.scatt_mode">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.scatt_mode">[docs]</a>
-    <span class="k">def</span> <span class="nf">scatt_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scatt_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">pye</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:MOT:MTR0602.VAL&quot;</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">)</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;slow_wait_time&#39;</span><span class="p">])</span>
         <span class="c1"># need to wait for motor move</span>
@@ -525,7 +544,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.beginrun">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.beginrun">[docs]</a>
-    <span class="k">def</span> <span class="nf">beginrun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">beginrun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        RUNSTATE can be a number (1 to 14), important states are:</span>
 <span class="sd">        1 - Setup</span>
@@ -544,19 +563,19 @@
 
 <div class="viewcode-block" id="ISISLARMOR.abortrun">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.abortrun">[docs]</a>
-    <span class="k">def</span> <span class="nf">abortrun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">abortrun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">pye</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:ABORTRUN&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
 
         
 <div class="viewcode-block" id="ISISLARMOR.endrun">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.endrun">[docs]</a>
-    <span class="k">def</span> <span class="nf">endrun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">endrun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">pye</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:ENDRUN&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ISISLARMOR.getRunTitle">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.getRunTitle">[docs]</a>
-    <span class="k">def</span> <span class="nf">getRunTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getRunTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">title</span><span class="o">=</span><span class="n">pye</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:TITLE&quot;</span><span class="p">)</span>
         <span class="n">stitle</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">title</span><span class="p">:</span> 
@@ -566,14 +585,14 @@
 
 <div class="viewcode-block" id="ISISLARMOR.setRunTitle">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.setRunTitle">[docs]</a>
-    <span class="k">def</span> <span class="nf">setRunTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setRunTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
         <span class="n">pye</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:TITLE:SP&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ISISLARMOR.waitforframes">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.waitforframes">[docs]</a>
-    <span class="k">def</span> <span class="nf">waitforframes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">frames</span><span class="p">:</span><span class="n">Number</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">waitforframes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">frames</span><span class="p">:</span><span class="n">Number</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Waiting for </span><span class="si">{</span><span class="n">frames</span><span class="si">}</span><span class="s2"> frames&quot;</span><span class="p">)</span>
         <span class="n">frs</span><span class="o">=</span><span class="n">pye</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:GOODFRAMES&quot;</span><span class="p">)</span>
         <span class="k">while</span> <span class="n">frs</span> <span class="o">&lt;</span> <span class="n">frames</span><span class="p">:</span>
@@ -584,7 +603,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.waitforuah">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.waitforuah">[docs]</a>
-    <span class="k">def</span> <span class="nf">waitforuah</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uamps</span><span class="p">:</span><span class="n">Number</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">waitforuah</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uamps</span><span class="p">:</span><span class="n">Number</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Waiting for </span><span class="si">{</span><span class="n">uamps</span><span class="si">}</span><span class="s2"> uamps&quot;</span><span class="p">)</span>
         <span class="n">ua</span> <span class="o">=</span> <span class="n">pye</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:GOODUAH&quot;</span><span class="p">)</span>
         <span class="k">while</span> <span class="n">ua</span> <span class="o">&lt;</span> <span class="n">uamps</span><span class="p">:</span>
@@ -595,7 +614,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.waitfortime">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.waitfortime">[docs]</a>
-    <span class="k">def</span> <span class="nf">waitfortime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sec</span><span class="p">:</span><span class="n">Number</span><span class="o">=</span><span class="mi">60</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">waitfortime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sec</span><span class="p">:</span><span class="n">Number</span><span class="o">=</span><span class="mi">60</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Waiting for </span><span class="si">{</span><span class="n">sec</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
         <span class="n">t</span><span class="o">=</span><span class="n">pye</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:GOODFRAMES&quot;</span><span class="p">)</span><span class="o">/</span><span class="mi">10</span>
         <span class="k">while</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">sec</span><span class="p">:</span>
@@ -606,7 +625,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.waitfor">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.waitfor">[docs]</a>
-    <span class="k">def</span> <span class="nf">waitfor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="n">Number</span><span class="p">,</span> <span class="n">expose_metric</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">waitfor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="n">Number</span><span class="p">,</span> <span class="n">expose_metric</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">beginrun</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">expose_metric</span> <span class="o">==</span> <span class="s1">&#39;frames&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">waitforframes</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
@@ -620,7 +639,7 @@
             
 <div class="viewcode-block" id="ISISLARMOR.waitforfile">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.waitforfile">[docs]</a>
-    <span class="k">def</span> <span class="nf">waitforfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpath</span><span class="p">,</span> <span class="n">max_t</span><span class="o">=</span><span class="mi">900</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">waitforfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpath</span><span class="p">,</span> <span class="n">max_t</span><span class="o">=</span><span class="mi">900</span><span class="p">):</span>
         <span class="c1"># TODO: Check that the file is not changing, not that is just exists</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">status_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Waiting for file </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2"> to be written...&quot;</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -639,7 +658,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.waitforSASfile">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.waitforSASfile">[docs]</a>
-    <span class="k">def</span> <span class="nf">waitforSASfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpath</span><span class="p">,</span> <span class="n">max_t</span><span class="o">=</span><span class="mi">900</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">waitforSASfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpath</span><span class="p">,</span> <span class="n">max_t</span><span class="o">=</span><span class="mi">900</span><span class="p">):</span>
         <span class="c1"># TODO: Check that the file is not changing, not that is just exists</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">status_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Waiting for file </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2"> to be written...&quot;</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -658,7 +677,7 @@
                 
 <div class="viewcode-block" id="ISISLARMOR.waitforsetup">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.waitforsetup">[docs]</a>
-    <span class="k">def</span> <span class="nf">waitforsetup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">waitforsetup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># if RUNSTATE is in Setup, begin the run</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">status_str</span> <span class="o">=</span> <span class="s2">&quot;Waiting for the instrument to be in the SETUP state.&quot;</span>
         <span class="k">while</span> <span class="n">pye</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;IN:LARMOR:DAE:RUNSTATE&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
@@ -667,7 +686,7 @@
             
 <div class="viewcode-block" id="ISISLARMOR.waitformotormove">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.waitformotormove">[docs]</a>
-    <span class="k">def</span> <span class="nf">waitformotormove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor</span><span class="o">=</span><span class="s2">&quot;0602&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">waitformotormove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor</span><span class="o">=</span><span class="s2">&quot;0602&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Monitor the motor motion of motors that are nearly instant. Defaults to the monitor motor if no motor number is sent.&quot;&quot;&quot;</span>
         <span class="k">while</span> <span class="n">pye</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IN:LARMOR:MTR</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">:ISMOVING&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;slow_wait_time&#39;</span><span class="p">])</span></div>
@@ -675,7 +694,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.getFilename">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.getFilename">[docs]</a>
-    <span class="k">def</span> <span class="nf">getFilename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;raw&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;LARMOR&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lmin</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lmax</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getFilename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;raw&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;LARMOR&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lmin</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lmax</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Filename for reduced data should be: [run#]_rear_1D_[lambdamin]_[lambdamax]</span>
 <span class="sd">        Filename for pre-reduced data should be as nxs file: LARMOR[RUN#] where [RUN#] is a (left) zero-padded run number</span>
@@ -697,7 +716,7 @@
 <div class="viewcode-block" id="ISISLARMOR.getData">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.getData">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;2d_img&#39;</span><span class="p">,</span><span class="n">log_image</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">getData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        NOTE: THIS IS AN OLD DESCRIPTION AND FUNCTION NEEDS TO BE MADE</span>
 <span class="sd">        Grabs raw data from the instrument using the last filepath</span>
@@ -716,7 +735,7 @@
         <span class="s1">&#39;reduce_data&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Reduce?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span>
         <span class="s1">&#39;measure_transmission&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Measure Trans?&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
         <span class="p">}})</span>
-    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">expose</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">exposure</span><span class="p">:</span> <span class="n">Number</span><span class="p">,</span>
@@ -761,7 +780,7 @@
 
 <div class="viewcode-block" id="ISISLARMOR.reduce">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.reduce">[docs]</a>
-    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampleSANS_rn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sampleTRANS_rn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_thickness</span><span class="p">:</span> <span class="n">Number</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampleSANS_rn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sampleTRANS_rn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_thickness</span><span class="p">:</span> <span class="n">Number</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;//isis/inst$&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mantid_simpleapiConfigService</span><span class="o">.</span><span class="n">setDataSearchDirs</span><span class="p">(</span>
             <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;/NDXLARMOR/User/Masks/;&quot;</span> <span class="o">+</span> \
@@ -834,7 +853,7 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.launcher</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 </pre></div>
 
                 </article>
@@ -864,8 +883,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -901,7 +920,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

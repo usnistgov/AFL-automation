@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/prepare/OT2HTTPDriver';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,28 +424,28 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.prepare.OT2HTTPDriver</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">hashlib</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.prepare.OT2DeckWebAppMixin</span> <span class="kn">import</span> <span class="n">OT2DeckWebAppMixin</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.utilities</span> <span class="kn">import</span> <span class="n">listify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">ceil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.prepare.OT2DeckWebAppMixin</span><span class="w"> </span><span class="kn">import</span> <span class="n">OT2DeckWebAppMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">listify</span>
 
 <span class="c1"># Add this constant at the top of the file, after the imports</span>
 <span class="n">TIPRACK_WELLS</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="si">}{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="s2">&quot;ABCDEFGH&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="OT2HTTPDriver">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver">[docs]</a>
-<span class="k">class</span> <span class="nc">OT2HTTPDriver</span><span class="p">(</span><span class="n">OT2DeckWebAppMixin</span><span class="p">,</span> <span class="n">Driver</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OT2HTTPDriver</span><span class="p">(</span><span class="n">OT2DeckWebAppMixin</span><span class="p">,</span> <span class="n">Driver</span><span class="p">):</span>
     <span class="n">PIPETTE_NAME_ALIASES</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;p10&quot;</span><span class="p">:</span> <span class="s2">&quot;p10_single&quot;</span><span class="p">,</span>
         <span class="s2">&quot;p10_single&quot;</span><span class="p">:</span> <span class="s2">&quot;p10_single&quot;</span><span class="p">,</span>
@@ -452,7 +471,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -491,7 +510,7 @@
 
 
 
-    <span class="k">def</span> <span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Safe logging that checks if app exists before logging&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;logger&quot;</span><span class="p">):</span>
             <span class="n">log_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -502,39 +521,39 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.log_info">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">log_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Log info message safely&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.log_error">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_error">[docs]</a>
-    <span class="k">def</span> <span class="nf">log_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Log error message safely&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.log_debug">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_debug">[docs]</a>
-    <span class="k">def</span> <span class="nf">log_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Log debug message safely&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;debug&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.log_warning">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_warning">[docs]</a>
-    <span class="k">def</span> <span class="nf">log_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Log warning message safely&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_get_custom_labware_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_custom_labware_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the user-scoped custom labware directory.&quot;&quot;&quot;</span>
         <span class="n">custom_labware_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.afl&quot;</span> <span class="o">/</span> <span class="s2">&quot;opentrons_labware&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_custom_labware_dir</span><span class="p">(</span><span class="n">custom_labware_dir</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">custom_labware_dir</span>
 
-    <span class="k">def</span> <span class="nf">_get_seed_custom_labware_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_seed_custom_labware_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the packaged labware definitions used to seed first-run state.&quot;&quot;&quot;</span>
         <span class="n">current</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">current</span><span class="o">.</span><span class="n">parents</span><span class="p">:</span>
@@ -548,7 +567,7 @@
 
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_bootstrap_custom_labware_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_labware_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bootstrap_custom_labware_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_labware_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the user labware directory and seed it once from packaged files.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">custom_labware_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">return</span>
@@ -564,7 +583,7 @@
         <span class="k">for</span> <span class="n">json_file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">seed_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.json&quot;</span><span class="p">)):</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">json_file</span><span class="p">,</span> <span class="n">custom_labware_dir</span> <span class="o">/</span> <span class="n">json_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_load_custom_labware_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_custom_labware_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Record available custom labware definitions in the user directory.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">custom_labware_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">custom_labware_files</span> <span class="o">=</span> <span class="p">{}</span>
@@ -590,40 +609,40 @@
                 <span class="sa">f</span><span class="s2">&quot;Duplicate custom labware definitions found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">custom_labware_dir</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">details</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_custom_labware_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_custom_labware_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
         <span class="n">ns</span> <span class="o">=</span> <span class="n">labware_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;namespace&quot;</span><span class="p">,</span> <span class="s2">&quot;custom_beta&quot;</span><span class="p">)</span>
         <span class="n">load_name</span> <span class="o">=</span> <span class="n">labware_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;parameters&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loadName&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">load_name</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;labware_def missing parameters.loadName&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ns</span><span class="p">,</span> <span class="n">load_name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">load_name</span><span class="si">}</span><span class="s2">&quot;</span>
 
-    <span class="k">def</span> <span class="nf">_canonical_labware_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_canonical_labware_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
         <span class="n">canonical_def</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">labware_def</span><span class="p">)</span>
         <span class="n">canonical_def</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">canonical_def</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_hash_labware_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_hash_labware_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
         <span class="n">canonical</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_canonical_labware_def</span><span class="p">(</span><span class="n">labware_def</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">canonical</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_labware_upload_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_labware_upload_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sent_custom_labware</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">info</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_next_custom_labware_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_next_custom_labware_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
         <span class="n">existing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labware_upload_info</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="n">requested_version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">labware_def</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">requested_version</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">requested_version</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">existing</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_custom_labware_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_custom_labware_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">):</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">load_name</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_labware_key</span><span class="p">(</span><span class="n">labware_def</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_labware_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">load_name</span><span class="si">}</span><span class="s2">.json&quot;</span>
 
-    <span class="k">def</span> <span class="nf">_loaded_labware_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">labware_data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_loaded_labware_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">labware_data</span><span class="p">):</span>
         <span class="n">definition</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labware_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="n">definition</span> <span class="o">=</span> <span class="n">labware_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;definition&quot;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="p">{}</span>
@@ -637,7 +656,7 @@
                 <span class="k">return</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">load_name</span>
             <span class="k">return</span> <span class="s2">&quot;opentrons&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_remap_tip_availability</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">old_available_tips</span><span class="p">,</span> <span class="n">old_uuid_to_slot</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_remap_tip_availability</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">old_available_tips</span><span class="p">,</span> <span class="n">old_uuid_to_slot</span><span class="p">):</span>
         <span class="n">remapped</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">tiprack_uuid</span><span class="p">,</span> <span class="n">well</span> <span class="ow">in</span> <span class="n">old_available_tips</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mount</span><span class="p">,</span> <span class="p">[]):</span>
             <span class="n">slot</span> <span class="o">=</span> <span class="n">old_uuid_to_slot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tiprack_uuid</span><span class="p">)</span>
@@ -647,7 +666,7 @@
             <span class="n">remapped</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">new_uuid</span><span class="p">,</span> <span class="n">well</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;available_tips&quot;</span><span class="p">][</span><span class="n">mount</span><span class="p">]</span> <span class="o">=</span> <span class="n">remapped</span>
 
-    <span class="k">def</span> <span class="nf">_reload_matching_labware_definition</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reload_matching_labware_definition</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
         <span class="n">namespace</span><span class="p">,</span> <span class="n">load_name</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_labware_key</span><span class="p">(</span><span class="n">labware_def</span><span class="p">)</span>
@@ -716,7 +735,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">has_tip</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_pipette</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_initialize_robot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_robot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the connection to the robot and get basic information&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Check if the robot is reachable</span>
@@ -732,7 +751,7 @@
                 <span class="sa">f</span><span class="s2">&quot;Error connecting to robot at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_update_pipettes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_pipettes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get information about attached pipettes and their settings&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -805,7 +824,7 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting pipettes: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_active_pipettes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_active_pipettes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return pipettes that are both physically attached and loaded into the active run.&quot;&quot;&quot;</span>
         <span class="n">active_pipettes</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">loaded_instruments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">,</span> <span class="p">{})</span>
@@ -821,7 +840,7 @@
 
         <span class="k">return</span> <span class="n">active_pipettes</span>
 
-    <span class="k">def</span> <span class="nf">_get_active_pipette_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_active_pipette_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">):</span>
         <span class="n">mount</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">mount</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mount</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -830,7 +849,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.reset_prep_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_prep_targets">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset_prep_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_prep_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear the list of preparation targets stored in the config.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
 
@@ -838,7 +857,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.add_prep_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.add_prep_targets">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_prep_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_prep_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add well locations to the preparation target list.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_prep_targets</span><span class="p">()</span>
@@ -849,13 +868,13 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_prep_target">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_prep_target">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_prep_target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_prep_target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OT2HTTPDriver.status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.status">[docs]</a>
-    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">prep_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prep_targets&quot;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prep_targets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -912,7 +931,7 @@
             <span class="p">},</span>
         <span class="p">}</span>
     <span class="p">)</span>
-    <span class="k">def</span> <span class="nf">reset_tipracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_tipracks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the available tips for the specified mount(s)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resetting tipracks for </span><span class="si">{</span><span class="n">mount</span><span class="si">}</span><span class="s2"> mount&quot;</span><span class="p">)</span>
 
@@ -937,7 +956,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.reset">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Resetting the protocol context&quot;</span><span class="p">)</span>
 
         <span class="c1"># Delete any active session</span>
@@ -975,7 +994,7 @@
         
 <div class="viewcode-block" id="OT2HTTPDriver.reset_deck">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_deck">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset_deck</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_deck</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the deck configuration, clearing loaded labware, instruments, and modules&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Resetting the deck configuration&quot;</span><span class="p">)</span>
         
@@ -995,7 +1014,7 @@
 <div class="viewcode-block" id="OT2HTTPDriver.home">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.home">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;button_text&quot;</span><span class="p">:</span> <span class="s2">&quot;Home&quot;</span><span class="p">})</span>
-    <span class="k">def</span> <span class="nf">home</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">home</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Home the robot&#39;s axes using the dedicated /robot/home endpoint.</span>
 
@@ -1030,7 +1049,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.parse_well">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.parse_well">[docs]</a>
-    <span class="k">def</span> <span class="nf">parse_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse a well location string into slot and well components&quot;&quot;&quot;</span>
         <span class="c1"># Default value in case no alphabetic character is found</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1044,7 +1063,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_wells">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_wells">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_wells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_wells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert location strings to well objects with proper labware IDs, and check that wells are valid.</span>
 
 <span class="sd">        Args:</span>
@@ -1081,7 +1100,7 @@
         
         <span class="k">return</span> <span class="n">wells</span></div>
 
-    <span class="k">def</span> <span class="nf">_check_cmd_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_cmd_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">201</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;Failed to execute command : </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1101,7 +1120,7 @@
                     <span class="p">)</span>
 <div class="viewcode-block" id="OT2HTTPDriver.send_labware">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_labware</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_labware</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">labware_def</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reload_loaded_labware</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a custom labware definition to the current run and persist it.</span>
@@ -1174,7 +1193,7 @@
                         
 <div class="viewcode-block" id="OT2HTTPDriver.load_labware">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_labware</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load labware (containers, tipracks) into the protocol using HTTP API</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -1350,7 +1369,7 @@
             
 <div class="viewcode-block" id="OT2HTTPDriver.load_module">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">slot</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load modules (heater-shaker, tempdeck) into the protocol using HTTP API</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -1435,7 +1454,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.load_instrument">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_instrument">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_instrument</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">update_pipettes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_instrument</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mount</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">update_pipettes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load pipette and store tiprack information using HTTP API.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -1558,12 +1577,12 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading pipette: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_normalize_pipette_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_pipette_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">normalized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PIPETTE_NAME_ALIASES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">normalized</span>
 
-    <span class="k">def</span> <span class="nf">_warn_on_tiprack_mismatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette_name</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_warn_on_tiprack_mismatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette_name</span><span class="p">,</span> <span class="n">tip_rack_slots</span><span class="p">):</span>
         <span class="n">token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EXPECTED_TIPRACK_TOKEN</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pipette_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
@@ -1581,7 +1600,7 @@
                 <span class="sa">f</span><span class="s2">&quot;Expected tiprack names containing &#39;</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
             <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_update_pipette_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_pipette_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the min/max values for largest and smallest pipettes&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_largest_pipette</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_smallest_pipette</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1627,7 +1646,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.mix">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.mix">[docs]</a>
-    <span class="k">def</span> <span class="nf">mix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mixing </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">uL </span><span class="si">{</span><span class="n">repetitions</span><span class="si">}</span><span class="s2"> times at </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Verify run exists once at the start, then skip checks for all atomic commands</span>
@@ -1700,7 +1719,7 @@
             <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_split_up_transfers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_split_up_transfers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vol</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Split up transfer volumes based on pipette constraints&quot;&quot;&quot;</span>
         <span class="n">transfers</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -1746,7 +1765,7 @@
 
         <span class="k">return</span> <span class="n">transfers</span>
 
-    <span class="k">def</span> <span class="nf">_slot_by_labware_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target_uuid</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_slot_by_labware_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target_uuid</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">slot</span><span class="p">,</span> <span class="p">(</span><span class="n">uuid</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_labware&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">uuid</span> <span class="o">==</span> <span class="n">target_uuid</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">slot</span>
@@ -1764,7 +1783,7 @@
             <span class="p">},</span>
         <span class="p">}</span>
     <span class="p">)</span>
-    <span class="k">def</span> <span class="nf">transfer</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">source</span><span class="p">,</span>
         <span class="n">dest</span><span class="p">,</span>
@@ -2231,7 +2250,7 @@
         <span class="k">return</span> <span class="n">transfer_record</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_touch_tip_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette_id</span><span class="p">,</span> <span class="n">well</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_touch_tip_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette_id</span><span class="p">,</span> <span class="n">well</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Touch tip at a well edge if supported by robot-server; otherwise move to well top.&quot;&quot;&quot;</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;pipetteId&quot;</span><span class="p">:</span> <span class="n">pipette_id</span><span class="p">,</span>
@@ -2257,7 +2276,7 @@
                 <span class="n">check_run_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_execute_atomic_command</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_atomic_command</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">command_type</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wait_until_complete</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a single atomic command using the HTTP API</span>
@@ -2342,7 +2361,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.set_aspirate_rate">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_aspirate_rate">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_aspirate_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_aspirate_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set aspirate rate in uL/s. Default is 150 uL/s&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting aspirate rate to </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2"> uL/s&quot;</span><span class="p">)</span>
 
@@ -2360,7 +2379,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.set_dispense_rate">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_dispense_rate">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_dispense_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_dispense_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set dispense rate in uL/s. Default is 300 uL/s&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting dispense rate to </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2"> uL/s&quot;</span><span class="p">)</span>
 
@@ -2378,7 +2397,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.set_gantry_speed">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_gantry_speed">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_gantry_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_gantry_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set movement speed of gantry. Default is 400 mm/s&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting gantry speed to </span><span class="si">{</span><span class="n">speed</span><span class="si">}</span><span class="s2"> mm/s&quot;</span><span class="p">)</span>
 
@@ -2391,7 +2410,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_pipette">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_pipette">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_pipette</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;min_transfers&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pipette</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;min_transfers&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Looking for a pipette for volume </span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Make sure we have the latest pipette information</span>
@@ -2457,7 +2476,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_aspirate_rate">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_aspirate_rate">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_aspirate_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_aspirate_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get current aspirate rate for a pipette&quot;&quot;&quot;</span>
         <span class="n">active_pipettes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2482,7 +2501,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_dispense_rate">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_dispense_rate">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_dispense_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dispense_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipette</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get current dispense rate for a pipette&quot;&quot;&quot;</span>
         <span class="n">active_pipettes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_active_pipettes</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">pipette</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2508,7 +2527,7 @@
     <span class="c1"># HTTP API communication with heater-shaker module</span>
 <div class="viewcode-block" id="OT2HTTPDriver.set_shake">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_shake">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_shake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rpm</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_shake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rpm</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting heater-shaker speed to </span><span class="si">{</span><span class="n">rpm</span><span class="si">}</span><span class="s2"> RPM&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">module_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">module_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_module_by_type</span><span class="p">(</span><span class="s2">&quot;heaterShaker&quot;</span><span class="p">)</span>
@@ -2522,7 +2541,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.stop_shake">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shake">[docs]</a>
-    <span class="k">def</span> <span class="nf">stop_shake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop_shake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Stopping heater-shaker&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">module_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">module_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_module_by_type</span><span class="p">(</span><span class="s2">&quot;heaterShaker&quot;</span><span class="p">)</span>
@@ -2536,7 +2555,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.set_shaker_temp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_shaker_temp">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_shaker_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_shaker_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting heater-shaker temperature to </span><span class="si">{</span><span class="n">temp</span><span class="si">}</span><span class="s2">°C&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">module_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">module_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_module_by_type</span><span class="p">(</span><span class="s2">&quot;heaterShaker&quot;</span><span class="p">)</span>
@@ -2550,7 +2569,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.stop_shaker_heat">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shaker_heat">[docs]</a>
-    <span class="k">def</span> <span class="nf">stop_shaker_heat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop_shaker_heat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deactivating heater-shaker heating&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">module_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">module_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_module_by_type</span><span class="p">(</span><span class="s2">&quot;heaterShaker&quot;</span><span class="p">)</span>
@@ -2564,7 +2583,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.unlatch_shaker">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.unlatch_shaker">[docs]</a>
-    <span class="k">def</span> <span class="nf">unlatch_shaker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unlatch_shaker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Unlatching heater-shaker&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">module_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">module_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_module_by_type</span><span class="p">(</span><span class="s2">&quot;heaterShaker&quot;</span><span class="p">)</span>
@@ -2579,7 +2598,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.latch_shaker">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.latch_shaker">[docs]</a>
-    <span class="k">def</span> <span class="nf">latch_shaker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">latch_shaker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Latching heater-shaker&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">module_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">module_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_module_by_type</span><span class="p">(</span><span class="s2">&quot;heaterShaker&quot;</span><span class="p">)</span>
@@ -2591,7 +2610,7 @@
                                     <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_find_module_by_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">partial_name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_module_by_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">partial_name</span><span class="p">):</span>
         
         <span class="n">module_id</span> <span class="o">=</span> <span class="kc">None</span>
         
@@ -2602,7 +2621,7 @@
     
 <div class="viewcode-block" id="OT2HTTPDriver.get_shaker_temp">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shaker_temp">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_shaker_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_shaker_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Getting heater-shaker temperature&quot;</span><span class="p">)</span>
 
         <span class="c1"># For get operations, we still need to use the modules API directly</span>
@@ -2640,7 +2659,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_shake_rpm">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shake_rpm">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_shake_rpm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_shake_rpm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># For get operations, we just use the modules API</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Get modules to find the heater-shaker module</span>
@@ -2674,7 +2693,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_shake_latch_status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shake_latch_status">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_shake_latch_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_shake_latch_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># For get operations, we just use the modules API</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Get modules to find the heater-shaker module</span>
@@ -2704,7 +2723,7 @@
             <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
         
-    <span class="k">def</span> <span class="nf">_create_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a run on the robot for executing commands&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Creating a new run for commands&quot;</span><span class="p">)</span>
 
@@ -2713,7 +2732,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sent_custom_labware</span> <span class="o">=</span> <span class="p">{}</span>
             
             <span class="c1"># Create a run</span>
-            <span class="kn">import</span> <span class="nn">datetime</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 
             <span class="n">run_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
                 <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/runs&quot;</span><span class="p">,</span>
@@ -2737,7 +2756,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error creating run: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error creating run: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_reload_deck_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reload_deck_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reload the deck configuration (modules, labware, instruments) from persistent storage&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Reloading previously configured deck setup&quot;</span><span class="p">)</span>
         
@@ -2835,7 +2854,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;loaded_instruments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_instruments</span>
             <span class="k">return</span> <span class="kc">False</span>
     
-    <span class="k">def</span> <span class="nf">_ensure_run_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_run_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_run_status</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure a run exists for executing commands, creating one if needed</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -2874,7 +2893,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_tip">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_tip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="p">):</span>
         <span class="n">tip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;available_tips&quot;</span><span class="p">][</span><span class="n">mount</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">tip</span></div>
@@ -2882,7 +2901,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.get_tip_status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip_status">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_tip_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tip_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mount</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current tip usage status&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mount</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">mount</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;available_tips&quot;</span><span class="p">]:</span>
@@ -2904,7 +2923,7 @@
 
 <div class="viewcode-block" id="OT2HTTPDriver.make_align_script">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.make_align_script">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_align_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_align_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate an Opentrons Python Protocol API script to verify alignment.</span>
 <span class="sd">        </span>
@@ -3020,7 +3039,7 @@
 
     
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.launcher</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 </pre></div>
 
                 </article>
@@ -3050,8 +3069,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -3087,7 +3106,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

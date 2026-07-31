@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/mixcalc/Solution';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,19 +424,19 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.mixcalc.Solution</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pint</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.Component</span> <span class="kn">import</span> <span class="n">Component</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.Context</span> <span class="kn">import</span> <span class="n">Context</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.MixDB</span> <span class="kn">import</span> <span class="n">MixDB</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.exceptions</span> <span class="kn">import</span> <span class="n">EmptyException</span><span class="p">,</span> <span class="n">NotFoundError</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.units</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Component</span><span class="w"> </span><span class="kn">import</span> <span class="n">Component</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Context</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MixDB</span><span class="w"> </span><span class="kn">import</span> <span class="n">MixDB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmptyException</span><span class="p">,</span> <span class="n">NotFoundError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.units</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">units</span><span class="p">,</span>
     <span class="n">enforce_units</span><span class="p">,</span>
     <span class="n">has_units</span><span class="p">,</span>
@@ -425,7 +444,7 @@
     <span class="n">is_mass</span><span class="p">,</span>
     <span class="n">AVOGADROS_NUMBER</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.warnings</span> <span class="kn">import</span> <span class="n">MixWarning</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">MixWarning</span>
 
 <span class="n">SANITY_MSG</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">Solution Check:</span>
@@ -439,13 +458,13 @@
 
 <div class="viewcode-block" id="Solution">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution">[docs]</a>
-<span class="k">class</span> <span class="nc">Solution</span><span class="p">(</span><span class="n">Context</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Solution</span><span class="p">(</span><span class="n">Context</span><span class="p">):</span>
     <span class="n">_stack_name</span> <span class="o">=</span> <span class="s2">&quot;stocks&quot;</span>
     <span class="n">_component_init_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="s1">&#39;density&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="s1">&#39;sld&#39;</span><span class="p">,</span> <span class="s1">&#39;uid&#39;</span><span class="p">,</span> <span class="s1">&#39;solute&#39;</span><span class="p">}</span>
 
 <div class="viewcode-block" id="Solution.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">total_mass</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -612,7 +631,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_sanity_check</span><span class="p">(</span><span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">volume_fractions</span><span class="p">,</span> <span class="n">molarities</span><span class="p">,</span> <span class="n">molalities</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_process_fractions_with_remainder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fractions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">fraction_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_fractions_with_remainder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fractions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">fraction_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Process a fractions dictionary, calculating remainder for None values.</span>
 
@@ -674,7 +693,7 @@
         <span class="n">result</span><span class="p">[</span><span class="n">remainder_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>  <span class="c1"># Clamp to 0 for tiny negative values due to float precision</span>
         <span class="k">return</span> <span class="n">result</span>
 
-    <span class="k">def</span> <span class="nf">_sanity_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">volume_fractions</span><span class="p">,</span> <span class="n">molarities</span><span class="p">,</span> <span class="n">molalities</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sanity_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masses</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">,</span> <span class="n">mass_fractions</span><span class="p">,</span> <span class="n">volume_fractions</span><span class="p">,</span> <span class="n">molarities</span><span class="p">,</span> <span class="n">molalities</span><span class="p">,</span> <span class="n">total_mass</span><span class="p">,</span> <span class="n">total_volume</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform a sanity check on the solution to ensure consistency of requested and final properties.</span>
 
@@ -832,19 +851,19 @@
             <span class="n">msg</span> <span class="o">=</span> <span class="n">SANITY_MSG</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">reasons</span><span class="o">=</span><span class="n">reasons</span><span class="p">)</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">MixWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">out_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;Solution name:&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; size:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s1">&gt;&#39;</span>
         <span class="k">return</span> <span class="n">out_str</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -852,20 +871,20 @@
                 <span class="sa">f</span><span class="s2">&quot;The component &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is not in this solution which contains: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">yield</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span>
 
 <div class="viewcode-block" id="Solution.__hash__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Needed so Solutions can be dictionary keys&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Solution.to_dict">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.to_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">out_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;components&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
@@ -879,7 +898,7 @@
 
 <div class="viewcode-block" id="Solution.add_component">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.add_component">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">solutes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">solutes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">mixdb</span> <span class="o">=</span> <span class="n">MixDB</span><span class="o">.</span><span class="n">get_db</span><span class="p">()</span>
@@ -904,7 +923,7 @@
 
 <div class="viewcode-block" id="Solution.set_properties_from_dict">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.set_properties_from_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_properties_from_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_properties_from_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
                 <span class="n">solution</span> <span class="o">=</span> <span class="bp">self</span>
@@ -924,7 +943,7 @@
 
 <div class="viewcode-block" id="Solution.rename_component">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.rename_component">[docs]</a>
-    <span class="k">def</span> <span class="nf">rename_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_name</span><span class="p">,</span> <span class="n">new_name</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rename_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_name</span><span class="p">,</span> <span class="n">new_name</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
             <span class="n">solution</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
@@ -936,7 +955,7 @@
 
 <div class="viewcode-block" id="Solution.copy">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.copy">[docs]</a>
-    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># Create a new instance without copying the context</span>
         <span class="n">solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="n">solution</span><span class="o">.</span><span class="n">context_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context_type</span>
@@ -948,23 +967,23 @@
 
 <div class="viewcode-block" id="Solution.contains">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.contains">[docs]</a>
-    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">solutes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solutes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">component</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">component</span><span class="o">.</span><span class="n">is_solute</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">solvents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solvents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">component</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">component</span><span class="o">.</span><span class="n">is_solvent</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="n">mixture</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">mixture</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; + &quot;</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">other</span><span class="p">:</span>
@@ -976,7 +995,7 @@
 
 <div class="viewcode-block" id="Solution.__eq__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compare the mass,volume, and composition of two mixtures&quot;&quot;&quot;</span>
 
         <span class="c1"># list of true/false values that represent equality checks</span>
@@ -996,12 +1015,12 @@
 
 <div class="viewcode-block" id="Solution.all_components_have_mass">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.all_components_have_mass">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_components_have_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_components_have_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">all</span><span class="p">([</span><span class="n">component</span><span class="o">.</span><span class="n">has_mass</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">mass</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mass</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Total mass of mixture.&quot;&quot;&quot;</span>
         <span class="n">masses</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">mass</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">component</span><span class="o">.</span><span class="n">has_mass</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">masses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1009,7 +1028,7 @@
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">masses</span><span class="p">)</span>
 
     <span class="nd">@mass</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set total mass of mixture.&quot;&quot;&quot;</span>
         <span class="c1"># assert self.all_components_have_mass(), (</span>
         <span class="c1">#     f&quot;Cannot set mass of solution with components lacking mass. Current &quot;</span>
@@ -1023,7 +1042,7 @@
 
 <div class="viewcode-block" id="Solution.set_mass">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.set_mass">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setter for inline mass changes&quot;&quot;&quot;</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;mass&quot;</span><span class="p">)</span>
         <span class="n">solution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1032,7 +1051,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Total volume of mixture. Only solvents are included in volume calculation&quot;&quot;&quot;</span>
         <span class="n">volumes</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">volume</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvents</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">volumes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1041,7 +1060,7 @@
             <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">volumes</span><span class="p">)</span>
 
     <span class="nd">@volume</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set total volume of mixture. Mass composition will be preserved&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solvents</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot set Solution volume without any Solvents&quot;</span><span class="p">)</span>
@@ -1067,7 +1086,7 @@
 
 <div class="viewcode-block" id="Solution.set_volume">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.set_volume">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setter for inline volume changes&quot;&quot;&quot;</span>
         <span class="n">solution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">solution</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">value</span>
@@ -1075,7 +1094,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">solvent_sld</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solvent_sld</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
         <span class="n">sld</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">vfracs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">vfrac</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_fraction</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1089,23 +1108,23 @@
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sld</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">solvent_density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solvent_density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvent_mass</span>
         <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvent_volume</span>
         <span class="k">return</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">m</span> <span class="o">/</span> <span class="n">v</span><span class="p">,</span> <span class="s2">&quot;density&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">solvent_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solvent_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span>
             <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">mass</span> <span class="o">/</span> <span class="n">component</span><span class="o">.</span><span class="n">density</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvents</span><span class="p">]</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">solvent_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solvent_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">component</span><span class="o">.</span><span class="n">mass</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">solvents</span><span class="p">])</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">mass_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mass_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Mass fraction of components in mixture</span>
 
 <span class="sd">        Returns</span>
@@ -1120,7 +1139,7 @@
         <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">component</span><span class="o">.</span><span class="n">mass</span> <span class="o">/</span> <span class="n">total_mass</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">}</span>
 
     <span class="nd">@mass_fraction</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">mass_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_mass_fractions</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mass_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_mass_fractions</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Mass fraction of components in mixture</span>
 
 <span class="sd">        Returns</span>
@@ -1142,7 +1161,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">fraction</span><span class="p">,</span><span class="s1">&#39;dimensionless&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">total_mass</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">volume_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">volume_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Volume fraction of solvents in mixture</span>
 
 <span class="sd">        Returns</span>
@@ -1156,7 +1175,7 @@
         <span class="p">}</span>
 
     <span class="nd">@volume_fraction</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">volume_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_volume_fractions</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">volume_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_volume_fractions</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Volume fraction of components in mixture</span>
 
 <span class="sd">        Returns</span>
@@ -1178,12 +1197,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">fraction</span><span class="p">,</span><span class="s1">&#39;dimensionless&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">total_volume</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">concentration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">concentration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">total_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">component</span><span class="o">.</span><span class="n">mass</span> <span class="o">/</span> <span class="n">total_volume</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">}</span>
 
     <span class="nd">@concentration</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">concentration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concentration_dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">concentration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concentration_dict</span><span class="p">):</span>
         <span class="n">total_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">concentration</span> <span class="ow">in</span> <span class="n">concentration_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">concentration</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">concentration</span><span class="p">,</span> <span class="s2">&quot;concentration&quot;</span><span class="p">)</span>
@@ -1192,7 +1211,7 @@
             <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">molarity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molarity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">total_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
@@ -1201,7 +1220,7 @@
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="nd">@molarity</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">molarity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molarity_dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molarity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molarity_dict</span><span class="p">):</span>
         <span class="n">total_volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">molarity_value</span> <span class="ow">in</span> <span class="n">molarity_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">has_formula</span><span class="p">:</span>
@@ -1220,7 +1239,7 @@
                 <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">molality</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molality</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Molality of components in mixture (moles of solute per kilogram of solvent)</span>
 
 <span class="sd">        Returns</span>
@@ -1236,7 +1255,7 @@
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="nd">@molality</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">molality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molality_dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molality_dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set component masses based on molality (moles per kg of solvent)</span>
 
 <span class="sd">        Parameters</span>
@@ -1263,7 +1282,7 @@
 
 <div class="viewcode-block" id="Solution.measure_out">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.measure_out">[docs]</a>
-    <span class="k">def</span> <span class="nf">measure_out</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measure_out</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">amount</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">deplete</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Solution&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create solution with identical composition at new total mass/volume&quot;&quot;&quot;</span>
@@ -1319,8 +1338,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -1356,7 +1375,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

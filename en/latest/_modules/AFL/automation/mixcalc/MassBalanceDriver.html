@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/mixcalc/MassBalanceDriver';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,38 +424,38 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.mixcalc.MassBalanceDriver</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">contextlib</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">uuid</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">hashlib</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">Bounds</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bounds</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.MassBalanceBase</span> <span class="kn">import</span> <span class="n">MassBalanceBase</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.MassBalanceWebAppMixin</span> <span class="kn">import</span> <span class="n">MassBalanceWebAppMixin</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.MixDB</span> <span class="kn">import</span> <span class="n">MixDB</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.shared.units</span> <span class="kn">import</span> <span class="n">enforce_units</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MassBalanceBase</span><span class="w"> </span><span class="kn">import</span> <span class="n">MassBalanceBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MassBalanceWebAppMixin</span><span class="w"> </span><span class="kn">import</span> <span class="n">MassBalanceWebAppMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Solution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MixDB</span><span class="w"> </span><span class="kn">import</span> <span class="n">MixDB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">enforce_units</span>
 
 
-<span class="k">def</span> <span class="nf">_is_finite</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_finite</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if *v* is a finite float (not NaN, inf, or -inf).&quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">math</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 
 <span class="n">EXACT_BALANCE_ERROR_TOL</span> <span class="o">=</span> <span class="mf">1e-12</span>
 
 
-<span class="k">def</span> <span class="nf">_max_component_error</span><span class="p">(</span><span class="n">component_errors</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_max_component_error</span><span class="p">(</span><span class="n">component_errors</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">component_errors</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">component_errors</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
 
@@ -453,7 +472,7 @@
     <span class="k">return</span> <span class="n">max_err</span>
 
 
-<span class="k">def</span> <span class="nf">_derive_balance_status</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">component_errors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_derive_balance_status</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">component_errors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">max_err</span> <span class="o">=</span> <span class="n">_max_component_error</span><span class="p">(</span><span class="n">component_errors</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">success</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;failed&#39;</span><span class="p">,</span> <span class="n">max_err</span>
@@ -462,7 +481,7 @@
     <span class="k">return</span> <span class="s1">&#39;within_tolerance&#39;</span><span class="p">,</span> <span class="n">max_err</span>
 
 
-<span class="k">def</span> <span class="nf">_solution_to_display_dict</span><span class="p">(</span><span class="n">solution</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_solution_to_display_dict</span><span class="p">(</span><span class="n">solution</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a JSON-serializable dict from a Solution with all available</span>
 <span class="sd">    composition methods.</span>
 
@@ -471,7 +490,7 @@
 <span class="sd">    non-finite floats (NaN / inf) are filtered to ``None``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">qty_to_dict</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">target_unit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">qty_to_dict</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">target_unit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">q</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
@@ -625,7 +644,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver">[docs]</a>
-<span class="k">class</span> <span class="nc">MassBalanceDriver</span><span class="p">(</span><span class="n">MassBalanceBase</span><span class="p">,</span> <span class="n">MassBalanceWebAppMixin</span><span class="p">,</span> <span class="n">Driver</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MassBalanceDriver</span><span class="p">(</span><span class="n">MassBalanceBase</span><span class="p">,</span> <span class="n">MassBalanceWebAppMixin</span><span class="p">,</span> <span class="n">Driver</span><span class="p">):</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;minimum_volume&#39;</span><span class="p">:</span> <span class="s1">&#39;20 ul&#39;</span><span class="p">,</span>
         <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="p">[],</span>
@@ -645,14 +664,14 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">MassBalanceBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">Driver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MassBalance&#39;</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gather_defaults</span><span class="p">(),</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
 
         <span class="c1"># Replace config with optimized settings for large stock configurations</span>
         <span class="c1"># This significantly improves performance when adding many stocks</span>
         <span class="c1"># Note: PersistentConfig will automatically load existing values from disk</span>
-        <span class="kn">from</span> <span class="nn">AFL.automation.shared.PersistentConfig</span> <span class="kn">import</span> <span class="n">PersistentConfig</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.PersistentConfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">PersistentConfig</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">PersistentConfig</span><span class="p">(</span>
             <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span>
@@ -692,24 +711,24 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">stock_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stock_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No stocks have been added; Must call process_stocks before accessing components&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">component</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">stock</span><span class="o">.</span><span class="n">components</span><span class="p">}</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">target_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">target_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No targets have been added; Must call process_stocks before accessing components&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">component</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">target</span><span class="o">.</span><span class="n">components</span><span class="p">}</span>
 
 <div class="viewcode-block" id="MassBalanceDriver.process_stocks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.process_stocks">[docs]</a>
-    <span class="k">def</span> <span class="nf">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_process_stocks_with_diagnostics</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_process_stocks_with_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capture_diagnostics</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_stocks_with_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capture_diagnostics</span><span class="p">):</span>
         <span class="n">new_stocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">diagnostics</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">capture_diagnostics</span><span class="p">:</span>
@@ -728,18 +747,18 @@
         <span class="k">return</span> <span class="n">diagnostics</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_build_solution_with_diagnostics</span><span class="p">(</span><span class="n">stock_config</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
-        <span class="k">class</span> <span class="nc">_TeeIO</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">):</span>
-            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">streams</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_solution_with_diagnostics</span><span class="p">(</span><span class="n">stock_config</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_TeeIO</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">streams</span><span class="p">):</span>
                 <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_streams</span> <span class="o">=</span> <span class="n">streams</span>
 
-            <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_streams</span><span class="p">:</span>
                     <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
                 <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_streams</span><span class="p">:</span>
                     <span class="n">stream</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
                 <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
@@ -780,7 +799,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.process_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.process_targets">[docs]</a>
-    <span class="k">def</span> <span class="nf">process_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">targets_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">signature_payload</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">targets_config</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">))</span>
@@ -799,7 +818,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.add_stock">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.add_stock">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_stock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solution</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_stock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solution</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="n">prev</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_stocks</span><span class="p">()</span>
@@ -819,7 +838,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.add_target">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.add_target">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">target</span><span class="p">]</span>
@@ -829,7 +848,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.add_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.add_targets">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">reset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">reset</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset_targets</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">targets</span>
@@ -839,7 +858,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.reset_stocks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.reset_stocks">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="s1">&#39;stock_locations&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_locations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
@@ -848,7 +867,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.reset_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.reset_targets">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_targets_signature</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
@@ -856,7 +875,7 @@
 
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_normalize_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">tags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -883,7 +902,7 @@
             <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="k">def</span> <span class="nf">_make_stock_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_stock_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
         <span class="n">snapshot_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
         <span class="n">created_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">timespec</span><span class="o">=</span><span class="s1">&#39;seconds&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -894,7 +913,7 @@
             <span class="s1">&#39;stocks&#39;</span><span class="p">:</span> <span class="n">stocks</span><span class="p">,</span>
         <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">_write_stock_snapshot_tiled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_write_stock_snapshot_tiled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
         <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;Unable to connect to tiled server.&#39;</span><span class="p">))</span>
@@ -905,7 +924,7 @@
         <span class="p">}</span>
         <span class="n">stocks_container</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">snapshot</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_or_create_tiled_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_or_create_tiled_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;Unable to connect to tiled server.&#39;</span><span class="p">))</span>
@@ -917,7 +936,7 @@
         <span class="k">return</span> <span class="n">client</span><span class="p">[</span><span class="n">node_name</span><span class="p">]</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_tiled_item_metadata</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_tiled_item_metadata</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">metadata</span><span class="p">:</span>
@@ -950,13 +969,13 @@
             <span class="k">pass</span>
         <span class="k">return</span> <span class="p">{}</span>
 
-    <span class="k">def</span> <span class="nf">_write_stock_snapshot_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_write_stock_snapshot_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
         <span class="n">history</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_history&#39;</span><span class="p">,</span> <span class="p">[]))</span>
         <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stock_history&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">200</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_update_history</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_save_stock_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_stock_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
         <span class="n">snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_stock_snapshot</span><span class="p">(</span><span class="n">stocks</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_stock_snapshot_tiled</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
@@ -965,7 +984,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_stock_snapshot_local</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
             <span class="k">return</span> <span class="s1">&#39;local&#39;</span>
 
-    <span class="k">def</span> <span class="nf">_list_stock_history_tiled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_list_stock_history_tiled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">stocks_container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_tiled_container</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -987,14 +1006,14 @@
         <span class="n">out</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">entry</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="k">def</span> <span class="nf">_has_tiled_stock_history_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_has_tiled_stock_history_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_tiled_container</span><span class="p">(</span><span class="s1">&#39;stocks&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_list_stock_history_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_list_stock_history_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stock_history&#39;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[]</span>
@@ -1002,7 +1021,7 @@
         <span class="n">out</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">entry</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="k">def</span> <span class="nf">_get_stock_history_with_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_stock_history_with_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">tiled_history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_stock_history_tiled</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">tiled_history</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_tiled_stock_history_backend</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">tiled_history</span><span class="p">,</span> <span class="s1">&#39;tiled&#39;</span>
@@ -1010,7 +1029,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.upload_stocks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.upload_stocks">[docs]</a>
-    <span class="k">def</span> <span class="nf">upload_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">upload_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">stocks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">stocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">prev_stocks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;stocks&#39;</span><span class="p">])</span>
@@ -1044,12 +1063,12 @@
 <div class="viewcode-block" id="MassBalanceDriver.compute_stock_properties">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.compute_stock_properties">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">compute_stock_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_stock_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">stock</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="kn">import</span> <span class="nn">json</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
                 <span class="n">stock</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
             <span class="n">stock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_stock_for_conversion</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
             <span class="n">solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="n">stock</span><span class="p">)</span>
@@ -1059,7 +1078,7 @@
 
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_normalize_stock_for_conversion</span><span class="p">(</span><span class="n">stock</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_stock_for_conversion</span><span class="p">(</span><span class="n">stock</span><span class="p">):</span>
         <span class="n">stock</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span>
         <span class="n">masses</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="n">volumes</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volumes&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
@@ -1107,7 +1126,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.save_sweep_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.save_sweep_config">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_sweep_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sweep_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_sweep_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sweep_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">sweep_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">sweep_config</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sweep_config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sweep_config</span>
@@ -1117,13 +1136,13 @@
 <div class="viewcode-block" id="MassBalanceDriver.load_sweep_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.load_sweep_config">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">load_sweep_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_sweep_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;sweep_config&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;sweep_config&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="k">else</span> <span class="p">{}</span></div>
 
 
 <div class="viewcode-block" id="MassBalanceDriver.upload_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.upload_targets">[docs]</a>
-    <span class="k">def</span> <span class="nf">upload_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">upload_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1144,7 +1163,7 @@
 <div class="viewcode-block" id="MassBalanceDriver.list_stocks">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_stocks">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">list_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">_solution_to_display_dict</span><span class="p">(</span><span class="n">stock</span><span class="p">)</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">]</span></div>
 
@@ -1152,7 +1171,7 @@
 <div class="viewcode-block" id="MassBalanceDriver.list_stock_history">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_stock_history">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">list_stock_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_stock_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">history</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_stock_history_with_source</span><span class="p">()</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">component_group_keys</span> <span class="o">=</span> <span class="p">(</span>
@@ -1206,7 +1225,7 @@
 <div class="viewcode-block" id="MassBalanceDriver.load_stock_history">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.load_stock_history">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">load_stock_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_stock_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">snapshot_id</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;snapshot_id is required.&#39;</span><span class="p">}</span>
         <span class="n">history</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_stock_history_with_source</span><span class="p">()</span>
@@ -1233,7 +1252,7 @@
 <div class="viewcode-block" id="MassBalanceDriver.get_storage_sources">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_storage_sources">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">get_storage_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_storage_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Trigger source resolution for component storage by doing a lightweight list.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">list_components</span><span class="p">()</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">stock_history_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_stock_history_with_source</span><span class="p">()</span>
@@ -1247,7 +1266,7 @@
 <div class="viewcode-block" id="MassBalanceDriver.list_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_targets">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">list_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_targets</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">_solution_to_display_dict</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">]</span></div>
 
@@ -1255,13 +1274,13 @@
 <div class="viewcode-block" id="MassBalanceDriver.list_balanced_targets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_balanced_targets">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">list_balanced_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_balanced_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_balanced_targets</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">results</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">results</span>
         <span class="c1"># Fall back to last cached results on disk (queue worker writes these)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">json</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">history</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">history</span><span class="p">:</span>
@@ -1275,7 +1294,7 @@
 
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_balance_status_metadata</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_balance_status_metadata</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
         <span class="n">diagnosis</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;diagnosis&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">component_errors</span> <span class="o">=</span> <span class="n">diagnosis</span><span class="o">.</span><span class="n">component_errors</span> <span class="k">if</span> <span class="n">diagnosis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
         <span class="n">balance_status</span><span class="p">,</span> <span class="n">max_component_error</span> <span class="o">=</span> <span class="n">_derive_balance_status</span><span class="p">(</span>
@@ -1289,7 +1308,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.balance_report">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.balance_report">[docs]</a>
-    <span class="k">def</span> <span class="nf">balance_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">balance_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">report</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">balance_report</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">report</span><span class="p">):</span>
             <span class="n">raw_entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
@@ -1299,7 +1318,7 @@
         <span class="k">return</span> <span class="n">report</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_collect_balanced_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_collect_balanced_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1314,7 +1333,7 @@
             <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span>
 
-    <span class="k">def</span> <span class="nf">_set_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transfer_volume</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;minimum_volume&#39;</span><span class="p">],</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="p">(</span>
             <span class="n">lb</span><span class="o">=</span><span class="p">[</span><span class="n">stock</span><span class="o">.</span><span class="n">measure_out</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum_transfer_volume</span><span class="p">)</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;g&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">],</span>
@@ -1324,7 +1343,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.balance">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.balance">[docs]</a>
-    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_targets</span><span class="p">()</span>
         <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span>
@@ -1341,7 +1360,7 @@
             <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;starting&#39;</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="k">def</span> <span class="nf">_progress_cb</span><span class="p">(</span><span class="n">stage</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">completed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">target_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_progress_cb</span><span class="p">(</span><span class="n">stage</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">completed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">target_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
             <span class="n">elapsed</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_balance_started_ts</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_balance_started_ts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span>
             <span class="n">frac</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">completed</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">total</span><span class="p">))</span> <span class="k">if</span> <span class="n">total</span> <span class="k">else</span> <span class="mf">1.0</span>
@@ -1401,14 +1420,14 @@
 <div class="viewcode-block" id="MassBalanceDriver.get_balance_progress">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_balance_progress">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">get_balance_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_balance_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_balance_progress</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MassBalanceDriver.get_balance_settings">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_balance_settings">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">get_balance_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_balance_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;tol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;tol&#39;</span><span class="p">],</span>
             <span class="s1">&#39;minimum_volume&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;minimum_volume&#39;</span><span class="p">,</span> <span class="s1">&#39;20 ul&#39;</span><span class="p">),</span>
@@ -1420,7 +1439,7 @@
 
 <div class="viewcode-block" id="MassBalanceDriver.get_sample_composition">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_sample_composition">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_sample_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition_format</span><span class="o">=</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sample_composition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition_format</span><span class="o">=</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the composition of the last balanced target in the requested format.</span>
 
 <span class="sd">        Uses the Solution objects in ``self.balanced`` which have full access</span>
@@ -1495,7 +1514,7 @@
 
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_component_value</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">format_type</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_component_value</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">format_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract a component value in the specified format from a Solution.</span>
 
 <span class="sd">        Parameters</span>
@@ -1550,14 +1569,14 @@
 <div class="viewcode-block" id="MassBalanceDriver.list_components">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.list_components">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">list_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">list_components</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="MassBalanceDriver.add_component">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.add_component">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">add_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">component</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">component</span><span class="p">):</span>
         <span class="n">component</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">uid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
@@ -1567,7 +1586,7 @@
 <div class="viewcode-block" id="MassBalanceDriver.update_component">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.update_component">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">update_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">component</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">component</span><span class="p">):</span>
         <span class="n">component</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">uid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">update_component</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
@@ -1577,7 +1596,7 @@
 <div class="viewcode-block" id="MassBalanceDriver.remove_component">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.remove_component">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">remove_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">remove_component</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="n">uid</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mixdb</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
         <span class="k">return</span> <span class="s1">&#39;OK&#39;</span></div>
@@ -1586,7 +1605,7 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.launcher</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 </pre></div>
 
                 </article>
@@ -1616,8 +1635,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -1653,7 +1672,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

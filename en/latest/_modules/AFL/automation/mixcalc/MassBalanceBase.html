@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/mixcalc/MassBalanceBase';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,23 +424,23 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.mixcalc.MassBalanceBase</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">lsq_linear</span><span class="p">,</span> <span class="n">Bounds</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">lsq_linear</span><span class="p">,</span> <span class="n">Bounds</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.PipetteAction</span> <span class="kn">import</span> <span class="n">PipetteAction</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.Solution</span> <span class="kn">import</span> <span class="n">Solution</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.mixcalc.BalanceDiagnosis</span> <span class="kn">import</span> <span class="n">BalanceDiagnosis</span><span class="p">,</span> <span class="n">FailureCode</span><span class="p">,</span> <span class="n">FailureDetail</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.PipetteAction</span><span class="w"> </span><span class="kn">import</span> <span class="n">PipetteAction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Solution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.BalanceDiagnosis</span><span class="w"> </span><span class="kn">import</span> <span class="n">BalanceDiagnosis</span><span class="p">,</span> <span class="n">FailureCode</span><span class="p">,</span> <span class="n">FailureDetail</span>
 
 <span class="n">ZERO_MASS_TOL_G</span> <span class="o">=</span> <span class="mf">1e-12</span>
 
 
 <span class="c1"># --- Shared utility functions ---</span>
-<span class="k">def</span> <span class="nf">_extract_masses</span><span class="p">(</span><span class="n">solution</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span> <span class="n">components</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;g&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_masses</span><span class="p">(</span><span class="n">solution</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span> <span class="n">components</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;g&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
@@ -431,7 +450,7 @@
             <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
 
-<span class="k">def</span> <span class="nf">_extract_mass_fractions</span><span class="p">(</span><span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span> <span class="n">components</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_mass_fractions</span><span class="p">(</span><span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span> <span class="n">components</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">stock</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stocks</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">stock</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">component</span><span class="p">):</span>
@@ -440,11 +459,11 @@
                 <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
 
-<span class="k">def</span> <span class="nf">_zero_target_mask</span><span class="p">(</span><span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">zero_mass_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">ZERO_MASS_TOL_G</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_zero_target_mask</span><span class="p">(</span><span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">zero_mass_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">ZERO_MASS_TOL_G</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">target_masses</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">zero_mass_tol</span>
 
 
-<span class="k">def</span> <span class="nf">_component_failure_mask</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_component_failure_mask</span><span class="p">(</span>
     <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">balanced_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">differences</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -458,7 +477,7 @@
     <span class="k">return</span> <span class="n">failed</span>
 
 
-<span class="k">def</span> <span class="nf">_is_balance_success</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_balance_success</span><span class="p">(</span>
     <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">balanced_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">differences</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -476,7 +495,7 @@
     <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_make_balanced_target</span><span class="p">(</span><span class="n">mass_transfers</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_balanced_target</span><span class="p">(</span><span class="n">mass_transfers</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
     <span class="n">balanced_target</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">balanced_target</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">stock</span><span class="p">,</span> <span class="n">mass</span> <span class="ow">in</span> <span class="n">mass_transfers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -497,7 +516,7 @@
     <span class="k">return</span> <span class="n">balanced_target</span>
 
 
-<span class="k">def</span> <span class="nf">_diagnose</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_diagnose</span><span class="p">(</span>
     <span class="n">target</span><span class="p">,</span>
     <span class="n">transfers</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">balanced_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -734,7 +753,7 @@
     <span class="k">return</span> <span class="n">BalanceDiagnosis</span><span class="p">(</span><span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">,</span> <span class="n">component_errors</span><span class="o">=</span><span class="n">component_errors</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_iter_balance_candidates</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_iter_balance_candidates</span><span class="p">(</span>
     <span class="n">mass_fraction_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">bounds</span><span class="p">:</span> <span class="n">Bounds</span><span class="p">,</span>
@@ -783,7 +802,7 @@
             <span class="k">yield</span> <span class="n">adjusted_transfer</span>
 
 
-<span class="k">def</span> <span class="nf">_balance</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_balance</span><span class="p">(</span>
     <span class="n">mass_fraction_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">bounds</span><span class="p">:</span> <span class="n">Bounds</span><span class="p">,</span>
@@ -793,7 +812,7 @@
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">_iter_balance_candidates</span><span class="p">(</span><span class="n">mass_fraction_matrix</span><span class="p">,</span> <span class="n">target_masses</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">stocks</span><span class="p">,</span> <span class="n">near_bound_tol</span><span class="p">))</span>
 
 
-<span class="k">def</span> <span class="nf">_compute_differences</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_differences</span><span class="p">(</span>
     <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">balanced_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">total_target_mass</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -821,7 +840,7 @@
     <span class="k">return</span> <span class="n">differences</span>
 
 
-<span class="k">def</span> <span class="nf">_make_transfer_dict</span><span class="p">(</span><span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span> <span class="n">transfers</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Solution</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_transfer_dict</span><span class="p">(</span><span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span> <span class="n">transfers</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Solution</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="n">stock</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">mass</span><span class="p">)</span><span class="si">}</span><span class="s1"> g&#39;</span>
         <span class="k">for</span> <span class="n">stock</span><span class="p">,</span> <span class="n">mass</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">stocks</span><span class="p">,</span> <span class="n">transfers</span><span class="p">)</span>
@@ -832,29 +851,29 @@
 <span class="c1"># --- MassBalance Base Class ---</span>
 <div class="viewcode-block" id="MassBalanceBase">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase">[docs]</a>
-<span class="k">class</span> <span class="nc">MassBalanceBase</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MassBalanceBase</span><span class="p">:</span>
 <div class="viewcode-block" id="MassBalanceBase.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">balanced</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">components</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">components</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stock_components</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_components</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">stock_components</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stock_components</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">target_components</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">target_components</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 <div class="viewcode-block" id="MassBalanceBase.mass_fraction_matrix">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.mass_fraction_matrix">[docs]</a>
-    <span class="k">def</span> <span class="nf">mass_fraction_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mass_fraction_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
         <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">components</span><span class="p">):</span>
@@ -868,7 +887,7 @@
 
 <div class="viewcode-block" id="MassBalanceBase.make_target_names">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.make_target_names">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_target_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_letters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_target_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_letters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">components</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span>
         <span class="k">if</span> <span class="n">name_map</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -883,7 +902,7 @@
 
 <div class="viewcode-block" id="MassBalanceBase.balance_report">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.balance_report">[docs]</a>
-    <span class="k">def</span> <span class="nf">balance_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">balance_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a json serializable structure that has all of the balanced targets</span>
 <span class="sd">        that can be reconstituted by the user back into solution objects.</span>
@@ -931,7 +950,7 @@
 
 <div class="viewcode-block" id="MassBalanceBase.failure_summary">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.failure_summary">[docs]</a>
-    <span class="k">def</span> <span class="nf">failure_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">failure_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a human-readable summary of all failed balance entries.</span>
 
 <span class="sd">        Returns an empty string if all balances succeeded or no balances have</span>
@@ -948,10 +967,10 @@
         <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_minimum_transfer_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_minimum_transfer_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;minimum_transfer_volume&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;minimum_volume&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_bounds_for_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span> <span class="n">minimum_transfer_volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bounds</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bounds_for_stocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span> <span class="n">minimum_transfer_volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bounds</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Bounds</span><span class="p">(</span>
             <span class="n">lb</span><span class="o">=</span><span class="p">[</span><span class="n">stock</span><span class="o">.</span><span class="n">measure_out</span><span class="p">(</span><span class="n">minimum_transfer_volume</span><span class="p">)</span><span class="o">.</span><span class="n">mass</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;g&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">stocks</span><span class="p">],</span>
             <span class="n">ub</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">stocks</span><span class="p">),</span>
@@ -959,15 +978,15 @@
         <span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_is_virtual_stock</span><span class="p">(</span><span class="n">stock</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_virtual_stock</span><span class="p">(</span><span class="n">stock</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s1">&#39;_is_virtual_dilution_stock&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_virtual_recipe</span><span class="p">(</span><span class="n">stock</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_virtual_recipe</span><span class="p">(</span><span class="n">stock</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s1">&#39;_dilution_recipe&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_find_primary_solvent_name</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_primary_solvent_name</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="n">best_name</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">best_mass</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">target</span><span class="p">:</span>
@@ -979,7 +998,7 @@
                 <span class="n">best_mass</span> <span class="o">=</span> <span class="n">m</span>
         <span class="k">return</span> <span class="n">best_name</span>
 
-    <span class="k">def</span> <span class="nf">_select_diluent_stock</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_diluent_stock</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
         <span class="n">source_stock</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
@@ -1010,7 +1029,7 @@
         <span class="n">fallback</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">fallback</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_make_virtual_dilution_stock</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_virtual_dilution_stock</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">source_stock</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
         <span class="n">diluent_stock</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
@@ -1041,7 +1060,7 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">virtual</span>
 
-    <span class="k">def</span> <span class="nf">_build_procedure_plan</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_procedure_plan</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
         <span class="n">stocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Solution</span><span class="p">],</span>
@@ -1094,7 +1113,7 @@
             <span class="s1">&#39;stages&#39;</span><span class="p">:</span> <span class="n">stages</span><span class="p">,</span>
         <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">_solve_single_target</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_single_target</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">Solution</span><span class="p">,</span>
         <span class="n">target_masses</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1237,7 +1256,7 @@
 
 <div class="viewcode-block" id="MassBalanceBase.balance">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.balance">[docs]</a>
-    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">balance</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">tol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
         <span class="n">return_report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1350,7 +1369,7 @@
 
 
 
-    <span class="k">def</span> <span class="nf">_set_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 </pre></div>
@@ -1382,8 +1401,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -1419,7 +1438,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/shared/ServerDiscovery';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,23 +424,23 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.shared.ServerDiscovery</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">socket</span>
-<span class="kn">from</span> <span class="nn">zeroconf</span> <span class="kn">import</span> <span class="n">IPVersion</span><span class="p">,</span> <span class="n">ServiceInfo</span><span class="p">,</span> <span class="n">ServiceBrowser</span><span class="p">,</span> <span class="n">ServiceStateChange</span><span class="p">,</span> <span class="n">Zeroconf</span>
-<span class="kn">from</span> <span class="nn">zeroconf.asyncio</span> <span class="kn">import</span> <span class="p">(</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zeroconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">IPVersion</span><span class="p">,</span> <span class="n">ServiceInfo</span><span class="p">,</span> <span class="n">ServiceBrowser</span><span class="p">,</span> <span class="n">ServiceStateChange</span><span class="p">,</span> <span class="n">Zeroconf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zeroconf.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsyncServiceBrowser</span><span class="p">,</span>
     <span class="n">AsyncServiceInfo</span><span class="p">,</span>
     <span class="n">AsyncZeroconf</span><span class="p">,</span>
     <span class="n">AsyncZeroconfServiceTypes</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 
 <div class="viewcode-block" id="RunThread">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.RunThread">[docs]</a>
-<span class="k">class</span> <span class="nc">RunThread</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RunThread</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">):</span>
 <div class="viewcode-block" id="RunThread.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.RunThread.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coro</span> <span class="o">=</span> <span class="n">coro</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
@@ -429,7 +448,7 @@
 
 <div class="viewcode-block" id="RunThread.run">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.RunThread.run">[docs]</a>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coro</span><span class="p">)</span></div>
 </div>
 
@@ -437,7 +456,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery">[docs]</a>
-<span class="k">class</span> <span class="nc">ServerDiscovery</span><span class="p">():</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ServerDiscovery</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    ServerDiscovery class</span>
 <span class="sd">    </span>
@@ -448,7 +467,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zeroconf</span> <span class="o">=</span> <span class="n">AsyncZeroconf</span><span class="p">(</span><span class="n">ip_version</span><span class="o">=</span><span class="n">IPVersion</span><span class="o">.</span><span class="n">All</span><span class="p">)</span><span class="o">.</span><span class="n">zeroconf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">service_info</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -457,7 +476,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery.on_service_state_change">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.on_service_state_change">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_service_state_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_service_state_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
         <span class="n">zeroconf</span><span class="p">:</span> <span class="n">Zeroconf</span><span class="p">,</span> <span class="n">service_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state_change</span><span class="p">:</span> <span class="n">ServiceStateChange</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">state_change</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">ServiceStateChange</span><span class="o">.</span><span class="n">Added</span> <span class="ow">and</span> <span class="n">state_change</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">ServiceStateChange</span><span class="o">.</span><span class="n">Removed</span><span class="p">:</span>
@@ -470,7 +489,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery.manage_service_info_to_list">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.manage_service_info_to_list">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">manage_service_info_to_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">zeroconf</span><span class="p">,</span><span class="n">service_type</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">append_or_remove</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">manage_service_info_to_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">zeroconf</span><span class="p">,</span><span class="n">service_type</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">append_or_remove</span><span class="p">):</span>
         <span class="n">service_info</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_service_info</span><span class="p">(</span><span class="n">zeroconf</span><span class="p">,</span><span class="n">service_type</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">append_or_remove</span> <span class="o">==</span> <span class="s1">&#39;a&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">service_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">service_info</span><span class="p">)</span>
@@ -481,7 +500,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery.get_service_info">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.get_service_info">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_service_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">zeroconf</span><span class="p">:</span> <span class="n">Zeroconf</span><span class="p">,</span> <span class="n">service_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_service_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">zeroconf</span><span class="p">:</span> <span class="n">Zeroconf</span><span class="p">,</span> <span class="n">service_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">info</span> <span class="o">=</span> <span class="n">AsyncServiceInfo</span><span class="p">(</span><span class="n">service_type</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">info</span><span class="o">.</span><span class="n">async_request</span><span class="p">(</span><span class="n">zeroconf</span><span class="p">,</span> <span class="mi">3000</span><span class="p">)</span>
         <span class="c1">#print(&quot;Info from zeroconf.get_service_info: %r&quot; % (info))</span>
@@ -494,7 +513,7 @@
    
 <div class="viewcode-block" id="ServerDiscovery.aio_find_server_by_name">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.aio_find_server_by_name">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">aio_find_server_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aio_find_server_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
 
         <span class="n">service_info</span> <span class="o">=</span> <span class="n">AsyncServiceInfo</span><span class="p">(</span>
         <span class="s2">&quot;_aflhttp._tcp.local.&quot;</span><span class="p">,</span>
@@ -505,7 +524,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Service </span><span class="si">{</span><span class="n">service_name</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_run_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">coro</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">coro</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
@@ -520,7 +539,7 @@
             <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
 <div class="viewcode-block" id="ServerDiscovery.discover_server_by_name">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.discover_server_by_name">[docs]</a>
-    <span class="k">def</span> <span class="nf">discover_server_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">discover_server_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Does a zeroconf request to find a named AFL-automation server on the network.</span>
 
@@ -533,7 +552,7 @@
 <div class="viewcode-block" id="ServerDiscovery.sa_aio_discover_server_by_name">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.sa_aio_discover_server_by_name">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">sa_aio_discover_server_by_name</span><span class="p">(</span><span class="n">ServiceDiscovery</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">sa_aio_discover_server_by_name</span><span class="p">(</span><span class="n">ServiceDiscovery</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Does a zeroconf request to find a named AFL-automation server on the network.</span>
 
@@ -547,7 +566,7 @@
 <div class="viewcode-block" id="ServerDiscovery.sa_discover_server_by_name">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.sa_discover_server_by_name">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">sa_discover_server_by_name</span><span class="p">(</span><span class="n">ServiceDiscovery</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sa_discover_server_by_name</span><span class="p">(</span><span class="n">ServiceDiscovery</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Does a zeroconf request to find a named AFL-automation server on the network.</span>
 
@@ -560,7 +579,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery.find_server_by_name">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.find_server_by_name">[docs]</a>
-    <span class="k">def</span> <span class="nf">find_server_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_server_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">            Disambiguator for either matching or discovering a specific server by name</span>
 <span class="sd">        &#39;&#39;&#39;</span>
@@ -571,7 +590,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery.match_server_by_name">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.match_server_by_name">[docs]</a>
-    <span class="k">def</span> <span class="nf">match_server_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">match_server_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">            Looks through the registry of discovered services for an exact name match.</span>
 <span class="sd">            Returns a tuple of (hostname:port string,ServiceInfo object) if found, None if not found.</span>
@@ -584,7 +603,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery.find_server_by_partial_name">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.find_server_by_partial_name">[docs]</a>
-    <span class="k">def</span> <span class="nf">find_server_by_partial_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_server_by_partial_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">            Looks through the registry of discovered services for a partial name match.</span>
 <span class="sd">            Returns a tuple of (hostname:port string,ServiceInfo object) if found, None if not found.</span>
@@ -597,7 +616,7 @@
 
 <div class="viewcode-block" id="ServerDiscovery.find_server_by_property_match">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.find_server_by_property_match">[docs]</a>
-    <span class="k">def</span> <span class="nf">find_server_by_property_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">property_name</span><span class="p">,</span><span class="n">property_value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_server_by_property_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">property_name</span><span class="p">,</span><span class="n">property_value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">            Looks through the registry of discovered services for a partial match in a property string.</span>
 <span class="sd">            Returns a tuple of (hostname:port string,ServiceInfo object) if found, None if not found.</span>
@@ -641,8 +660,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -678,7 +697,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

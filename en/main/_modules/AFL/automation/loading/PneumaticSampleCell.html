@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/loading/PneumaticSampleCell';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,19 +424,19 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.loading.PneumaticSampleCell</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">AFL.automation.loading.SampleCell</span> <span class="kn">import</span> <span class="n">SampleCell</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">time</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.loading.SampleCell</span><span class="w"> </span><span class="kn">import</span> <span class="n">SampleCell</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
 <div class="viewcode-block" id="PneumaticSampleCell">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell">[docs]</a>
-<span class="k">class</span> <span class="nc">PneumaticSampleCell</span><span class="p">(</span><span class="n">Driver</span><span class="p">,</span><span class="n">SampleCell</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PneumaticSampleCell</span><span class="p">(</span><span class="n">Driver</span><span class="p">,</span><span class="n">SampleCell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Class for a sample cell consisting of a push-through, pneumatically-closed sample loader.</span>
 
@@ -446,7 +465,7 @@
 
 <div class="viewcode-block" id="PneumaticSampleCell.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pump</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pump</span><span class="p">,</span>
                       <span class="n">relayboard</span><span class="p">,</span>
                       <span class="n">digitalin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">rinse1_tank_level</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span>
@@ -517,7 +536,7 @@
         <span class="s1">&#39;params&#39;</span><span class="p">:{</span>
             <span class="s1">&#39;dispense&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;dispense&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;bool&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
         <span class="p">}})</span>
-    <span class="k">def</span> <span class="nf">reset_pump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dispense</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_pump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dispense</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pump</span><span class="o">.</span><span class="n">setRate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;air_speed&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">dispense</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pump_level</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pump</span><span class="o">.</span><span class="n">dispense</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pump_level</span><span class="p">)</span>
@@ -533,18 +552,18 @@
         <span class="s1">&#39;rinse2&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Rinse2 (mL)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mi">950</span><span class="p">},</span>
         <span class="s1">&#39;waste&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Waste (mL)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
         <span class="p">}})</span>
-    <span class="k">def</span> <span class="nf">reset_tank_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rinse1</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span><span class="n">rinse2</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span><span class="n">waste</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_tank_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rinse1</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span><span class="n">rinse2</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span><span class="n">waste</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinse1_tank_level</span> <span class="o">=</span> <span class="n">rinse1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">waste_tank_level</span> <span class="o">=</span> <span class="n">waste</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinse2_tank_level</span> <span class="o">=</span> <span class="n">rinse2</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app</span>
 
     <span class="nd">@app</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">app</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">app</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">app</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_app</span> <span class="o">=</span> <span class="n">app</span>
         <span class="k">else</span><span class="p">:</span>
@@ -554,7 +573,7 @@
 
 <div class="viewcode-block" id="PneumaticSampleCell.status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.status">[docs]</a>
-    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;State: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Arm State: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">arm_state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -577,7 +596,7 @@
         <span class="k">return</span> <span class="n">status</span></div>
 
  
-    <span class="k">def</span> <span class="nf">_arm_interlock_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_arm_interlock_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USE_DOOR_INTERLOCK</span><span class="p">:</span>
             <span class="n">oldstate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
             <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;DOOR&#39;</span><span class="p">]:</span>
@@ -585,7 +604,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;AWAITING DOOR CLOSED BEFORE MOVING ARM&#39;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">oldstate</span>
 
-    <span class="k">def</span> <span class="nf">_arm_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_arm_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_interlock_check</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;arm-up&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;arm-down&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USE_ARM_LIMITS</span><span class="p">:</span>
@@ -595,7 +614,7 @@
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;arm_move_delay&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arm_state</span> <span class="o">=</span> <span class="s1">&#39;UP&#39;</span>
 
-    <span class="k">def</span> <span class="nf">_arm_down</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_arm_down</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_interlock_check</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;arm-up&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span><span class="s1">&#39;arm-down&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;arm_move_delay&#39;</span><span class="p">])</span>
@@ -610,7 +629,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.loadSample">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Load Sample&#39;</span><span class="p">,</span>
         <span class="s1">&#39;params&#39;</span><span class="p">:{</span><span class="s1">&#39;sampleVolume&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Sample Volume (mL)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mf">0.3</span><span class="p">}}})</span>
-    <span class="k">def</span> <span class="nf">loadSample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cellname</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span><span class="n">sampleVolume</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">loadSample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cellname</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span><span class="n">sampleVolume</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;READY&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Tried to load sample but cell not READY.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;PREPARING TO LOAD&#39;</span>
@@ -641,7 +660,7 @@
 <div class="viewcode-block" id="PneumaticSampleCell.stopLoad">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.stopLoad">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;raw&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">stopLoad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stopLoad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;secret&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;xrays&gt;neutrons&#39;</span><span class="p">:</span>
@@ -664,7 +683,7 @@
 <div class="viewcode-block" id="PneumaticSampleCell.rinseCell">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.rinseCell">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Rinse Cell&#39;</span><span class="p">})</span>
-    <span class="k">def</span> <span class="nf">rinseCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cellname</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rinseCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cellname</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;LOADED&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;READY&#39;</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Rinsing despite READY state.  This is OK, just a little extra.  Lowering the arm to rinse.&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -701,26 +720,26 @@
     
 <div class="viewcode-block" id="PneumaticSampleCell.rinseAll">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.rinseAll">[docs]</a>
-    <span class="k">def</span> <span class="nf">rinseAll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rinseAll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinseCell</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PneumaticSampleCell.setRinseLevel">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.setRinseLevel">[docs]</a>
-    <span class="k">def</span> <span class="nf">setRinseLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setRinseLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vol</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinse_tank_level</span> <span class="o">=</span> <span class="n">vol</span></div>
 
 
 <div class="viewcode-block" id="PneumaticSampleCell.setWasteLevel">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.setWasteLevel">[docs]</a>
-    <span class="k">def</span> <span class="nf">setWasteLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setWasteLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vol</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">waste_tank_level</span> <span class="o">=</span> <span class="n">vol</span></div>
 
 
 <div class="viewcode-block" id="PneumaticSampleCell.primeRinse">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.primeRinse">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Prime Rinse&#39;</span><span class="p">})</span>
-    <span class="k">def</span> <span class="nf">primeRinse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">waittime</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">primeRinse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">waittime</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;READY&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cell in inconsistent state: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
@@ -737,7 +756,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.calibrate_sensor">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;calibrate&#39;</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:{}})</span>
-    <span class="k">def</span> <span class="nf">calibrate_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calibrate_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">sensor</span><span class="o">.</span><span class="n">calibrate</span><span class="p">()</span></div>
 
@@ -745,7 +764,7 @@
 <div class="viewcode-block" id="PneumaticSampleCell.read_sensor">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.read_sensor">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">read_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">sensor</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
 
@@ -753,7 +772,7 @@
 <div class="viewcode-block" id="PneumaticSampleCell.read_sensor_poll">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.read_sensor_poll">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;1d_plot&#39;</span><span class="p">,</span><span class="n">xlin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">ylin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Signal (V)&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">read_sensor_poll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_sensor_poll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Serving sensor poll:&#39;</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
@@ -763,7 +782,7 @@
 <div class="viewcode-block" id="PneumaticSampleCell.read_sensor_poll_load">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.read_sensor_poll_load">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;1d_plot&#39;</span><span class="p">,</span><span class="n">xlin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">ylin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Signal (V)&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">read_sensor_poll_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_sensor_poll_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">read_load_buffer</span><span class="p">())</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
@@ -771,7 +790,7 @@
     
 <div class="viewcode-block" id="PneumaticSampleCell.set_sensor_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.set_sensor_config">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
@@ -779,7 +798,7 @@
 
 <div class="viewcode-block" id="PneumaticSampleCell.get_sensor_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.get_sensor_config">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config</span></div>
 
@@ -788,7 +807,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell.sensor_reset">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Reset Sensor&#39;</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:{}})</span>
-    <span class="k">def</span> <span class="nf">sensor_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sensor_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">reset_poll</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="o">.</span><span class="n">reset_stopper</span><span class="p">()</span>
@@ -829,8 +848,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -866,7 +885,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

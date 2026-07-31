@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,6 +46,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/instrument/VirtualSpec_data';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -53,25 +54,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -405,30 +424,30 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.instrument.VirtualSpec_data</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> <span class="c1"># for return types in get data</span>
-<span class="kn">import</span> <span class="nn">h5py</span> <span class="c1">#for Nexus file writing</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">import</span> <span class="nn">PIL</span>
-<span class="kn">import</span> <span class="nn">uuid</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span> <span class="c1"># for return types in get data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span> <span class="c1">#for Nexus file writing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">PIL</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.instrument.GPInterpolator</span> <span class="kn">import</span> <span class="n">Interpolator</span><span class="p">,</span> <span class="n">ClusteredGPs</span>
-<span class="kn">import</span> <span class="nn">lazy_loader</span> <span class="k">as</span> <span class="nn">lazy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.instrument.GPInterpolator</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interpolator</span><span class="p">,</span> <span class="n">ClusteredGPs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">lazy_loader</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lazy</span>
 <span class="c1"># Lazy load ML dependencies</span>
 <span class="n">gpflow</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;gpflow&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[ml]&quot;</span><span class="p">)</span>
 <span class="n">tf</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;tensorflow&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[ml]&quot;</span><span class="p">)</span>
 <span class="c1"># class DummySAS(ScatteringInstrument,Driver):</span>
 <div class="viewcode-block" id="VirtualSpec_data">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data">[docs]</a>
-<span class="k">class</span> <span class="nc">VirtualSpec_data</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VirtualSpec_data</span><span class="p">(</span><span class="n">Driver</span><span class="p">):</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;save_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/home/afl642/2305_SINQ_SANS_path&#39;</span>
 <div class="viewcode-block" id="VirtualSpec_data.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clustered</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clustered</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Generates smoothly interpolated scattering data via a noiseless GPR from an experiments netcdf file</span>
 <span class="sd">        &#39;&#39;&#39;</span>
@@ -448,14 +467,14 @@
         
 <div class="viewcode-block" id="VirtualSpec_data.set_params_dict">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.set_params_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">params_dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">params_dict</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sg</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">params_dict</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params_dict</span> <span class="o">=</span> <span class="n">params_dict</span></div>
 
         
 <div class="viewcode-block" id="VirtualSpec_data.get_params_dict">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.get_params_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sg</span><span class="o">.</span><span class="n">get_defaults</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params_dict</span><span class="p">)</span></div>
 
@@ -463,7 +482,7 @@
         
 <div class="viewcode-block" id="VirtualSpec_data.generate_model">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.generate_model">[docs]</a>
-    <span class="k">def</span> <span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clustered</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -479,7 +498,7 @@
         
 <div class="viewcode-block" id="VirtualSpec_data.load_model_dataset">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.load_model_dataset">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_model_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_model_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># this class uses the information in dataset, specifically &#39;SAS_savgol_xlo&#39; and &#39;SAS_savgol_xhi&#39; to determine the q range</span>
         <span class="c1"># it also points to the &#39;components&#39; attribute of the dataset to get the composition range and dimensions</span>
         <span class="c1"># the dataset is stored in the scattering generator object</span>
@@ -498,7 +517,7 @@
 
 <div class="viewcode-block" id="VirtualSpec_data.measure">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.measure">[docs]</a>
-    <span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">exposure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">nexp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">write_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">return_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">save_nexus</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">exposure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">nexp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">write_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">return_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">save_nexus</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="c1">## sample_data is a protected key in the self.data dictionary from Driver.py</span>
         <span class="c1">## composition, which is required to reproduce scattering data, has to be a parameter in the composition dictionary</span>
         <span class="k">if</span> <span class="s1">&#39;sample_composition&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
@@ -571,14 +590,14 @@
 
 <div class="viewcode-block" id="VirtualSpec_data.status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.status">[docs]</a>
-    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Dummy SPECTROSCOPY data&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">status</span></div>
 
 
 <div class="viewcode-block" id="VirtualSpec_data.train_model">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.train_model">[docs]</a>
-    <span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">niter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">noiseless</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">heteroscedastic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">train_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">niter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">noiseless</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">heteroscedastic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="c1">### Hyperparameter evaluation and model &quot;training&quot;. Can consider augmenting these in a separate call.</span>
         <span class="k">if</span> <span class="n">kernel</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
@@ -611,7 +630,7 @@
             <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_writedata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_writedata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">])</span>
         <span class="n">filepath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;filepath&#39;</span><span class="p">])</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;writing data to </span><span class="si">{</span><span class="n">filepath</span><span class="o">/</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -647,8 +666,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
 
   
@@ -684,7 +703,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

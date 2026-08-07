@@ -458,7 +458,8 @@
         <span class="n">max_history_size_mb</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>  <span class="c1"># New: limit history by file size</span>
         <span class="n">write_debounce_seconds</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>  <span class="c1"># New: batch writes within this time window</span>
         <span class="n">compact_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># New: use compact JSON for large files</span>
-        <span class="n">datetime_key_format</span><span class="o">=</span><span class="s1">&#39;%y/</span><span class="si">%d</span><span class="s1">/%m %H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span>
+        <span class="n">datetime_key_format</span><span class="o">=</span><span class="s1">&#39;%y/</span><span class="si">%d</span><span class="s1">/%m %H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">load_existing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Constructor</span>
 <span class="sd">        </span>
@@ -501,6 +502,11 @@
 <span class="sd">            If True, use compact JSON (no indentation) for files larger than 1MB.</span>
 <span class="sd">            This significantly reduces file size and write time for large configs.</span>
 <span class="sd">            (default: True)</span>
+
+<span class="sd">        load_existing: bool</span>
+<span class="sd">            If False, ignore any existing configuration history at ``path`` and</span>
+<span class="sd">            initialize from ``defaults`` and ``overrides`` instead.  The new</span>
+<span class="sd">            configuration replaces the file on its first write.</span>
 <span class="sd">        </span>
 <span class="sd">        datetime_key_format: str</span>
 <span class="sd">            String defining the root level keys of the json-serialized file. </span>
@@ -521,7 +527,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         
         <span class="n">need_update</span><span class="o">=</span><span class="kc">False</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">load_existing</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
             <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sorted_history_keys</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1">#use latest key</span>
@@ -690,6 +696,23 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_write_timer</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_pending_write</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_do_write</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PersistentConfig.write_current_config">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig.write_current_config">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_current_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Write a plain, non-historical snapshot of the current configuration.&#39;&#39;&#39;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">temp_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">+</span> <span class="s1">&#39;.tmp&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">temp_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">temp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">temp_path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">raise</span></div>
 
     
     <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_history_size_mb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

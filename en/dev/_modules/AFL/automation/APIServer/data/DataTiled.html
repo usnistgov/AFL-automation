@@ -453,7 +453,8 @@
             <span class="n">structure_clients</span><span class="o">=</span><span class="s2">&quot;dask&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_tiled_entry_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_tiled_error</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arrays</span> <span class="o">=</span> <span class="p">{}</span></div>
 
 
@@ -468,6 +469,8 @@
 <div class="viewcode-block" id="DataTiled.finalize">
 <a class="viewcode-back" href="../../../../../_autosummary/AFL.automation.APIServer.data.html#AFL.automation.APIServer.data.DataTiled.finalize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_tiled_entry_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_tiled_error</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transmit</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
@@ -576,7 +579,12 @@
                 <span class="n">fxn</span> <span class="o">=</span> <span class="n">run_document_container</span><span class="o">.</span><span class="n">write_array</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize</span><span class="p">()</span>
                 <span class="n">fxn</span><span class="p">(</span><span class="n">main_data</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">entry_uuid</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_tiled_entry_id</span> <span class="o">=</span> <span class="n">entry_uuid</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_tiled_error</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">entry_uuid</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_tiled_entry_id</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_tiled_error</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Exception while transmitting to Tiled! </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">. Saving data in backup store.&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="s1">&#39;main_data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">():</span>
                 <span class="k">if</span> <span class="s1">&#39;main_dataset&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -600,7 +608,8 @@
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">.json&#39;</span><span class="p">),</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">(),</span><span class="n">f</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">backup_error</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to write backup JSON to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">backup_error</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to write backup JSON to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_path</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">backup_error</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
 </pre></div>
 

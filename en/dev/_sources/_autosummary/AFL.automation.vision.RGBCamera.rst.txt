@@ -1,0 +1,14 @@
+AFL.automation.vision.RGBCamera
+===============================
+
+.. automodule:: AFL.automation.vision.RGBCamera
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      NeutronSampleCell
+      RGBCamera
+   

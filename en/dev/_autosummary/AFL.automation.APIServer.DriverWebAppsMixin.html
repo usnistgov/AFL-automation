@@ -487,6 +487,9 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_template</span></code>(template_name_or_list, **context)</p></td>
 <td><p>Render a template by name with the given context.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_tiled_config</span></code>([afl_home])</p></td>
+<td><p>Resolve the newest Tiled server and API key from AFL global config.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -504,6 +507,15 @@
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">defaultdict</span></code></p></td>
 <td><p>defaultdict(default_factory=None, /, [...]) --&gt; dict with default factory</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Exceptions</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">TiledConfigurationError</span></code></p></td>
+<td><p>Raised when an AFL global configuration lacks a usable Tiled server.</p></td>
 </tr>
 </tbody>
 </table>

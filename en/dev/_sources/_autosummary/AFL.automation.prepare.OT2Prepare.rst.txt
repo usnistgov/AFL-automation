@@ -8,6 +8,7 @@ AFL.automation.prepare.OT2Prepare
 
    .. autosummary::
    
+      capture_task_video
       enforce_units
       listify
    

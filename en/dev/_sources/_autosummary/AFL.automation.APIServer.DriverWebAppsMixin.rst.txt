@@ -10,6 +10,7 @@ AFL.automation.APIServer.DriverWebAppsMixin
    
       from_uri
       render_template
+      resolve_tiled_config
    
    .. rubric:: Classes
 
@@ -19,4 +20,10 @@ AFL.automation.APIServer.DriverWebAppsMixin
       DriverWebAppsMixin
       In
       defaultdict
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      TiledConfigurationError
    

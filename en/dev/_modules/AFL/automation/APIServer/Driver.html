@@ -488,7 +488,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dropbox</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;Driver&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tiled_client</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Cached Tiled client</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache_order</span> <span class="o">=</span> <span class="p">[]</span>
@@ -512,15 +511,42 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.config.json&#39;</span><span class="p">)</span>
 
+        <span class="c1"># The shared launcher sets this for a clean launch, allowing a driver</span>
+        <span class="c1"># to be constructed from its declared defaults without consuming a</span>
+        <span class="c1"># prior PersistentConfig history.</span>
+        <span class="n">load_existing_config</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AFL_FRESH_DRIVER_CONFIG&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;1&#39;</span>
+
+        <span class="c1"># Every driver can control the verbosity of the APIServer it is</span>
+        <span class="c1"># attached to.  Keep the framework default out of PersistentConfig:</span>
+        <span class="c1"># launcher snapshots must contain only the driver&#39;s declared defaults</span>
+        <span class="c1"># (and any explicit overrides), rather than an implicit extra key.</span>
+        <span class="n">config_defaults</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span> <span class="k">if</span> <span class="n">defaults</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">log_level</span> <span class="o">=</span> <span class="n">config_defaults</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log_level&#39;</span><span class="p">,</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">PersistentConfig</span><span class="p">(</span>
             <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span>
-            <span class="n">defaults</span><span class="o">=</span> <span class="n">defaults</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="n">config_defaults</span><span class="p">,</span>
             <span class="n">overrides</span><span class="o">=</span> <span class="n">overrides</span><span class="p">,</span>
+            <span class="n">load_existing</span><span class="o">=</span><span class="n">load_existing_config</span><span class="p">,</span>
             <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_log_level</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log_level&#39;</span><span class="p">,</span> <span class="n">log_level</span><span class="p">))</span>
         
         <span class="c1"># collect inherited static directories</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">static_dirs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gather_static_dirs</span><span class="p">()</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_log_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_level</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set this driver&#39;s logger and its attached APIServer logger level.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid log_level </span><span class="si">{</span><span class="n">log_level</span><span class="si">!r}</span><span class="s2">; use a standard logging level &quot;</span>
+                <span class="s2">&quot;such as DEBUG, INFO, WARNING, ERROR, or CRITICAL.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;logger&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;logger&#39;</span><span class="p">):</span>
@@ -597,6 +623,10 @@
 <div class="viewcode-block" id="Driver.set_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.set_config">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;log_level&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># Validate before persisting, then update the active server without</span>
+            <span class="c1"># requiring a restart.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_log_level</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;log_level&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span></div>
 
         <span class="c1"># if (&#39;driver&#39; in kwargs) and (kwargs[&#39;driver&#39;] is not None):</span>

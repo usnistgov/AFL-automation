@@ -426,7 +426,7 @@
   <h1>Source code for AFL.automation.vision</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Vision drivers and reusable image-processing helpers.&quot;&quot;&quot;</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ImageProcessing&quot;</span><span class="p">,</span> <span class="s2">&quot;PiCameraDriver&quot;</span><span class="p">,</span> <span class="s2">&quot;OT2RidingCam&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ImageProcessing&quot;</span><span class="p">,</span> <span class="s2">&quot;PiCameraDriver&quot;</span><span class="p">,</span> <span class="s2">&quot;OT2RidingCam&quot;</span><span class="p">,</span> <span class="s2">&quot;RGBCamera&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="__getattr__">
@@ -445,6 +445,10 @@
         <span class="kn">from</span><span class="w"> </span><span class="nn">.OT2RidingCam</span><span class="w"> </span><span class="kn">import</span> <span class="n">OT2RidingCam</span>
 
         <span class="k">return</span> <span class="n">OT2RidingCam</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;RGBCamera&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.RGBCamera</span><span class="w"> </span><span class="kn">import</span> <span class="n">RGBCamera</span>
+
+        <span class="k">return</span> <span class="n">RGBCamera</span>
     <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;module </span><span class="si">{</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> has no attribute </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 </pre></div>

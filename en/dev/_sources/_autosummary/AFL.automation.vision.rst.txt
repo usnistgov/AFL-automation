@@ -13,3 +13,4 @@ AFL.automation.vision
    ImageProcessing
    OT2RidingCam
    PiCameraDriver
+   RGBCamera

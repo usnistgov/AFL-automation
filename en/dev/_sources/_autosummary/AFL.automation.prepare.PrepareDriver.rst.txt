@@ -8,7 +8,9 @@ AFL.automation.prepare.PrepareDriver
 
    .. autosummary::
    
+      capture_task_video
       listify
+      wraps
    
    .. rubric:: Classes
 

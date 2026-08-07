@@ -561,7 +561,14 @@
                     <span class="k">break</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
 
-        <span class="c1">#check the return info of the command we waited on</span>
+        <span class="c1"># Return the completed task that was requested, including verified</span>
+        <span class="c1"># Tiled write metadata when the server has a DataTiled backend.</span>
+        <span class="k">if</span> <span class="n">target_uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">completed_task</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                <span class="n">task</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">task</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">target_uuid</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">completed_task</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;meta&#39;</span><span class="p">]</span></div>
 
 

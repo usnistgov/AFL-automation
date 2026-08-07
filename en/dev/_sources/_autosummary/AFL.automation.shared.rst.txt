@@ -18,7 +18,9 @@ AFL.automation.shared
    ServerDiscovery
    exceptions
    mock_eic_client
+   samplecells
    serialization
+   tiled
    units
    utilities
    warnings

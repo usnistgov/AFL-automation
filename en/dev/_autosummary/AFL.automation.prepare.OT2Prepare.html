@@ -479,10 +479,13 @@
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">enforce_units</span></code>(value, unit_type)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">capture_task_video</span></code>(output_filename)</p></td>
+<td><p>Optionally record one driver task when its runtime flag is enabled.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">enforce_units</span></code>(value, unit_type)</p></td>
 <td><p>Ensure that a number has units and convert to the default_units</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">listify</span></code>(obj)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">listify</span></code>(obj)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -778,7 +781,7 @@ the stock’s configured name.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.prepare.OT2Prepare.OT2Prepare.transfer_to_catch">
-<span class="sig-name descname"><span class="pre">transfer_to_catch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2Prepare.html#OT2Prepare.transfer_to_catch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2Prepare.OT2Prepare.transfer_to_catch" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">transfer_to_catch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capture_task_video</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2Prepare.html#OT2Prepare.transfer_to_catch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2Prepare.OT2Prepare.transfer_to_catch" title="Link to this definition">#</a></dt>
 <dd><p>Transfer a prepared sample into the configured catch destination.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

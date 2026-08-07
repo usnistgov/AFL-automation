@@ -426,6 +426,7 @@
   <h1>Source code for AFL.automation.prepare.PrepareDriver</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.MassBalance</span><span class="w"> </span><span class="kn">import</span> <span class="n">MassBalance</span>
@@ -434,6 +435,25 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.mixcalc.Solution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Solution</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.PersistentConfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">PersistentConfig</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">listify</span>
+
+
+<div class="viewcode-block" id="capture_task_video">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.capture_task_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">capture_task_video</span><span class="p">(</span><span class="n">output_filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optionally record one driver task when its runtime flag is enabled.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;capture_task_video&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start_task_video</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">output_filename</span><span class="o">=</span><span class="n">output_filename</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_finish_task_video</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">wrapped</span>
+    <span class="k">return</span> <span class="n">decorator</span></div>
+
 
 
 <div class="viewcode-block" id="PrepareDriver">
@@ -515,6 +535,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_balance_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">enable_multistep_dilution</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plan one target through the common MassBalance result contract.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_stock_volume_fraction_sources</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="n">mb</span> <span class="o">=</span> <span class="n">MassBalance</span><span class="p">(</span><span class="n">minimum_volume</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;minimum_volume&quot;</span><span class="p">,</span> <span class="s2">&quot;100 ul&quot;</span><span class="p">))</span>
         <span class="n">mb</span><span class="o">.</span><span class="n">stocks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stocks</span><span class="p">)</span>
         <span class="n">target_solution</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">apply_fixed_comps</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
@@ -534,6 +555,32 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_pipette_action_plan</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">protocol</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">entry</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_stock_volume_fraction_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure a direct stock recipe only names currently available stocks.&quot;&quot;&quot;</span>
+        <span class="n">requested_stocks</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stock_volume_fractions&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">requested_stocks</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">available_stocks</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="s2">&quot;stock_group&quot;</span><span class="p">,</span> <span class="n">stock</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stocks</span>
+        <span class="p">}</span>
+        <span class="n">missing_stocks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">requested_stocks</span><span class="p">)</span> <span class="o">-</span> <span class="n">available_stocks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">missing_stocks</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">configured_stocks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;unnamed&gt;&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stocks&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stock</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">configured_summary</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">configured_stocks</span><span class="p">)</span> <span class="k">if</span> <span class="n">configured_stocks</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Direct stock recipe requires available configured stock(s): &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_stocks</span><span class="p">)</span><span class="si">}</span><span class="s2">. Configure or restore these stocks before &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;retrying. Currently configured stocks: </span><span class="si">{</span><span class="n">configured_summary</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
 <div class="viewcode-block" id="PrepareDriver.is_feasible">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.is_feasible">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_feasible</span><span class="p">(</span>
@@ -543,6 +590,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="n">targets_to_check</span> <span class="o">=</span> <span class="n">listify</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_stocks</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_feasibility_errors</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">enable_multistep_dilution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">enable_multistep_dilution</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enable_multistep_dilution&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
 
@@ -552,11 +600,13 @@
                 <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_balance_target</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">))</span>
                 <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;balanced_target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">if</span> <span class="n">entry</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Exception during feasibility check for target &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unnamed&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Feasibility check for target </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unnamed&#39;</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_feasibility_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span></div>
 
@@ -755,11 +805,13 @@
 
 <div class="viewcode-block" id="PrepareDriver.prepare">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.prepare">[docs]</a>
+    <span class="nd">@capture_task_video</span><span class="p">(</span><span class="s2">&quot;prepare.mp4&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">enable_multistep_dilution</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">capture_task_video</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="n">requested_target</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_fixed_comps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
@@ -784,18 +836,25 @@
             <span class="n">enable_multistep_dilution</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">enable_multistep_dilution</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">feasibility_results</span> <span class="ow">or</span> <span class="n">feasibility_results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">feasibility_error</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_feasibility_errors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_feasibility_errors</span>
+                <span class="k">else</span> <span class="s2">&quot;No mass-balance solution was found.&quot;</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_prepare_metadata</span><span class="p">(</span>
                 <span class="n">feasible_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">balanced_target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">planned_mass_transfers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">procedure_plan</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">feasibility_error</span><span class="o">=</span><span class="n">feasibility_error</span><span class="p">,</span>
                 <span class="n">execution_success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Target composition </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unnamed target&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not feasible &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;based on mass balance calculations&quot;</span><span class="p">,</span>
-                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Target composition </span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unnamed target&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not feasible: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feasibility_error</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="n">feasible_result</span> <span class="o">=</span> <span class="n">feasibility_results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>

@@ -774,6 +774,7 @@
         <span class="k">if</span> <span class="n">location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">sources</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specify either top-level location or sources, not both&quot;</span><span class="p">)</span>
 
+        <span class="n">has_explicit_sources</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">sources</span><span class="p">:</span>
             <span class="n">normalized_sources</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_normalize_stock_source</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
@@ -801,7 +802,11 @@
             <span class="n">seen_locations</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">location_key</span><span class="p">)</span>
 
         <span class="n">normalized</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">normalized</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;total_volume&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="c1"># A stock-level total volume defines the composition used by every</span>
+        <span class="c1"># source.  Preserve it for explicit multi-source stocks; each</span>
+        <span class="c1"># source&#39;s initial_volume is inventory, not a separate recipe.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_explicit_sources</span><span class="p">:</span>
+            <span class="n">normalized</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;total_volume&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">normalized</span><span class="p">[</span><span class="s1">&#39;sources&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized_sources</span>
         <span class="k">return</span> <span class="n">normalized</span>
 
@@ -862,7 +867,10 @@
                 <span class="n">remaining_volume_qty</span> <span class="o">=</span> <span class="n">enforce_units</span><span class="p">(</span><span class="n">remaining_volume</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">remaining_volume_qty</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;ul&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="n">runtime_config</span><span class="p">[</span><span class="s1">&#39;total_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remaining_volume</span>
+                <span class="k">if</span> <span class="n">runtime_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;total_volume&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">runtime_config</span><span class="p">[</span><span class="s1">&#39;total_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remaining_volume</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">runtime_config</span><span class="p">[</span><span class="s1">&#39;_source_remaining_volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remaining_volume</span>
             <span class="n">runtime_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">runtime_config</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">runtime_configs</span>
 
@@ -886,12 +894,17 @@
                     <span class="n">source_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_locations</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">source_locations</span>
                 <span class="p">)</span>
             <span class="k">for</span> <span class="n">runtime_config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_stock_configs</span><span class="p">(</span><span class="n">stock_config</span><span class="p">):</span>
+                <span class="n">source_remaining_volume</span> <span class="o">=</span> <span class="n">runtime_config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span>
+                    <span class="s1">&#39;_source_remaining_volume&#39;</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="p">)</span>
                 <span class="k">if</span> <span class="n">capture_diagnostics</span><span class="p">:</span>
                     <span class="n">stock</span><span class="p">,</span> <span class="n">diag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_solution_with_diagnostics</span><span class="p">(</span><span class="n">runtime_config</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">diag</span><span class="p">:</span>
                         <span class="n">diagnostics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diag</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">stock</span> <span class="o">=</span> <span class="n">Solution</span><span class="p">(</span><span class="o">**</span><span class="n">runtime_config</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">source_remaining_volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">stock</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">measure_out</span><span class="p">(</span><span class="n">source_remaining_volume</span><span class="p">)</span>
                 <span class="n">stock</span><span class="o">.</span><span class="n">stock_group</span> <span class="o">=</span> <span class="n">stock_config</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
                 <span class="n">stock</span><span class="o">.</span><span class="n">stock_id</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_make_stock_source_id</span><span class="p">(</span><span class="n">stock_config</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">stock</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>

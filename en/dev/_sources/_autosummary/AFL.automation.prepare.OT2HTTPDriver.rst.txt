@@ -9,6 +9,7 @@ AFL.automation.prepare.OT2HTTPDriver
    .. autosummary::
    
       ceil
+      floor
       listify
    
    .. rubric:: Classes
@@ -19,4 +20,7 @@ AFL.automation.prepare.OT2HTTPDriver
       OT2DeckWebAppMixin
       OT2HTTPDriver
       Path
+      combinations_with_replacement
+      datetime
+      timezone
    

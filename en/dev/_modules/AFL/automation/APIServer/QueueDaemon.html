@@ -524,6 +524,19 @@
                 <span class="n">masked_package</span><span class="p">[</span><span class="s1">&#39;task&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="k">return</span> <span class="n">masked_package</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_attach_tiled_result_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">package</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Record the verified Tiled write outcome for a completed task.&quot;&quot;&quot;</span>
+        <span class="n">tiled_entry_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;last_tiled_entry_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tiled_entry_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">package</span><span class="p">[</span><span class="s2">&quot;meta&quot;</span><span class="p">][</span><span class="s2">&quot;tiled_entry_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tiled_entry_id</span><span class="p">)</span>
+            <span class="n">package</span><span class="p">[</span><span class="s2">&quot;meta&quot;</span><span class="p">][</span><span class="s2">&quot;tiled_status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;written&quot;</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;last_tiled_error&quot;</span><span class="p">):</span>
+            <span class="n">package</span><span class="p">[</span><span class="s2">&quot;meta&quot;</span><span class="p">][</span><span class="s2">&quot;tiled_entry_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">package</span><span class="p">[</span><span class="s2">&quot;meta&quot;</span><span class="p">][</span><span class="s2">&quot;tiled_status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;fallback&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">package</span><span class="p">[</span><span class="s2">&quot;meta&quot;</span><span class="p">][</span><span class="s2">&quot;tiled_entry_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">package</span><span class="p">[</span><span class="s2">&quot;meta&quot;</span><span class="p">][</span><span class="s2">&quot;tiled_status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;not_configured&quot;</span>
         
 
 <div class="viewcode-block" id="QueueDaemon.run">
@@ -608,6 +621,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;main_dataframe&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_val</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_attach_tiled_result_metadata</span><span class="p">(</span><span class="n">masked_package</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">masked_package</span><span class="p">)</span><span class="c1">#history for this server restart</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">task_queue</span><span class="o">.</span><span class="n">iteration_id</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>

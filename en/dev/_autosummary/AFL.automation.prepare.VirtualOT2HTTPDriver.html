@@ -634,6 +634,9 @@ If omitted, the existing <code class="docutils literal notranslate"><span class=
 <li><p><strong>fast_mixing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – Reserved flag for higher-level callers.</p></li>
 <li><p><strong>touch_tip</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, touch the tip to the destination well after dispense.</p></li>
 <li><p><strong>tip_location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Explicit tip location to use, for example <code class="docutils literal notranslate"><span class="pre">&quot;1A1&quot;</span></code>.</p></li>
+<li><p><strong>tip_locations</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Candidate explicit tip locations.  When a transfer plan uses more
+than one pipette mount, the matching candidate is used for each
+mount.</p></li>
 <li><p><strong>**kwargs</strong> – Additional compatibility aliases such as <code class="docutils literal notranslate"><span class="pre">blowout</span></code> and
 <code class="docutils literal notranslate"><span class="pre">touchTip</span></code>.</p></li>
 </ul>

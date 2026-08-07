@@ -428,9 +428,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># type: ignore</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -438,6 +436,11 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.PersistentConfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">PersistentConfig</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotFoundError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.tiled</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TiledConfigurationError</span><span class="p">,</span>
+    <span class="n">get_afl_home</span><span class="p">,</span>
+    <span class="n">resolve_tiled_config</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span><span class="p">,</span> <span class="n">has_units</span>
 
 <span class="c1"># Global variable to store the last instantiated MixDB instance</span>
@@ -1075,45 +1078,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fallback_engine</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_afl_home</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">:</span>
-    <span class="n">home</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AFL_HOME&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">home</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
-        <span class="k">return</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;.afl&#39;</span>
+    <span class="k">return</span> <span class="n">get_afl_home</span><span class="p">()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_global_tiled_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-    <span class="n">config_path</span> <span class="o">=</span> <span class="n">_resolve_afl_home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;config.json&#39;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">config_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">resolve_tiled_config</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">TiledConfigurationError</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">config_data</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
-
-    <span class="c1"># PersistentConfig uses YY/DD/MM timestamps, so lexicographic sorting can</span>
-    <span class="c1"># pick an older entry. Parse the timestamps to select the true latest entry.</span>
-    <span class="n">datetime_key_format</span> <span class="o">=</span> <span class="s1">&#39;%y/</span><span class="si">%d</span><span class="s1">/%m %H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
-            <span class="n">config_data</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
-            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">key</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">datetime_key_format</span><span class="p">),</span>
-            <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">config_data</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
-        <span class="n">entry</span> <span class="o">=</span> <span class="n">config_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">continue</span>
-        <span class="n">server</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tiled_server&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="n">api_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tiled_api_key&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">server</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">server</span><span class="p">,</span> <span class="n">api_key</span>
-    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_default_engine_with_tiled_fallback</span><span class="p">(</span><span class="n">default_local_spec</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DBEngine</span><span class="p">:</span>

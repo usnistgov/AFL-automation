@@ -75,9 +75,18 @@ else:
         ca_status_port = 5064
 
 if len(AFL_GLOBAL_CONFIG['tiled_server'])>0:
-        data = DataTiled(AFL_GLOBAL_CONFIG['tiled_server'],
-                api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
-                backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
+        tiled_server = AFL_GLOBAL_CONFIG['tiled_server']
+        try:
+                data = DataTiled(tiled_server,
+                        api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
+                        backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
+        except Exception as exc:
+                print(
+                        f'Warning: unable to connect to configured Tiled server {tiled_server!r}: {exc}. '
+                        'Continuing without a Tiled data backend.',
+                        file=sys.stderr,
+                )
+                data = None
 else:
         data = None
 

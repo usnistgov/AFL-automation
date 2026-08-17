@@ -18,7 +18,40 @@ seabreeze = lazy.load("seabreeze", require="AFL-automation[seabreeze]")
 
 
 class SeabreezeUVVis(Driver):
-    """Collect spectra from a SeaBreeze-compatible UV-Vis spectrometer."""
+    """Collect spectra from a SeaBreeze-compatible UV-Vis spectrometer.
+
+    Other Parameters
+    ----------------
+    correct_dark_counts : bool, default=False
+        Pass SeaBreeze's device-specific dark-count correction option to each
+        acquired spectrum. This is separate from the stored ``dark`` spectrum
+        used for transmission reduction.
+    correct_nonlinearity : bool, default=False
+        Pass SeaBreeze's detector nonlinearity correction option to each
+        acquired spectrum when supported by the device.
+    exposure : float, default=0.010
+        Spectrometer integration time in seconds.
+    exposure_delay : float, default=0
+        Additional delay in seconds between consecutively acquired frames.
+    save_single_scan : bool, default=False
+        Whether acquired spectra are also written to the configured HDF5 file.
+    file_name : str, default="test.h5"
+        HDF5 file name used when ``save_single_scan`` is enabled.
+    file_path : str or pathlib.Path, default="."
+        Directory containing the HDF5 file written when ``save_single_scan``
+        is enabled.
+    reference : str, default="reference_spectrum.npz"
+        Illuminated reference locator. A value ending in ``.npz`` is a local
+        filename below the driver's ``uvvis`` directory; any other non-empty
+        value is a Tiled ``run_documents`` entry ID.
+    air : str, default="air_reference_spectrum.npz"
+        Optional air-reference locator used to report the ``mean_air``
+        diagnostic. Local and Tiled values are selected as for ``reference``.
+    dark : str, default="dark_spectrum.npz"
+        Dark-spectrum locator subtracted from sample and reference spectra
+        during transmission reduction. Local and Tiled values are selected as
+        for ``reference``.
+    """
 
     defaults = {
         "correct_dark_counts": False,
@@ -28,10 +61,9 @@ class SeabreezeUVVis(Driver):
         "save_single_scan": False,
         "file_name": "test.h5",
         "file_path": ".",
-        "reference_file_name": "reference_spectrum.npz",
-        "air_reference_file_name": "air_reference_spectrum.npz",
-        "reference_tiled_entry_id": "",
-        "air_tiled_entry_id": "",
+        "reference": "reference_spectrum.npz",
+        "air": "air_reference_spectrum.npz",
+        "dark": "dark_spectrum.npz",
     }
 
     _LEGACY_CONFIG_KEYS = {
@@ -81,12 +113,28 @@ class SeabreezeUVVis(Driver):
                 stacklevel=2,
             )
         self.log_info("Configuring SeaBreeze using backend %s" % backend)
-        seabreeze.use(backend)
-
-        from seabreeze.spectrometers import Spectrometer, list_devices
+        try:
+            # ``seabreeze`` is a lazy proxy so importing this driver remains
+            # possible on systems without the optional hardware dependency.
+            # Accessing it here resolves the proxy at the first point the SDK
+            # is actually required.
+            seabreeze.use(backend)
+            from seabreeze.spectrometers import Spectrometer, list_devices
+        except ImportError as error:
+            raise RuntimeError(
+                "SeaBreeze could not be loaded. Install the optional dependency "
+                "with 'pip install AFL-automation[seabreeze]' and verify its "
+                "native dependencies are available."
+            ) from error
 
         self.log_info("Attempting to list spectrometers.")
-        self.log_info("SeaBreeze sees devices: %s" % list_devices())
+        devices = list_devices()
+        self.log_info("SeaBreeze sees devices: %s" % devices)
+        if not devices:
+            raise RuntimeError(
+                "SeaBreeze did not detect any spectrometers. Check that the "
+                "instrument is connected, powered, and accessible to this process."
+            )
         if device_serial is None:
             self.log_info("Connecting to the first available spectrometer.")
             self.spectrometer = Spectrometer.from_first_available()
@@ -252,11 +300,11 @@ class SeabreezeUVVis(Driver):
             output_file.create_dataset(str(uuid.uuid1()), data=data)
 
     def _reference_path(self, reference_name: str) -> Path:
-        """Return the AFL-home path for a local reduction reference.
+        """Return the AFL-home path for a locally configured reference.
 
         Parameters
         ----------
-        reference_name : {"reference", "air"}
+        reference_name : {"reference", "air", "dark"}
             Reference to locate.
 
         Returns
@@ -267,15 +315,33 @@ class SeabreezeUVVis(Driver):
         Raises
         ------
         ValueError
-            If ``reference_name`` is unsupported.
+            If the slot is unsupported or is configured as a Tiled entry.
         """
-        if reference_name == "reference":
-            file_name = self.config["reference_file_name"]
-        elif reference_name == "air":
-            file_name = self.config["air_reference_file_name"]
-        else:
-            raise ValueError("reference_name must be either 'reference' or 'air'.")
-        return self._reference_directory / file_name
+        locator = self._reference_locator(reference_name)
+        if self._reference_source(reference_name) != "local":
+            raise ValueError(
+                f"The {reference_name} locator {locator!r} is a Tiled entry, "
+                "not a local .npz file."
+            )
+        return self._reference_directory / locator
+
+    def _reference_locator(self, reference_name: str) -> str:
+        """Return the configured local-file or Tiled-entry locator for a slot."""
+        if reference_name not in {"reference", "air", "dark"}:
+            raise ValueError(
+                "reference_name must be one of 'reference', 'air', or 'dark'."
+            )
+        locator = self.config[reference_name]
+        if not isinstance(locator, str) or not locator.strip():
+            raise ValueError(
+                f"The {reference_name} locator must be a non-empty string."
+            )
+        return locator.strip()
+
+    def _reference_source(self, reference_name: str) -> str:
+        """Classify a reference locator as a local file or Tiled entry."""
+        locator = self._reference_locator(reference_name)
+        return "local" if locator.lower().endswith(".npz") else "tiled"
 
     def _has_tiled_connection(self) -> bool:
         """Return whether the driver has an initialized Tiled client.
@@ -287,36 +353,55 @@ class SeabreezeUVVis(Driver):
         """
         return getattr(getattr(self, "data", None), "tiled_client", None) is not None
 
-    def _reference_tiled_entry_key(self, reference_name: str) -> str:
-        """Return the configuration key for a reference's Tiled entry ID."""
-        if reference_name == "reference":
-            return "reference_tiled_entry_id"
-        if reference_name == "air":
-            return "air_tiled_entry_id"
-        raise ValueError("reference_name must be either 'reference' or 'air'.")
-
     def _has_reference(self, reference_name: str) -> bool:
         """Return whether the requested reference is available from its active source.
 
         Parameters
         ----------
-        reference_name : {"reference", "air"}
+        reference_name : {"reference", "air", "dark"}
             Reference slot to check.
 
         Returns
         -------
         bool
-            ``True`` if Tiled has a configured entry ID or a local reference exists.
+            ``True`` if the configured local file exists or a Tiled connection
+            is available for the configured entry ID.
         """
+        if self._reference_source(reference_name) == "tiled":
+            return self._has_tiled_connection()
         return (
-            (
-                self._has_tiled_connection()
-                and bool(self.config[self._reference_tiled_entry_key(reference_name)])
-            )
-            or
             reference_name in self._reference_cache
             or self._reference_path(reference_name).is_file()
         )
+
+    def _validate_reference_save_target(self, reference_name: str) -> None:
+        """Ensure a configured reference save destination is usable."""
+        if (
+            self._reference_source(reference_name) == "tiled"
+            and not self._has_tiled_connection()
+        ):
+            locator = self._reference_locator(reference_name)
+            raise ValueError(
+                f"The {reference_name} locator {locator!r} requires an "
+                "initialized Tiled connection to save a reference."
+            )
+
+    def _reference_metadata(self, reference_name: str) -> dict:
+        """Return provenance metadata for a configured reference slot."""
+        locator = self._reference_locator(reference_name)
+        source = self._reference_source(reference_name)
+        metadata = {
+            f"{reference_name}_locator": locator,
+            f"{reference_name}_source": source,
+        }
+        if source == "local":
+            path_key = (
+                "reference_path"
+                if reference_name == "reference"
+                else f"{reference_name}_reference_path"
+            )
+            metadata[path_key] = str(self._reference_path(reference_name))
+        return metadata
 
     def _save_reference(
         self,
@@ -324,7 +409,7 @@ class SeabreezeUVVis(Driver):
         spectrum_std: np.ndarray,
         reference_name: str,
     ) -> Path:
-        """Cache and persist a reference spectrum for local reduction.
+        """Cache and persist a reference spectrum at its local-file locator.
 
         Parameters
         ----------
@@ -332,14 +417,24 @@ class SeabreezeUVVis(Driver):
             Mean intensity of the reference measurement.
         spectrum_std : numpy.ndarray
             Standard deviation of the reference measurement.
-        reference_name : {"reference", "air"}
+        reference_name : {"reference", "air", "dark"}
             Reference slot to update.
 
         Returns
         -------
         pathlib.Path
             Path of the persisted compressed NumPy archive.
+
+        Raises
+        ------
+        ValueError
+            If the configured locator is a Tiled entry.
         """
+        if self._reference_source(reference_name) != "local":
+            raise ValueError(
+                f"The {reference_name} locator is a Tiled entry and cannot be "
+                "saved as a local .npz file."
+            )
         self._reference_cache[reference_name] = (
             np.array(spectrum_mean, copy=True),
             np.array(spectrum_std, copy=True),
@@ -355,11 +450,11 @@ class SeabreezeUVVis(Driver):
         return reference_path
 
     def _load_reference(self, reference_name: str) -> tuple:
-        """Load a cached or persisted local reference spectrum.
+        """Load a reference spectrum from its configured source.
 
         Parameters
         ----------
-        reference_name : {"reference", "air"}
+        reference_name : {"reference", "air", "dark"}
             Reference slot to load.
 
         Returns
@@ -370,9 +465,14 @@ class SeabreezeUVVis(Driver):
         Raises
         ------
         ValueError
-            If no reference exists or its wavelength grid differs from the
-            connected spectrometer.
+            If the configured source is unavailable or incompatible.
         """
+        if self._reference_source(reference_name) == "tiled":
+            return self._load_tiled_reference(reference_name)
+        return self._load_local_reference(reference_name)
+
+    def _load_local_reference(self, reference_name: str) -> tuple:
+        """Load a cached or persisted local ``.npz`` reference spectrum."""
         cached_reference = self._reference_cache.get(reference_name)
         if cached_reference is not None:
             return cached_reference
@@ -381,7 +481,8 @@ class SeabreezeUVVis(Driver):
         if not reference_path.is_file():
             raise ValueError(
                 f"No local {reference_name} reference exists at {reference_path}. "
-                "Acquire one with save_reference() or measure(set_reference=True)."
+                "Acquire one with save_reference() or the matching "
+                "measure(set_reference=True, set_air=True, or set_dark=True) option."
             )
 
         with np.load(reference_path) as reference_data:
@@ -401,7 +502,7 @@ class SeabreezeUVVis(Driver):
 
         Parameters
         ----------
-        reference_name : {"reference", "air"}
+        reference_name : {"reference", "air", "dark"}
             Reference slot to load.
 
         Returns
@@ -412,15 +513,18 @@ class SeabreezeUVVis(Driver):
         Raises
         ------
         ValueError
-            If the reference entry ID is unset or no longer exists in Tiled.
+            If a Tiled connection is unavailable or the entry no longer exists.
         """
-        reference_entry_id = self.config[
-            self._reference_tiled_entry_key(reference_name)
-        ]
-        if not reference_entry_id:
+        reference_entry_id = self._reference_locator(reference_name)
+        if self._reference_source(reference_name) != "tiled":
             raise ValueError(
-                f"No Tiled {reference_name} entry is configured. Acquire a "
-                "reference with set_reference=True or set_air=True."
+                f"The {reference_name} locator is a local .npz file, not a "
+                "Tiled entry."
+            )
+        if not self._has_tiled_connection():
+            raise ValueError(
+                f"The {reference_name} locator {reference_entry_id!r} requires "
+                "an initialized Tiled connection."
             )
         try:
             reference_entry = self.data.tiled_client["run_documents"][
@@ -439,7 +543,7 @@ class SeabreezeUVVis(Driver):
         return reference_spectrum, reference_std
 
     def post_tiled_finalize(self, task, tiled_entry_id):
-        """Persist the exact Tiled entry written for a reference acquisition."""
+        """Persist a finalized Tiled ID for references configured as Tiled."""
         task_name = task.get("task_name")
         reference_names = []
         if task_name == "save_reference":
@@ -449,8 +553,11 @@ class SeabreezeUVVis(Driver):
                 reference_names.append("reference")
             if task.get("set_air"):
                 reference_names.append("air")
+            if task.get("set_dark"):
+                reference_names.append("dark")
         for reference_name in reference_names:
-            self.config[self._reference_tiled_entry_key(reference_name)] = tiled_entry_id
+            if self._reference_source(reference_name) == "tiled":
+                self.config[reference_name] = tiled_entry_id
 
     @Driver.queued()
     def measure(
@@ -460,6 +567,7 @@ class SeabreezeUVVis(Driver):
         absorbance: bool = True,
         set_reference: bool = False,
         set_air: bool = False,
+        set_dark: bool = False,
         exposure: Optional[float] = None,
     ) -> xr.Dataset:
         """Acquire spectra and optionally reduce them against a reference.
@@ -472,12 +580,15 @@ class SeabreezeUVVis(Driver):
             Whether to include transmission and extinction variables in
             addition to the measured intensity spectrum.
         absorbance : bool, default=True
-            Retained for compatibility. Both transmission and extinction are
-            stored when ``reduced`` is ``True``.
+            Whether to include extinction (absorbance) variables when
+            ``reduced`` is ``True``. Transmission variables are always
+            included for a reduced measurement.
         set_reference : bool, default=False
             Save this measurement as the reference source.
         set_air : bool, default=False
             Save this measurement as the air reference source.
+        set_dark : bool, default=False
+            Save this measurement as the dark reference source.
         exposure : float, optional
             Temporary integration time in seconds.
 
@@ -493,38 +604,44 @@ class SeabreezeUVVis(Driver):
         """
         if exposure is not None:
             self.set_exposure(exposure)
+        for reference_name, should_save in (
+            ("reference", set_reference),
+            ("air", set_air),
+            ("dark", set_dark),
+        ):
+            if should_save:
+                self._validate_reference_save_target(reference_name)
 
         raw_spectra = self._acquire_spectra(n_frames)
         raw_mean = np.mean(raw_spectra, axis=0)
         raw_std = np.std(raw_spectra, axis=0)
 
-        if set_reference and self._has_tiled_connection():
-            reference_path = self._reference_path("reference")
-        elif set_reference:
-            reference_path = self._save_reference(raw_mean, raw_std, "reference")
-        else:
-            reference_path = self._reference_path("reference")
-        if set_air and self._has_tiled_connection():
-            air_reference_path = self._reference_path("air")
-        elif set_air:
-            air_reference_path = self._save_reference(raw_mean, raw_std, "air")
-        else:
-            air_reference_path = self._reference_path("air")
+        for reference_name, should_save in (
+            ("reference", set_reference),
+            ("air", set_air),
+            ("dark", set_dark),
+        ):
+            if should_save and self._reference_source(reference_name) == "local":
+                self._save_reference(raw_mean, raw_std, reference_name)
 
         if reduced:
-            transmission, transmission_std = self.reduce(
-                raw_mean, raw_std, absorbance=False
+            reduction = self.reduce(
+                raw_mean,
+                raw_std,
+                transmission=True,
+                absorbance=absorbance,
             )
-            with np.errstate(divide="ignore", invalid="ignore"):
-                extinction = -np.log10(transmission)
-                extinction_std = transmission_std / (
-                    np.abs(transmission) * np.log(10)
-                )
 
         if not set_air and self._has_reference("air"):
-            air_spectrum, air_std = self.reduce(raw_mean, raw_std, reference_name="air")
-            mean_air = np.mean(air_spectrum)
-            std_air = np.mean(air_std)
+            air_reduction = self.reduce(
+                raw_mean,
+                raw_std,
+                absorbance=False,
+                transmission=True,
+                reference_name="air",
+            )
+            mean_air = np.mean(air_reduction["transmission"])
+            std_air = np.mean(air_reduction["transmission_std"])
         else:
             mean_air = None
             std_air = None
@@ -534,26 +651,21 @@ class SeabreezeUVVis(Driver):
 
         dataset = xr.Dataset()
         dataset.attrs.update(
-            mode="collect",
-            reference_path=str(reference_path),
-            air_reference_path=str(air_reference_path),
-            reference_source="tiled" if self._has_tiled_connection() else "local",
+            mode="measure",
             reduced=reduced,
             absorbance=absorbance,
             mean_air=mean_air,
             std_air=std_air,
         )
+        for reference_name in ("reference", "air", "dark"):
+            dataset.attrs.update(self._reference_metadata(reference_name))
         dataset["wavelength"] = ("wavelength", self.wavelengths[1:])
         dataset["all_spectra"] = (("frame", "wavelength"), raw_spectra)
         dataset["spectrum_raw"] = ("wavelength", raw_mean)
         dataset["spectrum_raw_std"] = ("wavelength", raw_std)
-        dataset["spectrum"] = ("wavelength", raw_mean)
-        dataset["spectrum_std"] = ("wavelength", raw_std)
         if reduced:
-            dataset["transmission"] = ("wavelength", transmission)
-            dataset["transmission_std"] = ("wavelength", transmission_std)
-            dataset["extinction"] = ("wavelength", extinction)
-            dataset["extinction_std"] = ("wavelength", extinction_std)
+            for variable_name, values in reduction.items():
+                dataset[variable_name] = ("wavelength", values)
         return dataset
 
     @Driver.queued()
@@ -569,9 +681,9 @@ class SeabreezeUVVis(Driver):
         ----------
         n_frames : int, default=1
             Number of spectra to average into the reference.
-        reference_name : {"reference", "air"}, default="reference"
-            Reference slot to update. Tiled is used when connected; otherwise
-            the reference is cached and persisted locally.
+        reference_name : {"reference", "air", "dark"}, default="reference"
+            Reference slot to update. Its configured locator selects the local
+            ``.npz`` or Tiled save destination.
         exposure : float, optional
             Temporary integration time in seconds.
 
@@ -582,13 +694,12 @@ class SeabreezeUVVis(Driver):
         """
         if exposure is not None:
             self.set_exposure(exposure)
+        self._validate_reference_save_target(reference_name)
         raw_spectra = self._acquire_spectra(n_frames)
         spectrum_mean = np.mean(raw_spectra, axis=0)
         spectrum_std = np.std(raw_spectra, axis=0)
-        if self._has_tiled_connection():
-            reference_path = self._reference_path(reference_name)
-        else:
-            reference_path = self._save_reference(
+        if self._reference_source(reference_name) == "local":
+            self._save_reference(
                 spectrum_mean, spectrum_std, reference_name
             )
 
@@ -596,8 +707,8 @@ class SeabreezeUVVis(Driver):
         dataset.attrs.update(
             mode="reference",
             reference_name=reference_name,
-            reference_path=str(reference_path),
         )
+        dataset.attrs.update(self._reference_metadata(reference_name))
         dataset["wavelength"] = ("wavelength", self.wavelengths[1:])
         dataset["spectrum_raw"] = ("wavelength", spectrum_mean)
         dataset["spectrum_raw_std"] = ("wavelength", spectrum_std)
@@ -609,13 +720,18 @@ class SeabreezeUVVis(Driver):
 
         Parameters
         ----------
-        reference_name : {"reference", "air"}, default="reference"
+        reference_name : {"reference", "air", "dark"}, default="reference"
             Local reference slot to inspect.
 
         Returns
         -------
         str
             Reference file path beneath ``AFL_HOME/uvvis``.
+
+        Raises
+        ------
+        ValueError
+            If the slot is configured as a Tiled entry.
         """
         return str(self._reference_path(reference_name))
 
@@ -625,8 +741,9 @@ class SeabreezeUVVis(Driver):
         data_raw_std: np.ndarray,
         absorbance: bool = True,
         reference_name: str = "reference",
-    ) -> tuple:
-        """Reduce a raw spectrum against the active reference source.
+        transmission: bool = True,
+    ) -> dict:
+        r"""Reduce a raw spectrum against the active reference and dark source.
 
         Parameters
         ----------
@@ -635,40 +752,83 @@ class SeabreezeUVVis(Driver):
         data_raw_std : numpy.ndarray
             Standard deviation of the raw sample intensity.
         absorbance : bool, default=True
-            Convert transmission to extinction, in absorbance units.
+            Include extinction (absorbance) and propagated-uncertainty arrays.
         reference_name : {"reference", "air"}, default="reference"
-            Reference slot to use. Tiled is used when connected; otherwise the
-            local in-memory/AFL-home reference is used.
+            Reference slot to use. Its configured locator selects the local or
+            Tiled source.
+        transmission : bool, default=True
+            Include transmission and propagated-uncertainty arrays.
 
         Returns
         -------
-        tuple of numpy.ndarray
-            Extinction and propagated uncertainty when ``absorbance`` is
-            ``True``; otherwise transmission and its uncertainty.
+        dict of numpy.ndarray
+            Mapping containing the requested arrays: ``transmission`` and
+            ``transmission_std`` and/or ``extinction`` and ``extinction_std``.
+
+        Raises
+        ------
+        ValueError
+            If neither transmission nor absorbance is requested.
+
+        Notes
+        -----
+        Let $S$, $R$, and $D$ be the mean sample, reference, and dark
+        intensities, respectively. The dark-corrected transmission is:
+
+        $$
+        T = \frac{S - D}{R - D}
+        $$
+
+        Assuming independent sample, reference, and dark uncertainties
+        $\sigma_S$, $\sigma_R$, and $\sigma_D$, its propagated uncertainty is:
+
+        $$
+        \sigma_T = \sqrt{
+            \left(\frac{\sigma_S}{R - D}\right)^2
+            + \left(\frac{(S - D)\sigma_R}{(R - D)^2}\right)^2
+            + \left(\frac{(S - R)\sigma_D}{(R - D)^2}\right)^2
+        }
+        $$
+
+        The returned ``extinction`` fields are absorbance values and use:
+
+        $$
+        A = -\log_{10}(T), \qquad
+        \sigma_A = \frac{\sigma_T}{|T|\ln(10)}
+        $$
         """
-        if (
-            self._has_tiled_connection()
-            and self.config[self._reference_tiled_entry_key(reference_name)]
-        ):
-            reference_spectrum, reference_std = self._load_tiled_reference(
-                reference_name
-            )
-        else:
-            reference_spectrum, reference_std = self._load_reference(reference_name)
+        if not transmission and not absorbance:
+            raise ValueError("At least one of transmission or absorbance must be True.")
+        reference_spectrum, reference_std = self._load_reference(reference_name)
+        dark_spectrum, dark_std = self._load_reference("dark")
         with np.errstate(divide="ignore", invalid="ignore"):
-            transmission = data_raw_mean / reference_spectrum
-            transmission_std = np.abs(transmission) * np.sqrt(
-                (data_raw_std / data_raw_mean) ** 2
-                + (reference_std / reference_spectrum) ** 2
+            numerator = data_raw_mean - dark_spectrum
+            denominator = reference_spectrum - dark_spectrum
+            transmission_values = numerator / denominator
+            # Propagate the independent sample, reference, and dark-spectrum
+            # uncertainties through T = (sample - dark) / (reference - dark).
+            transmission_std = np.sqrt(
+                (data_raw_std / denominator) ** 2
+                + (numerator * reference_std / denominator**2) ** 2
+                + (
+                    (data_raw_mean - reference_spectrum)
+                    * dark_std
+                    / denominator**2
+                ) ** 2
             )
+        result = {}
+        if transmission:
+            result["transmission"] = transmission_values
+            result["transmission_std"] = transmission_std
         if absorbance:
             with np.errstate(divide="ignore", invalid="ignore"):
-                extinction = -np.log10(transmission)
+                extinction = -np.log10(transmission_values)
                 extinction_std = transmission_std / (
-                    np.abs(transmission) * np.log(10)
+                    np.abs(transmission_values) * np.log(10)
                 )
-            return extinction, extinction_std
-        return transmission, transmission_std
+            result["extinction"] = extinction
+            result["extinction_std"] = extinction_std
+        return result
 
     # Compatibility API: preserve existing server routes and Python callers while
     # directing new integrations to PEP 8 names.
@@ -972,7 +1132,13 @@ class SeabreezeUVVis(Driver):
             kwargs["reference_name"] = (
                 "air" if legacy_reference_key == "air_uuid" else "reference"
             )
-        return self.reduce(*args, **kwargs)
+        legacy_absorbance = kwargs.get(
+            "absorbance", args[2] if len(args) > 2 else True
+        )
+        result = self.reduce(*args, **kwargs)
+        if legacy_absorbance:
+            return result["extinction"], result["extinction_std"]
+        return result["transmission"], result["transmission_std"]
 
     @staticmethod
     def _warn_deprecated(old_name: str, new_name: str) -> None:

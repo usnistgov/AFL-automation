@@ -1,6 +1,7 @@
 """Driver for Ocean Optics UV-Vis spectrometers supported by SeaBreeze."""
 
 import datetime
+from numbers import Real
 from pathlib import Path
 from typing import List, Optional
 import time
@@ -569,6 +570,7 @@ class SeabreezeUVVis(Driver):
         set_air: bool = False,
         set_dark: bool = False,
         exposure: Optional[float] = None,
+        wavelengths: Optional[list] = None,
     ) -> xr.Dataset:
         """Acquire spectra and optionally reduce them against a reference.
 
@@ -591,6 +593,10 @@ class SeabreezeUVVis(Driver):
             Save this measurement as the dark reference source.
         exposure : float, optional
             Temporary integration time in seconds.
+        wavelengths : list[float, float], optional
+            Inclusive ``[minimum, maximum]`` wavelength range in nm. When
+            supplied, only this range is reduced and included in the returned
+            dataset. References are always acquired and stored full-spectrum.
 
         Returns
         -------
@@ -604,6 +610,7 @@ class SeabreezeUVVis(Driver):
         """
         if exposure is not None:
             self.set_exposure(exposure)
+        wavelength_mask = self._wavelength_mask(wavelengths)
         for reference_name, should_save in (
             ("reference", set_reference),
             ("air", set_air),
@@ -624,12 +631,18 @@ class SeabreezeUVVis(Driver):
             if should_save and self._reference_source(reference_name) == "local":
                 self._save_reference(raw_mean, raw_std, reference_name)
 
+        selected_wavelengths = self.wavelengths[1:][wavelength_mask]
+        raw_spectra = raw_spectra[:, wavelength_mask]
+        raw_mean = raw_mean[wavelength_mask]
+        raw_std = raw_std[wavelength_mask]
+
         if reduced:
             reduction = self.reduce(
                 raw_mean,
                 raw_std,
                 transmission=True,
                 absorbance=absorbance,
+                wavelength_mask=wavelength_mask,
             )
 
         if not set_air and self._has_reference("air"):
@@ -639,6 +652,7 @@ class SeabreezeUVVis(Driver):
                 absorbance=False,
                 transmission=True,
                 reference_name="air",
+                wavelength_mask=wavelength_mask,
             )
             mean_air = np.mean(air_reduction["transmission"])
             std_air = np.mean(air_reduction["transmission_std"])
@@ -659,7 +673,7 @@ class SeabreezeUVVis(Driver):
         )
         for reference_name in ("reference", "air", "dark"):
             dataset.attrs.update(self._reference_metadata(reference_name))
-        dataset["wavelength"] = ("wavelength", self.wavelengths[1:])
+        dataset["wavelength"] = ("wavelength", selected_wavelengths)
         dataset["all_spectra"] = (("frame", "wavelength"), raw_spectra)
         dataset["spectrum_raw"] = ("wavelength", raw_mean)
         dataset["spectrum_raw_std"] = ("wavelength", raw_std)
@@ -667,6 +681,35 @@ class SeabreezeUVVis(Driver):
             for variable_name, values in reduction.items():
                 dataset[variable_name] = ("wavelength", values)
         return dataset
+
+    def _wavelength_mask(self, wavelengths: Optional[list]) -> np.ndarray:
+        """Validate a requested wavelength range and return its inclusive mask."""
+        available_wavelengths = self.wavelengths[1:]
+        if wavelengths is None:
+            return np.ones(available_wavelengths.shape, dtype=bool)
+        if (
+            not isinstance(wavelengths, list)
+            or len(wavelengths) != 2
+            or any(
+                isinstance(value, bool)
+                or not isinstance(value, Real)
+                or not np.isfinite(value)
+                for value in wavelengths
+            )
+        ):
+            raise ValueError(
+                "wavelengths must be a list of two finite numbers: [min, max]."
+            )
+
+        minimum, maximum = wavelengths
+        if minimum >= maximum:
+            raise ValueError("wavelengths must satisfy min < max.")
+        mask = (available_wavelengths >= minimum) & (available_wavelengths <= maximum)
+        if not np.any(mask):
+            raise ValueError(
+                "wavelengths does not include any wavelengths measured by this spectrometer."
+            )
+        return mask
 
     @Driver.queued()
     def save_reference(
@@ -742,6 +785,7 @@ class SeabreezeUVVis(Driver):
         absorbance: bool = True,
         reference_name: str = "reference",
         transmission: bool = True,
+        wavelength_mask: Optional[np.ndarray] = None,
     ) -> dict:
         r"""Reduce a raw spectrum against the active reference and dark source.
 
@@ -801,6 +845,11 @@ class SeabreezeUVVis(Driver):
             raise ValueError("At least one of transmission or absorbance must be True.")
         reference_spectrum, reference_std = self._load_reference(reference_name)
         dark_spectrum, dark_std = self._load_reference("dark")
+        if wavelength_mask is not None:
+            reference_spectrum = reference_spectrum[wavelength_mask]
+            reference_std = reference_std[wavelength_mask]
+            dark_spectrum = dark_spectrum[wavelength_mask]
+            dark_std = dark_std[wavelength_mask]
         with np.errstate(divide="ignore", invalid="ignore"):
             numerator = data_raw_mean - dark_spectrum
             denominator = reference_spectrum - dark_spectrum

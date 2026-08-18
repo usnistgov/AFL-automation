@@ -23,6 +23,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     defaults['load_timeout'] = 60
     
     defaults['arm_move_delay'] = 0.2
+    defaults['arm_move_timeout'] = 10
     defaults['vent_delay'] = 0.5
     defaults['rinse_program'] = [
                                 ('rinse1',5),
@@ -219,19 +220,37 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self._arm_interlock_check()
         self.relayboard.setChannels({'piston-vent':True,'arm-up':True,'arm-down':False})
         if self._USE_ARM_LIMITS:
-            while self.digitalin.state['ARM_UP']:
-                time.sleep(0.1)
+            self._wait_for_arm_limit('ARM_UP', 'up')
         else:
             time.sleep(self.config['arm_move_delay'])
         self.arm_state = 'UP'
+
+    def _wait_for_arm_limit(self, limit_name, direction):
+        """Wait for an active-low arm limit switch, with a bounded timeout."""
+        timeout = self.config['arm_move_timeout']
+        if timeout <= 0:
+            raise ValueError('arm_move_timeout must be greater than zero.')
+
+        self.log_info(
+            f'Waiting up to {timeout:g} s for arm to reach {direction} limit '
+            f'({limit_name}).'
+        )
+        start_time = time.monotonic()
+        while self.digitalin.state[limit_name]:
+            elapsed = time.monotonic() - start_time
+            if elapsed >= timeout:
+                raise TimeoutError(
+                    f'Arm did not reach the {direction} limit ({limit_name}) '
+                    f'within {timeout:g} s; input remains high.'
+                )
+            time.sleep(min(0.1, timeout - elapsed))
 
     def _arm_down(self):
         self._arm_interlock_check()
         self.relayboard.setChannels({'piston-vent':True,'arm-up':False,'arm-down':True})
         time.sleep(self.config['arm_move_delay'])
         if self._USE_ARM_LIMITS:
-            while self.digitalin.state['ARM_DOWN']:
-                time.sleep(0.1)
+            self._wait_for_arm_limit('ARM_DOWN', 'down')
         else:
             time.sleep(self.config['arm_move_delay'])
         self.arm_state = 'DOWN'

@@ -188,6 +188,63 @@ def test_measure_attaches_reduction_results_from_reduce(tmp_path):
     np.testing.assert_array_equal(dataset["extinction"], [0.3, 0.2])
 
 
+def test_measure_limits_dataset_and_reduction_to_requested_wavelengths(tmp_path):
+    driver = object.__new__(SeabreezeUVVis)
+    driver.config = {
+        "reference": "reference.npz",
+        "air": "air.npz",
+        "dark": "dark.npz",
+        "save_single_scan": False,
+    }
+    driver._reference_cache = {}
+    driver._reference_directory = tmp_path
+    driver.wavelengths = np.array([0.0, 400.0, 500.0, 600.0])
+    driver._acquire_spectra = lambda n_frames: np.array(
+        [[10.0, 20.0, 30.0], [14.0, 24.0, 34.0]]
+    )
+    captured = {}
+
+    def reduce(data_mean, data_std, **kwargs):
+        captured["mean"] = data_mean
+        captured["mask"] = kwargs["wavelength_mask"]
+        return {
+            "transmission": np.array([0.5, 0.6]),
+            "transmission_std": np.array([0.01, 0.02]),
+            "extinction": np.array([0.3, 0.2]),
+            "extinction_std": np.array([0.01, 0.02]),
+        }
+
+    driver.reduce = reduce
+
+    dataset = driver.measure(n_frames=2, reduced=True, wavelengths=[450, 650])
+
+    np.testing.assert_array_equal(dataset["wavelength"], [500.0, 600.0])
+    np.testing.assert_array_equal(dataset["all_spectra"], [[20.0, 30.0], [24.0, 34.0]])
+    np.testing.assert_array_equal(captured["mean"], [22.0, 32.0])
+    np.testing.assert_array_equal(captured["mask"], [False, True, True])
+
+
+@pytest.mark.parametrize(
+    "wavelengths",
+    ([500], [500, 500], [600, 500], (400, 500), ["400", 500], [1200, 1300]),
+)
+def test_measure_rejects_invalid_wavelength_ranges(tmp_path, wavelengths):
+    driver = object.__new__(SeabreezeUVVis)
+    driver.config = {
+        "reference": "reference.npz",
+        "air": "air.npz",
+        "dark": "dark.npz",
+        "save_single_scan": False,
+    }
+    driver._reference_cache = {}
+    driver._reference_directory = tmp_path
+    driver.wavelengths = np.array([0.0, 400.0, 500.0])
+    driver._acquire_spectra = lambda n_frames: np.array([[10.0, 20.0]])
+
+    with pytest.raises(ValueError, match="wavelengths"):
+        driver.measure(n_frames=1, wavelengths=wavelengths)
+
+
 def test_post_tiled_finalize_updates_tiled_locator():
     driver = object.__new__(SeabreezeUVVis)
     driver.config = {"air": "old-entry"}

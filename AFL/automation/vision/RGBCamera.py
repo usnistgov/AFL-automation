@@ -401,7 +401,7 @@ class RGBCamera(NeutronSampleCell, Driver):
         img_metadata,
     ):
         """
-        Build an xarray Dataset containing RGB measurements, mask, and metadata.
+        Build an xarray Dataset containing RGB measurements, images, mask, and metadata.
         """
         ds = xr.Dataset()
         ds.attrs["name"] = name
@@ -426,6 +426,11 @@ class RGBCamera(NeutronSampleCell, Driver):
             coords={"channel": ["R", "G", "B"]},
         )
         ds["img_bgr"] = (("height", "width", "channel"), measurement_img)
+        ds["img_rgb"] = (
+            ("height", "width", "rgb_channel"),
+            measurement_img[..., ::-1],
+        )
+        ds = ds.assign_coords(rgb_channel=["R", "G", "B"])
         ds["mask"] = (("height", "width"), mask)
 
         return ds

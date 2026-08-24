@@ -41,23 +41,30 @@ class SeabreezeUVVis(Driver):
     file_path : str or pathlib.Path, default="."
         Directory containing the HDF5 file written when ``save_single_scan``
         is enabled.
-    reference : str, default="reference_spectrum.npz"
-        Illuminated reference locator. A value ending in ``.npz`` is a local
-        filename below the driver's ``uvvis`` directory; any other non-empty
-        value is a Tiled ``run_documents`` entry ID.
-    air : str, default="air_reference_spectrum.npz"
+    reference : str, default="AFL_HOME/uvvis/reference_spectrum.npz"
+        Illuminated reference path. A value ending in ``.npz`` is a local
+        file path; any other non-empty value is a Tiled ``run_documents``
+        entry ID.
+    air : str, default="AFL_HOME/uvvis/air_reference_spectrum.npz"
         Optional air-reference locator used to report the ``mean_air``
         diagnostic. Local and Tiled values are selected as for ``reference``.
-    dark : str, default="dark_spectrum.npz"
+    dark : str, default="AFL_HOME/uvvis/dark_spectrum.npz"
         Dark-spectrum locator subtracted from sample and reference spectra
-        during transmission reduction. Local and Tiled values are selected as
-        for ``reference``.
+        when dark-spectrum subtraction is enabled. Local and Tiled values are
+        selected as for ``reference``.
+    use_dark_spectrum : bool, default=False
+        Whether to subtract the stored dark spectrum from sample and reference
+        spectra during transmission reduction.
+    transmission_denominator_epsilon : float, default=1e-3
+        Minimum magnitude used for the dark-corrected reference denominator.
+        This prevents a nearly identical reference and dark spectrum from
+        creating an unstable transmission ratio.
     """
 
     defaults = {
         "correct_dark_counts": False,
         "correct_nonlinearity": False,
-        "exposure": 0.010,
+        "exposure": 0.1,
         "exposure_delay": 0,
         "save_single_scan": False,
         "file_name": "test.h5",
@@ -65,6 +72,8 @@ class SeabreezeUVVis(Driver):
         "reference": "reference_spectrum.npz",
         "air": "air_reference_spectrum.npz",
         "dark": "dark_spectrum.npz",
+        "use_dark_spectrum": False,
+        "transmission_denominator_epsilon": 1e-3,
     }
 
     _LEGACY_CONFIG_KEYS = {
@@ -73,6 +82,12 @@ class SeabreezeUVVis(Driver):
         "saveSingleScan": "save_single_scan",
         "filename": "file_name",
         "filepath": "file_path",
+    }
+
+    _DEFAULT_REFERENCE_FILENAMES = {
+        "reference": "reference_spectrum.npz",
+        "air": "air_reference_spectrum.npz",
+        "dark": "dark_spectrum.npz",
     }
 
     def __init__(
@@ -113,6 +128,7 @@ class SeabreezeUVVis(Driver):
                 DeprecationWarning,
                 stacklevel=2,
             )
+        self._normalize_local_reference_paths()
         self.log_info("Configuring SeaBreeze using backend %s" % backend)
         try:
             # ``seabreeze`` is a lazy proxy so importing this driver remains
@@ -145,6 +161,7 @@ class SeabreezeUVVis(Driver):
 
         self.log_info("Connected successfully to %s." % self.spectrometer)
         self.wavelengths = self.spectrometer.wavelengths()
+        self.log_info("Spectrometer wavelength grid: %s" % self.wavelengths)
         self.set_exposure(self.config["exposure"])
 
     @Driver.unqueued()
@@ -251,7 +268,9 @@ class SeabreezeUVVis(Driver):
             Integration time in seconds.
         """
         self.config["exposure"] = exposure
-        self.spectrometer.integration_time_micros(1_000_000 * exposure)
+        integration_time_micros = int(1_000_000 * exposure)
+        self.spectrometer.integration_time_micros(integration_time_micros)
+        self.log_info("Integration time set to %s seconds." % (integration_time_micros / 1_000_000))
 
     def _acquire_spectra(self, n_frames: int) -> np.ndarray:
         """Acquire spectra, excluding SeaBreeze's internal dark-reference pixel.
@@ -324,7 +343,37 @@ class SeabreezeUVVis(Driver):
                 f"The {reference_name} locator {locator!r} is a Tiled entry, "
                 "not a local .npz file."
             )
-        return self._reference_directory / locator
+        return self._local_reference_path(locator)
+
+    def _local_reference_path(self, locator: str) -> Path:
+        """Return an absolute local reference path from a local locator."""
+        reference_path = Path(locator).expanduser()
+        if not reference_path.is_absolute():
+            reference_path = self._reference_directory / reference_path
+        return reference_path.resolve()
+
+    def _normalize_local_reference_paths(self) -> None:
+        """Store local reference locators as absolute paths in configuration."""
+        for reference_name in self._DEFAULT_REFERENCE_FILENAMES:
+            locator = self.config.get(reference_name)
+            if isinstance(locator, str) and locator.strip().lower().endswith(".npz"):
+                self.config[reference_name] = str(
+                    self._local_reference_path(locator.strip())
+                )
+
+    def _set_reference_save_path(self, reference_name: str, path: str) -> Path:
+        """Configure a local save path for a reference and return that path."""
+        if reference_name not in self._DEFAULT_REFERENCE_FILENAMES:
+            raise ValueError(
+                "reference_name must be one of 'reference', 'air', or 'dark'."
+            )
+        requested_path = Path(path).expanduser()
+        if requested_path.suffix.lower() == ".npz":
+            reference_path = requested_path
+        else:
+            reference_path = requested_path / self._DEFAULT_REFERENCE_FILENAMES[reference_name]
+        self.config[reference_name] = str(reference_path.resolve())
+        return self._reference_path(reference_name)
 
     def _reference_locator(self, reference_name: str) -> str:
         """Return the configured local-file or Tiled-entry locator for a slot."""
@@ -544,12 +593,24 @@ class SeabreezeUVVis(Driver):
         return reference_spectrum, reference_std
 
     def post_tiled_finalize(self, task, tiled_entry_id):
-        """Persist a finalized Tiled ID for references configured as Tiled."""
+        """Persist a successfully uploaded Tiled reference entry ID.
+
+        ``save_reference`` always promotes its target slot to the uploaded
+        Tiled entry, including when it was initially configured as a local
+        ``.npz`` file.  ``measure`` retains its existing source-selection
+        behavior for its optional reference-setting flags.
+        """
         task_name = task.get("task_name")
-        reference_names = []
         if task_name == "save_reference":
-            reference_names.append(task.get("reference_name", "reference"))
-        elif task_name == "measure":
+            reference_name = task.get("reference_name", "reference")
+            self.config[reference_name] = tiled_entry_id
+            self.log_info(
+                f"Stored {reference_name} reference in Tiled entry {tiled_entry_id}."
+            )
+            return
+
+        reference_names = []
+        if task_name == "measure":
             if task.get("set_reference"):
                 reference_names.append("reference")
             if task.get("set_air"):
@@ -570,7 +631,7 @@ class SeabreezeUVVis(Driver):
         set_air: bool = False,
         set_dark: bool = False,
         exposure: Optional[float] = None,
-        wavelengths: Optional[list] = None,
+        wavelengths: Optional[list] = [300.0, 900.0],
     ) -> xr.Dataset:
         """Acquire spectra and optionally reduce them against a reference.
 
@@ -717,6 +778,7 @@ class SeabreezeUVVis(Driver):
         n_frames: int = 1,
         reference_name: str = "reference",
         exposure: Optional[float] = None,
+        path: Optional[str] = None,
     ) -> xr.Dataset:
         """Acquire and save a reference for later spectrum reduction.
 
@@ -729,6 +791,12 @@ class SeabreezeUVVis(Driver):
             ``.npz`` or Tiled save destination.
         exposure : float, optional
             Temporary integration time in seconds.
+        path : str, optional
+            Local directory in which to save the reference. The current
+            reference filename is retained (for example,
+            ``reference_spectrum.npz``). An explicit ``.npz`` path is also
+            accepted. When omitted, the configured path is used; defaults are
+            under ``AFL_HOME/uvvis``.
 
         Returns
         -------
@@ -737,13 +805,23 @@ class SeabreezeUVVis(Driver):
         """
         if exposure is not None:
             self.set_exposure(exposure)
+        if path is not None:
+            self._set_reference_save_path(reference_name, path)
         self._validate_reference_save_target(reference_name)
         raw_spectra = self._acquire_spectra(n_frames)
         spectrum_mean = np.mean(raw_spectra, axis=0)
         spectrum_std = np.std(raw_spectra, axis=0)
         if self._reference_source(reference_name) == "local":
-            self._save_reference(
+            reference_path = self._save_reference(
                 spectrum_mean, spectrum_std, reference_name
+            )
+            self.log_info(
+                f"Stored {reference_name} reference locally at {reference_path}."
+            )
+        else:
+            self.log_info(
+                f"Prepared {reference_name} reference for Tiled storage "
+                f"(current locator: {self._reference_locator(reference_name)})."
             )
 
         dataset = xr.Dataset()
@@ -786,8 +864,9 @@ class SeabreezeUVVis(Driver):
         reference_name: str = "reference",
         transmission: bool = True,
         wavelength_mask: Optional[np.ndarray] = None,
+        use_dark_spectrum: Optional[bool] = None,
     ) -> dict:
-        r"""Reduce a raw spectrum against the active reference and dark source.
+        r"""Reduce a raw spectrum against the active reference source.
 
         Parameters
         ----------
@@ -802,6 +881,9 @@ class SeabreezeUVVis(Driver):
             Tiled source.
         transmission : bool, default=True
             Include transmission and propagated-uncertainty arrays.
+        use_dark_spectrum : bool, optional
+            Override the configured dark-spectrum subtraction setting for this
+            reduction. The configured default is ``False``.
 
         Returns
         -------
@@ -816,15 +898,16 @@ class SeabreezeUVVis(Driver):
 
         Notes
         -----
-        Let $S$, $R$, and $D$ be the mean sample, reference, and dark
-        intensities, respectively. The dark-corrected transmission is:
+        By default, the transmission is calculated as $T = S / R$, where $S$
+        and $R$ are the mean sample and reference intensities. When
+        dark-spectrum subtraction is enabled, the stored dark spectrum $D$ is
+        subtracted from both:
 
         $$
         T = \frac{S - D}{R - D}
         $$
 
-        Assuming independent sample, reference, and dark uncertainties
-        $\sigma_S$, $\sigma_R$, and $\sigma_D$, its propagated uncertainty is:
+        With dark-spectrum subtraction enabled, the propagated uncertainty is:
 
         $$
         \sigma_T = \sqrt{
@@ -834,7 +917,9 @@ class SeabreezeUVVis(Driver):
         }
         $$
 
-        The returned ``extinction`` fields are absorbance values and use:
+        When the denominator is close to zero, it is replaced by a signed
+        epsilon before calculating transmission and its uncertainty. The
+        returned ``extinction`` fields are absorbance values and use:
 
         $$
         A = -\log_{10}(T), \qquad
@@ -843,28 +928,42 @@ class SeabreezeUVVis(Driver):
         """
         if not transmission and not absorbance:
             raise ValueError("At least one of transmission or absorbance must be True.")
+        eps = 1e-3
+
         reference_spectrum, reference_std = self._load_reference(reference_name)
-        dark_spectrum, dark_std = self._load_reference("dark")
         if wavelength_mask is not None:
             reference_spectrum = reference_spectrum[wavelength_mask]
             reference_std = reference_std[wavelength_mask]
-            dark_spectrum = dark_spectrum[wavelength_mask]
-            dark_std = dark_std[wavelength_mask]
+        if use_dark_spectrum is None:
+            use_dark_spectrum = self.config.get("use_dark_spectrum", False)
+        if not isinstance(use_dark_spectrum, (bool, np.bool_)):
+            raise ValueError("use_dark_spectrum must be a boolean.")
+
         with np.errstate(divide="ignore", invalid="ignore"):
-            numerator = data_raw_mean - dark_spectrum
-            denominator = reference_spectrum - dark_spectrum
-            transmission_values = numerator / denominator
-            # Propagate the independent sample, reference, and dark-spectrum
-            # uncertainties through T = (sample - dark) / (reference - dark).
-            transmission_std = np.sqrt(
-                (data_raw_std / denominator) ** 2
-                + (numerator * reference_std / denominator**2) ** 2
-                + (
-                    (data_raw_mean - reference_spectrum)
-                    * dark_std
-                    / denominator**2
-                ) ** 2
-            )
+            if use_dark_spectrum:
+                dark_spectrum, dark_std = self._load_reference("dark")
+                if wavelength_mask is not None:
+                    dark_spectrum = dark_spectrum[wavelength_mask]
+                    dark_std = dark_std[wavelength_mask]
+                numerator = data_raw_mean - dark_spectrum
+                denominator = reference_spectrum - dark_spectrum
+                transmission_std = np.sqrt(
+                    (data_raw_std / denominator) ** 2
+                    + (numerator * reference_std / denominator**2) ** 2
+                    + (
+                        (data_raw_mean - reference_spectrum)
+                        * dark_std
+                        / denominator**2
+                    ) ** 2
+                )
+            else:
+                numerator = data_raw_mean
+                denominator = reference_spectrum
+                transmission_std = np.sqrt(
+                    (data_raw_std / denominator) ** 2
+                    + (numerator * reference_std / denominator**2) ** 2
+                )
+            transmission_values = numerator / (denominator + eps)
         result = {}
         if transmission:
             result["transmission"] = transmission_values

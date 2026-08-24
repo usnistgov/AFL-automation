@@ -121,6 +121,34 @@ def test_load_local_reference_uses_npz_locator(tmp_path):
     np.testing.assert_array_equal(spectrum_std, [0.2, 0.3])
 
 
+def test_reference_path_accepts_an_absolute_custom_location(tmp_path):
+    driver = object.__new__(SeabreezeUVVis)
+    custom_path = tmp_path / "custom" / "reference.npz"
+    driver.config = {"reference": str(custom_path)}
+    driver._reference_directory = tmp_path / "uvvis"
+
+    assert driver._reference_path("reference") == custom_path
+
+
+def test_save_reference_path_uses_existing_reference_filename(tmp_path):
+    driver = object.__new__(SeabreezeUVVis)
+    driver.config = {"reference": str(tmp_path / "uvvis" / "reference_spectrum.npz")}
+    driver._reference_cache = {}
+    driver._reference_directory = tmp_path / "uvvis"
+    driver.wavelengths = np.array([0.0, 400.0, 500.0])
+    driver._acquire_spectra = lambda n_frames: np.array([[10.0, 20.0]])
+    log_messages = []
+    driver.log_info = log_messages.append
+
+    dataset = driver.save_reference(path=str(tmp_path / "custom-references"))
+    expected_path = tmp_path / "custom-references" / "reference_spectrum.npz"
+
+    assert driver.config["reference"] == str(expected_path)
+    assert expected_path.is_file()
+    assert dataset.attrs["reference_path"] == str(expected_path)
+    assert str(expected_path) in log_messages[-1]
+
+
 def test_tiled_locator_requires_tiled_connection():
     driver = object.__new__(SeabreezeUVVis)
     driver.config = {"dark": "QD-reference"}
@@ -248,6 +276,7 @@ def test_measure_rejects_invalid_wavelength_ranges(tmp_path, wavelengths):
 def test_post_tiled_finalize_updates_tiled_locator():
     driver = object.__new__(SeabreezeUVVis)
     driver.config = {"air": "old-entry"}
+    driver.log_info = lambda message: None
 
     driver.post_tiled_finalize(
         {"task_name": "save_reference", "reference_name": "air"},
@@ -269,20 +298,22 @@ def test_post_tiled_finalize_saves_dark_entry_id():
     assert driver.config["dark"] == "dark-entry-123"
 
 
-def test_post_tiled_finalize_preserves_local_locator():
+def test_post_tiled_finalize_promotes_local_save_reference_to_tiled():
     driver = object.__new__(SeabreezeUVVis)
     driver.config = {"reference": "reference.npz"}
+    driver.log_info = lambda message: None
 
     driver.post_tiled_finalize(
         {"task_name": "save_reference", "reference_name": "reference"},
         "entry-123",
     )
 
-    assert driver.config["reference"] == "reference.npz"
+    assert driver.config["reference"] == "entry-123"
 
 
 def test_reduce_subtracts_dark_from_sample_and_reference():
     driver = object.__new__(SeabreezeUVVis)
+    driver.config = {"use_dark_spectrum": True}
     sample = np.array([50.0, 30.0])
     sample_std = np.array([2.0, 3.0])
     reference = np.array([90.0, 50.0])
@@ -298,7 +329,7 @@ def test_reduce_subtracts_dark_from_sample_and_reference():
 
     numerator = sample - dark
     denominator = reference - dark
-    expected_transmission = numerator / denominator
+    expected_transmission = numerator / (denominator + 1e-3)
     expected_std = np.sqrt(
         (sample_std / denominator) ** 2
         + (numerator * reference_std / denominator**2) ** 2
@@ -307,7 +338,7 @@ def test_reduce_subtracts_dark_from_sample_and_reference():
     np.testing.assert_allclose(result["transmission"], expected_transmission)
     np.testing.assert_allclose(result["transmission_std"], expected_std)
     np.testing.assert_allclose(result["extinction"], -np.log10(expected_transmission))
-    np.testing.assert_allclose(result["transmission"], [0.5, 0.5])
+    np.testing.assert_allclose(result["transmission"], expected_transmission)
 
     transmission_only = driver.reduce(sample, sample_std, absorbance=False)
 
@@ -323,3 +354,32 @@ def test_reduce_subtracts_dark_from_sample_and_reference():
             transmission=False,
             absorbance=False,
         )
+
+
+def test_dark_spectrum_subtraction_is_disabled_by_default():
+    assert SeabreezeUVVis.defaults["use_dark_spectrum"] is False
+
+
+def test_reduce_can_skip_dark_spectrum_with_a_per_call_override():
+    driver = object.__new__(SeabreezeUVVis)
+    driver.config = {"use_dark_spectrum": True}
+    sample = np.array([50.0, 30.0])
+    sample_std = np.array([2.0, 3.0])
+    reference = np.array([90.0, 50.0])
+    reference_std = np.array([4.0, 5.0])
+
+    def load_reference(name):
+        if name == "dark":
+            raise AssertionError("dark spectrum should not be loaded")
+        return reference, reference_std
+
+    driver._load_reference = load_reference
+    result = driver.reduce(sample, sample_std, use_dark_spectrum=False)
+
+    expected_transmission = sample / (reference + 1e-3)
+    expected_std = np.sqrt(
+        (sample_std / reference) ** 2
+        + (sample * reference_std / reference**2) ** 2
+    )
+    np.testing.assert_allclose(result["transmission"], expected_transmission)
+    np.testing.assert_allclose(result["transmission_std"], expected_std)

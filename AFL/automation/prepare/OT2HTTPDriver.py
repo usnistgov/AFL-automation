@@ -4,6 +4,7 @@ import logging
 import re
 import threading
 import uuid
+from contextlib import nullcontext
 from datetime import datetime, timezone
 
 import copy
@@ -65,6 +66,13 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         "p1000_single": "1000ul",
     }
     DECK_STREAM_REQUEST_TIMEOUT_SECONDS = 15
+    OT2_HTTP_CONNECT_TIMEOUT_SECONDS = 5
+    OT2_HTTP_READ_TIMEOUT_SECONDS = 15
+    OT2_COMMAND_TIMEOUT_SECONDS = 60
+    OT2_COMMAND_POLL_INTERVAL_SECONDS = 0.25
+    OT2_STOP_TIMEOUT_SECONDS = 10
+    OT2_TERMINAL_COMMAND_STATES = {"succeeded", "failed", "error", "stopped"}
+    OT2_TERMINAL_RUN_STATES = {"succeeded", "failed", "error", "stopped"}
     defaults = {}
     defaults["robot_ip"] = "127.0.0.1"  # Default to localhost, should be overridden
     defaults["robot_port"] = "31950"  # Default Opentrons HTTP API port
@@ -80,6 +88,9 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
     defaults["tip_rack_offset"] = {"x": 0, "y": 0, "z": 0}  # Default offset for tip pickup/return at tiprack wells
     defaults["enable_deck_stream"] = True
     defaults["deck_stream_video_fps"] = 1
+    defaults["ot2_command_timeout_seconds"] = OT2_COMMAND_TIMEOUT_SECONDS
+    defaults["ot2_command_poll_interval_seconds"] = OT2_COMMAND_POLL_INTERVAL_SECONDS
+    defaults["ot2_stop_timeout_seconds"] = OT2_STOP_TIMEOUT_SECONDS
 
     def __init__(self, overrides=None):
         """Initialize the OT-2 HTTP driver.
@@ -116,6 +127,11 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         self._deck_stream_thread = None
         self._deck_stream_stop_event = None
         self._deck_stream_lock = threading.Lock()
+        # The OT-2 camera and protocol-engine endpoints share one robot HTTP
+        # service. Serialize task-video reads with mutations so a camera request
+        # cannot overlap command submission or command-state polling.
+        self._ot2_api_lock = threading.RLock()
+        self._ot2_command_fault = None
         self._deck_stream_state = {
             "running": False,
             "current_window_started_at": None,
@@ -125,6 +141,8 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             "last_error": None,
             "stopped_for_run_status": None,
             "task_name": None,
+            "capture_started_at": None,
+            "output_path": None,
         }
             
         self.pipette_info = {}
@@ -748,11 +766,12 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
     def _capture_deck_picture(self, cv2_module, timeout):
         """Request and decode one image from the OT-2 deck camera."""
-        response = requests.post(
-            url=f"{self.base_url}/camera/picture",
-            headers=self.headers,
-            timeout=timeout,
-        )
+        with getattr(self, "_ot2_api_lock", nullcontext()):
+            response = requests.post(
+                url=f"{self.base_url}/camera/picture",
+                headers=self.headers,
+                timeout=timeout,
+            )
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as exc:
@@ -867,6 +886,10 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 "last_frame_count": len(frames),
                 "last_error": first_error,
             })
+        self.log_info(
+            f"Task video saved at {completed_at}; output={output_path}; "
+            f"frames={len(frames)}"
+        )
         return {
             "path": str(output_path),
             "frame_count": len(frames),
@@ -880,11 +903,12 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         if run_id is None:
             return None
         try:
-            response = requests.get(
-                url=f"{self.base_url}/runs/{run_id}",
-                headers=self.headers,
-                timeout=self.DECK_STREAM_REQUEST_TIMEOUT_SECONDS,
-            )
+            with getattr(self, "_ot2_api_lock", nullcontext()):
+                response = requests.get(
+                    url=f"{self.base_url}/runs/{run_id}",
+                    headers=self.headers,
+                    timeout=self.DECK_STREAM_REQUEST_TIMEOUT_SECONDS,
+                )
             response.raise_for_status()
             run_status = response.json().get("data", {}).get("status")
         except (requests.exceptions.RequestException, ValueError, AttributeError) as exc:
@@ -929,7 +953,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             "duration_seconds": None,
             "output_path": settings["directory"] / output_filename,
         })
-        self.log_info(f"Deck stream task video: {settings['output_path']}")
+        capture_started_at = datetime.now(timezone.utc).isoformat()
         with self._deck_stream_lock:
             if self._deck_stream_thread is not None and self._deck_stream_thread.is_alive():
                 return False
@@ -937,6 +961,8 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             self._deck_stream_state["running"] = True
             self._deck_stream_state["stopped_for_run_status"] = None
             self._deck_stream_state["task_name"] = task_name
+            self._deck_stream_state["capture_started_at"] = capture_started_at
+            self._deck_stream_state["output_path"] = str(settings["output_path"])
             self._deck_stream_thread = threading.Thread(
                 target=self._deck_stream_worker,
                 args=(settings,),
@@ -944,6 +970,10 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 daemon=True,
             )
             self._deck_stream_thread.start()
+        self.log_info(
+            f"Task video capture started at {capture_started_at} for task "
+            f"'{task_name}'; output={settings['output_path']}"
+        )
         return True
 
     def _finish_task_video(self):
@@ -951,8 +981,16 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         with self._deck_stream_lock:
             stop_event = self._deck_stream_stop_event
             stream_thread = self._deck_stream_thread
-            if stop_event is not None:
-                stop_event.set()
+            task_name = self._deck_stream_state.get("task_name")
+            output_path = self._deck_stream_state.get("output_path")
+        if stop_event is not None or stream_thread is not None:
+            save_started_at = datetime.now(timezone.utc).isoformat()
+            self.log_info(
+                f"Task video stop/save initiated at {save_started_at} for task "
+                f"'{task_name}'; output={output_path}"
+            )
+        if stop_event is not None:
+            stop_event.set()
         if stream_thread is not None and stream_thread is not threading.current_thread():
             stream_thread.join(timeout=self.DECK_STREAM_REQUEST_TIMEOUT_SECONDS + 2)
         with self._deck_stream_lock:
@@ -1033,6 +1071,13 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             status.append(
                 "Deck stream stopped to preserve video: "
                 f"{deck_stream_state['stopped_for_run_status']}"
+            )
+        command_fault = getattr(self, "_ot2_command_fault", None)
+        if command_fault is not None:
+            status.append(
+                "OT-2 command fault: "
+                f"{command_fault['command_type']} {command_fault['command_id']} "
+                f"in run {command_fault['run_id']} ({command_fault['recovery']})"
             )
         return status
 
@@ -3325,6 +3370,144 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             check_run_status=check_run_status,
         )
 
+    def _positive_timeout_setting(self, key, default):
+        """Return a positive floating-point timeout from driver configuration."""
+        try:
+            value = float(self.config.get(key, default))
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{key} must be numeric") from exc
+        if value <= 0:
+            raise ValueError(f"{key} must be positive")
+        return value
+
+    def _ot2_request_timeout(self, remaining=None):
+        """Return bounded connect/read timeouts for one robot HTTP request."""
+        connect_timeout = float(self.OT2_HTTP_CONNECT_TIMEOUT_SECONDS)
+        read_timeout = float(self.OT2_HTTP_READ_TIMEOUT_SECONDS)
+        if remaining is not None:
+            remaining = max(float(remaining), 0.001)
+            connect_timeout = min(connect_timeout, remaining)
+            read_timeout = min(read_timeout, remaining)
+        return (connect_timeout, read_timeout)
+
+    @staticmethod
+    def _command_error_detail(command_data):
+        """Extract an actionable error description from command state data."""
+        error = command_data.get("error")
+        if isinstance(error, dict):
+            return error.get("detail") or error.get("message") or str(error)
+        return error or "Unknown error"
+
+    def _stop_run_after_command_fault(self, run_id, command_id, command_type):
+        """Request a bounded run stop and record the resulting uncertain state."""
+        stop_event = getattr(self, "_deck_stream_stop_event", None)
+        if stop_event is not None:
+            stop_event.set()
+
+        stop_timeout = self._positive_timeout_setting(
+            "ot2_stop_timeout_seconds", self.OT2_STOP_TIMEOUT_SECONDS
+        )
+        recovery = "stop was not requested"
+        try:
+            response = requests.post(
+                url=f"{self.base_url}/runs/{run_id}/actions",
+                headers=self.headers,
+                json={"data": {"actionType": "stop"}},
+                timeout=self._ot2_request_timeout(stop_timeout),
+            )
+            if response.status_code not in (200, 201):
+                recovery = f"stop request failed with HTTP {response.status_code}"
+            else:
+                recovery = "stop requested but not confirmed"
+                deadline = time.monotonic() + stop_timeout
+                while time.monotonic() < deadline:
+                    remaining = deadline - time.monotonic()
+                    status_response = requests.get(
+                        url=f"{self.base_url}/runs/{run_id}",
+                        headers=self.headers,
+                        timeout=self._ot2_request_timeout(remaining),
+                    )
+                    if status_response.status_code != 200:
+                        recovery = (
+                            "stop confirmation failed with HTTP "
+                            f"{status_response.status_code}"
+                        )
+                        break
+                    run_status = status_response.json().get("data", {}).get("status")
+                    if run_status in self.OT2_TERMINAL_RUN_STATES:
+                        recovery = f"run reached terminal state {run_status}"
+                        self.run_id = None
+                        break
+                    time.sleep(min(0.1, max(remaining, 0)))
+        except (
+            requests.exceptions.RequestException,
+            AttributeError,
+            KeyError,
+            TypeError,
+            ValueError,
+        ) as exc:
+            recovery = f"stop recovery failed: {exc}"
+
+        self._ot2_command_fault = {
+            "run_id": run_id,
+            "command_id": command_id,
+            "command_type": command_type,
+            "recovery": recovery,
+        }
+        return recovery
+
+    def _wait_for_command(self, run_id, command_id, command_type, timeout):
+        """Poll one asynchronously submitted command until completion or timeout."""
+        deadline = time.monotonic() + timeout
+        poll_interval = self._positive_timeout_setting(
+            "ot2_command_poll_interval_seconds",
+            self.OT2_COMMAND_POLL_INTERVAL_SECONDS,
+        )
+
+        while time.monotonic() < deadline:
+            remaining = deadline - time.monotonic()
+            try:
+                response = requests.get(
+                    url=f"{self.base_url}/runs/{run_id}/commands/{command_id}",
+                    headers=self.headers,
+                    timeout=self._ot2_request_timeout(remaining),
+                )
+                if response.status_code != 200:
+                    raise RuntimeError(
+                        f"command status returned HTTP {response.status_code}: {response.text}"
+                    )
+                command_data = response.json()["data"]
+                status = command_data["status"]
+            except (
+                requests.exceptions.RequestException,
+                KeyError,
+                TypeError,
+                ValueError,
+                RuntimeError,
+            ) as exc:
+                recovery = self._stop_run_after_command_fault(
+                    run_id, command_id, command_type
+                )
+                raise RuntimeError(
+                    f"Lost OT-2 command status for {command_type} {command_id} "
+                    f"in run {run_id}; {recovery}"
+                ) from exc
+
+            if status == "succeeded":
+                return True
+            if status in self.OT2_TERMINAL_COMMAND_STATES:
+                detail = self._command_error_detail(command_data)
+                raise RuntimeError(
+                    f"OT-2 command {command_type} {command_id} failed: {detail}"
+                )
+            time.sleep(min(poll_interval, max(deadline - time.monotonic(), 0)))
+
+        recovery = self._stop_run_after_command_fault(run_id, command_id, command_type)
+        raise TimeoutError(
+            f"OT-2 command {command_type} {command_id} in run {run_id} "
+            f"did not finish within {timeout:g} seconds; {recovery}"
+        )
+
     def _execute_atomic_command(
         self, command_type, params=None, wait_until_complete=True, timeout=None, check_run_status=True
     ):
@@ -3339,7 +3522,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         wait_until_complete : bool, default=True
             If ``True``, wait for command completion before returning.
         timeout : float, optional
-            Command timeout forwarded to the robot server.
+            Maximum seconds to wait for the command to reach a terminal state.
         check_run_status : bool, default=True
             If ``False``, skip the run-status GET check when ensuring a run.
 
@@ -3403,53 +3586,60 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             f"Executing atomic command: {command_type} with params: {params}"
         )
 
-        # Ensure we have a valid run
-        run_id = self._ensure_run_exists(check_run_status=check_run_status)
-
-        # Build the query parameters
-        query_params = {"waitUntilComplete": wait_until_complete}
-        if timeout is not None:
-            query_params["timeout"] = timeout
-
-        try:
-            # Send the command
-            command_response = requests.post(
-                url=f"{self.base_url}/runs/{run_id}/commands",
-                params=query_params,
-                headers=self.headers,
-                json={
-                    "data": {
-                        "commandType": command_type,
-                        "params": params,
-                        "intent": "setup",
-                    }
-                },
+        command_timeout = (
+            self._positive_timeout_setting(
+                "ot2_command_timeout_seconds", self.OT2_COMMAND_TIMEOUT_SECONDS
             )
+            if timeout is None
+            else float(timeout)
+        )
+        if command_timeout <= 0:
+            raise ValueError("OT-2 command timeout must be positive")
 
-            
-            self._check_cmd_success(command_response)
+        # Hold the shared robot API lock until the command reaches a terminal
+        # state. Task-video camera requests use the same lock and therefore
+        # cannot overlap protocol-engine command traffic.
+        with getattr(self, "_ot2_api_lock", nullcontext()):
+            run_id = self._ensure_run_exists(check_run_status=check_run_status)
+            try:
+                command_response = requests.post(
+                    url=f"{self.base_url}/runs/{run_id}/commands",
+                    params={"waitUntilComplete": False},
+                    headers=self.headers,
+                    json={
+                        "data": {
+                            "commandType": command_type,
+                            "params": params,
+                            "intent": "setup",
+                        }
+                    },
+                    timeout=self._ot2_request_timeout(),
+                )
+                self._check_cmd_success(command_response)
+                command_data = command_response.json()["data"]
+                command_id = command_data["id"]
+                status = command_data.get("status", "queued")
+            except (requests.exceptions.RequestException, KeyError, TypeError, ValueError) as exc:
+                self.log_error(f"Error submitting {command_type} command: {exc}")
+                raise RuntimeError(
+                    f"Error submitting OT-2 command {command_type}: {exc}"
+                ) from exc
 
-            command_data = command_response.json()["data"]
-            command_id = command_data["id"]
             self.log_debug(
-                f"Command {command_id} executed with status: {command_data['status']}"
+                f"Command {command_id} submitted with status: {status}"
             )
-
-            # If wait_until_complete is True, the command has already completed
-            if wait_until_complete:
-                if command_data["status"] == "succeeded":
-                    return True
-                elif command_data["status"] in ["failed", "error"]:
-                    error_info = command_data.get("error", "Unknown error")
-                    self.log_error(f"Command failed: {error_info}")
-                    raise RuntimeError(f"Command failed: {error_info}")
-
-            # If we're not waiting or the command is still running, return the command ID for tracking
-            return command_id
-
-        except requests.exceptions.RequestException as e:
-            self.log_error(f"Error executing command: {str(e)}")
-            raise RuntimeError(f"Error executing command: {str(e)}")
+            if status == "succeeded":
+                return True if wait_until_complete else command_id
+            if status in self.OT2_TERMINAL_COMMAND_STATES:
+                detail = self._command_error_detail(command_data)
+                raise RuntimeError(
+                    f"OT-2 command {command_type} {command_id} failed: {detail}"
+                )
+            if not wait_until_complete:
+                return command_id
+            return self._wait_for_command(
+                run_id, command_id, command_type, command_timeout
+            )
 
     def set_aspirate_rate(self, rate=150, pipette=None):
         """Set stored aspirate flow rate for one or more active pipettes."""
@@ -3914,6 +4104,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             run_response = requests.post(
                 url=f"{self.base_url}/runs",
                 headers=self.headers,
+                timeout=self._ot2_request_timeout(),
             )
 
             if run_response.status_code != 201:
@@ -3932,6 +4123,144 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         except requests.exceptions.RequestException as e:
             self.log_error(f"Error creating run: {str(e)}")
             raise RuntimeError(f"Error creating run: {str(e)}")
+
+    @Driver.unqueued()
+    def emergency_stop(self, timeout=10.0):
+        """Stop every nonterminal run on the OT-2 and clear local run state.
+
+        This command is intentionally unqueued so it remains available while a
+        queued robot command is blocked.  It asks the Opentrons server to stop
+        each active run, then waits for every run to reach a terminal state
+        before forgetting the cached run identifier.
+
+        Parameters
+        ----------
+        timeout : float, default=10.0
+            Maximum number of seconds to wait for stop confirmation.
+
+        Returns
+        -------
+        dict
+            The run identifiers stopped by this call and their final states.
+
+        Raises
+        ------
+        RuntimeError
+            If runs cannot be listed, a stop request fails, or a run does not
+            reach a terminal state before the timeout.
+        ValueError
+            If ``timeout`` is not positive.
+        """
+        timeout = float(timeout)
+        if timeout <= 0:
+            raise ValueError("Emergency-stop timeout must be positive")
+
+        terminal_states = {"succeeded", "failed", "error", "stopped"}
+        try:
+            response = requests.get(
+                url=f"{self.base_url}/runs",
+                headers=self.headers,
+                timeout=timeout,
+            )
+        except requests.exceptions.RequestException as exc:
+            raise RuntimeError(f"Unable to list OT-2 runs during emergency stop: {exc}") from exc
+
+        if response.status_code != 200:
+            raise RuntimeError(
+                "Unable to list OT-2 runs during emergency stop: "
+                f"HTTP {response.status_code}: {response.text}"
+            )
+
+        try:
+            runs = response.json()["data"]
+        except (KeyError, TypeError, ValueError) as exc:
+            raise RuntimeError("OT-2 returned an invalid run list during emergency stop") from exc
+
+        active_runs = {
+            run["id"]: run.get("status", "unknown")
+            for run in runs
+            if run.get("id") and run.get("status") not in terminal_states
+        }
+        stop_requested = []
+        failures = []
+        for run_id, status in active_runs.items():
+            self.log_warning(f"Emergency stop requested for OT-2 run {run_id} ({status})")
+            try:
+                stop_response = requests.post(
+                    url=f"{self.base_url}/runs/{run_id}/actions",
+                    headers=self.headers,
+                    json={"data": {"actionType": "stop"}},
+                    timeout=timeout,
+                )
+            except requests.exceptions.RequestException as exc:
+                failures.append(f"{run_id}: {exc}")
+                continue
+
+            if stop_response.status_code not in (200, 201):
+                failures.append(
+                    f"{run_id}: HTTP {stop_response.status_code}: {stop_response.text}"
+                )
+                continue
+            stop_requested.append(run_id)
+
+        if failures:
+            raise RuntimeError("Failed to stop OT-2 run(s): " + "; ".join(failures))
+
+        deadline = time.monotonic() + timeout
+        pending = set(stop_requested)
+        final_states = {}
+        while pending:
+            for run_id in list(pending):
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                try:
+                    status_response = requests.get(
+                        url=f"{self.base_url}/runs/{run_id}",
+                        headers=self.headers,
+                        timeout=remaining,
+                    )
+                except requests.exceptions.RequestException as exc:
+                    raise RuntimeError(
+                        f"Unable to confirm emergency stop for OT-2 run {run_id}: {exc}"
+                    ) from exc
+                if status_response.status_code != 200:
+                    raise RuntimeError(
+                        f"Unable to confirm emergency stop for OT-2 run {run_id}: "
+                        f"HTTP {status_response.status_code}: {status_response.text}"
+                    )
+                try:
+                    status = status_response.json()["data"]["status"]
+                except (KeyError, TypeError, ValueError) as exc:
+                    raise RuntimeError(
+                        f"OT-2 returned invalid status for run {run_id}"
+                    ) from exc
+                if status in terminal_states:
+                    final_states[run_id] = status
+                    pending.remove(run_id)
+            if pending:
+                remaining = deadline - time.monotonic()
+                if remaining > 0:
+                    time.sleep(min(0.1, remaining))
+
+        if pending:
+            raise RuntimeError(
+                "Timed out waiting for OT-2 run(s) to stop: " + ", ".join(sorted(pending))
+            )
+
+        # A future command must create a fresh run and reload the deck.  Tip
+        # tracking is deliberately retained because an emergency stop may
+        # leave a physical tip attached to a pipette.
+        self.run_id = None
+        self._ot2_command_fault = None
+        self.log_warning(
+            "OT-2 emergency stop complete; cleared cached run state"
+        )
+        return {
+            "stopped_run_ids": stop_requested,
+            "final_states": final_states,
+            "active_run_ids": [],
+        }
 
     def _reload_deck_configuration(self):
         """Reload persisted modules, labware, instruments, and tip state.
@@ -4051,6 +4380,14 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         str
             Valid run identifier.
         """
+        command_fault = getattr(self, "_ot2_command_fault", None)
+        if command_fault is not None:
+            raise RuntimeError(
+                "OT-2 command execution is quarantined after "
+                f"{command_fault['command_type']} {command_fault['command_id']}; "
+                "confirm the robot is stopped with emergency_stop before resuming"
+            )
+
         if not hasattr(self, "run_id") or not self.run_id:
             return self._create_run()
 
@@ -4061,7 +4398,9 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         # Check if the run is still valid
         try:
             response = requests.get(
-                url=f"{self.base_url}/runs/{self.run_id}", headers=self.headers
+                url=f"{self.base_url}/runs/{self.run_id}",
+                headers=self.headers,
+                timeout=self._ot2_request_timeout(),
             )
 
             if response.status_code != 200:
@@ -4077,9 +4416,12 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
 
             return self.run_id
 
-        except requests.exceptions.RequestException:
-            # Error checking run, create a new one
-            return self._create_run()
+        except requests.exceptions.RequestException as exc:
+            # A transport failure does not prove that the cached run is gone.
+            # Creating a second run here could leave two robot operations live.
+            raise RuntimeError(
+                f"Unable to verify OT-2 run {self.run_id}: {exc}"
+            ) from exc
 
     def _slot_by_labware_uuid(self, labware_id):
         """Return the deck slot for a loaded labware identifier."""

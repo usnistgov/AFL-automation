@@ -364,6 +364,10 @@ class APIServer:
 
     def init_logging(self,toaddrs=None):
         self.app.logger.setLevel(level=logging.DEBUG)
+        # Flask installs its own stream handler.  Do not also pass the same
+        # record to a root handler (for example one installed by IPython),
+        # which would print every server message twice with two formats.
+        self.app.logger.propagate = False
 
         # SMTP email handling has been removed. The `toaddrs` argument is now
         # ignored and retained only for backwards compatibility.

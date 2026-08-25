@@ -96,6 +96,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'piston-vent':True})
         self._arm_up()
         time.sleep(0.2)
+        self.log_info("Succesfully initated PneumaticPressureSampleCell class")
+
         self.state = 'READY'
         self.rinse_status = 'Not Rinsing'
         
@@ -204,7 +206,10 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self._arm_interlock_check()
         self.relayboard.setChannels({'piston-vent':True,'arm-up':True,'arm-down':False})
         if self._USE_ARM_LIMITS:
-            self._wait_for_arm_limit('ARM_UP', 'up')
+            while self.digitalin.state['ARM_UP']:
+                self.log_info(f"Waiting for arm to be in UP state; Currently {self.digitalin.state['ARM_UP']}")
+                time.sleep(0.1)
+            self.log_info(f"Current arm state is confirmed to be UP: {self.digitalin.state['ARM_UP']}")
         else:
             time.sleep(self.config['arm_move_delay'])
         self.arm_state = 'UP'

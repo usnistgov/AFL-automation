@@ -78,6 +78,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             self.robot_interlock_url = f'http://{robot_interlock_host}:31950/robot/door/status'
         else:
             self.robot_interlock_url = None
+        self._last_robot_door_state = None
 
 
         self._USE_ARM_LIMITS = False
@@ -192,10 +193,13 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             if 'DOOR' in self.digitalin.state.keys():
                 return not self.digitalin.state['DOOR']
         if self.robot_interlock_url is not None:
-            self.log_debug(f'Checking robot door status at {self.robot_interlock_url} for Opentrons-Version 2')
             state = requests.get(
                 self.robot_interlock_url,
             headers = {'Opentrons-Version': '2'}).json()['data']['status']
+
+            if state != self._last_robot_door_state:
+                self.log_debug(f'Robot door status at {self.robot_interlock_url}: {state}')
+                self._last_robot_door_state = state
 
             if state == 'open':
                 return True

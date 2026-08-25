@@ -1,9 +1,12 @@
 import lazy_loader as lazy
 from AFL.automation.loading.MultiChannelRelay import MultiChannelRelay
 import atexit
-import warnings
+import logging
 import time
 import threading
+
+logger = logging.getLogger(__name__)
+
 
 class PiPlatesRelay(MultiChannelRelay):
 
@@ -21,7 +24,7 @@ class PiPlatesRelay(MultiChannelRelay):
         self.RELAYplate = lazy.load("piplates.RELAYplate", require="AFL-automation[piplates]")
         with self.threadlock:
             conn = self.RELAYplate.getID(board_id)
-        print(f'Got connection response from board: {conn}')
+        logger.info('Pi-Plates relay board %s connection response: %s', board_id, conn)
         with self.threadlock:
             self.RELAYplate.RESET(board_id)
         self.state = [False]*7
@@ -65,7 +68,12 @@ class PiPlatesRelay(MultiChannelRelay):
             else:
                 channels_to_set[key] = val
         
-        print(f'Relay state change, CHANNELS TO SET = {channels_to_set} and CHANNELS = {channels}')
+        logger.debug(
+            'Pi-Plates relay board %s state change: resolved channels=%s, requested channels=%s',
+            self.board_id,
+            channels_to_set,
+            channels,
+        )
         for key,val in channels_to_set.items():
             self.state[key-1]=val
 
@@ -115,7 +123,12 @@ class PiPlatesRelay(MultiChannelRelay):
             readback =  self.RELAYplate.relaySTATE(self.board_id)
         if readback != val_to_send:
             retries = 0
-            warnings.warn(f'ERROR: attempted relay set to {val_to_send} but readback was {readback}.')
+            logger.warning(
+                'Pi-Plates relay board %s readback mismatch: requested=%s, readback=%s',
+                self.board_id,
+                val_to_send,
+                readback,
+            )
             while retries<60:
                 with self.threadlock:
                     self.RELAYplate.relayALL(self.board_id,val_to_send)
@@ -123,7 +136,11 @@ class PiPlatesRelay(MultiChannelRelay):
                 with self.threadlock:
                     readback = self.RELAYplate.relaySTATE(self.board_id)
                 if readback == val_to_send:
-                    print(f'Success after {retries} tries.')
+                    logger.info(
+                        'Pi-Plates relay board %s readback verified after %s retries',
+                        self.board_id,
+                        retries,
+                    )
                     break
                 else:
                     retries = retries + 1

@@ -33,7 +33,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                                 (None,0.5),
                                 ('blow',5)
                                 ] 
-    defaults['external_load_complete_trigger'] = False
+    defaults['external_load_complete_trigger'] = False  # Currently unused.
     defaults['ramp_load_stop_pressure'] = 7
     defaults['ramp_load_duration'] = 20
     defaults['enforce_door_closed'] = True
@@ -174,20 +174,6 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             
         return status
 
-    def _log(self, level, message):
-        if self.app is not None and hasattr(self.app, 'logger'):
-            log_method = getattr(self.app.logger, level, None)
-            if log_method is not None:
-                log_method(message)
-                return
-        print(f'[{level.upper()}] {message}')
-
-    def log_warning(self, message):
-        self._log('warning', message)
-
-    def log_info(self, message):
-        self._log('info', message)
- 
     def _arm_interlock_check(self):
         if self._USE_DOOR_INTERLOCK:
             if not self.config['enforce_door_closed']:
@@ -203,18 +189,16 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         if self.digitalin is not None:
             if 'DOOR' in self.digitalin.state.keys():
                 return not self.digitalin.state['DOOR']
-        try:
-            state = requests.get(self.robot_interlock_url,headers = {
-        'Opentrons-Version': '2'}).json()['data']['status']
-        except Exception:
-            return True
-        if state == 'open':
-            return True
-        elif state == 'closed':
-            return False
-        else:
-            raise ValueError('could not get robot door status')
+        if self.robot_interlock_url is not None:
+            self.log_debug(f'Checking robot door status at {self.robot_interlock_url} for Opentrons-Version 2')
+            state = requests.get(
+                self.robot_interlock_url,
+            headers = {'Opentrons-Version': '2'}).json()['data']['status']
 
+            if state == 'open':
+                return True
+            elif state == 'closed':
+                return False
 
     def _arm_up(self):
         self._arm_interlock_check()
@@ -271,13 +255,12 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self._arm_down()
         time.sleep(self.config['vent_delay'])
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
-        print('setting state...')
         self.loadStoppedExternally = False
         if load_dest_label == '':
             self.state = 'LOAD IN PROGRESS'
         else:
             self.state = f'LOAD IN PROGRESS to {load_dest_label}'
-        print('sending dispense command')
+        self.log_info(f'sending dispense command with state {self.state}')
         if self.config['load_mode'] == 'static':
             self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         elif self.config['load_mode'] == 'ramp':
@@ -315,12 +298,12 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             raise Exception('Tried to advance sample but no sample is loaded.')
         self.state = 'PREPARING TO Advance'
         self.relayboard.setChannels({'postsample':True})
-        print('setting state...')        
+        self.log_info('setting state...')
         if load_dest_label == '':
             self.state = 'LOAD IN PROGRESS'
         else:
             self.state = f'LOAD IN PROGRESS to {load_dest_label}'
-        print('sending dispense command')
+        self.log_info('sending dispense command')
         self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         self.loadStoppedExternally = False 
         while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
@@ -334,7 +317,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     
     @Driver.unqueued(render_hint='raw')
     def stopLoad(self,**kwargs):
-        print(kwargs)
+        self.log_info(f'Stopping load with kwargs: {kwargs}')
         try:
             if kwargs['secret'] == 'xrays>neutrons':
                 if 'LOAD IN PROGRESS' not in self.state:
@@ -345,7 +328,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                     self.relayboard.setChannels({'postsample':False})
                     self.loadStoppedExternally=True
                     if self.data is not None:
-                        print(self.data)
+                        self.log_debug(self.data)
                         try:
                             self.data['load_stop_source'] = 'external'
                         except AttributeError:

@@ -298,6 +298,15 @@ class Driver(DriverWebAppsMixin):
         '''
         pass
 
+    def post_tiled_finalize(self, task, tiled_entry_id):
+        """Handle a successfully persisted Tiled result.
+
+        QueueDaemon calls this hook after it has written a queued task result
+        to Tiled. Subclasses can retain the exact entry identifier when a
+        later operation needs to retrieve that particular result.
+        """
+        pass
+
     def execute(self,**kwargs):
         task_name = kwargs.get('task_name',None)
         if task_name is None:

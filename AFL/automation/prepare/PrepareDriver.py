@@ -391,8 +391,7 @@ class PrepareDriver(MassBalanceDriver):
                 f"{feasibility_error}"
             )
             self.log_warning(message)
-            warnings.warn(message, stacklevel=2)
-            return None, None
+            raise ValueError(message)
 
         feasible_result = feasibility_results[0]
 

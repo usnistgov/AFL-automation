@@ -1,14 +1,8 @@
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.APIServer.Client import Client
 from AFL.automation.loading.SensorPollingThread import SensorPollingThread
-from AFL.automation.loading.SensorCallbackThread import StopLoadCBv1
 from AFL.automation.loading.SensorCallbackThread import StopLoadCBv2
-import warnings
-import time
 import pathlib
 import numpy as np
-
-import math
 
 class LoadStopperDriver(Driver):
     '''
@@ -36,7 +30,7 @@ class LoadStopperDriver(Driver):
         if self.data is None:
             self.data = data
         
-        print(f'LoadStopperDriver started with data = {self.data}')
+        self.log_info(f'LoadStopperDriver started with data = {self.data}')
         self.load_object = load_object
         self.load_client = load_client
 

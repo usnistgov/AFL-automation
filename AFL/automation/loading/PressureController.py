@@ -1,4 +1,10 @@
-import threading,time
+import logging
+import threading
+import time
+
+
+logger = logging.getLogger(__name__)
+
 
 class PressureController():
     '''
@@ -69,7 +75,10 @@ class PressureController():
         '''
         Abort the current timed dispense action.
         '''
-        print(f'Dispense stop was called, callback status {self.dispenseRunning()}')
+        logger.info(
+            'Stopping pressure dispense; callback running=%s',
+            self.dispenseRunning(),
+        )
         self.set_P(0) 
         try:
             self.active_callback.cancel()   
@@ -77,6 +86,4 @@ class PressureController():
             self.stop_flag.set()
             time.sleep(0.05)
             self.set_P(0)
-
-
 

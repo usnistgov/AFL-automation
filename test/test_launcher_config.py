@@ -89,3 +89,52 @@ from AFL.automation.shared import launcher
     )
 
     assert json.loads(published_path.read_text()) == {"port": 5096, "enabled": False}
+
+
+def test_launcher_falls_back_to_default_data_when_tiled_is_unreachable(tmp_path):
+    afl_home = tmp_path / ".afl"
+    launcher_script = tmp_path / "LauncherTiledFallbackDriver.py"
+    launcher_script.write_text(
+        """
+from AFL.automation.APIServer.APIServer import APIServer
+from AFL.automation.APIServer.Driver import Driver
+
+
+class LauncherTiledFallbackDriver(Driver):
+    defaults = {}
+
+    def __init__(self, overrides=None):
+        super().__init__("LauncherTiledFallbackDriver", self.gather_defaults(), overrides)
+
+
+APIServer.run = lambda self, **kwargs: None
+APIServer.init_logging = lambda self, **kwargs: None
+from AFL.automation.shared import launcher
+
+assert type(server.queue_daemon.data).__name__ == "DataTrashcan"
+""".strip()
+        + "\n"
+    )
+    PersistentConfig(
+        afl_home / "config.json",
+        defaults={
+            "tiled_server": "http://127.0.0.1:1",
+            "tiled_api_key": "",
+        },
+    )
+    environment = os.environ | {
+        "AFL_HOME": str(afl_home),
+        "HOME": str(tmp_path),
+        "PYTHONPATH": str(Path(__file__).parents[1]),
+    }
+
+    launch = subprocess.run(
+        [sys.executable, str(launcher_script)],
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+
+    assert launch.returncode == 0, launch.stderr
+    assert "Warning: unable to connect to configured Tiled server" in launch.stderr
+    assert "http://127.0.0.1:1" in launch.stderr

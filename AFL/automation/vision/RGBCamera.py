@@ -30,6 +30,7 @@ class RGBCamera(NeutronSampleCell, Driver):
         "show_background_pipeline": False,
         "background_threshold": 25,
         "background_capture_on_init": True,
+        "background": "background.npz",
         "camera_warmup_delay": 0.2,
     }
 
@@ -43,8 +44,11 @@ class RGBCamera(NeutronSampleCell, Driver):
             Configuration overrides for PersistentConfig.
         """
         self._opencv_capture = None
+        # ``bkg`` is deliberately a locator, never an image array.  A
+        # background captured without Tiled is stored under AFL_HOME; after a
+        # queued capture is persisted to Tiled, post_tiled_finalize replaces
+        # this value with that entry ID.
         self.bkg = None
-        self._background_mask = None
         self._background_meta = {}
         Driver.__init__(
             self,
@@ -52,6 +56,15 @@ class RGBCamera(NeutronSampleCell, Driver):
             defaults=self.gather_defaults(),
             overrides=overrides,
         )
+        self._background_path = self.path / "RGBCamera" / "background.npz"
+        configured_background = self.config.get("background", "background.npz")
+        if (
+            isinstance(configured_background, str)
+            and not configured_background.lower().endswith(".npz")
+        ):
+            self.bkg = configured_background
+        elif self._background_path.is_file():
+            self.bkg = str(self._background_path)
         self._configure_direct_logging()
         try:
             self.open()
@@ -132,6 +145,61 @@ class RGBCamera(NeutronSampleCell, Driver):
             "opened": bool(self._opencv_capture.isOpened()),
         }
 
+    def _save_local_background(self, background, mask, metadata):
+        """Persist a background reference beneath ``AFL_HOME/RGBCamera``."""
+        self._background_path.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(
+            self._background_path,
+            background=np.asarray(background),
+            mask=np.asarray(mask, dtype=bool),
+            cx=metadata["cx"],
+            cy=metadata["cy"],
+            radius=metadata["radius"],
+        )
+        self.bkg = str(self._background_path)
+        self.config["background"] = self.bkg
+
+    def _load_background(self):
+        """Load the background and ROI mask addressed by ``self.bkg``."""
+        if self.bkg is None:
+            raise ValueError("No background reference has been captured.")
+
+        locator = str(self.bkg)
+        if pathlib.Path(locator).suffix.lower() == ".npz":
+            background_path = pathlib.Path(locator)
+            if not background_path.is_file():
+                raise ValueError(f"Local RGB background does not exist at {background_path}.")
+            with np.load(background_path) as background_data:
+                result = {
+                    "background": np.array(background_data["background"], copy=True),
+                    "mask": np.array(background_data["mask"], dtype=bool, copy=True),
+                    "meta": {
+                        "cx": int(background_data["cx"]),
+                        "cy": int(background_data["cy"]),
+                        "radius": int(background_data["radius"]),
+                    },
+                }
+        else:
+            tiled_client = getattr(getattr(self, "data", None), "tiled_client", None)
+            if tiled_client is None:
+                raise ValueError(
+                    f"RGB background {locator!r} is a Tiled entry and requires an initialized Tiled connection."
+                )
+            try:
+                entry = tiled_client["run_documents"][locator]
+                result = {
+                    # Tiled stores a display-ready RGB image. The OpenCV
+                    # subtraction pipeline remains BGR internally.
+                    "background": np.asarray(entry["background_rgb"][()])[..., ::-1],
+                    "mask": np.asarray(entry["background_mask"][()], dtype=bool),
+                    "meta": dict(getattr(entry, "metadata", {}).get("attrs", {})),
+                }
+            except KeyError as exc:
+                raise ValueError(f"RGB background Tiled entry {locator!r} no longer exists.") from exc
+
+        self._background_meta = result["meta"]
+        return result
+
     @Driver.queued()
     def close(self):
         """Release the OpenCV camera handle so another process can use it."""
@@ -166,7 +234,12 @@ class RGBCamera(NeutronSampleCell, Driver):
         )
         self.log_debug("Attempting to collect camera image.")
 
-        self.open()
+        # A number of still-image camera backends acquire only when the
+        # VideoCapture session is opened.  Reusing the session opened during
+        # driver startup therefore repeats the initial image on later calls.
+        # Resetting it here makes every capture_rgb invocation initiate a new
+        # hardware acquisition.
+        self._reset_camera()
         time.sleep(warmup_delay)
         collected, img = self._collect_image(**kwargs)
 
@@ -318,7 +391,13 @@ class RGBCamera(NeutronSampleCell, Driver):
         else:
             extracted = np.where(mask, I2, 0)
 
-        avg_rgb = self.rgb_values(extracted, mask, color_order="BGR")
+        # An unchanged frame legitimately has no foreground pixels.  Report a
+        # zero-valued foreground measurement instead of passing an empty mask
+        # to rgb_values(), which would abort the queued capture.
+        if changed_pixel_count:
+            avg_rgb = self.rgb_values(extracted, mask, color_order="BGR")
+        else:
+            avg_rgb = {"R": 0.0, "G": 0.0, "B": 0.0}
 
         pipeline_plot_path = None
         if show:
@@ -353,15 +432,21 @@ class RGBCamera(NeutronSampleCell, Driver):
             "image": I2,
             "mask": mask,
             "changed_pixel_count": changed_pixel_count,
+            "foreground_detected": bool(changed_pixel_count),
             "extracted": extracted,
             "pipeline_plot_path": None if pipeline_plot_path is None else str(pipeline_plot_path),
             "avg_rgb": avg_rgb,
         }
 
-    @Driver.unqueued()
+    @Driver.queued()
     def refresh_background(self, **kwargs):
         """
-        Capture and store a new cropped background reference image.
+        Capture and persist a new cropped background reference image.
+
+        The local archive is available immediately at
+        ``AFL_HOME/RGBCamera/background.npz``.  When this queued result is
+        written to Tiled, :meth:`post_tiled_finalize` switches ``self.bkg``
+        to the resulting Tiled entry ID.
         """
         _, processed = self._capture_processed_frame(**kwargs)
         masked_background = np.where(
@@ -369,24 +454,37 @@ class RGBCamera(NeutronSampleCell, Driver):
             processed["cropped_img"],
             0,
         )
-        self.bkg = masked_background
-        self._background_mask = processed["mask"].copy()
         self._background_meta = {
             "cx": processed["cx"],
             "cy": processed["cy"],
             "radius": processed["radius"],
             "shape": processed["cropped_img"].shape,
         }
+        self._save_local_background(masked_background, processed["mask"], self._background_meta)
         self.log_info(
             "Stored new background reference for RGB subtraction "
             f"(center=({processed['cx']}, {processed['cy']}), radius={processed['radius']})."
         )
-        return {
-            "background_ready": True,
-            "shape": list(processed["cropped_img"].shape),
-            "located_center": [processed["cx"], processed["cy"]],
-            "mask_radius": processed["radius"],
-        }
+        dataset = xr.Dataset()
+        dataset.attrs.update(
+            mode="rgb_background",
+            background_locator=str(self._background_path),
+            located_center=[processed["cx"], processed["cy"]],
+            mask_radius=processed["radius"],
+        )
+        dataset["background_rgb"] = (
+            ("height", "width", "rgb_channel"),
+            masked_background[..., ::-1],
+        )
+        dataset = dataset.assign_coords(rgb_channel=["R", "G", "B"])
+        dataset["background_mask"] = (("height", "width"), processed["mask"])
+        return dataset
+
+    def post_tiled_finalize(self, task, tiled_entry_id):
+        """Use the persisted Tiled background after a successful refresh."""
+        if task.get("task_name") == "refresh_background":
+            self.bkg = tiled_entry_id
+            self.config["background"] = tiled_entry_id
 
     def _build_dataset(
         self,
@@ -401,7 +499,7 @@ class RGBCamera(NeutronSampleCell, Driver):
         img_metadata,
     ):
         """
-        Build an xarray Dataset containing RGB measurements, mask, and metadata.
+        Build an xarray Dataset containing RGB measurements, an RGB image, mask, and metadata.
         """
         ds = xr.Dataset()
         ds.attrs["name"] = name
@@ -425,7 +523,14 @@ class RGBCamera(NeutronSampleCell, Driver):
             [avg_rgb["R"], avg_rgb["G"], avg_rgb["B"]],
             coords={"channel": ["R", "G", "B"]},
         )
-        ds["img_bgr"] = (("height", "width", "channel"), measurement_img)
+        # Persist one display-ready image.  Keeping only RGB also matches the
+        # background dataset format used by Tiled and avoids redundant image
+        # arrays in every capture entry.
+        ds["img_rgb"] = (
+            ("height", "width", "rgb_channel"),
+            measurement_img[..., ::-1],
+        )
+        ds = ds.assign_coords(rgb_channel=["R", "G", "B"])
         ds["mask"] = (("height", "width"), mask)
 
         return ds
@@ -490,11 +595,12 @@ class RGBCamera(NeutronSampleCell, Driver):
         if subtract_background:
             if self.bkg is None:
                 self.refresh_background(**kwargs)
+            background = self._load_background()
             roi_mask = processed["mask"]
-            if self._background_mask is not None and self._background_mask.shape == processed["mask"].shape:
-                roi_mask = roi_mask & self._background_mask
+            if background["mask"].shape == processed["mask"].shape:
+                roi_mask = roi_mask & background["mask"]
             background_processed = self._process_image_with_background(
-                self.bkg,
+                background["background"],
                 np.where(processed["mask"][..., None], processed["cropped_img"], 0),
                 show=show_background_pipeline,
                 roi_mask=roi_mask,
@@ -562,6 +668,7 @@ _DEFAULT_CUSTOM_CONFIG = {
         "show_background_pipeline": False,
         "background_threshold": 25,
         "background_capture_on_init": True,
+        "background": "background.npz",
         "camera_warmup_delay": 0.2,
     }
 }

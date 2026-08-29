@@ -138,7 +138,9 @@ When a driver is launched, the following sequence occurs:
 2. Persistent configuration is loaded from ``~/.afl/config.json``
 3. Default configurations are applied if missing from the persistent store
 4. Environment variables are set (e.g., ``AFL_SYSTEM_SERIAL``)
-5. If a Tiled server is configured, a data connection is established
+5. If a Tiled server is configured, a data connection is attempted. If it is
+   unavailable, the launcher reports a warning and continues with the default
+   non-persistent data backend.
 6. Driver objects are reconstituted from configuration
 7. The APIServer is created and configured
 8. Standard routes and command queue are set up

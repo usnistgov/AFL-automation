@@ -180,6 +180,9 @@ class QueueDaemon(threading.Thread):
 
             self.data.finalize()
             self._attach_tiled_result_metadata(masked_package)
+            tiled_entry_id = getattr(self.data, "last_tiled_entry_id", None)
+            if exit_state == "Success!" and tiled_entry_id is not None:
+                self.driver.post_tiled_finalize(task, str(tiled_entry_id))
             self.history.append(masked_package)#history for this server restart
 
             self.task_queue.iteration_id = time.time()

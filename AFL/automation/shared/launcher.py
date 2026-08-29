@@ -18,11 +18,21 @@ except NameError:
     import __main__
     main_module_fullpath = os.path.abspath(__main__.__file__)
     main_module_name = os.path.basename(main_module_fullpath).replace('.py','')
-try:
-    driver_module = importlib.import_module(main_module_name,'')
-except ModuleNotFoundError:
-    # driver_module = sys.modules[__name__]
+
+# The launcher is normally imported by the driver script itself.  Re-importing
+# that script by filename executes it a second time, including any statements
+# after ``from AFL.automation.shared import launcher``.  Use the active module
+# in that case so launch setup runs exactly once.
+if getattr(__main__, '__file__', None) and (
+        os.path.basename(os.path.abspath(__main__.__file__)).replace('.py', '')
+        == main_module_name
+):
     driver_module = __main__
+else:
+    try:
+        driver_module = importlib.import_module(main_module_name,'')
+    except ModuleNotFoundError:
+        driver_module = __main__
 driver_name = driver_module.__name__.split('.')[-1]
 try:
     main_module_name = driver_module._OVERRIDE_MAIN_MODULE_NAME
@@ -75,9 +85,18 @@ else:
         ca_status_port = 5064
 
 if len(AFL_GLOBAL_CONFIG['tiled_server'])>0:
-        data = DataTiled(AFL_GLOBAL_CONFIG['tiled_server'],
-                api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
-                backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
+        tiled_server = AFL_GLOBAL_CONFIG['tiled_server']
+        try:
+                data = DataTiled(tiled_server,
+                        api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
+                        backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
+        except Exception as exc:
+                print(
+                        f'Warning: unable to connect to configured Tiled server {tiled_server!r}: {exc}. '
+                        'Continuing without a Tiled data backend.',
+                        file=sys.stderr,
+                )
+                data = None
 else:
         data = None
 
@@ -227,6 +246,11 @@ server.create_queue(
         ca_prefix=f"AFL:{AFL_GLOBAL_CONFIG['system_serial']}:{main_module_name}:",
         ca_port=ca_status_port,
 )
+
+# Make the launched server available to the driver script after importing this
+# module.  This also avoids requiring launch scripts to reach into the launcher
+# module merely to inspect or customize the server instance.
+driver_module.server = server
 
 #server.add_unqueued_routes()
 # APIServer initializes logging in its constructor.

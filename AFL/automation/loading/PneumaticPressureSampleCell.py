@@ -23,6 +23,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     defaults['load_timeout'] = 60
     
     defaults['arm_move_delay'] = 0.2
+    defaults['arm_move_timeout'] = 10
     defaults['vent_delay'] = 0.5
     defaults['rinse_program'] = [
                                 ('rinse1',5),
@@ -32,7 +33,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                                 (None,0.5),
                                 ('blow',5)
                                 ] 
-    defaults['external_load_complete_trigger'] = False
+    defaults['external_load_complete_trigger'] = False  # Currently unused.
     defaults['ramp_load_stop_pressure'] = 7
     defaults['ramp_load_duration'] = 20
     defaults['enforce_door_closed'] = True
@@ -77,6 +78,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             self.robot_interlock_url = f'http://{robot_interlock_host}:31950/robot/door/status'
         else:
             self.robot_interlock_url = None
+        self._last_robot_door_state = None
 
 
         self._USE_ARM_LIMITS = False
@@ -95,6 +97,8 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self.relayboard.setChannels({'piston-vent':True})
         self._arm_up()
         time.sleep(0.2)
+        self.log_info("Succesfully initated PneumaticPressureSampleCell class")
+
         self.state = 'READY'
         self.rinse_status = 'Not Rinsing'
         
@@ -173,20 +177,6 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             
         return status
 
-    def _log(self, level, message):
-        if self.app is not None and hasattr(self.app, 'logger'):
-            log_method = getattr(self.app.logger, level, None)
-            if log_method is not None:
-                log_method(message)
-                return
-        print(f'[{level.upper()}] {message}')
-
-    def log_warning(self, message):
-        self._log('warning', message)
-
-    def log_info(self, message):
-        self._log('info', message)
- 
     def _arm_interlock_check(self):
         if self._USE_DOOR_INTERLOCK:
             if not self.config['enforce_door_closed']:
@@ -202,36 +192,58 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         if self.digitalin is not None:
             if 'DOOR' in self.digitalin.state.keys():
                 return not self.digitalin.state['DOOR']
-        try:
-            state = requests.get(self.robot_interlock_url,headers = {
-        'Opentrons-Version': '2'}).json()['data']['status']
-        except Exception:
-            return True
-        if state == 'open':
-            return True
-        elif state == 'closed':
-            return False
-        else:
-            raise ValueError('could not get robot door status')
+        if self.robot_interlock_url is not None:
+            state = requests.get(
+                self.robot_interlock_url,
+            headers = {'Opentrons-Version': '2'}).json()['data']['status']
 
+            if state != self._last_robot_door_state:
+                self.log_debug(f'Robot door status at {self.robot_interlock_url}: {state}')
+                self._last_robot_door_state = state
+
+            if state == 'open':
+                return True
+            elif state == 'closed':
+                return False
 
     def _arm_up(self):
         self._arm_interlock_check()
         self.relayboard.setChannels({'piston-vent':True,'arm-up':True,'arm-down':False})
         if self._USE_ARM_LIMITS:
             while self.digitalin.state['ARM_UP']:
+                self.log_info(f"Waiting for arm to be in UP state; Currently {self.digitalin.state['ARM_UP']}")
                 time.sleep(0.1)
+            self.log_info(f"Current arm state is confirmed to be UP: {self.digitalin.state['ARM_UP']}")
         else:
             time.sleep(self.config['arm_move_delay'])
         self.arm_state = 'UP'
+
+    def _wait_for_arm_limit(self, limit_name, direction):
+        """Wait for an active-low arm limit switch, with a bounded timeout."""
+        timeout = self.config['arm_move_timeout']
+        if timeout <= 0:
+            raise ValueError('arm_move_timeout must be greater than zero.')
+
+        self.log_info(
+            f'Waiting up to {timeout:g} s for arm to reach {direction} limit '
+            f'({limit_name}).'
+        )
+        start_time = time.monotonic()
+        while self.digitalin.state[limit_name]:
+            elapsed = time.monotonic() - start_time
+            if elapsed >= timeout:
+                raise TimeoutError(
+                    f'Arm did not reach the {direction} limit ({limit_name}) '
+                    f'within {timeout:g} s; input remains high.'
+                )
+            time.sleep(min(0.1, timeout - elapsed))
 
     def _arm_down(self):
         self._arm_interlock_check()
         self.relayboard.setChannels({'piston-vent':True,'arm-up':False,'arm-down':True})
         time.sleep(self.config['arm_move_delay'])
         if self._USE_ARM_LIMITS:
-            while self.digitalin.state['ARM_DOWN']:
-                time.sleep(0.1)
+            self._wait_for_arm_limit('ARM_DOWN', 'down')
         else:
             time.sleep(self.config['arm_move_delay'])
         self.arm_state = 'DOWN'
@@ -252,13 +264,12 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
         self._arm_down()
         time.sleep(self.config['vent_delay'])
         self.relayboard.setChannels({'piston-vent':False,'postsample':True})
-        print('setting state...')
         self.loadStoppedExternally = False
         if load_dest_label == '':
             self.state = 'LOAD IN PROGRESS'
         else:
             self.state = f'LOAD IN PROGRESS to {load_dest_label}'
-        print('sending dispense command')
+        self.log_info(f'sending dispense command with state {self.state}')
         if self.config['load_mode'] == 'static':
             self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         elif self.config['load_mode'] == 'ramp':
@@ -296,12 +307,12 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
             raise Exception('Tried to advance sample but no sample is loaded.')
         self.state = 'PREPARING TO Advance'
         self.relayboard.setChannels({'postsample':True})
-        print('setting state...')        
+        self.log_info('setting state...')
         if load_dest_label == '':
             self.state = 'LOAD IN PROGRESS'
         else:
             self.state = f'LOAD IN PROGRESS to {load_dest_label}'
-        print('sending dispense command')
+        self.log_info('sending dispense command')
         self.pctrl.timed_dispense(self.config['load_pressure'],self.config['load_timeout'],block=False)
         self.loadStoppedExternally = False 
         while(self.pctrl.dispenseRunning() and not self.loadStoppedExternally):
@@ -315,7 +326,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
     
     @Driver.unqueued(render_hint='raw')
     def stopLoad(self,**kwargs):
-        print(kwargs)
+        self.log_info(f'Stopping load with kwargs: {kwargs}')
         try:
             if kwargs['secret'] == 'xrays>neutrons':
                 if 'LOAD IN PROGRESS' not in self.state:
@@ -326,7 +337,7 @@ class PneumaticPressureSampleCell(Driver,SampleCell):
                     self.relayboard.setChannels({'postsample':False})
                     self.loadStoppedExternally=True
                     if self.data is not None:
-                        print(self.data)
+                        self.log_debug(self.data)
                         try:
                             self.data['load_stop_source'] = 'external'
                         except AttributeError:

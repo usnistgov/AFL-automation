@@ -317,86 +317,148 @@
 
         }
 
- // Function to display commands and handle command execution
-function displayCommands(containerId, commands) {
-    var container = $(containerId);
-    container.empty(); // Clear previous commands
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
 
-    // Iterate over each command
-    for (var key in commands) {
-        if (commands.hasOwnProperty(key)) {
-            var command = commands[key];
-            var commandContainer = $("<div class='command-args-container'></div>");
-            var button = $("<button class='button'>" + key + "</button>");
+        function normalizeKwargs(kwargs) {
+            if (!Array.isArray(kwargs)) {
+                return [];
+            }
+            return kwargs.map(function (kwarg) {
+                return { name: kwarg[0], value: kwarg[1] };
+            });
+        }
 
-            // Add click event handler to execute the command
-            button.click((function (cmd, args, kwargs) {
-                return function () {
-                    login().then(function (token) {
-                        var payload = { task_name: cmd };
-                        // Add any arguments to the payload
-                        for (var i = 0; i < args.length; i++) {
-                            payload[args[i]] = ""; // Add empty textboxes for arguments
-                        }
-                        // Add kwargs with values from the command definition
-                        for (var j = 0; j < kwargs.length; j++) {
-                            var kwarg = kwargs[j];
-                            payload[kwarg[0]] = kwarg[1]; // Add kwarg name and default value
-                        }
-                        // Execute the command with JWT token in request headers
-                        $.ajax({
-                            type: "POST",
-                            url: "/enqueue",
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            data: JSON.stringify(payload),
-                            success: function () {
-                                console.log("Command enqueued successfully.");
-                            },
-                            error: function (xhr, status, error) {
-                                console.error("Error enqueuing command:", error);
-                            }
-                        });
-                    });
+        function normalizeQuickbarParams(command) {
+            var params = command && command.qb && command.qb.params ? command.qb.params : {};
+            return Object.keys(params).map(function (name) {
+                var spec = params[name] || {};
+                return {
+                    name: name,
+                    label: spec.label || name,
+                    type: spec.type || 'text',
+                    value: spec.default
                 };
-            })(key, command.args, command.kwargs));
+            });
+        }
 
-            // Append button to command container
-            commandContainer.append(button);
+        function appendField(commandContainer, field) {
+            var fieldId = 'field_' + field.name + '_' + Math.random().toString(36).slice(2);
+            var label = $("<label for='" + fieldId + "'>" + escapeHtml(field.label || field.name) + ": </label>");
+            var inputType = field.type === 'bool' ? 'checkbox' : 'text';
+            var input = $("<input id='" + fieldId + "' data-field-name='" + escapeHtml(field.name) + "' type='" + inputType + "'>");
 
-            // Add labeled textboxes for kwargs
-            for (var k = 0; k < command.kwargs.length; k++) {
-                var kwarg = command.kwargs[k];
-                var label = $("<label>" + kwarg[0] + ": </label>");
-                var textbox = $("<input type='text' value='" + kwarg[1] + "'>");
-                textbox.on('input', function() {
-                    command[kwarg[0]] = $(this).val(); // Update value in command object
-                });
-                commandContainer.append(label);
-                commandContainer.append(textbox);
+            if (field.type === 'bool') {
+                input.prop('checked', Boolean(field.value));
+            } else if (field.value !== null && field.value !== undefined) {
+                input.val(field.value);
+            } else {
+                input.val('');
             }
 
-            // Append command container to main container
+            commandContainer.append(label);
+            commandContainer.append(input);
+        }
+
+        function collectPayload(commandContainer, commandName, args, kwargs) {
+            var payload = { task_name: commandName };
+
+            for (var i = 0; i < args.length; i++) {
+                payload[args[i]] = "";
+            }
+
+            for (var j = 0; j < kwargs.length; j++) {
+                var field = kwargs[j];
+                var input = commandContainer.find("[data-field-name='" + field.name + "']");
+                if (!input.length) {
+                    payload[field.name] = field.value;
+                    continue;
+                }
+                if (input.attr('type') === 'checkbox') {
+                    payload[field.name] = input.is(':checked');
+                } else {
+                    payload[field.name] = input.val();
+                }
+            }
+
+            return payload;
+        }
+
+        function renderCommand(container, commandName, buttonText, args, kwargs) {
+            var commandContainer = $("<div class='command-args-container'></div>");
+            var button = $("<button class='button'>" + escapeHtml(buttonText || commandName) + "</button>");
+
+            button.click(function () {
+                login().then(function (token) {
+                    var payload = collectPayload(commandContainer, commandName, args, kwargs);
+                    $.ajax({
+                        type: "POST",
+                        url: "/enqueue",
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        data: JSON.stringify(payload),
+                        success: function () {
+                            console.log("Command enqueued successfully.");
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error enqueuing command:", error);
+                        }
+                    });
+                });
+            });
+
+            commandContainer.append(button);
+            for (var k = 0; k < kwargs.length; k++) {
+                appendField(commandContainer, kwargs[k]);
+            }
             container.append(commandContainer);
         }
-    }
-}
 
-        // Initial update
+        function displayQuickbarCommands(containerId, commands) {
+            var container = $(containerId);
+            container.empty();
+
+            for (var key in commands) {
+                if (!commands.hasOwnProperty(key)) {
+                    continue;
+                }
+                var command = commands[key];
+                var quickbarFields = normalizeQuickbarParams(command);
+                var buttonText = command.qb && command.qb.button_text ? command.qb.button_text : key;
+                renderCommand(container, key, buttonText, command.args || [], quickbarFields);
+            }
+        }
+
+        function displayQueuedCommands(containerId, commands) {
+            var container = $(containerId);
+            container.empty();
+
+            for (var key in commands) {
+                if (!commands.hasOwnProperty(key)) {
+                    continue;
+                }
+                var command = commands[key];
+                renderCommand(container, key, key, command.args || [], normalizeKwargs(command.kwargs));
+            }
+        }
 
         update();
-        // Retrieve unqueued commands
         $.get("/get_quickbar", function (data) {
-            displayCommands("#quickbar-commands", data);
+            displayQuickbarCommands("#quickbar-commands", data);
         });
 
-        // Retrieve queued commands
         $.get("/get_queued_commands", function (data) {
-                displayCommands("#queued-commands", data);
-            });
-        setInterval(update, 500); // Update every 0.5 seconds
+            displayQueuedCommands("#queued-commands", data);
+        });
+        setInterval(update, 500);
         setTimeout(function () {
             $('#running')[0].scrollIntoView();
         }, 1500);

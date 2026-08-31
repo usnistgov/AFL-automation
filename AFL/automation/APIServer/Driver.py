@@ -223,6 +223,10 @@ class Driver(DriverWebAppsMixin):
                 self.log_info(f'{name:30s} = {value}')
         return config.config
 
+    def refresh_quickbar(self):
+        """Refresh dynamic quickbar metadata before the server serves it."""
+        return None
+
     def clean_config(self):
         """Remove any config keys that are not present in defaults.
 

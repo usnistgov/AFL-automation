@@ -97,7 +97,11 @@ class CatalogOfAFLEvents(Container):
         return self.search(Eq('sample_uuid',sample_uuid))
     
     def task_uuid(self,task_uuid):
-        return self.search(Eq('uuid',task_uuid))
+        task_uuid = str(task_uuid)
+        direct_match = self.search(Eq('uuid', task_uuid))
+        if len(direct_match):
+            return direct_match
+        return self.search(Eq('attrs.uuid', task_uuid))
 
     def task(self,task):
         return self.search(Eq('task_name',task))

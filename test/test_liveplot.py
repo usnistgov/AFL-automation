@@ -185,6 +185,45 @@ def test_base_driver_pulls_campaign_and_reports_partial_source_errors():
     assert any("spectrum-bad" in warning for warning in payload["warnings"])
 
 
+def test_base_driver_pulls_latest_tiled_campaign_by_default():
+    tiled, _, _ = campaign_tiled()
+    tiled["run_documents"]["newest"] = FakeItem(
+        xr.Dataset(),
+        {
+            "attrs": {
+                "AL_campaign_name": "campaign-2",
+                "meta": {"ended": "08/27/26 10:00:00-000000 EDT-0400"},
+            }
+        },
+    )
+    driver = LivePlottingDriver(tiled_client=tiled)
+    messages = []
+    driver.log_info = messages.append
+
+    payload = driver.pull_campaign()
+
+    assert payload["campaign_id"] == "campaign-2"
+    assert driver.status()[0] == "Campaign: campaign-2"
+    assert messages == ["Loaded campaign ID 'campaign-2' from Tiled."]
+
+
+def test_explicit_campaign_overrides_configured_campaign_and_tiled_latest():
+    tiled, _, _ = campaign_tiled()
+    tiled["run_documents"]["newest"] = FakeItem(
+        xr.Dataset(),
+        {
+            "AL_campaign_name": "campaign-2",
+            "timestamp": "2026-08-27T10:00:00",
+        },
+    )
+    driver = LivePlottingDriver(
+        overrides={"campaign_id": "configured-campaign"}, tiled_client=tiled
+    )
+
+    assert driver.pull_campaign()["campaign_id"] == "configured-campaign"
+    assert driver.pull_campaign("campaign-1")["campaign_id"] == "campaign-1"
+
+
 def test_bo_driver_builds_progress_and_high_dimensional_distribution_plots():
     tiled = bo_tiled(dimensions=4)
     driver = LivePlotBO(tiled_client=tiled)
@@ -413,25 +452,48 @@ def test_liveplot_flask_endpoints_serve_dashboard_json_and_png():
     client = server.app.test_client()
 
     dashboard = client.get("/liveplot")
-    data = client.get("/liveplot_data?campaign_id=campaign-1")
+    data = client.get("/liveplot_data")
     image = client.get("/liveplot_image?entry_id=image-1&variable=img_rgb")
 
     assert dashboard.status_code == 200
     assert b"AFL Live Plot" in dashboard.data
     assert data.status_code == 200
     assert data.get_json()["status"] == "success"
+    assert data.get_json()["campaign_id"] == "campaign-1"
     assert image.status_code == 200
     assert image.content_type == "image/png"
     assert image.data.startswith(b"\x89PNG")
 
 
-def test_missing_campaign_is_a_json_error():
-    driver = LivePlotBO(tiled_client=bo_tiled())
+def test_liveplot_response_converts_nonfinite_spectrum_values_to_null():
+    tiled = bo_tiled()
+    tiled["run_documents"]["spectrum-1"].dataset["extinction"].values[:] = [
+        np.nan,
+        np.inf,
+        -np.inf,
+    ]
+    driver = LivePlotBO(tiled_client=tiled)
+    server = APIServer("LivePlotNonfiniteTest")
+    server.create_queue(driver)
+
+    response = server.app.test_client().get(
+        "/liveplot_data?campaign_id=campaign-1"
+    )
+    payload = response.get_json()
+
+    assert response.status_code == 200
+    assert b"NaN" not in response.data
+    assert b"Infinity" not in response.data
+    assert payload["current"]["latest_spectrum"]["y"] == [None, None, None]
+
+
+def test_missing_campaign_is_a_json_error_when_tiled_has_no_campaigns():
+    driver = LivePlotBO(tiled_client=FakeTiled(run_documents=FakeCatalog()))
 
     result = driver.liveplot_data()
 
     assert result["status"] == "error"
-    assert "campaign_id" in result["message"]
+    assert "Tiled contains no campaigns" in result["message"]
 
 
 def test_liveplot_dashboard_assets_are_present_and_packaged():
@@ -440,6 +502,8 @@ def test_liveplot_dashboard_assets_are_present_and_packaged():
         assert (app_dir / filename).is_file()
 
     javascript = (app_dir / "liveplot.js").read_text()
+    assert "fetch(`/liveplot_data${query}`)" in javascript
+    assert "input.value = payload.campaign_id" in javascript
     assert "payload.dashboard_layout" in javascript
     assert "plotKinds.has(panelSpec.kind)" in javascript
     assert "record.sample_name || record.entry_id" not in javascript

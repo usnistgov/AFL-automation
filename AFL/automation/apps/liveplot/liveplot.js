@@ -127,18 +127,21 @@ function renderDashboard(payload) {
 async function refreshCampaign(event) {
   if (event) event.preventDefault();
   const campaignId = input.value.trim();
-  if (!campaignId) return;
   loading.hidden = false;
   warnings.hidden = true;
   try {
-    const response = await fetch(`/liveplot_data?campaign_id=${encodeURIComponent(campaignId)}`);
+    const query = campaignId ? `?campaign_id=${encodeURIComponent(campaignId)}` : '';
+    const response = await fetch(`/liveplot_data${query}`);
     const payload = await response.json();
     if (!response.ok || payload.status !== 'success') throw new Error(payload.message || `Request failed (${response.status})`);
     const counts = payload.counts || {};
+    input.value = payload.campaign_id;
     summary.textContent = `${payload.campaign_id}: ${counts.compositions || 0} compositions, ${counts.images || 0} images, ${counts.spectra || 0} spectra`;
     renderWarnings(payload.warnings);
     renderDashboard(payload);
-    const url = new URL(window.location.href); url.searchParams.set('campaign_id', campaignId); history.replaceState({}, '', url);
+    if (campaignId) {
+      const url = new URL(window.location.href); url.searchParams.set('campaign_id', campaignId); history.replaceState({}, '', url);
+    }
   } catch (error) {
     renderWarnings([error.message]);
   } finally {
@@ -149,4 +152,4 @@ async function refreshCampaign(event) {
 form.addEventListener('submit', refreshCampaign);
 const requestedCampaign = new URLSearchParams(window.location.search).get('campaign_id');
 if (requestedCampaign) input.value = requestedCampaign;
-if (input.value.trim()) refreshCampaign();
+refreshCampaign();

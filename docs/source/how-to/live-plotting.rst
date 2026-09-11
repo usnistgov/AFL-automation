@@ -7,8 +7,9 @@ optimization results stored in Tiled. Start the standalone server with::
 
    python -m AFL.automation.shared.liveplot
 
-The default port is ``5096``. Open ``http://localhost:5096/liveplot``, enter an
-``AL_campaign_name``, and use **Refresh** to pull the latest completed records.
+The default port is ``5096``. Open ``http://localhost:5096/liveplot`` to load
+the campaign belonging to the newest timestamped Tiled run. Enter an
+``AL_campaign_name`` and use **Refresh** to select a different campaign.
 The default source preset expects the color-matching workflow's
 ``OT2Prepare.prepare``, ``RGBCamera.capture_rgb``,
 ``SeabreezeUVVis.measure``, and ``DoubleAgentDriver.predict`` records.
@@ -16,8 +17,9 @@ The default source preset expects the color-matching workflow's
 Configuration
 -------------
 
-Supply launcher overrides to select a default campaign or change source names
-and variables. For example::
+Supply launcher overrides to pin a default campaign instead of discovering the
+latest one, or to change source names and variables. An ID entered in the
+dashboard takes precedence over this configured default. For example::
 
    {
      "campaign_id": "color-matching-082626-b3b865b5",

@@ -5,6 +5,8 @@ from __future__ import annotations
 import datetime as dt
 import io
 import json
+import math
+import re
 from typing import Any, Dict, Iterable, Mapping, Optional, Sequence
 from urllib.parse import urlencode
 
@@ -58,15 +60,28 @@ def _timestamp_key(value: Any) -> tuple:
         parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
         return (2, parsed.timestamp())
     except (TypeError, ValueError):
-        return (1, text)
+        pass
+    queue_timestamp = re.sub(r"\s+[A-Za-z_]+(?=[+-]\d{4}$)", "", text)
+    for timestamp_format in (
+        "%m/%d/%y %H:%M:%S-%f%z",
+        "%m/%d/%y %H:%M:%S-%f",
+    ):
+        try:
+            parsed = dt.datetime.strptime(queue_timestamp, timestamp_format)
+            return (2, parsed.timestamp())
+        except ValueError:
+            pass
+    return (1, text)
 
 
 def _plain(value: Any) -> Any:
     """Convert NumPy/xarray/Plotly values to JSON-safe Python values."""
     if isinstance(value, np.ndarray):
-        return value.tolist()
+        return _plain(value.tolist())
     if isinstance(value, np.generic):
-        return value.item()
+        return _plain(value.item())
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
     if isinstance(value, Mapping):
         return {str(key): _plain(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -284,6 +299,28 @@ class LivePlottingDriver(Driver):
         if not successful_searches:
             raise RuntimeError("Campaign search failed (" + "; ".join(errors) + ")")
         return found
+
+    def _latest_campaign_id(self) -> str:
+        """Return the campaign attached to the newest timestamped Tiled run."""
+        latest = None
+        for key, item in self._run_catalog().items():
+            metadata = self._metadata(item)
+            campaign_id = _first_value(metadata, self._field_paths("campaign"))
+            if campaign_id is None or not str(campaign_id).strip():
+                continue
+            timestamp = _first_value(metadata, self._field_paths("timestamp"))
+            candidate = (
+                _timestamp_key(timestamp),
+                self._entry_id(key),
+                str(campaign_id).strip(),
+            )
+            if latest is None or candidate[:2] > latest[:2]:
+                latest = candidate
+        if latest is None:
+            raise ValueError(
+                "No campaign_id was configured and Tiled contains no campaigns."
+            )
+        return latest[2]
 
     def _matches_source(
         self, metadata: Mapping[str, Any], source: Mapping[str, Any]
@@ -832,15 +869,14 @@ class LivePlottingDriver(Driver):
     def pull_campaign(self, campaign_id=None):
         selected = str(campaign_id or self.config.get("campaign_id", "")).strip()
         if not selected:
-            raise ValueError(
-                "A campaign_id must be supplied in the dashboard or driver configuration."
-            )
+            selected = self._latest_campaign_id()
         payload = self._build_base_payload(selected)
         payload.pop("_composition_records", None)
         payload.pop("_spectra_records", None)
         self._last_campaign_id = selected
         self._last_refresh = payload["refreshed_at"]
         self._last_warnings = payload["warnings"]
+        self.log_info(f"Loaded campaign ID {selected!r} from Tiled.")
         return _plain(payload)
 
     @Driver.unqueued(render_hint="html")

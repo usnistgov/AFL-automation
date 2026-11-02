@@ -1,0 +1,49 @@
+name: afl-tiled
+
+services:
+  tiled:
+    build:
+      context: .
+      args:
+        TILED_VERSION: "0.2.4"
+    restart: unless-stopped
+    user: "${TILED_UID:?set TILED_UID}:${TILED_GID:?set TILED_GID}"
+    ports:
+      # Default to loopback for a reverse proxy. Set TILED_BIND_ADDRESS to the
+      # NAS's fixed LAN IP only when direct LAN access is intentionally used.
+      - "${TILED_BIND_ADDRESS:-127.0.0.1}:${TILED_PORT:-8000}:8000"
+    volumes:
+      - type: bind
+        source: "${TILED_DATA_ROOT:?set TILED_DATA_ROOT}/catalog"
+        target: /catalog
+      - type: bind
+        source: "${TILED_DATA_ROOT:?set TILED_DATA_ROOT}/data"
+        target: /data
+    secrets:
+      - tiled_api_key
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          key=open('/run/secrets/tiled_api_key').read().strip();
+          request=urllib.request.Request('http://127.0.0.1:8000/api/v1/metadata',headers={'Authorization':'Apikey '+key});
+          raise SystemExit(0 if urllib.request.urlopen(request,timeout=5).status == 200 else 1)
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    stop_grace_period: 30s
+
+secrets:
+  tiled_api_key:
+    file: "${TILED_SECRET_FILE:?set TILED_SECRET_FILE}"

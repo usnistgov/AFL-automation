@@ -107,6 +107,7 @@ packages = ["AFL"]
 packages = ["AFL"]
 include = [
   "AFL/**/*.py",
+  "AFL/automation/apps/**/*",
   "support/labware/*.json",
 ]
 
@@ -114,6 +115,7 @@ include = [
 packages = ["AFL"]
 include = [
   "AFL/**/*.py",
+  "AFL/automation/apps/**/*",
   "support/labware/*.json",
 ]
 

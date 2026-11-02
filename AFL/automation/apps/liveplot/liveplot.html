@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AFL Live Plot</title>
+  <link rel="stylesheet" href="/static/apps/liveplot/liveplot.css">
+  <script src="/static/apps/common/plotly/plotly.min.js"></script>
+</head>
+<body data-default-campaign="{{ default_campaign|e }}">
+  <header>
+    <div><h1>AFL Live Plot</h1><p id="summary">Choose a campaign to load its measurements.</p></div>
+    <form id="campaign-form">
+      <label for="campaign-id">Campaign ID</label>
+      <input id="campaign-id" name="campaign_id" value="{{ default_campaign|e }}" placeholder="Latest campaign">
+      <button type="submit">Refresh</button>
+    </form>
+  </header>
+  <div id="loading" hidden>Loading campaign data…</div>
+  <section id="warnings" hidden></section>
+  <main id="dashboard"></main>
+  <script src="/static/apps/liveplot/liveplot.js"></script>
+</body>
+</html>

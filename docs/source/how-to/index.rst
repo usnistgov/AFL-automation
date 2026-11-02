@@ -8,6 +8,7 @@ How-to guides are problem-oriented instructions that help users accomplish speci
    :maxdepth: 1
    
    dependencies
+   live-plotting
    my-first-server
    static-directories
    run-tests

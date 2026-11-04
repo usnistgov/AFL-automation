@@ -73,7 +73,15 @@ except (AttributeError,NameError):
 if 'AFL_SYSTEM_SERIAL' not in os.environ.keys():
         os.environ['AFL_SYSTEM_SERIAL'] = AFL_GLOBAL_CONFIG['system_serial']
 
-if main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
+if 'AFL_HTTP_PORT' in os.environ:
+        try:
+                server_port = int(os.environ['AFL_HTTP_PORT'])
+        except ValueError as exc:
+                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535') from exc
+        if not 1 <= server_port <= 65535:
+                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535')
+        print(f'Using launch HTTP port {server_port}')
+elif main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
         server_port = AFL_GLOBAL_CONFIG['ports'][main_module_name]
         print(f'Found configured non-default port {server_port}, starting there')
 else:

@@ -61,8 +61,12 @@ def test_mixed_solvents_mass():
         del sub_balanced.components['NaCl']
         del sub_target.components['NaCl']
 
-        assert sub_balanced.mass_fraction['H2O'] == pytest.approx(sub_target.mass_fraction['H2O'], abs=2e-3)
-        assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(sub_target.mass_fraction['Hexanes'], abs=2e-3)
+        assert sub_balanced.mass_fraction['H2O'].to('').magnitude == pytest.approx(
+            sub_target.mass_fraction['H2O'].to('').magnitude, abs=2e-3
+        )
+        assert sub_balanced.mass_fraction['Hexanes'].to('').magnitude == pytest.approx(
+            sub_target.mass_fraction['Hexanes'].to('').magnitude, abs=2e-3
+        )
 
     assert none_count == 1
 

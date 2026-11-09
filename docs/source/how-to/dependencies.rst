@@ -44,8 +44,11 @@ Hardware Interfaces
      - labjack-ljm
      - Support for LabJack data acquisition hardware
    * - ``piplates``
-     - piplates
+     - pi-plates
      - Support for Pi-Plates hardware add-ons
+   * - ``loader``
+     - pi-plates, spidev, rpi-lgpio, labjack-ljm
+     - Default PneumaticPressureSampleCell hardware: Pi-Plates relays, Raspberry Pi GPIO, and LabJack pressure control and load sensors
    * - ``rpi-gpio``
      - RPi.GPIO
      - Raspberry Pi GPIO interface libraries
@@ -67,6 +70,18 @@ Hardware Interfaces
    * - ``remote-access``
      - paramiko
      - SSH client for remote instrument connections
+
+To install the pneumatic pressure sample cell dependencies from a checkout:
+
+.. code-block:: bash
+
+    python -m pip install -e '.[loader]'
+
+The ``loader`` extra includes the core dependencies and the hardware packages
+listed in ``requirements-loader.txt``. It uses ``rpi-lgpio``, which provides the
+``RPi.GPIO`` module used by ``PiGPIO``. Install only one GPIO implementation;
+``rpi-lgpio`` and ``RPi.GPIO`` provide the same module and cannot coexist.
+LabJack devices also require the vendor's native LJM library on the host.
 
 Scientific Processing
 ^^^^^^^^^^^^^^^^^^^^

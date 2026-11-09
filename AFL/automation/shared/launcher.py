@@ -170,6 +170,14 @@ args = parser.parse_args()
 if args.port is not None:
         server_port = args.port
         print(f'Using command-line port {server_port}')
+elif 'AFL_HTTP_PORT' in os.environ:
+        try:
+                server_port = int(os.environ['AFL_HTTP_PORT'])
+        except ValueError as exc:
+                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535') from exc
+        if not 1 <= server_port <= 65535:
+                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535')
+        print(f'Using launch HTTP port {server_port}')
 elif main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
         server_port = AFL_GLOBAL_CONFIG['ports'][main_module_name]
         print(f'Found configured non-default port {server_port}, starting there')

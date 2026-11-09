@@ -71,7 +71,9 @@ roboctl = "AFL.automation.cli:main"
 
 [project.optional-dependencies]
 labjack = ["labjack-ljm"]
-piplates = ["piplates"]
+piplates = ["pi-plates"]
+# Hardware used by PneumaticPressureSampleCell's default configuration.
+loader = ["pi-plates", "spidev", "rpi-lgpio", "labjack-ljm"]
 rpi-gpio = ["RPi.GPIO"]
 picamera = ["picamera2"]
 serial = ["pyserial"]

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
+import json
 import math
 import re
 import logging
@@ -25,9 +27,16 @@ CONFIG_DIRECTORY = Path(__file__).with_name("configs")
 _UNSET = object()
 
 
-def station_operation(method):
-    """Expose a station method through ``arm.station_operation`` without wrapping it."""
+def station_operation(method=None, *, resumes_context=False, arm_keyword=False):
+    """Expose an operation; continuations must validate their saved context.
+
+    arm_keyword preserves positional arguments on APIs also called directly.
+    """
+    if method is None:
+        return partial(station_operation, resumes_context=resumes_context, arm_keyword=arm_keyword)
     method._station_operation = True
+    method._station_arm_keyword = arm_keyword
+    method._resumes_station_context = resumes_context
     return method
 
 
@@ -69,7 +78,7 @@ class StationMotion:
     """Execute a station sequence immediately, retaining its entry RPY."""
 
     def __init__(self, station, arm, entry, target, item=None, bottom=None, *, hold_time_s=0.,
-                 grasp=None):
+                 grasp=None, force=None, speed=None):
         self.station = station
         self.arm = arm
         self.entry = tuple(entry)
@@ -79,6 +88,8 @@ class StationMotion:
         self.bottom = bottom
         self.hold_time_s = hold_time_s
         self.grasp_width_mm = grasp
+        self.gripper_force = force
+        self.gripper_speed = speed
 
     @property
     def target_delta(self):
@@ -86,7 +97,7 @@ class StationMotion:
         return tuple(rotation.T @ (np.asarray(self.target[:3]) - np.asarray(self.position[:3])))
 
     def move_to(self, x, y, z):
-        """Use one SDK-planned move for the Cartesian leg."""
+        """Execute one linear TCP leg while retaining the entry orientation."""
         target = (x, y, z, *self.entry[3:])
         self.arm._step(f"move at {self.station.name}",
                        lambda: self.arm._move_pose(target, self.station.name))
@@ -98,7 +109,8 @@ class StationMotion:
 
     def open_gripper(self):
         self.arm._step("open gripper", lambda: self.arm._set_gripper(
-            opened=True, labware=self.item, grasp=self.grasp_width_mm))
+            opened=True, labware=self.item, grasp=self.grasp_width_mm,
+            force=self.gripper_force, speed=self.gripper_speed))
 
     def _hold_before_gripper(self, action):
         if self.hold_time_s > 0:
@@ -108,7 +120,8 @@ class StationMotion:
     def grasp(self):
         self._hold_before_gripper("close gripper")
         self.arm._step("close gripper", lambda: self.arm._set_gripper(
-            opened=False, labware=self.item, grasp=self.grasp_width_mm))
+            opened=False, labware=self.item, grasp=self.grasp_width_mm,
+            force=self.gripper_force, speed=self.gripper_speed))
         self.arm._capture_attachment(self.item, self.position, self.bottom,
                                      grasp=self.grasp_width_mm)
 
@@ -473,10 +486,12 @@ class OT2(Station):
     @station_operation
     def pick(self, arm, labware, location=None, *, grasp=None, grasp_offset_mm=None,
              tcp_offset_mm=None, use_labware_offset=False, hold_time_s=0.,
-             approach="vertical", retreat=False):
+             approach="vertical", retreat=False, force=None, speed=None):
+        """Pick labware with optional gripper force and speed overrides."""
         def perform():
             arm._ensure_station_context_clear()
             arm._validate_operation_flags(retreat=retreat)
+            pick_force, pick_speed = arm._resolve_gripper_settings(force=force, speed=speed)
             duration = self._hold_duration(hold_time_s)
             address = self.resolve_address(location)
             grasp_width_mm = self._resolve_grasp_width(labware, grasp, grasp_offset_mm)
@@ -498,7 +513,8 @@ class OT2(Station):
                                 base_offset_mm=correction, reference=reference, final=final,
                                 use_labware_offset=use_labware_offset, target=target)
             motion = StationMotion(self, arm, entry, target, labware, bottom,
-                                   hold_time_s=duration, grasp=grasp_width_mm)
+                                   hold_time_s=duration, grasp=grasp_width_mm,
+                                   force=pick_force, speed=pick_speed)
             motion.address = address
             motion.approach = selected
             motion.open_gripper()
@@ -590,6 +606,7 @@ class OT2(Station):
         self.deck_rotation, self.deck_translation, self.deck_max_residual_m = calibration
         self.loaded_labware: Dict[str, Any] = {}
         self.loaded_modules: Dict[str, Any] = {}
+        self._custom_labware_definitions: Dict[str, Dict[str, Any]] = {}
         self._labware_slots: Dict[int, str] = {}
         self._module_slots: Dict[int, str] = {}
         self._registered_wells: Dict[int, Tuple[Any, str, str]] = {}
@@ -628,8 +645,9 @@ class OT2(Station):
                 raise ValueError(f"module_definitions.{label} has " + "; ".join(details))
             self.load_module(definition["model"], definition["slot"], label=label)
         for label, definition in labware.items():
-            unknown = set(definition) - {"load_name", "location", "namespace", "version"}
-            missing = {"load_name", "location"} - set(definition)
+            allowed = {"load_name", "location", "namespace", "version", "definition", "definition_path"}
+            unknown = set(definition) - allowed
+            missing = {"location"} - set(definition)
             if missing or unknown:
                 details = []
                 if missing:
@@ -637,17 +655,28 @@ class OT2(Station):
                 if unknown:
                     details.append(f"unknown {tuple(sorted(unknown))}")
                 raise ValueError(f"labware_definitions.{label} has " + "; ".join(details))
-            location = definition["location"]
-            if isinstance(location, str) and location in self.loaded_modules:
-                location = self.loaded_modules[location]
+            sources = set(definition) & {"load_name", "definition", "definition_path"}
+            if len(sources) != 1:
+                raise ValueError(
+                    f"labware_definitions.{label} requires exactly one of "
+                    "load_name, definition, or definition_path"
+                )
             options = {
                 key: definition[key]
-                for key in ("namespace", "version")
+                for key in ("load_name", "definition", "namespace", "version")
                 if key in definition
             }
-            self.load_labware(
-                definition["load_name"], location, label=label, **options
-            )
+            if "definition_path" in definition:
+                path_value = definition["definition_path"]
+                if not isinstance(path_value, str) or not path_value.strip():
+                    raise ValueError(f"labware_definitions.{label}.definition_path must be a nonempty string")
+                path = Path(path_value).expanduser()
+                try:
+                    with path.open(encoding="utf-8") as stream:
+                        options["definition"] = json.load(stream)
+                except (OSError, json.JSONDecodeError) as exc:
+                    raise ValueError(f"could not read OT-2 labware definition {path}: {exc}") from exc
+            self.load_labware(slot=definition["location"], label=label, **options)
 
     pickup_reference = "top"
 
@@ -805,49 +834,96 @@ class OT2(Station):
         self._module_slots[id(native_module)] = str(slot)
         return native_module
 
+    @station_operation(arm_keyword=True)
     def load_labware(
         self,
-        load_name: str,
-        slot: object,
+        load_name: Optional[str] = None,
+        slot: object = None,
         *,
         namespace: Optional[str] = None,
         version: Optional[int] = None,
         label: Optional[str] = None,
+        definition: Optional[Dict[str, Any]] = None,
+        arm: Any = None,
     ) -> Any:
-        """Load and register native simulated Opentrons labware."""
-        if not isinstance(load_name, str) or not load_name:
+        """Load named labware or a custom JSON definition in this station.
+
+        Direct calls return native Opentrons labware. The station dispatcher
+        supplies the arm by keyword and receives JSON-safe rack metadata.
+        Identical custom definitions reuse their existing label and slot.
+        """
+        if arm is not None:
+            arm._ensure_station_context_clear()
+            if arm.attached_labware is not None:
+                raise ValueError("load OT-2 labware before picking up a vial")
+        custom = definition is not None
+        if custom:
+            if not isinstance(definition, dict):
+                raise ValueError("OT-2 labware definition must be a mapping")
+            parameters = definition.get("parameters")
+            definition_name = parameters.get("loadName") if isinstance(parameters, dict) else None
+            if not isinstance(definition_name, str) or not definition_name.strip():
+                raise ValueError("OT-2 labware definition requires parameters.loadName")
+            if load_name is not None and load_name != definition_name:
+                raise ValueError("load_name must match the custom definition's parameters.loadName")
+            if namespace is not None or version is not None:
+                raise ValueError("namespace and version are supplied by the custom definition")
+            load_name = definition_name
+        if not isinstance(load_name, str) or not load_name.strip():
             raise ValueError("OT-2 load_name must be a non-empty string")
+        if isinstance(slot, str) and slot in self.loaded_modules:
+            slot = self.loaded_modules[slot]
         is_module = id(slot) in self._module_slots
-        if not is_module and (not isinstance(slot, (str, int)) or re.fullmatch(r"[1-9]|1[0-2]", str(slot)) is None):
+        if not is_module and (isinstance(slot, bool) or not isinstance(slot, (str, int))
+                              or re.fullmatch(r"[1-9]|1[0-2]", str(slot)) is None):
             raise ValueError("OT-2 location must be a deck slot from 1 through 12 or a registered module")
         if namespace is not None and (not isinstance(namespace, str) or not namespace):
             raise ValueError("OT-2 namespace must be a non-empty string or None")
-        if version is not None and (not isinstance(version, int) or version < 1):
+        if version is not None and (isinstance(version, bool) or not isinstance(version, int) or version < 1):
             raise ValueError("OT-2 version must be a positive integer or None")
         slot_name = self._module_slots[id(slot)] if is_module else str(slot)
         module_label = next((name for name, module in self.loaded_modules.items() if module is slot), None)
         location_label = module_label if is_module else f"slot{slot_name}"
         resolved_label = label if label is not None else f"{location_label}_{load_name}"
-        if not isinstance(resolved_label, str) or not resolved_label:
+        if not isinstance(resolved_label, str) or not resolved_label.strip():
             raise ValueError("OT-2 labware label must be a non-empty string")
-        if resolved_label in self.loaded_labware:
-            raise ValueError(f"OT-2 labware label {resolved_label!r} is already registered")
-        kwargs = {}
-        if namespace is not None:
-            kwargs["namespace"] = namespace
-        if version is not None:
-            kwargs["version"] = version
-        try:
-            if is_module:
-                native_labware = slot.load_labware(load_name, **kwargs)
-            else:
-                native_labware = self._simulator_protocol().load_labware(
-                    load_name, location=slot_name, **kwargs)
-        except Exception as exc:
-            raise RuntimeError(
-                f"could not simulate OT-2 labware {load_name!r} at {location_label!r}: {exc}"
-            ) from exc
-        self._register_labware(resolved_label, native_labware, slot_name)
+        existing = self.loaded_labware.get(resolved_label)
+        if existing is not None:
+            if not (custom and self._labware_slots[id(existing)] == slot_name
+                    and self._custom_labware_definitions.get(resolved_label) == definition):
+                raise ValueError(f"OT-2 labware label {resolved_label!r} is already registered")
+            native_labware = existing
+        else:
+            if (slot_name in self._labware_slots.values()
+                    or not is_module and slot_name in self._module_slots.values()):
+                raise ValueError(f"OT-2 slot {slot_name} is already occupied")
+            kwargs = {}
+            if namespace is not None:
+                kwargs["namespace"] = namespace
+            if version is not None:
+                kwargs["version"] = version
+            stored_definition = deepcopy(definition) if custom else None
+            try:
+                if custom:
+                    if is_module:
+                        native_labware = slot.load_labware_from_definition(definition, label=resolved_label)
+                    else:
+                        native_labware = self._simulator_protocol().load_labware_from_definition(
+                            definition, location=slot_name, label=resolved_label)
+                elif is_module:
+                    native_labware = slot.load_labware(load_name, **kwargs)
+                else:
+                    native_labware = self._simulator_protocol().load_labware(
+                        load_name, location=slot_name, **kwargs)
+            except Exception as exc:
+                raise RuntimeError(
+                    f"could not simulate OT-2 labware {load_name!r} at {location_label!r}: {exc}"
+                ) from exc
+            self._register_labware(resolved_label, native_labware, slot_name)
+            if custom:
+                self._custom_labware_definitions[resolved_label] = stored_definition
+        if arm is not None:
+            return {"name": resolved_label, "slot": slot_name, "wells": list(native_labware.wells_by_name())}
         return native_labware
 
     def _register_labware(self, label, native_labware, slot):
@@ -900,8 +976,21 @@ class OT2(Station):
             return f"{slot}{name}".lower()
         return super()._entry_location_key(location)
 
+    @staticmethod
+    def ot2_location(xyz):
+        """Validate arm-base XYZ millimetres and return a JSON-safe location."""
+        if (not isinstance(xyz, (list, tuple)) or len(xyz) != 3
+                or any(isinstance(v, bool) or not isinstance(v, (int, float))
+                       or not math.isfinite(v) for v in xyz)):
+            raise ValueError("Set OT2_LOCATION_BASE_MM to three finite XYZ values in millimetres")
+        return {"link_base_mm": list(xyz)}
+
     def resolve_address(self, address):
-        """Resolve slot+well notation such as 3B3 or 10A12 to registered labware."""
+        """Resolve a native well or an explicit {"link_base_mm": [x, y, z]}."""
+        if isinstance(address, dict):
+            if set(address) != {"link_base_mm"}:
+                raise ValueError("OT2 explicit location requires only link_base_mm")
+            return self.ot2_location(address["link_base_mm"])
         if not isinstance(address, str):
             return address
         match = re.fullmatch(r"(1[0-2]|[1-9])([A-Z]+[1-9]\d*)", address.strip().upper())
@@ -927,6 +1016,9 @@ class OT2(Station):
 
     def resolve_location(self, address=None) -> Pose:
         address = self.resolve_address(address)
+        if isinstance(address, dict):
+            # Already in link_base: bypass native well lookup and deck transform.
+            return (*(value / 1000. for value in address["link_base_mm"]), *self.pose[3:])
         if self._registered_well(address) is None:
             raise ValueError("OT2 requires a slot+well address such as '3B3'")
         return self._well_pose(address)
@@ -953,11 +1045,12 @@ class VialHandling(Station):
     @station_operation
     def pick(self, arm, labware, location=None, *, grasp=None, grasp_offset_mm=None,
              tcp_offset_mm=None, use_labware_offset=False, hold_time_s=0.,
-             approach=None, retreat=False):
+             approach=None, retreat=False, force=None, speed=None):
         """Pick at a holder location using its calibrated approach."""
         def perform():
             arm._ensure_station_context_clear()
             arm._validate_operation_flags(retreat=retreat)
+            pick_force, pick_speed = arm._resolve_gripper_settings(force=force, speed=speed)
             duration = self._hold_duration(hold_time_s)
             address = location.upper() if isinstance(location, str) else location
             reference = self.resolve_location(address)
@@ -979,7 +1072,8 @@ class VialHandling(Station):
                                 source=source, base_offset_mm=correction, reference=reference,
                                 final=final, use_labware_offset=use_labware_offset, target=target)
             motion = StationMotion(self, arm, entry, target, labware, bottom,
-                                   hold_time_s=duration, grasp=grasp_width_mm)
+                                   hold_time_s=duration, grasp=grasp_width_mm,
+                                   force=pick_force, speed=pick_speed)
             motion.address = address
             motion.approach = selected
             route = self._holder_approach(motion)
@@ -998,15 +1092,45 @@ class VialHandling(Station):
 
         return arm._run_operation("pickup", perform)
 
+    @station_operation(resumes_context=True)
+    def raise_pickup(self, arm, *, dz_mm=10.0):
+        """Raise a paused horizontal bottom pickup in base Z, ready for release.
+
+        The external holder must be open before this move and closed before
+        release. Keep the pickup's XY, wrist orientation, and retreat route.
+        """
+        def perform():
+            distance = float(dz_mm)
+            if not math.isfinite(distance) or distance <= 0:
+                raise ValueError("dz_mm must be finite and positive")
+            context = arm._station_context
+            if (context is None or context.station is not self
+                    or context.operation != "pickup" or context.phase != "at_target"
+                    or context.approach != "horizontal"
+                    or self.resolve_location_route(context.address) != "bottom"):
+                raise RuntimeError("raise_pickup requires a paused horizontal bottom pickup")
+            if arm.attached_labware is not context.item:
+                raise RuntimeError("pickup context does not match the attached labware")
+            arm._verify_station_context_pose(context)
+            x, y, z, *rpy = context.expected_pose
+            target = (x, y, z + distance / 1000., *rpy)
+            arm._step(f"raise pickup at {self.name}",
+                      lambda: arm._move_pose(target, self.name))
+            context.expected_pose = target
+            context.operation = "placement"
+            context.release_allowed = True
+            return {"labware_id": context.item.name, "phase": context.phase,
+                    "can_release": True, "can_retreat": True}
+
+        return arm._run_operation("raise_pickup", perform)
+
     def _holder_approach(self, motion):
-        selected = self.resolve_location_route(motion.address)
+        """Align across the approach axis before advancing to the holder."""
         x, y, z = motion.target[:3]
-        ex, ey, ez = motion.entry[:3]
+        ex, _, ez = motion.entry[:3]
         if motion.approach == "vertical":
-            return [(ex, y, ez), (x, y, ez), (x, y, z)]
-        if selected in ("top", "bottom"):
-            return [(x, ey, ez), (x, y, ez), (x, y, z)]
-        return [(x, y, ez), (x, y, z)]
+            return [(x, y, ez), (x, y, z)]
+        return [(ex, y, z), (x, y, z)]
 
     @station_operation
     def place(self, arm, location=None, *, labware=None, tcp_offset_mm=None, use_labware_offset=False, hold_time_s=0.,
@@ -1116,7 +1240,7 @@ class VialTurbidity(Station):
 
 
 class AzentaIntelliXCapS1(Station):
-    """Cap/decap with linear travel between the bottom and engage locations."""
+    """Cap/decap along a configured X-Z line into and out of engage."""
 
     default_approach = "horizontal"
 
@@ -1125,11 +1249,35 @@ class AzentaIntelliXCapS1(Station):
         if linear_rail_position is not _UNSET:
             config["rail_position"] = linear_rail_position
         super().__init__(config)
+        geometry = config.get("engage_approach")
+        if not isinstance(geometry, dict):
+            raise ValueError("engage_approach requires distance_mm and angle_deg")
+        distance = geometry.get("distance_mm")
+        if (isinstance(distance, bool) or not isinstance(distance, (int, float))
+                or not math.isfinite(distance) or distance <= 0):
+            raise ValueError("engage_approach.distance_mm must be finite and positive")
+        angle = geometry.get("angle_deg")
+        if (isinstance(angle, bool) or not isinstance(angle, (int, float))
+                or not math.isfinite(angle) or not -90 < angle < 90):
+            raise ValueError("engage_approach.angle_deg must be finite and strictly between -90 and 90")
+        self.engage_approach_distance_mm = float(distance)
+        self.engage_approach_angle_deg = float(angle)
         self.has_cap = False
         self.last_operation = None
         self.last_capped_vial = None
         self.pre_dwell_tcp_pose = None
         self.post_dwell_tcp_pose = None
+
+    def _engage_base_point(self, engage_xyz):
+        """Offset below engage in robot-base X-Z; angle is measured from +Z.
+
+        Positive angles advance toward +X on approach. Y stays at engage Y.
+        The distance is the length of the line, rather than its Z projection.
+        """
+        x, y, z = _vector(engage_xyz, "engage XYZ")
+        distance = self.engage_approach_distance_mm / 1000.
+        angle = math.radians(self.engage_approach_angle_deg)
+        return (x - distance * math.sin(angle), y, z - distance * math.cos(angle))
 
     @station_operation
     def cap(self, arm, labware=None, address=None, *, dwell_s=2.0,
@@ -1172,7 +1320,6 @@ class AzentaIntelliXCapS1(Station):
         if not math.isfinite(dwell) or dwell < 0:
             raise ValueError("dwell_s must be finite and nonnegative")
         target_address = "bottom" if address is None else address
-        location = pose(self.resolve_location(target_address))
         item = labware if labware is not None else arm.attached_labware
         correction = self._validate_target_options(item, use_labware_offset, tcp_offset_mm)
         source = "zero correction" if tcp_offset_mm is None else "explicit additive correction"
@@ -1190,27 +1337,31 @@ class AzentaIntelliXCapS1(Station):
         entry_poses = self.resolve_entry_pose(approach, location=target_address, all_entries=True)
         entry = arm._step(f"enter {self.name}", lambda: arm._enter(
             self, approach=approach, location=target_address))
+        location = (*engage_xyz, *self.pose[3:])
         reference = (self._held_reference(arm, location, entry[3:])
                      if item is not None and item is arm.attached_labware else location)
         target, _, final = self._target_geometry(
             item, reference, entry[3:], tcp_offset_mm=correction,
             use_labware_offset=use_labware_offset)
-        arm._log_tcp_offset(operation, self, target_address, item, grasp=None, source=source,
+        arm._log_tcp_offset(operation, self, "engage", item, grasp=None, source=source,
                             base_offset_mm=correction, reference=reference, final=final,
                             use_labware_offset=use_labware_offset, target=target)
+        # Apply TCP/labware corrections to the engage endpoint first, then
+        # derive the base so corrections cannot change the line's geometry.
+        base_xyz = self._engage_base_point(target[:3])
         motion = StationMotion(self, arm, entry, target, item)
         with arm._temporary_collision_sensitivity(collision_sensitivity):
-            motion.move_to(*target[:3])
+            motion.move_to(*base_xyz)
             if operation == "cap":
                 arm.logger.info(
-                    "%s cap endpoint uses post-decap TCP XYZ (mm)=%s",
+                    "%s cap reference uses post-decap TCP XYZ (mm)=%s",
                     self.name, tuple(value * 1000. for value in engage_xyz),
                 )
                 arm._record(
                     "azenta_cap_engage_reference", station=self.name,
                     tcp_xyz_m=list(engage_xyz),
                 )
-            motion.move_to(*engage_xyz)
+            motion.move_to(*target[:3])
             arm._step(
                 f"record pre-dwell pose at {self.name}",
                 lambda: self._capture_dwell_tcp(arm, "pre"),
@@ -1228,8 +1379,11 @@ class AzentaIntelliXCapS1(Station):
         arm.logger.info("%s %s completed; cap at station: %s", self.name, operation, self.has_cap)
         motion.address = target_address
         motion.approach = approach
+        # The capper can displace the TCP during dwell. Anchor withdrawal at
+        # the measured endpoint to keep its Y fixed and its X-Z angle exact.
+        retreat_base_xyz = self._engage_base_point(motion.position[:3])
         result = self._pause_at_endpoint(
-            arm, operation, motion, entry_poses, [target[:3], motion.entry[:3]],
+            arm, operation, motion, entry_poses, [retreat_base_xyz, motion.entry[:3]],
             retreat=retreat)
         return {**result, "vial_capped": operation == "cap", "has_cap": self.has_cap}
 

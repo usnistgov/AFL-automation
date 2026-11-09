@@ -20,10 +20,12 @@ class xArmHTTPDriver(Driver):
     """
 
     defaults = {
-        "robot_ip": "192.168.1.201",
+        "robot_ip": "ROBOT_IP",
         "simulation": False,
+        "initialize_rail": False,
         "workcell_config": "configs/workcell.yaml",
         "log_level": logging.INFO,
+        **xArmManipulator.gripper_defaults,
     }
 
     def __init__(self, stations, labware=(), overrides=None, sdk=None):
@@ -38,10 +40,13 @@ class xArmHTTPDriver(Driver):
         self.arm = xArmManipulator(
             self.config["robot_ip"],
             simulation=self.config["simulation"],
+            initialize_rail=self.config["initialize_rail"],
             sdk=sdk,
             stations=tuple(self.stations.values()),
             workcell_config=self.config["workcell_config"],
             logger=self.logger,
+            **{key: self.config[key] for key in xArmManipulator.gripper_defaults
+               if self.config[key] is not None},
         )
         self.arm.connect()
 
@@ -102,8 +107,12 @@ class xArmHTTPDriver(Driver):
         return value
 
     @Driver.queued()
-    def station_operation(self, station, operation, labware=None, **kwargs):
-        """Run one registered station operation using JSON-safe object names."""
+    def station_operation(self, station, operation, labware=None, force=None, speed=None, **kwargs):
+        """Run a station operation; picks accept gripper force and speed overrides.
+
+        Omitted force/speed use the startup defaults. Speed units and force
+        support depend on the configured gripper_type; see the driver status.
+        """
         station_object = self._station(station)
         labware_object = None if labware is None else self._labware(labware)
         if "grasp" in kwargs and isinstance(kwargs["grasp"], str):
@@ -119,6 +128,10 @@ class xArmHTTPDriver(Driver):
                 ) from exc
         if labware_object is not None:
             kwargs["labware"] = labware_object
+        if force is not None:
+            kwargs["force"] = force
+        if speed is not None:
+            kwargs["speed"] = speed
         result = self.arm.station_operation(station_object, operation, **kwargs)
         return self._require_success(f"{station}.{operation}", result)
 
@@ -272,10 +285,12 @@ _DEFAULT_CUSTOM_CONFIG = {
         }
     ],
     "overrides": {
-        "robot_ip": "192.168.1.201",
+        "robot_ip": "ROBOT_IP",
         "simulation": False,
+        "initialize_rail": False,
         "workcell_config": "configs/workcell.yaml",
         "log_level": logging.DEBUG,
+        **xArmManipulator.gripper_defaults,
     },
 }
 

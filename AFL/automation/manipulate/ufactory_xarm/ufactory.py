@@ -138,13 +138,45 @@ class xArmManipulator:
     Set simulation=False to command physical arm, rail, and gripper hardware.
     """
 
-    def __init__(self, ip_address=None, *, simulation=True, sdk=None, stations=(),
+    # None in an HTTP startup config defers to the workcell YAML.
+    gripper_defaults = {
+        "gripper_type": None,
+        "gripper_force": None,
+        "gripper_speed": None,
+    }
+    gripper_models = {
+        "xarm": {
+            "span_mm": 86., "span_sdk": 688,
+            "speed": None, "force": None,
+            "speed_range": (1, None), "force_range": None,
+            "speed_units": "r/min", "position_method": "set_gripper_position",
+        },
+        "xarm_g2": {
+            "span_mm": 84., "span_sdk": 84.,
+            "speed": 100, "force": 50,
+            "speed_range": (15, 225), "force_range": (1, 100),
+            "speed_units": "mm/s", "position_method": "set_gripper_g2_position",
+        },
+        "bio": {
+            "span_mm": 130., "span_sdk": 130.,
+            "speed": 2000, "force": None,
+            "speed_range": (1, 4000), "force_range": (10, 100),
+            "speed_units": "pulse/s", "position_method": None,
+        },
+    }
+
+    def __init__(self, ip_address=None, *, simulation=True, initialize_rail=False,
+                 sdk=None, stations=(),
                  workcell_config=None, arm_speed_mm_s=_UNSET, joint_speed_deg_s=_UNSET,
                  rail_speed_mm_s=_UNSET, rail_min_position_mm=_UNSET,
                  rail_max_position_mm=_UNSET, gripper_span_mm=_UNSET, gripper_span_sdk=_UNSET,
+                 gripper_type=_UNSET, gripper_force=_UNSET,
                  gripper_speed=_UNSET, logger=None):
         self.ip_address = ip_address
         self.simulation = simulation
+        if not isinstance(initialize_rail, bool):
+            raise TypeError("initialize_rail must be a boolean")
+        self.initialize_rail = initialize_rail
         self._arm = sdk
         self.logger = logger or logging.getLogger(f"{__name__}.xArmManipulator")
         path = Path(workcell_config) if workcell_config else Path(__file__).with_name("configs") / "workcell.yaml"
@@ -154,6 +186,15 @@ class xArmManipulator:
         rail = self._workcell.get("rail", {})
         gripper = self._workcell.get("gripper", {})
         tool = self._workcell.get("tool", {})
+        if not isinstance(gripper, dict):
+            raise ValueError("workcell gripper configuration must be a mapping")
+        self.gripper_type = gripper.get("type") if gripper_type is _UNSET else gripper_type
+        if self.gripper_type is None:
+            raise ValueError("specify gripper.type in the workcell config or gripper_type at startup")
+        if not isinstance(self.gripper_type, str) or self.gripper_type not in self.gripper_models:
+            raise ValueError(f"unknown gripper type {self.gripper_type!r}; "
+                             f"choose from {tuple(self.gripper_models)}")
+        model = self.gripper_models[self.gripper_type]
         self.arm_speed_mm_s = arm.get("speed_mm_s") if arm_speed_mm_s is _UNSET else arm_speed_mm_s
         self.joint_speed_deg_s = (arm.get("joint_speed_deg_s")
                                   if joint_speed_deg_s is _UNSET else joint_speed_deg_s)
@@ -169,16 +210,26 @@ class xArmManipulator:
             raise ValueError("rail position limits must be finite")
         if self.rail_min_position_mm > self.rail_max_position_mm:
             raise ValueError("rail min_position_mm must not exceed max_position_mm")
-        self.gripper_span_mm = float(gripper.get("span_mm", 86.)
+        # A startup model change must not reuse another model's calibration.
+        geometry = gripper if gripper.get("type", self.gripper_type) == self.gripper_type else {}
+        self.gripper_span_mm = float(geometry.get("span_mm", model["span_mm"])
                                      if gripper_span_mm is _UNSET else gripper_span_mm)
-        self.gripper_span_sdk = float(gripper.get("span_sdk", 688)
+        self.gripper_span_sdk = float(geometry.get("span_sdk", model["span_sdk"])
                                       if gripper_span_sdk is _UNSET else gripper_span_sdk)
         self.gripper_speed = gripper.get("speed") if gripper_speed is _UNSET else gripper_speed
+        self.gripper_force = gripper.get("force") if gripper_force is _UNSET else gripper_force
+        if self.gripper_speed is None:
+            self.gripper_speed = model["speed"]
+        if self.gripper_force is None:
+            self.gripper_force = model["force"]
+        self.gripper_force, self.gripper_speed = self._resolve_gripper_settings()
         self.gripper_open_clearance_mm = float(gripper.get("open_clearance_mm", 5.))
         if not math.isfinite(self.gripper_span_mm) or self.gripper_span_mm <= 0:
             raise ValueError("gripper span_mm must be finite and positive")
         if not math.isfinite(self.gripper_span_sdk) or self.gripper_span_sdk <= 0:
             raise ValueError("gripper span_sdk must be finite and positive")
+        if self.gripper_type == "xarm_g2" and self.gripper_span_mm > model["span_mm"]:
+            raise ValueError("xarm_g2 gripper span_mm must be at most 84 mm")
         if not math.isfinite(self.gripper_open_clearance_mm) or self.gripper_open_clearance_mm < 0:
             raise ValueError("gripper open_clearance_mm must be finite and nonnegative")
         self.tcp_offset_mm = tuple(tool.get("tcp_offset_mm", (0., 0., 0.)))
@@ -261,10 +312,70 @@ class xArmManipulator:
                 [*self.tcp_offset_mm, 0., 0., 0.], wait=True))
         self._check_code("set ready state", self._arm.set_state(0))
         if not self.simulation:
-            self._check_code("enable gripper", self._arm.set_gripper_enable(True))
-            if self.gripper_speed is not None:
-                self._check_code("set gripper speed", self._arm.set_gripper_speed(self.gripper_speed))
+            if self.gripper_type == "bio":
+                self._check_code("enable BIO gripper", self._arm.set_bio_gripper_enable(True))
+                if self.gripper_speed is not None:
+                    self._check_code("set BIO gripper speed", self._arm.set_bio_gripper_speed(self.gripper_speed))
+                if self.gripper_force is not None:
+                    self._check_code("set BIO gripper force", self._arm.set_bio_gripper_force(self.gripper_force))
+            else:
+                self._check_code("enable gripper", self._arm.set_gripper_enable(True))
+                if self.gripper_type == "xarm" and self.gripper_speed is not None:
+                    self._check_code("set gripper speed", self._arm.set_gripper_speed(self.gripper_speed))
+            if self.initialize_rail:
+                self._initialize_rail()
         return self
+
+    def _read_rail_status(self):
+        result = self._arm.get_linear_motor_registers()
+        self._check_code("read rail status", result)
+        if not isinstance(result, (tuple, list)) or len(result) < 2 \
+                or not isinstance(result[1], dict):
+            raise RuntimeError(f"read rail status returned an invalid response: {result!r}")
+        status = result[1]
+        required = {"pos", "error", "is_enabled", "on_zero", "sci"}
+        missing = required.difference(status)
+        if missing:
+            raise RuntimeError(
+                f"read rail status omitted {', '.join(sorted(missing))}")
+        return status
+
+    def _initialize_rail(self):
+        """Probe, recover, home when necessary, and enable the configured rail."""
+        self.logger.info("Initialize linear rail")
+        status = self._read_rail_status()
+        if status["sci"] != 1:
+            raise RuntimeError("initialize rail failed: safety input (SCI) is low")
+
+        if status["error"] != 0:
+            self._check_code("clear rail error", self._arm.clean_linear_motor_error())
+            status = self._read_rail_status()
+            if status["error"] != 0:
+                description = LINEAR_MOTOR_ERROR_DESCRIPTIONS.get(
+                    status["error"], "unknown rail drive fault")
+                raise RuntimeError(
+                    f"initialize rail failed: rail error={status['error']} ({description})")
+
+        if status["on_zero"] != 1:
+            # Disable the SDK's implicit post-home enable so a successful enable
+            # cannot mask a homing timeout in affected SDK versions.
+            self._check_code(
+                "home rail",
+                self._arm.set_linear_motor_back_origin(
+                    wait=True, auto_enable=False),
+            )
+            status = self._read_rail_status()
+            if status["on_zero"] != 1:
+                raise RuntimeError("initialize rail failed: rail did not reach its origin")
+
+        if status["is_enabled"] != 1:
+            self._check_code("enable rail", self._arm.set_linear_motor_enable(True))
+        if self.rail_speed_mm_s is not None:
+            self._check_code(
+                "set rail speed",
+                self._arm.set_linear_motor_speed(self.rail_speed_mm_s),
+            )
+        self._rail_position_mm = self._validate_rail_position(status["pos"])
 
     def disconnect(self):
         if self._arm is not None:
@@ -328,12 +439,13 @@ class xArmManipulator:
 
     @_stop_on_error
     def _move_pose(self, target, station_name, *, intent="station motion"):
+        """Request an unblended Cartesian line with no joint-planning fallback."""
         target = tuple(target)
         sdk_pose = self._si_pose_to_sdk(target)
         self.logger.debug("%s: %s TCP target at %s (mm, deg): %s",
                          self._operation_step, intent, station_name, sdk_pose)
         self._record("move_tcp", pose=list(target), station=station_name, intent=intent)
-        options = {"wait": True}
+        options = {"wait": True, "radius": -1, "motion_type": 0}
         if self.arm_speed_mm_s is not None:
             options["speed"] = self.arm_speed_mm_s
         self._check_motion_code("move TCP", self._arm.set_position(*sdk_pose, **options))
@@ -400,10 +512,42 @@ class xArmManipulator:
                     failed_step)
                 self._operation_step = failed_step
 
+    @staticmethod
+    def _validate_gripper_setting(value, name, bounds, *, integer=False):
+        if value is None:
+            return None
+        minimum, maximum = bounds
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(value) or value < minimum
+                or (maximum is not None and value > maximum)
+                or (integer and not float(value).is_integer())):
+            limits = f"at least {minimum}" if maximum is None else f"between {minimum} and {maximum}"
+            kind = "integer" if integer else "number"
+            raise ValueError(f"gripper {name} must be a finite {kind} {limits}")
+        return int(value) if integer else value
+
+    def _resolve_gripper_settings(self, *, force=None, speed=None):
+        """Resolve one pick's settings without changing the configured defaults."""
+        model = self.gripper_models[self.gripper_type]
+        force = self.gripper_force if force is None else force
+        speed = self.gripper_speed if speed is None else speed
+        if model["force_range"] is None:
+            if force is not None:
+                raise ValueError(f"{self.gripper_type} gripper does not support force control")
+        else:
+            force = self._validate_gripper_setting(force, "force", model["force_range"], integer=True)
+        speed = self._validate_gripper_setting(
+            speed, "speed", model["speed_range"], integer=self.gripper_type in ("xarm", "bio"))
+        return force, speed
+
     def gripper_position_for_gap(self, gap_mm):
-        """Convert a measured jaw gap through the calibrated mm and SDK spans."""
+        """Convert a jaw gap to native mm for G2, or calibrated original pulses."""
+        if self.gripper_type == "bio":
+            raise ValueError("BIO gripper uses full open/close commands, not a programmable jaw gap")
         if not math.isfinite(gap_mm) or not 0 <= gap_mm <= self.gripper_span_mm:
             raise ValueError(f"gripper gap must be between 0 and {self.gripper_span_mm:g} mm")
+        if self.gripper_type == "xarm_g2":
+            return gap_mm
         return round(gap_mm / self.gripper_span_mm * self.gripper_span_sdk)
 
     def _gripper_gap(self, labware, *, opened, grasp=None):
@@ -417,16 +561,40 @@ class xArmManipulator:
                 if opened else width_mm)
 
     @_stop_on_error
-    def _set_gripper(self, *, opened, labware=None, grasp=None):
+    def _set_gripper(self, *, opened, labware=None, grasp=None, force=None, speed=None):
+        force, speed = self._resolve_gripper_settings(force=force, speed=speed)
         gap_mm = self._gripper_gap(labware, opened=opened, grasp=grasp)
-        position = self.gripper_position_for_gap(gap_mm)
+        if self.gripper_type == "bio":
+            # BIO's public open/close API cannot target a labware-specific gap.
+            gap_mm = self.gripper_span_mm if opened else 0.
+            position = None
+        else:
+            position = self.gripper_position_for_gap(gap_mm)
         self.logger.debug("%sgripper: %s (gap %.2f mm, SDK position %s)",
                           "Virtual " if self.simulation else "",
                           "open" if opened else "close", gap_mm, position)
         self._record("set_gripper", opened=opened, position=position, gap_mm=gap_mm,
+                     gripper_type=self.gripper_type, force=force, speed=speed,
                      labware_id=labware.name if labware is not None else None, simulated=self.simulation)
         if not self.simulation:
-            self._check_code("set gripper", self._arm.set_gripper_position(position, wait=True))
+            options = {"wait": True}
+            if speed is not None:
+                options["speed"] = speed
+            if force is not None:
+                options["force"] = force
+            if self.gripper_type == "bio":
+                # BIO's open/close helpers can discard setter errors (and
+                # ignore force on older hardware). Check the setters ourselves.
+                if speed is not None:
+                    self._check_code("set BIO gripper speed", self._arm.set_bio_gripper_speed(speed))
+                if force is not None:
+                    self._check_code("set BIO gripper force", self._arm.set_bio_gripper_force(force))
+                method = self._arm.open_bio_gripper if opened else self._arm.close_bio_gripper
+                result = method(**options)
+            else:
+                method = getattr(self._arm, self.gripper_models[self.gripper_type]["position_method"])
+                result = method(position, **options)
+            self._check_code("set gripper", result)
 
     @_stop_on_error
     def home(self):
@@ -558,12 +726,16 @@ class xArmManipulator:
         Accepts a station instance or registered name. Options are forwarded to
         the station operation, which retains its motion and state handling.
         """
-        self._ensure_station_context_clear()
         station = self._resolve_station(station)
+        method = getattr(station, operation, None)
+        if not getattr(method, "_resumes_station_context", False):
+            self._ensure_station_context_clear()
         if operation not in station.available_operations:
             raise ValueError(f"{station.name} does not support operation {operation!r}; "
                              f"available operations: {station.available_operations}")
-        return getattr(station, operation)(self, *args, **kwargs)
+        if getattr(method, "_station_arm_keyword", False):
+            return method(*args, arm=self, **kwargs)
+        return method(self, *args, **kwargs)
 
     def _ensure_station_context_clear(self):
         context = self._station_context
@@ -858,6 +1030,9 @@ class xArmManipulator:
         context = self._station_context
         return {"station": self._current_station, "tcp_pose": self._last_tcp_pose,
                 "rail_position_mm": self._rail_position_mm, "simulation": self.simulation,
+                "gripper": {"type": self.gripper_type, "force": self.gripper_force,
+                            "speed": self.gripper_speed,
+                            "speed_units": self.gripper_models[self.gripper_type]["speed_units"]},
                 "labware_id": self.attached_labware.name if self.attached_labware else None,
                 "station_phase": context.phase if context is not None else None,
                 "can_release": bool(context and context.release_allowed

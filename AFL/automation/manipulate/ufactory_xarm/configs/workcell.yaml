@@ -7,11 +7,20 @@ arm:
   joint_speed_deg_s: null
 
 gripper:
-  # Calibrated full jaw span: 86 mm corresponds to SDK position 688; zero is closed.
+  # Required model: xarm (original), xarm_g2, or bio (full open/close).
+  type: xarm
+  # Calibrated full jaw span and SDK pulse position for the original gripper.
+  # G2 uses native mm positions and supports a span of at most 84 mm.
   span_mm: 84.40
   span_sdk: 840
-  # SDK gripper speed in r/min; null keeps the SDK/controller setting.
+  # xarm: r/min; null keeps the SDK/controller setting. G2: 15-225 mm/s,
+  # with null selecting the SDK default of 100 mm/s. BIO: 1-4000 pulse/s,
+  # with null selecting the SDK default of 2000 pulse/s.
   speed: null
+  # xarm has no force control: must be null. G2: integer setting 1-100,
+  # with null selecting the SDK default of 50. Newer BIO: integer 10-100;
+  # null omits force and uses the BIO SDK default of 50.
+  force: null
   # Total extra opening beyond the labware grasp width, capped at fully open.
   open_clearance_mm: 8.0
 

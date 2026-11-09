@@ -4,7 +4,8 @@ name: VialHandling
 rail_position: 700
 
 # Taught joint entry poses in degrees.
-# Vertical uses Y -> X -> Z. Horizontal uses X -> Y -> Z (ascend for bottom).
+# Vertical aligns X/Y together at entry Z, then moves Z to the target.
+# Horizontal aligns Y/Z together at entry X, then moves X to the target.
 # Each location maps its supported approaches to one of these taught entries.
 # A base pose is followed by the mapped location entry.
 poses:

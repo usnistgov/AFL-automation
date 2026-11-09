@@ -6,12 +6,12 @@ import datetime
 import os
 import sys
 import traceback
-import subprocess
 import json
 import pathlib
 import numpy as np
 import pandas as pd
 import xarray as xr
+from AFL.automation import __version__
 from AFL.automation.shared.serialization import is_serialized
 from AFL.automation.APIServer.data.DataTrashcan import DataTrashcan
 
@@ -47,10 +47,7 @@ class QueueDaemon(threading.Thread):
             self.data['platform_serial'] = os.environ['AFL_SYSTEM_SERIAL']
         except KeyError:
             self.data['platform_serial'] = 'not_set'
-        try:
-            self.data['afl_automation_version'] = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
-        except Exception:
-            self.data['afl_automation_version'] = 'could_not_determine'
+        self.data['afl_automation_version'] = __version__
 
 
     def terminate(self):

@@ -13,4 +13,5 @@ How-to guides are problem-oriented instructions that help users accomplish speci
    static-directories
    run-tests
    xarm-gripper
+   xarm-ot2-clearance
    

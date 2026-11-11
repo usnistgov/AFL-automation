@@ -7,6 +7,83 @@ import pytest
 from AFL.automation.instrument.SeabreezeUVVis import SeabreezeUVVis
 
 
+@pytest.fixture
+def seabreeze_sdk(monkeypatch):
+    class _SeaBreezeError(Exception):
+        pass
+
+    state = types.SimpleNamespace(
+        error_type=_SeaBreezeError,
+        devices=[],
+        backend=None,
+        discovery_calls=0,
+        opened_devices=[],
+        spectrometers=[],
+        discovery_error=None,
+        open_error=None,
+        wavelength_error=None,
+        exposure_error=None,
+    )
+
+    class _SeaBreeze:
+        @staticmethod
+        def use(backend):
+            state.backend = backend
+
+    def list_devices():
+        state.discovery_calls += 1
+        if state.discovery_error is not None:
+            raise state.discovery_error
+        return state.devices
+
+    class _Spectrometer:
+        def __init__(self, device):
+            state.opened_devices.append(device)
+            device.is_open = True
+            if state.open_error is not None:
+                raise state.open_error
+            self.device = device
+            self.model = device.model
+            self.serial_number = device.serial_number
+            self.integration_time = None
+            state.spectrometers.append(self)
+
+        def wavelengths(self):
+            if state.wavelength_error is not None:
+                raise state.wavelength_error
+            return np.array([400.0, 500.0, 600.0])
+
+        def integration_time_micros(self, value):
+            if state.exposure_error is not None:
+                raise state.exposure_error
+            self.integration_time = value
+
+        def close(self):
+            self.device.close()
+
+    spectrometers = types.ModuleType("seabreeze.spectrometers")
+    spectrometers.SeaBreezeError = _SeaBreezeError
+    spectrometers.Spectrometer = _Spectrometer
+    spectrometers.list_devices = list_devices
+    module = sys.modules[SeabreezeUVVis.__module__]
+    monkeypatch.setattr(module, "seabreeze", _SeaBreeze())
+    monkeypatch.setitem(sys.modules, "seabreeze.spectrometers", spectrometers)
+    return state
+
+
+def _spectrometer_device(serial="TEST-USB-001", model="USB4000", is_open=False):
+    device = types.SimpleNamespace(
+        model=model, serial_number=serial, is_open=is_open, closed=False
+    )
+
+    def close():
+        device.is_open = False
+        device.closed = True
+
+    device.close = close
+    return device
+
+
 def test_init_raises_actionable_error_when_seabreeze_cannot_load(monkeypatch):
     class _MissingSeaBreeze:
         @staticmethod
@@ -22,26 +99,98 @@ def test_init_raises_actionable_error_when_seabreeze_cannot_load(monkeypatch):
     assert "AFL-automation[seabreeze]" in str(error.value)
 
 
-def test_init_raises_actionable_error_when_no_spectrometer_is_detected(monkeypatch):
-    class _SeaBreeze:
-        @staticmethod
-        def use(backend):
-            assert backend == "cseabreeze"
+@pytest.mark.parametrize("backend", ["cseabreeze", "pyseabreeze"])
+@pytest.mark.parametrize("device_serial", [None, "TEST-USB-001"])
+def test_init_raises_actionable_error_when_no_spectrometer_is_detected(
+    seabreeze_sdk, capsys, backend, device_serial
+):
+    with pytest.raises(RuntimeError, match="did not detect any spectrometers") as error:
+        SeabreezeUVVis(backend=backend, device_serial=device_serial)
 
-    class _Spectrometer:
-        @staticmethod
-        def from_first_available():
-            raise AssertionError("must not connect when no devices are listed")
+    assert "USB" in str(error.value)
+    assert seabreeze_sdk.backend == backend
+    assert seabreeze_sdk.opened_devices == []
+    assert "Connected UV-Vis" not in capsys.readouterr().out
 
-    spectrometers = types.ModuleType("seabreeze.spectrometers")
-    spectrometers.Spectrometer = _Spectrometer
-    spectrometers.list_devices = lambda: []
-    module = sys.modules[SeabreezeUVVis.__module__]
-    monkeypatch.setattr(module, "seabreeze", _SeaBreeze())
-    monkeypatch.setitem(sys.modules, "seabreeze.spectrometers", spectrometers)
 
-    with pytest.raises(RuntimeError, match="did not detect any spectrometers"):
+@pytest.mark.parametrize("error_type", ["seabreeze", PermissionError, ImportError])
+def test_init_reports_usb_discovery_failures(seabreeze_sdk, error_type):
+    if error_type == "seabreeze":
+        error_type = seabreeze_sdk.error_type
+    cause = error_type("USB discovery failed")
+    seabreeze_sdk.discovery_error = cause
+
+    with pytest.raises(RuntimeError, match="could not discover UV-Vis") as error:
         SeabreezeUVVis()
+
+    assert error.value.__cause__ is cause
+    assert "permissions" in str(error.value)
+    assert seabreeze_sdk.opened_devices == []
+
+
+@pytest.mark.parametrize("backend", ["cseabreeze", "pyseabreeze"])
+def test_init_reports_first_available_device_and_initializes_it(seabreeze_sdk, capsys, backend):
+    busy_device = _spectrometer_device(serial="TEST-BUSY", is_open=True)
+    available_device = _spectrometer_device()
+    seabreeze_sdk.devices = [busy_device, available_device]
+
+    driver = SeabreezeUVVis(backend=backend, overrides={"exposure": 0.2})
+
+    assert seabreeze_sdk.backend == backend
+    assert seabreeze_sdk.discovery_calls == 1
+    assert seabreeze_sdk.opened_devices == [available_device]
+    assert driver.spectrometer.integration_time == 200_000
+    np.testing.assert_array_equal(driver.wavelengths, [400.0, 500.0, 600.0])
+    message = "Connected UV-Vis spectrometer: USB4000 (serial TEST-USB-001)."
+    assert message in capsys.readouterr().out
+    assert driver.status() == [message]
+
+
+def test_init_connects_to_requested_serial_number(seabreeze_sdk, capsys):
+    requested_device = _spectrometer_device(serial="TEST-USB-002", model="FLAME-S")
+    seabreeze_sdk.devices = [_spectrometer_device(), requested_device]
+
+    driver = SeabreezeUVVis(device_serial="TEST-USB-002")
+
+    assert seabreeze_sdk.opened_devices == [requested_device]
+    assert driver.spectrometer.serial_number == "TEST-USB-002"
+    assert "FLAME-S (serial TEST-USB-002)" in capsys.readouterr().out
+
+
+def test_init_rejects_missing_serial_and_lists_detected_devices(seabreeze_sdk):
+    seabreeze_sdk.devices = [_spectrometer_device()]
+
+    with pytest.raises(RuntimeError, match="did not detect the requested spectrometer") as error:
+        SeabreezeUVVis(device_serial="TEST-MISSING")
+
+    assert "TEST-MISSING" in str(error.value)
+    assert "USB4000 (serial TEST-USB-001)" in str(error.value)
+    assert seabreeze_sdk.opened_devices == []
+
+
+@pytest.mark.parametrize("device_serial", [None, "TEST-USB-001"])
+def test_init_rejects_devices_already_in_use(seabreeze_sdk, device_serial):
+    seabreeze_sdk.devices = [_spectrometer_device(is_open=True)]
+
+    with pytest.raises(RuntimeError, match="already in use"):
+        SeabreezeUVVis(device_serial=device_serial)
+
+    assert seabreeze_sdk.opened_devices == []
+
+
+@pytest.mark.parametrize("failure_stage", ["open_error", "wavelength_error", "exposure_error"])
+def test_init_rejects_device_that_cannot_be_initialized(seabreeze_sdk, capsys, failure_stage):
+    seabreeze_sdk.devices = [_spectrometer_device()]
+    cause = seabreeze_sdk.error_type("Device disconnected")
+    setattr(seabreeze_sdk, failure_stage, cause)
+
+    with pytest.raises(RuntimeError, match="Could not initialize UV-Vis spectrometer") as error:
+        SeabreezeUVVis()
+
+    assert error.value.__cause__ is cause
+    assert "USB4000 (serial TEST-USB-001)" in str(error.value)
+    assert "Connected UV-Vis" not in capsys.readouterr().out
+    assert seabreeze_sdk.devices[0].closed
 
 
 class _Array:

@@ -460,28 +460,135 @@ class OT2(Station):
             if cls._debug_filter not in handler.filters:
                 handler.addFilter(cls._debug_filter)
 
-    def loaded_labware_max_z(self):
-        """Return the highest loaded well top in ``link_base`` coordinates."""
+    def loaded_labware_max_z(self, slot=None):
+        """Return the highest loaded well top, optionally restricted to a slot."""
         if self.deck_rotation is None:
             raise RuntimeError("OT-2 deck calibration is required before planning deck clearance")
         tops = [self._well_pose(well)[2]
                 for labware in self.loaded_labware.values()
+                if slot is None or self._labware_slots[id(labware)] == str(slot)
                 for well in labware.wells_by_name().values()]
         if not tops:
-            raise RuntimeError("OT-2 requires loaded labware before planning deck clearance")
+            raise RuntimeError("OT-2 requires loaded labware before planning deck clearance"
+                               + ("" if slot is None else f" in slot {slot}"))
         return max(tops)
 
-    def _deck_travel_z(self, motion, *, carrying=False):
-        """Calculate a TCP Z that clears all loaded labware by the configured margin."""
+    def _address_slot(self, address):
+        record = self._registered_well(address)
+        if record is not None:
+            return record[1]
+        return address.get("slot") if isinstance(address, dict) else None
+
+    def _deck_travel_z(self, motion, *, carrying=False, slot=None):
+        """Clear a selected slot, or retain deck-wide clearance for legacy routes."""
         item_height = motion.item.height_m if carrying and motion.item is not None else 0.
-        obstacle_z = self.loaded_labware_max_z() + self.deck_clearance_m + item_height
+        if slot is not None:
+            top_z = self.loaded_labware_max_z(slot)
+            margin = self._slot_deck_clearance_m.get(slot, self.deck_clearance_m)
+            obstacle_z = top_z + margin + item_height
+        elif self._slot_deck_clearance_m:
+            # Unassociated explicit XYZ locations must still clear the whole deck,
+            # including any slot whose requested margin exceeds the YAML default.
+            obstacle_z = max(
+                self.loaded_labware_max_z(loaded_slot)
+                + self._slot_deck_clearance_m.get(loaded_slot, self.deck_clearance_m)
+                for loaded_slot in set(self._labware_slots.values())
+            ) + item_height
+        else:
+            obstacle_z = self.loaded_labware_max_z() + self.deck_clearance_m + item_height
         entry_z = motion.entry[2] + (item_height if carrying else 0.)
-        return max(obstacle_z, entry_z, motion.target[2])
+        target_z = motion.target[2] if slot is None or slot == self._address_slot(motion.address) else entry_z
+        travel_z = max(obstacle_z, entry_z, target_z)
+        if slot is not None:
+            motion.arm.logger.info(
+                "OT2 slot %s clearance: well-top Z %.3f mm + margin %.3f mm "
+                "+ carried height %.3f mm; entry minimum %.3f mm; travel Z %.3f mm",
+                slot, top_z * 1000., margin * 1000., item_height * 1000.,
+                entry_z * 1000., travel_z * 1000.)
+        return travel_z
+
+    def _slot_xy_bounds(self, slot):
+        """Project a native deck slot's footprint into calibrated arm-base XY."""
+        try:
+            definition = self._simulator_protocol().deck.get_slot_definition(slot)
+            origin = tuple(value / 1000. for value in _vector(definition["position"], "slot position"))
+            size = definition["boundingBox"]
+            width, depth = (float(size[key]) / 1000. for key in ("xDimension", "yDimension"))
+            if not all(math.isfinite(value) and value > 0 for value in (width, depth)):
+                raise ValueError("slot dimensions must be finite and positive")
+            top_z = max(self._point_xyz_m(well.top())[2]
+                        for labware in self.loaded_labware.values()
+                        if self._labware_slots[id(labware)] == slot
+                        for well in labware.wells_by_name().values())
+            # Include the slot at deck level and at its loaded height so deck
+            # tilt cannot shrink the footprint used for lateral travel.
+            corners = [self._apply_deck_transform((x, y, z))
+                       for x in (origin[0], origin[0] + width)
+                       for y in (origin[1], origin[1] + depth)
+                       for z in (origin[2], max(origin[2], top_z))]
+        except (AttributeError, KeyError, TypeError, ValueError) as exc:
+            raise RuntimeError(f"could not resolve OT2 slot {slot} footprint: {exc}") from exc
+        return tuple((min(point[axis] for point in corners), max(point[axis] for point in corners))
+                     for axis in (0, 1))
+
+    def _deck_route_bounds(self, address):
+        if not self._slot_deck_clearance_m or self._address_slot(address) is None:
+            return {}
+        return {slot: self._slot_xy_bounds(slot) for slot in sorted(set(self._labware_slots.values()))}
 
     @staticmethod
-    def _raise_before_deck_travel(motion, travel_z):
-        if motion.position[2] < travel_z:
-            motion.move_to(motion.position[0], motion.position[1], travel_z)
+    def _slot_crossing(start, end, bounds):
+        """Return the fraction at which an XY segment first enters a slot."""
+        entry, exit = 0., 1.
+        for axis, (low, high) in enumerate(bounds):
+            delta = end[axis] - start[axis]
+            if abs(delta) < 1e-12:
+                if start[axis] < low or start[axis] > high:
+                    return None
+                continue
+            first, last = sorted(((low - start[axis]) / delta, (high - start[axis]) / delta))
+            entry, exit = max(entry, first), min(exit, last)
+            if entry > exit:
+                return None
+        return entry
+
+    def _deck_route(self, motion, *, carrying=False, retreat=False):
+        """Keep the Y/X approach and X/Y retreat; raise before crossed slots."""
+        slot = self._address_slot(motion.address) if motion.deck_bounds else None
+        travel_z = self._deck_travel_z(motion, carrying=carrying, slot=slot)
+        if (slot is not None and not retreat
+                and self._slot_crossing(motion.target, motion.target, motion.deck_bounds[slot]) is not None):
+            # On approach, wait until the route reaches a slot to adopt its Z.
+            # A manually tagged XYZ outside its slot retains the conservative
+            # target-slot height for the whole approach instead.
+            item_height = motion.item.height_m if carrying and motion.item is not None else 0.
+            travel_z = motion.entry[2] + item_height
+        start = motion.target[:3] if retreat else motion.entry[:3]
+        position = (*start[:2], max(start[2], travel_z))
+        route = [position] if retreat or start[2] < travel_z else []
+        destinations = ((motion.entry[0], motion.target[1]), motion.entry[:2]) if retreat else (
+            (motion.entry[0], motion.target[1]), motion.target[:2])
+        for destination in destinations:
+            segment_start = position
+            crossings = []
+            for crossed_slot, bounds in motion.deck_bounds.items():
+                fraction = self._slot_crossing(segment_start, destination, bounds)
+                if fraction is not None:
+                    crossings.append((fraction, crossed_slot))
+            for fraction, crossed_slot in sorted(crossings):
+                required_z = self._deck_travel_z(motion, carrying=carrying, slot=crossed_slot)
+                if required_z > position[2]:
+                    # Stop at the slot boundary, then lift vertically before
+                    # crossing it. Retain the higher Z until the route ends.
+                    xy = tuple(segment_start[axis] + fraction * (destination[axis] - segment_start[axis])
+                               for axis in (0, 1))
+                    if xy != position[:2]:
+                        route.append((*xy, position[2]))
+                    position = (*xy, required_z)
+                    route.append(position)
+            position = (*destination, position[2])
+            route.append(position)
+        return route
 
     @station_operation
     def pick(self, arm, labware, location=None, *, grasp=None, grasp_offset_mm=None,
@@ -499,6 +606,7 @@ class OT2(Station):
             correction = self._validate_target_options(labware, use_labware_offset, tcp_offset_mm)
             selected = self.resolve_approach(approach)
             entries = self.resolve_entry_pose(selected, location=address, all_entries=True)
+            deck_bounds = self._deck_route_bounds(address)
             arm._gripper_gap(labware, opened=True, grasp=grasp_width_mm)
             entry = arm._step(f"enter {self.name}",
                               lambda: arm._enter(self, approach=selected, location=address))
@@ -517,19 +625,13 @@ class OT2(Station):
                                    force=pick_force, speed=pick_speed)
             motion.address = address
             motion.approach = selected
+            motion.deck_bounds = deck_bounds
             motion.open_gripper()
-            approach_z = self._deck_travel_z(motion)
-            self._raise_before_deck_travel(motion, approach_z)
-            motion.move_to(motion.entry[0], motion.target[1], approach_z)
-            motion.move_to(*motion.target[:2], approach_z)
+            for waypoint in self._deck_route(motion):
+                motion.move_to(*waypoint)
             motion.move_to(*motion.target[:3])
             motion.grasp()
-            retreat_z = self._deck_travel_z(motion, carrying=True)
-            route = [
-                (*motion.target[:2], retreat_z),
-                (motion.entry[0], motion.target[1], retreat_z),
-                (*motion.entry[:2], retreat_z),
-            ]
+            route = self._deck_route(motion, carrying=True, retreat=True)
             return self._pause_at_endpoint(
                 arm, "pickup", motion, entries, route, retreat=retreat)
 
@@ -550,6 +652,7 @@ class OT2(Station):
             address = self.resolve_address(location)
             selected = arm._placement_approach(self, approach)
             entries = self.resolve_entry_pose(selected, location=address, all_entries=True)
+            deck_bounds = self._deck_route_bounds(address)
             entry = arm._step(f"enter {self.name}",
                               lambda: arm._enter(self, approach=selected, location=address))
             reference = self._held_reference(arm, self.resolve_location(address), entry[3:])
@@ -562,16 +665,11 @@ class OT2(Station):
             motion = StationMotion(self, arm, entry, target, item, hold_time_s=duration)
             motion.address = address
             motion.approach = selected
-            approach_z = self._deck_travel_z(motion, carrying=True)
-            self._raise_before_deck_travel(motion, approach_z)
-            motion.move_to(motion.entry[0], motion.target[1], approach_z)
-            motion.move_to(*motion.target[:2], approach_z)
+            motion.deck_bounds = deck_bounds
+            for waypoint in self._deck_route(motion, carrying=True):
+                motion.move_to(*waypoint)
             motion.move_to(*motion.target[:3])
-            route = [
-                (*motion.target[:2], approach_z),
-                (motion.entry[0], motion.target[1], approach_z),
-                (*motion.entry[:2], approach_z),
-            ]
+            route = self._deck_route(motion, carrying=True, retreat=True)
             return self._pause_at_endpoint(
                 arm, "placement", motion, entries, route, release=release,
                 retreat=retreat, release_allowed=True, hold_time_s=duration)
@@ -606,9 +704,12 @@ class OT2(Station):
         self.deck_rotation, self.deck_translation, self.deck_max_residual_m = calibration
         self.loaded_labware: Dict[str, Any] = {}
         self.loaded_modules: Dict[str, Any] = {}
+        self._named_module_requests: Dict[str, Tuple[str, str]] = {}
         self._custom_labware_definitions: Dict[str, Dict[str, Any]] = {}
+        self._named_labware_requests: Dict[str, Tuple[str, Optional[str], Optional[int]]] = {}
         self._labware_slots: Dict[int, str] = {}
         self._module_slots: Dict[int, str] = {}
+        self._slot_deck_clearance_m: Dict[str, float] = {}
         self._registered_wells: Dict[int, Tuple[Any, str, str]] = {}
         self._protocol: Any = None
         self._load_configured_deck(module_definitions, labware_definitions)
@@ -645,7 +746,8 @@ class OT2(Station):
                 raise ValueError(f"module_definitions.{label} has " + "; ".join(details))
             self.load_module(definition["model"], definition["slot"], label=label)
         for label, definition in labware.items():
-            allowed = {"load_name", "location", "namespace", "version", "definition", "definition_path"}
+            allowed = {"load_name", "location", "namespace", "version", "definition", "definition_path",
+                       "deck_clearance_mm"}
             unknown = set(definition) - allowed
             missing = {"location"} - set(definition)
             if missing or unknown:
@@ -663,7 +765,7 @@ class OT2(Station):
                 )
             options = {
                 key: definition[key]
-                for key in ("load_name", "definition", "namespace", "version")
+                for key in ("load_name", "definition", "namespace", "version", "deck_clearance_mm")
                 if key in definition
             }
             if "definition_path" in definition:
@@ -811,10 +913,19 @@ class OT2(Station):
                 raise RuntimeError("Opentrons returned an unreadable well position") from exc
         return tuple(float(item) / 1000.0 for item in values)  # type: ignore[return-value]
 
+    @station_operation(arm_keyword=True)
     def load_module(
-        self, model: str, slot: object, *, label: Optional[str] = None
+        self, model: str, slot: object, *, label: Optional[str] = None, arm: Any = None
     ) -> Any:
-        """Load an Opentrons module into a deck slot in this station context."""
+        """Load an Opentrons module into a deck slot in this station context.
+
+        Direct calls return native modules; station operations return JSON-safe
+        metadata. Identical model, slot, and label requests reuse the module.
+        """
+        if arm is not None:
+            arm._ensure_station_context_clear()
+            if arm.attached_labware is not None:
+                raise ValueError("load OT-2 modules before picking up a vial")
         if not isinstance(model, str) or not model:
             raise ValueError("OT-2 module model must be a non-empty string")
         if not isinstance(slot, (str, int)) or re.fullmatch(r"[1-9]|1[0-2]", str(slot)) is None:
@@ -822,16 +933,26 @@ class OT2(Station):
         resolved_label = label if label is not None else f"slot{slot}_{model}"
         if not isinstance(resolved_label, str) or not resolved_label:
             raise ValueError("OT-2 module label must be a non-empty string")
-        if resolved_label in self.loaded_modules:
-            raise ValueError(f"OT-2 module label {resolved_label!r} is already registered")
-        try:
-            native_module = self._simulator_protocol().load_module(model, str(slot))
-        except Exception as exc:
-            raise RuntimeError(
-                f"could not simulate OT-2 module {model!r} in slot {slot}: {exc}"
-            ) from exc
-        self.loaded_modules[resolved_label] = native_module
-        self._module_slots[id(native_module)] = str(slot)
+        slot_name = str(slot)
+        existing = self.loaded_modules.get(resolved_label)
+        if existing is not None:
+            if self._named_module_requests.get(resolved_label) != (model, slot_name):
+                raise ValueError(f"OT-2 module label {resolved_label!r} is already registered")
+            native_module = existing
+        else:
+            if slot_name in self._module_slots.values() or slot_name in self._labware_slots.values():
+                raise ValueError(f"OT-2 slot {slot_name} is already occupied")
+            try:
+                native_module = self._simulator_protocol().load_module(model, slot_name)
+            except Exception as exc:
+                raise RuntimeError(
+                    f"could not simulate OT-2 module {model!r} in slot {slot}: {exc}"
+                ) from exc
+            self.loaded_modules[resolved_label] = native_module
+            self._module_slots[id(native_module)] = slot_name
+            self._named_module_requests[resolved_label] = (model, slot_name)
+        if arm is not None:
+            return {"name": resolved_label, "slot": slot_name, "model": model}
         return native_module
 
     @station_operation(arm_keyword=True)
@@ -844,6 +965,7 @@ class OT2(Station):
         version: Optional[int] = None,
         label: Optional[str] = None,
         definition: Optional[Dict[str, Any]] = None,
+        deck_clearance_mm: Optional[float] = None,
         arm: Any = None,
     ) -> Any:
         """Load named labware or a custom JSON definition in this station.
@@ -851,11 +973,20 @@ class OT2(Station):
         Direct calls return native Opentrons labware. The station dispatcher
         supplies the arm by keyword and receives JSON-safe rack metadata.
         Identical custom definitions reuse their existing label and slot.
+        A finite nonnegative deck_clearance_mm sets an extra margin above that
+        physical slot's well tops. Omitted/null values preserve an existing
+        override; a new slot uses the YAML default. An identical custom reload
+        can update the margin without reloading native labware. An identical
+        named load request can also be reused when a margin is supplied.
         """
         if arm is not None:
             arm._ensure_station_context_clear()
             if arm.attached_labware is not None:
                 raise ValueError("load OT-2 labware before picking up a vial")
+        if deck_clearance_mm is not None and (
+                isinstance(deck_clearance_mm, bool) or not isinstance(deck_clearance_mm, (int, float))
+                or not math.isfinite(deck_clearance_mm) or deck_clearance_mm < 0):
+            raise ValueError("OT2 deck_clearance_mm must be a finite nonnegative number or None")
         custom = definition is not None
         if custom:
             if not isinstance(definition, dict):
@@ -889,8 +1020,10 @@ class OT2(Station):
             raise ValueError("OT-2 labware label must be a non-empty string")
         existing = self.loaded_labware.get(resolved_label)
         if existing is not None:
-            if not (custom and self._labware_slots[id(existing)] == slot_name
-                    and self._custom_labware_definitions.get(resolved_label) == definition):
+            same_custom = custom and self._custom_labware_definitions.get(resolved_label) == definition
+            same_named = (not custom and deck_clearance_mm is not None
+                          and self._named_labware_requests.get(resolved_label) == (load_name, namespace, version))
+            if not (self._labware_slots[id(existing)] == slot_name and (same_custom or same_named)):
                 raise ValueError(f"OT-2 labware label {resolved_label!r} is already registered")
             native_labware = existing
         else:
@@ -922,8 +1055,17 @@ class OT2(Station):
             self._register_labware(resolved_label, native_labware, slot_name)
             if custom:
                 self._custom_labware_definitions[resolved_label] = stored_definition
+            else:
+                self._named_labware_requests[resolved_label] = (load_name, namespace, version)
+        if deck_clearance_mm is not None:
+            self._slot_deck_clearance_m[slot_name] = float(deck_clearance_mm) / 1000.
+            logging.getLogger(__name__).info("OT2 slot %s deck clearance margin set to %.3f mm",
+                                            slot_name, deck_clearance_mm)
         if arm is not None:
-            return {"name": resolved_label, "slot": slot_name, "wells": list(native_labware.wells_by_name())}
+            result = {"name": resolved_label, "slot": slot_name, "wells": list(native_labware.wells_by_name())}
+            if slot_name in self._slot_deck_clearance_m:
+                result["deck_clearance_mm"] = self._slot_deck_clearance_m[slot_name] * 1000.
+            return result
         return native_labware
 
     def _register_labware(self, label, native_labware, slot):
@@ -977,20 +1119,29 @@ class OT2(Station):
         return super()._entry_location_key(location)
 
     @staticmethod
-    def ot2_location(xyz):
+    def ot2_location(xyz, *, slot=None):
         """Validate arm-base XYZ millimetres and return a JSON-safe location."""
         if (not isinstance(xyz, (list, tuple)) or len(xyz) != 3
                 or any(isinstance(v, bool) or not isinstance(v, (int, float))
                        or not math.isfinite(v) for v in xyz)):
             raise ValueError("Set OT2_LOCATION_BASE_MM to three finite XYZ values in millimetres")
-        return {"link_base_mm": list(xyz)}
+        result = {"link_base_mm": list(xyz)}
+        if slot is not None:
+            if (isinstance(slot, bool) or not isinstance(slot, (str, int))
+                    or re.fullmatch(r"[1-9]|1[0-2]", str(slot)) is None):
+                raise ValueError("OT2 explicit location slot must be a deck slot from 1 through 12")
+            result["slot"] = str(slot)
+        return result
 
     def resolve_address(self, address):
-        """Resolve a native well or an explicit {"link_base_mm": [x, y, z]}."""
+        """Resolve a native well or explicit arm XYZ with an optional deck slot."""
         if isinstance(address, dict):
-            if set(address) != {"link_base_mm"}:
-                raise ValueError("OT2 explicit location requires only link_base_mm")
-            return self.ot2_location(address["link_base_mm"])
+            if "link_base_mm" not in address or set(address) - {"link_base_mm", "slot"}:
+                raise ValueError("OT2 explicit location requires link_base_mm and optionally slot")
+            resolved = self.ot2_location(address["link_base_mm"], slot=address.get("slot"))
+            if "slot" in resolved and resolved["slot"] not in self._labware_slots.values():
+                raise ValueError(f"no labware loaded in OT2 slot {resolved['slot']}")
+            return resolved
         if not isinstance(address, str):
             return address
         match = re.fullmatch(r"(1[0-2]|[1-9])([A-Z]+[1-9]\d*)", address.strip().upper())
@@ -1181,17 +1332,19 @@ class VialHandling(Station):
 
 
 class VialTurbidity(Station):
-    """Move a held vial into and out of the turbidity measurement position."""
+    """Move a held vial into and out of the turbidity measurement position.
+    """
 
     default_approach = "vertical"
+    config_filename = "vial_turbidity.yaml"
+    placement_operation = "turbidity placement"
 
     def __init__(self, config_path: Optional[str] = None, *,
                  linear_rail_position: object = _UNSET) -> None:
-        config = self._load_config("vial_turbidity.yaml", config_path)
+        config = self._load_config(self.config_filename, config_path)
         if linear_rail_position is not _UNSET:
             config["rail_position"] = linear_rail_position
         super().__init__(config)
-        self.dwell_s = self._hold_duration(config.get("dwell_s", 2.0))
 
     @station_operation
     def place(self, arm, labware=None, location="measure", *, tcp_offset_mm=None,
@@ -1220,7 +1373,7 @@ class VialTurbidity(Station):
                 item, reference, entry[3:], tcp_offset_mm=correction,
                 use_labware_offset=use_labware_offset)
             arm._log_tcp_offset(
-                "turbidity placement", self, address, item, grasp=arm._attachment.grasp,
+                self.placement_operation, self, address, item, grasp=arm._attachment.grasp,
                 source=source, base_offset_mm=correction, reference=reference,
                 final=final, use_labware_offset=use_labware_offset, target=target)
             motion = StationMotion(self, arm, entry, target, item)
@@ -1233,10 +1386,21 @@ class VialTurbidity(Station):
             motion.approach = selected
             retreat_route = list(reversed([entry[:3], *approach_route[:-1]]))
             return self._pause_at_endpoint(
-                arm, "turbidity placement", motion, entries, retreat_route,
+                arm, self.placement_operation, motion, entries, retreat_route,
                 release=release, retreat=retreat, release_allowed=True)
 
-        return arm._run_operation("turbidity placement", perform)
+        return arm._run_operation(self.placement_operation, perform)
+
+
+class UVVis(VialTurbidity):
+    """Place a held vial for UV-visible measurement using independent geometry.
+
+    Placement, optional release, and the saved retreat route match VialTurbidity.
+    Supply a calibrated config_path to replace the packaged dummy geometry.
+    """
+
+    config_filename = "uvvis.yaml"
+    placement_operation = "UVVis placement"
 
 
 class AzentaIntelliXCapS1(Station):

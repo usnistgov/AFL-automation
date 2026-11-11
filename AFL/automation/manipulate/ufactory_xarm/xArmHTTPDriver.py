@@ -275,6 +275,10 @@ _DEFAULT_CUSTOM_CONFIG = {
             "_classname": "AFL.automation.manipulate.ufactory_xarm.stations.VialTurbidity",
             "config_path": "configs/vial_turbidity.yaml",
         },
+        {
+            "_classname": "AFL.automation.manipulate.ufactory_xarm.stations.UVVis",
+            "config_path": "configs/uvvis.yaml",
+        },
     ],
     "labware": [
         {

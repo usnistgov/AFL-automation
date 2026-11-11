@@ -1,8 +1,5 @@
 name: VialTurbidity
 
-# Measurement interval used by example_multi_vials.py between place and return.
-dwell_s: 20.0
-
 # Rail position in mm.
 rail_position: 350
 

@@ -1,4 +1,5 @@
 import pytest
+import copy
 from pathlib import Path
 import json
 import logging
@@ -9,6 +10,7 @@ import numpy as np
 import requests
 
 from AFL.automation.prepare.OT2HTTPDriver import OT2HTTPDriver
+from AFL.automation.APIServer.Driver import Driver
 
 
 class DummyConfig(dict):
@@ -421,6 +423,225 @@ def test_emergency_stop_preserves_cached_run_when_stop_request_fails(monkeypatch
         driver.emergency_stop(timeout=2)
 
     assert driver.run_id == "test-run"
+
+
+def test_clear_runs_is_exposed_as_a_queued_command():
+    from AFL.automation.prepare.OT2Prepare import OT2Prepare
+
+    assert "clear_runs" in Driver.queued.functions
+    assert Driver.queued.function_info["clear_runs"]["kwargs"] == [("timeout", 10.0)]
+    assert "clear_runs" not in Driver.unqueued.functions
+    assert "emergency_stop" in Driver.unqueued.functions
+    assert OT2Prepare.clear_runs is OT2HTTPDriver.clear_runs
+
+
+@pytest.mark.parametrize("cached_run_id", ["test-run", "running-run", None])
+def test_clear_runs_stops_only_idle_runs_and_preserves_deck_and_tips(monkeypatch, cached_run_id):
+    driver = _command_lifecycle_driver()
+    driver.run_id = cached_run_id
+    driver.has_tip = True
+    driver.current_tip = {"mount": "left", "location": "1A1"}
+    driver.config["available_tips"] = {"left": [("tiprack-1", "A2")]}
+    driver._ot2_command_fault = {"run_id": "faulted-run"}
+    original_config = copy.deepcopy(driver.config)
+    posts = []
+    cached_run_statuses = iter(["stop-requested", "stopped"])
+
+    def fake_get(**kwargs):
+        if kwargs["url"].endswith("/runs"):
+            return _FakeResponse({"data": [
+                {"id": "test-run", "status": "idle", "current": True},
+                {"id": "another-idle-run", "status": "idle", "current": False},
+                {"id": "running-run", "status": "running"},
+                {"id": "paused-run", "status": "paused"},
+                {"id": "stopped-run", "status": "stopped"},
+                {"id": "succeeded-run", "status": "succeeded"},
+                {"id": "failed-run", "status": "failed"},
+                {"id": "error-run", "status": "error"},
+            ]}, status_code=200)
+        status = next(cached_run_statuses) if kwargs["url"].endswith("/test-run") else "stopped"
+        return _FakeResponse({"data": {"status": status}}, status_code=200)
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.get", fake_get)
+    monkeypatch.setattr(
+        "AFL.automation.prepare.OT2HTTPDriver.requests.post",
+        lambda **kwargs: posts.append(kwargs) or _FakeResponse({"data": {}}, status_code=201),
+    )
+
+    result = driver.execute(task_name="clear_runs", timeout=2)
+
+    assert result == {
+        "cleared_run_ids": ["test-run", "another-idle-run"],
+        "final_states": {"test-run": "stopped", "another-idle-run": "stopped"},
+    }
+    assert [post["url"] for post in posts] == [
+        "http://ot2.test/runs/test-run/actions",
+        "http://ot2.test/runs/another-idle-run/actions",
+    ]
+    assert all(post["json"] == {"data": {"actionType": "stop"}} for post in posts)
+    assert all(post["headers"] == driver.headers for post in posts)
+    assert driver.run_id == (None if cached_run_id == "test-run" else cached_run_id)
+    assert driver.config == original_config
+    assert driver.has_tip is True
+    assert driver.current_tip == {"mount": "left", "location": "1A1"}
+    assert driver._ot2_command_fault == {"run_id": "faulted-run"}
+
+
+@pytest.mark.parametrize("runs", [[], [
+    {"id": "test-run", "status": "running"},
+    {"id": "old-run", "status": "stopped"},
+]])
+def test_clear_runs_is_a_noop_without_idle_runs(monkeypatch, runs):
+    driver = _command_lifecycle_driver()
+    monkeypatch.setattr(
+        "AFL.automation.prepare.OT2HTTPDriver.requests.get",
+        lambda **kwargs: _FakeResponse({"data": runs}, status_code=200),
+    )
+
+    def unexpected_post(**kwargs):
+        raise AssertionError("Only idle runs may receive a stop action")
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", unexpected_post)
+
+    assert driver.clear_runs() == {"cleared_run_ids": [], "final_states": {}}
+    assert driver.run_id == "test-run"
+
+
+@pytest.mark.parametrize("failure_stage", ["list", "stop", "confirm"])
+@pytest.mark.parametrize("network_error", [False, True])
+def test_clear_runs_preserves_cached_run_when_request_fails(monkeypatch, failure_stage, network_error):
+    driver = _command_lifecycle_driver()
+
+    def failure_response():
+        if network_error:
+            raise requests.exceptions.ConnectionError("Robot unavailable")
+        return _FakeResponse({"errors": ["request failed"]}, status_code=500)
+
+    def fake_get(**kwargs):
+        stage = "list" if kwargs["url"].endswith("/runs") else "confirm"
+        if stage == failure_stage:
+            return failure_response()
+        payload = (
+            [{"id": "test-run", "status": "idle"}]
+            if stage == "list" else {"status": "stopped"}
+        )
+        return _FakeResponse({"data": payload}, status_code=200)
+
+    def fake_post(**kwargs):
+        if failure_stage == "stop":
+            return failure_response()
+        return _FakeResponse({"data": {}}, status_code=201)
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.get", fake_get)
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.post", fake_post)
+
+    error_message = "Failed to stop" if failure_stage == "stop" else f"Unable to {failure_stage}"
+    with pytest.raises(RuntimeError, match=error_message):
+        driver.clear_runs(timeout=2)
+
+    assert driver.run_id == "test-run"
+
+
+@pytest.mark.parametrize("failure_stage,payload", [
+    ("list", {}),
+    ("list", {"data": {}}),
+    ("list", {"data": [{"status": "idle"}]}),
+    ("confirm", {"data": {}}),
+    ("confirm", {"data": {"status": None}}),
+])
+def test_clear_runs_rejects_invalid_robot_responses(monkeypatch, failure_stage, payload):
+    driver = _command_lifecycle_driver()
+
+    def fake_get(**kwargs):
+        stage = "list" if kwargs["url"].endswith("/runs") else "confirm"
+        if stage == failure_stage:
+            return _FakeResponse(payload, status_code=200)
+        return _FakeResponse({"data": [{"id": "test-run", "status": "idle"}]}, status_code=200)
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.get", fake_get)
+    monkeypatch.setattr(
+        "AFL.automation.prepare.OT2HTTPDriver.requests.post",
+        lambda **kwargs: _FakeResponse({"data": {}}, status_code=201),
+    )
+
+    with pytest.raises(RuntimeError, match="invalid"):
+        driver.clear_runs()
+
+    assert driver.run_id == "test-run"
+
+
+@pytest.mark.parametrize("command,error_type", [
+    ("clear_runs", TimeoutError),
+    ("emergency_stop", RuntimeError),
+])
+def test_run_stop_preserves_cached_run_when_stop_is_not_confirmed(monkeypatch, command, error_type):
+    driver = _command_lifecycle_driver()
+
+    def fake_get(**kwargs):
+        payload = (
+            [{"id": "test-run", "status": "idle"}]
+            if kwargs["url"].endswith("/runs") else {"status": "stop-requested"}
+        )
+        return _FakeResponse({"data": payload}, status_code=200)
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.get", fake_get)
+    monkeypatch.setattr(
+        "AFL.automation.prepare.OT2HTTPDriver.requests.post",
+        lambda **kwargs: _FakeResponse({"data": {}}, status_code=201),
+    )
+
+    with pytest.raises(error_type, match="Timed out.*test-run"):
+        getattr(driver, command)(timeout=0.001)
+
+    assert driver.run_id == "test-run"
+
+
+@pytest.mark.parametrize("timeout", [0, -1, float("nan"), float("inf")])
+@pytest.mark.parametrize("command", ["clear_runs", "emergency_stop"])
+def test_run_stop_requires_a_finite_positive_timeout(timeout, command):
+    driver = _command_lifecycle_driver()
+
+    with pytest.raises(ValueError, match="finite and positive"):
+        getattr(driver, command)(timeout=timeout)
+
+
+def test_emergency_stop_reuses_run_stopping_without_waiting_for_the_api_lock(monkeypatch):
+    driver = _command_lifecycle_driver()
+
+    class _UnavailableLock:
+        def __enter__(self):
+            raise AssertionError("Emergency stop must not wait for a blocked command's API lock")
+
+        def __exit__(self, *args):
+            pass
+
+    driver._ot2_api_lock = _UnavailableLock()
+    posts = []
+
+    def fake_get(**kwargs):
+        if kwargs["url"].endswith("/runs"):
+            payload = [
+                {"id": "idle-run", "status": "idle"},
+                {"id": "running-run", "status": "running"},
+                {"id": "paused-run", "status": "paused"},
+                {"id": "old-run", "status": "stopped"},
+            ]
+        else:
+            assert len(posts) == 3, "Request every stop before waiting for confirmation"
+            payload = {"status": "stopped"}
+        return _FakeResponse({"data": payload}, status_code=200)
+
+    monkeypatch.setattr("AFL.automation.prepare.OT2HTTPDriver.requests.get", fake_get)
+    monkeypatch.setattr(
+        "AFL.automation.prepare.OT2HTTPDriver.requests.post",
+        lambda **kwargs: posts.append(kwargs) or _FakeResponse({"data": {}}, status_code=201),
+    )
+
+    result = driver.emergency_stop()
+
+    assert result["stopped_run_ids"] == ["idle-run", "running-run", "paused-run"]
+    assert result["active_run_ids"] == []
+    assert driver.run_id is None
 
 
 def test_load_module_reports_an_actionable_attachment_error(monkeypatch):

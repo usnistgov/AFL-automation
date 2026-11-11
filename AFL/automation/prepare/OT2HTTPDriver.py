@@ -4124,6 +4124,44 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             self.log_error(f"Error creating run: {str(e)}")
             raise RuntimeError(f"Error creating run: {str(e)}")
 
+    @Driver.queued()
+    def clear_runs(self, timeout=10.0):
+        """Stop idle OT-2 runs while preserving deck and tip configuration.
+
+        This queued command waits for preceding AFL tasks to finish. Only runs
+        reported as ``idle`` are stopped; running, paused, and terminal runs
+        are left alone. Run history is retained on the robot. If the cached
+        run is cleared, the next robot command creates a fresh run and reloads
+        the configured deck.
+
+        Parameters
+        ----------
+        timeout : float, default=10.0
+            Maximum number of seconds to wait for all stop confirmations.
+
+        Returns
+        -------
+        dict
+            Cleared run identifiers and their confirmed terminal states.
+
+        Raises
+        ------
+        RuntimeError
+            If runs cannot be listed, stopped, or confirmed as terminal.
+        TimeoutError
+            If a stop is not confirmed within ``timeout``.
+        ValueError
+            If ``timeout`` is not finite and positive.
+        """
+        with getattr(self, "_ot2_api_lock", nullcontext()):
+            result = self._stop_runs(timeout=timeout, idle_only=True)
+            if getattr(self, "run_id", None) in result["stopped_run_ids"]:
+                self.run_id = None
+        return {
+            "cleared_run_ids": result["stopped_run_ids"],
+            "final_states": result["final_states"],
+        }
+
     @Driver.unqueued()
     def emergency_stop(self, timeout=10.0):
         """Stop every nonterminal run on the OT-2 and clear local run state.
@@ -4149,13 +4187,28 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
             If runs cannot be listed, a stop request fails, or a run does not
             reach a terminal state before the timeout.
         ValueError
-            If ``timeout`` is not positive.
+            If ``timeout`` is not finite and positive.
+        """
+        # Do not acquire the robot API lock here: an emergency stop must remain
+        # available while a queued command holds that lock awaiting completion.
+        result = self._stop_runs(timeout=timeout)
+        self.run_id = None
+        self._ot2_command_fault = None
+        self.log_warning("OT-2 emergency stop complete; cleared cached run state")
+        return {**result, "active_run_ids": []}
+
+    def _stop_runs(self, timeout, *, idle_only=False):
+        """Discover selected runs, request every stop, and confirm final states.
+
+        Callers control API locking and cached driver state. Idle cleanup
+        selects only idle runs; emergency stops select every nonterminal run.
         """
         timeout = float(timeout)
-        if timeout <= 0:
-            raise ValueError("Emergency-stop timeout must be positive")
+        if not np.isfinite(timeout) or timeout <= 0:
+            raise ValueError("Run-stop timeout must be finite and positive")
 
-        terminal_states = {"succeeded", "failed", "error", "stopped"}
+        operation = "clear_runs" if idle_only else "emergency_stop"
+        terminal_states = self.OT2_TERMINAL_RUN_STATES
         try:
             response = requests.get(
                 url=f"{self.base_url}/runs",
@@ -4163,28 +4216,35 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 timeout=timeout,
             )
         except requests.exceptions.RequestException as exc:
-            raise RuntimeError(f"Unable to list OT-2 runs during emergency stop: {exc}") from exc
+            raise RuntimeError(f"Unable to list OT-2 runs during {operation}: {exc}") from exc
 
         if response.status_code != 200:
             raise RuntimeError(
-                "Unable to list OT-2 runs during emergency stop: "
+                f"Unable to list OT-2 runs during {operation}: "
                 f"HTTP {response.status_code}: {response.text}"
             )
 
         try:
             runs = response.json()["data"]
+            if not isinstance(runs, list) or any(not isinstance(run, dict) for run in runs):
+                raise ValueError("Expected a list of run objects")
+            selected_runs = {}
+            for run in runs:
+                status = run.get("status", "unknown")
+                if (idle_only and status != "idle") or (not idle_only and status in terminal_states):
+                    continue
+                run_id = run["id"]
+                if not isinstance(run_id, str) or not run_id:
+                    raise ValueError("Expected a nonempty run identifier")
+                selected_runs[run_id] = status
         except (KeyError, TypeError, ValueError) as exc:
-            raise RuntimeError("OT-2 returned an invalid run list during emergency stop") from exc
+            raise RuntimeError(f"OT-2 returned an invalid run list during {operation}") from exc
 
-        active_runs = {
-            run["id"]: run.get("status", "unknown")
-            for run in runs
-            if run.get("id") and run.get("status") not in terminal_states
-        }
         stop_requested = []
         failures = []
-        for run_id, status in active_runs.items():
-            self.log_warning(f"Emergency stop requested for OT-2 run {run_id} ({status})")
+        for run_id, status in selected_runs.items():
+            log_stop = self.log_info if idle_only else self.log_warning
+            log_stop(f"{operation} requested for OT-2 run {run_id} ({status})")
             try:
                 stop_response = requests.post(
                     url=f"{self.base_url}/runs/{run_id}/actions",
@@ -4209,7 +4269,7 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
         deadline = time.monotonic() + timeout
         pending = set(stop_requested)
         final_states = {}
-        while pending:
+        while pending and time.monotonic() < deadline:
             for run_id in list(pending):
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
@@ -4222,15 +4282,17 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                     )
                 except requests.exceptions.RequestException as exc:
                     raise RuntimeError(
-                        f"Unable to confirm emergency stop for OT-2 run {run_id}: {exc}"
+                        f"Unable to confirm {operation} stop for OT-2 run {run_id}: {exc}"
                     ) from exc
                 if status_response.status_code != 200:
                     raise RuntimeError(
-                        f"Unable to confirm emergency stop for OT-2 run {run_id}: "
+                        f"Unable to confirm {operation} stop for OT-2 run {run_id}: "
                         f"HTTP {status_response.status_code}: {status_response.text}"
                     )
                 try:
                     status = status_response.json()["data"]["status"]
+                    if not isinstance(status, str):
+                        raise ValueError("Expected a run status string")
                 except (KeyError, TypeError, ValueError) as exc:
                     raise RuntimeError(
                         f"OT-2 returned invalid status for run {run_id}"
@@ -4238,28 +4300,20 @@ class OT2HTTPDriver(OT2DeckWebAppMixin, Driver):
                 if status in terminal_states:
                     final_states[run_id] = status
                     pending.remove(run_id)
+                    self.log_info(f"{operation} confirmed for OT-2 run {run_id}: {status}")
             if pending:
                 remaining = deadline - time.monotonic()
                 if remaining > 0:
                     time.sleep(min(0.1, remaining))
 
         if pending:
-            raise RuntimeError(
+            timeout_error = TimeoutError if idle_only else RuntimeError
+            raise timeout_error(
                 "Timed out waiting for OT-2 run(s) to stop: " + ", ".join(sorted(pending))
             )
-
-        # A future command must create a fresh run and reload the deck.  Tip
-        # tracking is deliberately retained because an emergency stop may
-        # leave a physical tip attached to a pipette.
-        self.run_id = None
-        self._ot2_command_fault = None
-        self.log_warning(
-            "OT-2 emergency stop complete; cleared cached run state"
-        )
         return {
             "stopped_run_ids": stop_requested,
             "final_states": final_states,
-            "active_run_ids": [],
         }
 
     def _reload_deck_configuration(self):

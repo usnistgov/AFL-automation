@@ -1,6 +1,7 @@
 """Driver for Ocean Optics UV-Vis spectrometers supported by SeaBreeze."""
 
 import datetime
+from contextlib import suppress
 from numbers import Real
 from pathlib import Path
 from typing import List, Optional
@@ -104,9 +105,15 @@ class SeabreezeUVVis(Driver):
             SeaBreeze backend to use.
         device_serial : str, optional
             Serial number of the spectrometer to connect to. The first
-            available spectrometer is used when omitted.
+            available spectrometer is used when omitted. Startup fails if
+            no matching, available device can be opened and initialized.
         overrides : dict, optional
             Configuration values that override the driver defaults.
+
+        Raises
+        ------
+        RuntimeError
+            If SeaBreeze cannot discover or initialize an available spectrometer.
         """
         super().__init__(
             name="SeabreezeUVVis",
@@ -136,7 +143,7 @@ class SeabreezeUVVis(Driver):
             # Accessing it here resolves the proxy at the first point the SDK
             # is actually required.
             seabreeze.use(backend)
-            from seabreeze.spectrometers import Spectrometer, list_devices
+            from seabreeze.spectrometers import SeaBreezeError, Spectrometer, list_devices
         except ImportError as error:
             raise RuntimeError(
                 "SeaBreeze could not be loaded. Install the optional dependency "
@@ -145,24 +152,75 @@ class SeabreezeUVVis(Driver):
             ) from error
 
         self.log_info("Attempting to list spectrometers.")
-        devices = list_devices()
+        try:
+            devices = list_devices()
+        except (SeaBreezeError, OSError, ImportError) as error:
+            raise RuntimeError(
+                f"SeaBreeze could not discover UV-Vis spectrometers using {backend!r}. "
+                "Check the USB connection, power, device permissions, and backend "
+                f"dependencies. Original error: {error}"
+            ) from error
         self.log_info("SeaBreeze sees devices: %s" % devices)
         if not devices:
             raise RuntimeError(
                 "SeaBreeze did not detect any spectrometers. Check that the "
-                "instrument is connected, powered, and accessible to this process."
+                "instrument is connected by USB, powered, and accessible to this "
+                "process, and that another application is not using it."
             )
         if device_serial is None:
-            self.log_info("Connecting to the first available spectrometer.")
-            self.spectrometer = Spectrometer.from_first_available()
+            device = next((item for item in devices if not item.is_open), None)
+            if device is None:
+                raise RuntimeError(
+                    "SeaBreeze detected spectrometers, but all are already in use. "
+                    "Close the application using the instrument before starting this driver."
+                )
         else:
-            self.log_info("Connecting to spectrometer serial number %s." % device_serial)
-            self.spectrometer = Spectrometer.from_serial_number(device_serial)
+            device = next(
+                (item for item in devices if item.serial_number == str(device_serial)),
+                None,
+            )
+            if device is None:
+                detected = ", ".join(
+                    f"{item.model} (serial {item.serial_number})" for item in devices
+                )
+                raise RuntimeError(
+                    f"SeaBreeze did not detect the requested spectrometer with serial "
+                    f"number {device_serial!r}. Detected devices: {detected}."
+                )
+            if device.is_open:
+                raise RuntimeError(
+                    f"Spectrometer {device_serial!r} is already in use. Close the "
+                    "application using it before starting this driver."
+                )
 
-        self.log_info("Connected successfully to %s." % self.spectrometer)
-        self.wavelengths = self.spectrometer.wavelengths()
+        device_description = f"{device.model} (serial {device.serial_number})"
+        self.log_info(f"Connecting to UV-Vis spectrometer: {device_description}.")
+        try:
+            # Open the device we discovered, avoiding a second discovery pass.
+            self.spectrometer = Spectrometer(device)
+            self.wavelengths = self.spectrometer.wavelengths()
+            self.set_exposure(self.config["exposure"])
+        except (SeaBreezeError, OSError) as error:
+            # Spectrometer construction can fail after opening the device.
+            with suppress(SeaBreezeError, OSError):
+                device.close()
+            raise RuntimeError(
+                f"Could not initialize UV-Vis spectrometer {device_description}. "
+                "Check the USB connection and permissions, and close any other "
+                f"application using the instrument. Original error: {error}"
+            ) from error
+
+        self.device_description = (
+            f"{self.spectrometer.model} (serial {self.spectrometer.serial_number})"
+        )
+        # The launcher constructs the driver before configuring server logging.
+        # Flush the identity to the console so Andon captures it during startup.
+        print(self.status()[0], flush=True)
         self.log_info("Spectrometer wavelength grid: %s" % self.wavelengths)
-        self.set_exposure(self.config["exposure"])
+
+    def status(self) -> List[str]:
+        """Report the identity of the connected UV-Vis spectrometer."""
+        return [f"Connected UV-Vis spectrometer: {self.device_description}."]
 
     @Driver.unqueued()
     def get_exposure(self) -> float:

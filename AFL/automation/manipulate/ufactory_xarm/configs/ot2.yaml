@@ -1,6 +1,7 @@
 name: OT2
 rail_position: 700
 # Extra vertical clearance above loaded labware during deck travel, in mm.
+# OT2.load_labware(deck_clearance_mm=...) can override this margin per slot.
 deck_clearance_mm: 15.0
 deck_calibration:
   max_residual_mm: 15
@@ -16,7 +17,8 @@ deck_calibration:
     # 6BRC: Slot 6 Bottom Right Cross; defines the deck plane with the first two.
     - {"deck":[380.87,99.5,0],"link_base":[154.055908, 640.032227, 126.419518]}
 # Seven joint angles in degrees. Top uses vertical; front uses horizontal.
-# Both approaches first clear loaded deck labware by deck_clearance_mm, then move Y, X, and Z.
+# Both approaches move Y, X, and Z, clearing loaded labware by deck_clearance_mm.
+# With per-slot overrides, Z rises before entering crossed loaded slots.
 # Loaded travel also includes the carried labware height below the TCP.
 # Each existing shared entry is the base for that approach's well targets.
 poses:

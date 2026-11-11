@@ -47,7 +47,16 @@ class QueueDaemon(threading.Thread):
             self.data['platform_serial'] = os.environ['AFL_SYSTEM_SERIAL']
         except KeyError:
             self.data['platform_serial'] = 'not_set'
-        self.data['afl_automation_version'] = __version__
+        try:
+            # Andon launches from the SSH account's home, which need not be a
+            # Git checkout. Resolve the version from this package's repository.
+            repository = pathlib.Path(__file__).resolve().parents[3]
+            self.data['afl_automation_version'] = subprocess.check_output(
+                ["git", "describe", "--always"], cwd=repository,
+                stderr=subprocess.DEVNULL,
+            ).strip().decode()
+        except Exception:
+            self.data['afl_automation_version'] = 'could_not_determine'
 
 
     def terminate(self):

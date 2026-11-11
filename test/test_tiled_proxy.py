@@ -26,6 +26,54 @@ def server(tmp_path, monkeypatch):
     api.driver.close()
 
 
+@pytest.mark.parametrize("connection_kwargs", [
+    {
+        "overrides": {
+            "uri": "http://tiled:8000/",
+            "structure_clients": "numpy",
+            "timeout": 2.5,
+        },
+    },
+    {
+        "uri": "http://tiled:8000/",
+        "structure_clients": "numpy",
+        "overrides": {"timeout": 2.5},
+    },
+])
+def test_driver_configuration_controls_lazy_backend_connection(
+    tmp_path, monkeypatch, connection_kwargs
+):
+    requests = []
+
+    def upstream(request):
+        requests.append(request)
+        return httpx.Response(200, json={"data": []})
+
+    original_client = httpx.Client
+
+    def create_http_client(**kwargs):
+        return original_client(transport=httpx.MockTransport(upstream), **kwargs)
+
+    monkeypatch.setattr(httpx, "Client", create_http_client)
+    driver = proxy.TiledProxyDriver(
+        api_key="test-key", afl_home=tmp_path, **connection_kwargs
+    )
+    try:
+        assert driver._http_client is None
+        assert driver.status() == ["Tiled backend: http://tiled:8000/"]
+        assert driver._read_tiled_config()["tiled_server"] == "http://tiled:8000/"
+        assert driver.config["structure_clients"] == "numpy"
+        assert "test-key" not in driver.filepath.read_text()
+
+        response = driver.upstream_request("GET", "api/v1/metadata/")
+        assert response.status_code == 200
+        assert str(requests[0].url) == "http://tiled:8000/api/v1/metadata/"
+        assert requests[0].headers["Authorization"] == "Apikey test-key"
+        assert all(value == 2.5 for value in requests[0].extensions["timeout"].values())
+    finally:
+        driver.close()
+
+
 def test_browser_and_queue_routes_use_the_existing_afl_server(server):
     api, _ = server
     client = api.app.test_client()

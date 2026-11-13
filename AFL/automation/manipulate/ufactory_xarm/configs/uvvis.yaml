@@ -1,0 +1,24 @@
+name: UVVis
+
+# Dummy geometry: replace all joint poses and XYZ coordinates before hardware use.
+# For a private calibration, pass its file path as config_path when constructing
+# AFL.automation.manipulate.ufactory_xarm.stations.UVVis.
+
+# Linear rail position in millimetres.
+rail_position: 600
+
+# Seven taught joint angles in degrees, for station entry and return.
+poses:
+  vertical:
+    base: [0, 0, 0, 0, 0, 0, 0]  # TODO: teach the UVVis base joint pose.
+    top: [0, 0, 0, 0, 0, 0, 0]   # TODO: teach the UVVis measurement entry joint pose.
+
+# Vial-bottom measurement datum [x, y, z] in arm-base millimetres.
+# Placement with use_labware_offset=True adds the held vial's height.
+# Place approaches in separate X, Y, Z legs and retreat retraces those legs.
+locations:
+  measure:
+    xyz: [0, 0, 0]  # TODO: replace with the calibrated UVVis measurement position.
+    entries:
+      vertical: top
+    route: top

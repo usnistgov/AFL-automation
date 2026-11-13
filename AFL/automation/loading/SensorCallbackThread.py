@@ -112,7 +112,7 @@ class StopLoadCBv1(SensorCallbackThread):
                     
                     time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
                     
-                    print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep*100} %')
+                    self.update_status(f'[{datestr}] waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep*100} %')
                     self.load_client.server_cmd(cmd='stopLoad',secret='xrays>neutrons')
 
                     filename = self.filepath/str('Sensor-'+datestr+'.txt')
@@ -161,23 +161,22 @@ class StopLoadCBv2(SensorCallbackThread):
         self.trigger_on_end = trigger_on_end
         self.instatrigger = instatrigger
 
-        print(f'StopLoad thread starting with data = {self.data} and sensor label = {self.sensorlabel}')
-
     def process_signal(self):
         if ('PROGRESS' in self.loader_comm.getServerState()) and (self.sensorlabel in self.loader_comm.getServerState()): #make sure this sensor is queued for this load
             datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
-            self.update_status(f'[{datestr}] Detected a load...')
+            self.update_status(f'[{datestr}] StopLoad thread starting with data = {self.data} for sensor label = {self.sensorlabel}')
+            self.update_status(f'[{datestr}] Detected a load to {self.sensorlabel}...')
             start = datetime.datetime.now()
 
             self.poll.reset_load_buffer()
 
-            self.update_status(f'Taking baseline data for {self.baseline_duration} s.')
+            self.update_status(f'[{datestr}] Taking baseline data for {self.baseline_duration} s.')
             time.sleep(self.baseline_duration)
             
             signal = np.array(self.poll.read_load_buffer())
             
             baseline_val = np.mean(signal[-self.threshold_npts:,1])#column 0 is microseconds since beginning of load
-            self.update_status(f'Found baseline at {baseline_val}')
+            self.update_status(f'[{datestr}] Found baseline at {baseline_val}')
             if self.data is not None:
                 self.data[f'{self.sensorlabel}_stopper_baseline_voltage'] = baseline_val
             while True and (not self._stop):
@@ -196,9 +195,9 @@ class StopLoadCBv2(SensorCallbackThread):
                     time.sleep(self.period)
                 else:
                     datestr = datetime.datetime.strftime(datetime.datetime.now(),'%y%m%d-%H:%M:%S')
-                    self.update_status(f'Elapsed time: {datetime.datetime.now()-start}')
+                    self.update_status(f'[{datestr}] Elapsed time: {datetime.datetime.now()-start}')
                     if not timed_out:
-                        self.update_status(f'[{datestr}] Load stopped at voltage mean = {np.mean(signal[-self.threshold_npts:,1])} and stdev = {np.std(signal[-self.threshold_npts:,1])}')
+                        self.update_status(f'[{datestr}] Load stopped at voltage mean = {np.mean(signal[-self.threshold_npts:,1])}V and stdev = {np.std(signal[-self.threshold_npts:,1])}V')
                     else:
                         self.update_status(f'[{datestr}] Load timed out')
                     
@@ -237,7 +236,7 @@ class StopLoadCBv2(SensorCallbackThread):
                     
                         time.sleep(time_to_sleep.total_seconds()) # was self.post_detection_sleep)
 
-                        print(f'waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
+                        self.update_status(f'[{datestr}] waited for {time_to_sleep.total_seconds()} based on elapsed time of {elapsed_time.total_seconds()} and ratio of {self.post_detection_sleep} %')
 
                     self.loader_comm.stopLoad()
                     try:
@@ -245,7 +244,7 @@ class StopLoadCBv2(SensorCallbackThread):
                         # self.update_status(f'Saving signal data to {filename}')
                         np.savetxt(filename,signal)
                     except Exception as e:
-                        print(f"Could not write load trace to {filename}, {e}")
+                        self.update_status(f'[{datestr}] Could not write load trace to {filename}, {e}')
 
                     if self.data is not None:
                         self.data[f'{self.sensorlabel}_load_stop_trace'] = signal

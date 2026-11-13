@@ -1,0 +1,20 @@
+name: VialTurbidity
+
+# Rail position in mm.
+rail_position: 350
+
+# Taught joint entry poses in degrees. The supplied values mirror the current
+# VialHandling vertical/top route as editable starting points.
+poses:
+  vertical:
+    base: [176.012176, -37.186279, 3.719986, 51.026876, 1.775081, 89.947269, -3.701823]
+    top: [174.918916, 1.860738, 8.395436, 85.430987, 1.776169, 82.646526, 1.855352]
+
+# Vial-bottom measurement coordinate [x, y, z] in arm-base mm.
+# Place moves here in separate X, Y, and Z legs; retreat retraces them.
+locations:
+  measure:
+    xyz: [-502.841187, -44.705578, 170.424438]
+    entries:
+      vertical: top
+    route: top

@@ -6,12 +6,11 @@ import datetime
 import os
 import sys
 import traceback
-import subprocess
 import json
-import pathlib
 import numpy as np
 import pandas as pd
 import xarray as xr
+from AFL.automation import __version__
 from AFL.automation.shared.serialization import is_serialized
 from AFL.automation.APIServer.data.DataTrashcan import DataTrashcan
 
@@ -47,10 +46,8 @@ class QueueDaemon(threading.Thread):
             self.data['platform_serial'] = os.environ['AFL_SYSTEM_SERIAL']
         except KeyError:
             self.data['platform_serial'] = 'not_set'
-        try:
-            self.data['afl_automation_version'] = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
-        except Exception:
-            self.data['afl_automation_version'] = 'could_not_determine'
+        # Package metadata also works outside the checkout and without Git.
+        self.data['afl_automation_version'] = __version__
 
 
     def terminate(self):
@@ -170,7 +167,12 @@ class QueueDaemon(threading.Thread):
             # so that DataTiled can store it as the main data element
 
             if isinstance(return_val, xr.Dataset):
+                # Preserve the dataset for Client.retrieve_obj(task_uuid) while
+                # DataTiled independently writes the queued result to Tiled.
+                return_val = return_val.copy()
+                return_val.attrs['uuid'] = str(masked_package['uuid'])
                 self.data['main_dataset'] = return_val
+                self.driver.deposit_obj(return_val, uid=str(masked_package['uuid']))
             elif type(return_val) is np.ndarray:
                 self.data['main_array'] = return_val
             elif type(return_val) is pd.DataFrame:
@@ -180,6 +182,9 @@ class QueueDaemon(threading.Thread):
 
             self.data.finalize()
             self._attach_tiled_result_metadata(masked_package)
+            tiled_entry_id = getattr(self.data, "last_tiled_entry_id", None)
+            if exit_state == "Success!" and tiled_entry_id is not None:
+                self.driver.post_tiled_finalize(task, str(tiled_entry_id))
             self.history.append(masked_package)#history for this server restart
 
             self.task_queue.iteration_id = time.time()

@@ -334,10 +334,9 @@ def test_prepare_rejects_stock_volume_fraction_targets_with_invalid_protocol_vol
     _seed_stocks(driver)
     driver.config['prep_targets'] = ['5A1']
 
-    result, destination = driver.prepare(_stock_fraction_target(), enable_multistep_dilution=False)
+    with pytest.raises(ValueError, match='not feasible.*protocol.*volume'):
+        driver.prepare(_stock_fraction_target(), enable_multistep_dilution=False)
 
-    assert result is None
-    assert destination is None
     assert driver.last_validated_protocol == [
         {'source': '1A1', 'dest': '1A4', 'volume': 300.0},
         {'source': '1A2', 'dest': '1A4', 'volume': 700.0},
@@ -353,7 +352,5 @@ def test_prepare_rejects_stock_volume_fraction_targets_that_do_not_sum_to_one():
     bad_target = _stock_fraction_target()
     bad_target['stock_volume_fractions'] = {'Stock1': 0.3, 'Stock2': 0.6}
 
-    result, destination = driver.prepare(bad_target, enable_multistep_dilution=False)
-
-    assert result is None
-    assert destination is None
+    with pytest.raises(ValueError, match='not feasible.*must sum to 1.0'):
+        driver.prepare(bad_target, enable_multistep_dilution=False)

@@ -8,7 +8,7 @@ import numpy as np
 import xarray as xr
 
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.shared.samplecells import NeutronSampleCell
+from AFL.automation.shared.samplecells import NeutronSampleCell, SampleCell
 
 try:
     from tiled.queries import Eq
@@ -17,9 +17,8 @@ except ImportError:
     warnings.warn("Cannot import from tiled...empty UUID lookup will not work", stacklevel=2)
 
 
-class OpticalTurbidity(NeutronSampleCell, Driver):
+class OpticalTurbidity(Driver):
     defaults = {
-        **NeutronSampleCell.geometry_defaults,
         "save_path": "/home/afl642/2305_SINQ_TurbidityImages/",
         "camera_interface": "http",
         "camera_url": "http://afl-video:8081/103/current",
@@ -27,7 +26,7 @@ class OpticalTurbidity(NeutronSampleCell, Driver):
         "empty_uuid": "",
     }
 
-    def __init__(self, camera=None, overrides=None):
+    def __init__(self, camera=None, overrides=None, sample_cell=None):
         """
         Initialize OpticalTurbidity calculator driver.
 
@@ -38,7 +37,15 @@ class OpticalTurbidity(NeutronSampleCell, Driver):
             will be created when using the HTTP interface.
         overrides : dict, optional
             Configuration overrides for PersistentConfig.
+        sample_cell : SampleCell, optional
+            Geometry and image-processing strategy. Defaults to a
+            ``NeutronSampleCell``.
         """
+        if sample_cell is None:
+            sample_cell = NeutronSampleCell()
+        if not isinstance(sample_cell, SampleCell):
+            raise TypeError("sample_cell must be an instance of SampleCell")
+        self.sample_cell = sample_cell
         self.camera = camera
         self.empty_img = None
         self._opencv_capture = None
@@ -174,13 +181,13 @@ class OpticalTurbidity(NeutronSampleCell, Driver):
 
         if collected:
             print("collected image")
-            measurement_img = self.to_grayscale(img, color_order="RGB")
+            measurement_img = self.sample_cell.to_grayscale(img, color_order="RGB")
         else:
             self._reset_camera()
             print("trying to reset camera connection")
             collected, img = self._collect_image(**kwargs)
             if collected:
-                measurement_img = self.to_grayscale(img, color_order="RGB")
+                measurement_img = self.sample_cell.to_grayscale(img, color_order="RGB")
                 print("success on retry")
             else:
                 raise RuntimeError(
@@ -242,8 +249,8 @@ class OpticalTurbidity(NeutronSampleCell, Driver):
             empty_img = measurement_img
             empty_from_measurement = True
 
-        reference_sample = self.extract_sample_image(empty_img, color_order="RGB")
-        measurement_img = self.crop_image(
+        reference_sample = self.sample_cell.extract_sample_image(empty_img, color_order="RGB")
+        measurement_img = self.sample_cell.crop_image(
             measurement_img,
             row_crop=reference_sample["row_crop"],
             col_crop=reference_sample["col_crop"],
@@ -252,14 +259,14 @@ class OpticalTurbidity(NeutronSampleCell, Driver):
         mask = reference_sample["mask"]
         cx = reference_sample["cx"]
         cy = reference_sample["cy"]
-        turbidity_metric = self.turbidity_measurement(
+        turbidity_metric = self.sample_cell.turbidity_measurement(
             measurement_img, empty_img, mask, color_order="RGB"
         )["turbidity_metric"]
 
         if plotting:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
             title = f"Turbidity metric {np.round(turbidity_metric, 2)}"
-            self.save_mask_comparison_plot(
+            self.sample_cell.save_mask_comparison_plot(
                 empty_img,
                 measurement_img,
                 mask,
@@ -267,7 +274,7 @@ class OpticalTurbidity(NeutronSampleCell, Driver):
                 filename=f"{timestamp}-turbidity0.png",
                 title=title,
             )
-            self.save_mask_comparison_plot(
+            self.sample_cell.save_mask_comparison_plot(
                 empty_img,
                 measurement_img,
                 mask,
@@ -298,6 +305,9 @@ _DEFAULT_CUSTOM_CONFIG = {
             "_args": ["http://afl-video:8081/103/current"],
         }
     ],
+    "sample_cell": {
+        "_classname": "AFL.automation.shared.samplecells.NeutronSampleCell",
+    },
 }
 _DEFAULT_CUSTOM_PORT = 5001
 if __name__ == "__main__":

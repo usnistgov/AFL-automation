@@ -884,31 +884,68 @@ class DriverWebAppsMixin:
             ),
         }
 
+    def _get_plot_sample_dim_state(self, dataset):
+        """Resolve the sample-dimension state used by plot serialization."""
+        sample_dim = dataset.attrs.get('_detected_sample_dim')
+        if sample_dim not in dataset.dims:
+            sample_dim = self._detect_sample_dimension(dataset, allow_size_fallback=True)
+        sample_count = int(dataset.attrs.get(
+            '_sample_count', dataset.sizes.get(sample_dim, 1) if sample_dim else 1,
+        ))
+        singleton_synthetic_sample_dim = bool(
+            sample_dim and sample_count <= 1 and dataset.attrs.get('_synthetic_singleton_sample_dim')
+        )
+        return sample_dim, sample_count, singleton_synthetic_sample_dim
+
+    def _normalize_plot_dataarray(self, name, data_array, dataset, sample_dim=None, is_coord=False):
+        """Drop only the synthetic singleton sample axis before plotting."""
+        if sample_dim not in getattr(data_array, 'dims', ()):
+            return data_array
+        sample_count = int(dataset.attrs.get(
+            '_sample_count', dataset.sizes.get(sample_dim, 1) if sample_dim else 1,
+        ))
+        if sample_count > 1 or not dataset.attrs.get('_synthetic_singleton_sample_dim'):
+            return data_array
+        if is_coord and name in {sample_dim, 'sample_name', 'sample_uuid', 'entry_id'}:
+            return data_array
+        return data_array.isel({sample_dim: 0}, drop=True)
+
     def _build_tiled_plot_manifest(self, dataset):
         """Build a lightweight structural manifest for the tiled plot UI."""
         import numpy as np
         import xarray as xr
 
-        sample_dim = dataset.attrs.get('_detected_sample_dim')
-        if sample_dim not in dataset.dims:
-            sample_dim = self._detect_sample_dimension(dataset, allow_size_fallback=True)
+        sample_dim, sample_count, singleton_synthetic_sample_dim = self._get_plot_sample_dim_state(dataset)
+        effective_sample_dim = sample_dim
+        if singleton_synthetic_sample_dim:
+            effective_sample_dim = None
+        elif effective_sample_dim and len(dataset.dims) == 1 and sample_count <= 1:
+            # A lone physical axis (such as time or potential) is plottable data,
+            # not a sample dimension.
+            effective_sample_dim = None
 
         catalog = {}
         for coord_name, coord in dataset.coords.items():
+            normalized_coord = self._normalize_plot_dataarray(
+                coord_name, coord, dataset, sample_dim=sample_dim, is_coord=True,
+            )
             catalog[coord_name] = self._describe_plot_dataarray(
                 coord_name,
-                coord,
+                normalized_coord,
                 dataset,
-                sample_dim=sample_dim,
+                sample_dim=effective_sample_dim,
                 is_coord=True,
             )
 
         for var_name, data_array in dataset.data_vars.items():
+            normalized_data_array = self._normalize_plot_dataarray(
+                var_name, data_array, dataset, sample_dim=sample_dim, is_coord=False,
+            )
             catalog[var_name] = self._describe_plot_dataarray(
                 var_name,
-                data_array,
+                normalized_data_array,
                 dataset,
-                sample_dim=sample_dim,
+                sample_dim=effective_sample_dim,
                 is_coord=False,
             )
 
@@ -924,13 +961,13 @@ class DriverWebAppsMixin:
                 dim_name,
                 synthetic_coord,
                 dataset,
-                sample_dim=sample_dim,
+                sample_dim=effective_sample_dim,
                 is_coord=True,
             )
 
         return {
-            'sample_dim': sample_dim,
-            'sample_count': int(dataset.sizes.get(sample_dim, 1)) if sample_dim else 1,
+            'sample_dim': effective_sample_dim,
+            'sample_count': sample_count if sample_dim else 1,
             'dims': {name: int(size) for name, size in dataset.sizes.items()},
             'catalog': catalog,
         }
@@ -983,6 +1020,11 @@ class DriverWebAppsMixin:
                 is_coord = True
             else:
                 return {'status': 'error', 'message': f'Variable "{var_name}" not found in combined dataset'}
+
+            sample_dim, _, _ = self._get_plot_sample_dim_state(ds)
+            data_array = self._normalize_plot_dataarray(
+                var_name, data_array, ds, sample_dim=sample_dim, is_coord=is_coord,
+            )
 
             return {
                 'status': 'success',
@@ -1358,44 +1400,34 @@ class DriverWebAppsMixin:
 
         # SINGLE ENTRY CASE: Return dataset as-is with metadata added
         if len(datasets) == 1:
-            dataset = datasets[0]
+            dataset = datasets[0].copy(deep=True)
             metadata = metadata_list[0]
-            
-            # Detect the sample dimension from the dataset
-            # For single entries, avoid guessing a random axis as "sample".
-            sample_dim = self._detect_sample_dimension(dataset, allow_size_fallback=False)
-            if sample_dim is None:
-                # Ensure plotter paths have a sample dimension even for one entry.
-                # Use concat_dim for consistency with multi-entry flow.
-                sample_dim = concat_dim
-                dataset = dataset.expand_dims({sample_dim: [0]})
-                dataset = dataset.assign_coords({
-                    'sample_name': (sample_dim, [metadata['sample_name']]),
-                    'sample_uuid': (sample_dim, [metadata['sample_uuid']]),
-                    'entry_id': (sample_dim, [metadata['entry_id']]),
-                })
-            
-            # Add metadata as dataset attributes (not coordinates, since we don't have a new dim)
+            # Use the same outer index as multi-entry data. Serialization removes
+            # this artificial singleton axis before the browser plots it.
+            dataset = dataset.expand_dims({concat_dim: [0]})
+            dataset = dataset.assign_coords({
+                'sample_name': (concat_dim, [metadata['sample_name']]),
+                'sample_uuid': (concat_dim, [metadata['sample_uuid']]),
+                'entry_id': (concat_dim, [metadata['entry_id']]),
+            })
             dataset.attrs['sample_name'] = metadata['sample_name']
             dataset.attrs['sample_uuid'] = metadata['sample_uuid']
             dataset.attrs['entry_id'] = metadata['entry_id']
-            dataset.attrs['_detected_sample_dim'] = sample_dim
-            
-            # If sample_composition exists, add it as a DataArray along the sample dimension
-            if metadata['sample_composition'] and sample_dim:
+            dataset.attrs['_detected_sample_dim'] = concat_dim
+            dataset.attrs['_sample_count'] = 1
+            dataset.attrs['_synthetic_singleton_sample_dim'] = True
+
+            if metadata['sample_composition']:
                 components = metadata['sample_composition']['components']
                 values = metadata['sample_composition']['values']
-                
-                # Check if composition already exists in dataset (common case)
-                # If not, we could add it, but for single entry this is usually already there
                 if 'composition' not in dataset.data_vars:
-                    # Create composition array - but we need to match the sample dimension size
-                    # This is tricky for single entry since composition is per-sample
-                    # For now, store in attrs
-                    dataset.attrs['sample_composition'] = {
-                        'components': components,
-                        'values': values
-                    }
+                    dataset = dataset.assign(composition=xr.DataArray(
+                        data=np.asarray([values], dtype=float),
+                        dims=[concat_dim, 'components'],
+                        coords={concat_dim: dataset.coords[concat_dim].values, 'components': components},
+                        name='composition',
+                    ))
+                dataset.attrs['sample_composition'] = {'components': components, 'values': values}
             
             # Apply variable prefix if specified
             if variable_prefix:
@@ -1468,6 +1500,10 @@ class DriverWebAppsMixin:
         # Add compositions if we have it
         if compositions is not None:
             concatenated = concatenated.assign(composition=compositions)
+
+        concatenated.attrs['_detected_sample_dim'] = concat_dim
+        concatenated.attrs['_sample_count'] = len(datasets)
+        concatenated.attrs['_synthetic_singleton_sample_dim'] = False
 
         # Prefix names (data vars, coords, dims) but NOT the concat_dim itself
         if variable_prefix:

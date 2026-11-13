@@ -18,11 +18,21 @@ except NameError:
     import __main__
     main_module_fullpath = os.path.abspath(__main__.__file__)
     main_module_name = os.path.basename(main_module_fullpath).replace('.py','')
-try:
-    driver_module = importlib.import_module(main_module_name,'')
-except ModuleNotFoundError:
-    # driver_module = sys.modules[__name__]
+
+# The launcher is normally imported by the driver script itself.  Re-importing
+# that script by filename executes it a second time, including any statements
+# after ``from AFL.automation.shared import launcher``.  Use the active module
+# in that case so launch setup runs exactly once.
+if getattr(__main__, '__file__', None) and (
+        os.path.basename(os.path.abspath(__main__.__file__)).replace('.py', '')
+        == main_module_name
+):
     driver_module = __main__
+else:
+    try:
+        driver_module = importlib.import_module(main_module_name,'')
+    except ModuleNotFoundError:
+        driver_module = __main__
 driver_name = driver_module.__name__.split('.')[-1]
 try:
     main_module_name = driver_module._OVERRIDE_MAIN_MODULE_NAME
@@ -63,21 +73,24 @@ except (AttributeError,NameError):
 if 'AFL_SYSTEM_SERIAL' not in os.environ.keys():
         os.environ['AFL_SYSTEM_SERIAL'] = AFL_GLOBAL_CONFIG['system_serial']
 
-if main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
-        server_port = AFL_GLOBAL_CONFIG['ports'][main_module_name]
-        print(f'Found configured non-default port {server_port}, starting there')
-else:
-        server_port=5000
-
 if main_module_name in AFL_GLOBAL_CONFIG.get('ca_status_ports', {}):
         ca_status_port = AFL_GLOBAL_CONFIG['ca_status_ports'][main_module_name]
 else:
         ca_status_port = 5064
 
 if len(AFL_GLOBAL_CONFIG['tiled_server'])>0:
-        data = DataTiled(AFL_GLOBAL_CONFIG['tiled_server'],
-                api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
-                backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
+        tiled_server = AFL_GLOBAL_CONFIG['tiled_server']
+        try:
+                data = DataTiled(tiled_server,
+                        api_key = AFL_GLOBAL_CONFIG['tiled_api_key'],
+                        backup_path= os.path.join(os.path.expanduser('~'),'.afl','json-backup'),)
+        except Exception as exc:
+                print(
+                        f'Warning: unable to connect to configured Tiled server {tiled_server!r}: {exc}. '
+                        'Continuing without a Tiled data backend.',
+                        file=sys.stderr,
+                )
+                data = None
 else:
         data = None
 
@@ -131,16 +144,45 @@ def _reconstitute_objects(obj_dict,data=None):
 '''
 
 
+def _valid_port(value):
+        try:
+                port = int(value)
+        except (TypeError, ValueError):
+                raise argparse.ArgumentTypeError('port must be an integer')
+        if not 1 <= port <= 65535:
+                raise argparse.ArgumentTypeError('port must be between 1 and 65535')
+        return port
+
+
 parser = argparse.ArgumentParser(prog = f'AFL // {main_module_name}',
                                 description = f'AFL APIServer launcher for {main_module_name}')
 parser.add_argument('--no-waitress', action='store_true',
                     help='Disable the waitress WSGI server')
 parser.add_argument('--config', type=Path, metavar='CONFIG.json',
                     help='Launch using this JSON driver configuration instead of defaults')
+parser.add_argument('--port', type=_valid_port,
+                    help='HTTP port for the AFL API server; overrides the global configuration')
 
 parser.add_argument('-i', '--interactive', action='store_true',
                     help='Start in interactive mode')
 args = parser.parse_args()
+
+if args.port is not None:
+        server_port = args.port
+        print(f'Using command-line port {server_port}')
+elif 'AFL_HTTP_PORT' in os.environ:
+        try:
+                server_port = int(os.environ['AFL_HTTP_PORT'])
+        except ValueError as exc:
+                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535') from exc
+        if not 1 <= server_port <= 65535:
+                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535')
+        print(f'Using launch HTTP port {server_port}')
+elif main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
+        server_port = AFL_GLOBAL_CONFIG['ports'][main_module_name]
+        print(f'Found configured non-default port {server_port}, starting there')
+else:
+        server_port = 5000
 
 # Driver construction must not inherit values from an earlier run.  This is
 # consumed by Driver and applies to every Driver created by a custom config.
@@ -227,6 +269,11 @@ server.create_queue(
         ca_prefix=f"AFL:{AFL_GLOBAL_CONFIG['system_serial']}:{main_module_name}:",
         ca_port=ca_status_port,
 )
+
+# Make the launched server available to the driver script after importing this
+# module.  This also avoids requiring launch scripts to reach into the launcher
+# module merely to inspect or customize the server instance.
+driver_module.server = server
 
 #server.add_unqueued_routes()
 # APIServer initializes logging in its constructor.

@@ -223,6 +223,10 @@ class Driver(DriverWebAppsMixin):
                 self.log_info(f'{name:30s} = {value}')
         return config.config
 
+    def refresh_quickbar(self):
+        """Refresh dynamic quickbar metadata before the server serves it."""
+        return None
+
     def clean_config(self):
         """Remove any config keys that are not present in defaults.
 
@@ -296,6 +300,15 @@ class Driver(DriverWebAppsMixin):
            All of the kwargs passed to execute are also pass to this method. It
            is expected that this method be overridden by subclasses.
         '''
+        pass
+
+    def post_tiled_finalize(self, task, tiled_entry_id):
+        """Handle a successfully persisted Tiled result.
+
+        QueueDaemon calls this hook after it has written a queued task result
+        to Tiled. Subclasses can retain the exact entry identifier when a
+        later operation needs to retrieve that particular result.
+        """
         pass
 
     def execute(self,**kwargs):

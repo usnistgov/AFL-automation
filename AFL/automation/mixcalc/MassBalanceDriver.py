@@ -436,10 +436,20 @@ class MassBalanceDriver(MassBalanceBase, MassBalanceWebAppMixin, Driver):
                 remaining_volume_qty = enforce_units(remaining_volume, 'volume')
                 if float(remaining_volume_qty.to('ul').magnitude) <= 0:
                     continue
-                if runtime_config.get('total_volume') is None:
-                    runtime_config['total_volume'] = remaining_volume
-                else:
+                has_recipe_scale = any(
+                    runtime_config.get(key)
+                    for key in ('masses', 'volumes', 'total_mass', 'total_volume')
+                )
+                if has_recipe_scale:
+                    # Source volume is inventory, not part of the stock recipe.
+                    # Build the recipe first, then size the runtime copy with
+                    # Solution.measure_out() so concentrations are preserved
+                    # and recipe quantities do not trigger warnings.
                     runtime_config['_source_remaining_volume'] = remaining_volume
+                else:
+                    # Some legacy fraction-based recipes need a volume scale
+                    # in order to construct a Solution at all.
+                    runtime_config['total_volume'] = remaining_volume
             runtime_configs.append(runtime_config)
         return runtime_configs
 

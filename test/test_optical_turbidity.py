@@ -29,16 +29,15 @@ def test_optical_turbidity_set_empty_returns_dataset(tmp_path, monkeypatch):
     with patch('AFL.automation.APIServer.Driver.pathlib.Path.home', return_value=tmp_path):
         driver = OpticalTurbidity(
             camera=_DummyCamera(rgb_image),
-            overrides={
-                'camera_interface': 'http',
-                'row_crop': [1, 3],
-                'col_crop': [1, 3],
-            },
+            overrides={'camera_interface': 'http'},
+            sample_cell=NeutronSampleCell(
+                row_crop=[1, 3], col_crop=[1, 3], hough_radii=1
+            ),
         )
 
     driver.data = {'sample_uuid': 'empty-sample-uuid'}
 
-    assert isinstance(driver, NeutronSampleCell)
+    assert isinstance(driver.sample_cell, NeutronSampleCell)
 
     dataset = driver.measure(set_empty=True, name='empty-reference')
 
@@ -55,7 +54,7 @@ def test_optical_turbidity_set_empty_returns_dataset(tmp_path, monkeypatch):
     np.testing.assert_array_equal(dataset['img_MT'].values, driver.empty_img)
     np.testing.assert_array_equal(dataset['mask'].values, np.ones_like(driver.empty_img, dtype=bool))
 
-    monkeypatch.setattr(driver, 'find_circular_region', lambda image, radii: (1, 1, 1))
+    monkeypatch.setattr(driver.sample_cell, 'find_circular_region', lambda image, radii: (1, 1, 1))
     measurement = driver.measure(name='sample')
 
     assert measurement.attrs['located_center'] == [1, 1]

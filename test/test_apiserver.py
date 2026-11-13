@@ -135,6 +135,25 @@ class TestAPIServer:
         ]
         assert len(handlers) == 1
         assert handlers[0] in logging.getLogger('werkzeug').handlers
+        assert server.app.logger.propagate is False
+
+    def test_apiserver_log_records_do_not_reach_root_handlers(self, tmp_path):
+        server = APIServer(name='NonPropagatingServer', afl_home=tmp_path)
+        root_records = []
+
+        class RecordingHandler(logging.Handler):
+            def emit(self, record):
+                root_records.append(record)
+
+        root_handler = RecordingHandler()
+        root_logger = logging.getLogger()
+        root_logger.addHandler(root_handler)
+        try:
+            server.app.logger.warning('single server log record')
+        finally:
+            root_logger.removeHandler(root_handler)
+
+        assert root_records == []
 
     def test_apiserver_create_queue(self, dummy_driver):
         """Test that APIServer can create a queue with a driver"""

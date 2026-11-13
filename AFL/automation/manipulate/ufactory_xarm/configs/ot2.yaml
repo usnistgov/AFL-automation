@@ -1,0 +1,28 @@
+name: OT2
+rail_position: 700
+# Extra vertical clearance above loaded labware during deck travel, in mm.
+# OT2.load_labware(deck_clearance_mm=...) can override this margin per slot.
+deck_clearance_mm: 15.0
+deck_calibration:
+  max_residual_mm: 15
+  # Each pair identifies the same physical cross in two coordinate frames (mm).
+  # deck: nominal OT-2 deck coordinates from Opentrons' ot2_standard definition.
+  # link_base: measured cross coordinates relative to the arm base at this rail stop.
+  # These are deck calibration crosses, not labware wells or rack corners.
+  points:
+    # 1BLC: Slot 1 Bottom Left Cross (front-left reference); anchors the transform.
+    - {"deck":[12.13,9,0],"link_base":[-213.378525, 550.070618, 119.986015]}
+    # 3BRC: Slot 3 Bottom Right Cross (front-right reference); defines +deck X from 1BLC.
+    - {"deck":[380.87,9,0],"link_base":[155.624054, 548.591492, 125.90332]}
+    # 6BRC: Slot 6 Bottom Right Cross; defines the deck plane with the first two.
+    - {"deck":[380.87,99.5,0],"link_base":[154.055908, 640.032227, 126.419518]}
+# Seven joint angles in degrees. Top uses vertical; front uses horizontal.
+# Both approaches move Y, X, and Z, clearing loaded labware by deck_clearance_mm.
+# With per-slot overrides, Z rises before entering crossed loaded slots.
+# Loaded travel also includes the carried labware height below the TCP.
+# Each existing shared entry is the base for that approach's well targets.
+poses:
+  horizontal:
+    base: [92.435969, 0.505062, -4.993843, 14.436359, -4.233585, -77.231044, 0.396601]
+  vertical:
+    base:  [85.683604, -19.407685, 7.649445, 47.964302, 0.766388, 66.612302, 0.196353]

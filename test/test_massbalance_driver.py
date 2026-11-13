@@ -1,8 +1,11 @@
+import warnings
+
 import pytest
 from AFL.automation.mixcalc.BalanceDiagnosis import BalanceDiagnosis, FailureCode
 from AFL.automation.mixcalc.MassBalanceDriver import MassBalanceDriver
 from AFL.automation.mixcalc.Solution import Solution
 from AFL.automation.shared.units import units
+from AFL.automation.shared.warnings import MixWarning
 
 
 def _build_balanced_massbalance_driver():
@@ -97,11 +100,11 @@ def test_massbalance_driver_mixed_solvents_mass():
         del sub_balanced.components['NaCl']
         del sub_target.components['NaCl']
 
-        assert sub_balanced.mass_fraction['H2O'] == pytest.approx(
-            sub_target.mass_fraction['H2O'], abs=0.002
+        assert sub_balanced.mass_fraction['H2O'].to('').magnitude == pytest.approx(
+            sub_target.mass_fraction['H2O'].to('').magnitude, abs=0.002
         )
-        assert sub_balanced.mass_fraction['Hexanes'] == pytest.approx(
-            sub_target.mass_fraction['Hexanes'], abs=0.002
+        assert sub_balanced.mass_fraction['Hexanes'].to('').magnitude == pytest.approx(
+            sub_target.mass_fraction['Hexanes'].to('').magnitude, abs=0.002
         )
 
     assert none_count == 1
@@ -362,6 +365,45 @@ def test_multi_source_stock_preserves_recipe_volume_and_uses_source_inventory():
         float(stock.concentration["NaCl"].to("mg/ml").magnitude) == pytest.approx(1.0)
         for stock in mb.stocks
     )
+
+
+@pytest.mark.usefixtures("mixdb")
+def test_multi_source_inventory_does_not_rescale_recipe_during_construction():
+    mb = MassBalanceDriver()
+    mb.config.write = False
+    mb.reset_stocks()
+
+    stock_definition = {
+        "name": "stock_NaCl",
+        "volumes": {"H2O": "20 ml"},
+        "concentrations": {"NaCl": "1 mg/ml"},
+        "solutes": ["NaCl"],
+        "sources": [
+            {"location": "2A1", "initial_volume": "20 ml"},
+            {"location": "2B1", "initial_volume": "20 ml"},
+        ],
+    }
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        mb.add_stock(stock_definition)
+
+    assert not [warning for warning in caught if issubclass(warning.category, MixWarning)]
+    assert [float(stock.volume.to("ml").magnitude) for stock in mb.stocks] == [20.0, 20.0]
+
+    mb.config["stock_inventory"]["stock_NaCl@2A1"] = {
+        "remaining_volume": "10 ml"
+    }
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        mb.process_stocks()
+
+    assert not [warning for warning in caught if issubclass(warning.category, MixWarning)]
+    assert [float(stock.volume.to("ml").magnitude) for stock in mb.stocks] == [10.0, 20.0]
+    assert [
+        float(stock.concentration["NaCl"].to("mg/ml").magnitude)
+        for stock in mb.stocks
+    ] == pytest.approx([1.0, 1.0])
 
 
 @pytest.mark.usefixtures("mixdb")
